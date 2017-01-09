@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd"
+        logicalFilePath="migrations/db.changelog.xml">
+
+    <changeSet id="2017-01-09-add-harvest-permit-area" author="vincit-kyostihe">
+        <createTable tableName="harvest_permit_area_status">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="harvest_permit_area_status">
+            <column name="name" value="INCOMPLETE"/>
+        </insert>
+        <insert tableName="harvest_permit_area_status">
+            <column name="name" value="READY"/>
+        </insert>
+        <insert tableName="harvest_permit_area_status">
+            <column name="name" value="LOCKED"/>
+        </insert>
+
+        <createTable tableName="harvest_permit_area">
+            <column autoIncrement="true" name="harvest_permit_area_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_area_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="harvest_permit_area_status(name)"
+                             foreignKeyName="fk_harvest_permit_area_status"/>
+            </column>
+            <column name="name_finnish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hunting_year" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="club_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_harvest_permit_area_club"/>
+            </column>
+            <column name="zone_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="zone(zone_id)"
+                             foreignKeyName="fk_harvest_permit_area_zone"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="harvest_permit_area_partner">
+            <column autoIncrement="true" name="harvest_permit_area_partner_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_area_partner_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="harvest_permit_area_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_area(harvest_permit_area_id)"
+                             foreignKeyName="fk_harvest_permit_area_partner_parent"/>
+            </column>
+            <column name="source_area_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="hunting_club_area(hunting_club_area_id)"
+                             foreignKeyName="fk_harvest_permit_area_partner_source_area"/>
+            </column>
+            <column name="zone_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="zone(zone_id)"
+                             foreignKeyName="fk_harvest_permit_area_partner_zone"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2017-01-13-add-harvest-permit-area-rhy" author="vincit-kyostihe">
+        <createTable tableName="harvest_permit_area_rhy">
+            <column autoIncrement="true" name="harvest_permit_area_rhy_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_area_rhy_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="harvest_permit_area_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_area(harvest_permit_area_id)"
+                             foreignKeyName="fk_harvest_permit_area_rhy_parent"/>
+            </column>
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_harvest_permit_area_rhy_ref"/>
+            </column>
+            <column name="area_size" type="DOUBLE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2017-01-13-add-harvest-permit-area-hta" author="vincit-kyostihe">
+        <createTable tableName="harvest_permit_area_hta">
+            <column autoIncrement="true" name="harvest_permit_area_hta_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_area_hta_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="harvest_permit_area_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_area(harvest_permit_area_id)"
+                             foreignKeyName="fk_harvest_permit_area_hta_parent"/>
+            </column>
+            <column name="hta_id" type="INT">
+                <constraints nullable="false"
+                             references="hta(gid)"
+                             foreignKeyName="fk_harvest_permit_area_hta_ref"/>
+            </column>
+            <column name="area_size" type="DOUBLE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2017-01-12-club-name-unique-trigger" author="vincit-terova" dbms="postgresql">
+        <sql splitStatements="false">
+            <![CDATA[
+            CREATE OR REPLACE FUNCTION club_name_uniq_check()
+              RETURNS TRIGGER AS $club_name_uniq_check$
+            DECLARE
+              same_name_exists boolean;
+            BEGIN
+              SELECT true
+              INTO same_name_exists
+              FROM (
+                SELECT 1
+                FROM organisation club
+                WHERE
+                  club.organisation_type = 'CLUB'
+                  AND club.organisation_id <> NEW.organisation_id
+                  AND
+                  (
+                    regexp_replace(lower(club.name_finnish), '\W', '', 'g') = regexp_replace(lower(NEW.name_finnish), '\W', '', 'g')
+                    OR regexp_replace(lower(club.name_swedish), '\W', '', 'g') = regexp_replace(lower(NEW.name_finnish), '\W', '', 'g')
+                    OR regexp_replace(lower(club.name_finnish), '\W', '', 'g') = regexp_replace(lower(NEW.name_swedish), '\W', '', 'g')
+                    OR regexp_replace(lower(club.name_swedish), '\W', '', 'g') = regexp_replace(lower(NEW.name_swedish), '\W', '', 'g')
+                  )
+                ) as x;
+              IF same_name_exists
+              THEN
+                RAISE EXCEPTION 'Club exists already for name fi:% sv:%', NEW.name_finnish, NEW.name_swedish;
+              END IF;
+              RETURN NULL;
+            END;
+            $club_name_uniq_check$ LANGUAGE 'plpgsql' IMMUTABLE;
+
+            CREATE CONSTRAINT TRIGGER club_name_uniq_check_trigger
+            AFTER INSERT OR UPDATE ON organisation
+            FOR EACH ROW EXECUTE PROCEDURE club_name_uniq_check();
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-10-16-add-harvest-permit-area-external-id-uniq" author="vincit-kyostihe">
+        <createIndex tableName="harvest_permit_area" indexName="ndx_harvest_permit_area_external_id" unique="true">
+            <column name="external_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,30 @@
+<table class="table table-striped">
+    <tr>
+        <th>Päivämäärä</th>
+        <td>{{day}}
+    </tr>
+    <tr>
+        <th>Kunta</th>
+        <td>{{municipality_fi}}</td>
+    </tr>
+    <tr>
+        <th>Sukupuoli</th>
+        <td>{{gender}}</td>
+    </tr>
+    {{#if area_fi}}
+    <tr>
+        <th>Kiintiöalue</th>
+        <td>{{area_fi}}</td>
+    </tr>
+    {{/if}}
+    {{#if permit}}
+    <tr>
+        <th>Lupa</th>
+        <td>{{permit}}</td>
+    </tr>
+    {{/if}}
+    <tr>
+        <th>Koordinaatit</th>
+        <td>P {{latitude}} I {{longitude}} (ETRS-TM35FIN)</td>
+    </tr>
+</table>

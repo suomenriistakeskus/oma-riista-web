@@ -1,0 +1,51 @@
+<div class="content">
+    <form id="specimenForm" name="specimenForm" class="form form-horizontal">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <td class="col-xs-3">
+                    <span translate="gamediary.form.gender"></span>
+                </td>
+                <td class="col-xs-3">
+                    <span translate="gamediary.form.age"></span>
+                </td>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr ng-repeat="specimen in entry.specimens | limitTo:maxVisibleSpecimens" ng-form="specimenForm">
+                <td class="col-xs-3 form-group" show-errors>
+                    <select name="gender" id="gender-{{$index}}"
+                            class="form-control"
+                            ng-model="specimen.gender"
+                            ng-options="('gamediary.gender.' + a | translate) for a in getAvailableGameGenders()"
+                            ng-required="false"
+                            ng-disabled="!entry.canEdit"></select>
+                </td>
+
+                <td class="col-xs-3 form-group" show-errors>
+                    <select name="age" id="age-{{$index}}"
+                            class="form-control"
+                            ng-model="specimen.age"
+                            ng-options="(age | gameAge: entry.gameSpeciesCode) for age in getAvailableGameAges()"
+                            ng-required="false"
+                            ng-disabled="!entry.canEdit"></select>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-default"
+            ng-click="$close()"
+            translate="global.button.cancel"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-click="$close()"
+            ng-disabled="specimenForm.$invalid"
+            translate="global.button.save"></button>
+</div>

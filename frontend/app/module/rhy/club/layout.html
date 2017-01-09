@@ -1,0 +1,14 @@
+<ul class="nav nav-pills">
+    <li ui-sref-active="active"><a ui-sref="rhy.club.contacts" translate="rhy.club.contacts.menuTitle"></a></li>
+    <li ui-sref-active="active"><a ui-sref="rhy.club.huntingLeaders" translate="rhy.club.huntingLeaders.menuTitle"></a></li>
+    <li class="pull-right">
+        <button type="button" ng-click="$ctrl.exportToExcel()" class="btn btn-primary">
+            <span class="glyphicon glyphicon-search"></span> &nbsp;
+            <span translate="reporting.common.toExcel"></span>
+        </button>
+    </li>
+</ul>
+
+<hr class="invisible"/>
+
+<div ui-view autoscroll="false"></div>

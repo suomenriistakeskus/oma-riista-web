@@ -1,0 +1,50 @@
+// Main search
+// -------------------------
+.r-main-search {
+  position: relative;
+  top: 0;
+  left: 0;
+  .r-main-search-title {
+    display: block;
+    width: 270px;
+  }
+  .r-main-search-title span {
+    display: block;
+    width: 215px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .select2-container {
+    width: 250px;
+    display: inline-block;
+    position: absolute;
+    top: 45px;
+    left: 10px;
+  }
+  .select2-container .select2-choice > .select2-chosen {
+    display: none;
+  }
+  .select2-container > a {
+    width: 25px;
+    position: absolute;
+    right: 0;
+    top: -27px;
+  }
+  .select2-container .select2-choice .select2-arrow {
+    border: 0;
+    width: 23px;
+    border-radius: 4px;
+  }
+  .select2-container .select2-choice .select2-arrow b {
+    background: url(../images/select2.png) no-repeat 3px 1px;
+  }
+  .select2-container-active .select2-choice {
+    border: 1px solid #aaa;
+  }
+}
+.r-main-search-dropdown {
+  padding: 8px 4px 4px 4px;
+  border: 1px solid #aaa !important;
+  border-radius: 4px 0 4px 4px;
+}

@@ -1,0 +1,50 @@
+<div class="form-group" show-errors>
+    <label for="nonMooseDate" class="control-label">
+        <span translate="gamediary.form.date"></span>
+        <small class="glyphicon glyphicon-asterisk text-danger"></small>
+    </label>
+
+    <div class="form-control-wrapper">
+        <div class="input-group r-dropdown-align-right"
+             ng-controller="DatePickerController">
+
+            <input type="text" name="nonMooseDate" id="nonMooseDate"
+                   class="form-control"
+                   uib-datepicker-popup is-open="isDatePickerOpen"
+                   date-between-min-max
+                   max-date="today()"
+                   ng-model="viewState.nonMooseDate"
+                   required>
+
+            <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+        </div>
+        <p class="text-danger form-control-static"
+           translate="club.hunting.huntingDay.outsidePermitInterval"
+           ng-hide="isPermitValidOnDate()"></p>
+    </div>
+</div>
+
+<div class="form-group" show-errors>
+    <label for="time" class="control-label">
+        <span translate="gamediary.form.time"></span>
+        <small class="glyphicon glyphicon-asterisk text-danger"></small>
+    </label>
+
+    <div class="form-control-wrapper">
+        <input type="text" name="time" id="time"
+               class="form-control"
+               finnish-date-time-in-past="viewState.nonMooseDate"
+               ng-model="viewState.time"
+               required>
+        <p class="help-block has-error"
+           ng-show="parentForm.time.$invalid"
+           ng-messages="parentForm.time.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>

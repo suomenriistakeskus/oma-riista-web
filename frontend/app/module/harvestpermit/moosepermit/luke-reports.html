@@ -1,0 +1,36 @@
+<div class="moose-permit-statistics">
+
+    <ul class="nav nav-pills">
+        <li ng-repeat="u in data" ng-class="{ active: isOrgSelected(u) }">
+            <a ng-click="selectOrg(u)">
+                {{'club.permit.lukeReports.' + u.name | translate}}
+            </a>
+        </li>
+    </ul>
+
+    <ul class="nav nav-pills">
+        <li ng-repeat="presentation in uiState.org.presentations" ng-class="{ active: isPresentationSelected(presentation)}">
+            <a ng-click="selectPresentation(presentation)">
+                {{'club.permit.lukeReports.' + presentation.name | translate}}
+            </a>
+        </li>
+    </ul>
+
+    <div ng-if="showFilesForSelectedOrg()">
+        <div ng-repeat="file in uiState.presentation.files" class="luke-data">
+
+            <img ng-if="!isPresentationTable()"
+                 class="img-responsive"
+                 ng-src="{{url(file)}}">
+
+            <div ng-if="isPresentationTable()">
+                <div ng-include="url(file)"></div>
+            </div>
+            <hr>
+        </div>
+    </div>
+
+    <div ng-if="noFilesForSelectedClub()"
+         class="luke-data-missing"
+         translate="club.permit.lukeReports.noReports"></div>
+</div>

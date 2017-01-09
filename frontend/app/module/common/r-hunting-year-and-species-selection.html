@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="col-xs-4 left">
+        <select name="yearSelect" id="yearSelect"
+                class="form-control"
+                ng-model="$ctrl.selectedYear"
+                ng-options="year as year.name for year in $ctrl.decoratedYears | orderBy:'year'"
+                ng-change="$ctrl.onHuntingYearChanged()">
+            <option disabled value="">{{'club.hunting.selectHuntingYear' | translate}}</option>
+        </select>
+    </div>
+    <div class="col-xs-8 right">
+        <r-species-selection available-species="$ctrl.availableSpecies"
+                             on-selected-species-changed="$ctrl.selectSpeciesCode(speciesCode)">
+        </r-species-selection>
+    </div>
+</div>

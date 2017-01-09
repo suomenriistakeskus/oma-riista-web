@@ -1,0 +1,35 @@
+<div class="navbar navbar-primary r-main-navbar" role="navigation"
+     ng-if="$ctrl.isAuthenticated()">
+    <div class="container">
+        <span class="hidden" ng-controller="IdleController"></span>
+
+        <div class="navbar-header">
+            <nav-active-role></nav-active-role>
+        </div>
+
+        <ul class="nav navbar-nav r-main-navbar-nav"
+            ng-if="$ctrl.isAdminOrModerator()">
+
+            <li ng-show="$ctrl.isAdmin()"
+                active-if-state-includes="admin">
+                <a ui-sref="admin.home" translate="global.menu.admin"></a>
+            </li>
+
+            <li active-if-state-includes="reporting">
+                <a ui-sref="reporting.home" translate="global.menu.reports"></a>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right r-main-navbar-nav-right">
+            <nav-search ng-if="$ctrl.isAdminOrModerator()"
+                        active-if-state-includes="profile,rhy"></nav-search>
+
+            <li ng-if="$ctrl.isUser()">
+                <a href="{{'login.instructionsLink' | translate}}" target="_blank" translate="global.menu.help"></a>
+            </li>
+
+            <nav-language></nav-language>
+            <nav-change-role></nav-change-role>
+        </ul>
+    </div>
+</div>

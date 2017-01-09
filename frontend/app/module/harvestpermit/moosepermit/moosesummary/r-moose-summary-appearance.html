@@ -1,0 +1,80 @@
+<div class="row">
+    <div class="col-sm-4">
+        <h5>{{ $ctrl.species.name | rI18nNameFilter | capitalize }}</h5>
+    </div>
+
+    <div class="col-sm-6">
+        <div class="form-group">
+            <label class="control-label">
+                <span translate="club.hunting.mooseHuntingSummary.appearance"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <label class="radio-inline">
+                    <input type="radio" ng-model="$ctrl.appearance.appeared" ng-value="false">
+                    {{ 'global.no' | translate }}
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" ng-model="$ctrl.appearance.appeared" ng-value="true">
+                    {{ 'global.yes' | translate }}
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" ng-show="$ctrl.appearance.appeared">
+    <div class="col-sm-7 r-moose-summary-mooselike-population-growth">
+        <div class="form-group">
+            <label class="control-label">
+                <span class="text-right" translate="club.hunting.mooseHuntingSummary.trendOfMooselikePopulationGrowth"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <label class="radio-inline" ng-repeat="growthTrend in $ctrl.populationGrowthTrends">
+                    <input type="radio"
+                           ng-model="$ctrl.appearance.trendOfPopulationGrowth"
+                           ng-value="growthTrend">
+                    {{ 'club.hunting.mooseHuntingSummary.populationGrowthTrend.' + growthTrend | translate | lowercase }}
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-5 r-moose-summary-mooselike-estimated-amount">
+        <div class="form-group" show-errors>
+            <label for="{{'estimatedAmountOfSpecimens' + $ctrl.index}}" class="control-label">
+                <span translate="club.hunting.mooseHuntingSummary.estimatedAmountOfSpecimens"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="number" name="{{'estimatedAmountOfSpecimens' + $ctrl.index}}" id="{{'estimatedAmountOfSpecimens' + $ctrl.index}}"
+                       min="0" max="999999" step="1"
+                       r-decimal-separator-fix
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.appearance.estimatedAmountOfSpecimens"/>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" ng-show="$ctrl.appearance.appeared">
+    <div class="col-sm-12 r-moose-summary-mooselike-estimated-amount-piglets" ng-if="$ctrl.showEstimateOfSowWithPiglets">
+        <div class="form-group" show-errors>
+            <label for="estimatedAmountOfSowWithPiglets" class="control-label">
+                <span translate="club.hunting.mooseHuntingSummary.estimatedAmountOfSowWithPiglets"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="number" name="estimatedAmountOfSowWithPiglets" id="estimatedAmountOfSowWithPiglets"
+                       min="0" max="999999" step="1"
+                       r-decimal-separator-fix
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.appearance.estimatedAmountOfSowWithPiglets"/>
+            </div>
+        </div>
+    </div>
+</div>

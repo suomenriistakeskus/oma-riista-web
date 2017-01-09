@@ -1,0 +1,179 @@
+<div>
+    <ul class="nav nav-pills">
+        <li ng-class="{ active: $ctrl.tenses.current === $ctrl.selectedTense }">
+            <a ng-click="$ctrl.showTense($ctrl.tenses.current)" translate="occupation.button.current"></a>
+        </li>
+        <li ng-class="{ active: $ctrl.tenses.future === $ctrl.selectedTense }">
+            <a ng-click="$ctrl.showTense($ctrl.tenses.future)" translate="occupation.button.future"></a>
+        </li>
+        <li ng-class="{ active: $ctrl.tenses.past === $ctrl.selectedTense }">
+            <a ng-click="$ctrl.showTense($ctrl.tenses.past)" translate="occupation.button.past"></a>
+        </li>
+        <li class="pull-right">
+            <button type="button" ng-click="$ctrl.addOccupation()" class="btn btn-primary">
+                <span class="glyphicon glyphicon-plus"></span> &nbsp;
+                <span ng-bind="'occupation.button.add' | translate"></span>
+            </button>
+        </li>
+        <li class="pull-right">
+            <button type="button" ng-click="$ctrl.exportToExcel()" class="btn btn-primary">
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="reporting.common.toExcel"></span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="r-occupation-list table-responsive" ng-show="$ctrl.showOccupations">
+        <h3 translate="occupation.occupations" ng-show="$ctrl.showBoard"></h3>
+
+        <table class="table table-striped table-condensed">
+            <thead>
+                <tr>
+                    <th class="col-xs-3" translate="occupation.occupation"></th>
+                    <th class="col-xs-5" translate="occupation.name_and_address"></th>
+                    <th class="col-xs-3" translate="occupation.phonenumber_and_email"></th>
+                    <th class="col-xs-1">&nbsp;</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr ng-repeat="occupation in $ctrl.occupations track by occupation.id">
+                    <td>
+                        <div class="r-occupation-type">
+                            <span class="r-name">{{'occupation.type.'+occupation.occupationType | translate}}</span>
+                            <span class="r-call-order" ng-show="$ctrl.callOrderConfig.isCallOrderType(occupation.occupationType)">{{occupation.callOrder}}</span>
+                        </div>
+
+                        <div class="r-occupation-validity">
+                            <span ng-if="occupation.beginDate == null && occupation.endDate == null">{{'occupation.indefinitely' | translate}}</span>
+                            <span ng-if="occupation.beginDate != null && occupation.endDate == null">{{'occupation.starting' | translate}} {{occupation.beginDate|date:'d.M.yyyy'}}</span>
+                            <span ng-if="occupation.beginDate == null && occupation.endDate != null">{{'occupation.ending' | translate}} {{occupation.endDate|date:'d.M.yyyy'}}</span>
+                            <span ng-if="occupation.beginDate != null && occupation.endDate != null">{{occupation.beginDate|date:'d.M.yyyy'}} - {{occupation.endDate|date:'d.M.yyyy'}}</span>
+                        </div>
+
+                        <div class="r-occupation-additionalInfo">
+                            <span ng-if="occupation.additionalInfo" ng-bind="occupation.additionalInfo | truncateCharacters:50">Lisätieto</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div ng-class="$ctrl.isPersonRegistered(occupation) ? 'is-registered':'not-registered'" class="r-person-symbol">
+                            <span class="glyphicon glyphicon-user"></span>
+                        </div>
+
+                        <div class="r-contact-name" title="{{occupation.person.registered ? ('occupation.registered'|translate) : ('occupation.unregistered'|translate) }}"><span ng-bind="occupation.person.lastName + ' ' + occupation.person.firstName  | truncateCharacters:30"></span>
+                        </div>
+
+                        <div class="r-contact-address">
+                            <span ng-bind="occupation.person.address.streetAddress | truncateCharacters:30"></span>
+                            <span ng-bind="occupation.person.address.postalCode"></span>
+                            <span ng-bind="occupation.person.address.city | truncateCharacters:30" class="r-city"></span>
+                            <!--<span ng-bind="occupation.person.address.country"></span>-->
+                        </div>
+                    </td>
+                    <td>
+                        <div class="r-contact-phone">
+                            <span class="glyphicon glyphicon glyphicon-earphone">&nbsp;</span>
+                            <span ng-if="occupation.person.phoneNumber" ng-bind="occupation.person.phoneNumber"></span>
+                            <span ng-if="!occupation.person.phoneNumber" translate="occupation.no_phonenumber"></span>
+                        </div>
+
+                        <div class="r-contact-email">
+                            <span class="glyphicon glyphicon-envelope">&nbsp;</span>
+                            <a ng-if="occupation.person.email" href="mailto:{{occupation.person.email}}">
+                                <span ng-bind="occupation.person.email"></span>
+                            </a>
+                            <span ng-if="!occupation.person.email" translate="occupation.no_email"></span>
+                        </div>
+                    </td>
+                    <td class="text-right r-table-actions-cell">
+                        <button type="button" ng-click="$ctrl.showSelected(occupation)" class="btn btn-link"
+                                ng-disabled="!$ctrl.canModify(occupation)">
+                            <span class="glyphicon glyphicon-edit" title="{{'occupation.button.edit' | translate}}"></span>
+                        </button>
+                        <button type="button" ng-click="$ctrl.removeSelected(occupation)" class="btn btn-link"
+                                ng-disabled="!$ctrl.canModify(occupation)">
+                            <span class="glyphicon glyphicon-remove " title="{{'occupation.button.remove' | translate}}"></span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="r-occupation-list table-responsive" ng-show="$ctrl.showBoard">
+        <h3 translate="occupation.board" ng-show="$ctrl.showOccupations"></h3>
+
+        <table class="table table-striped table-condensed">
+            <thead>
+                <tr>
+                    <th class="col-xs-3" translate="occupation.occupation"></th>
+                    <th class="col-xs-5" translate="occupation.name_and_address"></th>
+                    <th class="col-xs-3" translate="occupation.phonenumber_and_email"></th>
+                    <th class="col-xs-1">&nbsp;</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr ng-repeat="occupation in $ctrl.board track by occupation.id">
+                    <td>
+                        <div class="r-occupation-type">
+                            <span class="r-name">{{'occupation.type.'+occupation.occupationType | translate}}</span>
+                            <span class="r-call-order" ng-show="callOrderConfig.isCallOrderType(occupation.occupationType)">{{occupation.callOrder}}</span>
+                        </div>
+
+                        <div class="r-occupation-validity">
+                            <span ng-if="occupation.beginDate == null && occupation.endDate == null">{{'occupation.indefinitely' | translate}}</span>
+                            <span ng-if="occupation.beginDate != null && occupation.endDate == null">{{'occupation.starting' | translate}} {{occupation.beginDate|date:'d.M.yyyy'}}</span>
+                            <span ng-if="occupation.beginDate == null && occupation.endDate != null">{{'occupation.ending' | translate}} {{occupation.endDate|date:'d.M.yyyy'}}</span>
+                            <span ng-if="occupation.beginDate != null && occupation.endDate != null">{{occupation.beginDate|date:'d.M.yyyy'}} - {{occupation.endDate|date:'d.M.yyyy'}}</span>
+                        </div>
+
+                        <div class="r-occupation-additionalInfo">
+                            <span ng-if="occupation.additionalInfo" ng-bind="occupation.additionalInfo | truncateCharacters:50">Lisätieto</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div ng-class="$ctrl.isPersonRegistered(occupation) ? 'is-registered':'not-registered'" class="r-person-symbol">
+                            <span class="glyphicon glyphicon-user"></span>
+                        </div>
+
+                        <div class="r-contact-name" title="{{occupation.person.registered ? ('occupation.registered'|translate) : ('occupation.unregistered'|translate) }}"><span ng-bind="occupation.person.lastName + ' ' + occupation.person.firstName"></span>
+                        </div>
+
+                        <div class="r-contact-address">
+                            <span ng-bind="occupation.person.address.streetAddress | truncateCharacters:50"></span>
+                            <span ng-bind="occupation.person.address.postalCode"></span>
+                            <span ng-bind="occupation.person.address.city | truncateCharacters:30" class="r-city"></span>
+                            <!--<span ng-bind="occupation.person.address.country"></span>-->
+                        </div>
+                    </td>
+                    <td>
+                        <div class="r-contact-phone">
+                            <span class="glyphicon glyphicon glyphicon-earphone">&nbsp;</span>
+                            <span ng-if="occupation.person.phoneNumber" ng-bind="occupation.person.phoneNumber"></span>
+                            <span ng-if="!occupation.person.phoneNumber" translate="occupation.no_phonenumber"></span>
+                        </div>
+
+                        <div class="r-contact-email">
+                            <span class="glyphicon glyphicon-envelope">&nbsp;</span>
+                            <a ng-if="occupation.person.email" href="mailto:{{occupation.person.email}}">
+                                <span ng-bind="occupation.person.email"></span>
+                            </a>
+                            <span ng-if="!occupation.person.email" translate="occupation.no_email"></span>
+                        </div>
+                    </td>
+                    <td class="text-right r-table-actions-cell">
+                        <button type="button" ng-click="$ctrl.showSelected(occupation)" class="btn btn-link"
+                                ng-disabled="!$ctrl.canModify(occupation)">
+                            <span class="glyphicon glyphicon-edit" title="{{'occupation.button.edit' | translate}}"></span>
+                        </button>
+                        <button type="button" ng-click="$ctrl.removeSelected(occupation)" class="btn btn-link"
+                                ng-disabled="!$ctrl.canModify(occupation)">
+                            <span class="glyphicon glyphicon-remove " title="{{'occupation.button.remove' | translate}}"></span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

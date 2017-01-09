@@ -1,0 +1,55 @@
+<div class="r-account-profile row">
+    <div class="col-md-5">
+        <account-profile-person
+                profile="$ctrl.profile">
+        </account-profile-person>
+
+        <account-profile-address
+                address="$ctrl.profile.address"
+                address-source="$ctrl.profile.addressSource"
+                on-save="$ctrl.save(profile)"
+                on-reload-profile="$ctrl.loadAccount()">
+        </account-profile-address>
+
+        <account-profile-other
+                profile="$ctrl.profile"
+                on-save="$ctrl.save(profile)"
+                on-reload-profile="$ctrl.loadAccount()">
+        </account-profile-other>
+
+        <account-profile-password
+                ng-if="$ctrl.isUserOwnProfile">
+        </account-profile-password>
+
+        <account-profile-deactivate
+                profile="$ctrl.profile">
+        </account-profile-deactivate>
+    </div>
+
+    <div class="col-md-7">
+        <account-profile-hunter
+                profile="$ctrl.profile"></account-profile-hunter>
+
+        <account-profile-invitation
+                club-invitations="$ctrl.clubInvitations"
+                is-user-own-profile="$ctrl.isUserOwnProfile">
+        </account-profile-invitation>
+
+        <account-profile-clubs
+                club-occupations="$ctrl.profile.clubOccupations"
+                is-user-own-profile="$ctrl.isUserOwnProfile">
+        </account-profile-clubs>
+
+        <account-profile-occupations
+                occupations="$ctrl.profile.occupations">
+        </account-profile-occupations>
+
+        <account-profile-jht
+                jht-trainings="$ctrl.jhtTrainings">
+        </account-profile-jht>
+
+        <account-profile-srva
+                profile="$ctrl.profile">
+        </account-profile-srva>
+    </div>
+</div>

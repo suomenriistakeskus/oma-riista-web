@@ -1,0 +1,114 @@
+<form name="form" role="form" class="form form-horizontal r-event-form" ng-submit="save(event)">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 ng-if="!event.id" class="modal-title" translate="event.form.titleAdd"></h3>
+        <h3 ng-if="event.id" class="modal-title" translate="event.form.titleEdit"></h3>
+    </div>
+
+    <div class="modal-body">
+
+        <div class="form-group" show-errors>
+            <label for="eventType" class="col-xs-4 control-label">
+                <span translate="event.form.eventType"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <select class="form-control"
+                        name="eventType" id="eventType"
+                        ng-model="event.calendarEventType"
+                        ng-options="('event.type.'+o|translate) for o in eventTypes" required></select>
+            </div>
+        </div>
+        <div class="form-group" show-errors>
+            <label for="venue" class="col-xs-4 control-label">
+                <span translate="event.form.venue"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <select class="form-control"
+                        name="venue" id="venue"
+                        ng-model="event.venue"
+                        ng-options="o.name for o in venues" required></select>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="date" class="col-xs-4 control-label">
+                <span translate="event.form.date"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" class="form-control"
+                           name="date" id="date"
+                           ng-model="event.date" required
+                           uib-datepicker-popup is-open="isDatePickerOpen"/>
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div>
+                <label for="beginTime" class="col-xs-4 control-label">
+                    <span translate="event.form.beginTime"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-2">
+                    <input type="text" class="form-control"
+                           name="beginTime" id="beginTime"
+                           finnish-time
+                           ng-model="event.beginTime" required/>
+                </div>
+            </div>
+            <div>
+                <label for="endTime" class="col-xs-3 control-label" translate="event.form.endTime"></label>
+
+                <div class="col-xs-2">
+                    <input type="text" class="form-control"
+                           name="endTime" id="endTime"
+                           finnish-time
+                           ng-model="event.endTime" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="name" class="col-xs-4 control-label" translate="event.form.name"></label>
+
+            <div class="col-xs-8">
+                <input type="text" class="form-control"
+                       name="name" id="name"
+                       ng-maxlength="255"
+                       ng-model="event.name"/>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="description" class="col-xs-4 control-label" translate="event.form.description"></label>
+
+            <div class="col-xs-8">
+                <textarea class="form-control"
+                          name="description" id="description"
+                          rows="10"
+                          ng-model="event.description"></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="cancel()" translate="global.button.cancel"></button>
+        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid" translate="global.button.save"></button>
+    </div>
+</form>

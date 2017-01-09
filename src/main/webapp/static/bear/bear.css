@@ -1,0 +1,101 @@
+.riista-harvest-widget {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+.riista-harvest-widget a {
+    cursor: pointer;
+    color: #428bca;
+}
+
+.riista-harvest-widget th {
+    text-align: left;
+}
+
+.riista-harvest-widget .table {
+    background-color: transparent;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 20px;
+}
+
+.riista-harvest-widget thead,tbody,tr,th,td {
+    padding: 6px;
+    line-height: 1.0;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+}
+
+.riista-harvest-widget thead tr th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #ddd;
+}
+
+.riista-harvest-widget tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+.riista-harvest-widget thead:first-child tr:first-child th,td {
+    border-top: 0;
+}
+
+.marker-cluster-small {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+.marker-cluster-small div {
+    background-color: white;
+}
+
+.marker-cluster-medium {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+.marker-cluster-medium div {
+    background-color: white;
+}
+
+.marker-cluster-large {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+.marker-cluster-large div {
+    background-color: white;
+}
+
+/* IE 6-8 fallback colors */
+.leaflet-oldie .marker-cluster-small {
+    background-color: black;
+}
+.leaflet-oldie .marker-cluster-small div {
+    background-color: white;
+}
+
+.leaflet-oldie .marker-cluster-medium {
+    background-color: black;
+}
+.leaflet-oldie .marker-cluster-medium div {
+    background-color: white;
+}
+
+.leaflet-oldie .marker-cluster-large {
+    background-color: black;
+}
+.leaflet-oldie .marker-cluster-large div {
+    background-color: white;
+}
+
+.marker-cluster {
+    background-clip: padding-box;
+    border-radius: 20px;
+}
+.marker-cluster div {
+    width: 30px;
+    height: 30px;
+    margin-left: 5px;
+    margin-top: 5px;
+
+    text-align: center;
+    border-radius: 15px;
+    font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+.marker-cluster span {
+    line-height: 30px;
+}

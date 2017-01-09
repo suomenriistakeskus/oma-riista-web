@@ -1,0 +1,43 @@
+<div class="form-group">
+    <label class="col-xs-3 control-label">
+        <span translate="harvestreport.form.locationInput"></span>
+    </label>
+
+    <div class="col-xs-9 form-horizontal">
+        <div class="form-group">
+            <label class="radio-inline"><input type="radio" ng-change="$ctrl.coordinateSystemChanged()" ng-model="$ctrl.coordinateSystem" value="ETRS-TM35FIN">ETRS-TM35FIN</label>
+            <label class="radio-inline"><input type="radio" ng-change="$ctrl.coordinateSystemChanged()" ng-model="$ctrl.coordinateSystem" value="WGS84">ETRS89 (WGS84)</label>
+            <label class="radio-inline"><input type="radio" ng-change="$ctrl.coordinateSystemChanged()" ng-model="$ctrl.coordinateSystem" value="KKJ">KKJ</label>
+        </div>
+        <div class="form-group">
+            <label for="coordinateLat" class="col-xs-2 control-label">
+                <span translate="global.geoLocation.lat"></span>
+            </label>
+            <div class="col-xs-10">
+                <input type="text" id="coordinateLat" name="lat"
+                       class="form-control"
+                       ng-model="$ctrl.coordinatesInput.lat"/>
+
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="coordinateLon" class="col-xs-2 control-label">
+                <span translate="global.geoLocation.lon"></span>
+            </label>
+            <div class="col-xs-10">
+                <input type="text" id="coordinateLon" name="lon"
+                       class="form-control"
+                       ng-model="$ctrl.coordinatesInput.lng"/>
+
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-offset-2 col-xs-10">
+                <a ng-click="$ctrl.setCoordinates()" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-map-marker"></span> &nbsp;
+                    <span translate="harvestreport.form.setlocation"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

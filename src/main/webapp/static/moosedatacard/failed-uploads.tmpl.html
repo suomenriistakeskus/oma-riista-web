@@ -1,0 +1,20 @@
+{{#if failedUploads}}
+<h4>Epäonnistuneet sisäänluennat</h4>
+
+<div class="uploads-info-container">
+    <ul>
+        {{#each failedUploads}}
+        <li class="upload-item">
+            <span class="upload-item-filename">{{ filename }}</span>
+            <ul>
+                {{#each messages}}
+                <li class="upload-item-failure-message">
+                    <span>{{ this }}</span>
+                </li>
+                {{/each}}
+            </ul>
+        </li>
+        {{/each}}
+    </ul>
+</div>
+{{/if}}

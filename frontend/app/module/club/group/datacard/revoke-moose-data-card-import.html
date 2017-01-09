@@ -1,0 +1,19 @@
+<form name="form" role="form" novalidate class="form form-horizontal">
+    <div class="modal-header">
+        <h3 class="modal-title" translate="club.group.mooseDataCardImport.revocationDialogTitle"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-info" translate="club.group.mooseDataCardImport.revocationInfo"></div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.revoke()"
+                translate="global.button.delete"></button>
+    </div>
+</form>

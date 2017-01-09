@@ -1,0 +1,109 @@
+<div class="btn-toolbar" role="toolbar">
+    <div class="btn-group" role="group">
+        <button type="button"
+                class="btn"
+                ng-class="toolbarCtrl.buttonStyle('move')"
+                ng-click="toolbarCtrl.useTool('move')"
+                translate="club.area.map.toolbar.move"></button>
+    </div>
+
+    <div class="btn-group" uib-dropdown dropdown-append-to-body>
+        <button type="button"
+                ng-click="toolbarCtrl.useTool('palsta.add.single')"
+                ng-class="toolbarCtrl.buttonStyle('palsta')"
+                class="btn">
+            <span ng-if="toolbarCtrl.isActiveTool('palsta')">
+                {{ ('club.area.map.toolbar.' + toolbarCtrl.currentTool) | translate }}
+            </span>
+            <span ng-if="!toolbarCtrl.isActiveTool('palsta')"
+                  translate="club.area.map.toolbar.palsta.add.single"></span>
+        </button>
+
+        <button type="button"
+                uib-dropdown-toggle
+                ng-class="toolbarCtrl.buttonStyle('palsta')"
+                class="btn">
+            <span class="caret"></span>
+        </button>
+
+        <ul class="dropdown-menu" uib-dropdown-menu>
+            <li>
+                <a ng-click="toolbarCtrl.useTool('palsta.add.single')">
+                    <span translate="club.area.map.toolbar.palsta.add.single"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="toolbarCtrl.toolStyle('palsta.add.single', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li role="separator" class="divider"></li>
+            <li>
+                <a ng-click="toolbarCtrl.useTool('palsta.add.marquee')">
+                    <span translate="club.area.map.toolbar.palsta.add.marquee"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="toolbarCtrl.toolStyle('palsta.add.marquee', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li>
+                <a ng-click="toolbarCtrl.useTool('palsta.remove.marquee')">
+                    <span translate="club.area.map.toolbar.palsta.remove.marquee"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="toolbarCtrl.toolStyle('palsta.remove.marquee', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="btn-group" uib-dropdown dropdown-append-to-body>
+        <button type="button" uib-dropdown-toggle
+                ng-class="toolbarCtrl.buttonStyle('exclude')"
+                class="btn">
+            <span ng-if="toolbarCtrl.isActiveTool('exclude')">
+                {{ ('club.area.map.toolbar.' + toolbarCtrl.currentTool) | translate }}
+            </span>
+            <span ng-if="!toolbarCtrl.isActiveTool('exclude')"
+                  translate="club.area.map.toolbar.exclude.title"></span>
+            <span class="caret"></span>
+        </button>
+
+        <ul class="dropdown-menu" uib-dropdown-menu>
+            <li>
+                <a ng-click="toolbarCtrl.useTool('exclude.polyLasso.add')">
+                    <span translate="club.area.map.toolbar.exclude.polyLasso.add"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="toolbarCtrl.toolStyle('exclude.polyLasso.add', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li>
+                <a ng-click="toolbarCtrl.useTool('exclude.polyLasso.remove')">
+                    <span translate="club.area.map.toolbar.exclude.polyLasso.remove"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="toolbarCtrl.toolStyle('exclude.polyLasso.remove', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li role="separator" class="divider"></li>
+            <li>
+                <a ng-click="toolbarCtrl.useTool('exclude.lasso.add')">
+                    <span translate="club.area.map.toolbar.exclude.lasso.add"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="toolbarCtrl.toolStyle('exclude.lasso.add', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li>
+                <a ng-click="toolbarCtrl.useTool('exclude.lasso.remove')">
+                    <span translate="club.area.map.toolbar.exclude.lasso.remove"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="toolbarCtrl.toolStyle('exclude.lasso.remove', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>    </ul>
+    </div>
+
+    <div class="pull-right">
+        <button type="button"
+                class="btn btn-default"
+                ng-click="toolbarCtrl.close()"
+                translate="global.button.exit"></button>
+        <button type="button"
+                class="btn btn-primary"
+                ng-click="toolbarCtrl.save()"
+                translate="global.button.save"></button>
+    </div>
+</div>

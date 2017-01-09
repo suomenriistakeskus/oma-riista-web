@@ -1,0 +1,248 @@
+// Basic colors
+// -------------------------
+
+.r-badge-red {
+  .badge;
+  background-color: #c44d4a;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.r-badge-yellow {
+  .badge;
+  color: #fff;
+  background-color: #d2ad00;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.r-badge-blue {
+  .badge;
+  background-color: #006893;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+// Buttons and links
+// -------------------------
+
+.btn {
+  text-shadow: 1px 1px 2px rgba(0,0,0,.35);
+}
+
+.btn.btn-link, .btn.btn-block, .btn.btn-default {
+  text-shadow: none;
+}
+
+a {
+  cursor: pointer;
+
+  &:not([href]) {
+    text-decoration: none;
+  }
+}
+
+.r-cursor-pointer {
+  cursor: pointer;
+}
+
+.r-cursor-arrow {
+  cursor: default;
+}
+
+.panel-title > a:focus {
+  outline: none;
+}
+
+// Breadcrumbs
+// -------------------------
+
+.r-active-breadcrumb {
+  font-weight: bold;
+  color: @r-green;
+}
+.r-inactive-breadcrumb {
+  color: gray;
+}
+
+// Pill navigation
+// -------------------------
+
+.nav-pills > li > a {
+  color: #333;
+  text-transform: uppercase;
+  font-family: @font-family-sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+}
+
+.nav-pills > li > a.btn {
+  color: #fff;
+  font-weight: normal;
+}
+
+.nav-pills > li.active > a {
+  border: 2px solid @r-green;
+  padding: 6px 12px;
+}
+
+// Tables
+// -------------------------
+
+.table > tbody {
+  font-size: 13px;
+}
+
+// Table header row
+.table > thead th {
+  text-transform: uppercase;
+  font-family: @font-family-sans-serif;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 12px;
+  background-color: #ddd;
+  color: #555;
+  padding: 7px 7px;
+}
+
+.table-striped > tbody > tr > th {
+  background-color: #d3d3d3;
+  padding: 1px 1px 1px 5px;
+}
+
+// swap striped tables even and odd colors, so that there is more contrast between header and first row
+.table-striped>tbody>tr:nth-child(odd)>td, .table-striped>tbody>tr:nth-child(odd)>th {
+  background-color: #fff;
+}
+.table-striped>tbody>tr:nth-child(even)>td, .table-striped>tbody>tr:nth-child(even)>th {
+  background-color: #f3f3f3;
+}
+
+// Row actions column
+.table td.r-table-actions-cell {
+  min-width: 100px;
+  white-space: nowrap;
+
+  .btn {
+    padding: 6px 6px;
+  }
+
+  .fa, .glyphicon {
+    font-size: 20px;
+  }
+
+  .fa-clone {
+    color: @r-blue;
+    font-weight:bold;
+  }
+
+  .glyphicon-edit {
+    color: @r-blue;
+  }
+
+  .glyphicon-remove {
+    color: @brand-danger;
+  }
+}
+
+.r-even-row {
+  background-color: #f9f9f9;
+}
+.r-even-row-darker {
+  background-color: #efefef;
+}
+
+.r-table-header {
+  position: relative;
+  margin-bottom: 15px;
+  height: 40px;
+
+  .content {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+  }
+
+  .buttons {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+
+    .btn {
+      margin-left: 10px;
+    }
+  }
+}
+
+// List groups
+// -------------------------
+.list-group > .list-group-item {
+  cursor: pointer;
+  padding: 10px;
+
+  &.active, &:hover {
+    background-color: #C6EBD5;
+  }
+
+  &:hover {
+    border-bottom: 1px solid #ddd;
+    border-top: 1px solid #ddd;
+  }
+
+  .list-group-item-heading {
+    font-family: Verdana, sans-serif;
+    font-size: 14px;
+    overflow: hidden;
+  }
+}
+
+
+// Pagination
+// -------------------------
+
+// Prevent text selection for pager
+ul.pagination li {
+  .preventTextSelection();
+}
+
+ul.pagination {
+  margin: 0;
+}
+
+// Fix links without #
+.nav, .pagination, .carousel a {
+  cursor: pointer;
+}
+
+label {
+  font-weight: normal;
+}
+
+.r-wordwrap {
+  white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  white-space: pre-wrap;       /* css-3 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  //word-break: break-all;
+  white-space: normal;
+}
+
+// Prevent text selection
+.preventTextSelection() {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+  -moz-user-select: none; /* mozilla browsers */
+  -khtml-user-select: none; /* webkit (konqueror) browsers */
+  -ms-user-select: none; /* IE10+ */
+}
+
+.pad-20 {
+  padding: 20px;
+}
+
+input[type="number"].no-spinner::-webkit-outer-spin-button,
+input[type="number"].no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"].no-spinner {
+  -moz-appearance: textfield;
+  .text-right;
+}

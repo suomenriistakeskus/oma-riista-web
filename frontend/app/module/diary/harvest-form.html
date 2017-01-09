@@ -1,0 +1,628 @@
+<div class="content">
+    <form id="harvestForm" name="harvestForm" role="form" class="form form-horizontal">
+        <h3 ng-if="!entry.id" class="modal-title" translate="gamediary.form.titleAddHarvest"></h3>
+
+        <h3 ng-if="entry.id && !entry.readOnly" class="modal-title" translate="gamediary.form.titleEditHarvest"></h3>
+
+        <h3 ng-if="entry.id && entry.readOnly" class="modal-title" translate="gamediary.form.titleViewHarvest"></h3>
+
+        <div class="form-group" ng-if="viewState.moderatorView">
+            <label class="col-xs-2 control-label">
+                <span translate="harvestreport.form.author"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-6">
+                <p class="form-control-static">
+                    {{entry.authorInfo.byName}} {{entry.authorInfo.lastName}}
+                </p>
+            </div>
+            <div class="col-xs-4" ng-if="entry.canEdit">
+                <a ng-click="findAuthor()" class="form-control btn btn-primary">
+                    <span class="glyphicon glyphicon-search"></span> &nbsp;
+                    <span translate="harvestreport.button.searchPerson"></span>
+                </a>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="viewState.moderatorView">
+            <label class="col-xs-2 control-label">
+                <span translate="harvestreport.form.hunter"></span>
+            </label>
+
+            <div class="col-xs-6">
+                <p class="form-control-static">
+                    {{entry.actorInfo.byName}} {{entry.actorInfo.lastName}}
+                </p>
+            </div>
+            <div class="col-xs-4" ng-if="entry.canEdit">
+                <a ng-click="findHunter(viewState.moderatorView)" class="form-control btn btn-primary">
+                    <span class="glyphicon glyphicon-search"></span> &nbsp;
+                    <span translate="harvestreport.button.searchPerson"></span>
+                </a>
+            </div>
+        </div>
+
+        <h4 translate="gamediary.form.harvestPermit"></h4>
+
+        <div class="form-group">
+            <div class="col-xs-11 col-xs-offset-1">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="withPermit" id="withPermit"
+                               ng-model="viewState.withPermit"
+                               ng-disabled="!entry.canEdit">
+                        <span translate="gamediary.form.withPermit"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="viewState.withPermit" show-errors>
+            <div class="col-xs-11 col-xs-offset-1">
+                <div class="alert alert-info" translate="gamediary.form.withPermitNote"></div>
+            </div>
+            <div>
+                <label for="permitNumber" class="col-xs-4 control-label">
+                    <span translate="harvestreport.form.permitNumber"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+            </div>
+            <div class="col-xs-8">
+                <input type="text" name="permitNumber" id="permitNumber"
+                       class="form-control"
+                       ng-model="viewState.searchPermitNumber"
+                       valid-permit-number
+                       maxlength="18"
+                       ng-required="viewState.withPermit"
+                       ng-disabled="!entry.canEdit"/>
+
+                <div class="form-control-static">
+                    <span ng-show="viewState.searchPermitNumber">{{viewState.searchPermit.permitType}}</span>
+                    <span ng-show="viewState.permitByNumberNotFound && viewState.searchPermitNumber"
+                          class="text-warning" translate="harvestreport.form.permitNumberNotFound"></span>
+                    <span ng-show="!viewState.searchPermitNumber"
+                          class="text-danger"
+                          translate="harvestreport.form.permitNumberRequired"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="viewState.searchPermit && viewState.searchPermit.permittedMethodAllowed">
+            <div class="form-group">
+                <div class="col-xs-offset-4 col-xs-8">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="withPermittedMethod" id="withPermittedMethod"
+                                   ng-model="viewState.withPermittedMethod"
+                                   ng-disabled="!entry.canEdit">
+                            <span translate="gamediary.form.withPermittedMethod"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="viewState.withPermittedMethod">
+            <div>
+                <label class="col-xs-4 control-label">
+                    <span translate="gamediary.form.permittedMethod"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-8">
+                <div>
+                    <label class="checkbox-inline">
+                        <input type="checkbox" name="tapeRecorders" id="tapeRecorders"
+                               ng-required="isPermittedMethodRequired()"
+                               ng-disabled="!entry.canEdit"
+                               ng-model="entry.permittedMethod.tapeRecorders">
+                        <span translate="permittedMethod.TAPE_RECORDERS"></span>
+                    </label>
+                    <label class="checkbox-inline">
+                        <input type="checkbox" name="traps" id="traps"
+                               ng-required="isPermittedMethodRequired()"
+                               ng-disabled="!entry.canEdit"
+                               ng-model="entry.permittedMethod.traps">
+                        <span translate="permittedMethod.TRAPS"></span>
+                    </label>
+                    <label class="checkbox-inline">
+                        <input type="checkbox" name="other" id="other"
+                               ng-required="isPermittedMethodRequired()"
+                               ng-disabled="!entry.canEdit"
+                               ng-model="entry.permittedMethod.other">
+                        <span translate="permittedMethod.OTHER"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" ng-show="entry.permittedMethod.other" show-errors>
+            <div>
+                <label for="permittedMethodDescription" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.permittedMethodDescription"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-8">
+                <input class="form-control" type="text"
+                       name="permittedMethodDescription" id="permittedMethodDescription"
+                       ng-maxlength="255"
+                       ng-required="entry.permittedMethod.other"
+                       ng-disabled="!entry.canEdit"
+                       ng-model="entry.permittedMethod.description"/>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="permitUnusable()">
+            <div class="col-xs-10 col-xs-offset-2">
+                <span class="text-danger" translate="gamediary.form.permitUnusable"></span>
+            </div>
+        </div>
+
+        <h4 translate="gamediary.form.titleHarvestAnimal"></h4>
+
+        <div class="form-group" ng-show="invalidSpeciesForDate()">
+            <div class="col-xs-12">
+                <span class="text-danger" translate="gamediary.form.invalidSpeciesForDate"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+            IE10 complains of unselected value if  'required', therefore we force existence of this field manually -->
+            <div ng-class="{ 'has-error': (!entry.gameSpeciesCode) }">
+                <label for="gameSpeciesId" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.species"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8">
+                    <select name="gameSpeciesId" id="gameSpeciesId"
+                            class="form-control"
+                            ng-model="entry.gameSpeciesCode"
+                            ng-options="o.code as getGameName(o.code, o) group by getCategoryName(o.categoryId) for o in species | orderBy:['categoryId', 'translatedName']"
+                            ie10-optgroup-fix
+                            ng-disabled="!entry.canEdit"><option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <h4 translate="gamediary.form.titleTimeAndPlace"></h4>
+
+        <div class="form-group">
+            <label class="col-xs-4 control-label">
+                <span translate="gamediary.form.location"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8">
+                <p class="form-control-static"
+                   ng-show="entry.geoLocation.longitude"
+                   translate="global.geoLocation.coordinatesText"
+                   translate-values="entry.geoLocation"></p>
+
+                <p class="text-danger form-control-static"
+                   ng-hide="entry.geoLocation.longitude"
+                   translate="global.geoLocation.required"></p>
+            </div>
+        </div>
+
+        <div r-geolocation-input="entry.geoLocation"
+             ng-if="viewState.moderatorView && entry.canEdit">
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="date" class="col-xs-4 control-label">
+                <span translate="gamediary.form.date"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8">
+                <div class="input-group r-dropdown-align-right"
+                     ng-controller="DatePickerController">
+
+                    <input type="text" name="date" id="date"
+                           class="form-control"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           date-between-min-max
+                           ng-model="viewState.date" required max-date="today()"
+                           ng-disabled="!entry.canEdit">
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)"
+                                ng-disabled="!entry.canEdit">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="time" class="col-xs-4 control-label">
+                <span translate="gamediary.form.time"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8">
+                <input type="text" name="time" id="time"
+                       class="form-control"
+                       finnish-date-time-in-past="viewState.date"
+                       ng-model="viewState.time" required
+                       ng-disabled="!entry.canEdit">
+            </div>
+        </div>
+
+        <div ng-if="!viewState.moderatorView">
+            <h4 translate="gamediary.form.titleActualShooter"></h4>
+
+            <div ng-show="entry.reportedForMe">
+                <span>{{'gamediary.form.onBehalfAuthor' | translate}} {{entry.authorInfo.byName}} {{entry.authorInfo.lastName}}</span>
+            </div>
+
+            <div ng-show="entry.authoredByMe">
+                <div class="form-group">
+                    <div class="col-xs-11 col-xs-offset-1 checkbox">
+                        <label>
+                            <input type="checkbox" name="authoredByMe" id="authoredByMe"
+                                   ng-model="viewState.iAmTheShooter"
+                                   ng-change="iAmTheShooterChanged()"
+                                   ng-disabled="!entry.canEdit">
+                            <span translate="gamediary.form.iamTheShooter"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div ng-show="entry.entry.hunterNumber || !viewState.iAmTheShooter">
+                    <div class="form-group" show-errors>
+                        <label for="hunterNumber" class="col-xs-4 control-label">
+                            <span translate="gamediary.form.hunterNumberOfActualShooter"></span>
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
+
+                        <div class="col-xs-8">
+                            <input type="text" name="hunterNumber" id="hunterNumber"
+                                   class="form-control"
+                                   ng-model="viewState.searchHunterNumber"
+                                   valid-hunter-number
+                                   maxlength="8"
+                                   ng-required="!viewState.iAmTheShooter"
+                                   ng-disabled="!entry.canEdit">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-xs-8 col-xs-offset-4">
+                            <p ng-show="viewState.searchHunterNumber && !viewState.hunterByNumberNotFound"
+                               class="form-control-static">
+                                {{entry.actorInfo.byName}} {{entry.actorInfo.lastName}}
+                            </p>
+
+                            <p ng-show="viewState.searchHunterNumber && viewState.hunterByNumberNotFound"
+                               class="form-control-static alert alert-warning"
+                               translate="gamediary.messages.notFound"></p>
+
+                            <p ng-show="!viewState.searchHunterNumber"
+                               class="form-control-static alert alert-info"
+                               translate="gamediary.messages.insertHunterNumber"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 ng-show="entry.gameSpeciesCode"
+            translate="gamediary.form.titleShowSpecimens"></h4>
+
+        <div class="form-group" show-errors ng-show="maxSpecimensForSelectedSpecies > 1">
+            <label for="totalSpecimenAmount" class="col-xs-4 control-label">
+                <span translate="gamediary.form.amount"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8">
+                <select name="totalSpecimenAmount" id="totalSpecimenAmount"
+                        class="form-control"
+                        ng-model="entry.totalSpecimenAmount"
+                        ng-options="n for n in [] | range:1:maxSpecimensForSelectedSpecies"
+                        required
+                        ng-disabled="!entry.canEdit || !entry.gameSpeciesCode"></select>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="showSpecimenEditButton()">
+            <div class="col-xs-12 text-right">
+                <small ng-if="hasRequiredFields()"
+                       class="glyphicon glyphicon-asterisk text-danger"></small>
+                <button type="button"
+                        ng-click="editSpecimen()"
+                        ng-disabled="isSpecimenEditDisabled()"
+                        class="btn btn-primary">
+                    <span translate="gamediary.form.titleShowSpecimens"></span>
+                </button>
+            </div>
+        </div>
+
+        <div ng-if="showInlineSpecimenEdit()">
+            <div class="form-group" show-errors>
+                <label for="gender" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.gender"></span>
+                    <small ng-if="isFieldRequired('gender')"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8">
+                    <select name="gender" id="gender"
+                            class="form-control"
+                            ng-model="entry.specimens[0].gender"
+                            ng-options="('gamediary.gender.' + a | translate) for a in getAvailableGameGenders()"
+                            ng-required="isFieldRequired('gender')"
+                            ng-disabled="!entry.canEdit"></select>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="age" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.age"></span>
+                    <small ng-if="isFieldRequired('age')"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8">
+                    <select name="age" id="age"
+                            class="form-control"
+                            ng-model="entry.specimens[0].age"
+                            ng-options="('gamediary.age.' + a | translate) for a in getAvailableGameAges()"
+                            ng-required="isFieldRequired('age')"
+                            ng-disabled="!entry.canEdit"></select>
+                </div>
+            </div>
+
+            <div class="form-group" ng-if="isFieldVisible('notEdible')">
+                <label for="notEdible" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.notEdible"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="notEdible" id="notEdible"
+                                   class="r-non-labeled-checkbox"
+                                   ng-model="entry.specimens[0].notEdible"
+                                   ng-disabled="!entry.canEdit"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="isWeightVisible()">
+                <label for="weight" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.weight"></span>
+                    <small ng-if="isFieldRequired('weight')"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8">
+                    <input type="number" name="weight" id="weight"
+                           class="form-control"
+                           min="0" max="999" step="0.1"
+                           r-decimal-separator-fix
+                           ng-model="entry.specimens[0].weight"
+                           ng-required="isFieldRequired('weight')"
+                           ng-disabled="!entry.canEdit"/>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="isFieldVisible('weightEstimated')">
+                <label for="weightEstimated" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.weightEstimated"></span>
+                    <small ng-if="isFieldRequired('weightEstimated')"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8">
+                    <input type="number" name="weightEstimated" id="weightEstimated"
+                           class="form-control"
+                           min="1" max="999" step="1"
+                           r-decimal-separator-fix
+                           ng-model="entry.specimens[0].weightEstimated"
+                           ng-required="isFieldRequired('weightEstimated')"
+                           ng-disabled="!entry.canEdit"/>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="isFieldVisible('weightMeasured')">
+                <label for="weightMeasured" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.weightMeasured"></span>
+                    <small ng-if="isFieldRequired('weightMeasured')"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8">
+                    <input type="number" name="weightMeasured" id="weightMeasured"
+                           class="form-control"
+                           min="1" max="999" step="1"
+                           r-decimal-separator-fix
+                           ng-model="entry.specimens[0].weightMeasured"
+                           ng-required="isFieldRequired('weightMeasured')"
+                           ng-disabled="!entry.canEdit"/>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="isFieldVisible('fitnessClass')">
+                <label for="fitnessClass" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.fitnessClass"></span>
+                    <small ng-if="isFieldRequired('fitnessClass')"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8">
+                    <select name="fitnessClass" id="fitnessClass"
+                            class="form-control"
+                            ng-model="entry.specimens[0].fitnessClass"
+                            ng-options="('gamediary.fitnessClass.' + a | translate) for a in getAvailableGameFitnessClasses()"
+                            ng-required="isFieldRequired('fitnessClass')"
+                            ng-disabled="!entry.canEdit"></select>
+                </div>
+            </div>
+
+            <div ng-if="entry.isAntlersPossible()">
+                <div class="form-group" show-errors ng-if="isFieldVisible('antlersType')">
+                    <label for="antlersType" class="col-xs-4 control-label">
+                        <span translate="gamediary.form.antlersType"></span>
+                        <small ng-if="isFieldRequired('antlersType')"
+                               class="glyphicon glyphicon-asterisk text-danger"></small>
+                    </label>
+
+                    <div class="col-xs-8">
+                        <select name="antlersType" id="antlersType"
+                                class="form-control"
+                                ng-model="entry.specimens[0].antlersType"
+                                ng-options="('gamediary.antlersType.' + a | translate) for a in getAvailableGameAntlersTypes()"
+                                ng-required="isFieldRequired('antlersType')"
+                                ng-disabled="!entry.canEdit"></select>
+                    </div>
+                </div>
+
+                <div class="form-group" show-errors ng-if="isFieldVisible('antlersWidth')">
+                    <label for="antlersWidth" class="col-xs-4 control-label">
+                        <span translate="gamediary.form.antlersWidth"></span>
+                        <small ng-if="isFieldRequired('antlersWidth')"
+                               class="glyphicon glyphicon-asterisk text-danger"></small>
+                    </label>
+
+                    <div class="col-xs-8">
+                        <input type="number" name="antlersWidth" id="antlersWidth"
+                               class="form-control"
+                               min="0" max="999" step="1"
+                               r-decimal-separator-fix
+                               ng-model="entry.specimens[0].antlersWidth"
+                               ng-required="isFieldRequired('antlersWidth')"
+                               ng-disabled="!entry.canEdit"/>
+                    </div>
+                </div>
+
+                <div class="form-group" show-errors ng-if="isFieldVisible('antlerPointsLeft')">
+                    <label for="antlerPointsLeft" class="col-xs-4 control-label">
+                        <span translate="gamediary.form.antlerPointsLeft"></span>
+                        <small ng-if="isFieldRequired('antlerPointsLeft')"
+                               class="glyphicon glyphicon-asterisk text-danger"></small>
+                    </label>
+
+                    <div class="col-xs-8">
+                        <input type="number" name="antlerPointsLeft" id="antlerPointsLeft"
+                               class="form-control"
+                               min="0" max="50" step="1"
+                               r-decimal-separator-fix
+                               ng-model="entry.specimens[0].antlerPointsLeft"
+                               ng-required="isFieldRequired('antlerPointsLeft')"
+                               ng-disabled="!entry.canEdit"/>
+                    </div>
+                </div>
+
+                <div class="form-group" show-errors ng-if="isFieldVisible('antlerPointsRight')">
+                    <label for="antlerPointsRight" class="col-xs-4 control-label">
+                        <span translate="gamediary.form.antlerPointsRight"></span>
+                        <small ng-if="isFieldRequired('antlerPointsRight')"
+                               class="glyphicon glyphicon-asterisk text-danger"></small>
+                    </label>
+
+                    <div class="col-xs-8">
+                        <input type="number" name="antlerPointsRight" id="antlerPointsRight"
+                               class="form-control"
+                               min="0" max="50" step="1"
+                               r-decimal-separator-fix
+                               ng-model="entry.specimens[0].antlerPointsRight"
+                               ng-required="isFieldRequired('antlerPointsRight')"
+                               ng-disabled="!entry.canEdit"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-if="isFieldVisible('additionalInfo')">
+            <label for="additionalInfo" class="control-label col-xs-4">
+                <span translate="gamediary.form.additionalInfo"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <textarea name="additionalInfo" id="additionalInfo"
+                          class="form-control"
+                          rows="6"
+                          ng-disabled="!entry.canEdit"
+                          ng-model="entry.specimens[0].additionalInfo"></textarea>
+            </div>
+
+            <div class="col-xs-offset-4 col-xs-8 help-block">
+                <span translate="gamediary.form.additionalInfoHelp"></span>
+            </div>
+
+        </div>
+
+        <hr/>
+
+        <div class="form-group" show-errors ng-if="!entry.readOnly && !viewState.moderatorView">
+            <label for="description" class="control-label col-xs-4">
+                <span translate="gamediary.form.description"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <textarea name="description" id="description"
+                          class="form-control"
+                          rows="6"
+                          ng-model="entry.description"></textarea>
+            </div>
+        </div>
+
+
+        <div class="form-group" ng-if="!entry.readOnly && !viewState.moderatorView">
+            <label class="col-xs-4 control-label">
+                <span translate="gamediary.form.image"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <a ng-show="!entry.imageIds || entry.imageIds.length == 0"
+                   ng-click="image()"
+                   class="btn btn-primary">
+                    <span class="glyphicon glyphicon-plus"></span> &nbsp;
+                    <span translate="gamediary.button.addImage"></span>
+                </a>
+            </div>
+
+            <div class="col-xs-11 col-xs-offset-1">
+                <hr class="invisible"/>
+
+                <div ng-repeat="uuid in entry.imageIds">
+                    <img ng-src="{{getUrl(uuid, 100, 100, true)}}">
+
+                    <div class="pull-right">
+                        <button type="button" ng-click="image(uuid)" class="btn btn-sm  btn-default">
+                            <span class="glyphicon glyphicon-edit"></span> &nbsp;
+                            <span translate="gamediary.button.changeImage"></span>
+                        </button>
+
+                        <button type="button" ng-click="removeImage(uuid)" class="btn btn-sm btn-default">
+                            <span class="glyphicon glyphicon-remove"></span> &nbsp;
+                            <span translate="global.button.delete"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-default"
+            ng-click="cancel()"
+            translate="global.button.cancel"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-disabled="harvestForm.$invalid || !isValid() || (entry.readOnly && !entry.canEdit)"
+            ng-click="save()"
+            translate="global.button.save"></button>
+</div>

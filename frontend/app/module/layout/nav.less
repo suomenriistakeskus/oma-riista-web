@@ -1,0 +1,115 @@
+// Brand stuff
+// -------------------------
+
+.r-brand {
+  padding: 0;
+  margin-top: 10px;
+  margin-left: -15px;
+}
+.r-logo {
+  display: inline-block;
+  text-indent: -10000px;
+  background: transparent url('../images/oma-riista-logo-brown.png') no-repeat center center;
+  width: 180px;
+  height: 40px;
+}
+.r-logo.r-logo-white {
+  background: transparent url('../images/oma-riista-logo-white.png') no-repeat center center;
+  width: 228px;
+  height: 182px;
+}
+.r-lead {
+  font-size: 18px;
+}
+.r-page-context-heading {
+  color: @r-light;
+  text-shadow: 1px 1px #333;
+  margin: 30px 0;
+}
+
+// Main navigation
+// -------------------------
+
+.r-main-navbar {
+  background-color: white;
+  border: 0;
+  margin-bottom: 0;
+  min-height: 0;
+}
+.r-main-navbar a {
+  color: @r-dark;
+}
+.r-main-navbar-nav {
+  margin-top: 10px;
+}
+.r-main-navbar-nav > li {
+  border-right: 1px solid #ccc;
+}
+.r-main-navbar-nav > li:first-child {
+  border-left: 1px solid #ccc;
+}
+.r-main-navbar-nav > li.active a {
+  color: @r-green;
+}
+.r-main-navbar-nav > li > a {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.r-main-navbar-nav-right > li {
+  border-right: 1px solid #ccc;
+}
+.r-main-navbar-nav-right > li:first-child {
+  border-left: 1px solid #ccc;
+}
+.r-main-navbar-nav-right > li > a {
+  padding-top: 20px;
+  padding-bottom: 17px;
+  border-bottom: 4px solid transparent;
+}
+.r-main-navbar-nav-right > li.active > a {
+  border-bottom: 4px solid @r-green;
+}
+.r-lang-nav-dropdown .r-lang-nav-dropdown-menu {
+  border-top: 1px solid #ccc;
+  border-radius: 0;
+}
+
+// Subnavigation
+// -------------------------
+
+.r-subnav-navbar {
+  min-height: 40px;
+  border: 0;
+  background: rgba(0, 114, 54, 0.8);
+  border-radius: 0;
+  margin-bottom: 0;
+}
+.r-subnav-navbar .r-subnav-nav {
+  margin-left: -(@grid-gutter-width / 2);
+  margin-right: -(@grid-gutter-width / 2);
+}
+.r-subnav-navbar .r-subnav-nav > li > a {
+  margin: 2px 2px 2px 0;
+  padding: 10px;
+  color: white;
+  text-transform: uppercase;
+}
+.r-subnav-navbar .r-subnav-nav > li > a:hover {
+  background-color: rgba(255,255,255, 0.4);
+}
+.r-subnav-navbar .r-subnav-nav > li.active > a {
+  background-color: white;
+  color: @r-dark;
+}
+
+.r-nav-dropdown-menu {
+  margin-top: 0;
+  border-top: 0;
+  border-radius: 0 0 4px 4px;
+}
+
+.r-nav-dropdown-menu > li > a {
+  margin: 2px 2px 2px 0;
+  padding: 5px 10px 5px 10px;
+  text-transform: uppercase;
+}

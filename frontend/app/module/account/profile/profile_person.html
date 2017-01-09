@@ -1,0 +1,51 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="account.profile.title.personDetails"></h3>
+    </div>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.ssn"></td>
+                    <td ng-bind="::$ctrl.profile.ssnMasked"></td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.lastName"></td>
+                    <td ng-bind="::$ctrl.profile.lastName"></td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.firstName"></td>
+                    <td ng-bind="::$ctrl.profile.firstName"></td>
+                </tr>
+                <tr ng-show="::profile.homeMunicipality">
+                    <td class="r-legend col-xs-6" translate="global.person.homeMunicipality"></td>
+                    <td ng-bind="::$ctrl.profile.homeMunicipality"></td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.finnishCitizen"></td>
+                    <td>
+                        <span ng-show="::$ctrl.profile.finnishCitizen" translate="global.yes"></span>
+                        <span ng-hide="::$ctrl.profile.finnishCitizen" translate="global.no"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.nativeLanguage"></td>
+                    <td ng-bind="::($ctrl.profile.languageCode | languageCodeName | lowercase)"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <p class="text-right info">
+                <span ng-show="::($ctrl.profile.addressSource != 'METSASTAJAREKISTERI')"
+                      translate="account.profile.sourcePopulationInformationSystem"></span>
+
+                <span ng-show="::($ctrl.profile.addressSource == 'METSASTAJAREKISTERI')"
+                      translate="account.profile.sourceHunterRegistry"></span>
+            </p>
+        </div>
+    </div>
+</div>

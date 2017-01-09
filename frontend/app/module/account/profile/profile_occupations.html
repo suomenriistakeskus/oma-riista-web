@@ -1,0 +1,49 @@
+<div class="panel panel-default"
+     ng-if="$ctrl.occupations && $ctrl.occupations.length">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="account.profile.title.occupations"></h3>
+    </div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th class="col-xs-6" translate="occupation.occupation"></th>
+                    <th class="col-xs-6" translate="occupation.validity"></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr ng-repeat="occupation in ::$ctrl.occupations track by occupation.id">
+                    <td>
+                        <span ng-bind="::(occupation.occupationType | translateWithPrefix:'occupation.type.')"></span>
+                        <span ng-show="occupation.callOrder != null" ng-bind="::occupation.callOrder"></span>
+                        <span ng-bind="::occupation.organisation | rI18nNameFilter"></span>
+                    </td>
+
+                    <td>
+                        <span ng-if="::(occupation.beginDate == null && occupation.endDate == null)"
+                              translate="occupation.indefinitely"></span>
+
+                        <span ng-if="::(occupation.beginDate != null && occupation.endDate == null)">
+                            {{'occupation.starting' | translate}}
+                            {{::(occupation.beginDate|date:'d.M.yyyy')}}
+                        </span>
+
+                        <span ng-if="::(occupation.beginDate == null && occupation.endDate != null)">
+                            {{'occupation.ending' | translate}}
+                            {{::(occupation.endDate|date:'d.M.yyyy')}}
+                        </span>
+
+                        <span ng-if="occupation.beginDate != null && occupation.endDate != null">
+                            {{::(occupation.beginDate|date:'d.M.yyyy')}}
+                            -
+                            {{::(occupation.endDate|date:'d.M.yyyy')}}
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

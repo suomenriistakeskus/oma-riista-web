@@ -1,0 +1,118 @@
+<form name="sendEmailForm" role="form" novalidate class="form">
+
+    <div class="modal-header">
+        <h3 class="modal-title">Lähetä sähköposti</h3>
+    </div>
+
+    <div class="modal-body">
+        <fieldset>
+            <legend>Viestin sisältö</legend>
+
+            <div class="form-group" show-errors>
+                <label for="subject" class="control-label">
+                    <span>Otsikko</span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <input type="text" name="subject" id="subject"
+                       class="form-control"
+                       required
+                       ng-model="message.subject"
+                       ng-minlength="5"
+                       ng-maxlength="255">
+            </div>
+
+
+            <div class="form-group">
+                <label for="body" class="control-label">
+                    <span>Sisältö</span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div text-angular id="body"
+                     required
+                     ng-model="message.body"
+                     ng-minlength="50"
+                     ng-maxlength="65535"></div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Varmistus</legend>
+
+            <div class="form-group col-xs-6">
+                <label for="confirmation" class="control-label">
+                    <span>Koodi</span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <input type="text" name="confirmationUser" id="confirmation"
+                       class="form-control" disabled
+                       ng-model="message.confirmation"/>
+            </div>
+
+            <div class="form-group col-xs-6" show-errors>
+                <label for="userConfirmation" class="control-label">
+                    <span>Toista koodi</span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <input type="text" name="userConfirmation" id="userConfirmation"
+                       class="form-control"
+                       required
+                       ng-model="message.userConfirmation"
+                       ng-maxlength="255"/>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Vastaanottaja</legend>
+
+            <div class="form-group col-xs-6">
+                <label><input type="radio" ng-model="viewState.sendTo" ng-value="SEND_TO.test">Testiviesti</label>
+                <br>
+                <label><input type="radio" ng-model="viewState.sendTo" ng-value="SEND_TO.clubContacts">Seurojen yhteyshenkilöille</label>
+                <br>
+                <label><input type="radio" ng-model="viewState.sendTo" ng-value="SEND_TO.all">Kaikille rekisteröityneille</label>
+            </div>
+
+            <div ng-if="viewState.sendTo === SEND_TO.test">
+                <div class="form-group col-xs-6">
+                    <label for="confirmation" class="control-label">
+                        <span>Testiviestin vastaanottaja</span>
+                    </label>
+
+                    <input type="email" name="testRecipient" id="testRecipient"
+                           class="form-control"
+                           ng-model="viewState.testRecipient"/>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="modal-footer">
+
+        <div growl inline="true"></div>
+
+        <button type="button"
+                class="btn btn-default"
+                ng-click="$close()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit"
+                ng-if="viewState.sendTo !== 'test'"
+                ng-click="sendEmail()"
+                class="btn btn-primary"
+                ng-disabled="sendEmailForm.$invalid || !confirmationMatches()">
+            Lähetä joukkoviesti
+        </button>
+
+        <button type="submit"
+                ng-if="viewState.sendTo === 'test'"
+                ng-click="sendTestEmail()"
+                class="btn btn-primary"
+                ng-disabled="sendEmailForm.$invalid || !confirmationMatches()">
+            Lähetä testiviesti
+        </button>
+    </div>
+</form>

@@ -1,0 +1,57 @@
+<div class="content r-club-sidebar-content">
+    <button type="button" class="close pull-right" ng-click="cancel()">
+        <span class="glyphicon glyphicon-remove"></span>
+    </button>
+
+    <h3 class="modal-title" translate="gamediary.harvest"></h3>
+
+    <h5 translate="club.permit.map.partner"></h5>
+
+    <div>
+        <table class="table table-striped table-condensed">
+            <tbody>
+            <tr>
+                <td><span class="h6" translate="club.permit.map.partnerName"></span></td>
+                <td><span name-translated="diaryEntry.huntingClub"></span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <table class="table table-striped">
+        <tr>
+            <td>
+                <img ng-src="/static/elainlajikuvat/96x96/{{ ::diaryEntry.gameSpeciesCode }}.jpg"
+                     class="r-gamediary-species-logo" width="96" height="96"/>
+            </td>
+            <td class="species-name">
+                <p>{{ diaryEntry.gameSpecies.name | rI18nNameFilter | capitalize }}</p>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <h5 translate="club.hunting.pointOfTime"></h5>
+                <span>{{diaryEntry.pointOfTime | date:'d.M.yyyy HH:mm'}}</span>
+            </td>
+            <td>
+                <h5 translate="gamediary.form.location"></h5>
+
+                <div translate="global.geoLocation.coordinatesText"
+                     translate-values="diaryEntry.geoLocation"></div>
+            </td>
+        </tr>
+    </table>
+
+    <div><r-show-entry-specimens entry="diaryEntry"></r-show-entry-specimens></div>
+</div>
+
+<div class="buttons r-club-sidebar-buttons">
+    <div class="pull-left">
+        <button type="button"
+                class="btn btn-default"
+                ng-click="cancel()">
+            <span translate="global.button.cancel"></span>
+        </button>
+    </div>
+</div>

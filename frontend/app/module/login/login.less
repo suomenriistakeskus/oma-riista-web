@@ -1,0 +1,111 @@
+
+// Login page styles
+// -------------------------
+
+body > .wrapper > .main-content > .r-login-container {
+  background: transparent;
+  max-width: 700px;
+  padding: 0;
+  margin: 0 auto;
+  border: 0;
+  color: @r-light;
+
+  a {
+    color: @r-light;
+  }
+
+  .growl-container a {
+    color: @r-dark;
+    text-decoration: underline;
+  }
+
+  .r-login-main-title {
+    .text-uppercase;
+    font-weight: bold;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .nav.nav-tabs {
+    border: 0;
+    margin-bottom: 1px;
+  }
+
+  .nav > li {
+    border: 0;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+  }
+  .nav > li > a {
+    margin-right: 5px;
+    border: 0;
+    background-color: rgba(0,0,0,0.3);
+  }
+  .nav > li:last-child > a {
+    margin-right: 0;
+  }
+  .nav > li.active > a {
+    background-color: rgba(0,0,0,0.6);
+  }
+  .nav > li > a:focus,
+  .nav > li > a:hover,
+  .nav > li.active > a:focus,
+  .nav > li.active > a:hover{
+    background-color: rgba(0,0,0,0.6);
+  }
+
+  .r-login-well {
+    .well;
+    background-color: rgba(0,0,0,0.6);
+    .box-shadow(0 0 0 rgba(0,0,0,0.0));
+    border: 0;
+    border-top-right-radius: 0px;
+    padding: 5px 15px 5px 15px;
+    margin-bottom: 15px;
+    input {
+      margin-bottom: 5px;
+    }
+    .form-group {
+      margin-bottom: 5px;
+    }
+  }
+
+  .r-login-well-lower {
+    .well;
+    background-color: rgba(0,0,0,0.6);
+    .box-shadow(0 0 0 rgba(0,0,0,0.0));
+    border: 0;
+    padding: 15px;
+    margin-left: 0px; // because 'row' adds -15 margin
+    margin-right: 0px; // because 'row' adds -15 margin
+    margin-bottom: 15px;
+    div {
+      height: 34px;
+      line-height: 34px;
+      text-align: center;
+      a {
+        display: inline-block;
+        vertical-align: middle;
+        line-height: normal;
+      }
+    }
+  }
+  .r-login-create-account {
+    .btn;
+    .btn-default;
+    text-shadow: 0;
+    background-color: @r-light;
+    color: @r-green;
+  }
+}
+body > .wrapper > .main-content > .r-twitter-feed-container {
+  background-color: #fff;
+  margin-bottom: 20px;
+  min-height: 0;
+  max-width: 700px;
+
+  h3 {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+}

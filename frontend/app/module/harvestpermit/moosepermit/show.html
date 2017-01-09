@@ -1,0 +1,66 @@
+<div class="container-fluid">
+
+<div ng-if="!permit.amendmentPermitsMatchHarvests">
+    <div class="alert alert-danger">
+        <span class="text-danger fa fa-exclamation-triangle"></span>
+        <span translate="club.permit.amendmentPermitsDoNotMatchHarvests"></span>
+    </div>
+</div>
+
+<div class="permit-species-logo">
+    <img ng-src="/static/elainlajikuvat/96x96/{{permit.speciesAmount.gameSpecies.code}}.jpg"
+         style="float:left"
+         width="96" height="96"/>
+</div>
+
+<table class="table table-condensed permit-percentage-table">
+    <thead>
+    <tr>
+        <th></th>
+        <th translate="club.permit.percentage.allocated"></th>
+        <th translate="club.permit.percentage.harvests"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td class="h5" translate="club.permit.percentage.males"></td>
+        <td>{{malePercentage()}}%</td>
+        <td>{{maleHarvestPercentage()}}%</td>
+    </tr>
+    <tr>
+        <td class="h5" translate="club.permit.percentage.young"></td>
+        <td>{{youngPercentage()}}%</td>
+        <td>{{youngHarvestPercentage()}}%</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="pull-right" ng-if="canEditAllocations()">
+    <button class="btn btn-primary"
+            ng-disabled="isEditingAllocations()"
+            ng-click="startEditAllocations()"
+            translate="club.permit.allocation.buttonText"></button>
+    <button class="btn btn-danger"
+            ng-disabled="!isEditingAllocations()"
+            ng-click="cancelAllocations()"
+            translate="global.button.cancel"></button>
+    <button class="btn btn-primary"
+            ng-disabled="form.$invalid || !isEditingAllocations()"
+            ng-click="saveAllocations()"
+            translate="global.button.save"></button>
+</div>
+
+<form name="form" role="form" class="form-inline" r-force-show-errors-check-validity>
+    <uib-tabset active="tabSelection">
+        <uib-tab heading="{{'club.permit.tabHunting' | translate}}">
+            <div ng-include="'harvestpermit/moosepermit/show-table-hunting.html'"></div>
+        </uib-tab>
+        <uib-tab heading="{{'club.permit.tabIndexes' | translate}}" ng-if="isMoose()">
+            <div ng-include="'harvestpermit/moosepermit/show-table-indexes.html'"></div>
+        </uib-tab>
+        <uib-tab heading="{{'club.permit.tabPayments' | translate}}" >
+            <div ng-include="'harvestpermit/moosepermit/show-table-payments.html'"></div>
+        </uib-tab>
+    </uib-tabset>
+</form>
+</div>

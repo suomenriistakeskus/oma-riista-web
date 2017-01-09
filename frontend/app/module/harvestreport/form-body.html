@@ -1,0 +1,195 @@
+<div class="form-group" ng-if="report.state">
+    <label class="col-xs-3 control-label">
+        <span translate="harvestreport.state.title"></span>
+    </label>
+
+    <div class="col-xs-9">
+        <p class="form-control-static">
+            {{'harvestreport.state.' + report.state | translate}}
+        </p>
+    </div>
+</div>
+
+<div class="form-group" ng-if="report.creator">
+    <label class="col-xs-3 control-label">
+        <span translate="harvestreport.form.creator"></span>
+    </label>
+
+    <div class="col-xs-4">
+        <p class="form-control-static">{{report.creator}}
+
+        <p/>
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="col-xs-3 control-label">
+        <span translate="harvestreport.form.author"></span>
+        <span ng-if="viewState.moderatorView" class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-4">
+        <p class="form-control-static">
+            {{report.authorInfo.byName}} {{report.authorInfo.lastName}}
+        </p>
+    </div>
+    <div class="col-xs-3" ng-if="viewState.moderatorView && report.canEdit">
+        <a ng-click="findAuthor()" class="form-control btn btn-primary">
+            <span class="glyphicon glyphicon-search"></span> &nbsp;
+            <span translate="harvestreport.button.searchPerson"></span>
+        </a>
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="col-xs-3 control-label">
+        <span translate="harvestreport.form.hunter"></span>
+    </label>
+
+    <div class="col-xs-4">
+        <p class="form-control-static">
+            {{report.hunterInfo.byName}} {{report.hunterInfo.lastName}}
+        </p>
+    </div>
+    <div class="col-xs-3" ng-if="report.canEdit">
+        <a ng-click="findHunter(viewState.moderatorView)" class="form-control btn btn-primary">
+            <span class="glyphicon glyphicon-search"></span> &nbsp;
+            <span translate="harvestreport.form.changeHunter"></span>
+        </a>
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="col-xs-3 control-label">
+        <span translate="harvestreport.form.reportType"></span>
+        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-9">
+        <p class="form-control-static">{{viewState.fieldAndSeason.name}}</p>
+    </div>
+</div>
+
+<div class="form-group"
+     ng-include="'harvestreport/form-map.html'">
+</div>
+
+<div r-geolocation-input="report.geoLocation"
+     ng-if="viewState.moderatorView && report.canEdit">
+</div>
+
+<div class="form-group" show-errors>
+    <label for="rhy" class="col-xs-3 control-label">
+        <span translate="harvestreport.form.rhy"></span>
+        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-6">
+        <input type="text" name="rhy" id="rhy"
+               class="form-control"
+               required
+               ng-model="viewState.rhy"
+               name-translated-input
+               disabled></div>
+</div>
+
+<div class="form-group" show-errors
+     ng-if="harvestAreaRequired()">
+    <label for="harvestArea"
+           class="col-xs-3 control-label">
+        <span translate="harvestreport.form.harvestarea"></span>
+        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-6">
+        <input type="text" name="harvestArea" id="harvestArea"
+               class="form-control"
+               ng-model="viewState.harvestArea"
+               required
+               name-translated-input
+               disabled></div>
+</div>
+
+<div class="form-group" show-errors>
+    <label for="date" class="col-xs-3 control-label">
+        <span translate="harvestreport.form.date"></span>
+        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-3">
+        <div class="input-group" ng-controller="DatePickerController">
+            <input type="text" name="date" id="date"
+                   class="form-control"
+                   ng-model="viewState.date"
+                   required
+                   date-between-min-max
+                   uib-datepicker-popup is-open="isDatePickerOpen"
+                   max-date="today()"
+                   ng-disabled="!report.canEdit"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default"
+                                    ng-click="toggleDatePopup($event)"
+                                    ng-disabled="!report.canEdit">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+        </div>
+    </div>
+    <div class="col-xs-3"><span ng-show="viewState.date && !isValidDate()" class="form-control-static text-danger" translate="gamediary.form.invalidDate"></span></div>
+</div>
+
+<div class="form-group" show-errors>
+    <label for="time" class="col-xs-3 control-label">
+        <span translate="harvestreport.form.time"></span>
+        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-3">
+        <input type="text" name="time" id="time"
+               class="form-control"
+               finnish-date-time-in-past="viewState.date"
+               required
+               autocorrect="off" autocapitalize="none"
+               ng-model="viewState.time"
+               ng-disabled="!report.canEdit"/>
+    </div>
+</div>
+
+<div ng-if="viewState.fieldAndSeason"
+     ng-include="'harvestreport/form-fields.html'">
+</div>
+
+<hr ng-if="viewState.moderatorView"/>
+
+<div ng-if="viewState.moderatorView" class="form-group" show-errors>
+    <label for="description" class="col-xs-3 control-label">
+        <span translate="harvestreport.form.description"></span>
+    </label>
+
+    <div class="col-xs-9">
+        <textarea name="description" id="description"
+                  class="form-control"
+                  ng-disabled="!report.canEdit"
+                  ng-model="report.description"></textarea>
+    </div>
+</div>
+
+<div ng-if="viewState.moderatorView" class="form-group" show-errors>
+    <label for="lukeStatus" class="col-xs-3 control-label">
+        <span translate="harvestreport.form.lukeStatus"></span>
+    </label>
+
+    <div class="col-xs-3">
+
+        <select name="lukeStatus" id="lukeStatus" class="form-control"
+                ng-model="report.lukeStatus"
+                ng-options="('harvestreport.lukeStatus.' + a | translate) for a in parameters.lukeStatuses"
+                ng-disabled="!report.canEdit"><option value=""></option>
+        </select>
+    </div>
+
+    <div class="col-xs-6">
+        <span class="help-text" translate="harvestreport.form.lukeStatusInstruction"></span>
+    </div>
+</div>

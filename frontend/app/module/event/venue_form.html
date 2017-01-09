@@ -1,0 +1,80 @@
+<form name="form" role="form" class="form form-horizontal r-venue-form" ng-submit="save(venue)">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 ng-if="!venue.id" class="modal-title" translate="venue.form.titleAdd"></h3>
+        <h3 ng-if="venue.id" class="modal-title" translate="venue.form.titleEdit"></h3>
+    </div>
+
+    <div class="modal-body">
+
+        <div class="form-group" show-errors>
+            <label for="name" class="col-xs-3 control-label">
+                <span translate="venue.form.name"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <input type="text" name="name" id="name"
+                       class="form-control"
+                       required
+                       ng-model="venue.name"
+                       ng-maxlength="255" />
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="streetAddress" class="col-xs-3 control-label">
+                <span translate="global.address.streetAddress"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <input type="text" name="streetAddress" id="streetAddress"
+                       class="form-control"
+                       ng-model="venue.address.streetAddress"
+                       ng-maxlength="255" />
+            </div>
+        </div>
+        <div class="form-group" show-errors>
+            <label for="postalCode" class="col-xs-3 control-label">
+                <span translate="global.address.postalCode"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <input type="text" name="postalCode" id="postalCode"
+                       class="form-control"
+                       ui-mask="99999"
+                       ng-model="venue.address.postalCode"/>
+            </div>
+        </div>
+        <div class="form-group" show-errors>
+            <label for="city" class="col-xs-3 control-label">
+                <span translate="global.address.city"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <input type="text" name="city" id="city"
+                       class="form-control"
+                       ng-model="venue.address.city"
+                       ng-maxlength="255" />
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="info" class="col-xs-3 control-label" translate="venue.form.info"></label>
+
+            <div class="col-xs-9">
+                <textarea name="info" id="info"
+                          class="form-control"
+                          ng-model="venue.info"></textarea>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="cancel()" translate="global.button.cancel"></button>
+        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid" translate="global.button.save"></button>
+    </div>
+</form>

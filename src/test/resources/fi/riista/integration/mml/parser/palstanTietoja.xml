@@ -1,0 +1,71 @@
+<wfs:FeatureCollection xmlns:gml="http://www.opengis.net/gml" xmlns:ktjkiiwfs="http://xml.nls.fi/ktjkiiwfs/2010/02"
+                       xmlns:wfs="http://www.opengis.net/wfs" xmlns:xlink="http://www.w3.org/1999/xlink"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" numberOfFeatures="1"
+                       xsi:schemaLocation="http://xml.nls.fi/ktjkiiwfs/2010/02 https://ws.nls.fi/ktjkii/wfs/wfs?SERVICE=WFS&amp;VERSION=1.1.0&amp;REQUEST=DescribeFeatureType&amp;TYPENAME=ktjkiiwfs:PalstanTietoja&amp;NAMESPACE=xmlns(ktjkiiwfs=http://xml.nls.fi/ktjkiiwfs/2010/02) http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd">
+    <gml:boundedBy>
+        <gml:Envelope srsName="EPSG:3067">
+            <gml:lowerCorner>331248.291 6817310.668</gml:lowerCorner>
+            <gml:upperCorner>331306.316 6817401.989</gml:upperCorner>
+        </gml:Envelope>
+    </gml:boundedBy>
+    <gml:featureMember>
+        <ktjkiiwfs:PalstanTietoja gml:id="FI.KTJkii-PalstanTietoja-15647140420141220">
+            <gml:boundedBy>
+                <gml:Envelope srsName="EPSG:3067">
+                    <gml:lowerCorner>331248.291 6817310.668</gml:lowerCorner>
+                    <gml:upperCorner>331306.316 6817401.989</gml:upperCorner>
+                </gml:Envelope>
+            </gml:boundedBy>
+            <ktjkiiwfs:paivityspvm>20120207</ktjkiiwfs:paivityspvm>
+            <ktjkiiwfs:tekstiKartalla>837-65-7115-5</ktjkiiwfs:tekstiKartalla>
+            <ktjkiiwfs:rekisteriyksikonKiinteistotunnus>83706571150005</ktjkiiwfs:rekisteriyksikonKiinteistotunnus>
+            <ktjkiiwfs:sijainti>
+                <gml:Surface srsName="EPSG:3067">
+                    <gml:patches>
+                        <gml:PolygonPatch>
+                            <gml:exterior>
+                                <gml:LinearRing>
+                                    <gml:posList count="10" srsDimension="2">331306.316 6817320.636 331282.847
+                                        6817310.668 331274.442 6817330.456 331261.022 6817324.755 331252.374 6817345.115
+                                        331265.795 6817350.816 331248.291 6817392.02 331271.76 6817401.989 331288.677
+                                        6817362.162 331306.316 6817320.636
+                                    </gml:posList>
+                                </gml:LinearRing>
+                            </gml:exterior>
+                        </gml:PolygonPatch>
+                    </gml:patches>
+                </gml:Surface>
+                <gml:UnknownElement ignore="true">
+                </gml:UnknownElement>
+            </ktjkiiwfs:sijainti>
+        </ktjkiiwfs:PalstanTietoja>
+    </gml:featureMember>
+    <gml:featureMember>
+        <ktjkiiwfs:PalstanTietoja gml:id="FI.KTJkii-PalstanTietoja-612967430420141220">
+            <gml:boundedBy>
+                <gml:Envelope srsName="EPSG:3067">
+                    <gml:lowerCorner>631248.291 6817310.668</gml:lowerCorner>
+                    <gml:upperCorner>131306.316 6817401.989</gml:upperCorner>
+                </gml:Envelope>
+            </gml:boundedBy>
+            <ktjkiiwfs:paivityspvm>20140330</ktjkiiwfs:paivityspvm>
+            <ktjkiiwfs:tekstiKartalla>887-26-8115-3</ktjkiiwfs:tekstiKartalla>
+            <ktjkiiwfs:rekisteriyksikonKiinteistotunnus>88702678115003</ktjkiiwfs:rekisteriyksikonKiinteistotunnus>
+            <ktjkiiwfs:sijainti>
+                <gml:Surface srsName="EPSG:3067">
+                    <gml:patches>
+                        <gml:PolygonPatch>
+                            <gml:exterior>
+                                <gml:LinearRing>
+                                    <gml:posList count="10" srsDimension="2">
+                                        6817350.816 331248.291 6817392.02 331271.76 6817401.989 331288.677 6817362.162
+                                    </gml:posList>
+                                </gml:LinearRing>
+                            </gml:exterior>
+                        </gml:PolygonPatch>
+                    </gml:patches>
+                </gml:Surface>
+            </ktjkiiwfs:sijainti>
+        </ktjkiiwfs:PalstanTietoja>
+    </gml:featureMember>
+</wfs:FeatureCollection>

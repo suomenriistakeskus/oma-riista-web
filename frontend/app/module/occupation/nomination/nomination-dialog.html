@@ -1,0 +1,103 @@
+<div>
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="occupation.nomination.title.nominate"></h3>
+    </div>
+
+    <div class="modal-body">
+        <form name="occupationNominationForm"
+              role="form" novalidate autocomplete="off"
+              class="form form-horizontal">
+            <div class="form-group">
+                <label for="occupationType" class="control-label col-xs-4"
+                       translate="occupation.nomination.field.occupationType"></label>
+                <div class="col-xs-8">
+                    <p class="form-control-static" id="occupationType"
+                       ng-bind="$ctrl.occupationType | translateWithPrefix:'occupation.type.'"></p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="occupationRhy" class="control-label col-xs-4"
+                    translate="occupation.nomination.field.rhy"></label>
+                <div class="col-xs-8">
+                    <p class="form-control-static" id="occupationRhy"
+                       ng-bind="$ctrl.rhy | rI18nNameFilter"></p>
+                </div>
+            </div>
+
+            <div class="form-group has-error" ng-show="!$ctrl.isValidOccupationPeriod()">
+                <div class="col-xs-8 col-xs-offset-4">
+                    <p class="help-block has-error" translate="occupation.nomination.message.periodTooLong"></p>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="beginDate" class="control-label col-xs-4" translate="global.beginDate"></label>
+
+                <div class="col-xs-4">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" name="beginDate" id="beginDate"
+                               class="form-control"
+                               required
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-options="$ctrl.beginDatePickerOptions"
+                               date-between-min-max
+                               max-date="$ctrl.endDate"
+                               ng-model="$ctrl.beginDate"/>
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+
+                    <p class="help-block has-error"
+                       ng-show="occupationNominationForm.beginDate.$invalid"
+                       ng-messages="occupationNominationForm.beginDate.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="beginDate" class="control-label col-xs-4" translate="global.endDate"></label>
+                <div class="col-xs-4">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" name="endDate" id="endDate"
+                               class="form-control"
+                               required
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-options="$ctrl.endDatePickerOptions"
+                               date-between-min-max
+                               min-date="$ctrl.beginDate"
+                               ng-model="$ctrl.endDate"/>
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+
+                    <p class="help-block has-error"
+                       ng-show="occupationNominationForm.endDate.$invalid"
+                       ng-messages="occupationNominationForm.endDate.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()"
+                translate="occupation.form.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.submit()"
+                ng-disabled="occupationNominationForm.$invalid || !$ctrl.isValidOccupationPeriod()"
+                translate="occupation.form.button.save"></button>
+    </div>
+</div>

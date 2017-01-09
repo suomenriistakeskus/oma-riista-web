@@ -1,0 +1,18 @@
+<li uib-dropdown class="r-lang-nav-dropdown">
+    <a uib-dropdown-toggle>
+        <span translate="global.menu.language"></span>
+        <b class="caret"></b>
+    </a>
+
+    <ul class="dropdown-menu r-lang-nav-dropdown-menu" uib-dropdown-menu>
+        <li ng-show="{'active': $ctrl.isSelected('fi')}">
+            <a ng-click="$ctrl.changeLanguage('fi')"><span translate="global.language.fi"></span></a>
+        </li>
+        <li ng-show="{'active': $ctrl.isSelected('sv')}">
+            <a ng-click="$ctrl.changeLanguage('sv')"><span translate="global.language.sv"></span></a>
+        </li>
+        <li ng-show="{'active': $ctrl.isSelected('en')}" show-in-development>
+            <a ng-click="$ctrl.changeLanguage('en')"><span translate="global.language.en"></span></a>
+        </li>
+    </ul>
+</li>

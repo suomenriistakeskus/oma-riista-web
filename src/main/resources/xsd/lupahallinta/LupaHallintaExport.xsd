@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://xml.riistakeskus.fi/schema/LupaHallintaExport"
+           xmlns="http://xml.riistakeskus.fi/schema/LupaHallintaExport"
+           xmlns:common="http://xml.riistakeskus.fi/schema/CommonTypes"
+           xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified"
+           elementFormDefault="qualified">
+
+    <xsd:import schemaLocation="../CommonTypes.xsd" namespace="http://xml.riistakeskus.fi/schema/CommonTypes"/>
+
+    <xsd:complexType name="GeoSijainti">
+        <xsd:sequence>
+            <xsd:element type="xsd:int" name="Leveys" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="xsd:int" name="Pituus" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Organisaatio">
+        <xsd:sequence>
+            <xsd:element type="xsd:long" name="Id" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="common:TyyppiKoodiJaNimi" name="Tyyppi" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="NimiS" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="NimiR" minOccurs="1" maxOccurs="1" nillable="true"/>
+            <xsd:element type="xsd:token" name="RiistakeskusOrganisaatiokoodi" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="common:Osoite" name="Osoite" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="Puhelinnumero" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="Sahkopostiosoite" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="LupaHallintaId" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="GeoSijainti" name="GeoSijainti" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute type="xsd:ID" name="xmlId" use="required"/>
+        <xsd:attribute type="xsd:IDREF" name="riistakeskusAlue"/>
+    </xsd:complexType>
+    <xsd:simpleType name="TehtavaTyyppi">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="TOIMINNANOHJAAJA"/>
+            <xsd:enumeration value="SRVA_YHTEYSHENKILO"/>
+            <xsd:enumeration value="PETOYHDYSHENKILO"/>
+            <xsd:enumeration value="METSASTYKSENVALVOJA"/>
+            <xsd:enumeration value="METSASTAJATUTKINNON_VASTAANOTTAJA"/>
+            <xsd:enumeration value="AMPUMAKOKEEN_VASTAANOTTAJA"/>
+            <xsd:enumeration value="RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA"/>
+            <xsd:enumeration value="METSASTAJATUTKINTOON_VALMENTAVAN_KOULUTUKSEN_KOULUTTAJA"/>
+            <xsd:enumeration value="PUHEENJOHTAJA"/>
+            <xsd:enumeration value="VARAPUHEENJOHTAJA"/>
+            <xsd:enumeration value="HALLITUKSEN_JASEN"/>
+            <xsd:enumeration value="HALLITUKSEN_VARAJASEN"/>
+            <xsd:enumeration value="JALJESTYSKOIRAN_OHJAAJA_HIRVI"/>
+            <xsd:enumeration value="JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET"/>
+            <xsd:enumeration value="JALJESTYSKOIRAN_OHJAAJA_SUURPEDOT"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="Tehtava">
+        <xsd:sequence>
+            <xsd:element type="xsd:long" name="Id" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="TehtavaTyyppi" name="Tyyppi" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="xsd:date" name="AlkuPvm" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:date" name="LoppuPvm" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:unsignedShort" name="Soittojarjestys" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:unsignedShort" name="Suoritusvuosi" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:string" name="Lisatieto" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute type="xsd:IDREF" name="organisaatio" use="required"/>
+    </xsd:complexType>
+    <xsd:complexType name="Henkilo">
+        <xsd:sequence>
+            <xsd:element type="xsd:long" name="Id" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="common:Henkilotunnus" name="Henkilotunnus" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="Etunimet" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="Kutsumanimi" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="Sukunimi" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="common:Osoite" name="Osoite" minOccurs="1" maxOccurs="1" nillable="true"/>
+            <xsd:element type="xsd:token" name="Puhelinnumero" minOccurs="1" maxOccurs="1" nillable="true"/>
+            <xsd:element type="xsd:token" name="Sahkopostiosoite" minOccurs="1" maxOccurs="1" nillable="true"/>
+            <xsd:element type="common:Kielikoodi" name="Kielikoodi" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="LupaHallintaId" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="Tehtavat" minOccurs="0" maxOccurs="1">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element type="Tehtava" name="Tehtava" minOccurs="1" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute type="xsd:ID" name="xmlId" use="required"/>
+        <xsd:attribute type="xsd:IDREF" name="rhyJasenyys"/>
+    </xsd:complexType>
+    <xsd:element name="Riistakeskus">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element type="xsd:token" name="Versio" minOccurs="1" maxOccurs="1" nillable="true"/>
+                <xsd:element type="xsd:dateTime" name="Aikaleima" minOccurs="1" maxOccurs="1"/>
+                <xsd:element name="Organisaatiot" minOccurs="1" maxOccurs="1">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element type="Organisaatio" name="Organisaatio" minOccurs="0" maxOccurs="unbounded"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="Henkilot" minOccurs="1" maxOccurs="1">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element type="Henkilo" name="Henkilo" minOccurs="0" maxOccurs="unbounded"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

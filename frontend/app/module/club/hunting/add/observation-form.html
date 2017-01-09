@@ -1,0 +1,288 @@
+<div class="content r-club-sidebar-content">
+    <form id="observationForm" name="observationForm" role="form" class="form form-horizontal" r-force-show-errors-check-validity>
+    <fieldset ng-disabled="huntingFinished">
+        <h3 ng-if="!entry.id" class="modal-title" translate="gamediary.form.titleAddObservation"></h3>
+        <h3 ng-if="entry.id && !huntingFinished" class="modal-title" translate="gamediary.form.titleEditObservation"></h3>
+        <h3 ng-if="entry.id && huntingFinished" class="modal-title" translate="gamediary.form.titleViewObservation"></h3>
+
+        <h4 translate="gamediary.form.titleObservationAnimal"></h4>
+
+        <species-select diary-parameters="parameters"
+                        available-species="availableSpecies"
+                        diary-entry="entry"></species-select>
+
+        <div class="form-group" ng-if="entry.gameSpeciesCode">
+            <div ng-class="{ 'has-error': (!entry.observationType) }">
+                <label for="observationType" class="control-label">
+                    <span translate="gamediary.form.observationType"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="form-control-wrapper">
+                    <select name="observationType" id="observationType"
+                            class="form-control"
+                            ng-model="entry.observationType"
+                            ng-options="type as ('observation.type.' + type) | translate for type in getAvailableObservationTypes()"><option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <h4 translate="gamediary.form.titleTimeAndPlace"></h4>
+
+        <div class="form-group">
+            <label class="control-label">
+                <span translate="gamediary.form.location"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <p class="form-control-static"
+                   ng-show="entry.geoLocation.longitude"
+                   translate="global.geoLocation.coordinatesText"
+                   translate-values="entry.geoLocation"></p>
+
+                <p class="text-danger form-control-static"
+                   ng-hide="entry.geoLocation.longitude"
+                   translate="global.geoLocation.required"></p>
+            </div>
+        </div>
+
+        <hunting-day-time-select diary-entry="entry"
+                                 create="createHuntingDayForObservation()"
+                                 hunting-days="huntingDays"
+                                 hunting-finished="huntingFinished"></hunting-day-time-select>
+
+        <h4 ng-if="isModerator" translate="harvestreport.form.author"></h4>
+
+        <club-person-select ng-if="isModerator" member-list="memberCandidates" person="entry.authorInfo"></club-person-select>
+
+        <h4 translate="gamediary.form.nameOfObserver"></h4>
+
+        <club-person-select member-list="memberCandidates" person="entry.actorInfo"></club-person-select>
+
+        <h4 translate="gamediary.form.titleShowSpecimens"></h4>
+
+        <div ng-show="isFieldVisible('amount')">
+
+            <div class="form-group" show-errors>
+                <label for="totalSpecimenAmount" class="control-label">
+                    <span translate="gamediary.form.amount"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('amount')"></small>
+                </label>
+
+                <div class="form-control-wrapper">
+                    <select name="totalSpecimenAmount" id="totalSpecimenAmount"
+                            class="form-control"
+                            ng-model="entry.totalSpecimenAmount"
+                            ng-options="n for n in [] | range:1:maxSpecimenCount"
+                            ng-required="isFieldRequired('amount')"></select>
+                </div>
+            </div>
+
+            <div class="form-group" ng-show="showEditSpecimenButton()">
+                <div class="col-xs-12 text-right">
+                    <button type="button"
+                            ng-click="editSpecimen()"
+                            ng-disabled="isSpecimenEditDisabled()"
+                            class="btn btn-primary">
+                        <span translate="gamediary.form.titleShowSpecimens"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div ng-if="showInlineSpecimenEdit()">
+                <div class="form-group" ng-if="isFieldVisible('gender')" show-errors>
+                    <label for="gender" class="control-label">
+                        <span translate="gamediary.form.gender"></span>
+                        <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('gender')"></small>
+                    </label>
+
+                    <div class="form-control-wrapper">
+                        <select name="gender" id="gender"
+                                class="form-control"
+                                ng-model="entry.specimens[0].gender"
+                                ng-options="('gamediary.gender.' + a | translate) for a in getAvailableGameGenders()"
+                                ng-required="isFieldRequired('gender')"></select>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-if="isFieldVisible('age')" show-errors>
+                    <label for="age" class="control-label">
+                        <span translate="gamediary.form.age"></span>
+                        <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('age')"></small>
+                    </label>
+
+                    <div class="form-control-wrapper">
+                        <select name="age" id="age"
+                                class="form-control"
+                                ng-model="entry.specimens[0].age"
+                                ng-options="(age | gameAge: entry.gameSpeciesCode) for age in getAvailableGameAges()"
+                                ng-required="isFieldRequired('age')"
+                                ng-required="isFieldRequired('age')"></select>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-if="isFieldVisible('state')" show-errors>
+                    <label for="state" class="control-label">
+                        <span translate="gamediary.form.gameState"></span>
+                        <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('state')"></small>
+                    </label>
+
+                    <div class="form-control-wrapper">
+                        <select name="state" id="state"
+                                class="form-control"
+                                ng-model="entry.specimens[0].state"
+                                ng-options="('observation.gamestate.' + state | translate) for state in getAvailableGameStates()"
+                                ng-required="isFieldRequired('state')"></select>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-if="isFieldVisible('marking')" show-errors>
+                    <label for="marking" class="control-label">
+                        <span translate="gamediary.form.gameMarking"></span>
+                        <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('marking')"></small>
+                    </label>
+
+                    <div class="form-control-wrapper">
+                        <select name="marking" id="marking"
+                                class="form-control"
+                                ng-model="entry.specimens[0].marking"
+                                ng-options="('observation.marking.' + state | translate) for state in getAvailableGameMarkings()"
+                                ng-required="isFieldRequired('marking')"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('mooselikeMaleAmount')" show-errors>
+            <label for="mooselikeMaleAmount" class="control-label">
+                <span translate="gamediary.mooselike.mooselikeMaleAmount"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('mooselikeMaleAmount')"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select type="number" name="mooselikeMaleAmount" id="mooselikeMaleAmount"
+                        class="form-control"
+                        ng-model="entry.mooselikeMaleAmount"
+                        ng-options="n for n in [] | range:0:50"
+                        ng-required="isFieldRequired('mooselikeMaleAmount')"></select>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('mooselikeFemaleAmount')" show-errors>
+            <label for="mooselikeFemaleAmount" class="control-label">
+                <span translate="gamediary.mooselike.mooselikeFemaleAmount"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('mooselikeFemaleAmount')"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select type="number" name="mooselikeFemaleAmount" id="mooselikeFemaleAmount"
+                        class="form-control"
+                        ng-model="entry.mooselikeFemaleAmount"
+                        ng-options="n for n in [] | range:0:50"
+                        ng-required="isFieldRequired('mooselikeFemaleAmount')"></select>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('mooselikeFemale1CalfAmount')" show-errors>
+            <label for="mooselikeFemale1CalfAmount" class="control-label">
+                <span translate="gamediary.mooselike.mooselikeFemale1CalfAmount"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('mooselikeFemale1CalfAmount')"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select type="number" name="mooselikeFemale1CalfAmount" id="mooselikeFemale1CalfAmount"
+                        class="form-control"
+                        ng-model="entry.mooselikeFemale1CalfAmount"
+                        ng-options="n for n in [] | range:0:50"
+                        ng-required="isFieldRequired('mooselikeFemale1CalfAmount')"></select>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('mooselikeFemale2CalfsAmount')" show-errors>
+            <label for="mooselikeFemale2CalfsAmount" class="control-label">
+                <span translate="gamediary.mooselike.mooselikeFemale2CalfsAmount"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('mooselikeFemale2CalfsAmount')"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select type="number" name="mooselikeFemale2CalfsAmount" id="mooselikeFemale2CalfsAmount"
+                        class="form-control"
+                        ng-model="entry.mooselikeFemale2CalfsAmount"
+                        ng-options="n for n in [] | range:0:50"
+                        ng-required="isFieldRequired('mooselikeFemale2CalfsAmount')"></select>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('mooselikeFemale3CalfsAmount')" show-errors>
+            <label for="mooselikeFemale3CalfsAmount" class="control-label">
+                <span translate="gamediary.mooselike.mooselikeFemale3CalfsAmount"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('mooselikeFemale3CalfsAmount')"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select type="number" name="mooselikeFemale3CalfsAmount" id="mooselikeFemale3CalfsAmount"
+                        class="form-control"
+                        ng-model="entry.mooselikeFemale3CalfsAmount"
+                        ng-options="n for n in [] | range:0:50"
+                        ng-required="isFieldRequired('mooselikeFemale3CalfsAmount')"></select>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('mooselikeFemale4CalfsAmount')" show-errors>
+            <label for="mooselikeFemale4CalfsAmount" class="control-label">
+                <span translate="gamediary.mooselike.mooselikeFemale4CalfsAmount"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('mooselikeFemale4CalfsAmount')"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select type="number" name="mooselikeFemale4CalfsAmount" id="mooselikeFemale4CalfsAmount"
+                        class="form-control"
+                        ng-model="entry.mooselikeFemale4CalfsAmount"
+                        ng-options="n for n in [] | range:0:50"
+                        ng-required="isFieldRequired('mooselikeFemale4CalfsAmount')"></select>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('mooselikeUnknownSpecimenAmount')" show-errors>
+            <label for="mooselikeUnknownSpecimenAmount" class="control-label">
+                <span translate="gamediary.mooselike.mooselikeUnknownSpecimenAmount"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('mooselikeUnknownSpecimenAmount')"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select type="number" name="mooselikeUnknownSpecimenAmount" id="mooselikeUnknownSpecimenAmount"
+                        class="form-control"
+                        ng-model="entry.mooselikeUnknownSpecimenAmount"
+                        ng-options="n for n in [] | range:0:50"
+                        ng-required="isFieldRequired('mooselikeUnknownSpecimenAmount')"></select>
+            </div>
+        </div>
+    </fieldset>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-default pull-left"
+            ng-click="cancel()"
+            translate="global.button.cancel"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-disabled="observationForm.$invalid || !isValid()"
+            ng-show="showAccept"
+            ng-click="save()">
+        <span class="glyphicon glyphicon-ok"></span>&nbsp;
+        <span translate="global.button.accept"></span>
+    </button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-disabled="observationForm.$invalid || !isValid()"
+            ng-show="showSave"
+            ng-click="save()">
+        <span translate="global.button.save"></span>
+    </button>
+</div>

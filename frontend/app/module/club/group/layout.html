@@ -1,0 +1,21 @@
+<div class="row">
+    <div class="col-md-3 col-xs-4">
+        <r-club-groups-menu years="groupsToYearSelection" club-id="clubId" selected-species-code="species"></r-club-groups-menu>
+
+        <hr/>
+
+        <div class="text-right">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-show="club.canEdit"
+                    ng-click="addClubGroup()">
+                <span class="glyphicon glyphicon-add"></span>
+                <span translate="club.group.button.add"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="col-md-9 col-xs-8">
+        <div ui-view autoscroll="false"></div>
+    </div>
+</div>

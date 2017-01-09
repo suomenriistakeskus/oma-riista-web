@@ -1,0 +1,76 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 translate="harvestpermit.title.endOfHuntingReport"></h3>
+</div>
+
+<div class="modal-body">
+    <h4>
+        {{permit.permitNumber}} {{permit.permitType}}
+    </h4>
+
+    <h5>
+        <span translate="harvestpermit.harvestReportDoneInfo"></span>
+    </h5>
+
+    <span r-permit-species-amounts permit="permit"></span>
+
+    <div ng-if="permit.harvestsAsList">
+        <hr class="invisible"/>
+
+        <div ng-if="!harvests || harvests.length == 0" class="alert alert-info" translate="harvestpermit.noHarvests"></div>
+        <div class="well r-harvest-permit-end-of-hunting-harvests" ng-if="harvests && harvests.length > 0">
+            <div class="row">
+                <h6 class="col-xs-2" translate="harvestpermit.pointOfTime"></h6>
+                <h6 class="col-xs-2" translate="global.organisationType.RHY"></h6>
+                <h6 class="col-xs-2" translate="harvestpermit.gameInfo"></h6>
+                <h6 class="col-xs-3" translate="harvestreport.form.author"></h6>
+                <h6 class="col-xs-3" translate="harvestreport.form.hunter"></h6>
+            </div>
+
+            <div ng-repeat="harvest in harvests track by harvest.id"
+                 class="row r-report-permit-row" ng-class="{'r-even-row': ($index%2==0)}">
+                <span class="col-xs-2">{{harvest.pointOfTime | date:'d.M.yyyy HH:mm'}}</span>
+                <span class="col-xs-2"><span name-translated="harvest.rhy"></span></span>
+                <span class="col-xs-2">
+                    <span name-translated="harvest.gameSpecies.name"></span>
+                    <span>
+                        <span>{{harvest.totalSpecimenAmount}}</span>
+                        <span translate="harvestpermit.pcs"></span>
+                    </span>
+                </span>
+                <span class="col-xs-3">
+                    <!-- it's either author or authorInfo -->
+                    {{harvest.author.byName}} {{harvest.author.lastName}}
+                    {{harvest.authorInfo.byName}} {{harvest.authorInfo.lastName}}
+                </span>
+                <span class="col-xs-3">
+                    <!-- it's either hunter or actualShooterInfo-->
+                    {{harvest.hunter.byName}} {{harvest.hunter.lastName}}
+                    {{harvest.actorInfo.byName}} {{harvest.actorInfo.lastName}}
+                </span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-footer">
+
+    <span ng-include="'harvestreport/form-transitions.html'"></span>
+
+    <span ng-show="report.canEdit">
+        <button type="button" class="btn btn-danger"
+                ng-click="remove()"
+                ng-disabled="!permit.endOfHuntingReport || permit.endOfHuntingReport.state === 'APPROVED'"
+                ng-show="!viewState.moderatorView"
+                translate="harvestpermit.button.removeEndOfHuntingReport"></button>
+
+        <button type="button" class="btn btn-default" ng-click="$close()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-click="save()"
+                ng-disabled="permit.endOfHuntingReport"
+                translate="global.button.save"></button>
+    </span>
+</div>

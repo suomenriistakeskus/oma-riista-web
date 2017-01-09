@@ -1,0 +1,68 @@
+26287;metsähanhi;sädgås;bean goose;Anser fabalis;FOWL;t;
+26291;merihanhi;grågås;greylag goose;Anser anser;FOWL;t;
+26298;kanadanhanhi;kanadagås;canada goose;Branta canadensis;FOWL;t;
+26360;haapana;bläsand;wigeon;Anas penelope;FOWL;t;
+26366;tavi;kricka;teal;Anas crecca;FOWL;t;
+26373;heinäsorsa;gräsand;mallard;Anas platyrhynchos;FOWL;t;
+26382;jouhisorsa;stjärtand;pintail;Anas acuta;FOWL;t;
+26388;heinätavi;årta;garganey;Anas querquedula;FOWL;t;
+26394;lapasorsa;skedand;shoveler;Anas clypeata;FOWL;t;
+26407;punasotka;brunand;pochard;Aythya ferina;FOWL;t;
+26415;tukkasotka;vigg;tufted duck;Aythya fuligula;FOWL;t;
+26419;haahka;ejder;common eider;Somateria mollissima;FOWL;t;
+26427;alli;alfågel;long-tailed duck;Clangula hyemalis;FOWL;t;
+26435;telkkä;knipa;goldeneye;Bucephala clangula;FOWL;t;
+26440;tukkakoskelo;småskrake;red-breasted merganser;Mergus serrator;FOWL;t;
+26442;isokoskelo;storskrake;goosander;Mergus merganser;FOWL;t;
+26921;riekko;dalripa;willow grouse;Lagopus lagopus;FOWL;t;
+26922;kiiruna;fjällripa;ptarmigan;Lagopus muta;FOWL;t;
+26926;teeri;orre;black grouse;Tetrao tetrix;FOWL;t;
+26928;metso;tjäder;capercaillie;Tetrao urogallus;FOWL;t;
+26931;pyy;järpe;hazel grouse;Tetrastes bonasia;FOWL;t;
+27048;peltopyy;rapphöna;partridge;Perdix perdix;FOWL;t;
+27152;fasaani;fasan;pheasant;Phasianus colchicus;FOWL;t;
+27381;nokikana;sothöna;coot;Fulica atra;FOWL;t;
+27649;lehtokurppa;morkulla;woodcock;Scolopax rusticola;FOWL;t;
+27750;harmaalokki;gråtrut;herring gull;Larus argentatus;UNPROTECTED;t;
+27759;merilokki;havstrut;sea gull;Larus marinus;UNPROTECTED;t;
+27911;sepelkyyhky;ringduva;wood pigeon;Columba palumbus;FOWL;t;
+33117;räkättirastas;björktrast;field fare;Turdus pilaris;UNPROTECTED;t;
+37122;harakka;skata;magpie;Pica pica;UNPROTECTED;t;
+37166;varis;kråka;crow;Corvus corone cornix;UNPROTECTED;t;
+37178;korppi;korp;raven;Corvus corax;UNPROTECTED;t;
+46542;tarhattu naali;I farm uppfödd fjällräv;blue fox;Alopex lagopus;GAME_MAMMAL;f;
+46549;susi;varg;wolf;Canis lupus;GAME_MAMMAL;f;9
+46564;supikoira;mårdhund;raccoon dog;Nyctereutes procyonoides;GAME_MAMMAL;t;
+46587;kettu;rödräv;red fox;Vulpes vulpes;GAME_MAMMAL;f;
+46615;ilves;lodjur;lynx;Lynx lynx;GAME_MAMMAL;f;7
+47169;saukko;utter;otter;Lutra lutra;GAME_MAMMAL;f;
+47180;mäyrä;grävling;badger;Meles meles;GAME_MAMMAL;t;
+47212;ahma;järv;wolverine;Gulo gulo;GAME_MAMMAL;f;10
+47223;näätä;mård;pine marten;Martes martes;GAME_MAMMAL;f;
+47230;kärppä;hermelin;ermine;Mustela erminea;GAME_MAMMAL;f;
+47240;hilleri;iller;polecat;Mustela putorius;GAME_MAMMAL;f;
+47243;minkki;mink;american mink;Mustela vison;GAME_MAMMAL;f;
+47282;halli;gråsäl;grey seal;Halichoerus grypus;GAME_MAMMAL;f;
+47305;kirjohylje;knubbsäl ;harbour seal;Phoca vitulina;GAME_MAMMAL;f;
+47329;pesukarhu;tvättbjörn ;raccoon;Procyon lotor;GAME_MAMMAL;f;
+47348;karhu;björn;brown bear;Ursus arctos;GAME_MAMMAL;f;8
+47476;saksanhirvi;kronhjort;red deer;Cervus elaphus;GAME_MAMMAL;f;
+47479;japaninhirvi ;sikahjort;sika deer;Cervus nippon;GAME_MAMMAL;f;
+47484;kuusipeura;dovhjort;fallow deer;Dama dama;GAME_MAMMAL;f;5
+47503;hirvi;älg;moose;Alces alces;GAME_MAMMAL;f;1
+47507;metsäkauris;rådjur;roe deer;Capreolus capreolus;GAME_MAMMAL;f;3
+47629;valkohäntäpeura;vitsvanshjort;white-tailed deer;Odocoileus virginianus;GAME_MAMMAL;f;2
+47774;mufloni;mufflon;mufflon;Ovis aries;GAME_MAMMAL;f;
+47926;villisika;vildsvin;wild boar;Sus scrofa;GAME_MAMMAL;f;6
+48089;orava;ekorre;red squirrel;Sciurus vulgaris;GAME_MAMMAL;f;
+48250;kanadanmajava;amerikansk bäver;canadian beaver;Castor canadensis;GAME_MAMMAL;f;
+48251;euroopanmajava;bäver;european beaver;Castor fiber;GAME_MAMMAL;f;
+48537;piisami;bisam;muskrat;Ondatra zibethicus;GAME_MAMMAL;f;
+50106;metsäjänis;skogshare;mountain hare;Lepus timidus;GAME_MAMMAL;f;
+50114;villikani;vildkanin;rabbit;Oryctolagus cuniculus;GAME_MAMMAL;t;
+50336;rämemajava;sumpbäver;nutria;Myocastor coypus;GAME_MAMMAL;f;
+50386;rusakko;fälthare;brown hare;Lepus europaeus;GAME_MAMMAL;f;
+53004;villiintynyt kissa;förvildad katt;wild cat;Felis silvestris catus;UNPROTECTED;f;
+200535;kesykyyhky;tamduva;feral pigeon;Columba livia domestica;UNPROTECTED;t;
+200555;itämerennorppa;östersjövikare;ringed seal;Phoca hispida botnica;GAME_MAMMAL;f;
+200556;metsäpeura;skogsren;wild forest reindeer;Rangifer tarandus fennicus;GAME_MAMMAL;f;4

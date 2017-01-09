@@ -1,0 +1,20 @@
+<ol class="r-harvestreport-breadcrumb">
+    <li ng-show="!harvest" class="r-inactive-breadcrumb" translate="harvestreport.wizard.new"></li>
+    <li ng-show="harvest" class="r-inactive-breadcrumb" translate="harvestreport.wizard.complete"></li>
+    <li class="r-inactive-breadcrumb" translate="harvestreport.wizard.selectSpecies"></li>
+    <li class="r-active-breadcrumb" translate="harvestreport.wizard.form"></li>
+</ol>
+<form id="harvestreportform" name="harvestReportForm" role="form" novalidate
+      r-force-show-errors-check-validity
+      class="form form-horizontal harvestreportform"
+      ng-submit="save()">
+
+    <span ng-include="'harvestreport/form-body.html'"></span>
+
+    <hr/>
+    <span ng-include="'harvestreport/form-transitions.html'"></span>
+    <span class="pull-right">
+        <span ng-include="'harvestreport/form-buttons.html'"></span>
+    </span>
+</form>
+

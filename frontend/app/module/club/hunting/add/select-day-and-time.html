@@ -1,0 +1,57 @@
+<div class="form-group" show-errors>
+    <label for="huntingDay" class="control-label">
+        <span translate="gamediary.form.date"></span>
+        <small class="glyphicon glyphicon-asterisk text-danger"></small>
+    </label>
+
+    <div class="form-control-wrapper">
+        <div class="input-group">
+            <select name="huntingDay" id="huntingDay" class="form-control"
+                    ng-model="viewState.huntingDay"
+                    required
+                    ng-options="d as getHuntingDayName(d) for d in huntingDays | orderBy:['-startDate'] track by d.id ">
+                <option value=""></option>
+            </select>
+            <a class="input-group-addon" ng-click="addHuntingDay()" ng-if="!viewState.huntingFinished">
+                <span href class="glyphicon glyphicon-plus"></span>
+            </a>
+        </div>
+        <p class="help-block has-error"
+           ng-show="parentForm.date.$invalid"
+           ng-messages="parentForm.date.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>
+
+<div class="form-group" show-errors>
+    <label for="time" class="control-label">
+        <span translate="gamediary.form.time"></span>
+        <small class="glyphicon glyphicon-asterisk text-danger"></small>
+    </label>
+
+    <div class="form-control-wrapper">
+        <input type="text" name="time" id="time"
+               class="form-control"
+               finnish-date-time-in-past="viewState.date"
+               time-inside-hunting-day="viewState.huntingDay"
+               is-next-day="viewState.nextDayHunting"
+               ng-model="viewState.time"
+               required>
+        <p class="help-block has-error"
+           ng-show="parentForm.time.$invalid"
+           ng-messages="parentForm.time.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>
+
+<div class="form-group" ng-show="showNextDayHunting()">
+    <div class="form-control-offset-wrapper">
+        <label class="checkbox">
+            <input type="checkbox"
+                   ng-model="viewState.nextDayHunting">
+            <span translate="club.hunting.nextDayHunting"></span>
+        </label>
+    </div>
+</div>

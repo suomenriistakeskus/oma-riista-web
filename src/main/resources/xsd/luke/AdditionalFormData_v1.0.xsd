@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified"
+            targetNamespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:attribute name="ImagePath" type="xsd:string"/>
+</xsd:schema>

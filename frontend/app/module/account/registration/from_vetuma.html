@@ -1,0 +1,258 @@
+<!-- Prevent margin from collapsing -->
+<div>&nbsp;</div>
+
+<h2 class="r-page-context-heading text-center" translate="registration.completion.title"></h2>
+
+<div class="container">
+    <form name="form" role="form" novalidate
+          class="form-horizontal col-md-10 col-md-offset-1">
+        <div class="form-group">
+            <div class="col-md-12">
+                <div class="alert alert-info" translate="registration.completion.msg"></div>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="byName" class="col-sm-3 control-label">
+                <span translate="global.person.byName"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-sm-9">
+                <input type="text" name="byName" id="byName"
+                       class="form-control"
+                       ng-model="$ctrl.registrationData.byName"
+                       valid-person-name
+                       required
+                       ng-maxlength="255"
+                       autofocus="true" focus-me="true">
+
+                <p class="help-block"
+                   ng-show="form.byName.$dirty && form.byName.$invalid"
+                   translate="global.messages.invalid"></p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label" translate="global.person.firstName"></label>
+
+            <div class="col-sm-9">
+                <p class="form-control-static"
+                   ng-bind="$ctrl.registrationData.firstName"></p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label" translate="global.person.lastName"></label>
+
+            <div class="col-sm-9">
+                <p class="form-control-static"
+                   ng-bind="$ctrl.registrationData.lastName"></p>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label" translate="global.person.ssn"></label>
+
+            <div class="col-sm-9">
+                <p class="form-control-static"
+                   ng-bind="$ctrl.registrationData.ssn"></p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label" translate="global.person.homeMunicipality"></label>
+
+            <div class="col-sm-9">
+                <p class="form-control-static"
+                   ng-bind="$ctrl.registrationData.homeMunicipality"></p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label" translate="global.person.finnishCitizen"></label>
+
+            <div class="col-sm-9">
+                <p class="form-control-static">
+                    <span ng-show="$ctrl.registrationData.finnishCitizen" translate="global.yes"></span>
+                    <span ng-show="!$ctrl.registrationData.finnishCitizen" translate="global.no"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label" translate="global.person.nativeLanguage"></label>
+            <div class="col-sm-9">
+                <p class="form-control-static"
+                   ng-bind="$ctrl.registrationData.languageCode"></p>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="form-group" show-errors>
+            <label for="streetAddress" class="col-sm-3 control-label">
+                <span translate="global.address.streetAddress"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"
+                      ng-show="$ctrl.registrationData.addressEditable"></span>
+            </label>
+
+            <div class="col-sm-9">
+                <input type="text" name="streetAddress" id="streetAddress"
+                       class="form-control"
+                       ng-model="$ctrl.registrationData.streetAddress"
+                       ng-required="$ctrl.registrationData.addressEditable"
+                       ng-disabled="!$ctrl.registrationData.addressEditable">
+
+                <p class="help-block"
+                   ng-show="form.streetAddress.$dirty && form.streetAddress.$invalid"
+                   translate="global.messages.invalid"></p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="city" class="col-sm-3 control-label">
+                <span translate="global.address.city"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"
+                      ng-show="$ctrl.registrationData.addressEditable"></span>
+            </label>
+
+            <div class="col-sm-9">
+                <input type="text" name="city" id="city"
+                       class="form-control"
+                       ng-model="$ctrl.registrationData.city"
+                       ng-required="$ctrl.registrationData.addressEditable"
+                       ng-disabled="!$ctrl.registrationData.addressEditable">
+
+                <p class="help-block"
+                   ng-show="form.city.$dirty && form.city.$invalid"
+                   translate="global.messages.invalid"></p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="postalCode" class="col-sm-3 control-label">
+                <span translate="global.address.postalCode"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"
+                      ng-show="$ctrl.registrationData.addressEditable"></span>
+            </label>
+
+            <div class="col-sm-9">
+                <input type="text" name="postalCode" id="postalCode"
+                       class="form-control"
+                       ng-model="$ctrl.registrationData.postalCode"
+                       ng-required="$ctrl.registrationData.addressEditable"
+                       ng-maxlength="10"
+                       ng-disabled="!$ctrl.registrationData.addressEditable">
+
+                <p class="help-block"
+                   ng-show="form.postalCode.$dirty && form.postalCode.$invalid"
+                   translate="global.messages.invalid"></p>
+            </div>
+        </div>
+        <div class="form-group" show-errors>
+            <label for="country" class="col-sm-3 control-label">
+                <span translate="global.address.country"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"
+                      ng-show="$ctrl.registrationData.addressEditable"></span>
+            </label>
+
+            <div class="col-sm-9">
+                <input type="text" name="country" id="country"
+                       class="form-control"
+                       ng-model="$ctrl.registrationData.country"
+                       ng-required="$ctrl.registrationData.addressEditable"
+                       ng-disabled="!$ctrl.registrationData.addressEditable">
+
+                <p class="help-block"
+                   ng-show="form.country.$dirty && form.country.$invalid"
+                   translate="global.messages.invalid"></p>
+            </div>
+        </div>
+        <div class="form-group" show-errors>
+            <label for="phoneNumber" class="col-sm-3 control-label">
+                <span translate="global.person.phoneNumber"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-sm-9">
+                <input type="text" name="phoneNumber" id="phoneNumber"
+                       class="form-control"
+                       required
+                       ng-model="$ctrl.registrationData.phoneNumber"
+                       validate-phonenumber
+                       ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                       ng-maxlength="255">
+
+                <p class="help-block"
+                   ng-show="form.phoneNumber.$dirty && form.phoneNumber.$invalid"
+                   translate="global.messages.invalid"></p>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="form-group" show-errors>
+            <label for="password" class="col-sm-3 control-label">
+                <span translate="change_password.form.newpassword"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-sm-9">
+                <div class="alert alert-danger"
+                     ng-show="$ctrl.doNotMatch"
+                     translate="change_password.messages.error.dontmatch"></div>
+                <input type="password" name="password" id="password"
+                       class="form-control"
+                       autocomplete="false" autocorrect="off" autocapitalize="none"
+                       required
+                       ng-model="$ctrl.password"
+                       ng-minlength=8
+                       ng-change="$ctrl.doNotMatch = false">
+
+                <ul id="r-pw-strength" check-pw-strength="$ctrl.password"></ul>
+
+                <p class="help-block"
+                   ng-show="form.password.$error.required && form.password.$dirty"
+                   translate="change_password.messages.validate.newpassword.required"></p>
+
+                <p class="help-block"
+                   ng-show="form.password.$error.minlength"
+                   translate="change_password.messages.validate.newpassword.minlength"></p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="confirmPassword" class="col-sm-3 control-label">
+                <span translate="change_password.form.confirmpassword"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-sm-9">
+                <input type="password" name="confirmPassword" id="confirmPassword"
+                       class="form-control"
+                       autocomplete="false" autocorrect="off" autocapitalize="none"
+                       required
+                       ng-model="$ctrl.confirmPassword">
+
+                <p class="help-block"
+                   ng-show="form.confirmPassword.$invalid && form.confirmPassword.$dirty"
+                   translate="change_password.messages.validate.confirmpassword.required"></p>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="text-right">
+            <button type="button"
+                    class="btn btn-lg btn-primary"
+                    ng-click="form.$valid && $ctrl.completeRegistration()"
+                    ng-disabled="form.$invalid || form.$pending">
+                <span translate="registration.completion.button.createAccount"></span>
+                <span class="glyphicon glyphicon-circle-arrow-right"></span>
+            </button>
+        </div>
+    </form>
+</div>

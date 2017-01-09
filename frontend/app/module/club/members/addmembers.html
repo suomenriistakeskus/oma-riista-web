@@ -1,0 +1,85 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="club.genericMember.titleInviteForm"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="hunterNumber" class="col-xs-3 control-label">
+                <span translate="global.person.hunterNumber"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <p class="help-block" translate="club.genericMember.hunterNumbersPlaceholder"></p>
+                <textarea name="hunterNumber" id="hunterNumber" class="form-control"
+                          ng-change="$ctrl.hunterNumberTyped()"
+                          ng-model="$ctrl.hunterNumbers"
+                          rows="10"></textarea>
+            </div>
+        </div>
+        <div ng-show="$ctrl.hasInvalidHunterNumbers()" class="alert alert-warning">
+            <span translate="club.genericMember.hunterNumbersInvalid"></span>
+            <div ng-repeat="h in $ctrl.invalidHunterNumbers" ng-bind="h"></div>
+        </div>
+        <div ng-show="$ctrl.notFoundHunterNumbers" class="alert alert-danger">
+            <span translate="club.genericMember.hunterNumbersNotFound"></span>
+            <div ng-repeat="h in $ctrl.notFoundHunterNumbers" ng-bind="h"></div>
+        </div>
+
+        <div ng-show="$ctrl.groups && $ctrl.groups.length > 0">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="addToGroupToggle" id="addToGroupToggle"
+                           ng-model="$ctrl.isAddToGroupEnabled"
+                           ng-change="$ctrl.isAddToGroupEnabledChanged()"/>
+                    <span translate="club.genericMember.inviteToGroup"></span>
+                </label>
+            </div>
+
+            <div class="r-club-member-invite-select-group">
+                <div class="form-group" show-errors>
+                    <label for="yearSelection" class="col-xs-3 control-label">
+                        <span translate="club.group.form.huntingYear"></span>
+                    </label>
+
+                    <div class="col-xs-9">
+                        <select name="yearSelection" id="yearSelection" class="form-control"
+                                ng-model="$ctrl.years.selected"
+                                ng-change="$ctrl.yearChanged()"
+                                ng-options="year.year as year.name for year in $ctrl.years.values | orderBy:'year'"
+                                ng-disabled="!$ctrl.isAddToGroupEnabled">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" show-errors>
+                    <label for="groupSelection" class="col-xs-3 control-label">
+                        <span translate="club.hunting.selectGroup"></span>
+                    </label>
+
+                    <div class="col-xs-9">
+                        <select name="groupSelection" id="groupSelection" class="form-control"
+                                ng-model="$ctrl.selectedGroup"
+                                ng-options="group as group.nameFI for group in $ctrl.groups"
+                                ng-disabled="!$ctrl.isAddToGroupEnabled">
+                            <option></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.ok()"
+                ng-disabled="!$ctrl.isOk()"
+                translate="global.button.ok"></button>
+    </div>
+</form>

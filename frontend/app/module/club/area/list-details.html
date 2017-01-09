@@ -1,0 +1,122 @@
+<div class="panel panel-default" ng-if="$ctrl.selectedArea">
+    <div class="panel-heading">
+        <div class="pull-right">
+            <div class="btn-group" uib-dropdown dropdown-append-to-body>
+                <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                    <span translate="club.area.button.functionMenu"></span>
+                    &nbsp;
+                    <span class="caret"></span>
+                </button>
+
+                <ul class="dropdown-menu" uib-dropdown-menu>
+                    <li>
+                        <a ng-click="$ctrl.printArea()">
+                            <span class="glyphicon glyphicon-print"></span> &nbsp;
+                            <span translate="club.area.button.printArea"></span>
+                        </a>
+                    </li>
+                    <li ng-show="$ctrl.isLocalAreaWithGeometry()">
+                        <a ng-click="$ctrl.exportExcel('all')">
+                            <span class="glyphicon glyphicon-export"></span> &nbsp;
+                            <span translate="club.area.button.toExcel"></span>
+                        </a>
+                    </li>
+                    <li ng-show="$ctrl.isLocalAreaWithGeometry()">
+                        <a ng-click="$ctrl.exportExcel('changed')">
+                            <span class="glyphicon glyphicon-export"></span> &nbsp;
+                            <span translate="club.area.button.toChangesExcel"></span>
+                        </a>
+                    </li>
+                    <li ng-show="$ctrl.isAreaWithGeometry()">
+                        <a ng-click="$ctrl.exportGeoJson()">
+                            <span class="glyphicon glyphicon-globe"></span> &nbsp;
+                            <span translate="club.area.button.toGeojson"></span>
+                        </a>
+                    </li>
+                    <li ng-show="$ctrl.isAreaWithGeometry()">
+                        <a ng-click="$ctrl.exportGarmin()">
+                            <span class="glyphicon glyphicon-globe"></span> &nbsp;
+                            <span translate="club.area.button.toGarmin"></span>
+                        </a>
+                    </li>
+                    <li class="divider" ng-show="$ctrl.isContactPerson()"></li>
+                    <li ng-show="$ctrl.isContactPerson()">
+                        <a ng-click="$ctrl.importArea()">
+                            <span class="glyphicon glyphicon-import"></span> &nbsp;
+                            <span translate="club.area.button.importArea"></span>
+                        </a>
+                    </li>
+                    <li ng-show="$ctrl.isContactPerson()">
+                        <a ng-click="$ctrl.exportArea()" show-in-development>
+                            <span class="glyphicon glyphicon-export"></span> &nbsp;
+                            <span translate="club.area.button.exportArea"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="panel-title">
+            <span ng-bind="$ctrl.selectedArea | rI18nNameFilter"></span>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <table class="table">
+            <tbody>
+            <tr>
+                <td translate="club.area.form.externalId"></td>
+                <td class="text-right" ng-bind="$ctrl.selectedArea.externalId"></td>
+            </tr>
+            <tr>
+                <td translate="club.area.map.selectedArea.landAreaSize"></td>
+                <td class="text-right">
+                    <strong ng-show="$ctrl.selectedArea.computedAreaSize < 0"
+                          translate="club.area.map.selectedArea.calculatingAreaSize"></strong>
+                    <span ng-show="$ctrl.selectedArea.computedAreaSize >= 0"
+                          ng-bind="($ctrl.selectedArea.computedAreaSize - $ctrl.selectedArea.waterAreaSize) | prettyAreaSize"></span>
+                </td>
+            </tr>
+            <tr>
+                <td translate="club.area.map.selectedArea.waterAreaSize"></td>
+                <td class="text-right">
+                    <strong ng-show="$ctrl.selectedArea.computedAreaSize < 0"
+                          translate="club.area.map.selectedArea.calculatingAreaSize"></strong>
+                    <span ng-show="$ctrl.selectedArea.computedAreaSize >= 0"
+                          ng-bind="$ctrl.selectedArea.waterAreaSize | prettyAreaSize"></span>
+                </td>
+            </tr>
+            <tr>
+                <td translate="club.area.map.selectedArea.areaSize"></td>
+                <td class="text-right">
+                    <strong ng-show="$ctrl.selectedArea.computedAreaSize < 0"
+                            translate="club.area.map.selectedArea.calculatingAreaSize"></strong>
+                    <span ng-show="$ctrl.selectedArea.computedAreaSize >= 0"
+                          ng-bind="$ctrl.selectedArea.computedAreaSize | prettyAreaSize"></span>
+                </td>
+            </tr>
+            <tr>
+                <td translate="club.area.map.selectedArea.lastModified"></td>
+                <td class="text-right">
+                    <span ng-show="$ctrl.selectedArea.lastModifierRiistakeskus">
+                        <span translate="global.organisationType.RK"></span>
+                        <br>
+                    </span>
+                    <span ng-show="$ctrl.selectedArea.lastModifierName">
+                        <span ng-bind="$ctrl.selectedArea.lastModifierName"></span>
+                        <br>
+                    </span>
+
+                    <span ng-bind="$ctrl.selectedArea.lastModifiedDate | date:'d.M.yyyy HH:mm'"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <button type="button" class="btn btn-primary"
+                ng-show="$ctrl.isContactPerson() && $ctrl.isLocalArea()"
+                ng-click="$ctrl.editAreaGeometry()">
+            <span class="glyphicon glyphicon-edit"></span>
+            <span translate="club.area.button.editArea"></span>
+        </button>
+    </div>
+</div>

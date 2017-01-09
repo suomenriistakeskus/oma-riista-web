@@ -1,0 +1,169 @@
+<h3 translate="club.main.title"></h3>
+
+<div class="col-sm-6">
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title" translate="club.main.general.title"></h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-condensed">
+                <tbody>
+                <tr>
+                    <td class="col-md-3" translate="club.main.general.customerId"></td>
+                    <td>{{club.customerId}}</td>
+                </tr>
+                <tr>
+                    <td class="col-md-3" translate="club.main.general.nameFI"></td>
+                    <td>{{club.nameFI}}</td>
+                </tr>
+                <tr>
+                    <td class="col-md-3" translate="club.main.general.nameSV"></td>
+                    <td>{{club.nameSV}}</td>
+                </tr>
+                </tbody>
+            </table>
+            <div>
+                <a class="btn btn-primary pull-right" ng-show="canEdit()" ng-click="edit()" translate="global.button.edit"></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title" translate="club.main.contactPersons.title"></h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped">
+                <tbody>
+                <tr ng-repeat="member in club.yhdyshenkilot">
+                    <td class="col-xs-6">
+                        <div class="r-contact-name">
+                            <div>
+                                <span ng-bind="member.person.lastName + ' ' + member.person.byName"></span>
+                            </div>
+                        </div>
+
+                        <div class="r-contact-phone" ng-if="member.person.phoneNumber">
+                            <span class="glyphicon glyphicon glyphicon-earphone">&nbsp;</span>
+                            <span ng-bind="member.person.phoneNumber"></span>
+                        </div>
+
+                        <div class="r-contact-email" ng-if="member.person.email">
+                            <span class="glyphicon glyphicon-envelope">&nbsp;</span>
+                            <a href="mailto:{{member.person.email}}">
+                                <span ng-bind="member.person.email"></span>
+                            </a>
+                        </div>
+
+                        <div class="r-contact-address">
+                            <span ng-bind="member.person.address.streetAddress"></span>
+                            <span ng-bind="member.person.address.postalCode"></span>
+                            <span ng-bind="member.person.address.city" class="r-city"></span>
+                        </div>
+                    </td>
+
+                    <td class="col-xs-6 text-right">
+                        <div class="label label-info"
+                             ng-show="member.callOrder == 0">
+                            <span translate="club.main.contactPersons.primary"></span>
+                        </div>
+
+                        <div class="btn-group btn-group-sm"
+                             uib-dropdown
+                             ng-show="club.canEdit && member.callOrder != 0">
+
+                            <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                                <span class="glyphicon glyphicon-cog"></span>&nbsp;
+                                <span translate="global.button.edit"></span>&nbsp;
+                                <span class="caret"></span>
+                            </button>
+
+                            <ul class="dropdown-menu" role="menu" uib-dropdown-menu>
+                                <li>
+                                    <a ng-click="setPrimaryContact(member)">
+                                        <span translate="club.main.contactPersons.setPrimaryContact"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title" translate="club.main.location"></h3>
+        </div>
+        <div class="panel-body">
+            <leaflet class="r-cursor-pointer"
+                     id="viewClubMap"
+                     defaults="mapDefaults"
+                     layers="mapDefaults.mmlLayers"
+                     controls="mapDefaults.controls"
+                     event-broadcast="mapEvents"
+                     r-geolocation-center="club.geoLocation"
+                     r-geolocation-marker="club.geoLocation"
+                     r-geolocation-editable="editLocation"
+                     r-geolocation-marker-force-finland="true"
+                     height="300px">
+            </leaflet>
+
+            <table class="table table-condensed">
+                <tbody>
+                <tr>
+                    <td class="col-md-3" translate="club.main.location"></td>
+                    <td ng-show="club.geoLocation" translate="global.geoLocation.coordinatesText" translate-values="club.geoLocation"></td>
+                </tr>
+                <tr>
+                    <td class="col-md-3" translate="club.main.general.rhy"></td>
+                    <td ng-show="!editLocation" name-translated="club.rhy"></td>
+                </tr>
+                <tr ng-show="club.mooseArea">
+                    <td class="col-md-3" translate="club.main.general.mooseArea"></td>
+                    <td ng-show="!editLocation">{{ club.mooseArea.name }}</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div ng-if="club.canEdit && !editLocation">
+                <span ng-show="!club.geoLocation" translate="global.messages.notSet"></span>
+                <div class="pull-right">
+                    <button class="btn btn-primary" ng-click="editLocationStart()" translate="global.button.edit"></button>
+                </div>
+            </div>
+            <div ng-if="editLocation">
+                <div class="pull-right">
+                    <button class="btn btn-default" ng-click="editLocationCancel()" translate="global.button.cancel"></button>
+                    <button class="btn btn-primary" ng-click="editLocationEnd()" translate="global.button.save" ng-disabled="!locationChanged()"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-6">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-xs-8">
+                    <h3 class="panel-title" translate="announcements.list.title"></h3>
+                </div>
+                <div class="col-xs-4 text-right">
+                    <announcement-send-button
+                            from-organisation="club">
+                    </announcement-send-button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-body">
+            <announcement-list
+                    organisation="club">
+            </announcement-list>
+        </div>
+    </div>
+</div>

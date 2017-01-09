@@ -1,0 +1,101 @@
+<div class="rhy-sidebar-layout">
+    <div class="left-column">
+        <form id="rhyMooseHarvestsSearchForm" name="rhyMooseHarvestsSearchForm"
+              class="form-horizontal" role="form" r-force-show-errors-check-validity>
+
+            <div class="form-group">
+                <label for="gameSpecies"
+                       class="col-xs-4 control-label"
+                       translate="rhy.harvestMap.species"></label>
+
+                <div class="col-xs-8">
+                    <r-species-selection available-species="$ctrl.availableSpecies"
+                                         on-selected-species-changed="$ctrl.selectSpeciesCode(speciesCode)">
+                    </r-species-selection>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-xs-4 control-label" translate="rhy.harvestMap.filteringScheme"></label>
+
+                <div class="col-xs-8">
+                    <div>
+                        <label class="radio-inline">
+                            <input type="radio" ng-change="$ctrl.onFilterCriteriaChanged()" ng-model="$ctrl.filterByAreaGeometry" ng-value="true">
+                            {{ 'rhy.harvestMap.filterByAreaIntersection' | translate }}
+                        </label>
+                    </div>
+                    <div>
+                        <label class="radio-inline">
+                            <input type="radio" ng-change="$ctrl.onFilterCriteriaChanged()" ng-model="$ctrl.filterByAreaGeometry" ng-value="false">
+                            {{ 'rhy.harvestMap.filterByPermit' | translate }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="beginDate"
+                       class="col-xs-4 control-label"
+                       translate="global.beginDate"></label>
+                <div class="col-xs-8">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input id="beginDate" type="text" name="beginDate"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-append-to-body="true"
+                               ng-model="$ctrl.beginDate"
+                               ng-change="$ctrl.onFilterCriteriaChanged()"
+                               max-date="$ctrl.endDate"
+                               date-between-min-max
+                               required/>
+
+                        <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="endDate"
+                       class="col-xs-4 control-label"
+                       translate="global.endDate"></label>
+                <div class="col-xs-8">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input id="endDate" type="text" name="endDate"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-append-to-body="true"
+                               ng-model="$ctrl.endDate"
+                               ng-change="$ctrl.onFilterCriteriaChanged()"
+                               min-date="$ctrl.beginDate"
+                               date-between-min-max
+                               required/>
+
+                        <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="main-column">
+
+        <leaflet id="rhy-harvest-map"
+                 class="r-cursor-pointer"
+                 defaults="$ctrl.mapDefaults"
+                 layers="$ctrl.mapDefaults.mmlLayers"
+                 controls="$ctrl.mapDefaults.controls"
+                 lf-center="$ctrl.mapState.center"
+                 bounds="$ctrl.mapState.viewBounds"
+                 event-broadcast="$ctrl.mapEvents"
+                 geojson="$ctrl.mapFeatures"
+                 geojson-watch-options="$ctrl.mapDefaults.geojsonWatchOptions"
+                 r-viewport-height
+                 width="100%">
+            <marker-cluster id="rhyHarvestMarkers" leaflet-markers="$ctrl.markers"/>
+        </leaflet>
+    </div>
+</div>

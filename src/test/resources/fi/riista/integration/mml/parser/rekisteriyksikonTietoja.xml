@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wfs:FeatureCollection numberOfFeatures='35' xmlns:ktjkiiwfs="http://xml.nls.fi/ktjkiiwfs/2010/02"
+                       xmlns:wfs="http://www.opengis.net/wfs" xmlns:xlink="http://www.w3.org/1999/xlink"
+                       xmlns:gml="http://www.opengis.net/gml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="http://xml.nls.fi/ktjkiiwfs/2010/02 https://ws.nls.fi/ktjkii/wfs/wfs?SERVICE=WFS&amp;VERSION=1.1.0&amp;REQUEST=DescribeFeatureType&amp;TYPENAME=ktjkiiwfs:RekisteriyksikonTietoja&amp;NAMESPACE=xmlns(ktjkiiwfs=http://xml.nls.fi/ktjkiiwfs/2010/02) http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.1.0/wfs.xsd">
+    <gml:featureMember>
+        <ktjkiiwfs:RekisteriyksikonTietoja gml:id="FI.KTJkii-RekisteriyksikonTietoja-09141000010004">
+            <ktjkiiwfs:kiinteistotunnus>09141000010004</ktjkiiwfs:kiinteistotunnus>
+            <ktjkiiwfs:olotila>1</ktjkiiwfs:olotila>
+            <ktjkiiwfs:rekisteriyksikkolaji>4</ktjkiiwfs:rekisteriyksikkolaji>
+            <ktjkiiwfs:kuntaTieto>
+                <!--Inlined feature 'null'-->
+                <ktjkiiwfs:KuntaTieto>
+                    <ktjkiiwfs:kuntatunnus>167</ktjkiiwfs:kuntatunnus>
+                    <ktjkiiwfs:olotila>1</ktjkiiwfs:olotila>
+                    <ktjkiiwfs:nimiSuomeksi>Joensuu</ktjkiiwfs:nimiSuomeksi>
+                    <ktjkiiwfs:nimiRuotsiksi>Joensuu</ktjkiiwfs:nimiRuotsiksi>
+                </ktjkiiwfs:KuntaTieto>
+            </ktjkiiwfs:kuntaTieto>
+            <ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+                <ktjkiiwfs:RekisteriyksikonPalstanTietoja
+                        gml:id="FI.KTJkii-RekisteriyksikonPalstanTietoja-15830178220140728">
+                    <ktjkiiwfs:paivityspvm>20131002</ktjkiiwfs:paivityspvm>
+                    <ktjkiiwfs:rekisteriyksikonKiinteistotunnus>09141000010004
+                    </ktjkiiwfs:rekisteriyksikonKiinteistotunnus>
+                </ktjkiiwfs:RekisteriyksikonPalstanTietoja>
+            </ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+            <ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+                <ktjkiiwfs:RekisteriyksikonPalstanTietoja
+                        gml:id="FI.KTJkii-RekisteriyksikonPalstanTietoja-28345450920140728">
+                    <ktjkiiwfs:paivityspvm>20130328</ktjkiiwfs:paivityspvm>
+                    <ktjkiiwfs:rekisteriyksikonKiinteistotunnus>09141000010004
+                    </ktjkiiwfs:rekisteriyksikonKiinteistotunnus>
+                </ktjkiiwfs:RekisteriyksikonPalstanTietoja>
+            </ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+        </ktjkiiwfs:RekisteriyksikonTietoja>
+    </gml:featureMember>
+    <gml:featureMember>
+        <ktjkiiwfs:RekisteriyksikonTietoja gml:id="FI.KTJkii-RekisteriyksikonTietoja-09101799010000">
+            <ktjkiiwfs:kiinteistotunnus>09101799010000</ktjkiiwfs:kiinteistotunnus>
+            <ktjkiiwfs:olotila>1</ktjkiiwfs:olotila>
+            <ktjkiiwfs:rekisteriyksikkolaji>14</ktjkiiwfs:rekisteriyksikkolaji>
+            <ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+                <ktjkiiwfs:RekisteriyksikonPalstanTietoja
+                        gml:id="FI.KTJkii-RekisteriyksikonPalstanTietoja-15829840220140728">
+                    <ktjkiiwfs:paivityspvm>20130328</ktjkiiwfs:paivityspvm>
+                    <ktjkiiwfs:rekisteriyksikonKiinteistotunnus>09101799010000
+                    </ktjkiiwfs:rekisteriyksikonKiinteistotunnus>
+                </ktjkiiwfs:RekisteriyksikonPalstanTietoja>
+            </ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+            <ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+                <ktjkiiwfs:RekisteriyksikonPalstanTietoja
+                        gml:id="FI.KTJkii-RekisteriyksikonPalstanTietoja-15829840720140728">
+                    <ktjkiiwfs:paivityspvm>20130820</ktjkiiwfs:paivityspvm>
+                    <ktjkiiwfs:rekisteriyksikonKiinteistotunnus>09101799010000
+                    </ktjkiiwfs:rekisteriyksikonKiinteistotunnus>
+                </ktjkiiwfs:RekisteriyksikonPalstanTietoja>
+            </ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+        </ktjkiiwfs:RekisteriyksikonTietoja>
+    </gml:featureMember>
+    <gml:featureMember>
+        <ktjkiiwfs:RekisteriyksikonTietoja gml:id="FI.KTJkii-RekisteriyksikonTietoja-09101700130001">
+            <ktjkiiwfs:kiinteistotunnus>09101700130001</ktjkiiwfs:kiinteistotunnus>
+            <ktjkiiwfs:olotila>1</ktjkiiwfs:olotila>
+            <ktjkiiwfs:rekisteriyksikkolaji>13</ktjkiiwfs:rekisteriyksikkolaji>
+            <ktjkiiwfs:kuntaTieto>
+                <!--Inlined feature 'null'-->
+                <ktjkiiwfs:KuntaTieto>
+                    <ktjkiiwfs:kuntatunnus>380</ktjkiiwfs:kuntatunnus>
+                    <ktjkiiwfs:olotila>1</ktjkiiwfs:olotila>
+                    <ktjkiiwfs:nimiSuomeksi>Tampere</ktjkiiwfs:nimiSuomeksi>
+                    <ktjkiiwfs:nimiRuotsiksi>Tammerfors</ktjkiiwfs:nimiRuotsiksi>
+                </ktjkiiwfs:KuntaTieto>
+            </ktjkiiwfs:kuntaTieto>
+            <ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+                <ktjkiiwfs:RekisteriyksikonPalstanTietoja
+                        gml:id="FI.KTJkii-RekisteriyksikonPalstanTietoja-15829844920140728">
+                    <ktjkiiwfs:paivityspvm>20130126</ktjkiiwfs:paivityspvm>
+                    <ktjkiiwfs:rekisteriyksikonKiinteistotunnus>09101700130001
+                    </ktjkiiwfs:rekisteriyksikonKiinteistotunnus>
+                </ktjkiiwfs:RekisteriyksikonPalstanTietoja>
+            </ktjkiiwfs:rekisteriyksikonPalstanTietoja>
+        </ktjkiiwfs:RekisteriyksikonTietoja>
+    </gml:featureMember>
+</wfs:FeatureCollection>

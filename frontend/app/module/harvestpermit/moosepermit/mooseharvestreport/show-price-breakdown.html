@@ -1,0 +1,122 @@
+<div>
+    <div class="row h5">
+        <div class="col-xs-2" translate="club.permit.mooseHarvestReport.iban"></div>
+        <div class="col-xs-3 text-right">{{permit.totalPayment.iban}}</div>
+    </div>
+    <div class="row h5">
+        <div class="col-xs-2" translate="club.permit.mooseHarvestReport.bic"></div>
+        <div class="col-xs-3 text-right">{{permit.totalPayment.bic}}</div>
+    </div>
+    <div class="row h5">
+        <div class="col-xs-2" translate="club.permit.mooseHarvestReport.creditorReference"></div>
+        <div class="col-xs-3 text-right">{{permit.totalPayment.creditorReference}}</div>
+    </div>
+    <div class="row h5">
+        <div class="col-xs-2" translate="club.permit.mooseHarvestReport.dueDate"></div>
+        <div class="col-xs-3 text-right">{{permit.totalPayment.dueDate | date:'d.M.yyyy'}}</div>
+    </div>
+
+    <div class="row h5">
+        <div class="col-xs-2" translate="club.permit.mooseHarvestReport.totalPayment"></div>
+        <div class="col-xs-3 text-right">{{permit.totalPayment.totalPayment}} &euro;</div>
+        <div class="col-xs-5">
+            <div ng-click="hidePriceBreakdown = !hidePriceBreakdown">
+                <span translate="club.permit.mooseHarvestReport.priceBreakdown.title"></span>
+                <span class="glyphicon" ng-class="{'glyphicon-chevron-down': hidePriceBreakdown, 'glyphicon-chevron-right': !hidePriceBreakdown}"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <div class="well" uib-collapse="!hidePriceBreakdown">
+        <div class="row">
+            <div class="col-xs-8">
+                <table class="table table-condensed table-responsive">
+                    <tr>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.adults"></td>
+                        <td class="text-right">{{permit.totalPayment.adultsCount}}</td>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.notEdibleAdults"></td>
+                        <td class="text-right">{{permit.totalPayment.adultsNotEdibleCount}}</td>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.adultsToBePaid"></td>
+                        <td class="text-right">{{permit.totalPayment.adultsCount - permit.totalPayment.adultsNotEdibleCount}}</td>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.adultPrice"></td>
+                        <td class="text-right">{{permit.totalPayment.adultPrice}}</td>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.eurPerPcs"></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td class="text-uppercase" translate="club.permit.mooseHarvestReport.priceBreakdown.adultsPayment"></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right"><b>{{permit.totalPayment.adultsPayment}}</b></td>
+                        <td><b translate="club.permit.mooseHarvestReport.priceBreakdown.eur"></b></td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.young"></td>
+                        <td class="text-right">{{permit.totalPayment.youngCount}}</td>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.notEdibleYoung"></td>
+                        <td class="text-right">{{permit.totalPayment.youngNotEdibleCount}}</td>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.youngToBePaid"></td>
+                        <td class="text-right">{{permit.totalPayment.youngCount - permit.totalPayment.youngNotEdibleCount}}</td>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.youngPrice"></td>
+                        <td class="text-right">{{permit.totalPayment.youngPrice}}</td>
+                        <td translate="club.permit.mooseHarvestReport.priceBreakdown.eurPerPcs"></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td class="text-uppercase" translate="club.permit.mooseHarvestReport.priceBreakdown.youngPayment"></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td class="text-right"><b>{{permit.totalPayment.youngPayment}}</b></td>
+                        <td><b translate="club.permit.mooseHarvestReport.priceBreakdown.eur"></b></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-uppercase text-right"><b translate="club.permit.mooseHarvestReport.priceBreakdown.sumOfPayments"></b></td>
+                        <td class="text-right"><b>{{permit.totalPayment.totalPayment}}</b></td>
+                        <td><b translate="club.permit.mooseHarvestReport.priceBreakdown.eur"></b></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

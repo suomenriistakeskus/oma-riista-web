@@ -1,0 +1,261 @@
+<div class="content r-club-sidebar-content">
+    <form id="harvestForm" name="harvestForm" role="form" class="form form-horizontal" r-force-show-errors-check-validity>
+    <fieldset ng-disabled="huntingFinished">
+        <h3 ng-if="!entry.id" class="modal-title" translate="gamediary.form.titleAddHarvest"></h3>
+        <h3 ng-if="entry.id && !huntingFinished" class="modal-title" translate="gamediary.form.titleEditHarvest"></h3>
+        <h3 ng-if="entry.id && huntingFinished" class="modal-title" translate="gamediary.form.titleViewHarvest"></h3>
+
+        <h4 translate="gamediary.form.titleHarvestAnimal"></h4>
+
+        <species-select diary-parameters="parameters"
+                        available-species="availableSpecies"
+                        diary-entry="entry"></species-select>
+
+        <h4 translate="gamediary.form.titleTimeAndPlace"></h4>
+
+        <div class="form-group">
+            <label class="control-label">
+                <span translate="gamediary.form.location"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <p class="form-control-static"
+                   ng-show="entry.geoLocation.longitude"
+                   translate="global.geoLocation.coordinatesText"
+                   translate-values="entry.geoLocation"></p>
+
+                <p class="text-danger form-control-static"
+                   ng-hide="entry.geoLocation.longitude"
+                   translate="global.geoLocation.required"></p>
+            </div>
+        </div>
+
+        <hunting-day-time-select ng-if="mooseGroupSelected"
+                                 diary-entry="entry"
+                                 create="createHuntingDayForHarvest()"
+                                 hunting-days="huntingDays"
+                                 hunting-finished="huntingFinished"></hunting-day-time-select>
+
+        <non-moose-date-time-select ng-if="!mooseGroupSelected"
+                                    diary-entry="entry" species-amount="permitSpeciesAmount"></non-moose-date-time-select>
+
+        <h4 ng-if="isModerator" translate="harvestreport.form.author"></h4>
+
+        <club-person-select ng-if="isModerator" member-list="memberCandidates" person="entry.authorInfo"></club-person-select>
+
+        <h4 translate="gamediary.form.titleActualShooter"></h4>
+
+        <club-person-select member-list="memberCandidates" person="entry.actorInfo"></club-person-select>
+
+        <h4 ng-show="entry.gameSpeciesCode"
+            translate="gamediary.form.titleShowSpecimens"></h4>
+
+        <div class="form-group" show-errors>
+            <label for="gender" class="control-label">
+                <span translate="gamediary.form.gender"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select name="gender" id="gender"
+                        class="form-control"
+                        ng-model="entry.specimens[0].gender"
+                        ng-options="('gamediary.gender.' + a | translate) for a in availableGenders"
+                        ng-required="true"></select>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="age" class="control-label">
+                <span translate="gamediary.form.age"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select name="age" id="age"
+                        class="form-control"
+                        ng-model="entry.specimens[0].age"
+                        ng-options="('gamediary.age.' + a | translate) for a in availableAges"
+                        ng-required="true"></select>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('notEdible')">
+            <label for="notEdible" class="control-label">
+                <span translate="gamediary.form.notEdible"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="notEdible" id="notEdible"
+                               class="r-non-labeled-checkbox"
+                               ng-model="entry.specimens[0].notEdible"/>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-if="isEstimatedWeightVisible()">
+            <label for="weightEstimated" class="control-label">
+                <span translate="gamediary.form.weightEstimated"></span>
+                <small ng-if="isEstimatedWeightRequired()"
+                       class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="number" name="weightEstimated" id="weightEstimated"
+                       class="form-control"
+                       min="1" max="999" step="1"
+                       r-decimal-separator-fix
+                       ng-model="entry.specimens[0].weightEstimated"
+                       ng-required="isEstimatedWeightRequired()"/>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-if="isMeasuredWeightVisible()">
+            <label for="weightMeasured" class="control-label">
+                <span translate="gamediary.form.weightMeasured"></span>
+                <small ng-if="isMeasuredWeightRequired()"
+                       class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="number" name="weightMeasured" id="weightMeasured"
+                       class="form-control"
+                       min="1" max="999" step="1"
+                       r-decimal-separator-fix
+                       ng-model="entry.specimens[0].weightMeasured"
+                       ng-required="isMeasuredWeightRequired()"/>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-if="isFieldVisible('fitnessClass')">
+            <label for="fitnessClass" class="control-label">
+                <span translate="gamediary.form.fitnessClass"></span>
+                <small ng-if="mooseGroupSelected"
+                       class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select name="fitnessClass" id="fitnessClass"
+                        class="form-control"
+                        ng-model="entry.specimens[0].fitnessClass"
+                        ng-options="('gamediary.fitnessClass.' + a | translate) for a in parameters.fitnessClasses"
+                        ng-required="mooseGroupSelected"></select>
+            </div>
+        </div>
+
+        <div ng-if="entry.isAntlersPossible()">
+            <div class="form-group" show-errors ng-if="isFieldVisible('antlersType')">
+                <label for="antlersType" class="control-label">
+                    <span translate="gamediary.form.antlersType"></span>
+                    <small ng-if="mooseGroupSelected"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="form-control-wrapper">
+                    <select name="antlersType" id="antlersType"
+                            class="form-control"
+                            ng-model="entry.specimens[0].antlersType"
+                            ng-options="('gamediary.antlersType.' + a | translate) for a in parameters.antlersTypes"
+                            ng-required="mooseGroupSelected"></select>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="isFieldVisible('antlersWidth')">
+                <label for="antlersWidth" class="control-label">
+                    <span translate="gamediary.form.antlersWidth"></span>
+                    <small ng-if="mooseGroupSelected"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="form-control-wrapper">
+                    <input type="number" name="antlersWidth" id="antlersWidth"
+                           class="form-control"
+                           min="0" max="999" step="1"
+                           r-decimal-separator-fix
+                           ng-model="entry.specimens[0].antlersWidth"
+                           ng-required="mooseGroupSelected"/>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="isFieldVisible('antlerPointsLeft')">
+                <label for="antlerPointsLeft" class="control-label">
+                    <span translate="gamediary.form.antlerPointsLeft"></span>
+                    <small ng-if="mooseGroupSelected"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="form-control-wrapper">
+                    <input type="number" name="antlerPointsLeft" id="antlerPointsLeft"
+                           class="form-control"
+                           min="0" max="50" step="1"
+                           r-decimal-separator-fix
+                           ng-model="entry.specimens[0].antlerPointsLeft"
+                           ng-required="mooseGroupSelected"/>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="isFieldVisible('antlerPointsRight')">
+                <label for="antlerPointsRight" class="control-label">
+                    <span translate="gamediary.form.antlerPointsRight"></span>
+                    <small ng-if="mooseGroupSelected"
+                           class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="form-control-wrapper">
+                    <input type="number" name="antlerPointsRight" id="antlerPointsRight"
+                           class="form-control"
+                           min="0" max="50" step="1"
+                           r-decimal-separator-fix
+                           ng-model="entry.specimens[0].antlerPointsRight"
+                           ng-required="mooseGroupSelected"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-if="isFieldVisible('additionalInfo')">
+            <label for="additionalInfo" class="control-label">
+                <span translate="gamediary.form.additionalInfo"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <textarea name="additionalInfo" id="additionalInfo"
+                          class="form-control"
+                          rows="6"
+                          ng-model="entry.specimens[0].additionalInfo"></textarea>
+            </div>
+
+            <div class="form-control-offset-wrapper help-block">
+                <span translate="gamediary.form.additionalInfoHelp"></span>
+            </div>
+        </div>
+    </fieldset>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-default pull-left"
+            ng-click="cancel()"
+            translate="global.button.cancel"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-disabled="harvestForm.$invalid || !isValid()"
+            ng-show="showAccept"
+            ng-click="save()">
+        <span class="glyphicon glyphicon-ok"></span>&nbsp;
+        <span translate="global.button.accept"></span>
+    </button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-disabled="harvestForm.$invalid || !isValid()"
+            ng-show="showSave"
+            ng-click="save()">
+        <span translate="global.button.save"></span>
+    </button>
+</div>

@@ -1,0 +1,11 @@
+<div class="modal-header">
+    <h3 translate="global.idle.warning.title"></h3>
+</div>
+
+<div idle-countdown="countdown" ng-init="countdown=300" class="modal-body">
+    <p translate="global.idle.warning.body" translate-values="{timeout: countdown}"></p>
+
+    <hr/>
+
+    <uib-progressbar max="300" value="countdown" animate="false" class="progress-striped active"></uib-progressbar>
+</div>

@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/luke/export/mooselikeharvests/2016/07"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/luke/export/mooselikeharvests/2016/07"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xs:element name="permits">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="permits" type="Permit" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="Permit">
+        <xs:sequence>
+            <xs:element name="permitNumber" type="xs:string"/>
+            <xs:element name="rhyOfficialCode" type="xs:string"/>
+            <xs:element name="contactPerson" type="Person" minOccurs="0"/>
+            <xs:element name="mooseAmount" type="Amount"/>
+            <xs:element name="amendmentPermits" type="Amount" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="huntingClubs" type="Club" nillable="true" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Amount">
+        <xs:sequence>
+            <xs:element name="amount" type="xs:float"/>
+            <xs:element name="restriction" type="restrictionType" minOccurs="0"/>
+            <xs:element name="restrictedAmount" type="xs:float" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Person">
+        <xs:sequence>
+            <xs:element name="firstName" type="xs:string"/>
+            <xs:element name="lastName" type="xs:string"/>
+            <xs:element name="email" type="xs:string" minOccurs="0"/>
+            <xs:element name="phoneNumber" type="xs:string" minOccurs="0"/>
+            <xs:element name="address" type="Address" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Address">
+        <xs:sequence>
+            <xs:element name="streetAddress" type="xs:string"/>
+            <xs:element name="postalCode" type="xs:string"/>
+            <xs:element name="city" type="xs:string"/>
+            <xs:element name="country" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Club">
+        <xs:sequence>
+            <xs:element name="clubOfficialCode" type="xs:string"/>
+            <xs:element name="nameFinnish" type="xs:string"/>
+            <xs:element name="geoLocation" type="geoLocation" minOccurs="0"/>
+            <xs:element name="contactPerson" type="Person" minOccurs="0"/>
+            <xs:element name="rhyOfficialCode" type="xs:string"/>
+            <xs:element name="groups" type="Group" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="huntingSummary" type="HuntingSummary" minOccurs="0"/>
+            <xs:element name="overrides" type="Overrides" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="geoLocation">
+        <xs:sequence>
+            <xs:element name="latitude" type="xs:int"/>
+            <xs:element name="longitude" type="xs:int"/>
+            <xs:element name="source" type="source"/>
+            <xs:element name="accuracy" type="xs:double" minOccurs="0"/>
+            <xs:element name="altitude" type="xs:double" minOccurs="0"/>
+            <xs:element name="altitudeAccuracy" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Overrides">
+        <xs:sequence>
+            <xs:element name="adultMales" type="xs:int" minOccurs="0"/>
+            <xs:element name="adultFemales" type="xs:int" minOccurs="0"/>
+            <xs:element name="youngMales" type="xs:int" minOccurs="0"/>
+            <xs:element name="youngFemales" type="xs:int" minOccurs="0"/>
+            <xs:element name="nonEdibleAdults" type="xs:int" minOccurs="0"/>
+            <xs:element name="nonEdibleYoung" type="xs:int" minOccurs="0"/>
+            <xs:element name="totalHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="effectiveHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="remainingPopulationInTotalArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="remainingPopulationInEffectiveArea" type="xs:int" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+
+
+    <xs:complexType name="Group">
+        <xs:sequence>
+            <xs:element name="dataSource" type="dataSource"/>
+            <xs:element name="nameFinnish" type="xs:string"/>
+            <xs:element name="huntingDays" type="HuntingDay" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="HuntingDay">
+        <xs:sequence>
+            <xs:element name="startDate" type="xs:date"/>
+            <xs:element name="startTime" type="xs:time"/>
+            <xs:element name="endDate" type="xs:date"/>
+            <xs:element name="endTime" type="xs:time"/>
+            <xs:element name="breakDurationInMinutes" type="xs:int"/>
+            <xs:element name="durationInMinutes" type="xs:int"/>
+            <xs:element name="snowDepth" type="xs:int" minOccurs="0"/>
+            <xs:element name="huntingMethod" type="HuntingMethod" minOccurs="0"/>
+            <xs:element name="numberOfHunters" type="xs:int" minOccurs="0"/>
+            <xs:element name="numberOfHounds" type="xs:int" minOccurs="0"/>
+            <xs:element name="mooseHarvests" type="Harvest" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="observations" type="Observation" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Harvest">
+        <xs:sequence>
+            <xs:element name="geoLocation" type="geoLocation"/>
+            <xs:element name="pointOfTime" type="xs:dateTime"/>
+            <xs:element name="gender" type="gameGender"/>
+            <xs:element name="age" type="gameAge"/>
+            <xs:element name="weightEstimated" type="xs:double" minOccurs="0"/>
+            <xs:element name="weightMeasured" type="xs:double" minOccurs="0"/>
+            <xs:element name="fitnessClass" type="gameFitnessClass" minOccurs="0"/>
+            <xs:element name="antlersType" type="gameAntlersType" minOccurs="0"/>
+            <xs:element name="antlersWidth" type="xs:int" minOccurs="0"/>
+            <xs:element name="antlerPointsLeft" type="xs:int" minOccurs="0"/>
+            <xs:element name="antlerPointsRight" type="xs:int" minOccurs="0"/>
+            <xs:element name="notEdible" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="additionalInfo" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Observation">
+        <xs:sequence>
+            <xs:element name="geoLocation" type="geoLocation"/>
+            <xs:element name="pointOfTime" type="xs:dateTime"/>
+            <xs:element name="observationType" type="observationType"/>
+            <xs:element name="gameSpeciesCode" type="xs:int"/>
+            <xs:element name="gameSpeciesNameFinnish" type="xs:string"/>
+            <xs:element name="mooselikeMaleAmount" type="xs:int" minOccurs="0"/>
+            <xs:element name="mooseLikeFemaleAndCalfs" type="FemaleAndCalfs" nillable="true" minOccurs="0"  maxOccurs="5"/>
+            <xs:element name="mooselikeUnknownSpecimenAmount" type="xs:int" minOccurs="0"/>
+            <xs:element name="specimens" type="ObservationSpecimen" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FemaleAndCalfs">
+        <xs:sequence>
+            <xs:element name="calfs" type="xs:int"/>
+            <xs:element name="amount" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ObservationSpecimen">
+        <xs:sequence>
+            <xs:element name="gender" type="gameGender" minOccurs="0"/>
+            <xs:element name="age" type="observedGameAge" minOccurs="0"/>
+            <xs:element name="state" type="observedGameState" minOccurs="0"/>
+            <xs:element name="marking" type="gameMarking" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="HuntingSummary">
+        <xs:sequence>
+            <xs:element name="huntingEndDate" type="xs:date"/>
+            <xs:element name="huntingFinished" type="xs:boolean"/>
+
+            <xs:element name="totalHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="effectiveHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="effectiveHuntingAreaPercentage" type="xs:float" minOccurs="0"/>
+            <xs:element name="moosesRemainingInTotalHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="moosesRemainingInEffectiveHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="huntingAreaType" type="mooseHuntingAreaType" nillable="true"/>
+
+            <xs:element name="numberOfDrownedMooses" type="xs:int" minOccurs="0"/>
+            <xs:element name="numberOfMoosesKilledByBear" type="xs:int" minOccurs="0"/>
+            <xs:element name="numberOfMoosesKilledByWolf" type="xs:int" minOccurs="0"/>
+            <xs:element name="numberOfMoosesKilledInTrafficAccident" type="xs:int" minOccurs="0"/>
+            <xs:element name="numberOfMoosesKilledByPoaching" type="xs:int" minOccurs="0"/>
+            <xs:element name="numberOfMoosesKilledInRutFight" type="xs:int" minOccurs="0"/>
+            <xs:element name="numberOfStarvedMooses" type="xs:int" minOccurs="0"/>
+            <xs:element name="numberOfMoosesDeceasedByOtherReason" type="xs:int" minOccurs="0"/>
+            <xs:element name="causeOfDeath" type="xs:string" minOccurs="0"/>
+
+            <xs:element name="whiteTailedDeerAppearance" type="EstimatedAppearance" minOccurs="0"/>
+            <xs:element name="roeDeerAppearance" type="EstimatedAppearance" minOccurs="0"/>
+            <xs:element name="wildForestReindeerAppearance" type="EstimatedAppearance" minOccurs="0"/>
+            <xs:element name="fallowDeerAppearance" type="EstimatedAppearance" minOccurs="0"/>
+            <xs:element name="wildBoarAppearance" type="WildBoarEstimatedAppearance" minOccurs="0"/>
+
+            <xs:element name="mooseHeatBeginDate" type="xs:date" minOccurs="0"/>
+            <xs:element name="mooseHeatEndDate" type="xs:date" minOccurs="0"/>
+            <xs:element name="mooseFawnBeginDate" type="xs:date" minOccurs="0"/>
+            <xs:element name="mooseFawnEndDate" type="xs:date" minOccurs="0"/>
+
+            <xs:element name="dateOfFirstDeerFlySeen" type="xs:date" minOccurs="0"/>
+            <xs:element name="dateOfLastDeerFlySeen" type="xs:date" minOccurs="0"/>
+            <xs:element name="numberOfAdultMoosesHavingFlies" type="xs:int" minOccurs="0"/>
+            <xs:element name="numberOfYoungMoosesHavingFlies" type="xs:int" minOccurs="0"/>
+            <xs:element name="deerFliesAppeared" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="trendOfDeerFlyPopulationGrowth" type="trendOfPopulationGrowth" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="EstimatedAppearance">
+        <xs:sequence>
+            <xs:element name="trendOfPopulationGrowth" type="trendOfPopulationGrowth"/>
+            <xs:element name="estimatedAmountOfSpecimens" type="xs:int" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="WildBoarEstimatedAppearance">
+        <xs:complexContent>
+            <xs:extension base="EstimatedAppearance">
+                <xs:sequence>
+                    <xs:element name="estimatedAmountOfSowWithPiglets" type="xs:int" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="restrictionType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="AE"/>
+            <xs:enumeration value="AU"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="source">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="GPS_DEVICE"/>
+            <xs:enumeration value="MANUAL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="dataSource">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="WEB"/>
+            <xs:enumeration value="MOOSE_DATA_CARD"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameAge">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ADULT"/>
+            <xs:enumeration value="YOUNG"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameAntlersType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="HANKO"/>
+            <xs:enumeration value="LAPIO"/>
+            <xs:enumeration value="SEKA"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameFitnessClass">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ERINOMAINEN"/>
+            <xs:enumeration value="NORMAALI"/>
+            <xs:enumeration value="LAIHA"/>
+            <xs:enumeration value="NAANTYNYT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameGender">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="FEMALE"/>
+            <xs:enumeration value="MALE"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="observationType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="NAKO"/>
+            <xs:enumeration value="JALKI"/>
+            <xs:enumeration value="ULOSTE"/>
+            <xs:enumeration value="AANI"/>
+            <xs:enumeration value="RIISTAKAMERA"/>
+            <xs:enumeration value="KOIRAN_RIISTATYO"/>
+            <xs:enumeration value="MAASTOLASKENTA"/>
+            <xs:enumeration value="KOLMIOLASKENTA"/>
+            <xs:enumeration value="LENTOLASKENTA"/>
+            <xs:enumeration value="HAASKA"/>
+            <xs:enumeration value="SYONNOS"/>
+            <xs:enumeration value="KELOMISPUU"/>
+            <xs:enumeration value="KIIMAKUOPPA"/>
+            <xs:enumeration value="MAKUUPAIKKA"/>
+            <xs:enumeration value="PESA"/>
+            <xs:enumeration value="SOIDIN"/>
+            <xs:enumeration value="LUOLASTO"/>
+            <xs:enumeration value="PESIMALUOTO"/>
+            <xs:enumeration value="LEPAILYLUOTO"/>
+            <xs:enumeration value="PESIMASUO"/>
+            <xs:enumeration value="MUUTON_AIKAINEN_LEPAILYALUE"/>
+            <xs:enumeration value="RIISTANKULKUPAIKKA"/>
+            <xs:enumeration value="MUU"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="observedGameAge">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ADULT"/>
+            <xs:enumeration value="LT1Y"/>
+            <xs:enumeration value="_1TO2Y"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameMarking">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="NOT_MARKED"/>
+            <xs:enumeration value="COLLAR_OR_RADIO_TRANSMITTER"/>
+            <xs:enumeration value="LEG_RING_OR_WING_TAG"/>
+            <xs:enumeration value="EARMARK"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="observedGameState">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="HEALTHY"/>
+            <xs:enumeration value="ILL"/>
+            <xs:enumeration value="WOUNDED"/>
+            <xs:enumeration value="CARCASS"/>
+            <xs:enumeration value="DEAD"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="trendOfPopulationGrowth">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="INCREASED"/>
+            <xs:enumeration value="UNCHANGED"/>
+            <xs:enumeration value="DECREASED"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="mooseHuntingAreaType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="SUMMER_PASTURE"/>
+            <xs:enumeration value="WINTER_PASTURE"/>
+            <xs:enumeration value="BOTH"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="HuntingMethod">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="PASSILINJA_KOIRA_OHJAAJINEEN_METSASSA"/>
+            <xs:enumeration value="HIIPIMINEN_PYSAYTTAVALLE_KOIRALLE"/>
+            <xs:enumeration value="PASSILINJA_JA_TIIVIS_AJOKETJU"/>
+            <xs:enumeration value="PASSILINJA_JA_MIESAJO_JALJITYKSENA"/>
+            <xs:enumeration value="JALJITYS_ELI_NAAKIMINEN_ILMAN_PASSEJA"/>
+            <xs:enumeration value="VAIJYNTA_KULKUPAIKOILLA"/>
+            <xs:enumeration value="VAIJYNTA_RAVINTOKOHTEILLA"/>
+            <xs:enumeration value="HOUKUTTELU"/>
+            <xs:enumeration value="MUU"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

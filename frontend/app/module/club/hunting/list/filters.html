@@ -1,0 +1,132 @@
+<form id="clubHuntingForm" name="clubHuntingForm"
+      class="form-horizontal r-map-filter-form" role="form">
+    <div class="form-group">
+        <label for="huntingYearSelection"
+               class="col-xs-4 control-label"
+               translate="club.hunting.huntingYear"></label>
+        <div class="col-xs-8">
+            <select name="huntingYearSelection" id="huntingYearSelection"
+                    class="form-control"
+                    ng-model="ctrl.huntingData.huntingYear"
+                    ng-change="ctrl.onHuntingYearChanged(ctrl.huntingData.huntingYear)"
+                    ng-options="(year | rHuntingYear) for year in ctrl.huntingData.huntingYears">
+                <option disabled value="">{{'club.hunting.selectHuntingYear' | translate}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="speciesSelection"
+               class="col-xs-4 control-label"
+               translate="club.hunting.species"></label>
+        <div class="col-xs-8 right">
+            <select name="speciesSelection" id="speciesSelection"
+                    class="form-control"
+                    ng-model="ctrl.huntingData.species"
+                    ng-change="ctrl.onSpeciesChanged(ctrl.huntingData.species)"
+                    ng-options="(species.name | rI18nNameFilter: 'translated') for species in ctrl.huntingData.speciesWithinSelectedYear | orderBy: 'name.translated' track by species.code">
+                <option disabled value="">{{'club.hunting.selectSpecies' | translate}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="groupSelection"
+               class="col-xs-4 control-label"
+               translate="club.hunting.group"></label>
+        <div class="col-xs-8">
+            <select name="groupSelection" id="groupSelection"
+                    class="form-control"
+                    ng-model="ctrl.huntingData.huntingGroup"
+                    ng-change="ctrl.onGroupChanged(ctrl.huntingData.huntingGroup)"
+                    ng-options="(group | rI18nNameFilter: 'translated') for group in ctrl.huntingData.huntingGroups | orderBy: 'translated' track by group.id">
+                <option disabled value="">{{'club.hunting.selectGroup' | translate}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group form-label-group">
+        <label class="col-xs-4 control-label"
+               translate="club.group.form.harvestPermit"></label>
+        <div class="col-xs-8">
+            <p class="form-control-static"
+               ng-if="!ctrl.isEditPermitPossible()"
+               ng-bind="ctrl.huntingData.huntingGroup.permit.permitNumber"></p>
+
+            <p class="form-control-static"
+               ng-if="ctrl.isEditPermitPossible()">
+                <a ng-click="ctrl.editHuntingGroup()">
+                    <span class="text-danger"
+                          ng-show="ctrl.huntingData.huntingGroup && !ctrl.huntingData.huntingGroup.permit"
+                          translate="club.group.form.harvestPermitNotSet"></span>
+
+                    <span ng-show="ctrl.huntingData.huntingGroup && ctrl.huntingData.huntingGroup.permit"
+                          ng-bind="ctrl.huntingData.huntingGroup.permit.permitNumber"></span>
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group form-label-group hunting-finished-indicator" ng-if="ctrl.huntingData.huntingFinished">
+        <div class="col-xs-offset-4 col-xs-8">
+            <label class="form-control-static" translate="club.group.form.huntingFinished"></label>
+        </div>
+    </div>
+
+    <div class="form-group" ng-class="{ 'has-error': !!clubHuntingForm.beginDate.$invalid }">
+        <label for="beginDate"
+               class="col-xs-4 control-label"
+               translate="global.beginDate" ></label>
+        <div class="col-xs-8">
+            <div class="input-group" ng-controller="DatePickerController">
+                <input id="beginDate" type="text" name="beginDate"
+                       class="form-control"
+                       uib-datepicker-popup is-open="isDatePickerOpen"
+                       datepicker-append-to-body="true"
+                       ng-model="ctrl.beginDate"
+                       ng-change="ctrl.onDateChange()"
+                       max-date="ctrl.endDate"
+                       date-between-min-max />
+
+                <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group" ng-class="{ 'has-error': !!clubHuntingForm.endDate.$invalid }">
+        <label for="endDate"
+               class="col-xs-4 control-label"
+               translate="global.endDate"></label>
+        <div class="col-xs-8">
+            <div class="input-group" ng-controller="DatePickerController">
+                <input id="endDate" type="text" name="endDate"
+                       class="form-control"
+                       uib-datepicker-popup is-open="isDatePickerOpen"
+                       datepicker-append-to-body="true"
+                       ng-model="ctrl.endDate"
+                       ng-change="ctrl.onDateChange()"
+                       min-date="ctrl.beginDate"
+                       date-between-min-max />
+
+                <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="onlyRejected" id=onlyRejected
+                       ng-model="ctrl.onlyRejected"
+                       ng-change="ctrl.onOnlyRejectedChange()">
+                <span>
+                    {{ctrl.mooseGroupSelected ? 'club.hunting.showOnlyRejectedHarvestsAndObservations' : 'club.hunting.showOnlyRejectedHarvests' | translate}}
+                </span>
+            </label>
+        </div>
+    </div>
+</form>

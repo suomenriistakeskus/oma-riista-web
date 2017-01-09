@@ -1,0 +1,79 @@
+<form name="profileOtherForm"
+      role="form" class="form"
+      novalidate autocomplete="off"
+      ng-submit="$ctrl.save()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="account.edit.otherinfo_title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="byName" class="control-label">
+                <span translate="account.edit.form.byName"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <input type="text" name="byName" id="byName"
+                   class="form-control"
+                   ng-model="$ctrl.profile.byName"
+                   valid-person-name required
+                   ng-maxlength="255">
+
+            <p class="help-block" ng-show="profileOtherForm.byName.$invalid"
+               translate="account.edit.messages.invalid"></p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="email" class="control-label">
+                <span translate="account.edit.form.email"></span>
+            </label>
+
+            <input type="text" name="email" id="email"
+                   class="form-control"
+                   ng-disabled="$ctrl.profile.registered"
+                   ng-model="$ctrl.profile.email"
+                   ng-model-options="{ debounce : { 'default' : 200, blur : 0 } }"
+                   ng-maxlength="255"
+                   valid-person-email>
+
+            <p class="help-block"
+               ng-show="profileOtherForm.email.$invalid"
+               translate="account.edit.messages.invalid"></p>
+
+            <p class="help-block"
+               ng-show="$ctrl.profile.registered"
+               translate="account.edit.messages.userIsRegistered"></p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="phoneNumber" class="control-label">
+                <span translate="account.edit.form.phoneNumber"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <input type="text" name="phoneNumber" id="phoneNumber"
+                   class="form-control"
+                   ng-model="$ctrl.profile.phoneNumber"
+                   validate-phonenumber
+                   ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                   required
+                   ng-maxlength="255">
+
+            <p class="help-block"
+               ng-show="profileOtherForm.phoneNumber.$invalid"
+               translate="account.edit.messages.invalid"></p>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="profileOtherForm.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

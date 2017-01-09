@@ -1,0 +1,46 @@
+<div class="r-club-year-menu">
+    <div class="row year-species-menu">
+        <div class="col-xs-5 left">
+            <select name="year" id="year" class="form-control"
+                    ng-model="$ctrl.years.selected"
+                    ng-change="$ctrl.yearChanged()"
+                    ng-options="year.year as year.name for year in $ctrl.years.values | orderBy:'year'">
+            </select>
+        </div>
+        <div class="col-xs-7 right">
+            <select name="gameSpeciesId" id="gameSpeciesId"
+                    class="form-control"
+                    ng-model="$ctrl.selectedSpeciesCode"
+                    ng-change="$ctrl.speciesChanged()"
+                    ng-options="s.code as (s.name | rI18nNameFilter) for s in $ctrl.speciesForYear">
+                <option value="">{{'global.showAll' | translate}}</option>
+            </select>
+        </div>
+    </div>
+
+    <ul class="list-group">
+        <li class="list-group-item"
+            ng-repeat="group in ($ctrl.groups | orderBy:['nameFI','id']) track by group.id"
+            ng-click="$ctrl.groupChanged(group)"
+            ui-sref-active="active">
+
+            <a class="list-group-item-heading"
+               name-translated="group"
+               ui-sref="club.groups.group({ groupId:group.id} )"></a>
+
+            <span ng-bind="group.memberCount"
+                  class="member-count"></span>
+        </li>
+    </ul>
+
+    <div class="wrapper">
+        <div class="btn-group btn-group-justified buttons"
+             ng-show="$ctrl.isGroupExportVisible()">
+            <a class="btn btn-info" ng-click="$ctrl.exportGroups()">
+                <span class="glyphicon glyphicon-export"></span>
+                &nbsp;
+                <span translate="club.group.button.toCSV"></span>
+            </a>
+        </div>
+    </div>
+</div>

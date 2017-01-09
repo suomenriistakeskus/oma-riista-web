@@ -1,0 +1,20 @@
+<div class="form-group">
+    <!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+    IE10 complains of unselected value if  'required', therefore we force existence of this field manually -->
+    <div ng-class="{ 'has-error': (!ctrl.diaryEntry.gameSpeciesCode) }">
+        <label for="gameSpeciesId" class="control-label">
+            <span translate="gamediary.form.species"></span>
+            <small class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
+
+        <div class="form-control-wrapper">
+            <select name="gameSpeciesId" id="gameSpeciesId"
+                    class="form-control"
+                    ng-model="ctrl.diaryEntry.gameSpeciesCode"
+                    ng-disabled="ctrl.isDisabled()"
+                    ng-options="o.code as ctrl.getGameName(o.code, o) group by ctrl.getCategoryName(o.categoryId) for o in ctrl.availableSpecies | orderBy:['categoryId', 'translatedName']"
+                    ie10-optgroup-fix><option value=""></option>
+            </select>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+<div>
+    <form class="dropzone"
+          method="post"
+          enctype="multipart/form-data"
+          ng-dropzone
+          dropzone="dropzone"
+          dropzone-config="dropzoneConfig"
+          event-handlers="dropzoneEventHandlers">
+
+        <input type="hidden" spring-csrf-cookie />
+        <div class="dz-message" translate="reporting.mooseDataCardUpload.dzHelpMessage"></div>
+    </form>
+</div>
+
+<div class="r-moose-data-card-uploads" ng-show="successfulUploads.length > 0">
+    <h4 translate="reporting.mooseDataCardUpload.successfulImports"></h4>
+    <ul>
+        <li ng-repeat="upload in (successfulUploads | orderBy:'filename') track by $index">
+            <div class="r-moose-data-card-upload">
+                <span class="r-moose-data-card-upload-filename">{{ upload.filename }}</span>
+
+                <ul>
+                    <li ng-repeat="msg in upload.messages track by $index">
+                        <span>{{ msg }}</span>
+                    </li>
+                </ul>
+            </div>
+        </li>
+    </ul>
+</div>
+
+<div class="r-moose-data-card-uploads" ng-show="failedUploads.length > 0">
+    <h4 translate="reporting.mooseDataCardUpload.failedImports"></h4>
+    <ul>
+        <li ng-repeat="upload in (failedUploads | orderBy:'filename') track by $index">
+            <div class="r-moose-data-card-upload">
+                <span class="r-moose-data-card-upload-filename">{{ upload.filename }}</span>
+
+                <ul>
+                    <li class="r-moose-data-card-upload-failure-message" ng-repeat="msg in upload.messages track by $index">
+                        <span>{{ msg }}</span>
+                    </li>
+                </ul>
+            </div>
+        </li>
+    </ul>
+</div>

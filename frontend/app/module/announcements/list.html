@@ -1,0 +1,12 @@
+<div class="announcement-list">
+    <slice-pager slice="$ctrl.currentPage" load-page="$ctrl.loadPage(page)"></slice-pager>
+
+    <announcement-list-item
+            ng-repeat="a in $ctrl.currentPage.content"
+            announcement="a"
+            organisation="$ctrl.organisation"
+            show-actions="true"
+            only-summary="true"
+            refresh="$ctrl.refresh()">
+    </announcement-list-item>
+</div>

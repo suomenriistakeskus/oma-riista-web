@@ -1,0 +1,28 @@
+<table class="table table-condensed property-list">
+    <thead>
+    <tr>
+        <th translate="club.area.map.tab.selectedAreas.propertyIdentifier"></th>
+        <th translate="club.area.map.tab.selectedAreas.areaSize"></th>
+        <th>&nbsp;</th>
+    </tr>
+    </thead>
+    <tbody vs-repeat vs-scroll-parent=".left-column">
+    <tr ng-repeat="f in palstaFeatureList() track by f.id"
+        ng-mouseenter="editor.api.features.setHighlight(f)"
+        ng-mouseleave="editor.api.features.removeHighlight(f)">
+        <td>
+            <span ng-show="::(f.properties.changed)" class="glyphicon glyphicon-warning-sign text-danger"></span>
+            <a ng-click="selectFeature(f)" ng-bind="::(f.properties.number | formatPropertyIdentifier)"></a>
+        </td>
+        <td>
+            <span ng-bind="::(f | featureAreaSize)"></span>
+        </td>
+        <td class="text-right">
+            <a class="btn btn-link btn-xs"
+               ng-click="editor.api.removeFeature(f.id)">
+                <span translate="global.button.delete"></span>
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>

@@ -1,0 +1,14 @@
+<div class="modal-header">
+    <span class="pull-right" ng-bind="::$ctrl.announcement.date | date:'d.MM.yyyy'"></span>
+    <h3 class="modal-title" ng-bind="$ctrl.announcement.subject"></h3>
+</div>
+
+<div class="modal-body">
+    <div ng-bind-html="$ctrl.announcement.body | htmlSplitLines "></div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-click="$ctrl.close()"
+            translate="global.button.close"></button>
+</div>

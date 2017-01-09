@@ -1,0 +1,3303 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd"
+        logicalFilePath="migrations/db.changelog.xml">
+
+    <changeSet id="2015-01-19-harvest-report-state-uniq-to-harvest" author="vincit-terova">
+        <preConditions onFail="CONTINUE">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            <![CDATA[
+                CREATE UNIQUE INDEX harvest_report_state_uniq
+                ON harvest_report(state,harvest_id)
+                WHERE state <> 'DELETED'
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-01-05-harvest-mh-field" author="vincit-kyostihe">
+        <addColumn tableName="harvest">
+            <column name="mh_hirvi_id" type="INTEGER"/>
+        </addColumn>
+        <addColumn tableName="harvest">
+            <column name="mh_pienriista_id" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-02-09-create-municipality-table" author="vincit-kyostihe">
+        <createTable tableName="municipality">
+            <column name="official_code" type="CHAR(3)">
+                <constraints primaryKey="true" primaryKeyName="municipality_pkey"/>
+            </column>
+            <column name="name_finnish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            <![CDATA[
+            ALTER TABLE municipality ADD CONSTRAINT municipality_code CHECK (official_code ~* '^[0-9]{3}$');
+          ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-02-09-add-home-municipality-code" author="vincit-kyostihe">
+        <addColumn tableName="person">
+            <column name="home_municipality_code" type="CHAR(3)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-02-19-add-luke-status" author="vincit-kyostihe">
+        <createTable tableName="harvest_luke_status">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="PENDING"/>
+        </insert>
+
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="CONFIRMED_ALPHA"/>
+        </insert>
+
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="CONFIRMED_NOT_ALPHA"/>
+        </insert>
+
+        <addColumn tableName="harvest_report">
+            <column name="luke_status" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <addForeignKeyConstraint baseTableName="harvest_report"
+                                 baseColumnNames="luke_status"
+                                 constraintName="fk_harvest_report_luke_status"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="harvest_luke_status"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="2015-02-17-add-permit-type-code" author="vincit-terova">
+        <addColumn tableName="harvest_permit">
+            <column name="permit_type_code" type="CHAR(3)"/>
+        </addColumn>
+        <sql>
+            UPDATE harvest_permit SET permit_type_code='202' WHERE permit_type='Karhu 41 A § poikkeuslupa
+            vahinkoperusteinen';
+            UPDATE harvest_permit SET permit_type_code='203' WHERE permit_type='Ilves 41 A § poikkeuslupa
+            vahinkoperusteinen';
+            UPDATE harvest_permit SET permit_type_code='204' WHERE permit_type='Susi 41 A § poikkeuslupa
+            vahinkoperusteinen';
+            UPDATE harvest_permit SET permit_type_code='206' WHERE permit_type='Saukko 41 A § poikkeuslupa
+            vahinkoperusteinen';
+            UPDATE harvest_permit SET permit_type_code='207' WHERE permit_type='Karhu 41 A § kannanhoidollinen';
+            UPDATE harvest_permit SET permit_type_code='208' WHERE permit_type='Ilves 41 A § kannanhoidollinen';
+            UPDATE harvest_permit SET permit_type_code='209' WHERE permit_type='Susi 41 A § kannanhoidollinen';
+            UPDATE harvest_permit SET permit_type_code='210' WHERE permit_type='41 C§ poikkeuslupa';
+        </sql>
+        <addNotNullConstraint tableName="harvest_permit" columnName="permit_type_code" columnDataType="CHAR(3)"/>
+
+        <addNotNullConstraint tableName="harvest_permit" columnName="permit_type" columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <changeSet id="2015-02-23-add-harvest-report-required-field" author="vincit-terova">
+        <addColumn tableName="harvest">
+            <column name="harvest_report_required" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql><![CDATA[
+UPDATE harvest
+SET harvest_report_required=true
+WHERE harvest_id IN (
+  SELECT h.harvest_id FROM harvest h
+  JOIN game_species g ON g.game_species_id = h.game_species_id
+  LEFT JOIN harvest_report_fields hf_permit
+    ON (hf_permit.game_species_id=h.game_species_id AND hf_permit.used_with_permit=true)
+  LEFT JOIN harvest_report_fields hf ON (hf.game_species_id=h.game_species_id AND hf.used_with_permit=false)
+  LEFT JOIN harvest_season hs
+    ON (hs.harvest_report_fields_id=hf.harvest_report_fields_id AND h.point_of_time BETWEEN hs.begin_date AND hs.end_date)
+  WHERE ( hf_permit.harvest_report_fields_id IS NOT NULL or hs.harvest_season_id IS NOT NULL)
+  AND h.point_of_time > DATE '2014-08-01'
+)
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-02-23-harvest-add-lastHarvestReportRequiredEmailSent" author="vincit-terova">
+        <addColumn tableName="harvest">
+            <column name="email_reminder_sent_time" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-02-25-harvest-actual-shooter-not-null" author="vincit-terova">
+        <sql>UPDATE harvest SET actual_shooter_id=author_id WHERE actual_shooter_id IS NULL</sql>
+        <addNotNullConstraint tableName="harvest" columnName="actual_shooter_id" columnDataType="BIGINT"/>
+    </changeSet>
+
+    <changeSet id="2015-03-16-person-hunting-payment-date-and-status" author="vincit-kyostihe">
+        <addColumn tableName="person">
+            <column name="deletion_code" type="CHAR(1)"/>
+            <column name="hunting_payment_one_day" type="DATE"/>
+            <column name="hunting_payment_one_year" type="INT"/>
+            <column name="hunting_payment_two_day" type="DATE"/>
+            <column name="hunting_payment_two_year" type="INT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-03-17-person-add-check-constraints" author="vincit-kyostihe">
+        <sql><![CDATA[
+ALTER TABLE person ADD CONSTRAINT hunting_card_range CHECK (
+    (hunting_card_start IS NULL AND hunting_card_end IS NULL) OR
+    (hunting_card_start IS NOT NULL AND hunting_card_end IS NOT NULL AND hunting_card_start <= hunting_card_end));
+
+ALTER TABLE person ADD CONSTRAINT hunting_ban_range CHECK (
+    (hunting_ban_start IS NULL AND hunting_ban_end IS NULL) OR
+    (hunting_ban_start IS NOT NULL AND hunting_ban_end IS NOT NULL AND hunting_ban_start <= hunting_ban_end));
+
+ALTER TABLE person ADD CONSTRAINT hunting_payment_one_check CHECK (
+    (hunting_payment_one_day IS NULL AND hunting_payment_one_year IS NULL) OR
+    (hunting_payment_one_day IS NOT NULL AND hunting_payment_one_year IS NOT NULL));
+
+ALTER TABLE person ADD CONSTRAINT hunting_payment_two_check CHECK (
+    (hunting_payment_two_day IS NULL AND hunting_payment_two_year IS NULL) OR
+    (hunting_payment_two_day IS NOT NULL AND hunting_payment_two_year IS NOT NULL));
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-02-19-move-columns-from-harvest-report-to-harvest" author="vincit-terova">
+        <addColumn tableName="harvest">
+            <column name="property_identifier" type="VARCHAR(255)"/>
+            <column name="hunting_area_type" type="VARCHAR(255)"/>
+            <column name="hunting_party" type="VARCHAR(255)"/>
+            <column name="hunting_area_size" type="NUMERIC(10,2)"/>
+            <column name="hunting_method" type="VARCHAR(255)"/>
+            <column name="reported_with_phone_call" type="BOOL"/>
+            <column name="luke_status" type="VARCHAR(255)">
+                <constraints references="harvest_luke_status(name)"
+                             foreignKeyName="fk_harvest_luke_status"/>
+            </column>
+            <column name="harvest_report_id" type="BIGINT">
+                <constraints references="harvest_report(harvest_report_id)"
+                             foreignKeyName="fk_harvest_harvest_report"/>
+            </column>
+            <column name="harvest_report_fields_id" type="BIGINT">
+                <constraints references="harvest_report_fields(harvest_report_fields_id)"
+                             foreignKeyName="fk_harvest_harvest_harvest_report_fields"/>
+            </column>
+            <column name="harvest_permit_id" type="BIGINT">
+                <constraints references="harvest_permit(harvest_permit_id)"
+                             foreignKeyName="fk_harvest_harvest_permit"/>
+            </column>
+            <column name="harvest_season_id" type="BIGINT">
+                <constraints references="harvest_season(harvest_season_id)"
+                             foreignKeyName="fk_harvest_harvest_season"/>
+            </column>
+            <column name="harvest_quota_id" type="BIGINT">
+                <constraints references="harvest_quota(harvest_quota_id)"
+                             foreignKeyName="fk_harvest_harvest_quota"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-02-19-copy-data-from-harvest-report-to-harvest" author="vincit-terova" dbms="postgresql">
+        <sql><![CDATA[
+UPDATE harvest h SET
+harvest_report_id = hr.harvest_report_id,
+rhy_id = hr.rhy_id,
+actual_shooter_id = COALESCE(hr.hunter_id, actual_shooter_id),
+harvest_permit_id = hr.harvest_permit_id,
+harvest_season_id = hr.harvest_season_id,
+harvest_report_fields_id = hr.harvest_report_fields_id,
+harvest_quota_id = hr.harvest_quota_id,
+property_identifier = hr.property_identifier,
+hunting_party = hr.hunting_party,
+hunting_area_type = hr.hunting_area_type,
+hunting_area_size = hr.hunting_area_size,
+hunting_method = hr.hunting_method,
+reported_with_phone_call = hr.reported_with_phone_call,
+luke_status = hr.luke_status
+FROM harvest_report hr
+WHERE hr.harvest_id = h.harvest_id AND hr.state <> 'DELETED';
+
+UPDATE harvest_specimen hs SET
+weight = hr.weight,
+age = hr.age,
+gender = hr.gender
+FROM harvest h
+JOIN harvest_report hr ON (h.harvest_report_id = hr.harvest_report_id)
+WHERE hs.harvest_id = h.harvest_id
+AND h.amount = 1;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2015-02-19-drop-harvest-report-columns" author="vincit-terova">
+        <!-- Migrated to harvest -->
+        <dropColumn tableName="harvest_report" columnName="harvest_season_id"/>
+        <dropColumn tableName="harvest_report" columnName="harvest_report_fields_id"/>
+        <dropColumn tableName="harvest_report" columnName="harvest_quota_id"/>
+        <dropColumn tableName="harvest_report" columnName="property_identifier"/>
+        <dropColumn tableName="harvest_report" columnName="hunting_party"/>
+        <dropColumn tableName="harvest_report" columnName="hunting_area_type"/>
+        <dropColumn tableName="harvest_report" columnName="hunting_area_size"/>
+        <dropColumn tableName="harvest_report" columnName="hunting_method"/>
+        <dropColumn tableName="harvest_report" columnName="reported_with_phone_call"/>
+        <dropColumn tableName="harvest_report" columnName="luke_status"/>
+
+        <!-- Migrated to harvest_specimen -->
+        <dropColumn tableName="harvest_report" columnName="gender"/>
+        <dropColumn tableName="harvest_report" columnName="age"/>
+        <dropColumn tableName="harvest_report" columnName="weight"/>
+
+        <!-- Duplicate information -->
+        <dropColumn tableName="harvest_report" columnName="hunter_id"/>
+        <dropColumn tableName="harvest_report" columnName="rhy_id"/>
+        <dropColumn tableName="harvest_report" columnName="harvest_id"/>
+        <dropColumn tableName="harvest_report" columnName="point_of_time"/>
+        <dropColumn tableName="harvest_report" columnName="game_species_id"/>
+        <dropColumn tableName="harvest_report" columnName="latitude"/>
+        <dropColumn tableName="harvest_report" columnName="longitude"/>
+        <dropColumn tableName="harvest_report" columnName="accuracy"/>
+        <dropColumn tableName="harvest_report" columnName="altitude"/>
+        <dropColumn tableName="harvest_report" columnName="altitude_accuracy"/>
+        <dropColumn tableName="harvest_report" columnName="geolocation_source"/>
+    </changeSet>
+
+    <changeSet id="2015-02-17-add-columns-to-harvest_report_fields" author="vincit-terova">
+        <addColumn tableName="harvest_report_fields">
+            <column name="free_hunting_also" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="age" type="VARCHAR(255)"/>
+            <column name="gender" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <sql>UPDATE harvest_report_fields SET age='YES', gender='YES' WHERE age IS NULL AND gender IS NULL</sql>
+
+        <addNotNullConstraint tableName="harvest_report_fields" columnName="age" columnDataType="VARCHAR(255)"/>
+        <addNotNullConstraint tableName="harvest_report_fields" columnName="gender" columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <changeSet id="2015-02-18-harvest_state_accepted_to_harvest_permit_enum" author="vincit-terova">
+        <createTable tableName="harvest_state_accepted_to_harvest_permit">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="harvest_state_accepted_to_harvest_permit">
+            <column name="name" value="PROPOSED"/>
+        </insert>
+        <insert tableName="harvest_state_accepted_to_harvest_permit">
+            <column name="name" value="ACCEPTED"/>
+        </insert>
+        <insert tableName="harvest_state_accepted_to_harvest_permit">
+            <column name="name" value="REJECTED"/>
+        </insert>
+
+        <addColumn tableName="harvest">
+            <column name="state_accepted_to_harvest_permit" type="VARCHAR(255)">
+                <constraints references="harvest_state_accepted_to_harvest_permit(name)"
+                             foreignKeyName="fk_harvest_harvest_state_accepted_to_harvest_permit"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-03-02-add-column-harvests_as_list" author="vincit-terova">
+        <addColumn tableName="harvest_permit">
+            <column name="harvests_as_list" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <sql>UPDATE harvest_permit
+            SET harvests_as_list=true
+            WHERE permit_type_code IN ('200', '210', '250', '251', '253', '300', '310', '345', '370')
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-03-12-add-harvest-foreign-key-indexes" author="vincit-kyostihe">
+        <createIndex tableName="harvest" indexName="ndx_harvest_permit">
+            <column name="harvest_permit_id"/>
+        </createIndex>
+        <createIndex tableName="harvest" indexName="ndx_harvest_rhy">
+            <column name="rhy_id"/>
+        </createIndex>
+        <createIndex tableName="harvest" indexName="ndx_harvest_harvest_report">
+            <column name="harvest_report_id"/>
+        </createIndex>
+        <createIndex tableName="harvest" indexName="ndx_harvest_report_fields">
+            <column name="harvest_report_fields_id"/>
+        </createIndex>
+        <createIndex tableName="harvest" indexName="ndx_harvest_season">
+            <column name="harvest_season_id"/>
+        </createIndex>
+        <createIndex tableName="harvest" indexName="ndx_harvest_quota">
+            <column name="harvest_quota_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-04-09-fix-harvest-permit-species-amount-dates" author="vincit-kyostihe">
+        <modifyDataType tableName="harvest_permit_species_amount" columnName="begin_date" newDataType="DATE"/>
+        <modifyDataType tableName="harvest_permit_species_amount" columnName="end_date" newDataType="DATE"/>
+    </changeSet>
+
+    <changeSet id="2015-04-13-increase-species-amount-range" author="vincit-kyostihe">
+        <modifyDataType tableName="harvest_permit_species_amount" columnName="amount" newDataType="DECIMAL(6,1)"/>
+    </changeSet>
+
+    <changeSet id="2015-04-10-add-second-species-amount-date" author="vincit-kyostihe">
+        <addColumn tableName="harvest_permit_species_amount">
+            <column name="begin_date2" type="DATE"/>
+            <column name="end_date2" type="DATE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-04-20-harvest-season-add-another-begin-end-dates" author="vincit-terova">
+        <addColumn tableName="harvest_season">
+            <column name="begin_date2" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="end_date2" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="end_of_reporting_date2" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-04-20-fix-dates" author="vincit-terova">
+        <modifyDataType tableName="harvest_season" columnName="begin_date" newDataType="DATE"/>
+        <modifyDataType tableName="harvest_season" columnName="end_date" newDataType="DATE"/>
+        <modifyDataType tableName="harvest_season" columnName="end_of_reporting_date" newDataType="DATE"/>
+        <modifyDataType tableName="harvest_season" columnName="begin_date2" newDataType="DATE"/>
+        <modifyDataType tableName="harvest_season" columnName="end_date2" newDataType="DATE"/>
+        <modifyDataType tableName="harvest_season" columnName="end_of_reporting_date2" newDataType="DATE"/>
+
+        <modifyDataType tableName="harvest_report_fields" columnName="begin_date" newDataType="DATE"/>
+        <modifyDataType tableName="harvest_report_fields" columnName="end_date" newDataType="DATE"/>
+
+        <modifyDataType tableName="occupation" columnName="begin_date" newDataType="DATE"/>
+        <modifyDataType tableName="occupation" columnName="end_date" newDataType="DATE"/>
+    </changeSet>
+
+    <changeSet id="2014-12-08-hunting-club-area" author="vincit-terova">
+        <createTable tableName="hunting_club_area">
+            <column autoIncrement="true" name="hunting_club_area_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="hunting_club_area_id"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="club_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hunting_year" type="INT"/>
+            <column name="name_finnish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="hunting_club_area"
+                baseColumnNames="club_id"
+                constraintName="fk_hunting_club_area_club"
+                onDelete="NO ACTION" onUpdate="NO ACTION"
+                referencedColumnNames="organisation_id"
+                referencedTableName="organisation"/>
+        <addForeignKeyConstraint
+                baseTableName="hunting_club_area"
+                baseColumnNames="game_species_id"
+                constraintName="fk_hunting_club_area_species"
+                onDelete="NO ACTION" onUpdate="NO ACTION"
+                referencedColumnNames="game_species_id"
+                referencedTableName="game_species"/>
+    </changeSet>
+
+    <changeSet id="2014-12-10-hunting_club_area_species" author="vincit-terova">
+        <dropColumn tableName="hunting_club_area" columnName="game_species_id"/>
+
+        <createTable tableName="hunting_club_area_species">
+            <column name="hunting_club_area_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="hunting_club_area_species" columnNames="hunting_club_area_id, game_species_id"/>
+
+        <addForeignKeyConstraint baseTableName="hunting_club_area_species"
+                                 baseColumnNames="hunting_club_area_id"
+                                 constraintName="fk_hunting_club_area_species_area"
+                                 referencedTableName="hunting_club_area"
+                                 referencedColumnNames="hunting_club_area_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <addForeignKeyConstraint baseTableName="hunting_club_area_species"
+                                 baseColumnNames="game_species_id"
+                                 constraintName="fk_hunting_club_area_species_gamespecies"
+                                 referencedTableName="game_species"
+                                 referencedColumnNames="game_species_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+    </changeSet>
+
+    <changeSet id="2015-01-05-map-zone" author="vincit-kyostihe">
+        <createTable tableName="zone">
+            <column autoIncrement="true" name="zone_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="zone_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="geom" type="GEOMETRY"/>
+            <column name="source_type" type="VARCHAR(255)" defaultValue="LOCAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="upload_file_id" type="CHAR(36)">
+                <constraints references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_zone_upload_metadata_uuid"
+                             deleteCascade="true"/>
+            </column>
+        </createTable>
+
+        <addColumn tableName="hunting_club_area">
+            <column name="zone_id" type="BIGINT"/>
+        </addColumn>
+
+        <createTable tableName="zone_property">
+            <column name="zone_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="property_identifier" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="zone_property" columnNames="zone_id,property_identifier"/>
+
+        <createTable tableName="zone_palsta">
+            <column name="zone_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="palsta_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom_area" type="FLOAT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom_perimeter" type="FLOAT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom_centroid_x" type="INT4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom_centroid_y" type="INT4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom_md5" type="CHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="zone_palsta" columnNames="zone_id,palsta_id"/>
+
+        <addForeignKeyConstraint baseTableName="zone_property"
+                                 baseColumnNames="zone_id"
+                                 constraintName="fk_zone_property_owner"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedTableName="zone"
+                                 referencedColumnNames="zone_id"/>
+
+        <addForeignKeyConstraint baseTableName="zone_palsta"
+                                 baseColumnNames="zone_id"
+                                 constraintName="fk_zone_palsta_owner"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedTableName="zone"
+                                 referencedColumnNames="zone_id"/>
+
+        <addForeignKeyConstraint baseTableName="hunting_club_area"
+                                 baseColumnNames="zone_id"
+                                 constraintName="fk_hunting_club_area_zone"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="zone"
+                                 referencedColumnNames="zone_id"/>
+
+        <createTable tableName="zone_feature">
+            <column name="zone_feature_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="zone_feature_pkey"/>
+            </column>
+            <column name="zone_id" type="BIGINT">
+                <constraints nullable="false" references="zone(zone_id)"
+                             foreignKeyName="fk_zone_feature_zone_id"
+                             deleteCascade="true"/>
+            </column>
+            <column name="property_identifier" type="BIGINT"/>
+            <column name="geom" type="GEOMETRY"/>
+        </createTable>
+
+        <createIndex tableName="zone_feature" indexName="ndx_zone_feature_zone_id">
+            <column name="zone_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-04-02-map-zone-palsta-fk" author="vincit-kyostihe">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="palstaalue"/>
+        </preConditions>
+
+        <addForeignKeyConstraint baseTableName="zone_palsta"
+                                 baseColumnNames="palsta_id"
+                                 constraintName="fk_zone_palsta_ref"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="palstaalue"
+                                 referencedColumnNames="id"/>
+
+    </changeSet>
+
+    <changeSet id="2015-04-21-add-zone-species" author="vincit-kyostihe" dbms="postgresql">
+        <addColumn tableName="zone_feature">
+            <column name="included_species" type="integer[]"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-04-21-add-zone-species" author="vincit-kyostihe" dbms="h2">
+        <addColumn tableName="zone_feature">
+            <column name="included_species" type="ARRAY"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-04-22-add-hunting-day-of-group" author="vincit-jarkkoka">
+        <createTable tableName="group_hunting_day">
+            <column autoIncrement="true" name="group_hunting_day_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="group_hunting_day_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="hunting_group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration_minutes" type="INT2"/>
+            <column name="snow_depth" type="INT2"/>
+            <column name="hunting_method" type="VARCHAR(255)"/>
+            <column name="number_of_hunters" type="INT2"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="group_hunting_day" baseColumnNames="hunting_group_id"
+                                 constraintName="fk_group_hunting_day_group"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"/>
+
+        <addForeignKeyConstraint baseTableName="group_hunting_day" baseColumnNames="hunting_method"
+                                 constraintName="fk_group_hunting_day_hunting_method"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="hunting_method"
+                                 referencedColumnNames="name"/>
+
+        <createIndex tableName="group_hunting_day" indexName="ndx_group_hunting_day_group">
+            <column name="hunting_group_id"/>
+        </createIndex>
+
+        <sql>
+            <![CDATA[
+            ALTER TABLE group_hunting_day ADD CONSTRAINT ck_group_hunting_day_duration_minutes CHECK (duration_minutes >= 0);
+            ALTER TABLE group_hunting_day ADD CONSTRAINT ck_group_hunting_day_snow_depth CHECK (snow_depth >= 0);
+            ALTER TABLE group_hunting_day ADD CONSTRAINT ck_group_hunting_day_hunter_count CHECK (number_of_hunters >= 0);
+            ]]>
+        </sql>
+
+        <addColumn tableName="harvest">
+            <column name="group_hunting_day_id" type="BIGINT">
+                <constraints references="group_hunting_day(group_hunting_day_id)"
+                             foreignKeyName="fk_harvest_group_hunting_day"/>
+            </column>
+        </addColumn>
+
+        <createIndex tableName="harvest" indexName="ndx_harvest_group_hunting_day">
+            <column name="group_hunting_day_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-05-05-add-table-for-harvest-rejections-of-group" author="vincit-jarkkoka">
+        <createTable tableName="group_harvest_rejection">
+            <column autoIncrement="true" name="group_harvest_rejection_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="group_harvest_rejection_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+
+            <column name="hunting_club_group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="harvest_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="group_harvest_rejection"
+                                 baseColumnNames="hunting_club_group_id"
+                                 constraintName="fk_group_harvest_rejection_hunting_club_group"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"
+                                 onDelete="CASCADE" onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint baseTableName="group_harvest_rejection"
+                                 baseColumnNames="harvest_id"
+                                 constraintName="fk_group_harvest_rejection_harvest"
+                                 referencedTableName="harvest"
+                                 referencedColumnNames="harvest_id"
+                                 onDelete="CASCADE" onUpdate="CASCADE"/>
+
+        <createIndex tableName="group_harvest_rejection" indexName="ndx_group_harvest_rejection" unique="true">
+            <column name="hunting_club_group_id"/>
+            <column name="harvest_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-05-20-add-club-group-hunting-area" author="vincit-kyostihe">
+        <addColumn tableName="organisation">
+            <column name="hunting_area_id" type="BIGINT">
+                <constraints nullable="true" references="hunting_club_area(hunting_club_area_id)"
+                             foreignKeyName="fk_organisation_hunting_club_area_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-06-03-add-harvest_report_state-constraint" author="vincit-terova">
+        <preConditions onFail="CONTINUE">
+            <dbms type="postgresql"/>
+        </preConditions>
+
+        <sql splitStatements="false">
+            <![CDATA[
+-- there should be at most 1 harvest_report for permit where harvests_as_list=true
+CREATE OR REPLACE FUNCTION harvest_report_state_check()
+  RETURNS TRIGGER AS $harvest_report_state_check$
+DECLARE
+  total_count INT;
+BEGIN
+  SELECT count(hr.*)
+  INTO total_count
+  FROM harvest_report hr
+    JOIN harvest_permit hp ON (hr.harvest_permit_id = hp.harvest_permit_id AND hp.harvests_as_list = TRUE)
+  WHERE
+    hr.harvest_permit_id = NEW.harvest_permit_id
+    AND hr.state <> 'DELETED';
+  IF total_count > 1
+  THEN
+    RAISE EXCEPTION 'Too many harvest reports for list type permit, permit_id=%', NEW.harvest_permit_id;
+  END IF;
+  RETURN NULL;
+END;
+$harvest_report_state_check$ LANGUAGE 'plpgsql';
+CREATE CONSTRAINT TRIGGER harvest_report_state_check_trigger
+AFTER INSERT OR UPDATE ON harvest_report
+FOR EACH ROW EXECUTE PROCEDURE harvest_report_state_check();
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-05-15-harvest-permitted-method" author="vincit-terova">
+        <addColumn tableName="harvest">
+            <column name="permitted_method_tape_recorders" type="BOOLEAN" />
+            <column name="permitted_method_traps" type="BOOLEAN" />
+            <column name="permitted_method_other" type="BOOLEAN" />
+            <column name="permitted_method_description" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2014-12-05-refactor-game-observation-tables" author="vincit-jarkkoka">
+        <addColumn tableName="game_observation">
+            <column name="observer_id" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="rhy_id" type="BIGINT"/>
+
+            <column name="from_mobile" type="BOOL" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="mobile_client_ref_id" type="BIGINT"/>
+
+            <column name="on_yard" type="BOOL"/>
+            <column name="verified_by_beast_contact" type="BOOL"/>
+        </addColumn>
+
+        <addForeignKeyConstraint baseColumnNames="rhy_id"
+                                 baseTableName="game_observation"
+                                 constraintName="fk_game_observation_rhy"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="organisation_id"
+                                 referencedTableName="organisation"/>
+
+        <createIndex tableName="game_observation" indexName="ndx_game_observation_rhy">
+            <column name="rhy_id"/>
+        </createIndex>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_amount_bounds
+                CHECK (amount > 0 AND amount < 1000)
+            ]]>
+        </sql>
+
+        <dropColumn tableName="observation_specimen" columnName="type"/>
+
+        <dropNotNullConstraint tableName="observation_specimen" columnName="age" columnDataType="varchar"/>
+        <dropNotNullConstraint tableName="observation_specimen" columnName="gender" columnDataType="varchar"/>
+
+        <addColumn tableName="observation_specimen">
+            <column name="paw_width" type="DECIMAL(3,1)" />
+            <column name="paw_length" type="DECIMAL(3,1)" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-06-10-add-observation-reference-to-game_diary_image" author="vincit-jarkkoka">
+        <addColumn tableName="game_diary_image">
+            <column name="observation_id" type="BIGINT" />
+        </addColumn>
+
+        <addForeignKeyConstraint baseTableName="game_diary_image"
+                                 baseColumnNames="observation_id"
+                                 constraintName="fk_game_diary_image_game_observation"
+                                 referencedTableName="game_observation"
+                                 referencedColumnNames="game_observation_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <createIndex tableName="game_diary_image" indexName="ndx_game_diary_image_observation">
+            <column name="observation_id"/>
+        </createIndex>
+
+        <sql>
+            <![CDATA[
+            ALTER TABLE game_diary_image ADD CONSTRAINT ck_game_diary_image_exclusive_harvest_and_observation_references CHECK (harvest_id IS NULL OR observation_id IS NULL);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-06-12-enable-associating-game_observations-with-group_hunting_day" author="vincit-jarkkoka">
+        <addColumn tableName="game_observation">
+            <column name="group_hunting_day_id" type="BIGINT">
+                <constraints references="group_hunting_day(group_hunting_day_id)"
+                             foreignKeyName="fk_game_observation_group_hunting_day"/>
+            </column>
+        </addColumn>
+
+        <createIndex tableName="game_observation" indexName="ndx_game_observation_group_hunting_day">
+            <column name="group_hunting_day_id"/>
+        </createIndex>
+
+        <createTable tableName="group_observation_rejection">
+            <column autoIncrement="true" name="group_observation_rejection_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="group_observation_rejection_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="hunting_club_group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="observation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="group_observation_rejection"
+                                 baseColumnNames="hunting_club_group_id"
+                                 constraintName="fk_group_observation_rejection_hunting_club_group"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"
+                                 onDelete="CASCADE" onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint baseTableName="group_observation_rejection"
+                                 baseColumnNames="observation_id"
+                                 constraintName="fk_group_observation_rejection_game_observation"
+                                 referencedTableName="game_observation"
+                                 referencedColumnNames="game_observation_id"
+                                 onDelete="CASCADE" onUpdate="CASCADE"/>
+
+        <createIndex tableName="group_observation_rejection" indexName="ndx_group_observation_rejection" unique="true">
+            <column name="hunting_club_group_id"/>
+            <column name="observation_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-07-06-add-permit-end_of_hunting_report" author="vincit-terova">
+        <addColumn tableName="harvest_permit">
+            <column name="end_of_hunting_report_id" type="BIGINT">
+                <constraints references="harvest_report(harvest_report_id)"
+                             foreignKeyName="fk_harvest_permit_end_of_hunting_report"/>
+            </column>
+        </addColumn>
+        <createIndex tableName="harvest_permit" indexName="ndx_harvest_permit_end_of_hunting_report" unique="true">
+            <column name="end_of_hunting_report_id"></column>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-07-06-generate-end_of_hunting_report" author="vincit-terova">
+        <preConditions onFail="CONTINUE">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql><![CDATA[
+            UPDATE harvest_permit hp SET end_of_hunting_report_id=hr.harvest_report_id
+            FROM harvest_report hr
+            WHERE hp.harvest_permit_id=hr.harvest_permit_id
+            AND hr.state <> 'DELETED'
+            AND hp.harvests_as_list=true;
+            ]]>
+        </sql>
+        <sql><![CDATA[
+            WITH eoh AS (
+              INSERT INTO harvest_report (consistency_version, created_by_user_id, deleted_by_user_id, modified_by_user_id, creation_time, modification_time, deletion_time, description, author_id, state, harvest_permit_id)
+              SELECT 0, -1, null, -1, NOW(), NOW(), null, 'Automaattisesti luotu metsästyksen päättymisilmoitus ', hp.original_contact_person_id, 'APPROVED', hp.harvest_permit_id
+              FROM harvest_permit hp
+              WHERE hp.harvests_as_list=false
+              AND hp.harvest_permit_id in (
+                SELECT hpsa.harvest_permit_id FROM harvest_permit_species_amount hpsa
+                WHERE hpsa.end_date < date '2015-03-01' AND (hpsa.end_date2 IS NULL OR hpsa.end_date2 < date '2015-03-01')
+              )
+              RETURNING *
+            )
+            UPDATE harvest_permit hp
+              SET end_of_hunting_report_id=eoh.harvest_report_id,
+                modification_time=NOW()
+            FROM eoh WHERE hp.harvest_permit_id=eoh.harvest_permit_id;
+            ]]>
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="2015-07-03-game-species-name-english" author="vincit-terova">
+        <addColumn tableName="game_species">
+            <column name="name_english" type="VARCHAR(255)"></column>
+        </addColumn>
+        <sql>
+            update game_species set name_english='canada goose' where official_code=26298;
+            update game_species set name_english='greylag goose' where official_code=26291;
+            update game_species set name_english='bean goose' where official_code=26287;
+            update game_species set name_english='mallard' where official_code=26373;
+            update game_species set name_english='teal' where official_code=26366;
+            update game_species set name_english='wigeon' where official_code=26360;
+            update game_species set name_english='pintail' where official_code=26382;
+            update game_species set name_english='garganey' where official_code=26388;
+            update game_species set name_english='shoveler' where official_code=26394;
+            update game_species set name_english='pochard' where official_code=26407;
+            update game_species set name_english='tufted duck' where official_code=26415;
+            update game_species set name_english='common eider' where official_code=26419;
+            update game_species set name_english='long-tailed duck' where official_code=26427;
+            update game_species set name_english='goldeneye' where official_code=26435;
+            update game_species set name_english='red-breasted merganser' where official_code=26440;
+            update game_species set name_english='goosander' where official_code=26442;
+            update game_species set name_english='willow grouse' where official_code=26921;
+            update game_species set name_english='ptarmigan' where official_code=26922;
+            update game_species set name_english='hazel grouse' where official_code=26931;
+            update game_species set name_english='black grouse' where official_code=26926;
+            update game_species set name_english='capercaillie' where official_code=26928;
+            update game_species set name_english='partridge' where official_code=27048;
+            update game_species set name_english='pheasant' where official_code=27152;
+            update game_species set name_english='coot' where official_code=27381;
+            update game_species set name_english='woodcock' where official_code=27649;
+            update game_species set name_english='wood pigeon' where official_code=27911;
+            update game_species set name_english='rabbit' where official_code=50114;
+            update game_species set name_english='mountain hare' where official_code=50106;
+            update game_species set name_english='brown hare' where official_code=50386;
+            update game_species set name_english='red squirrel' where official_code=48089;
+            update game_species set name_english='european beaver' where official_code=48251;
+            update game_species set name_english='canadian beaver' where official_code=48250;
+            update game_species set name_english='muskrat' where official_code=48537;
+            update game_species set name_english='nutria' where official_code=50336;
+            update game_species set name_english='wolf' where official_code=46549;
+            update game_species set name_english='blue fox' where official_code=46542;
+            update game_species set name_english='red fox' where official_code=46587;
+            update game_species set name_english='raccoon dog' where official_code=46564;
+            update game_species set name_english='brown bear' where official_code=47348;
+            update game_species set name_english='raccoon' where official_code=47329;
+            update game_species set name_english='badger' where official_code=47180;
+            update game_species set name_english='ermine' where official_code=47230;
+            update game_species set name_english='polecat' where official_code=47240;
+            update game_species set name_english='otter' where official_code=47169;
+            update game_species set name_english='pine marten' where official_code=47223;
+            update game_species set name_english='american mink' where official_code=47243;
+            update game_species set name_english='wolverine' where official_code=47212;
+            update game_species set name_english='lynx' where official_code=46615;
+            update game_species set name_english='ringed seal' where official_code=200555;
+            update game_species set name_english='harbour seal' where official_code=47305;
+            update game_species set name_english='grey seal' where official_code=47282;
+            update game_species set name_english='wild boar' where official_code=47926;
+            update game_species set name_english='fallow deer' where official_code=47484;
+            update game_species set name_english='red deer' where official_code=47476;
+            update game_species set name_english='sika deer' where official_code=47479;
+            update game_species set name_english='roe deer' where official_code=47507;
+            update game_species set name_english='moose' where official_code=47503;
+            update game_species set name_english='white-tailed deer' where official_code=47629;
+            update game_species set name_english='wild forest reindeer' where official_code=200556;
+            update game_species set name_english='mufflon' where official_code=47774;
+            update game_species set name_english='raven' where official_code=37178;
+            update game_species set name_english='crow' where official_code=37166;
+            update game_species set name_english='magpie' where official_code=37122;
+            update game_species set name_english='herring gull' where official_code=27750;
+            update game_species set name_english='sea gull' where official_code=27759;
+            update game_species set name_english='feral pigeon' where official_code=200535;
+            update game_species set name_english='field fare' where official_code=33117;
+            update game_species set name_english='wild cat' where official_code=53004;
+        </sql>
+        <addNotNullConstraint tableName="game_species" columnName="name_english" columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <changeSet id="2015-07-01-harvest-permitted-method_all-booleans-null-or-none" author="vincit-terova">
+        <sql>
+            <![CDATA[
+            ALTER TABLE harvest ADD CONSTRAINT ck_harvest_permitted_method_booleans_null_or_none
+            CHECK (
+              (permitted_method_tape_recorders IS NULL
+                AND permitted_method_traps IS NULL
+                AND permitted_method_other IS NULL
+                AND permitted_method_description IS NULL)
+              OR (
+                permitted_method_other IS NOT NULL
+                AND permitted_method_tape_recorders IS NOT NULL
+                AND permitted_method_traps IS NOT NULL
+                AND ((permitted_method_other = FALSE AND permitted_method_description IS NULL)
+                     OR
+                     (permitted_method_other = TRUE AND permitted_method_description IS NOT NULL)
+            )));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-07-15-hunting-club-restrictions" author="vincit-terova">
+        <addColumn tableName="organisation">
+            <column name="restriction" type="BIGINT"></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-07-27-add-missing-geometry-indexes" author="vincit-kyostihe" dbms="postgresql">
+        <sql>
+            CREATE INDEX zone_geom_gist ON zone USING GIST (geom);
+            CREATE INDEX mh_hirvi_geom_gist ON mh_hirvi USING GIST (geom);
+            CREATE INDEX mh_pienriista_geom_gist ON mh_pienriista USING GIST (geom);
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-08-27-add-harvest-municipality" author="vincit-terova">
+        <addColumn tableName="harvest">
+            <column name="municipality_code" type="CHAR(3)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-08-27-populate-harvest-municipality" author="vincit-terova" dbms="postgresql">
+        <sql><![CDATA[
+                UPDATE harvest SET municipality_code = (
+                    SELECT ktunnus FROM palstaalue
+                    WHERE ST_Intersects(geom, ST_SetSRID(ST_MakePoint(longitude, latitude), 3067)) LIMIT 1
+                );
+              ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-08-07-drop-hunting-area-species" author="vincit-kyostihe">
+        <dropTable tableName="hunting_club_area_species"/>
+    </changeSet>
+
+    <changeSet id="2015-08-07-drop-zone-property-list" author="vincit-kyostihe">
+        <dropTable tableName="zone_property"/>
+    </changeSet>
+
+    <changeSet id="2015-08-07-drop-computed-zone-properties" author="vincit-kyostihe">
+        <dropColumn tableName="zone_palsta" columnName="geom_area"/>
+        <dropColumn tableName="zone_palsta" columnName="geom_perimeter"/>
+        <dropColumn tableName="zone_palsta" columnName="geom_centroid_x"/>
+        <dropColumn tableName="zone_palsta" columnName="geom_centroid_y"/>
+        <dropColumn tableName="zone_palsta" columnName="geom_md5"/>
+    </changeSet>
+
+    <changeSet id="2015-08-10-add-not-null-constraint-for-hunting_year-of-hunting_club_area" author="vincit-jarkkoka">
+        <addNotNullConstraint tableName="hunting_club_area" columnName="hunting_year" columnDataType="integer"/>
+    </changeSet>
+
+    <changeSet id="2015-08-07-drop-observation_specimen_type-table" author="vincit-jarkkoka">
+        <dropTable tableName="observation_specimen_type"/>
+    </changeSet>
+
+    <changeSet id="2015-08-12-add-required-table" author="vincit-jarkkoka">
+        <createTable tableName="required">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="required">
+            <column name="name" value="YES"/>
+        </insert>
+        <insert tableName="required">
+            <column name="name" value="NO"/>
+        </insert>
+        <insert tableName="required">
+            <column name="name" value="VOLUNTARY"/>
+        </insert>
+
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="hunting_area_type"
+                                 constraintName="fk_harvest_report_fields_hunting_area_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="hunting_party"
+                                 constraintName="fk_harvest_report_fields_hunting_party"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="hunting_area_size"
+                                 constraintName="fk_harvest_report_fields_hunting_area_size"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="permit_number"
+                                 constraintName="fk_harvest_report_fields_permit_number"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="hunting_method"
+                                 constraintName="fk_harvest_report_fields_hunting_method"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="weight"
+                                 constraintName="fk_harvest_report_fields_weight"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="age"
+                                 constraintName="fk_harvest_report_fields_age"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="gender"
+                                 constraintName="fk_harvest_report_fields_gender"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="reported_with_phone_call"
+                                 constraintName="fk_harvest_report_fields_reported_with_phone_call"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="2015-08-11-add-permit-number-unique-constraint" author="vincit-terova">
+        <addUniqueConstraint tableName="harvest_permit" columnNames="permit_number" />
+    </changeSet>
+
+    <changeSet id="2015-07-15-hunting-club-member-invitation" author="vincit-terova">
+        <createTable tableName="hunting_club_member_invitation">
+            <column autoIncrement="true" name="hunting_club_member_invitation_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="hunting_club_member_invitation_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="person_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hunting_club_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="occupation_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_rejected_time" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="person_id"
+                                 baseTableName="hunting_club_member_invitation"
+                                 constraintName="fk_hunting_club_member_invitation_person"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="person_id"
+                                 referencedTableName="person"/>
+
+        <addForeignKeyConstraint baseColumnNames="hunting_club_id"
+                                 baseTableName="hunting_club_member_invitation"
+                                 constraintName="fk_hunting_club_member_invitation_hunting_club"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="organisation_id"
+                                 referencedTableName="organisation"/>
+
+        <addForeignKeyConstraint baseColumnNames="occupation_type"
+                                 baseTableName="hunting_club_member_invitation"
+                                 constraintName="fk_hunting_club_member_invitation_occupation_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="occupation_type"
+                                 referencedColumnNames="name"/>
+
+
+        <addUniqueConstraint tableName="hunting_club_member_invitation"
+                             columnNames="person_id,hunting_club_id"
+                             constraintName="ndx_hunting_club_member_invitation"/>
+    </changeSet>
+
+    <changeSet id="2015-08-19-add-constraint-harvest-rhy-required-with-permit" author="vincit-terova">
+        <sql>
+            <![CDATA[
+                ALTER TABLE harvest ADD CONSTRAINT ck_harvest_permit_requires_rhy
+                CHECK (
+                 harvest_permit_id IS NULL
+                 OR (harvest_permit_id IS NOT NULL AND rhy_id IS NOT NULL)
+                );
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-02-add-group-hunting-day-start-time" author="vincit-kyostihe">
+        <renameColumn tableName="group_hunting_day" oldColumnName="date" newColumnName="start_date"/>
+        <addColumn tableName="group_hunting_day">
+            <column name="end_date" type="DATE"/>
+            <column name="start_time" type="TIME WITHOUT TIME ZONE"/>
+            <column name="end_time" type="TIME WITHOUT TIME ZONE"/>
+        </addColumn>
+        <sql>
+            UPDATE group_hunting_day SET end_date = start_date, start_time = '06:00', end_time = '21:00';
+        </sql>
+        <addNotNullConstraint tableName="group_hunting_day" columnName="end_date" columnDataType="DATE"/>
+        <addNotNullConstraint tableName="group_hunting_day" columnName="start_time" columnDataType="TIME WITHOUT TIME ZONE"/>
+        <addNotNullConstraint tableName="group_hunting_day" columnName="end_time" columnDataType="TIME_WITHOUT TIME ZONE"/>
+        <dropColumn tableName="group_hunting_day" columnName="duration_minutes"/>
+        <addUniqueConstraint tableName="group_hunting_day"
+                             columnNames="hunting_group_id,start_date"
+                             constraintName="ndx_group_hunting_day_group_start_date"/>
+    </changeSet>
+
+    <changeSet id="2015-09-10-add-group-hunting-day-attributes" author="vincit-kyostihe">
+        <dropForeignKeyConstraint baseTableName="group_hunting_day" constraintName="fk_group_hunting_day_hunting_method"/>
+        <dropColumn tableName="group_hunting_day" columnName="hunting_method"/>
+
+        <addColumn tableName="group_hunting_day">
+            <column name="break_duration_minutes" type="INT"/>
+            <column name="number_of_hounds" type="INT"/>
+            <column name="hunting_method" type="INT"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE group_hunting_day ADD CONSTRAINT hunting_method_check
+                CHECK (hunting_method IS NULL OR hunting_method BETWEEN 1 AND 9);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-08-07-add-observation_type-table" author="vincit-jarkkoka">
+        <createTable tableName="observation_type">
+            <column name="id" type="INT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="observation_type">
+            <column name="id" value="1"/>
+            <column name="name" value="NAKO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="2"/>
+            <column name="name" value="JALKI"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="3"/>
+            <column name="name" value="ULOSTE"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="4"/>
+            <column name="name" value="AANI"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="5"/>
+            <column name="name" value="RIISTAKAMERA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="6"/>
+            <column name="name" value="KOIRAN_RIISTATYO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="7"/>
+            <column name="name" value="MAASTOLASKENTA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="8"/>
+            <column name="name" value="KOLMIOLASKENTA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="9"/>
+            <column name="name" value="LENTOLASKENTA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="10"/>
+            <column name="name" value="HAASKA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="11"/>
+            <column name="name" value="SYONNOS"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="12"/>
+            <column name="name" value="PESA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="13"/>
+            <column name="name" value="SOIDIN"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="14"/>
+            <column name="name" value="LUOLASTO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="15"/>
+            <column name="name" value="PESIMALUOTO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="16"/>
+            <column name="name" value="LEPAILYLUOTO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="17"/>
+            <column name="name" value="PESIMASUO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="18"/>
+            <column name="name" value="MUUTON_AIKAINEN_LEPAILYALUE"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="19"/>
+            <column name="name" value="RIISTANKULKUPAIKKA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="id" value="20"/>
+            <column name="name" value="MUU"/>
+        </insert>
+
+        <addColumn tableName="game_observation">
+            <column name="observation_type" type="VARCHAR(255)" defaultValue="MUU">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint baseTableName="game_observation"
+                                 baseColumnNames="observation_type"
+                                 constraintName="fk_game_observation_observation_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="observation_type"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="2015-08-12-create-observation_base_fields-table" author="vincit-jarkkoka">
+        <createTable tableName="observation_base_fields">
+            <column autoIncrement="true" name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="observation_base_fields_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="metadata_version" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="within_moose_hunting" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="observation_base_fields"
+                                 baseColumnNames="game_species_id"
+                                 constraintName="fk_observation_base_fields_species"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="game_species"
+                                 referencedColumnNames="game_species_id"/>
+
+        <addForeignKeyConstraint baseTableName="observation_base_fields"
+                                 baseColumnNames="within_moose_hunting"
+                                 constraintName="fk_observation_base_fields_within_moose_hunting"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addUniqueConstraint tableName="observation_base_fields"
+                             columnNames="game_species_id, metadata_version"
+                             constraintName="observation_base_fields_uniq"/>
+    </changeSet>
+
+    <changeSet id="2015-08-12-create-observation_context_sensitive_fields-table" author="vincit-jarkkoka">
+        <createTable tableName="observation_context_sensitive_fields">
+            <column autoIncrement="true" name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="observation_context_sensitive_fields_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="metadata_version" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="within_moose_hunting" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="observation_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="amount" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="age" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Extended age range will include 1-2-year-old category -->
+            <column name="extended_age_range" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="gender" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="wounded" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dead" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="on_carcass" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="collar_or_radio" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="legring_or_wingmark" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="earmark" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="game_species_id"
+                                 constraintName="fk_observation_context_sensitive_fields_species"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="game_species"
+                                 referencedColumnNames="game_species_id"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="observation_type"
+                                 constraintName="fk_observation_context_sensitive_fields_observation_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="observation_type"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="amount"
+                                 constraintName="fk_observation_context_sensitive_fields_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="age"
+                                 constraintName="fk_observation_context_sensitive_fields_age"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="gender"
+                                 constraintName="fk_observation_context_sensitive_fields_gender"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="wounded"
+                                 constraintName="fk_observation_context_sensitive_fields_wounded"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="dead"
+                                 constraintName="fk_observation_context_sensitive_fields_dead"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="on_carcass"
+                                 constraintName="fk_observation_context_sensitive_fields_on_carcass"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="collar_or_radio"
+                                 constraintName="fk_observation_context_sensitive_fields_collar_or_radio"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="legring_or_wingmark"
+                                 constraintName="fk_observation_context_sensitive_fields_legring_or_wingmark"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="earmark"
+                                 constraintName="fk_observation_context_sensitive_fields_earmark"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addUniqueConstraint tableName="observation_context_sensitive_fields"
+                             columnNames="metadata_version, game_species_id, within_moose_hunting, observation_type"
+                             constraintName="observation_context_sensitive_fields_uniq"/>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE observation_context_sensitive_fields
+                    ADD CONSTRAINT observation_context_sensitive_fields_extended_age_range_validity
+                    CHECK (age != 'NO' OR extended_age_range = false);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-08-update-observation-fields-modification-timestamps-by-trigger" author="vincit-jarkkoka" dbms="postgresql">
+        <sql splitStatements="false">
+
+            <!-- Trigger is used to update the modification timestamp. It is assumed that the  -->
+            <!-- affected tables will only be updated by Liquibase migration scripts or by     -->
+            <!-- executing SQL clauses directly into production DB. Within any update to a row -->
+            <!-- the modification_time must be updated as well. This trigger ensures that      -->
+            <!-- this is not "forgotten" to do.                                                -->
+
+            <![CDATA[
+                CREATE OR REPLACE FUNCTION update_modification_time_column()
+                RETURNS TRIGGER AS $$
+                BEGIN
+                  IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+                    NEW.modification_time = now();
+                    RETURN NEW;
+                  ELSE
+                    RETURN OLD;
+                  END IF;
+                END;
+                $$ language 'plpgsql';
+
+                CREATE TRIGGER update_observation_base_fields_modification_time
+                BEFORE UPDATE ON observation_base_fields FOR EACH ROW EXECUTE PROCEDURE update_modification_time_column();
+
+                CREATE TRIGGER update_observation_context_sensitive_fields_modification_time
+                BEFORE UPDATE ON observation_context_sensitive_fields FOR EACH ROW EXECUTE PROCEDURE update_modification_time_column();
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-08-13-populate-observation_base_fields-table" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                -- Generate an observation_base_fields counterpart for each game_species row.
+                INSERT INTO observation_base_fields (game_species_id) SELECT game_species_id FROM game_species ORDER BY 1;
+
+                UPDATE observation_base_fields obf
+                SET within_moose_hunting = 'YES'
+                FROM game_species gs
+                WHERE
+                  obf.game_species_id = gs.game_species_id
+                  AND gs.official_code IN (46549, 46615, 47212, 47348, 47484, 47629, 200556);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-08-10-add-temporarily-observation-type-bitset-to-game_species" author="vincit-jarkkoka">
+
+        <!-- This int bitset field is removed in the future. It serves only temporarily for data generation needs. -->
+        <addColumn tableName="game_species">
+            <column name="observation_types_bitset" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <!-- The following bitsets are generated programmatically. -->
+        <sql>
+            <![CDATA[
+                ALTER TABLE game_species ADD CONSTRAINT observation_types_bitset_bounds
+                    CHECK (observation_types_bitset >= 0 AND observation_types_bitset < 1048576);
+
+                UPDATE game_species SET observation_types_bitset = 526397 WHERE official_code IN (27152,27381,27649,27750,27759,27911,33117,37122,37166,37178,200535);
+                UPDATE game_species SET observation_types_bitset = 526461 WHERE official_code IN (27048);
+                UPDATE game_species SET observation_types_bitset = 530493 WHERE official_code IN (26921,26922,26926,26928,26931);
+                UPDATE game_species SET observation_types_bitset = 576575 WHERE official_code IN (47282,47305,200555);
+                UPDATE game_species SET observation_types_bitset = 657469 WHERE official_code IN (26291,26298,26360,26366,26373,26382,26388,26394,26407,26415,26419,26427,26435,26440,26442);
+                UPDATE game_species SET observation_types_bitset = 723005 WHERE official_code IN (26287);
+                UPDATE game_species SET observation_types_bitset = 787519 WHERE official_code IN (47476,47479,47774,50106,50336,50386);
+                UPDATE game_species SET observation_types_bitset = 787583 WHERE official_code IN (47484,47507,47629);
+                UPDATE game_species SET observation_types_bitset = 787839 WHERE official_code IN (47503,200556);
+                UPDATE game_species SET observation_types_bitset = 788543 WHERE official_code IN (53004);
+                UPDATE game_species SET observation_types_bitset = 789567 WHERE official_code IN (46542,47169,47223,47230,47240,47243,47329,47926,48089,48250,48251,48537);
+                UPDATE game_species SET observation_types_bitset = 790079 WHERE official_code IN (47348);
+                UPDATE game_species SET observation_types_bitset = 790143 WHERE official_code IN (46615);
+                UPDATE game_species SET observation_types_bitset = 795711 WHERE official_code IN (50114);
+                UPDATE game_species SET observation_types_bitset = 797759 WHERE official_code IN (46564,46587,47180);
+                UPDATE game_species SET observation_types_bitset = 798335 WHERE official_code IN (46549,47212);            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-08-13-populate-observation_context_sensitive_fields-table" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                -- Generate hundreds of observation_context_sensitive_fields rows based on bitset in game_species table.
+                INSERT INTO observation_context_sensitive_fields (game_species_id, observation_type)
+                    SELECT s.id, ot.name
+                    FROM (
+                      SELECT game_species_id AS id, observation_types_bitset AS bits FROM game_species
+                    ) s
+                    INNER JOIN observation_type ot ON (s.bits >> (ot.id - 1) & 1 = 1)
+                    ORDER BY s.id, ot.id;
+
+                -- Generate observation_context_sensitive_fields rows for other-moose-like species relevant for withing-moose-hunting.
+                INSERT INTO observation_context_sensitive_fields (game_species_id, within_moose_hunting, observation_type)
+                    SELECT s.id, true, ot.name
+                    FROM (
+                      SELECT game_species_id AS id, observation_types_bitset AS bits
+                      FROM game_species
+                      WHERE official_code IN (47484, 47629, 200556)
+                    ) s
+                    INNER JOIN observation_type ot ON (s.bits >> (ot.id - 1) & 1 = 1)
+                    ORDER BY s.id, ot.id;
+
+                -- Generate observation_context_sensitive_fields rows for beast species relevant for withing-moose-hunting.
+                INSERT INTO observation_context_sensitive_fields (game_species_id, within_moose_hunting, observation_type)
+                    SELECT s.id, true, ot.name
+                    FROM (
+                      SELECT game_species_id AS id
+                      FROM game_species
+                      WHERE official_code IN (46549, 46615, 47212, 47348)
+                    ) s
+                    INNER JOIN observation_type ot ON ot.name IN ('NAKO', 'JALKI')
+                    ORDER BY s.id, ot.id;
+
+                UPDATE observation_context_sensitive_fields
+                SET amount = 'YES'
+                WHERE observation_type IN
+                    ('NAKO', 'JALKI', 'AANI', 'RIISTAKAMERA', 'KOIRAN_RIISTATYO', 'MAASTOLASKENTA', 'KOLMIOLASKENTA', 'LENTOLASKENTA');
+
+                -- Allow amount field for 'MUU' observation type because amount was previously
+                -- mandatory and since all existing observations (created prior to adding
+                -- observation type) are assigned 'MUU'.
+                UPDATE observation_context_sensitive_fields
+                SET amount = 'VOLUNTARY'
+                WHERE observation_type = 'MUU';
+
+                UPDATE observation_context_sensitive_fields ocsf
+                SET gender = 'VOLUNTARY'
+                FROM game_species gs
+                WHERE
+                    ocsf.observation_type IN ('NAKO', 'JALKI', 'AANI', 'RIISTAKAMERA', 'KOIRAN_RIISTATYO', 'MAASTOLASKENTA', 'KOLMIOLASKENTA')
+                    AND gs.game_species_id = ocsf.game_species_id
+                    AND gs.official_code NOT IN (26360, 26366, 27381, 27649, 27911, 27750, 27759, 33117, 37122, 37166, 37178, 200535);
+
+                UPDATE observation_context_sensitive_fields ocsf
+                SET age = 'VOLUNTARY'
+                FROM game_species gs
+                WHERE
+                    ocsf.observation_type IN ('NAKO', 'JALKI', 'AANI', 'RIISTAKAMERA', 'KOIRAN_RIISTATYO', 'MAASTOLASKENTA', 'KOLMIOLASKENTA')
+                    AND gs.game_species_id = ocsf.game_species_id
+                    AND gs.official_code NOT IN (26360, 26366, 27381, 27649, 27911, 27750, 27759, 33117, 37122, 37166, 37178, 200535);
+
+                UPDATE observation_context_sensitive_fields ocsf
+                SET extended_age_range = true
+                FROM game_species gs
+                WHERE
+                    ocsf.observation_type IN ('NAKO', 'JALKI', 'AANI', 'RIISTAKAMERA', 'KOIRAN_RIISTATYO', 'MAASTOLASKENTA', 'KOLMIOLASKENTA')
+                    AND gs.game_species_id = ocsf.game_species_id
+                    AND gs.official_code IN (46549, 46615, 47212, 47348);
+
+                UPDATE observation_context_sensitive_fields
+                SET wounded = 'VOLUNTARY'
+                WHERE observation_type IN ('NAKO', 'JALKI', 'RIISTAKAMERA', 'MAASTOLASKENTA');
+
+                UPDATE observation_context_sensitive_fields
+                SET dead = 'VOLUNTARY'
+                WHERE observation_type IN ('NAKO', 'JALKI', 'MAASTOLASKENTA');
+
+                UPDATE observation_context_sensitive_fields ocsf
+                SET on_carcass = 'VOLUNTARY'
+                FROM game_species gs
+                WHERE
+                    ocsf.observation_type IN ('NAKO', 'JALKI', 'MAASTOLASKENTA')
+                    AND gs.game_species_id = ocsf.game_species_id
+                    AND gs.official_code IN (46549, 46615, 47212, 47348, 46587);
+
+                UPDATE observation_context_sensitive_fields ocsf
+                SET collar_or_radio = 'VOLUNTARY'
+                FROM game_species gs
+                WHERE
+                    ocsf.observation_type IN ('NAKO', 'RIISTAKAMERA')
+                    AND gs.game_species_id = ocsf.game_species_id
+                    AND gs.category != 'FOWL'
+                    AND (gs.category != 'UNPROTECTED' OR gs.official_code = 53004)
+                    AND gs.official_code NOT IN (46542, 48250, 48251, 48537, 50336);
+
+                UPDATE observation_context_sensitive_fields ocsf
+                SET legring_or_wingmark = 'VOLUNTARY'
+                FROM game_species gs
+                WHERE
+                    ocsf.observation_type IN ('NAKO', 'RIISTAKAMERA')
+                    AND gs.game_species_id = ocsf.game_species_id
+                    AND gs.category IN ('FOWL', 'UNPROTECTED')
+                    AND gs.official_code != 53004;
+
+                UPDATE observation_context_sensitive_fields ocsf
+                SET earmark = 'VOLUNTARY'
+                FROM game_species gs
+                WHERE
+                    ocsf.observation_type IN ('NAKO', 'RIISTAKAMERA')
+                    AND gs.game_species_id = ocsf.game_species_id
+                    AND gs.category != 'FOWL'
+                    AND (gs.category != 'UNPROTECTED' OR gs.official_code = 53004)
+                    AND gs.official_code NOT IN (47282, 200555, 47305, 46542, 48250, 48251, 48537, 50336);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-08-18-alter-fields-of-game_observation" author="vincit-jarkkoka">
+        <dropNotNullConstraint tableName="game_observation" columnName="amount" columnDataType="INTEGER"/>
+
+        <!-- These fields are not needed at the moment. -->
+        <dropColumn tableName="game_observation" columnName="on_yard"/>
+        <dropColumn tableName="game_observation" columnName="verified_by_beast_contact"/>
+
+        <addColumn tableName="game_observation">
+            <column name="within_moose_hunting" type="BOOLEAN"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-09-07-refactor-observation-age" author="vincit-jarkkoka">
+        <createTable tableName="observed_game_age">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+        <insert tableName="observed_game_age">
+            <column name="name" value="ADULT"/>
+        </insert>
+        <insert tableName="observed_game_age">
+            <column name="name" value="LT1Y"/>
+        </insert>
+        <insert tableName="observed_game_age">
+            <column name="name" value="_1TO2Y"/>
+        </insert>
+        <insert tableName="observed_game_age">
+            <column name="name" value="UNKNOWN"/>
+        </insert>
+
+        <dropForeignKeyConstraint baseTableName="observation_specimen" constraintName="fk_observation_specimen_age"/>
+
+        <update tableName="observation_specimen">
+            <column name="age" type="varchar(255)" value="LT1Y"/>
+            <where>age = 'YOUNG'</where>
+        </update>
+
+        <addForeignKeyConstraint baseTableName="observation_specimen"
+                                 baseColumnNames="age"
+                                 constraintName="fk_observation_specimen_age"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="observed_game_age"
+                                 referencedColumnNames="name"/>
+
+    </changeSet>
+
+    <changeSet id="2015-08-18-alter-fields-of-observation_specimen" author="vincit-jarkkoka">
+        <!-- These fields not needed at the moment. -->
+        <dropColumn tableName="observation_specimen" columnName="paw_width"/>
+        <dropColumn tableName="observation_specimen" columnName="paw_length "/>
+
+        <createTable tableName="observed_game_state">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="observed_game_state">
+            <column name="name" value="HEALTHY"/>
+        </insert>
+        <insert tableName="observed_game_state">
+            <column name="name" value="WOUNDED"/>
+        </insert>
+        <insert tableName="observed_game_state">
+            <column name="name" value="CARCASS"/>
+        </insert>
+        <insert tableName="observed_game_state">
+            <column name="name" value="DEAD"/>
+        </insert>
+
+        <addColumn tableName="observation_specimen">
+            <column name="state" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <addForeignKeyConstraint baseTableName="observation_specimen"
+                                 baseColumnNames="state"
+                                 constraintName="fk_observation_specimen_state"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="observed_game_state"
+                                 referencedColumnNames="name"/>
+
+        <createTable tableName="game_marking">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="game_marking">
+            <column name="name" value="NOT_MARKED"/>
+        </insert>
+        <insert tableName="game_marking">
+            <column name="name" value="COLLAR_OR_RADIO_TRANSMITTER"/>
+        </insert>
+        <insert tableName="game_marking">
+            <column name="name" value="LEG_RING_OR_WING_TAG"/>
+        </insert>
+        <insert tableName="game_marking">
+            <column name="name" value="EARMARK"/>
+        </insert>
+
+        <addColumn tableName="observation_specimen">
+            <column name="marking" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <addForeignKeyConstraint baseTableName="observation_specimen"
+                                 baseColumnNames="marking"
+                                 constraintName="fk_observation_specimen_marking"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="game_marking"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="2015-09-16-add-moose-hunting-consistency-constraint-into-game_observation" author="vincit-jarkkoka">
+        <sql>
+            <![CDATA[
+                ALTER TABLE game_observation ADD CONSTRAINT ck_observation_consistency_between_hunting_day_and_moose_hunting
+                    CHECK (group_hunting_day_id IS null OR within_moose_hunting = true);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-21-remove-two-observation-type-associations" author="vincit-jarkkoka" dbms="postgresql">
+        <delete tableName="observation_context_sensitive_fields">
+            <where>observation_type IN ('MAASTOLASKENTA', 'LENTOLASKENTA')</where>
+        </delete>
+    </changeSet>
+
+    <changeSet id="2015-09-17-harvest-and-observation-mobile_client_ref_id-unique" author="vincit-terova" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                CREATE UNIQUE INDEX harvest_mobile_client_ref_id_uniq
+                ON harvest(mobile_client_ref_id, author_id) WHERE mobile_client_ref_id is not null;
+
+                CREATE UNIQUE INDEX game_observation_mobile_client_ref_id_uniq
+                ON game_observation(mobile_client_ref_id, author_id) WHERE mobile_client_ref_id is not null;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-22-make-age-and-gender-optional-for-other-observation-type" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                UPDATE observation_context_sensitive_fields ocsf
+                SET age = 'VOLUNTARY',
+                    gender = 'VOLUNTARY'
+                FROM game_species gs
+                WHERE ocsf.observation_type IN ('MUU');
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-22-remove-age-and-gender-from-few-observation-species-for-observation-type-other" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                UPDATE observation_context_sensitive_fields ocsf
+                SET age = 'NO',
+                    gender = 'NO'
+                FROM game_species gs
+                WHERE
+                    ocsf.observation_type IN ('MUU')
+                    AND gs.game_species_id = ocsf.game_species_id
+                    AND (
+                        (gs.category = 'UNPROTECTED' AND gs.official_code != 53004)
+                        OR gs.official_code IN (27381, 27649, 27911)
+                    );
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-23-add-moose-specific-harvest-report-fields" author="vincit-terova">
+        <addColumn tableName="harvest_report_fields">
+            <column name="additional_info" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="additional_info"
+                                 constraintName="fk_harvest_report_fields_additional_info"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addColumn tableName="harvest_report_fields">
+            <column name="weight_estimated" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="weight_estimated"
+                                 constraintName="fk_harvest_report_fields_weight_estimated"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addColumn tableName="harvest_report_fields">
+            <column name="weight_measured" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="weight_estimated"
+                                 constraintName="fk_harvest_report_fields_weight_measured"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addColumn tableName="harvest_report_fields">
+            <column name="fitness_class" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="fitness_class"
+                                 constraintName="fk_harvest_report_fields_fitness_class"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addColumn tableName="harvest_report_fields">
+            <column name="antlers_type" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="antlers_type"
+                                 constraintName="fk_harvest_report_fields_antlers_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addColumn tableName="harvest_report_fields">
+            <column name="antlers_width" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="antlers_width"
+                                 constraintName="fk_harvest_report_fields_antlers_width"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addColumn tableName="harvest_report_fields">
+            <column name="antler_points_left" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="antler_points_left"
+                                 constraintName="fk_harvest_report_fields_antler_points_left"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addColumn tableName="harvest_report_fields">
+            <column name="antler_points_right" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_report_fields"
+                                 baseColumnNames="antler_points_right"
+                                 constraintName="fk_harvest_report_fields_antler_points_right"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <sql>
+            <![CDATA[
+                UPDATE harvest_report_fields
+                SET additional_info='VOLUNTARY',
+                  weight_estimated='VOLUNTARY',
+                  weight_measured='VOLUNTARY',
+                  fitness_class='VOLUNTARY',
+                  antlers_type='VOLUNTARY',
+                  antlers_width='VOLUNTARY',
+                  antler_points_left='VOLUNTARY',
+                  antler_points_right='VOLUNTARY'
+                WHERE game_species_id=(SELECT game_species_id FROM game_species WHERE official_code=47503);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-23-add-table-game-fitness-class" author="vincit-terova">
+        <createTable tableName="game_fitness_class">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="game_fitness_class">
+            <column name="name" value="ERINOMAINEN"/>
+        </insert>
+        <insert tableName="game_fitness_class">
+            <column name="name" value="NORMAALI"/>
+        </insert>
+        <insert tableName="game_fitness_class">
+            <column name="name" value="LAIHA"/>
+        </insert>
+        <insert tableName="game_fitness_class">
+            <column name="name" value="NAANTYNYT"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2015-09-23-add-table-game_antlers-type" author="vincit-terova">
+        <createTable tableName="game_antlers_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="game_antlers_type">
+            <column name="name" value="HANKO"/>
+        </insert>
+        <insert tableName="game_antlers_type">
+            <column name="name" value="LAPIO"/>
+        </insert>
+        <insert tableName="game_antlers_type">
+            <column name="name" value="SEKA"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2015-09-23-add-specimen-columns" author="vincit-terova">
+        <addColumn tableName="harvest_specimen">
+            <column name="weight_estimated" type="DECIMAL(5,2)"/>
+        </addColumn>
+        <addColumn tableName="harvest_specimen">
+            <column name="weight_measured" type="DECIMAL(5,2)"/>
+        </addColumn>
+        <addColumn tableName="harvest_specimen">
+            <column name="fitness_class" type="VARCHAR(255)"/>
+        </addColumn>
+        <addColumn tableName="harvest_specimen">
+            <column name="antlers_type" type="VARCHAR(255)"/>
+        </addColumn>
+        <addColumn tableName="harvest_specimen">
+            <column name="antlers_width" type="INTEGER"/>
+        </addColumn>
+        <addColumn tableName="harvest_specimen">
+            <column name="antler_points_left" type="INTEGER"/>
+        </addColumn>
+        <addColumn tableName="harvest_specimen">
+            <column name="antler_points_right" type="INTEGER"/>
+        </addColumn>
+        <addColumn tableName="harvest_specimen">
+            <column name="additional_info" type="TEXT"/>
+        </addColumn>
+
+        <addForeignKeyConstraint baseColumnNames="fitness_class"
+                                 baseTableName="harvest_specimen"
+                                 constraintName="fk_specimen_fitness_class"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="name"
+                                 referencedTableName="game_fitness_class"/>
+
+        <addForeignKeyConstraint baseColumnNames="antlers_type"
+                                 baseTableName="harvest_specimen"
+                                 constraintName="fk_specimen_antlers_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="name"
+                                 referencedTableName="game_antlers_type"/>
+
+
+    </changeSet>
+
+    <changeSet id="2015-09-23-add-amount-fields-of-mooselike-species-into-game_observation" author="vincit-jarkkoka">
+        <addColumn tableName="game_observation">
+            <column name="mooselike_male_amount" type="INT"/>
+            <column name="mooselike_female_amount" type="INT"/>
+            <column name="mooselike_female_1_calf_amount" type="INT"/>
+            <column name="mooselike_female_2_calfs_amount" type="INT"/>
+            <column name="mooselike_female_3_calfs_amount" type="INT"/>
+            <column name="mooselike_female_4_calfs_amount" type="INT"/>
+            <column name="mooselike_unknown_specimen_amount" type="INT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-09-23-add-more-check-constraint-to-game_observation" author="vincit-jarkkoka">
+        <sql>
+            <![CDATA[
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_male_amount_range
+                    CHECK (mooselike_male_amount between 0 and 100);
+
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_female_amount_range
+                    CHECK (mooselike_female_amount between 0 and 100);
+
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_female_1calf_amount_range
+                    CHECK (mooselike_female_1_calf_amount between 0 and 50);
+
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_female_2calfs_amount_range
+                    CHECK (mooselike_female_2_calfs_amount between 0 and 50);
+
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_female_3calfs_amount_range
+                    CHECK (mooselike_female_3_calfs_amount between 0 and 50);
+
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_female_4calfs_amount_range
+                    CHECK (mooselike_female_4_calfs_amount between 0 and 50);
+
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_unknown_specimen_amount_range
+                    CHECK (mooselike_unknown_specimen_amount between 0 and 100);
+
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_amounts_nullability CHECK (
+                    (
+                        coalesce(mooselike_male_amount,
+                                 mooselike_female_amount,
+                                 mooselike_female_1_calf_amount,
+                                 mooselike_female_2_calfs_amount,
+                                 mooselike_female_3_calfs_amount,
+                                 mooselike_female_4_calfs_amount,
+                                 mooselike_unknown_specimen_amount) IS null
+                    ) OR (
+                        within_moose_hunting = true
+
+                        -- Minimum set of non-null fields
+                        AND mooselike_male_amount IS NOT null
+                        AND mooselike_female_amount IS NOT null
+                        AND mooselike_female_1_calf_amount IS NOT null
+                        AND mooselike_female_2_calfs_amount IS NOT null
+                        AND mooselike_female_3_calfs_amount IS NOT null
+                        AND mooselike_unknown_specimen_amount IS NOT null
+                    )
+                );
+
+                -- Check total amount matches sum of mooselike amount components
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_amounts_integrity CHECK (
+                    -- Need to check nullness of only one amount component because other check constraints
+                    -- guarantee nullness of other amount fields.
+                    mooselike_male_amount IS null
+
+                    OR amount =
+                        coalesce(mooselike_male_amount, 0) +
+                        coalesce(mooselike_female_amount, 0) +
+                        2 * coalesce(mooselike_female_1_calf_amount, 0) +
+                        3 * coalesce(mooselike_female_2_calfs_amount, 0) +
+                        4 * coalesce(mooselike_female_3_calfs_amount, 0) +
+                        5 * coalesce(mooselike_female_4_calfs_amount, 0) +
+                        coalesce(mooselike_unknown_specimen_amount, 0)
+                );
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-23-add-moose-amounts-into-observation_context_sensitive_fields" author="vincit-jarkkoka">
+        <addColumn tableName="observation_context_sensitive_fields">
+            <column name="mooselike_male_amount" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mooselike_female_amount" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mooselike_female_1_calf_amount" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mooselike_female_2_calfs_amount" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mooselike_female_3_calfs_amount" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mooselike_female_4_calfs_amount" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mooselike_unknown_specimen_amount" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="mooselike_male_amount"
+                                 constraintName="fk_observation_context_sensitive_fields_mooselike_male_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="mooselike_female_amount"
+                                 constraintName="fk_observation_context_sensitive_fields_mooselike_female_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="mooselike_female_1_calf_amount"
+                                 constraintName="fk_observation_context_sensitive_fields_mooselike_female_1_calf_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="mooselike_female_2_calfs_amount"
+                                 constraintName="fk_observation_context_sensitive_fields_mooselike_female_2_calfs_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="mooselike_female_3_calfs_amount"
+                                 constraintName="fk_observation_context_sensitive_fields_mooselike_female_3_calfs_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="mooselike_female_4_calfs_amount"
+                                 constraintName="fk_observation_context_sensitive_fields_mooselike_female_4_calfs_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="mooselike_unknown_specimen_amount"
+                                 constraintName="fk_observation_context_sensitive_fields_mooselike_unknown_specimen_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="2015-09-23-populate-observation_context_sensitive_fields-for-moose-within-moose-hunting" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                UPDATE observation_base_fields obf
+                SET within_moose_hunting = 'YES'
+                FROM game_species gs
+                WHERE
+                  obf.game_species_id = gs.game_species_id
+                  AND gs.official_code = 47503;
+
+                INSERT INTO observation_context_sensitive_fields
+                  (game_species_id, within_moose_hunting, observation_type, mooselike_male_amount, mooselike_female_amount,
+                   mooselike_female_1_calf_amount, mooselike_female_2_calfs_amount, mooselike_female_3_calfs_amount,
+                   mooselike_unknown_specimen_amount)
+                SELECT game_species_id, true, 'NAKO', 'YES', 'YES', 'YES', 'YES', 'YES', 'YES'
+                FROM game_species
+                WHERE official_code = 47503;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-23-update-observation-settings-within-moose-hunting-for-mooselike-species" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                -- Allow only 'NAKO' observation type for moose-like animal within moose hunting.
+                DELETE FROM observation_context_sensitive_fields WHERE id IN (
+                  SELECT ocsf.id
+                  FROM observation_context_sensitive_fields ocsf
+                  INNER JOIN game_species gs ON gs.game_species_id = ocsf.game_species_id
+                  WHERE
+                    ocsf.within_moose_hunting = true
+                    AND ocsf.observation_type != 'NAKO'
+                    AND gs.official_code IN (47484, 47507, 47629, 200556)
+                );
+
+                -- Add roe deer into species set that can be tagged as 'within-moose-hunting'.
+                UPDATE observation_base_fields obf
+                SET within_moose_hunting = 'YES'
+                FROM game_species gs
+                WHERE
+                  obf.game_species_id = gs.game_species_id
+                  AND gs.official_code = 47507;
+
+                -- Roe deer settings within-moose-hunting-observations.
+                INSERT INTO observation_context_sensitive_fields
+                  (game_species_id, within_moose_hunting, observation_type, mooselike_male_amount, mooselike_female_amount,
+                   mooselike_female_1_calf_amount, mooselike_female_2_calfs_amount, mooselike_female_3_calfs_amount,
+                   mooselike_female_4_calfs_amount, mooselike_unknown_specimen_amount)
+                SELECT game_species_id, true, 'NAKO', 'YES', 'YES', 'YES', 'YES', 'YES', 'YES', 'YES'
+                FROM game_species
+                WHERE official_code = 47507;
+
+                -- Adjust observation settings for some moose-like species within moose hunting.
+                UPDATE observation_context_sensitive_fields ocsf
+                SET amount = 'NO',
+                    mooselike_male_amount = 'YES',
+                    mooselike_female_amount = 'YES',
+                    mooselike_female_1_calf_amount = 'YES',
+                    mooselike_female_2_calfs_amount = 'YES',
+                    mooselike_female_3_calfs_amount = 'YES',
+                    mooselike_female_4_calfs_amount = 'YES',
+                    mooselike_unknown_specimen_amount = 'YES'
+                FROM game_species gs
+                WHERE
+                  ocsf.within_moose_hunting = true
+                  AND ocsf.game_species_id = gs.game_species_id
+                  AND gs.official_code IN (47484, 47629, 200556);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-09-30-add-new-observed_game_state" author="vincit-jarkkoka">
+        <insert tableName="observed_game_state">
+            <column name="name" value="ILL"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2015-10-01-remove-observation-type-bitset" author="vincit-jarkkoka">
+        <dropPrimaryKey tableName="observation_type" constraintName="pk_observation_type"/>
+        <dropColumn tableName="observation_type" columnName="id"/>
+        <addPrimaryKey tableName="observation_type" columnNames="name" constraintName="observation_type_pkey"/>
+
+        <dropColumn tableName="game_species" columnName="observation_types_bitset"/>
+    </changeSet>
+
+    <changeSet id="2015-10-01-update-observation_context_sensitive_fields-for-koiran_riistatyo" author="vincit-jarkkoka" dbms="postgresql">
+        <!-- Settings for 'KOIRAN_RIISTATYO' observation type are copied from and set equal to 'NAKO' -->
+        <sql>
+            <![CDATA[
+                UPDATE observation_context_sensitive_fields kr
+                SET wounded = nako.wounded,
+                    on_carcass = nako.on_carcass,
+                    dead = nako.dead,
+                    collar_or_radio = nako.collar_or_radio,
+                    legring_or_wingmark = nako.legring_or_wingmark,
+                    earmark = nako.earmark
+                FROM observation_context_sensitive_fields nako
+                WHERE
+                  kr.observation_type = 'KOIRAN_RIISTATYO'
+                  AND kr.game_species_id = nako.game_species_id
+                  AND nako.observation_type = 'NAKO';
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-10-05-add-new-observation-types" author="vincit-jarkkoka">
+        <insert tableName="observation_type">
+            <column name="name" value="KELOMISPUU"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="KIIMAKUOPPA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="MAKUUPAIKKA"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2015-10-05-populate-new-observation_context_sensitive_fields" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                -- Generate observation_context_sensitive_fields rows for new observation types.
+                INSERT INTO observation_context_sensitive_fields (game_species_id, observation_type)
+                    SELECT s.id, ot.name
+                    FROM (
+                      SELECT game_species_id AS id
+                      FROM game_species
+                      WHERE official_code IN (47476, 47479, 47484, 47503, 47507, 47629, 200556)
+                    ) s
+                    INNER JOIN observation_type ot ON ot.name IN ('KELOMISPUU', 'KIIMAKUOPPA', 'MAKUUPAIKKA')
+                    ORDER BY s.id, ot.name;
+
+                -- Generate observation_context_sensitive_fields rows for all (big) beast species
+                -- with 'MAKUUPAIKKA' observation type.
+                INSERT INTO observation_context_sensitive_fields (game_species_id, observation_type)
+                    SELECT s.id, ot.name
+                    FROM (
+                      SELECT game_species_id AS id
+                      FROM game_species
+                      WHERE official_code IN (46549, 46615, 47212, 47348)
+                    ) s
+                    INNER JOIN observation_type ot ON ot.name = 'MAKUUPAIKKA'
+                    ORDER BY s.id;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-10-05-hunting-day-hunter-count-more-than-zero" author="vincit-terova">
+        <sql>
+            <![CDATA[
+            ALTER TABLE group_hunting_day DROP CONSTRAINT ck_group_hunting_day_hunter_count;
+            ALTER TABLE group_hunting_day ADD CONSTRAINT ck_group_hunting_day_hunter_count CHECK (number_of_hunters > 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-10-06-add-calendar-event-type_extraordinary_meeting" author="vincit-terova">
+        <insert tableName="calendar_event_type">
+            <column name="name" value="YLIMAARAINEN_KOKOUS"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2015-10-05-harvest-report-fields-harvests_as_list" author="vincit-terova">
+        <addColumn tableName="harvest_report_fields">
+            <column name="harvests_as_list" type="BOOLEAN"></column>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+            UPDATE harvest_report_fields SET harvests_as_list = FALSE;
+
+            UPDATE harvest_report_fields SET harvests_as_list = TRUE
+              WHERE free_hunting_also = TRUE AND game_species_id IN (SELECT game_species_id FROM game_species WHERE category <> 'GAME_MAMMAL');
+
+            UPDATE harvest_report_fields SET harvests_as_list = TRUE
+              WHERE used_with_permit = true
+              AND game_species_id IN (
+                SELECT DISTINCT g.game_species_id
+                FROM harvest_permit hp
+                  JOIN harvest_permit_species_amount hpsa ON (hp.harvest_permit_id=hpsa.harvest_permit_id)
+                  JOIN game_species g ON (hpsa.game_species_id=g.game_species_id)
+                WHERE hp.harvests_as_list = TRUE
+            );
+            ]]>
+        </sql>
+
+        <addNotNullConstraint tableName="harvest_report_fields" columnName="harvests_as_list" columnDataType="BOOLEAN"/>
+    </changeSet>
+
+    <changeSet id="2015-10-08-add-zone-exclusion-geometry" author="vincit-kyostihe">
+        <addColumn tableName="zone">
+            <column name="excluded_geom" type="GEOMETRY"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-10-14-add-zone-computed-area" author="vincit-kyostihe">
+        <addColumn tableName="zone">
+            <column name="computed_area_size" type="DOUBLE" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-10-14-calculate-zone-computed-area" author="vincit-kyostihe" dbms="postgresql">
+        <sql>UPDATE zone SET computed_area_size = COALESCE(ST_Area(geom), 0);</sql>
+    </changeSet>
+
+    <changeSet id="2015-10-22-add-not_edible_attribute-into-harvest_specimen" author="vincit-jarkkoka">
+        <addColumn tableName="harvest_specimen">
+            <column name="not_edible" type="BOOLEAN"/>
+        </addColumn>
+
+        <addColumn tableName="harvest_report_fields">
+            <column name="not_edible" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                UPDATE harvest_report_fields
+                SET not_edible = 'VOLUNTARY'
+                WHERE game_species_id=(SELECT game_species_id FROM game_species WHERE official_code=47503);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-10-19-permit-holder" author="vincit-terova">
+        <addColumn tableName="harvest_permit">
+            <column name="permit_holder_id" type="BIGINT" />
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_permit"
+                                 baseColumnNames="permit_holder_id"
+                                 constraintName="fk_harvest_permit_permit_holder"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+    </changeSet>
+
+    <changeSet id="2015-10-19-permit-partners" author="vincit-terova">
+        <createTable tableName="harvest_permit_partners">
+            <column name="harvest_permit_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="harvest_permit_partners" columnNames="harvest_permit_id, organisation_id"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_partners"
+                                 baseColumnNames="harvest_permit_id"
+                                 constraintName="fk_harvest_permit_partners_harvest_permit"
+                                 referencedTableName="harvest_permit"
+                                 referencedColumnNames="harvest_permit_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_partners"
+                                 baseColumnNames="organisation_id"
+                                 constraintName="fk_harvest_permit_partners_organisation"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+    </changeSet>
+
+    <changeSet id="2015-10-19-harvest-permit-species-amount-add-restrictions" author="vincit-terova">
+        <addColumn tableName="harvest_permit_species_amount">
+            <column name="restriction_type" type="VARCHAR(2)"/>
+            <column name="restriction_amount" type="NUMERIC(6,2)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-11-04-original-permit" author="vincit-terova">
+        <addColumn tableName="harvest_permit">
+            <column name="original_permit_id" type="BIGINT"/>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="harvest_permit"
+                                 baseColumnNames="original_permit_id"
+                                 constraintName="fk_harvest_permit_original_permit"
+                                 referencedTableName="harvest_permit"
+                                 referencedColumnNames="harvest_permit_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+    </changeSet>
+
+    <changeSet id="2015-11-04-harvest-permit-allocation" author="vincit-terova">
+        <createTable tableName="harvest_permit_allocation">
+            <column autoIncrement="true" name="harvest_permit_allocation_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_allocation_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="harvest_permit_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hunting_club_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="total" type="DECIMAL(4,1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="adult_males" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="adult_females" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="young" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_allocation"
+                                 baseColumnNames="harvest_permit_id"
+                                 constraintName="fk_harvest_permit_allocation_harvest_permit"
+                                 referencedTableName="harvest_permit"
+                                 referencedColumnNames="harvest_permit_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_allocation"
+                                 baseColumnNames="game_species_id"
+                                 constraintName="fk_harvest_permit_allocation_game_species"
+                                 referencedTableName="game_species"
+                                 referencedColumnNames="game_species_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_allocation"
+                                 baseColumnNames="hunting_club_id"
+                                 constraintName="fk_harvest_permit_allocation_organisation"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <createIndex tableName="harvest_permit_allocation" indexName="ndx_harvest_permit_allocation" unique="true">
+            <column name="harvest_permit_id"/>
+            <column name="game_species_id"/>
+            <column name="hunting_club_id"/>
+        </createIndex>
+
+        <sql>
+            <![CDATA[
+            ALTER TABLE harvest_permit_allocation ADD CONSTRAINT ck_harvest_permit_allocation_positive
+                CHECK (total >= 0 AND adult_males >= 0 AND adult_females >= 0 AND young >= 0);
+            ALTER TABLE harvest_permit_allocation ADD CONSTRAINT ck_harvest_permit_allocation_total
+                CHECK (2 * total = (2 * adult_males + 2 * adult_females + young));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2015-10-30-permit-groups" author="vincit-kyostihe">
+        <createTable tableName="harvest_permit_groups">
+            <column name="harvest_permit_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="harvest_permit_groups" columnNames="harvest_permit_id, organisation_id"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_groups"
+                                 baseColumnNames="harvest_permit_id"
+                                 constraintName="fk_harvest_permit_groups_harvest_permit"
+                                 referencedTableName="harvest_permit"
+                                 referencedColumnNames="harvest_permit_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_groups"
+                                 baseColumnNames="organisation_id"
+                                 constraintName="fk_harvest_permit_groups_organisation"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+    </changeSet>
+
+    <changeSet id="2015-11-03-zone-mh-hirvi" author="vincit-kyostihe">
+        <createTable tableName="zone_mh_hirvi">
+            <column name="zone_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kohde_koodi" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="zone_mh_hirvi" columnNames="zone_id, kohde_koodi"/>
+
+        <addForeignKeyConstraint baseTableName="zone_mh_hirvi" baseColumnNames="zone_id"
+                                 constraintName="fk_zone_mh_hirvi_zone"
+                                 referencedTableName="zone"
+                                 referencedColumnNames="zone_id"/>
+    </changeSet>
+
+    <changeSet id="2015-11-20-new-harvest-luke-statuses" author="vincit-jarkkoka">
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="CONFIRMED_ALPHA_ADULT"/>
+        </insert>
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="CONFIRMED_ALPHA_1TO2Y"/>
+        </insert>
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="CONFIRMED_POTENTIAL_ALPHA_ADULT"/>
+        </insert>
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="CONFIRMED_POTENTIAL_ALPHA_1TO2Y"/>
+        </insert>
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="CONFIRMED_NOT_ALPHA_ADULT"/>
+        </insert>
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="CONFIRMED_NOT_ALPHA_1TO2Y"/>
+        </insert>
+        <insert tableName="harvest_luke_status">
+            <column name="name" value="CONFIRMED_NOT_ALPHA_LT1Y"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2015-11-23-denormalize-zone-palsta" author="vincit-kyostihe">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="palstaalue"/>
+        </preConditions>
+        <addColumn tableName="zone_palsta">
+            <column name="geom" type="GEOMETRY"/>
+            <column name="palsta_tunnus" type="BIGINT"/>
+        </addColumn>
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE zone_palsta
+            SET palsta_tunnus = pa.tunnus, geom = pa.geom
+            FROM palstaalue pa
+            WHERE pa.id = palsta_id;
+            CREATE INDEX zone_palsta_geom ON "zone_palsta" USING GIST ("geom");
+        ]]></sql>
+        <dropForeignKeyConstraint baseTableName="zone_palsta" constraintName="fk_zone_palsta_ref"/>
+        <addNotNullConstraint tableName="zone_palsta" columnName="geom" columnDataType="GEOMETRY"/>
+        <addNotNullConstraint tableName="zone_palsta" columnName="palsta_tunnus" columnDataType="BIGINT"/>
+    </changeSet>
+
+    <changeSet id="2015-11-24-add-zone-palsta-changed-fields" author="vincit-kyostihe">
+        <preConditions onFail="CONTINUE">
+            <tableExists tableName="palstaalue"/>
+        </preConditions>
+        <addColumn tableName="zone_palsta">
+            <column name="is_changed" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="new_palsta_id" type="INT"/>
+            <column name="new_palsta_tunnus" type="BIGINT"/>
+            <column name="diff_area" type="FLOAT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-missing-foreign-key-into-game_observation" author="vincit-jarkkoka">
+        <addForeignKeyConstraint baseTableName="game_observation"
+                                 baseColumnNames="observer_id"
+                                 constraintName="fk_game_observation_observer"
+                                 referencedTableName="person"
+                                 referencedColumnNames="person_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <createIndex tableName="game_observation" indexName="ndx_game_observation_observer">
+            <column name="observer_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-missing-foreign-key-into-game_observation-for-species" author="vincit-jarkkoka">
+        <!-- Index for game_species_id field exists already. -->
+        <addForeignKeyConstraint baseTableName="game_observation"
+                                 baseColumnNames="game_species_id"
+                                 constraintName="fk_game_observation_species"
+                                 referencedTableName="game_species"
+                                 referencedColumnNames="game_species_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-srva_event_name-table" author="vincit-tonile">
+        <createTable tableName="srva_event_name">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="srva_event_name">
+            <column name="name" value="ACCIDENT"/>
+        </insert>
+        <insert tableName="srva_event_name">
+            <column name="name" value="DEPORTATION"/>
+        </insert>
+        <insert tableName="srva_event_name">
+            <column name="name" value="INJURED_ANIMAL"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-srva_event_type-table" author="vincit-tonile">
+        <createTable tableName="srva_event_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="srva_event_type">
+            <column name="name" value="TRAFFIC_ACCIDENT"/>
+        </insert>
+        <insert tableName="srva_event_type">
+            <column name="name" value="RAILWAY_ACCIDENT"/>
+        </insert>
+        <insert tableName="srva_event_type">
+            <column name="name" value="ANIMAL_NEAR_HOUSES_AREA"/>
+        </insert>
+        <insert tableName="srva_event_type">
+            <column name="name" value="ANIMAL_AT_FOOD_DESTINATION"/>
+        </insert>
+        <insert tableName="srva_event_type">
+            <column name="name" value="INJURED_ANIMAL"/>
+        </insert>
+        <insert tableName="srva_event_type">
+            <column name="name" value="ANIMAL_ON_ICE"/>
+        </insert>
+        <insert tableName="srva_event_type">
+            <column name="name" value="OTHER"/>
+        </insert>
+
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-srva_method_type-table" author="vincit-tonile">
+        <createTable tableName="srva_method_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="srva_method_type">
+            <column name="name" value="DOG"/>
+        </insert>
+        <insert tableName="srva_method_type">
+            <column name="name" value="PAIN_EQUIPMENT"/>
+        </insert>
+        <insert tableName="srva_method_type">
+            <column name="name" value="SOUND_EQUIPMENT"/>
+        </insert>
+        <insert tableName="srva_method_type">
+            <column name="name" value="TRACED_WITH_DOG"/>
+        </insert>
+        <insert tableName="srva_method_type">
+            <column name="name" value="TRACED_WITHOUT_DOG"/>
+        </insert>
+        <insert tableName="srva_method_type">
+            <column name="name" value="OTHER"/>
+        </insert>
+
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-srva_result_type-table" author="vincit-tonile">
+        <createTable tableName="srva_result_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="srva_result_type">
+            <column name="name" value="ANIMAL_DEAD_AT_SITE"/>
+        </insert>
+        <insert tableName="srva_result_type">
+            <column name="name" value="ANIMAL_FOUND_AND_TERMINATED"/>
+        </insert>
+        <insert tableName="srva_result_type">
+            <column name="name" value="ANIMAL_FOUND_AND_NOT_TERMINATED"/>
+        </insert>
+        <insert tableName="srva_result_type">
+            <column name="name" value="ACCIDENT_SITE_NOT_FOUND"/>
+        </insert>
+        <insert tableName="srva_result_type">
+            <column name="name" value="ANIMAL_TERMINATED"/>
+        </insert>
+        <insert tableName="srva_result_type">
+            <column name="name" value="ANIMAL_DEPORTED"/>
+        </insert>
+        <insert tableName="srva_result_type">
+            <column name="name" value="ANIMAL_NOT_FOUND"/>
+        </insert>
+        <insert tableName="srva_result_type">
+            <column name="name" value="UNDUE_ALARM"/>
+        </insert>
+
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-srva_event-table" author="vincit-tonile">
+        <createTable tableName="srva_event">
+            <column autoIncrement="true" name="srva_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="srva_event_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="event_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_specimen_amount" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="point_of_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="latitude" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="longitude" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+            <column name="other_method_description" type="VARCHAR(255)"/>
+            <column name="other_type_description" type="VARCHAR(255)"/>
+            <column name="person_count" type="INT"/>
+            <column name="time_spent" type="INT"/>
+            <column name="event_result" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="author_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="srva_event"
+                                 baseColumnNames="event_name"
+                                 constraintName="fk_srva_event_event"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="srva_event_name"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="srva_event"
+                                 baseColumnNames="event_type"
+                                 constraintName="fk_srva_event_event_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="srva_event_type"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="srva_event"
+                                 baseColumnNames="event_result"
+                                 constraintName="fk_srva_event_event_result"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="srva_result_type"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="srva_event"
+                                 baseColumnNames="geolocation_source"
+                                 constraintName="fk_srva_event_geolocation_source"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="geolocation_source"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="srva_event"
+                                 baseColumnNames="game_species_id"
+                                 constraintName="fk_srva_event_game_species"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="game_species"
+                                 referencedColumnNames="game_species_id"/>
+
+        <addForeignKeyConstraint baseTableName="srva_event"
+                                 baseColumnNames="author_id"
+                                 constraintName="fk_srva_event_author"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="person"
+                                 referencedColumnNames="person_id"/>
+
+        <addForeignKeyConstraint baseTableName="srva_event"
+                                 baseColumnNames="rhy_id"
+                                 constraintName="fk_srva_event_rhy"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"/>
+
+        <createIndex tableName="srva_event" indexName="ndx_srva_event_game_species">
+            <column name="game_species_id"/>
+        </createIndex>
+
+        <createIndex tableName="srva_event" indexName="ndx_srva_event_author">
+            <column name="author_id"/>
+        </createIndex>
+
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-srva_method-table" author="vincit-tonile">
+        <createTable tableName="srva_method">
+            <column autoIncrement="true" name="srva_method_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="srva_event_srva_method_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_checked" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="srva_event_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="srva_method"
+                                 baseColumnNames="srva_event_id"
+                                 constraintName="fk_srva_method_srva_event"
+                                 referencedTableName="srva_event"
+                                 referencedColumnNames="srva_event_id"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"/>
+
+        <addForeignKeyConstraint baseTableName="srva_method"
+                                 baseColumnNames="name"
+                                 constraintName="fk_srva_method_name"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="srva_method_type"
+                                 referencedColumnNames="name"/>
+
+        <createIndex tableName="srva_method" indexName="ndx_srva_method_srva_event">
+            <column name="srva_event_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-srva_specimen-table" author="vincit-tonile">
+        <createTable tableName="srva_specimen">
+            <column autoIncrement="true" name="srva_specimen_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="srva_event_srva_specimen_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="age" type="VARCHAR(255)"/>
+            <column name="gender" type="VARCHAR(255)"/>
+            <column name="srva_event_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="srva_specimen"
+                                 baseColumnNames="srva_event_id"
+                                 constraintName="fk_srva_specimen_srva_event"
+                                 referencedTableName="srva_event"
+                                 referencedColumnNames="srva_event_id"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"/>
+
+        <addForeignKeyConstraint baseTableName="srva_specimen"
+                                 baseColumnNames="age"
+                                 constraintName="fk_srva_specimen_age"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="game_age"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="srva_specimen"
+                                 baseColumnNames="gender"
+                                 constraintName="fk_srva_specimen_gender"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="game_gender"
+                                 referencedColumnNames="name"/>
+
+
+        <createIndex tableName="srva_specimen" indexName="ndx_srva_specimen_srva_event">
+            <column name="srva_event_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-enable_srva-to-person" author="vincit-tonile">
+        <addColumn tableName="person">
+            <column name="enable_srva" type="BOOLEAN"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-srva_event_id-to-game_diary_image" author="vincit-tonile">
+        <addColumn tableName="game_diary_image">
+            <column name="srva_event_id" type="BIGINT"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+            ALTER TABLE game_diary_image DROP CONSTRAINT ck_game_diary_image_exclusive_harvest_and_observation_references;
+            ALTER TABLE game_diary_image ADD CONSTRAINT ck_game_diary_image_exclusive_srva_event_and_harvest_and_observation_references CHECK ((harvest_id IS NULL AND observation_id IS NULL) OR (srva_event_id is NULL AND harvest_id IS NULL) OR (srva_event_id is NULL AND observation_id IS NULL));
+            ]]>
+        </sql>
+
+        <addForeignKeyConstraint baseTableName="game_diary_image"
+                                 baseColumnNames="srva_event_id"
+                                 constraintName="fk_game_diary_image_srva_event"
+                                 referencedTableName="srva_event"
+                                 referencedColumnNames="srva_event_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <createIndex tableName="game_diary_image" indexName="ndx_game_diary_image_srva_event">
+            <column name="srva_event_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-12-02-add-srva_ordinal-to-game_species" author="vincit-tonile">
+        <addColumn tableName="game_species">
+            <column name="srva_ordinal" type="INT"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+            UPDATE game_species SET srva_ordinal=1 WHERE official_code=47503;
+            UPDATE game_species SET srva_ordinal=2 WHERE official_code=47629;
+            UPDATE game_species SET srva_ordinal=3 WHERE official_code=47507;
+            UPDATE game_species SET srva_ordinal=4 WHERE official_code=200556;
+            UPDATE game_species SET srva_ordinal=5 WHERE official_code=47484;
+            UPDATE game_species SET srva_ordinal=6 WHERE official_code=47926;
+            UPDATE game_species SET srva_ordinal=7 WHERE official_code=46615;
+            UPDATE game_species SET srva_ordinal=8 WHERE official_code=47348;
+            UPDATE game_species SET srva_ordinal=9 WHERE official_code=46549;
+            UPDATE game_species SET srva_ordinal=10 WHERE official_code=47212;
+            ]]>
+        </sql>
+        <!--47503 moose-->
+        <!--47629 white tailed deer-->
+        <!--47507 roe deer-->
+        <!--200556 wild forest reindeer-->
+        <!--47484 fallow deer-->
+        <!--47926 wild boar-->
+        <!--46615 lynx-->
+        <!--47348 bear-->
+        <!--46549 wolf-->
+        <!--47212 wolverine-->
+    </changeSet>
+
+    <changeSet id="2015-12-01-add-permit-refno-and-printingurl" author="vincit-terova">
+        <addColumn tableName="harvest_permit">
+            <column name="printing_url" type="VARCHAR(2048)"/>
+        </addColumn>
+        <addColumn tableName="harvest_permit_species_amount">
+            <column name="creditor_reference" type="VARCHAR(20)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-12-21-add-hunting-club-area-active" author="vincit-kyostihe">
+        <addColumn tableName="hunting_club_area">
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-12-29-add-lh-organisation-table" author="vincit-kyostihe">
+        <createTable tableName="lh_org">
+            <column autoIncrement="true" name="lh_org_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="lh_org_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="official_code" type="VARCHAR(7)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_finnish" type="VARCHAR(255)"/>
+            <column name="name_swedish" type="VARCHAR(255)"/>
+            <column name="rhy_official_code" type="CHAR(3)"/>
+            <column name="moose_area_code" type="VARCHAR(255)"/>
+            <column name="latitude" type="INT"/>
+            <column name="longitude" type="INT"/>
+            <column name="area_size" type="INT"/>
+            <column name="contact_person_ssn" type="VARCHAR(11)"/>
+            <column name="contact_person_rhy" type="VARCHAR(255)"/>
+            <column name="contact_person_name" type="VARCHAR(255)"/>
+            <column name="contact_person_address_1" type="VARCHAR(255)"/>
+            <column name="contact_person_address_2" type="VARCHAR(255)"/>
+            <column name="contact_person_phone_1" type="VARCHAR(255)"/>
+            <column name="contact_person_phone_2" type="VARCHAR(255)"/>
+            <column name="contact_person_email" type="VARCHAR(255)"/>
+            <column name="contact_person_lang" type="VARCHAR(255)"/>
+        </createTable>
+
+        <createIndex tableName="lh_org" indexName="ndx_lh_org_official_code">
+            <column name="official_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-01-04-add-club-fields" author="vincit-kyostihe">
+        <addColumn tableName="organisation">
+            <column name="hunting_area_size" type="NUMERIC(10,2)"/>
+            <column name="moose_area_code" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2015-12-29-lh-org-trgm-index" author="vincit-kyostihe" dbms="postgresql">
+        <preConditions onFail="CONTINUE">
+            <sqlCheck expectedResult="1">
+                select count(1) from pg_extension where extname = 'pg_trgm';
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            CREATE INDEX ndx_lh_org_name_finnish_trgm ON lh_org USING GIST ((name_finnish) gist_trgm_ops);
+            CREATE INDEX ndx_lh_org_name_swedish_trgm ON lh_org USING GIST ((name_swedish) gist_trgm_ops);
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-01-11-add-srva_event_state-table" author="vincit-tonile">
+        <createTable tableName="srva_event_state">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="srva_event_state">
+            <column name="name" value="UNFINISHED"/>
+        </insert>
+        <insert tableName="srva_event_state">
+            <column name="name" value="APPROVED"/>
+        </insert>
+        <insert tableName="srva_event_state">
+            <column name="name" value="REJECTED"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2016-01-15-add-state-to-srva_event" author="vincit-tonile">
+        <addColumn tableName="srva_event">
+            <column name="state" type="VARCHAR(255)" defaultValue="REJECTED">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <sql>
+            ALTER TABLE srva_event ALTER state DROP DEFAULT;
+        </sql>
+
+        <addForeignKeyConstraint baseTableName="srva_event"
+                                 baseColumnNames="state"
+                                 constraintName="fk_srva_event_state"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="srva_event_state"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+</databaseChangeLog>

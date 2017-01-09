@@ -1,0 +1,272 @@
+<div class="row r-nomination-list-tabs">
+    <div class="col-md-9 col-md-offset-3">
+        <button type="button" class="btn btn-primary pull-right"
+                ng-show="$ctrl.showAddTraining()"
+                ng-click="$ctrl.addTraining()"
+                translate="occupation.nomination.button.addTraining"></button>
+
+        <ul class="nav nav-pills">
+            <li ng-class="{'active': $ctrl.searchParams.nominationStatus == 'KOULUTUS'}">
+                <a ng-click="$ctrl.selectNominationStatus('KOULUTUS')">1. <span
+                        translate="occupation.nominationStatus.KOULUTUS"></span></a>
+            </li>
+            <li ng-class="{'active': $ctrl.searchParams.nominationStatus == 'EHDOLLA'}" ng-show="!$ctrl.isModerator">
+                <a ng-click="$ctrl.selectNominationStatus('EHDOLLA')">2. <span
+                        translate="occupation.nominationStatus.EHDOLLA"></span>
+                    <span class="badge" ng-bind="$ctrl.counts['EHDOLLA']"></span>
+                </a>
+            </li>
+            <li ng-class="{'active': $ctrl.searchParams.nominationStatus == 'ESITETTY'}">
+                <a ng-click="$ctrl.selectNominationStatus('ESITETTY')">3. <span
+                        translate="occupation.nominationStatus.ESITETTY"></span>
+                    <span class="badge" ng-bind="$ctrl.counts['ESITETTY']"></span>
+                </a>
+            </li>
+            <li ng-class="{'active': $ctrl.searchParams.nominationStatus == 'NIMITETTY'}">
+                <a ng-click="$ctrl.selectNominationStatus('NIMITETTY')"><span
+                        translate="occupation.nominationStatus.NIMITETTY"></span>
+                    <span class="badge" ng-bind="$ctrl.counts['NIMITETTY']"></span>
+                </a>
+            </li>
+            <li ng-class="{'active': $ctrl.searchParams.nominationStatus == 'HYLATTY'}">
+                <a ng-click="$ctrl.selectNominationStatus('HYLATTY')"><span
+                        translate="occupation.nominationStatus.HYLATTY"></span>
+                    <span class="badge" ng-bind="$ctrl.counts['HYLATTY']"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <ul class="list-group">
+            <li class="list-group-item"
+                ng-click="$ctrl.selectOccupationType(occupationType)"
+                ng-class="{'active': $ctrl.searchParams.occupationType === occupationType}"
+                ng-repeat="occupationType in $ctrl.occupationTypes">
+                <p class="list-group-item-heading">
+                    <a><span ng-bind="::(occupationType | translateWithPrefix:'occupation.type.')"></span></a>
+                </p>
+            </li>
+        </ul>
+    </div>
+
+    <div class="col-md-9 r-nomination-list-container">
+        <div class="r-nomination-list-filters" ng-if="$ctrl.showFilters()"
+             ng-include="'occupation/nomination/filters.html'">
+        </div>
+
+        <div class="text-center">
+            <ul uib-pagination
+                ng-model="$ctrl.searchParams.page"
+                ng-change="$ctrl.search()"
+                ng-show="$ctrl.showPager()"
+                items-per-page="$ctrl.resultList.pageable.size"
+                total-items="$ctrl.resultList.total"
+                rotate="true"
+                max-size="8"
+                boundary-links="true"
+                class="pagination-md"
+                previous-text="{{'global.pager.previous' | translate}}"
+                next-text="{{'global.pager.next' | translate}}"
+                first-text="{{'global.pager.first' | translate}}"
+                last-text="{{'global.pager.last' | translate}}"></ul>
+        </div>
+
+        <div class="r-nomination-list-header" ng-show="$ctrl.resultList.content">
+            <div class="left-column">
+                <label class="checkbox-inline">
+                    <input type="checkbox"
+                           ng-model="$ctrl.selectAllModel"
+                           ng-change="$ctrl.selectAll($ctrl.selectAllModel)">
+                    <span translate="global.button.selectAll"></span>
+                </label>
+            </div>
+
+            <div class="right-column">
+                <a class="btn btn-sm btn-default"
+                   ng-show="!$ctrl.isModerator && ($ctrl.searchParams.nominationStatus === 'EHDOLLA' || $ctrl.searchParams.nominationStatus === 'ESITETTY')"
+                   ng-click="$ctrl.cancel('selected')">
+                    <span translate="occupation.nomination.button.cancelSelected"></span>
+                </a>
+
+                <a class="btn btn-sm btn-primary"
+                   ng-show="!$ctrl.isModerator && $ctrl.searchParams.nominationStatus === 'KOULUTUS'"
+                   ng-click="$ctrl.proposeTraining('selected')">
+                    <span translate="occupation.nomination.button.proposeTrainingSelected"></span>
+                </a>
+
+                <a class="btn btn-sm btn-primary"
+                   ng-show="!$ctrl.isModerator && $ctrl.searchParams.nominationStatus === 'EHDOLLA'"
+                   ng-click="$ctrl.propose('selected')">
+                    <span translate="occupation.nomination.button.proposeSelected"></span>
+                </a>
+
+                <a class="btn btn-sm btn-primary"
+                   ng-show="$ctrl.isModerator && $ctrl.searchParams.nominationStatus === 'ESITETTY'"
+                   ng-click="$ctrl.accept('selected')">
+                    <span translate="occupation.nomination.button.acceptSelected"></span>
+                </a>
+
+                <a class="btn btn-sm btn-danger"
+                   ng-show="$ctrl.isModerator && $ctrl.searchParams.nominationStatus === 'ESITETTY'"
+                   ng-click="$ctrl.reject('selected')">
+                    <span translate="occupation.nomination.button.rejectSelected"></span>
+                </a>
+
+                <a class="btn btn-sm btn-primary" ng-click="$ctrl.exportToExcel()">
+                    <span class="glyphicon glyphicon-search"></span> &nbsp;
+                    <span translate="reporting.common.toExcel"></span>
+                </a>
+            </div>
+        </div>
+
+        <div class="r-nomination-list-empty" ng-show="$ctrl.resultList.total === 0">
+            <span translate="occupation.nomination.list.noResults"></span>
+        </div>
+
+        <div class="panel r-nomination-list-element"
+             ng-class="{'panel-primary': row.selected, 'panel-default': !row.selected}"
+             ng-repeat="row in $ctrl.resultList.content">
+            <div class="panel-heading">
+                <label class="checkbox-inline">
+                    <input type="checkbox" ng-model="row.selected" ng-change="$ctrl.onRowSelected(row.selected)">
+                    <span ng-bind="::(row.person.lastName + ' ' + row.person.firstName)"></span>
+                    <span ng-bind="::($ctrl.getRowHeaderDate(row) | date:'d.M.yyyy')"></span>
+                    <span class="text-warning glyphicon glyphicon glyphicon-hourglass"
+                          title="{{ 'occupation.nominationStatus.ESITETTY' | translate }}"
+                          ng-show="row.nominated"></span>
+                    <span class="text-primary glyphicon glyphicon-ok"
+                          title="{{ 'occupation.nominationStatus.NIMITETTY' | translate }}"
+                          ng-show="row.accepted"></span>
+                    <span class="text-danger glyphicon glyphicon-warning-sign"
+                          ng-show="row.person.underage || row.person.huntingBanActive"></span>
+                </label>
+
+                <span class="badge" ng-show="row.trainingType === 'LAHI'"
+                      translate="occupation.trainingType.LAHI"></span>
+
+                <span class="badge" ng-show="row.trainingType === 'SAHKOINEN'"
+                      translate="occupation.trainingType.SAHKOINEN"></span>
+
+                <button type="button" class="btn btn-default" ng-click="row.collapsed = !row.collapsed">
+                    <span ng-hide="row.collapsed" translate="global.button.open"></span>
+                    <span ng-show="row.collapsed" translate="global.button.close"></span>
+                </button>
+            </div>
+
+            <div class="panel-body" ng-show="row.collapsed">
+                <div class="alert alert-warning" ng-if="row.person.underage">
+                    <p translate="occupation.nomination.list.alertUnderage"></p>
+                </div>
+
+                <div class="alert alert-warning" ng-if="row.person.huntingBanActive">
+                    <p translate="occupation.nomination.list.alertHuntingBan"></p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 left-column">
+                        <p ng-show="row.trainingType === 'LAHI'" class="header"
+                           translate="occupation.nomination.field.trainingLocation"></p>
+                        <p ng-show="row.trainingType === 'LAHI'" ng-bind="::row.trainingLocation"></p>
+
+                        <p ng-show="row.moderatorFullName" class="header"
+                           translate="occupation.nomination.field.moderatorName"></p>
+                        <p ng-show="row.moderatorFullName" ng-bind="::row.moderatorFullName"></p>
+
+                        <p ng-show="row.occupationPeriod" class="header"
+                           translate="occupation.nomination.field.occupationPeriod"></p>
+
+                        <p ng-show="row.occupationPeriod">
+                            <span ng-if="!row.occupationPeriod.beginDate && !row.occupationPeriod.endDate"
+                                  ng-bind="'occupation.indefinitely' | translate"></span>
+
+                            <span ng-if="row.occupationPeriod.beginDate && !row.occupationPeriod.endDate"
+                                  ng-bind="('occupation.starting' | translate) + ' ' + (row.occupationPeriod.beginDate|date:'d.M.yyyy')"></span>
+
+                            <span ng-if="!row.occupationPeriod.beginDate && row.occupationPeriod.endDate"
+                                  ng-bind="('occupation.ending' | translate) + ' ' + (row.occupationPeriod.endDate|date:'d.M.yyyy')"></span>
+
+                            <span ng-if="row.occupationPeriod.beginDate && row.occupationPeriod.endDate"
+                                  ng-bind="(row.occupationPeriod.beginDate|date:'d.M.yyyy') + ' - ' + (row.occupationPeriod.endDate|date:'d.M.yyyy')"></span>
+                        </p>
+
+                        <p ng-show="row.nominationDate" class="header"
+                           translate="occupation.nomination.field.nominationDate"></p>
+                        <p ng-show="row.nominationDate" ng-bind="::(row.nominationDate | date:'d.M.yyyy')"></p>
+
+                        <p ng-show="row.decisionDate" class="header"
+                           translate="occupation.nomination.field.decisionDate"></p>
+                        <p ng-show="row.decisionDate" ng-bind="::(row.decisionDate | date:'d.M.yyyy')"></p>
+                    </div>
+
+                    <div class="col-md-5 center-column">
+                        <p ng-show="row.person.phoneNumber" class="header" translate="global.person.phoneNumber"></p>
+                        <p ng-show="row.person.phoneNumber" ng-bind="::row.person.phoneNumber"></p>
+
+                        <p class="header" translate="global.person.email"></p>
+                        <p ng-show="row.person.email" ng-bind="::row.person.email"></p>
+
+                        <p ng-show="row.person.address" class="header" translate="global.person.address"></p>
+                        <p ng-show="row.person.address">
+                            {{ ::row.person.address.streetAddress }},<br/>
+                            {{ ::row.person.address.postalCode }}
+                            {{ ::row.person.address.city }}
+                        </p>
+                    </div>
+
+                    <div class="col-md-3 right-column" ng-hide="row.underage || row.huntingBanActive">
+                        <div class="btn-group btn-group-justified"
+                             ng-show="!$ctrl.isModerator && $ctrl.searchParams.nominationStatus === 'KOULUTUS'">
+                            <a class="btn btn-sm btn-primary"
+                               ng-click="$ctrl.proposeTraining(row.id)">
+                                <span translate="occupation.nomination.button.proposeTraining"></span>
+                            </a>
+                        </div>
+
+                        <div class="btn-group btn-group-justified"
+                             ng-show="$ctrl.isModerator && $ctrl.searchParams.nominationStatus === 'KOULUTUS' && row.trainingType === 'LAHI'">
+                            <a class="btn btn-sm btn-primary"
+                               ng-click="$ctrl.deleteTraining(row.id)">
+                                <span translate="occupation.nomination.button.deleteTraining"></span>
+                            </a>
+                        </div>
+
+                        <div class="btn-group btn-group-justified"
+                             ng-show="!$ctrl.isModerator && ($ctrl.searchParams.nominationStatus === 'EHDOLLA' || $ctrl.searchParams.nominationStatus === 'ESITETTY')">
+                            <a class="btn btn-sm btn-primary"
+                               ng-click="$ctrl.cancel(row.id)">
+                                <span translate="occupation.nomination.button.cancel"></span>
+                            </a>
+                        </div>
+
+                        <div class="btn-group btn-group-justified"
+                             ng-show="!$ctrl.isModerator && $ctrl.searchParams.nominationStatus === 'EHDOLLA'">
+                            <a class="btn btn-sm btn-primary"
+                               ng-click="$ctrl.propose(row.id)">
+                                <span translate="occupation.nomination.button.propose"></span>
+                            </a>
+                        </div>
+
+                        <div class="btn-group btn-group-justified"
+                             ng-show="$ctrl.isModerator && $ctrl.searchParams.nominationStatus === 'ESITETTY'">
+                            <a class="btn btn-sm btn-primary"
+                               ng-click="$ctrl.accept(row.id)">
+                                <span translate="occupation.nomination.button.accept"></span>
+                            </a>
+                        </div>
+
+                        <div class="btn-group btn-group-justified"
+                             ng-show="$ctrl.isModerator && $ctrl.searchParams.nominationStatus === 'ESITETTY'">
+                            <a class="btn btn-sm btn-danger"
+                               ng-click="$ctrl.reject(row.id)">
+                                <span translate="occupation.nomination.button.reject"></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

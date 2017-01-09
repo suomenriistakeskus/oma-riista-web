@@ -1,0 +1,33 @@
+<div ng-if="okPropertyCount" class="alert alert-info">
+    <span>{{'club.area.map.tab.massInsert.okPropertyCount' | translate:{count:okPropertyCount} }}</span>
+</div>
+<div ng-if="invalidPropertyList && invalidPropertyList.length" class="alert alert-danger">
+    <span translate="club.area.map.tab.massInsert.propertyIdentifiersNotFound"></span>
+
+    <div ng-repeat="p in invalidPropertyList">
+        {{p | formatPropertyIdentifier}}
+    </div>
+</div>
+
+<form name="propertyListForm">
+    <div class="form-group" show-errors>
+        <label class="control-label" for="propertyList"
+               translate="club.area.map.tab.massInsert.inputPropertyIdentifier"></label>
+
+        <textarea name="propertyList" id="propertyList"
+                  class="form-control"
+                  ng-model="userInput.propertyList"
+                  rows="15"
+                  property-identifier-list></textarea>
+
+        <p ng-show="propertyListForm.propertyList.$invalid" class="help-block" translate="club.area.map.tab.massInsert.placeholder"></p>
+    </div>
+    <ul class="nav">
+        <li class="pull-right">
+            <button type="button" class="btn btn-primary"
+                    ng-disabled="propertyListForm.$invalid"
+                    ng-click="addPropertiesAsText()"
+                    translate="club.area.map.tab.massInsert.buttonAdd"></button>
+        </li>
+    </ul>
+</form>

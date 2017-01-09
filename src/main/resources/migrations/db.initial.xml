@@ -1,0 +1,1198 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="initial-1" author="vincit">
+        <createTable tableName="system_user">
+            <column autoIncrement="true" name="user_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="system_user_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="is_active" type="BOOL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_system_user_username"/>
+            </column>
+            <column name="password" type="VARCHAR(255)"/>
+            <column name="role" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="phone_number" type="VARCHAR(255)"/>
+            <column name="locale_id" type="VARCHAR(255)"/>
+            <column name="timezone_id" type="VARCHAR(255)"/>
+            <column name="person_id" type="BIGINT"/>
+        </createTable>
+
+        <createIndex tableName="system_user" indexName="ndx_system_user_person_id">
+            <column name="person_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-2" author="vincit">
+        <createTable tableName="system_user_role">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="system_user_role_pkey"/>
+            </column>
+        </createTable>
+
+        <insert tableName="system_user_role">
+            <column name="name" value="ROLE_USER"/>
+        </insert>
+        <insert tableName="system_user_role">
+            <column name="name" value="ROLE_REST"/>
+        </insert>
+        <insert tableName="system_user_role">
+            <column name="name" value="ROLE_MODERATOR"/>
+        </insert>
+        <insert tableName="system_user_role">
+            <column name="name" value="ROLE_ADMIN"/>
+        </insert>
+
+        <addForeignKeyConstraint baseTableName="system_user"
+                                 baseColumnNames="role"
+                                 constraintName="fk_system_user_role"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="system_user_role"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="initial-3" author="vincit">
+        <createTable tableName="address">
+            <column autoIncrement="true" name="address_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="address_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="street_address" type="VARCHAR(255)"/>
+            <column name="postal_code" type="VARCHAR(255)"/>
+            <column name="city" type="VARCHAR(255)"/>
+            <column name="country" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="initial-4" author="vincit">
+        <createTable tableName="organisation">
+            <column autoIncrement="true" name="organisation_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="organisation_pkey"/>
+            </column>
+            <column name="organisation_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="parent_organisation_id" type="BIGINT"/>
+            <column name="official_code" type="VARCHAR(255)"/>
+            <column name="name_finnish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address_id" type="BIGINT">
+                <constraints unique="true" uniqueConstraintName="uk_organisation_address"/>
+            </column>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="phone_number" type="VARCHAR(255)"/>
+            <column name="longitude" type="INT"/>
+            <column name="latitude" type="INT"/>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+            <column name="lh_organisation_id" type="VARCHAR(255)"/>
+            <column name="poronhoitoalue_id" type="VARCHAR(255)"/>
+            <column name="hallialue_id" type="VARCHAR(255)"/>
+            <column name="is_at_coast" type="BOOL"/>
+        </createTable>
+
+        <sql>
+            ALTER TABLE organisation ADD CONSTRAINT ck_organisation_coordinates
+            CHECK (longitude IS NOT NULL AND latitude IS NOT NULL OR longitude IS NULL AND latitude IS NULL)
+        </sql>
+
+        <addUniqueConstraint
+                tableName="organisation"
+                columnNames="organisation_type,official_code"
+                constraintName="uk_organisation_type_official_code"/>
+
+        <addUniqueConstraint
+                tableName="organisation"
+                columnNames="organisation_type,lh_organisation_id"
+                constraintName="uk_organisation_type_lh_organisation"/>
+
+        <addForeignKeyConstraint baseColumnNames="parent_organisation_id"
+                                 baseTableName="organisation"
+                                 constraintName="fk_organisation_parent"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="organisation_id"
+                                 referencedTableName="organisation"/>
+
+        <addForeignKeyConstraint baseColumnNames="address_id"
+                                 baseTableName="organisation"
+                                 constraintName="fk_organisation_address"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="address_id"
+                                 referencedTableName="address"/>
+
+        <createIndex tableName="organisation" indexName="ndx_organisation_parent">
+            <column name="parent_organisation_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-5" author="vincit">
+        <createTable tableName="organisation_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="organisation_type">
+            <column name="name" value="RK"/>
+        </insert>
+        <insert tableName="organisation_type">
+            <column name="name" value="RKA"/>
+        </insert>
+        <insert tableName="organisation_type">
+            <column name="name" value="RHY"/>
+        </insert>
+        <insert tableName="organisation_type">
+            <column name="name" value="ARN"/>
+        </insert>
+        <insert tableName="organisation_type">
+            <column name="name" value="VRN"/>
+        </insert>
+
+        <addForeignKeyConstraint baseTableName="organisation"
+                                 baseColumnNames="organisation_type"
+                                 constraintName="fk_organisation_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="organisation_type"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="initial-6" author="vincit">
+        <createTable tableName="person">
+            <column autoIncrement="true" name="person_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="person_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="ssn" type="CHAR(11)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_person_ssn"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="by_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="language_code" type="CHAR(2)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="phone_number" type="VARCHAR(255)"/>
+            <column name="home_municipality" type="VARCHAR(255)"/>
+            <column name="is_finnish_citizen" type="BOOL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lh_person_id" type="VARCHAR(255)">
+                <constraints unique="true" uniqueConstraintName="uk_person_lh_person_id"/>
+            </column>
+            <column name="vtj_address_id" type="BIGINT">
+                <constraints unique="true" uniqueConstraintName="uk_person_vtj_address"/>
+            </column>
+            <column name="lh_address_id" type="BIGINT">
+                <constraints unique="true" uniqueConstraintName="uk_person_lh_address"/>
+            </column>
+            <column name="other_address_id" type="BIGINT">
+                <constraints unique="true" uniqueConstraintName="uk_person_other_address"/>
+            </column>
+            <column name="rhy_membership_id" type="BIGINT"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="person"
+                                 baseColumnNames="rhy_membership_id"
+                                 constraintName="fk_rhy_membership"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="organisation_id"
+                                 referencedTableName="organisation"/>
+
+        <addForeignKeyConstraint baseColumnNames="person_id"
+                                 baseTableName="system_user"
+                                 constraintName="fk_system_user_person"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="person_id"
+                                 referencedTableName="person"/>
+
+        <addForeignKeyConstraint baseColumnNames="vtj_address_id"
+                                 baseTableName="person"
+                                 constraintName="fk_person_vtj_address"
+                                 onDelete="SET NULL" onUpdate="NO ACTION"
+                                 referencedColumnNames="address_id"
+                                 referencedTableName="address"/>
+
+        <addForeignKeyConstraint baseColumnNames="lh_address_id"
+                                 baseTableName="person"
+                                 constraintName="fk_person_lh_address"
+                                 onDelete="SET NULL" onUpdate="NO ACTION"
+                                 referencedColumnNames="address_id"
+                                 referencedTableName="address"/>
+
+        <addForeignKeyConstraint baseColumnNames="other_address_id"
+                                 baseTableName="person"
+                                 constraintName="fk_person_other_address"
+                                 onDelete="SET NULL" onUpdate="NO ACTION"
+                                 referencedColumnNames="address_id"
+                                 referencedTableName="address"/>
+
+        <createIndex tableName="person" indexName="ndx_person_rhy_membership">
+            <column name="rhy_membership_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-7" author="vincit">
+        <createTable tableName="occupation">
+            <column autoIncrement="true" name="occupation_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="occupation_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="person_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="occupation_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="begin_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="end_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="call_order" type="INT"/>
+            <column name="qualification_year" type="INT"/>
+            <column name="additional_info" type="VARCHAR(255)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="person_id"
+                                 baseTableName="occupation"
+                                 constraintName="fk_occupation_person"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="person_id"
+                                 referencedTableName="person"/>
+
+        <addForeignKeyConstraint baseColumnNames="organisation_id"
+                                 baseTableName="occupation"
+                                 constraintName="fk_occupation_organisation"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="organisation_id"
+                                 referencedTableName="organisation"/>
+
+        <createIndex tableName="occupation" indexName="ndx_occupation_person_and_type">
+            <column name="person_id"/>
+            <column name="occupation_type"/>
+        </createIndex>
+
+        <createIndex tableName="occupation" indexName="ndx_occupation_organisation_and_type">
+            <column name="organisation_id"/>
+            <column name="occupation_type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-8" author="vincit">
+        <createTable tableName="occupation_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="occupation_type">
+            <column name="name" value="TOIMINNANOHJAAJA"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="SRVA_YHTEYSHENKILO"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="PETOYHDYSHENKILO"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="METSASTYKSENVALVOJA"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="METSASTAJATUTKINNON_VASTAANOTTAJA"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="AMPUMAKOKEEN_VASTAANOTTAJA"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="METSASTAJATUTKINTOON_VALMENTAVAN_KOULUTUKSEN_KOULUTTAJA"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="PUHEENJOHTAJA"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="VARAPUHEENJOHTAJA"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="HALLITUKSEN_JASEN"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="HALLITUKSEN_VARAJASEN"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="JALJESTYSKOIRAN_OHJAAJA_HIRVI"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="JALJESTYSKOIRAN_OHJAAJA_SUURPEDOT"/>
+        </insert>
+
+        <addForeignKeyConstraint baseTableName="occupation" baseColumnNames="occupation_type"
+                                 constraintName="fk_occupation_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="occupation_type"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="initial-9" author="vincit">
+        <createTable tableName="venue">
+            <column autoIncrement="true" name="venue_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="venue_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="info" type="TEXT"/>
+            <column name="address_id" type="BIGINT">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_venue_address"/>
+            </column>
+            <column name="longitude" type="INT"/>
+            <column name="latitude" type="INT"/>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="address_id"
+                                 baseTableName="venue"
+                                 constraintName="fk_venue_address"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="address_id"
+                                 referencedTableName="address"/>
+
+        <sql>
+            ALTER TABLE venue ADD CONSTRAINT ck_venue_coordinates
+            CHECK (longitude IS NOT NULL AND latitude IS NOT NULL OR longitude IS NULL AND latitude IS NULL)
+        </sql>
+    </changeSet>
+
+    <changeSet id="initial-10" author="vincit">
+        <createTable tableName="calendar_event">
+            <column autoIncrement="true" name="calendar_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="calendar_event_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="date" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="begin_time" type="TIME WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="TIME WITHOUT TIME ZONE"/>
+            <column name="calendar_event_type" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="TEXT"/>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="venue_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="organisation_id"
+                                 baseTableName="calendar_event"
+                                 constraintName="fk_calendar_event_organisation"
+                                 onDelete="SET NULL" onUpdate="NO ACTION"
+                                 referencedColumnNames="organisation_id"
+                                 referencedTableName="organisation"/>
+
+        <addForeignKeyConstraint baseColumnNames="venue_id"
+                                 baseTableName="calendar_event"
+                                 constraintName="fk_calendar_event_venue"
+                                 onDelete="SET NULL" onUpdate="NO ACTION"
+                                 referencedColumnNames="venue_id"
+                                 referencedTableName="venue"/>
+
+        <createIndex tableName="calendar_event" indexName="ndx_calendar_event_venue">
+            <column name="venue_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-11" author="vincit">
+        <createTable tableName="calendar_event_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="calendar_event_type">
+            <column name="name" value="AMPUMAKOE"/>
+        </insert>
+        <insert tableName="calendar_event_type">
+            <column name="name" value="METSASTAJAKURSSI"/>
+        </insert>
+        <insert tableName="calendar_event_type">
+            <column name="name" value="METSASTAJATUTKINTO"/>
+        </insert>
+        <insert tableName="calendar_event_type">
+            <column name="name" value="KOULUTUSTILAISUUS"/>
+        </insert>
+        <insert tableName="calendar_event_type">
+            <column name="name" value="VUOSIKOKOUS"/>
+        </insert>
+        <insert tableName="calendar_event_type">
+            <column name="name" value="NUORISOTAPAHTUMA"/>
+        </insert>
+        <insert tableName="calendar_event_type">
+            <column name="name" value="AMPUMAKILPAILU"/>
+        </insert>
+        <insert tableName="calendar_event_type">
+            <column name="name" value="RIISTAPOLKUKILPAILU"/>
+        </insert>
+        <insert tableName="calendar_event_type">
+            <column name="name" value="ERATAPAHTUMA"/>
+        </insert>
+
+        <addForeignKeyConstraint baseTableName="calendar_event"
+                                 baseColumnNames="calendar_event_type"
+                                 constraintName="fk_calendar_event_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="calendar_event_type"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="initial-12" author="vincit">
+        <createTable tableName="organisation_venue">
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="venue_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="organisation_venue" columnNames="organisation_id, venue_id"/>
+
+        <addForeignKeyConstraint baseTableName="organisation_venue"
+                                 baseColumnNames="organisation_id"
+                                 constraintName="fk_organisation_venue_organisation"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <addForeignKeyConstraint baseTableName="organisation_venue"
+                                 baseColumnNames="venue_id"
+                                 constraintName="fk_organisation_venue_venue"
+                                 referencedTableName="venue"
+                                 referencedColumnNames="venue_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <createIndex tableName="organisation_venue" indexName="ndx_organisation_venue">
+            <column name="venue_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-13" author="vincit">
+        <createTable tableName="file_metadata">
+            <column name="file_metadata_uuid" type="CHAR(36)">
+                <constraints primaryKey="true" primaryKeyName="file_metadata_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_size" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="storage_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="original_file_name" type="VARCHAR(255)"/>
+            <column name="resource_url" type="VARCHAR(255)"/>
+            <column name="md5_hash" type="CHAR(32)"/>
+            <column name="is_public" type="BOOL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="initial-14" author="vincit">
+        <createTable tableName="file_content">
+            <column name="file_metadata_uuid" type="CHAR(36)">
+                <constraints primaryKey="true" primaryKeyName="file_content_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_content" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="file_metadata_uuid"
+                                 baseTableName="file_content"
+                                 constraintName="fk_file_content_metadata"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedColumnNames="file_metadata_uuid"
+                                 referencedTableName="file_metadata"/>
+    </changeSet>
+
+    <changeSet id="initial-15" author="vincit">
+        <createTable tableName="game_category">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+        <insert tableName="game_category">
+            <column name="name" value="FOWL"/>
+        </insert>
+        <insert tableName="game_category">
+            <column name="name" value="GAME_MAMMAL"/>
+        </insert>
+        <insert tableName="game_category">
+            <column name="name" value="UNPROTECTED"/>
+        </insert>
+
+        <createTable tableName="game_gender">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+        <insert tableName="game_gender">
+            <column name="name" value="FEMALE"/>
+        </insert>
+        <insert tableName="game_gender">
+            <column name="name" value="MALE"/>
+        </insert>
+        <insert tableName="game_gender">
+            <column name="name" value="UNKNOWN"/>
+        </insert>
+
+        <createTable tableName="game_age">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+        <insert tableName="game_age">
+            <column name="name" value="ADULT"/>
+        </insert>
+        <insert tableName="game_age">
+            <column name="name" value="YOUNG"/>
+        </insert>
+        <insert tableName="game_age">
+            <column name="name" value="UNKNOWN"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="initial-16" author="vincit">
+        <createTable tableName="game_species">
+            <column autoIncrement="true" name="game_species_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="game_species_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="official_code" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_finnish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scientific_name" type="VARCHAR(100)"/>
+            <column name="category" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="game_species" baseColumnNames="category"
+                                 constraintName="fk_game_species_category"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="game_category"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="initial-17" author="vincit">
+        <createTable tableName="game_diary_entry">
+            <column autoIncrement="true" name="game_diary_entry_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="game_diary_entry_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="latitude" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="longitude" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+            <column name="point_of_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="author_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hunter_number_of_actual_shooter" type="VARCHAR(50)"/>
+            <column name="gender" type="VARCHAR(255)"/>
+            <column name="age" type="VARCHAR(255)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="author_id"
+                                 baseTableName="game_diary_entry"
+                                 constraintName="fk_game_diary_entry_author"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="person_id"
+                                 referencedTableName="person"/>
+
+        <addForeignKeyConstraint baseColumnNames="gender"
+                                 baseTableName="game_diary_entry"
+                                 constraintName="fk_game_diary_entry_gender"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="name"
+                                 referencedTableName="game_gender"/>
+
+        <addForeignKeyConstraint baseColumnNames="age"
+                                 baseTableName="game_diary_entry"
+                                 constraintName="fk_game_diary_entry_age"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="name"
+                                 referencedTableName="game_age"/>
+
+        <createIndex tableName="game_diary_entry" indexName="ndx_game_diary_entry_species">
+            <column name="game_species_id"/>
+        </createIndex>
+        <createIndex tableName="game_diary_entry" indexName="ndx_game_diary_entry_author">
+            <column name="author_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-18" author="vincit">
+        <createTable tableName="game_diary_image">
+            <column autoIncrement="true" name="game_diary_image_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="game_diary_image_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="diary_entry_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_metadata_id" type="CHAR(36)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="diary_entry_id"
+                                 baseTableName="game_diary_image"
+                                 constraintName="fk_game_diary_image_diary_entry"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="game_diary_entry_id"
+                                 referencedTableName="game_diary_entry"/>
+
+        <addForeignKeyConstraint baseColumnNames="file_metadata_id"
+                                 baseTableName="game_diary_image"
+                                 constraintName="fk_game_diary_image_file_metadata"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedColumnNames="file_metadata_uuid"
+                                 referencedTableName="file_metadata"/>
+
+        <createIndex tableName="game_diary_image" indexName="ndx_game_diary_image_diary_entry">
+            <column name="diary_entry_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-19" author="vincit">
+        <createTable tableName="system_user_previous_password">
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="password" type="VARCHAR(255)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="system_user_previous_password"
+                                 constraintName="fk_system_user_previous_password_system_user"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedColumnNames="user_id"
+                                 referencedTableName="system_user"/>
+
+        <createIndex tableName="system_user_previous_password" indexName="ndx_previous_password_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-20" author="vincit">
+        <createTable tableName="account_activity_message">
+            <column autoIncrement="true" name="message_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="account_activity_message_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activity_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(255)"/>
+            <column name="user_id" type="BIGINT"/>
+            <column name="ip_address" type="VARCHAR(255)"/>
+            <column name="message" type="TEXT"/>
+            <column name="exception_message" type="TEXT"/>
+        </createTable>
+
+        <createIndex tableName="account_activity_message" indexName="ndx_account_activity_message_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-21" author="vincit">
+        <createTable tableName="persistent_remember_me_token">
+            <column name="series" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="persistent_remember_me_token_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token_value" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token_date" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ip_address" type="VARCHAR(255)"/>
+            <column name="user_agent" type="VARCHAR(255)"/>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="persistent_remember_me_token"
+                                 constraintName="fk_persistent_token_user"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedColumnNames="user_id"
+                                 referencedTableName="system_user"/>
+
+        <createIndex tableName="persistent_remember_me_token" indexName="ndx_remember_me_token_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-22" author="vincit">
+        <createTable tableName="mail_message">
+            <column autoIncrement="true" name="mail_message_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="mail_message_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="to_email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subject" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delivered" type="BOOL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delivery_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="failure_counter" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_attempt_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="scheduled_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="submit_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="mail_message" indexName="ndx_mail_message">
+            <column name="delivered"/>
+            <column name="scheduled_time"/>
+            <column name="failure_counter"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="initial-23" author="vincit">
+        <preConditions onFail="CONTINUE">
+            <dbms type="postgresql"/>
+            <sqlCheck expectedResult="1">
+                select count(1) from pg_extension where extname = 'pg_trgm';
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            CREATE INDEX person_fullname_trgm ON person USING GIN ((COALESCE(first_name || ' ', '')  || COALESCE(last_name, '')) gin_trgm_ops);
+        </sql>
+    </changeSet>
+
+    <changeSet id="initial-24" author="vincit">
+        <preConditions onFail="CONTINUE">
+            <dbms type="postgresql"/>
+            <sqlCheck expectedResult="1">
+                select count(1) from pg_extension where extname = 'pg_trgm';
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            CREATE INDEX organisation_name_trgm ON organisation USING GIN ((COALESCE(name_finnish || ' ', '')  || COALESCE(name_swedish, '')) gin_trgm_ops);
+        </sql>
+    </changeSet>
+
+    <changeSet author="initial" id="initial-rhy">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="rhy"/>
+            </not>
+        </preConditions>
+        <createTable tableName="rhy">
+            <column autoIncrement="true" name="gid" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="rhy_pkey"/>
+            </column>
+            <column name="vesi_ala" type="numeric"/>
+            <column name="maa_ala" type="numeric"/>
+            <column name="koko_ala" type="numeric"/>
+            <column name="nimi_fi" type="VARCHAR(50)"/>
+            <column name="nimi_sv" type="VARCHAR(50)"/>
+            <column name="id" type="CHAR(3)"/>
+            <column name="geom" type="GEOMETRY"/>
+        </createTable>
+        <createIndex tableName="rhy" indexName="rhy_id" unique="true">
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="initial" id="initial-palstaalue">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="palstaalue"/>
+            </not>
+        </preConditions>
+        <createTable tableName="palstaalue">
+            <column name="id" type="INT">
+                <constraints primaryKey="true" primaryKeyName="palstaalue_pkey"/>
+            </column>
+            <column name="tunnus" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ktunnus" type="CHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nimi" type="VARCHAR(120)"/>
+            <column name="tpteksti" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="palstaalue" indexName="palstaalue_tunnus">
+            <column name="tunnus"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="initial" id="initial-mh-hirvi">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="mh_hirvi"/>
+            </not>
+        </preConditions>
+        <createTable tableName="mh_hirvi">
+            <column autoIncrement="true" name="gid" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="mh_hirvi_pkey"/>
+            </column>
+            <column name="vuosi" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="koodi" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nimi" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pinta_ala" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="mh_hirvi" constraintName="uk_mh_hirvi_vuosi_kohde" columnNames="vuosi,koodi"/>
+    </changeSet>
+    <changeSet author="initial" id="initial-mh-pienriista">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="mh_pienriista"/>
+            </not>
+        </preConditions>
+        <createTable tableName="mh_pienriista">
+            <column autoIncrement="true" name="gid" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="mh_pienriista_pkey"/>
+            </column>
+            <column name="kohde_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="palstanro" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kohde_nimi" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kartta_ala" type="numeric">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shape_leng" type="numeric">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shape_area" type="numeric">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kohde_koodi" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="initial" id="initial-hta">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="hta"/>
+            </not>
+        </preConditions>
+        <createTable tableName="hta">
+            <column autoIncrement="true" name="gid" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="hta_pkey"/>
+            </column>
+            <column name="numero" type="VARCHAR(7)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nimi" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nimi_ly" type="VARCHAR(9)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nimi_se" type="VARCHAR(54)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="hta" indexName="hta_numero" unique="true">
+            <column name="numero"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="initial" author="initial-vesialue">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="vesialue"/>
+            </not>
+        </preConditions>
+        <createTable tableName="vesialue">
+            <column autoIncrement="true" name="gid" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="vesialue_pkey"/>
+            </column>
+            <column name="teksti" type="VARCHAR(80)"/>
+            <column name="ryhma" type="DOUBLE"/>
+            <column name="luokka" type="DOUBLE"/>
+            <column name="tastar" type="DOUBLE"/>
+            <column name="kortar" type="DOUBLE"/>
+            <column name="korarv" type="DOUBLE"/>
+            <column name="kulkutapa" type="DOUBLE"/>
+            <column name="kohdeoso" type="DOUBLE"/>
+            <column name="ainlahde" type="DOUBLE"/>
+            <column name="syntyhetki" type="VARCHAR(8)" />
+            <column name="kuolhetki" type="VARCHAR(8)" />
+            <column name="kartoglk" type="DOUBLE"/>
+            <column name="aluejakoon" type="DOUBLE"/>
+            <column name="versuh" type="DOUBLE"/>
+            <column name="suunta" type="DOUBLE"/>
+            <column name="siirt_dx" type="DOUBLE"/>
+            <column name="siirt_dy" type="DOUBLE"/>
+            <column name="korkeus" type="DOUBLE"/>
+            <column name="attr2" type="DOUBLE"/>
+            <column name="attr3" type="DOUBLE"/>
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

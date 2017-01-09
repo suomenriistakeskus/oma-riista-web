@@ -1,0 +1,34 @@
+<p>Tämä on Oma riista –palvelun automaattisesti luoma viesti.</p>
+
+<p>Luvan {{data.permitNumber}} ({{data.speciesName.finnish}}) kaikki osakkaat ovat merkinneet metsästyksen päättyneeksi omalta osaltaan.</p>
+{{#if data.nokNotEdibles}}
+    <p>
+        HUOM: Ihmisravinnoksi kelpaamattomien määrä ei luvassa vastaa uusien lupien määrää. Pyydämme tarkistamaan onko
+        jokin osakas on merkannut ihmisravinnoksi kelpaamattomien tiedon väärin vai onko jokin uuden luvan hakemus vielä
+        käsittelemättä. Voit merkitä luvalla metsästyksen päättyneeksi vasta kun määrät täsmäävät.
+    </p>
+{{/if}}
+
+{{#if data.allOk}}
+    <p>
+        Ilmoittaaksesi metsästyksen luvalla {{data.permitNumber}} ({{data.speciesName.finnish}}) päättyneeksi sinun tulee:
+    <ol>
+        <li>Maksaa saamasi saaliit käyttäen allaolevia tietoja.</li>
+        <li>Tallettaa tai skannata maksutosite.</li>
+        <li>Liittää maksutosite <a target="_blank" href="{{link}}">sähköiseen ilmoitukseen</a>.</li>
+        <li>Merkitä metsästys päättyneeksi.</li>
+    </ol>
+
+<pre>
+Summa: {{data.sum}} EUR
+Eräpäivä: {{data.dueDate}}
+Tilinumero:
+      IBAN: {{data.iban}}
+       BIC: {{data.bic}}
+Viitenumero: {{data.creditorReference}}
+</pre>
+
+    </p>
+{{/if}}
+<hr/>
+<p>–- Älä vastaa tähän viestiin; se lähetettiin sähköpostiosoitteesta, jota ei seurata.</p>

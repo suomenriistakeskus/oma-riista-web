@@ -1,0 +1,368 @@
+<form name="occupationForm" role="form" novalidate
+      class="form form-horizontal r-occupation-form" ng-submit="save()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 ng-if="!occupation.id" class="modal-title" translate="occupation.form.titleAdd"></h3>
+        <h3 ng-if="occupation.id" class="modal-title" translate="occupation.form.titleEdit"></h3>
+    </div>
+
+    <div class="modal-body">
+
+        <div class="form-group" show-errors>
+            <label for="occupationTypeId" class="col-xs-4 control-label">
+                <span translate="occupation.occupation"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <select name="occupationTypeId" id="occupationTypeId"
+                        class="form-control"
+                        ng-model="occupation.occupationType"
+                        ng-options="('occupation.type.' + o | translate) for o in occupationTypes"
+                        required
+                        ng-disabled="occupation.id"></select>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-if="callOrderConfig.isCallOrderType(occupation.occupationType)">
+            <label for="callOrder" class="col-xs-4 control-label">
+                <span translate="occupation.callOrder"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <select name="callOrder" id="callOrder"
+                        class="form-control"
+                        ng-model="occupation.callOrder"
+                        ng-options="o for o in callOrderConfig.callOrderValues"></select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-xs-4 control-label" translate="occupation.form.validity"></label>
+
+            <div class="col-xs-8 row">
+                <div class="col-xs-5">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" name="beginDate" id="beginDate"
+                               class="form-control r-wider-date-input"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               max-date="occupation.endDate"
+                               ng-model="occupation.beginDate"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-xs-1 r-date-input-spacer">-</div>
+                <div class="col-xs-5">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" name="endDate" id="endDate"
+                               class="form-control r-wider-date-input"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               min-date="occupation.beginDate"
+                               ng-model="occupation.endDate"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="additionalInfo" class="col-xs-4 control-label">
+                <span translate="occupation.additionalInfo"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <textarea name="additionalInfo" id="additionalInfo"
+                          class="form-control"
+                          rows="3"
+                          ng-model="occupation.additionalInfo"
+                          ng-maxlength="255"></textarea>
+            </div>
+        </div>
+
+
+        <!-- ---------- -->
+        <!--    ADD     -->
+        <!-- ---------- -->
+        <div ng-if="!occupation.id">
+            <div class="form-group">
+                <label class="col-xs-4 control-label">
+                    <span translate="occupation.form.selectPerson"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger" ng-show="!occupation.person"></span>
+                </label>
+                <div class="col-xs-8">
+                    <span class="radio-inline">
+                        <label>
+                            <input type="radio" ng-model="addPersonBy.value" value="existing">
+                            <span translate="occupation.form.selectFromList"></span>
+                        </label>
+                    </span>
+                    <span class="radio-inline">
+                        <label>
+                            <input type="radio" ng-model="addPersonBy.value"value="HETU">
+                            <span translate="occupation.form.selectBySSN"></span>
+                        </label>
+                    </span>
+                    <span class="radio-inline">
+                        <label>
+                            <input type="radio" ng-model="addPersonBy.value" value="hunterNumber">
+                            <span translate="occupation.form.selectByHunterNumber"></span>
+                        </label>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="addPersonBy.value == 'existing'">
+                <label for="selectExisting" class="col-xs-4 control-label">
+                    <span translate="occupation.form.person"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger" ng-show="!occupation.person"></span>
+                </label>
+                <div class="col-xs-8">
+                    <select name="selectExisting" id="selectExisting"
+                            class="form-control"
+                            ng-model="occupation.person"
+                            ng-options="p as personDisplayName(p) for p in existingPersons"
+                            ng-required="!occupation.person"
+                            ng-disabled="occupation.id">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="addPersonBy.value == 'HETU'">
+                <label for="searchSsn" class="col-xs-4 control-label">
+                    <span translate="occupation.form.ssn"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger" ng-show="!occupation.person"></span>
+                </label>
+
+                <div class="col-xs-3">
+                    <input type="text" name="searchSsn" id="searchSsn"
+                           class="form-control"
+                           maxlength="11"
+                           ng-model="searchPerson.ssn"
+                           valid-ssn
+                           ng-required="!occupation.person">
+                </div>
+
+                <div class="col-xs-5">
+                    <button type="button" class="btn btn-primary"
+                            ng-click="findPersonBySsn()"
+                            ng-disabled="!searchPerson.ssn"
+                            translate="occupation.form.button.search_person"></button>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="addPersonBy.value == 'hunterNumber'">
+                <label for="searchHunterNumber" class="col-xs-4 control-label">
+                    <span translate="global.person.hunterNumber"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger" ng-show="!occupation.person"></span>
+                </label>
+
+                <div class="col-xs-3">
+                    <input type="text" name="searchHunterNumber" id="searchHunterNumber"
+                           class="form-control"
+                           maxlength="8"
+                           ng-model="searchPerson.hunterNumber"
+                           valid-hunter-number
+                           ng-required="!occupation.person">
+                </div>
+
+                <div class="col-xs-5">
+                    <button type="button" class="btn btn-primary"
+                            ng-click="findPersonByHunterNumber()"
+                            ng-disabled="!searchPerson.hunterNumber"
+                            translate="occupation.form.button.search_person"></button>
+                </div>
+            </div>
+
+
+            <div class="form-group" ng-show="searchPerson.error">
+                <div class="col-xs-9 col-xs-offset-3 text-danger">
+                    <span translate="occupation.form.error.person_not_found"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- -------------- -->
+        <!--   PERSON INFO  -->
+        <!-- -------------- -->
+        <div ng-if="occupation.person">
+            <div class="alert alert-info"
+                 ng-if="editPersonInformation && phoneNumberRequired"
+                 translate="occupation.form.phoneNumberRequiredByType"></div>
+
+            <div class="form-group" show-errors ng-if="editPersonInformation">
+                <label for="phoneNumber" class="col-xs-4 control-label">
+                    <span translate="occupation.form.phoneNumber"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger" ng-show="phoneNumberRequired"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <input type="text" name="phoneNumber" id="phoneNumber"
+                           class="form-control"
+                           ng-model="occupation.person.phoneNumber"
+                           validate-phonenumber
+                           ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                           ng-maxlength=255
+                           ng-required="phoneNumberRequired">
+                    <p class="help-block" ng-show="occupationForm.phoneNumber.$invalid" translate="global.messages.invalid"></p>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="editPersonInformation">
+                <label for="email" class="col-xs-4 control-label" translate="occupation.form.email"></label>
+
+                <div class="col-xs-8">
+                    <input type="text" name="email" id="email"
+                           class="form-control"
+                           ng-model="occupation.person.email"
+                           ng-model-options="{ debounce : { 'default' : 200, blur : 0 } }"
+                           ng-maxlength="255"
+                           valid-person-email>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="editPersonInformation">
+                <label for="byName" class="col-xs-4 control-label" translate="global.person.byName"></label>
+
+                <div class="col-xs-8">
+                    <input type="text" name="byName" id="byName"
+                           class="form-control"
+                           required
+                           ng-model="occupation.person.byName"
+                           valid-person-name
+                           ng-maxlength="255">
+                </div>
+            </div>
+
+            <div class="form-group" ng-if="!editPersonInformation">
+
+                <div class="col-xs-offset-4 col-xs-8">
+                    <div class="well well-sm">
+                        <a class="btn btn-link pull-right"
+                           ng-click="startEditPersonInformation()"
+                           ng-show="!occupation.person.registered">
+                            <span class="glyphicon glyphicon-edit"></span>
+                        </a>
+
+                        <div class="r-contact-name">
+                            {{occupation.person.lastName}} {{occupation.person.firstName}}
+                        </div>
+
+                        <div class="r-contact-phone">
+                            <span class="glyphicon glyphicon glyphicon-earphone">&nbsp;</span>
+
+                            <span ng-if="occupation.person.phoneNumber">{{occupation.person.phoneNumber}}</span>
+                            <span ng-if="!occupation.person.phoneNumber" translate="occupation.no_phonenumber"></span>
+                        </div>
+
+                        <div class="r-contact-email">
+                            <span class="glyphicon glyphicon-envelope">&nbsp;</span>
+
+                            <a ng-if="occupation.person.email" href="mailto:{{occupation.person.email}}">{{occupation.person.email}}</a>
+                            <span ng-if="!occupation.person.email" translate="occupation.no_email"></span>
+                        </div>
+
+                        <div class="r-contact-byname">
+                            <span class="glyphicon glyphicon-user">&nbsp;</span>
+                            <span translate="global.person.byName"></span>: {{occupation.person.byName}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" ng-if="!editAddress">
+                <label class="col-xs-4 control-label" translate="global.person.address"></label>
+
+                <div class="col-xs-8">
+                    <div class="well well-sm">
+                        <a class="btn btn-link pull-right"
+                           ng-click="startEditAddress()"
+                           ng-show="canEditAddress">
+                            <span class="glyphicon glyphicon-edit"></span>
+                        </a>
+
+                        <span>{{occupation.person.address.streetAddress}}</span>
+                        <br/>
+                        <span>{{occupation.person.address.postalCode}}</span>
+                        <span class="r-city">{{occupation.person.address.city}}</span>
+                        <br/>
+                        <span>{{occupation.person.address.country}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!--Address-->
+            <div class="form-group" show-errors ng-if="editAddress">
+                <label for="streetAddress" class="col-xs-4 control-label" translate="global.address.streetAddress"></label>
+
+                <div class="col-xs-8">
+                    <input type="text" name="streetAddress" id="streetAddress"
+                           class="form-control"
+                           required
+                           ng-model="occupation.person.address.streetAddress"
+                           ng-disabled="!canEditAddress"
+                           ng-maxlength="255">
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="editAddress">
+                <label for="postalCode" class="col-xs-4 control-label" translate="global.address.postalCode"></label>
+
+                <div class="col-xs-8">
+                    <input type="text" name="postalCode" id="postalCode"
+                           class="form-control"
+                           required
+                           ng-model="occupation.person.address.postalCode"
+                           ng-disabled="!canEditAddress"
+                           ng-maxlength="10">
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="editAddress">
+                <label for="city" class="col-xs-4 control-label" translate="global.address.city"></label>
+
+                <div class="col-xs-8">
+                    <input type="text" name="city" id="city"
+                           class="form-control"
+                           required
+                           ng-model="occupation.person.address.city"
+                           ng-disabled="!canEditAddress"
+                           ng-maxlength="255">
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="editAddress">
+                <label for="country" class="col-xs-4 control-label" translate="global.address.country"></label>
+
+                <div class="col-xs-8">
+                    <input type="text" name="country" id="country"
+                           class="form-control"
+                           required
+                           ng-model="occupation.person.address.country"
+                           ng-disabled="!canEditAddress"
+                           ng-maxlength="255">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="cancel()" translate="occupation.form.button.cancel"></button>
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="occupationForm.$invalid || !isValid(occupation, editPersonInformation, occupationForm.phoneNumber.$error.invalid)" translate="occupation.form.button.save"></button>
+    </div>
+</form>

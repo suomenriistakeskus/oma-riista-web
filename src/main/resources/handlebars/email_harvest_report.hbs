@@ -1,0 +1,46 @@
+<pre>
+{{author.firstName}} {{author.lastName}}
+{{author.address.streetAddress}}
+{{author.address.postalCode}} {{author.address.city}}
+Puhelin: {{author.phoneNumber}}
+Sähköposti: {{author.email}}
+
+SUOMEN RIISTAKESKUS
+{{#if permit}}
+Luvan numero: {{permit.permitNumber}}
+{{/if}}
+ILMOITUS PYYNNIN TULOKSESTA
+{{#if permit}}
+Myönnetyllä luvalla on saatu saalista seuraavasti:
+{{/if}}
+{{toUpperCase species.name.fi}}
+
+Erittely saaliiksi saadusta eläimestä:
+Pyyntiaika: {{timestamp pointOfTime "dd.MM.yyyy HH:mm"}}
+Pyyntipaikan koordinaatit: {{geoLocation.latitude}} {{geoLocation.longitude}} ETRS-TM35FIN
+Kiinteistötunnus: {{propertyIdentifier.delimitedValue}}
+{{#if quotaArea}}Kiintiöalue: {{quotaArea.nameFI}}{{/if}}
+{{#if rka}}Riistakeskuksen alue: {{rka.nameFI}}{{/if}}
+{{#if rhy}}Riistanhoitoyhdistys: {{rhy.nameFI}}{{/if}}
+{{#if huntingAreaType}}Pyyntialue: {{i18n (enumName huntingAreaType) locale="fi"}}{{/if}}
+{{#if huntingParty}}Metsästysseuran/-seurueen alue, jolta saalis saatiin: {{huntingParty}}{{/if}}
+{{#if huntingAreaSize}}Metsästysalueen pinta-ala: {{number huntingAreaSize "#.##" locale="fi"}} ha{{/if}}
+{{#if huntingMethod}}Saalistustapa: {{i18n (enumName huntingMethod) locale="fi"}}{{/if}}
+{{#if reportedWithPhoneCall}}Onko ilmoitettu myös saalispuhelimeen: {{i18n (boolName reportedWithPhoneCall) locale="fi"}}{{/if}}
+
+Eläimen tiedot
+{{#if gender}}Sukupuoli: {{i18n (enumName gender) locale="fi"}}{{/if}}
+{{#if age}}Ikä: {{i18n (enumName age) locale="fi"}}{{/if}}
+{{#if weight}}Paino: {{number weight "#.###" locale="fi"}} kg{{/if}}
+
+Kaataja:
+{{hunter.firstName}} {{hunter.lastName}}
+{{hunter.address.streetAddress}}
+{{hunter.address.postalCode}} {{hunter.address.city}}
+
+{{#if permit}}Ohje: Tämä vahvistusviesti tulee edelleenlähettää tällaisenaan poliisille ja muille päätöksessä mainituille
+viranomaistahoille viimeistään ensimmäisenä arkipäivänä siitä, kun poikkeusluvassa tarkoitettu riistaeläin
+on tullut pyydystetyksi.{{/if}}
+
+(Viestin tunnistetiedot: {{timestamp timestamp "dd.MM.yyyy HH:mm:ss"}}, id={{id}}, revision={{rev}}, state={{state}}, c={{createdByUserId}}, m={{modifiedByUserId}})
+</pre>

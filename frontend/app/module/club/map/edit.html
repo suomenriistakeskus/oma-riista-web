@@ -1,0 +1,96 @@
+<div class="r-club-map-edit-layout">
+    <div class="main-column">
+        <div class="r-gamediary-map-button-area">
+            <map-editor-toolbar api="editor.api"
+                                save="saveFeatures()"
+                                close="close()"></map-editor-toolbar>
+        </div>
+
+        <leaflet id="club-area-map"
+                 class="r-cursor-arrow"
+                 defaults="mapDefaults"
+                 layers="mapDefaults.mmlLayers"
+                 controls="mapDefaults.controls"
+                 event-broadcast="mapEvents"
+                 lf-center="mapState.center"
+                 bounds="mapState.viewBounds"
+                 r-viewport-height>
+            <r-geojson-editor
+                    editor-api="editor.api"
+                    editor-geojson="editor.geojson"
+                    editor-callbacks="editor.callbacks">
+            </r-geojson-editor>
+        </leaflet>
+    </div>
+
+    <div class="left-column">
+        <h4 ng-bind="area | rI18nNameFilter"></h4>
+
+        <div class="panel panel-default selected-area">
+            <div class="panel-heading">
+                <h3 class="panel-title" translate="club.area.map.selectedArea.title"></h3>
+            </div>
+            <div class="panel-body">
+                <table class="table table-condensed">
+                    <tbody>
+                    <tr>
+                        <td translate="club.area.map.selectedArea.propertyIdentifier"></td>
+                        <td>
+                            <span ng-show="getActiveFeature().properties.number"
+                                  ng-bind="getActiveFeature().properties.number | formatPropertyIdentifier"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td translate="club.area.map.selectedArea.areaName"></td>
+                        <td>
+                            <span ng-show="getActiveFeature().properties.name"
+                                  ng-bind="getActiveFeature().properties.name"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td translate="club.area.map.selectedArea.areaSize"></td>
+                        <td><span ng-show="getActiveFeature().properties.size"
+                                  ng-bind="(getActiveFeature() | featureAreaSize)"></span>
+                            <span class="text-danger" ng-if="getActiveFeature().properties.changed">
+                                (<span translate="club.area.map.selectedArea.changeAmount"></span>:
+                                {{ getActiveFeature().properties.diff_area | prettyAreaSize }})
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td translate="club.area.map.selectedArea.changeTitle"></td>
+                        <td>
+                            <a ng-click="updateChangedFeature(getActiveFeature())"
+                               ng-show="getActiveFeature().properties.changed">
+                                <span translate="club.area.map.selectedArea.fix"></span>
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <uib-tabset justified="false">
+            <uib-tab>
+                <uib-tab-heading>{{'club.area.map.tab.selectedAreas.title' | translate}}</uib-tab-heading>
+                <div ng-include="'club/map/edit_sidebar_palsta.html'"></div>
+            </uib-tab>
+
+            <uib-tab>
+                <uib-tab-heading>{{'club.area.map.tab.changed.title' | translate}}</uib-tab-heading>
+                <div ng-include="'club/map/edit_sidebar_changed.html'"></div>
+            </uib-tab>
+
+            <uib-tab>
+                <uib-tab-heading>{{'club.area.map.tab.massInsert.title' | translate}}</uib-tab-heading>
+                <div ng-include="'club/map/edit_sidebar_bulk.html'"></div>
+            </uib-tab>
+
+            <uib-tab>
+                <uib-tab-heading>{{'club.area.map.tab.metsahallitus.title' | translate}}</uib-tab-heading>
+                <div ng-include="'club/map/edit_sidebar_mh.html'"></div>
+            </uib-tab>
+        </uib-tabset>
+    </div>
+</div>

@@ -1,0 +1,111 @@
+<form name="jhtFilterForm" role="form" novalidate autocomplete="off"
+      ng-submit="jhtFilterForm.$valid && $ctrl.search()">
+    <div class="well well-sm">
+        <div class="row">
+            <div class="col-md-4" ng-if="$ctrl.searchParams.nominationStatus === 'KOULUTUS'">
+                <div class="form-group">
+                    <label for="searchType" class="control-label" translate="occupation.trainingSearchTypeLabel"></label>
+                    <select name="searchType" id="searchType"
+                            class="form-control"
+                            ng-change="$ctrl.onSearchTypeChange($ctrl.searchParams.searchType)"
+                            ng-model="$ctrl.searchParams.searchType">
+                        <option value="PREVIOUS_OCCUPATION"
+                                translate="occupation.trainingSearchType.PREVIOUS_OCCUPATION"></option>
+                        <option value="HOME_RHY" translate="occupation.trainingSearchType.HOME_RHY"></option>
+                        <option value="TRAINING_LOCATION"
+                                translate="occupation.trainingSearchType.TRAINING_LOCATION"></option>
+                        <option value="PERSON" translate="occupation.trainingSearchType.PERSON"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-4" ng-if="$ctrl.showOrganisationFilter()">
+                <organisation-selection
+                        area-code="$ctrl.searchParams.areaCode"
+                        rhy-code="$ctrl.searchParams.rhyCode"></organisation-selection>
+            </div>
+
+            <div class="col-md-4" ng-if="$ctrl.showPersonSearch()">
+                <div class="form-group" show-errors>
+                    <label for="searchSsn" class="control-label" translate="global.person.ssn"></label>
+                    <input type="text" name="searchSsn" id="searchSsn"
+                           class="form-control"
+                           maxlength="11"
+                           valid-ssn
+                           ng-required="!$ctrl.searchParams.hunterNumber"
+                           ng-model="$ctrl.searchParams.ssn"/>
+                </div>
+
+                <div class="form-group" show-errors>
+                    <label for="searchHunternumber" class="control-label" translate="global.person.hunterNumber"></label>
+                    <input type="text" name="searchHunternumber" id="searchHunternumber"
+                           class="form-control"
+                           maxlength="8"
+                           valid-hunter-number
+                           ng-required="!$ctrl.searchParams.ssn"
+                           ng-model="$ctrl.searchParams.hunterNumber">
+                </div>
+            </div>
+
+            <div class="col-md-4" ng-if="$ctrl.showTrainingLocationFilter()">
+                <div class="form-group" show-errors>
+                    <label for="searchTrainingLocation" class="control-label"
+                           translate="occupation.nomination.field.trainingLocation"></label>
+                    <input type="text" name="searchTrainingLocation" id="searchTrainingLocation"
+                           class="form-control"
+                           ng-model="$ctrl.searchParams.trainingLocation"/>
+                </div>
+            </div>
+
+            <div class="col-md-4" ng-if="$ctrl.showDateFilter()">
+                <div class="form-group" show-errors>
+                    <label for="searchBeginDate" class="control-label" translate="global.beginDate"></label>
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" name="searchBeginDate" id="searchBeginDate"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               date-between-min-max
+                               max-date="$ctrl.searchParams.endDate"
+                               ng-model="$ctrl.searchParams.beginDate"/>
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group" show-errors>
+                    <label for="searchEndDate" class="control-label" translate="global.endDate"></label>
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" name="searchEndDate" id="searchEndDate"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               date-between-min-max
+                               min-date="$ctrl.searchParams.beginDate"
+                               ng-model="$ctrl.searchParams.endDate"/>
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-offset-8 col-md-4">
+                <div class="form-group">
+                    <label class="control-label">&nbsp;</label>
+                    <div class="btn-group btn-group-justified">
+                        <div class="btn-group">
+                            <button type="submit" ng-disabled="jhtFilterForm.$invalid"
+                                    class="btn btn-primary" translate="global.button.search"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

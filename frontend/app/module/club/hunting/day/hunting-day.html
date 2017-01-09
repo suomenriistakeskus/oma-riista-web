@@ -1,0 +1,282 @@
+<div class="content r-club-sidebar-content">
+    <form name="huntingDayForm" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+        <h3 ng-if="!huntingDay.id" class="modal-title" translate="club.hunting.huntingDay.createTitle"></h3>
+
+        <h3 ng-if="huntingDay.id" class="modal-title" translate="club.hunting.huntingDay.editTitle"></h3>
+
+        <div class="form-group" show-errors>
+            <label for="startDate" class="control-label">
+                <span translate="club.hunting.huntingDay.startDate"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <div class="input-group r-dropdown-align-right"
+                     ng-controller="DatePickerController">
+
+                    <input type="text" name="startDate" id="startDate"
+                           class="form-control"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           date-between-min-max
+                           min-date="getMinDate('start')"
+                           max-date="getMaxDate('start')"
+                           ng-model="viewState.startDate"
+                           ng-change="onStartDateChanged(viewState.startDate)"
+                           ng-disabled="huntingDay.id"
+                           required>
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="!huntingDay.id && toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+                <p class="help-block has-error"
+                   ng-show="huntingDayForm.startDate.$invalid"
+                   ng-messages="huntingDayForm.startDate.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+                <p class="text-danger form-control-static"
+                   translate="club.hunting.huntingDay.duplicateDate"
+                   ng-hide="isNotDuplicateDate()"></p>
+                <p class="text-danger form-control-static"
+                   translate="club.hunting.huntingDay.outsidePermitInterval"
+                   ng-hide="isPermitValidOnDate()"></p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="startTime" class="control-label">
+                <span translate="club.hunting.huntingDay.startTime"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="text" name="startTime" id="startTime"
+                       class="form-control"
+                       finnish-date-time-in-past="viewState.startDate"
+                       ng-model="viewState.startTime"
+                       ng-model-options="{ updateOn: 'blur' }"
+                       required>
+
+                <p class="help-block has-error"
+                   ng-show="huntingDayForm.startTime.$invalid"
+                   ng-messages="huntingDayForm.startTime.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <!--<hr/>-->
+
+        <div class="form-group" show-errors>
+            <label for="endDate" class="control-label">
+                <span translate="club.hunting.huntingDay.endDate"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <div class="input-group r-dropdown-align-right"
+                     ng-controller="DatePickerController">
+
+                    <input type="text" name="endDate" id="endDate"
+                           class="form-control"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           date-between-min-max
+                           min-date="getMinDate('end')"
+                           max-date="getMaxDate('end')"
+                           ng-model="viewState.endDate"
+                           ng-change="onEndDateChanged(viewState.endDate)"
+                           required>
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+                <p class="help-block has-error"
+                   ng-show="huntingDayForm.endDate.$invalid"
+                   ng-messages="huntingDayForm.endDate.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="endTime" class="control-label">
+                <span translate="club.hunting.huntingDay.endTime"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="text" name="endTime" id="endTime"
+                       class="form-control"
+                       finnish-date-time-in-past="viewState.endDate"
+                       ng-model="viewState.endTime"
+                       ng-model-options="{ updateOn: 'blur' }"
+                       required>
+
+                <p class="help-block has-error"
+                   ng-show="huntingDayForm.endTime.$invalid"
+                   ng-messages="huntingDayForm.endTime.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="form-group" show-errors>
+            <label for="breakDuration" class="control-label">
+                <span translate="club.hunting.huntingDay.breakDuration"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <div class="input-group">
+                    <input type="number" name="breakDuration" id="breakDuration"
+                           min="0" max="48" step="0.5"
+                           r-decimal-separator-fix
+                           class="form-control"
+                           ng-model="viewState.breakDuration"
+                           required/>
+                    <span class="input-group-addon">h</span>
+                </div>
+
+                <p class="help-block has-error"
+                   ng-show="huntingDayForm.breakDuration.$invalid"
+                   ng-messages="huntingDayForm.breakDuration.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="duration" class="control-label">
+                <span translate="club.hunting.huntingDay.duration"></span>
+            </label>
+
+            <div class="form-control-wrapper" ng-class="{ 'has-error': !isValidPeriod() }">
+                <p id="duration" class="form-control-static"
+                   ng-show="isValidPeriod()">
+                    {{ periodLengthInMinutes() | prettyMinutes }}
+                </p>
+
+                <p class="help-block has-error"
+                   ng-hide="isValidPeriod()"
+                   translate="club.hunting.huntingDay.durationInvalid"></p>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="form-group" show-errors>
+            <label for="snowDepth" class="control-label">
+                <span translate="club.hunting.huntingDay.snowDepth"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <div class="input-group">
+                    <input type="number" name="snowDepth" id="snowDepth"
+                           min="0" max="999" step="1"
+                           r-decimal-separator-fix
+                           class="form-control"
+                           ng-model="huntingDay.snowDepth"/>
+                    <span class="input-group-addon">cm</span>
+                </div>
+
+                <p class="help-block has-error"
+                   ng-show="huntingDayForm.snowDepth.$invalid"
+                   ng-messages="huntingDayForm.snowDepth.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="numberOfHunters" class="control-label">
+                <span translate="club.hunting.huntingDay.numberOfHunters"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="number" name="numberOfHunters" id="numberOfHunters"
+                       min="1" max="100" step="1"
+                       class="form-control"
+                       required
+                       ng-model="huntingDay.numberOfHunters"/>
+
+                <p class="help-block has-error"
+                   ng-show="huntingDayForm.numberOfHunters.$invalid"
+                   ng-messages="huntingDayForm.numberOfHunters.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="huntingMethod" class="control-label">
+                <span translate="club.hunting.huntingDay.huntingMethod"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select name="huntingMethod" id="huntingMethod"
+                        class="form-control"
+                        required
+                        ng-model="huntingDay.huntingMethod"
+                        ng-options="('club.hunting.huntingMethod.' + a | translate) for a in huntingMethods"><option value=""></option>
+                </select>
+
+                <p class="help-block has-error"
+                   ng-show="huntingDayForm.huntingMethod.$invalid"
+                   ng-messages="huntingDayForm.huntingMethod.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-if="showHoundCount()">
+            <label for="numberOfHounds" class="control-label">
+                <span translate="club.hunting.huntingDay.numberOfHounds"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="number" name="numberOfHounds" id="numberOfHounds"
+                       min="1" max="100" step="1"
+                       class="form-control"
+                       required
+                       ng-model="huntingDay.numberOfHounds"/>
+
+                <p class="help-block has-error"
+                   ng-show="huntingDayForm.numberOfHounds.$invalid"
+                   ng-messages="huntingDayForm.numberOfHounds.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-danger pull-left"
+            ng-click="delete()"
+            ng-if="huntingDay.id"
+            translate="global.button.delete"></button>
+
+    <button type="button"
+            class="btn btn-default"
+            ng-click="cancel()"
+            translate="global.button.cancel"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-click="ok(huntingDayForm)"
+            ng-disabled="!isValid(huntingDayForm)"
+            translate="global.button.ok"></button>
+</div>

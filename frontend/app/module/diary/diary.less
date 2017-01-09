@@ -1,0 +1,246 @@
+@r-gamediary-left-sidebar-width: 300px;
+
+.r-gamediary-layout {
+  .make-row(0);
+
+  .left-column {
+    position: fixed;
+    width: @r-gamediary-left-sidebar-width;
+    top: @main-nav-height;
+    bottom: 0;
+    overflow: hidden;
+    overflow-y: auto;
+    min-height: 1px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-top: -1px;
+    background: #E5E5E5;
+
+    .r-header {
+      background: #666;
+      font-weight: bold;
+      border-bottom: 1px solid #555;
+      text-transform: uppercase;
+      width: 100%;
+      padding: 7px 15px;
+      cursor: pointer;
+      font-size: 12px;
+      color: #eee;
+    }
+
+    .r-diary-days {
+      :link:focus {
+        outline: none;
+      }
+
+      .foo{
+        margin-left: 2px;
+        margin-right: 3px;
+      }
+      .r-hunting-day-header {
+        font-size: 10px;
+        color: #999999;
+        margin-top: 1px;
+      }
+      .r-hunting-day-header-date {
+        font-size: 14px;
+        font-family: @font-family-open-sans;
+        font-weight: 700;
+      }
+      .r-hunting-day-harvest-counter {
+        font-size: 14px;
+        font-family: @font-family-open-sans;
+        font-weight: 400;
+      }
+      .r-hunting-day-harvest-counter-icon {
+        color: #007236;
+        margin-left: 4px
+      }
+    }
+
+    .panel-body {
+      padding: 10px 5px;
+      overflow-y: auto;
+    }
+
+    .panel-group .panel+.panel {
+      margin-top: 2px;
+    }
+
+    .r-content {
+      padding: 20px;
+      background: #fff;
+    }
+  }
+
+  .main-column {
+    position: fixed;
+    left: @r-gamediary-left-sidebar-width;
+    right: 0;
+    min-height: 1px;
+  }
+}
+
+.r-gamediary-hunting-day-list:hover {
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+.r-gamediary-hunting-day-list {
+  .make-row(0);
+
+  border-bottom: 1px solid #dddddd;
+
+  .col1 {
+    .make-xs-column(1, 0);
+  }
+  .col2 {
+    .make-xs-column(6, 0);
+    padding-left: 10px;
+  }
+  .col3 {
+    .make-xs-column(2, 0);
+  }
+  .col4 {
+    .make-xs-column(2, 0);
+  }
+  .col5 {
+    .make-xs-column(1, 0);
+  }
+  .r-hunting-day-harvest-species {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .r-hunting-day-harvest-amount {
+    font-size: 12px;
+  }
+  .r-hunting-day-harvest-point-of-time {
+    font-size: 12px;
+  }
+}
+.r-gamediary-hunting-day-list:not(:first-child) {
+  margin-top: 5px;
+}
+
+.r-gamediary-species-logo {
+  margin-right: 5px;
+}
+
+.r-gamediary-entry-show-image {
+  margin-top: 10px;
+  img {
+    .center-block;
+  }
+}
+
+.r-gamediary-map-button-area {
+  position: absolute;
+  top: 10px;
+  left: 55px;
+  overflow: auto;
+  z-index: 550;
+
+  .btn {
+    margin-left: 10px;
+  }
+
+  .btn:first-child {
+    margin-left: 0;
+  }
+}
+
+.r-gamediary-binoculars {
+  font-size: 80%;
+}
+
+.r-gamediary-gradient {
+  #gradient > .vertical(rgba(0, 114, 54, 1), rgba(0, 110, 46, 0.0), 0%, 100%);
+}
+
+.r-gamediary-entry-show-image-title {
+  color: white;
+  position: absolute;
+  width: 500px;
+  height: 40px;
+  padding: 5px 10px 0px 5px;
+  .r-gamediary-gradient;
+}
+
+.r-gamediary-entry-show {
+  .modal-header {
+    .btn {
+      margin-left: 5px;
+    }
+  }
+  .r-gamediary-species-name {
+    position: relative;
+    top: 5px;
+    font-family: @font-family-roboto-slab;
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.r-gamediary-entry-show-left > div {
+  border-bottom: 1px solid #d3d3d3;
+  margin: 2px 2px 4px 2px;
+}
+
+.r-gamediary-entry-description {
+  overflow: auto;
+  max-height: 250px;
+}
+
+.r-permit-person-new > td {
+  font-weight: bold;
+}
+
+.r-tag-choices {
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+
+  background-color: #fff;
+  cursor: text;
+  display: inline-block;
+  height: auto !important;
+  margin: 0;
+  min-height: 26px;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+}
+
+.r-tag-choice {
+  background-clip: padding-box;
+  background-color: rgb(228, 228, 228);
+  border: 1px solid #aaa;
+  @radius: 3px;
+  .border-top-radius(@radius);
+  .border-right-radius(@radius);
+  .border-bottom-radius(@radius);
+  .border-left-radius(@radius);
+  float: left;
+  font-size: 11px;
+  list-style-type: none;
+  margin: 3px 0 3px 5px;
+  padding: 3px 5px 3px 5px;
+
+  li {
+    color: #333;
+    cursor: default;
+    line-height: 13px;
+  }
+}
+
+.r-tag-choice-close {
+  color: #777;
+  cursor: pointer;
+  &:hover {
+    color: #333;
+  }
+}
+
+input[type=checkbox].r-non-labeled-checkbox {
+  position: relative;
+}

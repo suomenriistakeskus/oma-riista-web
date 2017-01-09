@@ -1,0 +1,43 @@
+<div ng-show="harvestReports && harvestReports.length > 0">
+    <table class="table table-striped table-condensed">
+        <thead>
+        <tr>
+            <th class="col-xs-1" translate="harvestreport.admin.state"></th>
+            <th class="col-xs-1" translate="harvestreport.admin.pointOfTime"></th>
+            <th class="col-xs-2" translate="harvestreport.admin.gameInfo"></th>
+            <th class="col-xs-2" translate="harvestreport.admin.area"></th>
+            <th class="col-xs-2" translate="harvestreport.form.author"></th>
+            <th class="col-xs-2" translate="harvestreport.form.hunter"></th>
+            <th class="col-xs-1"></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr ng-repeat="report in harvestReports | orderBy:'-pointOfTime'">
+            <td>
+                <div harvest-report-state-to-class="report.state"
+                     class="r-harvestreport-state-text">
+                    {{ ::('harvestreport.state.' + report.state | translate) }}
+                </div>
+            </td>
+            <td>{{ ::(report.pointOfTime | date:'d.M.yyyy HH:mm') }}</td>
+            <td>
+                <span r-harvest-report-specimen-or-permitted-species="report"></span>
+            </td>
+            <td>
+                {{ ::(getHuntingArea(report)) }}<br/>
+                {{ ::(getAreaName(report)) }}<br/>
+                {{ ::(getRhyName(report)) }}
+            </td>
+            <td>{{ ::report.authorInfo.byName }} {{ ::report.authorInfo.lastName }}</td>
+            <td>{{ ::report.hunterInfo.byName }} {{ ::report.hunterInfo.lastName }}</td>
+
+            <td>
+                <a ng-click="edit(report)" class="btn btn-default pull-right">
+                    <span translate="global.button.open"></span>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

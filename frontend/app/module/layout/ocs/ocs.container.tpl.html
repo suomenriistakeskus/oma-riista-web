@@ -1,0 +1,10 @@
+<div class="off-canvas-panels" ng-class="{'open' : stack.length > 0}">
+    <div class="enable-ng-animate" ng-class="{'off-canvas-panel-wrap': (!item.renderOpts.largeDialog || stack[stack.length-1] !== item ),
+                  'off-canvas-panel-wrap-large': (item.renderOpts.largeDialog && stack[stack.length-1] === item)}"
+         ng-repeat="item in stack">
+        <off-canvas-stack-item ng-hide="$index != (stack.length-1)"
+                               item="item">
+        </off-canvas-stack-item>
+    </div>
+</div>
+<div class="offCanvasStackBackdrop" ng-if="stack.length > 0"></div>

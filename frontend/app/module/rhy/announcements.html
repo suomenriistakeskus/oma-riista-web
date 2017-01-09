@@ -1,0 +1,22 @@
+<div class="announcement-panel">
+    <div class="row">
+        <div class="col-md-10">
+            <span class="h2" translate="announcements.list.title"></span>
+        </div>
+
+        <div class="col-md-2 top-pane text-right">
+            <announcement-send-button
+                    from-organisation="$ctrl.rhy">
+            </announcement-send-button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <announcement-list
+                    organisation="$ctrl.rhy"
+                    filter="$ctrl.filter">
+            </announcement-list>
+        </div>
+    </div>
+</div>

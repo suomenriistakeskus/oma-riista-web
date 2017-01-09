@@ -1,0 +1,23 @@
+{{#if features}}
+<p style="font-weight: bold;">{{title}}{{#if showQuota}}
+    (kiintiötä jäljellä {{remainingQuota}})
+    {{/if}}
+</p>
+
+<table class="table table-striped table-condensed">
+    <tr>
+        <th width="10%">&nbsp;</th>
+        <th width="20%">Pvm</th>
+        <th width="40%">Kunta</th>
+        <th width="30%">Sukupuoli</th>
+    </tr>
+    {{#each features}}{{#with properties}}
+    <tr data-ndx="{{id}}">
+        <td><a># {{order}}</a></td>
+        <td><a>{{day}}</a></td>
+        <td><a>{{municipality_fi}}</a></td>
+        <td><a>{{gender}}</a></td>
+    </tr>
+    {{/with}}{{/each}}
+</table>
+{{/if}}

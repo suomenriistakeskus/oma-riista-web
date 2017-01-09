@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="mavenproject1" default="gulp" basedir=".">
+    <target name="npm">
+        <exec executable="cmd" dir="${basedir}/"
+              osfamily="windows" failonerror="true">
+            <arg line="/c npm install"/>
+        </exec>
+        <exec executable="bash" dir="${basedir}/"
+              osfamily="unix" failonerror="true" newenvironment="false">
+            <arg value="-c"/>
+            <arg value="npm install"/>
+        </exec>
+    </target>
+
+    <target name="gulp" depends="npm">
+        <!-- GULP  -->
+        <exec executable="cmd" dir="${basedir}/frontend"
+              osfamily="windows" resultproperty="cmdresult">
+            <env key="BUILD_PROFILE" value="${build.profile.id}"/>
+            <arg line="/c gulp build:dist"/>
+        </exec>
+
+        <exec executable="bash" dir="${basedir}/frontend"
+              osfamily="unix" resultproperty="cmdresult" newenvironment="false">
+            <env key="BUILD_PROFILE" value="${build.profile.id}"/>
+            <arg value="-c"/>
+            <arg value="../node_modules/.bin/gulp build:dist"/>
+        </exec>
+
+        <condition property="cmdsuccess">
+            <equals arg1="${cmdresult}" arg2="0"/>
+        </condition>
+        <fail unless="cmdsuccess"/>
+    </target>
+
+    <target name="e2e-test" depends="npm">
+        <!-- GULP  -->
+        <exec executable="cmd" dir="${basedir}/frontend"
+              osfamily="windows" resultproperty="cmdresult"
+              failonerror="true" failifexecutionfails="true">
+            <env key="BUILD_PROFILE" value="${build.profile.id}"/>
+            <env key="E2E_PROFILE" value="${e2e.profile.id}"/>
+            <arg line="/c gulp e2e"/>
+        </exec>
+
+        <exec executable="bash" dir="${basedir}/frontend"
+              osfamily="unix" resultproperty="cmdresult" newenvironment="false"
+              failonerror="true" failifexecutionfails="true">
+            <env key="BUILD_PROFILE" value="${build.profile.id}"/>
+            <env key="E2E_PROFILE" value="${e2e.profile.id}"/>
+            <arg value="-c"/>
+            <arg value="../node_modules/.bin/gulp e2e"/>
+        </exec>
+    </target>
+
+    <!-- Conditional reinitialization of the test database template -->
+    <target name="e2e-template-reset" if="resettemplate">
+        <exec executable="bash" dir="${basedir}/scripts/database"
+              osfamily="unix" failonerror="true">
+            <arg line="create-database.sh riistakeskus_testdb_template"/>
+        </exec>
+    </target>
+
+    <target name="e2e-testdb-setup" depends="e2e-template-reset">
+        <exec executable="bash" dir="${basedir}/scripts/database"
+              osfamily="unix" failonerror="true">
+            <arg line="create-testdb.sh riistakeskus_testdb riistakeskus_testdb_template"/>
+        </exec>
+    </target>
+
+</project>

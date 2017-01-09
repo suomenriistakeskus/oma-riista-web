@@ -1,0 +1,181 @@
+<div class="content r-club-sidebar-content">
+    <form name="huntingSummaryForm" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+        <fieldset ng-disabled="isHuntingFinishedOrLocked()">
+
+            <h3 ng-if="!isHuntingFinished()" class="modal-title" translate="club.hunting.huntingSummary.editTitle"></h3>
+            <h3 ng-if="isHuntingFinished()" class="modal-title" translate="club.hunting.huntingSummary.finalSubmitDoneTitle"></h3>
+
+            <hr/>
+
+            <div class="h4">
+                <span translate="club.hunting.deerHuntingSummary.huntingAreaAndEstimatedPopulationTitle"></span>
+                <span>{{ getGameSpeciesName() }}</span>
+            </div>
+
+            <div class="row r-two-column-number-fields">
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="totalHuntingArea" class="control-label">
+                            <span translate="club.hunting.huntingSummary.totalHuntingArea"></span>
+                            <small ng-show="isTotalHuntingAreaRequired()"
+                                   class="glyphicon glyphicon-asterisk text-danger"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="totalHuntingArea" id="totalHuntingArea"
+                                   min="0" ng-max="summary.permitAreaSize" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="summary.totalHuntingArea"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.totalHuntingArea.$invalid"
+                               ng-messages="huntingSummaryForm.totalHuntingArea.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="remainingPopulationInTotalArea" class="control-label">
+                            <span translate="club.hunting.deerHuntingSummary.remainingPopulationInTotalArea"></span>
+                            <small ng-show="isRemainingPopulationForTotalAreaRequired()"
+                                   class="glyphicon glyphicon-asterisk text-danger"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="remainingPopulationInTotalArea" id="remainingPopulationInTotalArea"
+                                   min="0" max="99999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="summary.remainingPopulationInTotalArea"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.remainingPopulationInTotalArea.$invalid"
+                               ng-messages="huntingSummaryForm.remainingPopulationInTotalArea.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row r-two-column-number-fields">
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="effectiveHuntingArea" class="control-label">
+                            <span translate="club.hunting.huntingSummary.effectiveHuntingArea"></span>
+                            <small class="glyphicon glyphicon-asterisk text-danger"
+                                   ng-show="isEffectiveHuntingAreaRequired()"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="effectiveHuntingArea" id="effectiveHuntingArea"
+                                   min="0" ng-max="getMaxForEffectiveHuntingArea()" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="summary.effectiveHuntingArea"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.effectiveHuntingArea.$invalid"
+                               ng-messages="huntingSummaryForm.effectiveHuntingArea.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="remainingPopulationInEffectiveArea" class="control-label">
+                            <span translate="club.hunting.deerHuntingSummary.remainingPopulationInEffectiveArea"></span>
+                            <small class="glyphicon glyphicon-asterisk text-danger"
+                                   ng-show="isRemainingPopulationForEffectiveAreaRequired()"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="remainingPopulationInEffectiveArea" id="remainingPopulationInEffectiveArea"
+                                   min="0" ng-max="getMaxForRemainingPopulationInEffectiveArea()" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="summary.remainingPopulationInEffectiveArea"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.remainingPopulationInEffectiveArea.$invalid"
+                               ng-messages="huntingSummaryForm.remainingPopulationInEffectiveArea.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 translate="club.hunting.huntingSummary.huntingFinishingTitle"></h4>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="huntingEndDate" class="control-label">
+                            <span translate="club.hunting.huntingSummary.huntingEndDate"></span>
+                            <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <div class="input-group r-dropdown-align-right"
+                                 ng-controller="DatePickerController">
+
+                                <input type="text" name="huntingEndDate" id="huntingEndDate"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       ng-model="viewState.huntingEndDate"
+                                       date-between-min-max
+                                       min-date="speciesAmount.beginDate"
+                                       max-date="speciesAmount.endDate"
+                                       min-date2="speciesAmount.beginDate2"
+                                       max-date2="speciesAmount.endDate2">
+
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" tabindex="-1"
+                                            ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </button>
+                                </span>
+                            </div>
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.huntingEndDate.$invalid"
+                               ng-messages="huntingSummaryForm.huntingEndDate.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-danger pull-left"
+            ng-click="markUnfinished()"
+            ng-if="!summary.moderatorOverridden && isHuntingFinishedAndNotLocked()"
+            translate="club.hunting.huntingSummary.markUnfinished"></button>
+
+    <button type="button"
+            class="btn btn-default"
+            ng-click="cancel()"
+            ng-if="!markedUnfinished"
+            translate="global.button.cancel"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-click="submit(huntingSummaryForm)"
+            ng-if="!summary.moderatorOverridden &&  !isHuntingFinishedOrLocked()"
+            ng-disabled="!isValid(huntingSummaryForm)"
+            translate="club.hunting.huntingSummary.saveUnfinished"></button>
+
+    <button type="button"
+            class="btn btn-danger"
+            ng-click="doFinalSubmit(huntingSummaryForm)"
+            ng-if="!summary.moderatorOverridden &&  !isHuntingFinishedOrLocked()"
+            ng-disabled="!isValidForFinalSubmit(huntingSummaryForm)"
+            translate="global.button.submit"></button>
+</div>

@@ -1,0 +1,750 @@
+<div class="content r-club-sidebar-content">
+    <form name="huntingSummaryForm" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+        <fieldset ng-disabled="isHuntingFinishedOrLocked()">
+
+            <h3 ng-if="!isHuntingFinished()" class="modal-title" translate="club.hunting.huntingSummary.editTitle"></h3>
+            <h3 ng-if="isHuntingFinished()" class="modal-title" translate="club.hunting.huntingSummary.finalSubmitDoneTitle"></h3>
+
+            <hr/>
+
+            <h4 translate="club.hunting.mooseHuntingSummary.huntingAreaAndEstimatedPopulationTitle"></h4>
+
+            <div class="row r-two-column-number-fields">
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="totalHuntingArea" class="control-label">
+                            <span translate="club.hunting.huntingSummary.totalHuntingArea"></span>
+                            <small ng-show="isTotalHuntingAreaRequired()"
+                                   class="glyphicon glyphicon-asterisk text-danger"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="totalHuntingArea" id="totalHuntingArea"
+                                   min="0" ng-max="huntingSummary.permitAreaSize" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.totalHuntingArea"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.totalHuntingArea.$invalid"
+                               ng-messages="huntingSummaryForm.totalHuntingArea.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="remainingPopulationInTotalArea" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.remainingPopulationInTotalArea"></span>
+                            <small ng-show="isRemainingPopulationForTotalAreaRequired()"
+                                   class="glyphicon glyphicon-asterisk text-danger"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="remainingPopulationInTotalArea" id="remainingPopulationInTotalArea"
+                                   min="0" max="99999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.remainingPopulationInTotalArea"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.remainingPopulationInTotalArea.$invalid"
+                               ng-messages="huntingSummaryForm.remainingPopulationInTotalArea.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row r-two-column-number-fields">
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="effectiveHuntingArea" class="control-label">
+                            <span translate="club.hunting.huntingSummary.effectiveHuntingArea"></span>
+                            <small class="glyphicon glyphicon-asterisk text-danger"
+                                   ng-show="isEffectiveHuntingAreaRequired()"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="effectiveHuntingArea" id="effectiveHuntingArea"
+                                   min="0" ng-max="getMaxForEffectiveHuntingArea()" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.effectiveHuntingArea"
+                                   ng-disabled="huntingSummary.effectiveHuntingAreaPercentage"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.effectiveHuntingArea.$invalid"
+                               ng-messages="huntingSummaryForm.effectiveHuntingArea.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="remainingPopulationInEffectiveArea" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.remainingPopulationInEffectiveArea"></span>
+                            <small class="glyphicon glyphicon-asterisk text-danger"
+                                   ng-show="isRemainingPopulationForEffectiveAreaRequired()"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="remainingPopulationInEffectiveArea" id="remainingPopulationInEffectiveArea"
+                                   min="0" ng-max="getMaxForRemainingPopulationInEffectiveArea()" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.remainingPopulationInEffectiveArea"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.remainingPopulationInEffectiveArea.$invalid"
+                               ng-messages="huntingSummaryForm.remainingPopulationInEffectiveArea.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <span class="col-xs-offset-2 col-xs-2" translate="global.or"></span>
+            </div>
+
+            <div class="row r-two-column-number-fields">
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="effectiveHuntingAreaPercentage" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.effectiveHuntingAreaPercentage"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <div class="input-group">
+                                <input type="number" name="effectiveHuntingAreaPercentage" id="effectiveHuntingAreaPercentage"
+                                       min="0" max="100" step="0.1"
+                                       r-decimal-separator-fix
+                                       class="form-control no-spinner"
+                                       ng-model="huntingSummary.effectiveHuntingAreaPercentage"
+                                       ng-disabled="huntingSummary.effectiveHuntingArea"/>
+                                <span class="input-group-addon">%</span>
+                            </div>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.effectiveHuntingAreaPercentage.$invalid"
+                               ng-messages="huntingSummaryForm.effectiveHuntingAreaPercentage.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row r-moose-summary-hunting-area">
+                <div class="form-group">
+                    <label class="control-label">
+                        <span class="text-right" translate="club.hunting.mooseHuntingSummary.huntingAreaType"></span>
+                        <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                    </label>
+
+                    <div class="form-control-wrapper">
+                        <label class="radio-inline" ng-repeat="areaType in areaTypes">
+                            <input type="radio" ng-model="huntingSummary.huntingAreaType" ng-value="areaType">
+                            {{ 'club.hunting.mooseHuntingSummary.huntingAreaTypes.' + areaType | translate }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <h4 translate="club.hunting.mooseHuntingSummary.deadMoosesTitle"></h4>
+
+            <div class="row r-dead-moose-count-form-group">
+                <div class="col-sm-4">
+                    <div class="form-group" show-errors>
+                        <label for="numberOfDrownedMooses" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.numberOfDrownedMooses"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="numberOfDrownedMooses" id="numberOfDrownedMooses"
+                                   min="0" max="9999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.numberOfDrownedMooses"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.numberOfDrownedMooses.$invalid"
+                               ng-messages="huntingSummaryForm.numberOfDrownedMooses.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group" show-errors>
+                        <label for="numberOfMoosesKilledByBear" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledByBear"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="numberOfMoosesKilledByBear" id="numberOfMoosesKilledByBear"
+                                   min="0" max="9999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.numberOfMoosesKilledByBear"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.numberOfMoosesKilledByBear.$invalid"
+                               ng-messages="huntingSummaryForm.numberOfMoosesKilledByBear.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group" show-errors>
+                        <label for="numberOfMoosesKilledByWolf" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledByWolf"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="numberOfMoosesKilledByWolf" id="numberOfMoosesKilledByWolf"
+                                   min="0" max="9999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.numberOfMoosesKilledByWolf"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.numberOfMoosesKilledByWolf.$invalid"
+                               ng-messages="huntingSummaryForm.numberOfMoosesKilledByWolf.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row r-dead-moose-count-form-group">
+                <div class="col-sm-4">
+                    <div class="form-group" show-errors>
+                        <label for="numberOfMoosesKilledInTrafficAccident" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledInTrafficAccident"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="numberOfMoosesKilledInTrafficAccident" id="numberOfMoosesKilledInTrafficAccident"
+                                   min="0" max="9999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.numberOfMoosesKilledInTrafficAccident"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.numberOfMoosesKilledInTrafficAccident.$invalid"
+                               ng-messages="huntingSummaryForm.numberOfMoosesKilledInTrafficAccident.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group" show-errors>
+                        <label for="numberOfMoosesKilledByPoaching" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledByPoaching"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="numberOfMoosesKilledByPoaching" id="numberOfMoosesKilledByPoaching"
+                                   min="0" max="9999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.numberOfMoosesKilledByPoaching"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.numberOfMoosesKilledByPoaching.$invalid"
+                               ng-messages="huntingSummaryForm.numberOfMoosesKilledByPoaching.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group" show-errors>
+                        <label for="numberOfMoosesKilledInRutFight" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledInRutFight"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="numberOfMoosesKilledInRutFight" id="numberOfMoosesKilledInRutFight"
+                                   min="0" max="9999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.numberOfMoosesKilledInRutFight"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.numberOfMoosesKilledInRutFight.$invalid"
+                               ng-messages="huntingSummaryForm.numberOfMoosesKilledInRutFight.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row r-dead-moose-count-form-group">
+                <div class="col-sm-4">
+                    <div class="form-group" show-errors>
+                        <label for="numberOfStarvedMooses" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.numberOfStarvedMooses"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="numberOfStarvedMooses" id="numberOfStarvedMooses"
+                                   min="0" max="9999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.numberOfStarvedMooses"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.numberOfStarvedMooses.$invalid"
+                               ng-messages="huntingSummaryForm.numberOfStarvedMooses.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group" show-errors>
+                        <label for="numberOfMoosesDeceasedByOtherReason" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesDeceasedByOtherReason"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="number" name="numberOfMoosesDeceasedByOtherReason" id="numberOfMoosesDeceasedByOtherReason"
+                                   min="0" max="9999" step="1"
+                                   class="form-control no-spinner"
+                                   ng-model="huntingSummary.numberOfMoosesDeceasedByOtherReason"/>
+
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.numberOfMoosesDeceasedByOtherReason.$invalid"
+                               ng-messages="huntingSummaryForm.numberOfMoosesDeceasedByOtherReason.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="control-label">
+                            <span translate="global.total"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="text" name="numberOfMoosesDeceasedTotal" id="numberOfMoosesDeceasedTotal"
+                                   class="form-control"
+                                   disabled
+                                   value="{{ getTotalNumberOfDeadMooses() }}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+
+            <div class="row r-cause-of-death-form-group">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <label for="causeOfDeath" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.causeOfDeath"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <input type="text" name="causeOfDeath" id="causeOfDeath"
+                                   class="form-control"
+                                   ng-model="huntingSummary.causeOfDeath"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 translate="club.hunting.mooseHuntingSummary.otherMooselikeSpeciesTitle"></h4>
+            <div class="well" ng-repeat="mooselike in mooselikeSpeciesAppearances track by $index">
+                <r-moose-summary-appearance appearance="mooselike"
+                                            species="mooselikeSpecies[$index]"
+                                            population-growth-trends="populationGrowthTrends"
+                                            index="$index"></r-moose-summary-appearance>
+            </div>
+
+            <h4 translate="club.hunting.mooseHuntingSummary.wildBoarTitle"></h4>
+            <div class="well">
+                <r-moose-summary-appearance appearance="wildBoarAppearance"
+                                            species="wildBoar"
+                                            population-growth-trends="populationGrowthTrends"
+                                            show-estimate-of-sow-with-piglets="true"
+                                            index="mooselikeSpeciesAppearances.length"></r-moose-summary-appearance>
+            </div>
+
+            <h4 translate="club.hunting.mooseHuntingSummary.otherObservationsTitle"></h4>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="mooseHeatBeginDate" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.mooseHeatBeginDate"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <div class="input-group r-dropdown-align-right"
+                                 ng-controller="DatePickerController">
+
+                                <input type="text" name="mooseHeatBeginDate" id="mooseHeatBeginDate"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       date-between-min-max
+                                       max-date="viewState.mooseHeatEndDate"
+                                       ng-model="viewState.mooseHeatBeginDate">
+
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" tabindex="-1"
+                                            ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </button>
+                                </span>
+                            </div>
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.mooseHeatBeginDate.$invalid"
+                               ng-messages="huntingSummaryForm.mooseHeatBeginDate.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="mooseHeatEndDate" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.mooseHeatEndDate"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <div class="input-group r-dropdown-align-right"
+                                 ng-controller="DatePickerController">
+
+                                <input type="text" name="mooseHeatEndDate" id="mooseHeatEndDate"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       date-between-min-max
+                                       min-date="viewState.mooseHeatBeginDate"
+                                       ng-model="viewState.mooseHeatEndDate">
+
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" tabindex="-1"
+                                            ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </button>
+                                </span>
+                            </div>
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.mooseHeatEndDate.$invalid"
+                               ng-messages="huntingSummaryForm.mooseHeatEndDate.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="mooseFawnBeginDate" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.mooseFawnBeginDate"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <div class="input-group r-dropdown-align-right"
+                                 ng-controller="DatePickerController">
+
+                                <input type="text" name="mooseFawnBeginDate" id="mooseFawnBeginDate"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       date-between-min-max
+                                       max-date="viewState.mooseFawnEndDate"
+                                       ng-model="viewState.mooseFawnBeginDate">
+
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" tabindex="-1"
+                                            ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </button>
+                                </span>
+                            </div>
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.mooseFawnBeginDate.$invalid"
+                               ng-messages="huntingSummaryForm.mooseFawnBeginDate.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="mooseFawnEndDate" class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.mooseFawnEndDate"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <div class="input-group r-dropdown-align-right"
+                                 ng-controller="DatePickerController">
+
+                                <input type="text" name="mooseFawnEndDate" id="mooseFawnEndDate"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       date-between-min-max
+                                       min-date="viewState.mooseFawnBeginDate"
+                                       ng-model="viewState.mooseFawnEndDate">
+
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" tabindex="-1"
+                                            ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </button>
+                                </span>
+                            </div>
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.mooseFawnEndDate.$invalid"
+                               ng-messages="huntingSummaryForm.mooseFawnEndDate.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="well">
+                <div class="row">
+                    <div class="form-group">
+                        <label class="control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.deerFliesAppeared"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <label class="radio-inline">
+                                <input type="radio" ng-model="huntingSummary.deerFliesAppeared" ng-value="false">
+                                {{ 'global.no' | translate }}
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" ng-model="huntingSummary.deerFliesAppeared" ng-value="true">
+                                {{ 'global.yes' | translate }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" ng-show="showDeerFlyFields()">
+                    <br/>
+
+                    <div class="col-sm-6">
+                        <div class="form-group" show-errors>
+                            <label for="dateOfFirstDeerFlySeen" class="control-label">
+                                <span translate="club.hunting.mooseHuntingSummary.dateOfFirstDeerFlySeen"></span>
+                            </label>
+
+                            <div class="form-control-wrapper">
+                                <div class="input-group r-dropdown-align-right"
+                                     ng-controller="DatePickerController">
+
+                                    <input type="text" name="dateOfFirstDeerFlySeen" id="dateOfFirstDeerFlySeen"
+                                           class="form-control"
+                                           uib-datepicker-popup is-open="isDatePickerOpen"
+                                           date-between-min-max
+                                           max-date="viewState.dateOfLastDeerFlySeen"
+                                           ng-model="viewState.dateOfFirstDeerFlySeen"
+                                           ng-disabled="!huntingSummary.deerFliesAppeared">
+
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" tabindex="-1"
+                                                ng-click="toggleDatePopup($event)">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </button>
+                                    </span>
+                                </div>
+                                <p class="help-block has-error"
+                                   ng-show="huntingSummaryForm.dateOfFirstDeerFlySeen.$invalid"
+                                   ng-messages="huntingSummaryForm.dateOfFirstDeerFlySeen.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group" show-errors>
+                            <label for="dateOfLastDeerFlySeen" class="control-label">
+                                <span translate="club.hunting.mooseHuntingSummary.dateOfLastDeerFlySeen"></span>
+                            </label>
+
+                            <div class="form-control-wrapper">
+                                <div class="input-group r-dropdown-align-right"
+                                     ng-controller="DatePickerController">
+
+                                    <input type="text" name="dateOfLastDeerFlySeen" id="dateOfLastDeerFlySeen"
+                                           class="form-control"
+                                           uib-datepicker-popup is-open="isDatePickerOpen"
+                                           date-between-min-max
+                                           min-date="viewState.dateOfFirstDeerFlySeen"
+                                           ng-model="viewState.dateOfLastDeerFlySeen"
+                                           ng-disabled="!huntingSummary.deerFliesAppeared">
+
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" tabindex="-1"
+                                                ng-click="toggleDatePopup($event)">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </button>
+                                    </span>
+                                </div>
+                                <p class="help-block has-error"
+                                   ng-show="huntingSummaryForm.dateOfLastDeerFlySeen.$invalid"
+                                   ng-messages="huntingSummaryForm.dateOfLastDeerFlySeen.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row r-two-column-number-fields" ng-show="huntingSummary.deerFliesAppeared">
+                    <div class="col-sm-6">
+                        <div class="form-group" show-errors>
+                            <label for="numberOfAdultMoosesHavingFlies" class="control-label">
+                                <span translate="club.hunting.mooseHuntingSummary.numberOfAdultMoosesHavingFlies"></span>
+                            </label>
+
+                            <div class="form-control-wrapper">
+                                <input type="number" name="numberOfAdultMoosesHavingFlies" id="numberOfAdultMoosesHavingFlies"
+                                       min="0" max="99999" step="1"
+                                       class="form-control no-spinner"
+                                       ng-model="huntingSummary.numberOfAdultMoosesHavingFlies"
+                                       ng-disabled="!huntingSummary.deerFliesAppeared">
+
+                                <p class="help-block has-error"
+                                   ng-show="huntingSummaryForm.numberOfAdultMoosesHavingFlies.$invalid"
+                                   ng-messages="huntingSummaryForm.numberOfAdultMoosesHavingFlies.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group" show-errors>
+                            <label for="numberOfYoungMoosesHavingFlies" class="control-label">
+                                <span translate="club.hunting.mooseHuntingSummary.numberOfYoungMoosesHavingFlies"></span>
+                            </label>
+
+                            <div class="form-control-wrapper">
+                                <input type="number" name="numberOfYoungMoosesHavingFlies" id="numberOfYoungMoosesHavingFlies"
+                                       min="0" max="99999" step="1"
+                                       class="form-control no-spinner"
+                                       ng-model="huntingSummary.numberOfYoungMoosesHavingFlies"
+                                       ng-disabled="!huntingSummary.deerFliesAppeared">
+
+                                <p class="help-block has-error"
+                                   ng-show="huntingSummaryForm.numberOfYoungMoosesHavingFlies.$invalid"
+                                   ng-messages="huntingSummaryForm.numberOfYoungMoosesHavingFlies.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row r-moose-summary-deer-fly-population-growth" ng-show="huntingSummary.deerFliesAppeared">
+                    <div class="form-group">
+                        <label class="control-label">
+                            <span class="text-right" translate="club.hunting.mooseHuntingSummary.trendOfDeerFlyPopulationGrowth"></span>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <label class="radio-inline"
+                                   ng-repeat="growthTrend in populationGrowthTrends">
+
+                                <input type="radio"
+                                       ng-model="huntingSummary.trendOfDeerFlyPopulationGrowth"
+                                       ng-value="growthTrend"
+                                       ng-disabled="!huntingSummary.deerFliesAppeared">
+                                {{ 'club.hunting.mooseHuntingSummary.populationGrowthTrend.' + growthTrend | translate | lowercase }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 translate="club.hunting.huntingSummary.huntingFinishingTitle"></h4>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group" show-errors>
+                        <label for="huntingEndDate" class="control-label">
+                            <span translate="club.hunting.huntingSummary.huntingEndDate"></span>
+                            <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                        </label>
+
+                        <div class="form-control-wrapper">
+                            <div class="input-group r-dropdown-align-right"
+                                 ng-controller="DatePickerController">
+
+                                <input type="text" name="huntingEndDate" id="huntingEndDate"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       ng-model="viewState.huntingEndDate"
+                                       date-between-min-max
+                                       min-date="speciesAmount.beginDate"
+                                       max-date="speciesAmount.endDate"
+                                       min-date2="speciesAmount.beginDate2"
+                                       max-date2="speciesAmount.endDate2">
+
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" tabindex="-1"
+                                            ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </button>
+                                </span>
+                            </div>
+                            <p class="help-block has-error"
+                               ng-show="huntingSummaryForm.huntingEndDate.$invalid"
+                               ng-messages="huntingSummaryForm.huntingEndDate.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-danger pull-left"
+            ng-click="markUnfinished()"
+            ng-if="isHuntingFinishedAndNotLocked()"
+            translate="club.hunting.huntingSummary.markUnfinished"></button>
+
+    <button type="button"
+            class="btn btn-default"
+            ng-click="cancel()"
+            ng-if="!markedUnfinished"
+            translate="global.button.cancel"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-click="submit(huntingSummaryForm)"
+            ng-if="!isHuntingFinishedOrLocked()"
+            ng-disabled="!isValid(huntingSummaryForm)"
+            translate="club.hunting.huntingSummary.saveUnfinished"></button>
+
+    <button type="button"
+            class="btn btn-danger"
+            ng-click="doFinalSubmit(huntingSummaryForm)"
+            ng-if="!isHuntingFinishedOrLocked()"
+            ng-disabled="!isValidForFinalSubmit(huntingSummaryForm)"
+            translate="global.button.submit"></button>
+</div>

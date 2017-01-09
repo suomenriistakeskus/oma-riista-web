@@ -1,0 +1,157 @@
+.r-contact-search-nav {
+  margin-bottom: 5px;
+}
+
+.dropzone {
+  background: white;
+  border: 2px dashed @brand-primary;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  padding: 54px;
+
+  .dz-message {
+    font-size: 18px;
+    font-weight: 400;
+  }
+
+  .dz-preview {
+    width: 155px;
+
+    .dz-image {
+      width: 155px;
+    }
+
+    .dz-details {
+      padding: 1em 1em;
+
+      .dz-filename {
+        font-size: 12px;
+        height: 70px;
+        white-space: normal;
+      }
+
+      .dz-size {
+        font-size: 14px;
+      }
+    }
+
+    &.dz-processing > .dz-progress {
+      visibility: visible;
+    }
+    &:not(.dz-processing) > .dz-progress {
+      visibility: hidden;
+    }
+
+    &.dz-processing, &.dz-success, &.dz-error, &.dz-complete {
+        > .dz-remove {
+          visibility: hidden;
+        }
+    }
+  }
+}
+
+.r-moose-data-card-uploads {
+  > ul {
+    .list-unstyled();
+
+    li {
+      padding-left: 15px;
+    }
+  }
+
+  .r-moose-data-card-upload {
+    padding-bottom: 10px;
+
+    > ul {
+      list-style-type: disc;
+    }
+
+    .r-moose-data-card-upload-filename {
+      font-weight: 700;
+    }
+
+    .r-moose-data-card-upload-failure-message {
+      color: @r-red;
+    }
+  }
+}
+
+.loop-moderator-hunting-summary-border-left(@cols; @index: 1) when(@index <= length(@cols)) {
+  .loop-moderator-hunting-summary-border-left(@cols; (@index + 1));
+
+  @i: extract(@cols, @index);
+  &:nth-of-type(@{i}) {
+    border-left: @moderator-hunting-summary-table-header-border-style;
+  }
+}
+
+.moderator-hunting-summary-table {
+  @moderator-hunting-summary-table-header-border-style: 1px solid #c5c5c5;
+  @moderator-hunting-summaey-table-border-style: 1px solid rgb(221, 221, 221);
+  @moderator-hunting-summary-table-border-indexes: 4 8 10 12;
+
+  td:first-child {
+    width: 250px;
+  }
+  th, td:not(:first-child) {
+    .text-center;
+    padding: 2px !important;
+  }
+
+  .topheader {
+    th {
+      border-bottom: none;
+
+      &:not(:first-child) {
+        border-left: @moderator-hunting-summary-table-header-border-style;
+      }
+    }
+  }
+
+  .lowheader > th {
+    .loop-moderator-hunting-summary-border-left(@moderator-hunting-summary-table-border-indexes);
+
+    border-top: 0;
+  }
+
+  .summary {
+    font-weight: bold;
+  }
+
+  .current-club {
+    td {
+      color: white;
+      background-color: darkgray !important;
+    }
+  }
+
+  tr > td {
+    .loop-moderator-hunting-summary-border-left(@moderator-hunting-summary-table-border-indexes);
+
+    // Hide spinner on number input fields
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+      .text-right;
+      width: 51px;
+    }
+    .effectiveHuntingArea, .totalHuntingArea {
+      width: 71px !important;
+    }
+
+    padding: 1px !important;
+  }
+
+  input[type="checkbox"] {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    -o-box-shadow: none;
+    box-shadow: none;
+
+    margin: 0;
+  }
+}

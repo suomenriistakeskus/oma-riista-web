@@ -1,0 +1,162 @@
+<form name="form" role="form" novalidate ng-submit="save()" r-force-show-errors-check-validity>
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h4 class="modal-title" id="myUserLabel">
+            <span ng-show="user.id" translate="admin.users.edit_title"></span>
+            <span ng-hide="user.id" translate="admin.users.create_title"></span>
+        </h4>
+    </div>
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="username" translate="admin.users.username" class="control-label"></label>
+            <input type="text" name="username" id="username"
+                   class="form-control"
+                   required
+                   ng-disabled="user.id"
+                   ng-model="user.username"
+                   ng-minlength="1" ng-maxlength="255"
+                   ng-change="usernameChanged()">
+
+            <p class="help-block" ng-show="form.username.$error.required && form.username.$dirty">
+                Kenttä vaaditaan.
+            </p>
+        </div>
+
+        <div class="checkbox">
+            <label>
+                <input id="active" type="checkbox" ng-model="user.active" checked>
+                <span translate="admin.users.active"></span>
+            </label>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="role" translate="admin.users.role" class="control-label"></label>
+            <select name="role" id="role"
+                    class="form-control"
+                    ng-model="user.role"
+                    ng-options="role as ('global.role.' + role) | translate for role in roles"
+                    ng-selected="user.role"
+                    ng-change="roleChanged()"
+                    required></select>
+            <p class="help-block" ng-show="form.role.$error.required">
+                Kenttä vaaditaan.
+            </p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="email" translate="admin.users.email" class="control-label"></label>
+            <input type="email" name="email" id="email"
+                   class="form-control"
+                   ng-required="user.role != 'ROLE_REST'"
+                   ng-disabled="user.role == 'ROLE_REST'"
+                   ng-model="user.email"
+                   ng-maxlength="255">
+            <p class="help-block" ng-show="form.email.$error.email">
+                Laillinen sähköpostiosoite vaaditaan.
+            </p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="phonenumber" translate="admin.users.phonenumber" class="control-label"></label>
+            <input type="text" name="phonenumber" id="phonenumber"
+                   class="form-control"
+                   ng-required="user.role != 'ROLE_REST'"
+                   ng-disabled="user.role == 'ROLE_REST'"
+                   ng-model="user.phoneNumber"
+                   validate-phonenumber
+                   ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                   ng-maxlength="255">
+            <p class="help-block" ng-show="form.email.$error.phonenumber">
+                Laillinen puhelinnumero vaaditaan.
+            </p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="firstName" translate="admin.users.firstname" class="control-label"></label>
+            <input type="text" name="firstName" id="firstName"
+                   class="form-control"
+                   required
+                   ng-disabled="user.role == 'ROLE_REST'"
+                   ng-model="user.firstName"
+                   ng-maxlength="255"
+                   ng-disabled="!user.nameEditable">
+            <p class="help-block" ng-show="form.firstName.$error.required && form.firstName.$dirty">
+                Kenttä vaaditaan.
+            </p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="lastName" translate="admin.users.lastname" class="control-label"></label>
+            <input type="text" name="lastName" id="lastName"
+                   class="form-control"
+                   required
+                   ng-disabled="user.role == 'ROLE_REST'"
+                   ng-model="user.lastName"
+                   ng-maxlength=255
+                   ng-disabled="!user.nameEditable">
+            <p class="help-block" ng-show="form.lastName.$error.required && form.lastName.$dirty">
+                Kenttä vaaditaan.
+            </p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="ipWhiteList" translate="admin.users.ipWhiteList" class="control-label"></label>
+            <input type="text" name="ipWhiteList" id="ipWhiteList"
+                   class="form-control"
+                   ng-model="user.ipWhiteList"
+                   ng-required="user.role == 'ROLE_REST'">
+            <p class="help-block" ng-show="form.ipWhiteList.$error.required && form.ipWhiteList.$dirty">
+                Kenttä vaaditaan.
+            </p>
+        </div>
+
+        <div class="form-group" ng-if="!user.id" show-errors>
+            <label for="password" translate="admin.users.password" class="control-label"></label>
+            <input type="password"
+                   class="form-control"
+                   name="password" id="password"
+                   autocomplete="false" autocorrect="off" autocapitalize="none"
+                   ng-model="user.password" ng-minlength=8 ng-required="!user.id">
+
+            <p class="help-block" ng-show="form.password.$error.required  && form.password.$dirty"
+               translate="change_password.messages.validate.newpassword.required"></p>
+
+            <p class="help-block" ng-show="form.password.$error.minlength && form.password.$dirty"
+               translate="change_password.messages.validate.newpassword.minlength"></p>
+        </div>
+
+        <div class="form-group" ng-if="!user.id" show-errors>
+            <label for="confirmPassword" translate="admin.users.passwordConfirm" class="control-label"></label>
+            <input type="password"
+                   class="form-control"
+                   name="confirmPassword" id="confirmPassword"
+                   autocomplete="false" autocorrect="off" autocapitalize="none"
+                   ng-model="user.passwordConfirm" ng-required="!user.id">
+
+            <p class="help-block" ng-show="form.confirmPassword.$error.required && form.confirmPassword.$dirty"
+               translate="change_password.messages.validate.confirmpassword.required"></p>
+
+            <p class="help-block" ng-show="form.confirmPassword.$error.minlength && form.confirmPassword.$dirty"
+               translate="change_password.messages.validate.newpassword.minlength"></p>
+        </div>
+
+        <div class="form-group" ng-show="user.role == 'ROLE_REST'">
+            <div class="form-control-static" translate="admin.users.privileges"></div>
+            <div class="checkbox" ng-repeat="p in privileges">
+                <label>
+                    <input type="checkbox" name="privilege_{{p.name}}" id="privilege_{{p.name}}"
+                           ng-model="p.selected">
+                    <span ng-bind="p.name"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" ng-click="cancel()"
+                    translate="admin.users.cancel"></button>
+            &nbsp;
+            <button type="submit" ng-disabled="form.$invalid" class="btn btn-primary"
+                    translate="admin.users.save"></button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,30 @@
+<button class="btn btn-primary pull-right"
+        ng-if="$ctrl.club.canEdit"
+        ng-click="$ctrl.addMembersBulk()">
+    <span class="glyphicon glyphicon-plus"></span> &nbsp;
+    <span translate="club.genericMember.button.invite"></span>
+</button>
+
+<div ng-if="$ctrl.invitations.length">
+    <h3>
+        <span translate="club.genericMember.titleInvite"></span>
+        <span class="text-muted">({{ $ctrl.invitations.length }})</span>
+    </h3>
+
+    <club-invitation-list
+            reload="$ctrl.reloadInvitations()"
+            invitations="$ctrl.invitations"
+            can-edit="$ctrl.club.canEdit">
+    </club-invitation-list>
+</div>
+
+<h3>
+    <span translate="club.genericMember.title"></span>
+    <span class="text-muted">({{ $ctrl.members.length }})</span>
+</h3>
+
+<club-member-list
+        reload="$ctrl.reloadMembers()"
+        members="$ctrl.members"
+        can-edit="$ctrl.club.canEdit">
+</club-member-list>

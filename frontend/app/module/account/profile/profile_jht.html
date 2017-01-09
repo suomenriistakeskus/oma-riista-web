@@ -1,0 +1,33 @@
+<div class="panel panel-default"
+     ng-if="$ctrl.jhtTrainings && $ctrl.jhtTrainings.length">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="account.profile.title.trainings"></h3>
+    </div>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th class="col-xs-6" translate="account.profile.training.name"></th>
+                    <th class="col-xs-6" translate="account.profile.training.date"></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr ng-repeat="training in ::$ctrl.jhtTrainings track by training.id">
+                    <td>
+                        <span ng-bind="::('occupation.type.'+training.occupationType | translate)"></span>
+                        (<span ng-bind="::('occupation.trainingType.'+training.trainingType | translate)"></span>)
+                    </td>
+
+                    <td>
+                        <span ng-bind="::(training.trainingDate | date:'d.M.yyyy')"></span>
+                        <span ng-bind="::(training.trainingLocation)"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

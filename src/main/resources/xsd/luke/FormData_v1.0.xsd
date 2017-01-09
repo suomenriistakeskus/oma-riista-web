@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified"
+            targetNamespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/FormData.xsd"
+            xmlns="http://www.abbyy.com/FlexiCapture/Schemas/Export/FormData.xsd"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:import schemaLocation="Hirvitietokortti_v1.0.xsd"
+                namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/Hirvitietokortti.xsd"/>
+
+    <xsd:element name="Documents">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="Hirvitietokortti:_Hirvitietokortti"
+                             xmlns:Hirvitietokortti="http://www.abbyy.com/FlexiCapture/Schemas/Export/Hirvitietokortti.xsd"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>

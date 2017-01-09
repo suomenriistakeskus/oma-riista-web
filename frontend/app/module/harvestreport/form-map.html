@@ -1,0 +1,38 @@
+<label class="col-xs-3 control-label">
+    <span translate="harvestreport.form.location"></span>
+    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+</label>
+
+<div class="col-xs-9">
+    <leaflet class="r-cursor-arrow"
+             id="harvest-report-form"
+             defaults="mapDefaults"
+             layers="mapDefaults.mmlLayers"
+             controls="mapDefaults.controls"
+             r-geolocation-center="report.geoLocation"
+             r-geolocation-marker="report.geoLocation"
+             r-geolocation-editable="report.canEdit"
+             height="300px">
+    </leaflet>
+
+    <div>
+        <span ng-show="report.geoLocation.longitude"
+              translate="global.geoLocation.coordinatesText"
+              translate-values="report.geoLocation"></span>
+        &nbsp;<!-- this will keep empty line when location is not yet selected -->
+    </div>
+
+    <div>
+        <span ng-show="report.propertyIdentifier">
+            <span translate="harvestreport.form.propertyIdentifier"></span>:
+            <span ng-bind="report.propertyIdentifier"></span>
+        </span>
+        <span ng-show="report.geoLocation.longitude && !report.propertyIdentifier && !propertyIdentifierLookupError"
+              translate="harvestreport.form.propertyIdentifierSearching"></span>
+        <span ng-show="propertyIdentifierLookupError && viewState.moderatorView" class="text-danger"
+              translate="harvestreport.form.propertyIdentifierErrorModerator"></span>
+        <span ng-show="propertyIdentifierLookupError && !viewState.moderatorView" class="text-warning"
+              translate="harvestreport.form.propertyIdentifierErrorUser"></span>
+        &nbsp;<!-- this will keep empty line when location is not yet selected -->
+    </div>
+</div>

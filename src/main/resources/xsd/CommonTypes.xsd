@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://xml.riistakeskus.fi/schema/CommonTypes"
+            xmlns="http://xml.riistakeskus.fi/schema/CommonTypes"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified">
+
+    <xsd:simpleType name="Henkilotunnus">
+        <xsd:restriction base="xsd:token">
+            <!--
+            <xsd:pattern value="^\\d{6}[A+-]\\d{3}[0-9A-FHJ-NPR-Y]$"/>
+            -->
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OsoiteLahde">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="VTJ"/>
+            <xsd:enumeration value="LupaHallinta"/>
+            <xsd:enumeration value="Manual"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="Osoite">
+        <xsd:sequence>
+            <xsd:element type="xsd:string" name="Katuosoite" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="Postinumero" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="Postitoimipaikka" minOccurs="0" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="Maa" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute type="OsoiteLahde" name="OsoiteLahde"/>
+    </xsd:complexType>
+    <xsd:simpleType name="Kielikoodi">
+        <xsd:restriction base="xsd:token">
+            <xsd:length value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="TyyppiKoodi">
+        <xsd:restriction base="xsd:int">
+            <xsd:minInclusive value = "0"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="TyyppiKoodiJaNimi">
+        <xsd:sequence>
+            <xsd:element type="TyyppiKoodi" name="TyyppiKoodi" minOccurs="1" maxOccurs="1"/>
+            <xsd:element type="xsd:token" name="TyyppiNimi" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>

@@ -1,0 +1,59 @@
+<table class="table table-condensed">
+    <thead>
+    <tr>
+        <th class="col-xs-1" translate="gamediary.state.title"></th>
+        <th class="col-xs-2" translate="harvestpermit.pointOfTime"></th>
+        <th class="col-xs-2" translate="harvestpermit.gameInfo"></th>
+        <th class="col-xs-2" translate="harvestreport.form.author"></th>
+        <th class="col-xs-2" translate="harvestreport.form.hunter"></th>
+        <th class="col-xs-3"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat-start="harvest in ::permit.harvests track by harvest.id">
+        <td>
+            <div class="r-harvestreport-state-text r-report-permit-row-state"
+                 harvest-report-state-to-class="::harvest.stateAcceptedToHarvestPermit">
+                <span ng-if="::harvest.stateAcceptedToHarvestPermit">
+                    {{::('gamediary.state.' + harvest.stateAcceptedToHarvestPermit | translate)}}
+                </span>
+                <span ng-if="::(!harvest.stateAcceptedToHarvestPermit)">
+                    {{'gamediary.state.PROPOSED' | translate}}
+                </span>
+            </div>
+        </td>
+        <td>{{::(harvest.pointOfTime | date:'d.M.yyyy HH:mm')}}</td>
+        <td>
+            <span name-translated="::harvest.gameSpecies.name"></span><br/>
+            <span>
+                <span>{{::harvest.totalSpecimenAmount}}</span>
+                <span translate="harvestpermit.pcs"></span>
+            </span>
+        </td>
+        <td>
+            {{::harvest.author.byName}} {{::harvest.author.lastName}}
+            <span ng-if="::harvest.creator">
+                <br>({{'harvestreport.form.creator' | translate}} {{::harvest.creator}})
+            </span>
+        </td>
+        <td>{{::(harvest.hunter.byName)}} {{::(harvest.hunter.lastName)}}</td>
+        <td class="text-right">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn" harvest-report-state-to-class="'REJECTED'"
+                        ng-disabled="::(harvest.stateAcceptedToHarvestPermit=='REJECTED' || (permit.endOfHuntingReport && harvest.stateAcceptedToHarvestPermit=='ACCEPTED'))"
+                        ng-click="changeState(harvest, 'REJECTED')">
+                    <span translate="gamediary.button.changeStateTo.REJECTED"></span>
+                </button>
+                <button type="button" class="btn" harvest-report-state-to-class="'ACCEPTED'"
+                        ng-disabled="::(harvest.stateAcceptedToHarvestPermit=='ACCEPTED' || permit.endOfHuntingReport)"
+                        ng-click="changeState(harvest, 'ACCEPTED')">
+                    <span translate="gamediary.button.changeStateTo.ACCEPTED"></span>
+                </button>
+            </div>
+            &nbsp;
+            <span r-view-harvest-buttons="harvest" show-moderator-buttons="::(!permit.endOfHuntingReport)"></span>
+        </td>
+    </tr>
+    <tr ng-repeat-end r-view-harvest-inline="harvest" ></tr>
+    </tbody>
+</table>

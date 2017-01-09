@@ -1,0 +1,141 @@
+<hr class="invisible"/>
+
+<div class="r-table-header">
+    <div class="content">
+        <span class="h3" translate="club.group.mooseDataCardImport.listTitle"></span>
+    </div>
+</div>
+
+<table class="r-moose-data-card-table table table-striped table-condensed">
+    <thead>
+    <tr>
+        <th class="col-xs-3" translate="club.group.mooseDataCardImport.importTimestamp"></th>
+        <th class="col-xs-3" translate="club.group.mooseDataCardImport.filenameTimestamp"></th>
+        <th class="col-xs-3" translate="club.group.mooseDataCardImport.reportingPeriod"></th>
+        <th class="col-xs-1" translate="club.group.mooseDataCardImport.fileDownload"></th>
+        <th class="col-xs-1" translate="club.group.mooseDataCardImport.messages"></th>
+        <th class="col-xs-1"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr ng-repeat-start="import in $ctrl.notRevoked track by import.id">
+        <td>
+            <div>
+                {{ import.importTimestamp | date:'d.M.yyyy' }}
+                {{ import.importTimestamp | date:'HH:mm:ss' }}
+            </div>
+        </td>
+        <td>
+            <div>
+                {{ import.filenameTimestamp | date:'d.M.yyyy' }}
+                {{ import.filenameTimestamp | date:'HH:mm:ss' }}
+            </div>
+        </td>
+        <td>
+            {{ import.reportingPeriodBeginDate | date:'d.M.yyyy' }} -
+            {{ import.reportingPeriodEndDate | date:'d.M.yyyy' }}
+        </td>
+        <td class="row">
+            <div class="r-file-download-container">
+                <div class="col-xs-6" r-download-pdf="$ctrl.getPdfImportFileUrl(import.id)"></div>
+                <div class="col-xs-6" r-download-xml="$ctrl.getXmlImportFileUrl(import.id)"></div>
+            </div>
+        </td>
+        <td>
+            <div ng-if="import.messages.length > 0">
+                <a ng-click="$ctrl.toggleImportMessages(import)" class="btn btn-default">
+                    <span>{{ import.messages.length }}</span> &nbsp;
+                    <span class="glyphicon"
+                          ng-class="{ 'glyphicon-remove-circle': import.showMessages,
+                                      'glyphicon-chevron-down': !import.showMessages }"></span>
+                </a>
+            </div>
+        </td>
+        <td>
+            <button ng-show="$ctrl.isModerator && $last"
+                    ng-click="$ctrl.revokeImport(import)" class="btn btn-danger">
+                <span class="glyphicon glyphicon-remove"></span>&nbsp;
+                <span translate="global.button.delete"></span>
+            </button>
+        </td>
+    </tr>
+    <tr ng-repeat-end ng-show="import.showMessages">
+        <td colspan="6">
+            <ul>
+                <li ng-repeat="message in import.messages">
+                    <span>{{ message }}</span>
+                    <br/>
+                </li>
+            </ul>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div ng-if="$ctrl.revoked.length > 0">
+    <div class="r-table-header">
+        <div class="content">
+            <span class="h3" translate="club.group.mooseDataCardImport.revokedListTitle"></span>
+        </div>
+    </div>
+
+    <table class="r-moose-data-card-table table table-striped table-condensed">
+        <thead>
+        <tr>
+            <th class="col-xs-3" translate="club.group.mooseDataCardImport.revocationTimestamp"></th>
+            <th class="col-xs-3" translate="club.group.mooseDataCardImport.filenameTimestamp"></th>
+            <th class="col-xs-3" translate="club.group.mooseDataCardImport.reportingPeriod"></th>
+            <th class="col-xs-1" translate="club.group.mooseDataCardImport.fileDownload"></th>
+            <th class="col-xs-1" translate="club.group.mooseDataCardImport.messages"></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr ng-repeat-start="import in $ctrl.revoked | orderBy:['revocationTimestamp'] track by import.id">
+            <td>
+                <div>
+                    {{ import.revocationTimestamp | date:'d.M.yyyy' }}
+                    {{ import.revocationTimestamp | date:'HH:mm:ss' }}
+                </div>
+            </td>
+            <td>
+                <div>
+                    {{ import.filenameTimestamp | date:'d.M.yyyy' }}
+                    {{ import.filenameTimestamp | date:'HH:mm:ss' }}
+                </div>
+            </td>
+            <td>
+                {{ import.reportingPeriodBeginDate | date:'d.M.yyyy' }} -
+                {{ import.reportingPeriodEndDate | date:'d.M.yyyy' }}
+            </td>
+            <td class="row">
+                <div class="r-file-download-container">
+                    <div class="col-xs-6" r-download-pdf="$ctrl.getPdfImportFileUrl(import.id)"></div>
+                    <div class="col-xs-6" r-download-xml="$ctrl.getXmlImportFileUrl(import.id)"></div>
+                </div>
+            </td>
+            <td>
+                <div ng-if="import.messages.length > 0">
+                    <a ng-click="$ctrl.toggleImportMessages(import)" class="btn btn-default">
+                        <span>{{ import.messages.length }}</span> &nbsp;
+                        <span class="glyphicon"
+                              ng-class="{ 'glyphicon-remove-circle': import.showMessages,
+                                          'glyphicon-chevron-down': !import.showMessages }"></span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+        <tr ng-repeat-end ng-show="import.showMessages">
+            <td colspan="5">
+                <ul>
+                    <li ng-repeat="message in import.messages">
+                        <span>{{ message }}</span>
+                        <br/>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

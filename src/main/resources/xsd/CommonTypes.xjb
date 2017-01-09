@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+               xmlns:namespace="http://jaxb2-commons.dev.java.net/namespace-prefix"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               schemaLocation="CommonTypes.xsd"
+               node="/xsd:schema"
+               jaxb:extensionBindingPrefixes="xjc"
+               version="2.1">
+
+    <jaxb:schemaBindings>
+        <jaxb:package name="fi.riista.integration.common.model"/>
+
+        <!-- Prefix common types with 'C_'
+        <jaxb:nameXmlTransform>
+            <jaxb:typeName prefix="C_"/>
+            <jaxb:anonymousTypeName prefix="C_"/>
+            <jaxb:elementName prefix="C_"/>
+        </jaxb:nameXmlTransform>
+        -->
+    </jaxb:schemaBindings>
+
+    <jaxb:globalBindings underscoreBinding="asCharInWord" >
+        <xjc:javaType adapter="fi.riista.integration.support.LocalDateAdapter"
+                      name="org.joda.time.LocalDate"
+                      xmlType="xsd:date"/>
+        <xjc:javaType adapter="fi.riista.integration.support.DateTimeAdapter"
+                      name="org.joda.time.DateTime"
+                      xmlType="xsd:dateTime"/>
+    </jaxb:globalBindings>
+
+    <jaxb:bindings>
+        <namespace:prefix name="common"/>
+    </jaxb:bindings>
+
+    <!--
+    <jaxb:bindings node="//xsd:simpleType[@name='Henkilotunnus']">
+        <jaxb:class name="C_SocialSecurityNumber"/>
+    </jaxb:bindings>
+    -->
+    <jaxb:bindings node="//xsd:simpleType[@name='OsoiteLahde']">
+        <jaxb:typesafeEnumClass name="C_AddressSource"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Osoite']">
+        <jaxb:class name="C_Address"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='TyyppiKoodiJaNimi']">
+        <jaxb:class name="C_TypeCodeAndName"/>
+    </jaxb:bindings>
+
+</jaxb:bindings>

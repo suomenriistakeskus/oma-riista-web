@@ -1,0 +1,15 @@
+<leaflet id="harvest-map"
+         class="r-cursor-pointer r-leaflet-propagate-overlay-click"
+         defaults="mapDefaults"
+         layers="mapDefaults.mmlLayers"
+         controls="mapDefaults.controls"
+         event-broadcast="mapEvents"
+         geojson="mapGeoJSON"
+         geojson-watch-options="mapDefaults.geojsonWatchOptions"
+         r-geolocation-center="geoCenter"
+         r-geolocation-marker="diaryEntry.geoLocation"
+         r-geolocation-keep-marker-center
+         r-geolocation-editable="diaryEntry.canEdit"
+         r-viewport-height
+         width="100%">
+</leaflet>

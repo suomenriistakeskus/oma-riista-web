@@ -1,0 +1,23 @@
+<nav class="navbar r-subnav-navbar" role="navigation">
+    <div class="container">
+        <div class="navbar-collapse collapse" class="in">
+            <ul class="nav navbar-nav r-subnav-nav">
+                <li active-if-state-includes="srva.list">
+                    <a ui-sref="srva.list">
+                        <span translate="rhy.menu.srvaList"></span>
+                        <span r-account-todo="'unfinishedSrvaEvents'"></span>
+                    </a>
+                </li>
+                <li active-if-state-includes="srva.map">
+                    <a ui-sref="srva.map" translate="rhy.menu.srvaMap"></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div riista-container-css>
+    <div growl inline="true"></div>
+
+    <div ui-view autoscroll="false"></div>
+</div>

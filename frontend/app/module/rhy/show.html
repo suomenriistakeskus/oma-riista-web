@@ -1,0 +1,89 @@
+<div class="row">
+    <div class="col-sm-6">
+        <h3 translate="rhy.basicInfo"></h3>
+
+        <table class="table table-condensed">
+            <tr>
+                <td class="col-md-3" translate="rhy.officialCode"></td>
+                <td>{{data.officialCode}}</td>
+            </tr>
+            <tr>
+                <td class="col-md-3" translate="rhy.nameFI"></td>
+                <td>{{data.nameFI}}</td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3" translate="rhy.nameSV"></td>
+                <td>{{data.nameSV}}</td>
+            </tr>
+        </table>
+
+        <h3 translate="rhy.contactInfo"></h3>
+
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                <tr ng-show="!data.hasOwnEmail">
+                    <td colspan="2"><span class="r-rhy-own-data-info" translate="rhy.edit.form.hasOwnEmailHelp"></span></td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.email"></td>
+                    <td>{{data.email}}</td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                </tr>
+
+                <tr ng-show="!data.hasOwnPhoneNumber">
+                    <td colspan="2"><span class="r-rhy-own-data-info"translate="rhy.edit.form.hasOwnPhoneNumberHelp"></span></td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.phoneNumber"></td>
+                    <td>{{data.phoneNumber}}</td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                </tr>
+
+                <tr ng-show="!data.hasOwnAddress">
+                    <td colspan="2"><span class="r-rhy-own-data-info" translate="rhy.edit.form.hasOwnAddressHelp"></span></td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.address.streetAddress"></td>
+                    <td>{{data.address.streetAddress}}</td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.address.postalCode"></td>
+                    <td>{{data.address.postalCode}}</td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.address.city"></td>
+                    <td>{{data.address.city}}</td>
+                </tr>
+                </tbody>
+            </table>
+            <hr />
+            <div class="text-right">
+                <button type="button"
+                        class="btn btn-primary"
+                        ng-click="editRHY()"
+                        ng-show="data.editable"
+                        translate="rhy.button.editContactInfo"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6">
+        <leaflet id="rhy-map-show"
+                 defaults="mapDefaults"
+                 layers="mapDefaults.mmlLayers"
+                 bounds="bounds"
+                 lf-center="center"
+                 geojson="geojson"
+                 geojson-watch-options="mapDefaults.geojsonWatchOptions"
+                 height="400px">
+        </leaflet>
+    </div>
+</div>

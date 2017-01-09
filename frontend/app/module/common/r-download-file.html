@@ -1,0 +1,7 @@
+<form name="downloadForm" action="{{fileUrl}}" method="POST" style="display: inline;">
+    <input type="hidden" spring-csrf-cookie/>
+    <button type="submit" class="btn btn-link btn-sm">
+        <span class="fa fa-lg fa-download"></span>
+        <span>{{translateKey | translate}}</span>
+    </button>
+</form>

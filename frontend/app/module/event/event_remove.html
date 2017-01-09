@@ -1,0 +1,17 @@
+<form name="form" role="form" novalidate class="form form-horizontal r-occupation-form" ng-submit="remove()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="event.remove.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-info" translate="event.remove.info"></div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="cancel()" translate="global.button.cancel"></button>
+        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid" translate="global.button.delete"></button>
+    </div>
+</form>

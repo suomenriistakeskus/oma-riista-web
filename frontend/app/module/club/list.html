@@ -1,0 +1,22 @@
+<div class="r-club-listing">
+
+<ul class="nav nav-pills">
+    <li class="pull-right">
+        <button type="button" ng-click="" class="btn btn-primary">
+            <span class="glyphicon glyphicon-plus"></span> &nbsp;
+            <span translate="Ota haltuun"></span>
+        </button>
+    </li>
+    <li class="pull-right">
+        <button type="button" ng-click="" class="btn btn-primary">
+            <span class="glyphicon glyphicon-plus"></span> &nbsp;
+            <span translate="Luo uusi"></span>
+        </button>
+    </li>
+</ul>
+
+<a class="r-clubselection" ui-sref="club.main({ id: club.id })" ng-repeat="club in clubs">
+    <h5><span name-translated="club"></span></h5>
+</a>
+
+</div>

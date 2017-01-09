@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               xmlns:inheritance="http://jaxb2-commons.dev.java.net/basic/inheritance"
+               xmlns:namespace="http://jaxb2-commons.dev.java.net/namespace-prefix"
+               xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               schemaLocation="FormData_v1.0.xsd"
+               node="/xsd:schema"
+               jaxb:extensionBindingPrefixes="xjc"
+               version="2.1">
+
+    <jaxb:schemaBindings>
+        <jaxb:package name="fi.riista.integration.luke_import.model.v1_0"/>
+    </jaxb:schemaBindings>
+
+    <jaxb:globalBindings underscoreBinding="asCharInWord" >
+        <xjc:javaType adapter="fi.riista.integration.support.LocalDateAdapter"
+                      name="org.joda.time.LocalDate"
+                      xmlType="xsd:date"/>
+    </jaxb:globalBindings>
+
+    <jaxb:bindings>
+        <namespace:prefix name="form"/>
+    </jaxb:bindings>
+
+    <jaxb:bindings node="//xsd:element[@name='Documents']">
+        <jaxb:class name="MooseDataCardContainer"/>
+        <jaxb:bindings node="./xsd:complexType/xsd:sequence/xsd:element[@ref='Hirvitietokortti:_Hirvitietokortti']">
+            <jaxb:property name="report"/>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="Hirvitietokortti_v1.0.xsd" node="/xsd:schema">
+
+        <jaxb:schemaBindings>
+            <jaxb:package name="fi.riista.integration.luke_import.model.v1_0"/>
+        </jaxb:schemaBindings>
+
+        <jaxb:bindings>
+            <namespace:prefix name="_Hirvitietokortti"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:group[@name='ETRS_TM35FIN_CoordinateType']">
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Koordinaatit_P']">
+                <jaxb:property name="latitude"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Koordinaatit_I']">
+                <jaxb:property name="longitude"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:group[@name='DateAndLocationType']">
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Päivämäärä']">
+                <jaxb:property name="date"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:group[@name='MooseHarvestBasicInfoType']">
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Punnittu']">
+                <jaxb:property name="weightMeasured"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Arvioitu']">
+                <jaxb:property name="weightEstimated"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:group[@name='MooseHarvestConditionType']">
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Kuntoluokka']">
+                <jaxb:property name="fitnessClass"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Lisätietoja']">
+                <jaxb:property name="additionalInfo"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ihmisravinnoksi_kelpaamaton']">
+                <jaxb:property name="notEdible"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_HirvitietokorttiType']">
+            <jaxb:class name="MooseDataCard"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sivu_1']">
+                <jaxb:property name="page1"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sivu_2']">
+                <jaxb:property name="page2"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sivu_3']">
+                <jaxb:property name="page3"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sivu_4']">
+                <jaxb:property name="page4"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sivu_5']">
+                <jaxb:property name="page5"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sivu_6']">
+                <jaxb:property name="page6"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sivu_7']">
+                <jaxb:property name="page7"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sivu_8']">
+                <jaxb:property name="page8"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_PAGE_IMAGES']">
+                <jaxb:property name="imagePage"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Sivu_1Type']">
+            <jaxb:class name="MooseDataCardPage1"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_1.1']">
+                <jaxb:property name="clubInfo"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_1.2']">
+                <jaxb:property name="contactPerson"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Asiakasnumero']">
+                <jaxb:property name="huntingClubCode"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ilmoitus_on_ajalta_1']">
+                <jaxb:property name="reportingPeriodBeginDate"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ilmoitus_on_ajalta_2']">
+                <jaxb:property name="reportingPeriodEndDate"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Pyyntilupa']">
+                <jaxb:property name="permitNumber"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_1.1Type']">
+            <jaxb:class name="MooseDataCardClubInfo"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Pyyntiluvan_saajan_nimi']">
+                <jaxb:property name="permitHolderName"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästysseura_tai_-seurue']">
+                <jaxb:property name="huntingClubName"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Seurueen_koordinaatit']">
+                <jaxb:property name="huntingClubCoordinate"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Riistanhoitoyhdistys']">
+                <jaxb:property name="rhyName"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_1.2Type']">
+            <jaxb:class name="MooseDataCardContactPerson"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sukunimi_Etunimi']">
+                <jaxb:property name="lastNameFirstName"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Henkilötunnus']">
+                <jaxb:property name="ssn"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästäjänumero']">
+                <jaxb:property name="hunterNumber"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Lähiosoite']">
+                <jaxb:property name="streetAddress"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Postinumero_ja_-toimipaikka']">
+                <jaxb:property name="postalCodeAndCity"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Puhelin']">
+                <jaxb:property name="phoneNumber"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sähköpostiosoite']">
+                <jaxb:property name="emailAddress"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Sivu_2Type']">
+            <jaxb:class name="MooseDataCardPage2"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_2.1']">
+                <jaxb:property name="section_2_1"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Asiakasnumero']">
+                <jaxb:property name="huntingClubCode"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_2.1Type']">
+            <jaxb:class name="MooseDataCardSection_2_1"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästyspäivien_olosuhdetiedot']">
+                <jaxb:property name="huntingDays"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Sivu_3Type']">
+            <jaxb:class name="MooseDataCardPage3"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_3.1']">
+                <jaxb:property name="section_3_1"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Asiakasnumero']">
+                <jaxb:property name="huntingClubCode"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_3.1Type']">
+            <jaxb:class name="MooseDataCardSection_3_1"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Päivittäiset_hirvihavainnot']">
+                <jaxb:property name="mooseObservations"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Sivu_4Type']">
+            <jaxb:class name="MooseDataCardPage4"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_4.1']">
+                <jaxb:property name="section_4_1"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Asiakasnumero']">
+                <jaxb:property name="huntingClubCode"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_4.1Type']">
+            <jaxb:class name="MooseDataCardSection_4_1"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Urokset']">
+                <jaxb:property name="mooseMales"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Sivu_5Type']">
+            <jaxb:class name="MooseDataCardPage5"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_5.1']">
+                <jaxb:property name="section_5_1"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Asiakasnumero']">
+                <jaxb:property name="huntingClubCode"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_5.1Type']">
+            <jaxb:class name="MooseDataCardSection_5_1"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Naaraat']">
+                <jaxb:property name="mooseFemales"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Sivu_6Type']">
+            <jaxb:class name="MooseDataCardPage6"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_6.1']">
+                <jaxb:property name="section_6_1"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Asiakasnumero']">
+                <jaxb:property name="huntingClubCode"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_6.1Type']">
+            <jaxb:class name="MooseDataCardSection_6_1"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Vasat']">
+                <jaxb:property name="mooseCalfs"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Sivu_7Type']">
+            <jaxb:class name="MooseDataCardPage7"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_7.1']">
+                <jaxb:property name="section_7_1"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Asiakasnumero']">
+                <jaxb:property name="huntingClubCode"/>
+            </jaxb:bindings>
+
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Esiintyminen']">
+                <jaxb:property name="whiteTailedDeerAppeared"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_MuutoksetExport']">
+                <jaxb:property name="trendOfWhiteTailedDeerPopulationGrowth"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Arvio_yksilömäärästä']">
+                <jaxb:property name="estimatedSpecimenAmountOfWhiteTailedDeer"/>
+            </jaxb:bindings>
+
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Esiintyminen1']">
+                <jaxb:property name="roeDeerAppeared"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_MuutoksetExport1']">
+                <jaxb:property name="trendOfRoeDeerPopulationGrowth"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Arvio_yksilömäärästä1']">
+                <jaxb:property name="estimatedSpecimenAmountOfRoeDeer"/>
+            </jaxb:bindings>
+
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Esiintyminen2']">
+                <jaxb:property name="wildForestReindeerAppeared"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_MuutoksetExport2']">
+                <jaxb:property name="trendOfWildForestReindeerPopulationGrowth"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Arvio_yksilömäärästä2']">
+                <jaxb:property name="estimatedSpecimenAmountOfWildForestReindeer"/>
+            </jaxb:bindings>
+
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Esiintyminen3']">
+                <jaxb:property name="fallowDeerAppeared"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_MuutoksetExport3']">
+                <jaxb:property name="trendOfFallowDeerPopulationGrowth"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Arvio_yksilömäärästä3']">
+                <jaxb:property name="estimatedSpecimenAmountOfFallowDeer"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_7.1Type']">
+            <jaxb:class name="MooseDataCardSection_7_1"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Suurpetohavainnot']">
+                <jaxb:property name="largeCarnivoreObservations"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Sivu_8Type']">
+            <jaxb:class name="MooseDataCardPage8"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_8.1']">
+                <jaxb:property name="section_8_1"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_8.2']">
+                <jaxb:property name="section_8_2"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_8.3']">
+                <jaxb:property name="section_8_3"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_8.4']">
+                <jaxb:property name="section_8_4"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Organisaatiotunnus']">
+                <jaxb:property name="huntingClubCode"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Pyynti_päättynyt']">
+                <jaxb:property name="huntingEndDate"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Vakuutan_tiedot_oikeiksi']">
+                <jaxb:property name="correctnessAssurance"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_8.1Type']">
+            <jaxb:class name="MooseDataCardSection_8_1"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästysalueen_kokonaispinta-ala']">
+                <jaxb:property name="totalHuntingArea"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästykseen_käytetyn_alueen_koko']">
+                <jaxb:property name="effectiveHuntingArea"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästykseen_käytetyn_alueen_koko_2']">
+                <jaxb:property name="effectiveHuntingAreaPercentage"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Koko_metsästysalueelle_jäi_hirviä_yhteensä']">
+                <jaxb:property name="moosesRemainingInTotalHuntingArea"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästykseen_käytetylle_alueelle_jäi_hirviä_yhteensä']">
+                <jaxb:property name="moosesRemainingInEffectiveHuntingArea"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästysalueemme_on']">
+                <jaxb:property name="huntingAreaType"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_8.2Type']">
+            <jaxb:class name="MooseDataCardSection_8_2"/>
+
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Aikuiset_urokset']">
+                <jaxb:property name="numberOfAdultMales"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Aikuiset_naaraat']">
+                <jaxb:property name="numberOfAdultFemales"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Urosvasat']">
+                <jaxb:property name="numberOfYoungMales"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Naarasvasat']">
+                <jaxb:property name="numberOfYoungFemales"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ihmisravinnoksi_kelpaamattom_aikuiset']">
+                <jaxb:property name="totalNumberOfNonEdibleAdults"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ihmisravinnoksi_kelpaamattom_vasat']">
+                <jaxb:property name="totalNumberOfNonEdibleYoungs"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Maksettava_120']">
+                <jaxb:property name="paymentAmountForEdibleAdults"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Maksettava_50']">
+                <jaxb:property name="paymentAmountForEdibleYoungs"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Vähennä_120']">
+                <jaxb:property name="paymentAmountForNonEdibleAdults"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Vähennä_50']">
+                <jaxb:property name="paymentAmountForNonEdibleYoungs"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Yhteensä_maksettavaa']">
+                <jaxb:property name="totalPaymentAmount"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_8.3Type']">
+            <jaxb:class name="MooseDataCardSection_8_3"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Hukkuneet']">
+                <jaxb:property name="numberOfDrownedMooses"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Karhun_tappamat']">
+                <jaxb:property name="numberOfMoosesKilledByBear"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Suden_tappamat']">
+                <jaxb:property name="numberOfMoosesKilledByWolf"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Kolarissa_kuolleet']">
+                <jaxb:property name="numberOfMoosesKilledInTrafficAccident"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Salakaadetut']">
+                <jaxb:property name="numberOfMoosesKilledInPoaching"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Kiimatappelussa_kuolleet']">
+                <jaxb:property name="numberOfMoosesKilledInRutFight"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Nälkiintyneet']">
+                <jaxb:property name="numberOfStarvedMooses"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Muu_syy']">
+                <jaxb:property name="numberOfMoosesDeceasedByOtherReason"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Yhteensä']">
+                <jaxb:property name="totalNumberOfDeceasedMooses"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Muu_syy_2']">
+                <jaxb:property name="explanationForOtherReason"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_8.4Type']">
+            <jaxb:class name="MooseDataCardSection_8_4"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ensimmäiset']">
+                <jaxb:property name="mooseHeatBeginDate"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Viimeiset']">
+                <jaxb:property name="mooseHeatEndDate"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ensimmäiset_2']">
+                <jaxb:property name="mooseFawnBeginDate"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Viimeiset_2']">
+                <jaxb:property name="mooseFawnEndDate"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ensimmäiset_3']">
+                <jaxb:property name="dateOfFirstDeerFlySeen"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Viimeiset_3']">
+                <jaxb:property name="dateOfLastDeerFlySeen"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Aikuisessa']">
+                <jaxb:property name="numberOfAdultMoosesHavingFlies"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Vasassa']">
+                <jaxb:property name="numberOfYoungMoosesHavingFlies"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Alueellamme_esiintyy_hirven_täikärpästä']">
+                <jaxb:property name="deerFlyAppearead"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Määrä']">
+                <jaxb:property name="trendOfDeerFlyPopulationGrowth"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Metsästyspäivien_olosuhdetiedotType']">
+            <jaxb:class name="MooseDataCardHuntingDay"/>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Päivämäärä']">
+                <jaxb:property name="startDate"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästysaika']">
+                <jaxb:property name="huntingTime"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Lumen_syvyys']">
+                <jaxb:property name="snowDepth"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästystapa']">
+                <jaxb:property name="huntingMethod"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästäjiä']">
+                <jaxb:property name="numberOfHunters"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästyskoiria']">
+                <jaxb:property name="numberOfHounds"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_Päivittäiset_hirvihavainnotType']">
+            <jaxb:class name="MooseDataCardObservation"/>
+            <inheritance:implements>fi.riista.feature.huntingclub.moosedatacard.DateAndLocation</inheritance:implements>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_AU']">
+                <jaxb:property name="AU"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_N0']">
+                <jaxb:property name="N0"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_N1']">
+                <jaxb:property name="N1"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_N2']">
+                <jaxb:property name="N2"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_N3']">
+                <jaxb:property name="N3"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_T']">
+                <jaxb:property name="T"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_UroksetType']">
+            <jaxb:class name="MooseDataCardMooseMale"/>
+            <inheritance:implements>fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest</inheritance:implements>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Vasen']">
+                <jaxb:property name="antlerPointsLeft"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Oikea']">
+                <jaxb:property name="antlerPointsRight"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sarvityyppi']">
+                <jaxb:property name="antlersType"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sarvien_kärkiväli']">
+                <jaxb:property name="antlersWidth"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_NaaraatType']">
+            <jaxb:class name="MooseDataCardMooseFemale"/>
+            <inheritance:implements>fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest</inheritance:implements>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_VasatType']">
+            <jaxb:class name="MooseDataCardMooseCalf"/>
+            <inheritance:implements>fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest</inheritance:implements>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sukupuoli']">
+                <jaxb:property name="gender"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:complexType[@name='_SuurpetohavainnotType']">
+            <jaxb:class name="MooseDataCardLargeCarnivoreObservation"/>
+            <inheritance:implements>fi.riista.feature.huntingclub.moosedatacard.DateAndLocation</inheritance:implements>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Susi']">
+                <jaxb:property name="numberOfWolves"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Havaintotyyppi']">
+                <jaxb:property name="observationType"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Lisätiedot']">
+                <jaxb:property name="additionalInfo"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Karhu']">
+                <jaxb:property name="numberOfBears"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ilves']">
+                <jaxb:property name="numberOfLynxes"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ahma']">
+                <jaxb:property name="numberOfWolverines"/>
+            </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:simpleType[@name='_EsiintyminenType']">
+            <jaxb:typesafeEnumClass name="MooseDataCardGameSpeciesAppearance">
+                <jaxb:typesafeEnumMember value="" name="UNDEFINED"/>
+                <jaxb:typesafeEnumMember value="Ei" name="NO"/>
+                <jaxb:typesafeEnumMember value="Kyllä" name="YES"/>
+            </jaxb:typesafeEnumClass>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:simpleType[@name='_Metsästysalueemme_onType']">
+            <jaxb:typesafeEnumClass name="MooseDataCardHarvestAreaType">
+                <jaxb:typesafeEnumMember value="" name="UNDEFINED"/>
+                <jaxb:typesafeEnumMember value="Kesälaidunaluetta" name="SUMMER_PASTURE"/>
+                <jaxb:typesafeEnumMember value="Talvilaidunaluetta" name="WINTER_PASTURE"/>
+                <jaxb:typesafeEnumMember value="Molempia" name="BOTH"/>
+            </jaxb:typesafeEnumClass>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:simpleType[@name='_MääräType']">
+            <jaxb:typesafeEnumClass name="MooseDataCardTrendOfPopulationGrowth">
+                <jaxb:typesafeEnumMember value="" name="UNDEFINED"/>
+                <jaxb:typesafeEnumMember value="vähentynyt" name="DECREASED"/>
+                <jaxb:typesafeEnumMember value="ennallaan" name="UNCHANGED"/>
+                <jaxb:typesafeEnumMember value="lisääntynyt" name="INCREASED"/>
+            </jaxb:typesafeEnumClass>
+        </jaxb:bindings>
+
+    </jaxb:bindings>
+
+    <jaxb:bindings schemaLocation="AdditionalFormData_v1.0.xsd" node="/xsd:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="fi.riista.integration.luke_import.model.v1_0"/>
+        </jaxb:schemaBindings>
+
+        <jaxb:bindings>
+            <namespace:prefix name="addData"/>
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>

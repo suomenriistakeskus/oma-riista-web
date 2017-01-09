@@ -1,0 +1,41 @@
+<h1>
+    Samlicensdeltagarens meddelande om Jaktledare med hjortdjurslicensmottagarens eller licensmottagarens samtycke
+    <br/>
+    {{club}}
+</h1>
+<p>Kundnummer: {{clubCustomerNumber}}</p>
+<p>Gruppen anmäler jaktledarna enligt följande:
+    först kommer jaktledaren och under honom vicejaktledarna.</p>
+
+{{#each groups}}
+    <table width="100%">
+        <thead style="text-align: left; font-size: 120%;">
+        {{#if permitNumber}}
+            <tr>
+                <th colspan="4">Licens: {{permitNumber}}</th>
+            </tr>
+        {{/if}}
+        <tr>
+            <th width="30%">Grupp</th>
+            <th width="35%">Jaktledare</th>
+            <th width="20%">Jägarnummer</th>
+            <th width="15%">Sparats</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#each this.leaders}}
+            <tr>
+                <td>
+                    {{#if @first}}
+                        <strong>{{../nameSwedish}}  ({{../speciesNameSwedish}})</strong>
+                    {{/if}}
+                </td>
+                <td>{{name}}</td>
+                <td>{{hunterNumber}}</td>
+                <td>{{date}}</td>
+            </tr>
+        {{/each}}
+        </tbody>
+    </table>
+    <br/>
+{{/each}}

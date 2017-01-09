@@ -1,0 +1,31 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" ng-submit="ok(reason)">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="harvestreport.admin.reasonTitle"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="reason" class="col-xs-3 control-label">
+                <span translate="harvestreport.admin.reason"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <input type="text" name="reason" id="reason"
+                       class="form-control"
+                       ng-model="reason" />
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="!reason"
+                translate="global.button.ok"></button>
+    </div>
+</form>

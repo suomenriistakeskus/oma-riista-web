@@ -1,0 +1,76 @@
+<h3 class="text-center">Seurojen haltuunoton eteneminen</h3>
+
+<form class="buttons">
+    <button class="btn btn-primary"
+            ng-show="ctrl.isBackLinkVisible()"
+            ng-click="ctrl.showFinland()">
+        <span class="glyphicon glyphicon-arrow-left"></span> Suomi
+    </button>
+
+    <button type="button" class="btn btn-default pull-right"
+            ng-click="ctrl.toggleShowPermitHolders()">
+        <span ng-show="!ctrl.showPermitHolders()">Näytä myös luvansaajat</span>
+        <span ng-show="ctrl.showPermitHolders()">Piilota luvansaajat</span>
+    </button>
+</form>
+
+<div class="row">
+    <ul class="nav nav-pills nav-justified">
+        <li>
+            <span class="label label-club1">&nbsp;</span>
+            Seura haltuunotettu
+        </li>
+        <li>
+            <span class="label label-club2">&nbsp;</span>
+            Alue määritelty
+        </li>
+        <li>
+            <span class="label label-club3">&nbsp;</span>
+            Jäseniä kutsuttu
+        </li>
+        <li>
+            <span class="label label-club4">&nbsp;</span>
+            Ryhmä luotu
+        </li>
+        <li>
+            <span class="label label-club5">&nbsp;</span>
+            Metsästyksenjohtaja määritetty
+        </li>
+    </ul>
+</div>
+<div class="row" ng-repeat="row in ::ctrl.statistics track by row.organisation.id">
+    <div class="col-xs-3 text-right">
+        <button class="btn btn-link"
+                ng-click="ctrl.showRka(row.organisation)"
+                ng-disabled="!ctrl.isOrganisationLinkClickable(row)">
+            <span ng-if="!row.organisation">Kaikki</span>
+            <span ng-if="row.organisation" ng-bind="::(row.organisation | rI18nNameFilter)"></span>
+            <span ng-bind="::(ctrl.printClubRegistrationPercentage(row) | number:1)"></span> %
+        </button>
+    </div>
+
+    <div class="col-xs-7">
+        <uib-progress max="::ctrl.getRowMax(row)">
+            <uib-bar type="club1" value="::row.countRegistered" uib-tooltip="Seura haltuunotettu {{::row.countRegistered}}">
+                <span ng-hide="::ctrl.hideBarLabel(row, row.countRegistered)">{{ ::row.countRegistered }}</span>
+            </uib-bar>
+            <uib-bar type="club2" value="::row.countAreaDefined" uib-tooltip="Alue määritelty {{::row.countAreaDefined}}">
+                <span ng-hide="::ctrl.hideBarLabel(row, row.countAreaDefined)">{{ ::row.countAreaDefined }}</span>
+            </uib-bar>
+            <uib-bar type="club3" value="::row.countMemberInvited" uib-tooltip="Jäseniä kutsuttu {{::row.countMemberInvited}}">
+                <span ng-hide="::ctrl.hideBarLabel(row, row.countMemberInvited)">{{ ::row.countMemberInvited }}</span>
+            </uib-bar>
+            <uib-bar type="club4" value="::row.countGroupCreated" uib-tooltip="Ryhmä luotu {{::row.countGroupCreated}}">
+                <span ng-hide="::ctrl.hideBarLabel(row, row.countGroupCreated)">{{ ::row.countGroupCreated }}</span>
+            </uib-bar>
+            <uib-bar type="club5" value="::row.countGroupLeaderSelect" uib-tooltip="Metsästyksenjohtaja määritelty {{::row.countGroupLeaderSelect}}">
+                <span ng-hide="::ctrl.hideBarLabel(row, row.countGroupLeaderSelect)">{{ ::row.countGroupLeaderSelect }}</span>
+            </uib-bar>
+        </uib-progress>
+    </div>
+
+    <div class="col-xs-2">
+        <span ng-bind="::ctrl.printClubRegistrationRatio(row)"></span>
+
+    </div>
+</div>

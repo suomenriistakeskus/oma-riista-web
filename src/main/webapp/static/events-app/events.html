@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.5.1/moment.min.js"></script>
+       <style>
+        #search-form {
+            float: left;
+            margin-right: 10px;
+        }
+        #search-form select {
+            width: 250px;
+        }
+        #search-form input[type="text"] {
+            width: 100px;
+        }
+        #map-container {
+            float: left;
+        }
+        #search-results-container {
+            clear: both;
+        }
+        #search-results-container table td {
+            vertical-align: top;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+
+<script type="text/javascript" src="events-app.js"></script>
+<script type="text/javascript" src="../maps/image-maps.js"></script>
+<script type="text/javascript">
+    /*
+     * WordPress compatible jQuery "no conflict" wrapper.
+     */
+    jQuery(document).ready(function() {
+        var options = {
+            backendUrl: "/api/v1/anon",
+            formSelector: "#search-form",
+            areaSelector: "#area-selection",
+            rhySelector: "#rhy-selection",
+            eventSelector: "#event-selection",
+            eventStartDateSelector: "#event-start-date",
+            eventEndDateSelector: "#event-end-date",
+            mapContainerSelector: "#map-container",
+            searchResultsSelector: "#search-results-container",
+            searchLimit: 200,
+            lang: "fi",
+            translations: {
+                "all": "kaikki",
+                "tooManyResults": "Hakusi tuotti liikaa tuloksia, tarkenna hakua.",
+                "noResults": "Ei tuloksia.",
+                "datesAreRequired": "Anna aikav&auml;li!"
+            },
+            evenColor: '#fff',
+            oddColor: '#eee'
+        };
+        var app = new EventsApp(options);
+        app.start();
+    });
+</script>
+
+<form id="search-form">
+    <h4>Valitse alue</h4>
+    <select id="area-selection"></select>
+
+    <h4>Valitse riistanhoitoyhdistys</h4>
+    <select id="rhy-selection"></select>
+
+    <h4>Valitse tapahtuma</h4>
+    <select id="event-selection"></select>
+    <h4>Valitse aikav&auml;li</h4>
+    <input type="text" id="event-start-date"/> - <input type="text" id="event-end-date"/>
+    <br/><br/>
+    <input type="submit" value="Hae"/>
+</form>
+<div id="map-container"></div>
+<div id="search-results-container"></div>
+
+</body>
+</html>

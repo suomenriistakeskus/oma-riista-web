@@ -1,0 +1,135 @@
+<table class="table table-condensed table-striped moose-permit-infotable-hunting">
+    <thead>
+    <tr class="topheader">
+        <th colspan="1"></th>
+        <th colspan="1"><r-with-tooltip content-key="club.permit.allocation.huntingFinished.top" tooltip-key="club.permit.allocation.huntingFinished.topTooltip"/></th>
+        <th colspan="1"><r-with-tooltip content-key="club.permit.allocation.latestUpdate.top" tooltip-key="club.permit.allocation.latestUpdate.topTooltip"/></th>
+        <th colspan="1"><r-with-tooltip content-key="club.permit.allocation.sumOfAllocated.top" tooltip-key="club.permit.allocation.sumOfAllocated.topTooltip"/></th>
+        <th colspan="3"><r-with-tooltip content-key="club.permit.allocation.huntingPlan.top" tooltip-key="club.permit.allocation.huntingPlan.topTooltip"/></th>
+        <th colspan="1"><r-with-tooltip content-key="club.permit.allocation.usedPermits.top" tooltip-key="club.permit.allocation.usedPermits.topTooltip"/></th>
+        <th colspan="6"><r-with-tooltip content-key="club.permit.allocation.harvestedSpecimens.top" tooltip-key="club.permit.allocation.harvestedSpecimens.topTooltip"/></th>
+        <th colspan="2"><r-with-tooltip content-key="club.permit.allocation.notEdible.top" tooltip-key="club.permit.allocation.notEdible.topTooltip"/></th>
+        <th colspan="2"><r-with-tooltip content-key="club.permit.allocation.remaining.top" tooltip-key="club.permit.allocation.remaining.topTooltip"/></th>
+    </tr>
+    <tr class="lowheader">
+        <th translate="club.permit.allocation.partner"></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.huntingFinished.low" tooltip-key="club.permit.allocation.huntingFinished.lowTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.latestUpdate.low" tooltip-key="club.permit.allocation.latestUpdate.lowTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.sumOfAllocated.low" tooltip-key="club.permit.allocation.sumOfAllocated.lowTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.huntingPlan.au" tooltip-key="club.permit.allocation.huntingPlan.auTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.huntingPlan.an" tooltip-key="club.permit.allocation.huntingPlan.anTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.huntingPlan.v" tooltip-key="club.permit.allocation.huntingPlan.vTooltip"/></th>
+
+        <th><r-with-tooltip content-key="club.permit.allocation.usedPermits.low" tooltip-key="club.permit.allocation.usedPermits.lowTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.harvestedSpecimens.a" tooltip-key="club.permit.allocation.harvestedSpecimens.aTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.harvestedSpecimens.au" tooltip-key="club.permit.allocation.harvestedSpecimens.auTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.harvestedSpecimens.an" tooltip-key="club.permit.allocation.harvestedSpecimens.anTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.harvestedSpecimens.v" tooltip-key="club.permit.allocation.harvestedSpecimens.vTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.harvestedSpecimens.vu" tooltip-key="club.permit.allocation.harvestedSpecimens.vuTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.harvestedSpecimens.vn" tooltip-key="club.permit.allocation.harvestedSpecimens.vnTooltip"/></th>
+
+        <th><r-with-tooltip content-key="club.permit.allocation.notEdible.a" tooltip-key="club.permit.allocation.notEdible.aTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.notEdible.v" tooltip-key="club.permit.allocation.notEdible.vTooltip"/></th>
+
+        <th><r-with-tooltip content-key="club.permit.allocation.remaining.total" tooltip-key="club.permit.allocation.remaining.totalTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.remaining.effective" tooltip-key="club.permit.allocation.remaining.effectiveTooltip"/></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="summary">
+        <td translate="club.permit.sumTitle"></td>
+
+        <td><!-- hunting end date for summary row is empty --></td>
+        <td><r-with-tooltip content-val="{{permit.totalStatistics.latestUpdate | date:'dd.M.yyyy'}}" tooltip-key="club.permit.allocation.latestUpdate.cellTooltip"/></td>
+        <td><r-with-tooltip bind-content="{{permitAllocated | number}}" tooltip-key="club.permit.allocation.sumOfAllocated.cellTooltip"/></td>
+        <td><r-with-tooltip bind-content="{{countAllocatedBy('adultMales')}}" tooltip-key="club.permit.allocation.huntingPlan.auCellTooltip"/></td>
+        <td><r-with-tooltip bind-content="{{countAllocatedBy('adultFemales')}}" tooltip-key="club.permit.allocation.huntingPlan.anCellTooltip"/></td>
+        <td><r-with-tooltip bind-content="{{countAllocatedBy('young')}}" tooltip-key="club.permit.allocation.huntingPlan.vCellTooltip"/></td>
+
+        <td><r-with-tooltip content-val="{{countHarvestsBy('adult') + 0.5 * countHarvestsBy('young') | number}}" tooltip-key="club.permit.allocation.usedPermits.cellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{countHarvestsBy('adult')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.aCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{countHarvestsBy('adultMales')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.auCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{countHarvestsBy('adultFemales')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.anCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{countHarvestsBy('young')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{countHarvestsBy('youngMales')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vuCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{countHarvestsBy('youngFemales')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vnCellTooltip"/></td>
+
+        <td><r-with-tooltip content-val="{{countHarvestsBy('adultsNotEdible')}}" tooltip-key="club.permit.allocation.notEdible.aCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{countHarvestsBy('youngsNotEdible')}}" tooltip-key="club.permit.allocation.notEdible.vCellTooltip"/></td>
+
+        <td><r-with-tooltip content-val="{{countSummaryForPartnersTable('remainingPopulationInTotalArea')}}" tooltip-key="club.permit.allocation.remaining.totalCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{countSummaryForPartnersTable('remainingPopulationInEffectiveArea')}}" tooltip-key="club.permit.allocation.remaining.effectiveCellTooltip"/></td>
+    </tr>
+    <tr ng-repeat="a in allocations" ng-class="{'current-club': isCurrentClub(a)}">
+        <td>
+            <div>
+                <moose-permit-todo todo="todos[a.huntingClubId]"></moose-permit-todo>
+                <span name-translated="a.huntingClubName"></span>
+                <span class="pull-right" ng-if="::(permit.summaryForPartnersTable[a.huntingClubId].fromMooseDataCard)"
+                      uib-tooltip="{{ 'club.permit.allocation.fromMooseDataCard' | translate }}" tooltip-popup-delay="0" tooltip-placement="right">
+                    <span class="fa fa-file-text"></span>
+                </span>
+            </div>
+        </td>
+        <td><r-with-tooltip content-val="{{(permit.summaryForPartnersTable[a.huntingClubId].huntingEndDate | date:'dd.M.yyyy') || '-'}}"
+                            tooltip-key="club.permit.allocation.huntingFinished.cellTooltip"/>
+        </td>
+        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].latestUpdate | date:'dd.M.yyyy') || '-'}}" tooltip-key="club.permit.allocation.latestUpdate.cellTooltip"/></td>
+        <td><r-with-tooltip bind-content="{{a.total | number}}" tooltip-key="club.permit.allocation.sumOfAllocated.cellTooltip"/></td>
+        <td>
+            <span ng-if="!isEditingAllocations()"><r-with-tooltip content-val="{{a.adultMales}}" tooltip-key="club.permit.allocation.huntingPlan.auCellTooltip"/></span>
+
+            <div ng-if="isEditingAllocations()" class="form-group" show-errors>
+                <input type="number" ng-pattern="/^[0-9]*$/" min="0" max="{{floor(permitUnallocated + a.adultMales)}}"
+                       name="adultMales{{$index}}"
+                       class="form-control input-sm"
+                       ng-change="recalculate()"
+                       ng-model="a.adultMales">
+            </div>
+        </td>
+        <td>
+            <span ng-if="!isEditingAllocations()"><r-with-tooltip content-val="{{a.adultFemales}}" tooltip-key="club.permit.allocation.huntingPlan.anCellTooltip"/></span>
+
+            <div ng-if="isEditingAllocations()" class="form-group" show-errors>
+                <input type="number" ng-pattern="/^[0-9]*$/" min="0" max="{{floor(permitUnallocated + a.adultFemales)}}"
+                       name="adultFemales{{$index}}"
+                       class="form-control input-sm"
+                       ng-change="recalculate()"
+                       ng-model="a.adultFemales">
+            </div>
+        </td>
+        <td>
+            <span ng-if="!isEditingAllocations()"><r-with-tooltip content-val="{{a.young}}" tooltip-key="club.permit.allocation.huntingPlan.vCellTooltip"/></span>
+
+            <div ng-if="isEditingAllocations()" class="form-group" show-errors>
+                <input type="number" ng-pattern="/^[0-9]*$/" min="0" max="{{floor(permitUnallocated * 2 + a.young)}}" name="young{{$index}}"
+                       class="form-control input-sm"
+                       ng-change="recalculate()"
+                       ng-model="a.young">
+            </div>
+        </td>
+        <td>
+            <r-with-tooltip content-val="{{
+                    permit.harvestCounts[a.huntingClubId].adultMales
+                    + permit.harvestCounts[a.huntingClubId].adultFemales
+                    + 0.5 * (
+                      permit.harvestCounts[a.huntingClubId].youngMales
+                      + permit.harvestCounts[a.huntingClubId].youngFemales) | number
+                }}" tooltip-key="club.permit.allocation.usedPermits.cellTooltip"/>
+        </td>
+        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].adultMales + permit.harvestCounts[a.huntingClubId].adultFemales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.aCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].adultMales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.auCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].adultFemales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.anCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].youngMales + permit.harvestCounts[a.huntingClubId].youngFemales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].youngMales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vuCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].youngFemales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vnCellTooltip"/></td>
+
+        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].adultsNotEdible}}" tooltip-key="club.permit.allocation.notEdible.aCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].youngsNotEdible}}" tooltip-key="club.permit.allocation.notEdible.vCellTooltip"/></td>
+
+        <td><r-with-tooltip content-val="{{permit.summaryForPartnersTable[a.huntingClubId].remainingPopulationInTotalArea || '-'}}" tooltip-key="club.permit.allocation.remaining.totalCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.summaryForPartnersTable[a.huntingClubId].remainingPopulationInEffectiveArea || '-'}}" tooltip-key="club.permit.allocation.remaining.effectiveCellTooltip"/></td>
+    </tr>
+
+    </tbody>
+</table>

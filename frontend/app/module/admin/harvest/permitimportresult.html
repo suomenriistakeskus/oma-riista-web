@@ -1,0 +1,28 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="Lupien import tulos"></h3>
+</div>
+
+<div class="modal-body">
+    <div class="alert alert-warning" ng-show="!ok">
+        Lupien importissa tapahtui virhe, tarkista että CSV tiedostossa on oikea määrä sarakkeita.
+    </div>
+    <div class="alert alert-info" ng-show="ok && !errors">
+        Lupien importissa luotiin tai muokattiin {{modifiedOrAddedCount}} lupaa.
+    </div>
+    <div class="alert alert-warning" ng-show="ok && errors">
+        Lupien import tiedostossa on seuraavat virheet:<br>
+        <div ng-repeat="error in errors track by $index">
+            Rivi:{{error.row}} Lupanumero:{{error.permitNumber}} Virheet:<br>
+            <span ng-repeat="e in error.errors  track by $index">&nbsp; {{e}} <br></span>
+            <br>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal-footer">
+    <button type="submit" class="btn btn-primary"
+            ng-click="$close()"
+            translate="global.button.close"></button>
+</div>

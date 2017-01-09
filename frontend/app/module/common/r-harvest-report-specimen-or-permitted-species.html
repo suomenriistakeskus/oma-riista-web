@@ -1,0 +1,18 @@
+
+<span ng-if="::report.endOfHuntingReport">
+    <div ng-repeat="s in report.permittedSpecies">
+        <span name-translated="s.name"></span>
+    </div>
+</span>
+
+<span ng-if="::!report.endOfHuntingReport">
+    <span ng-if="report.fields" name-translated="report.fields.species.name"></span>
+    <span ng-if="report.gameSpecies" name-translated="report.gameSpecies.name"></span>
+    <br/>
+    <span ng-if="::report.gender">
+        {{ ::('harvestreport.gender.'+report.gender | translate) }}
+    </span><br/>
+    <span ng-if="::report.age">
+        {{ ::('harvestreport.age.'+report.age | translate) }}
+    </span>
+</span>

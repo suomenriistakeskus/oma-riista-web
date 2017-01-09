@@ -1,0 +1,58 @@
+<p>
+    {{author.firstName}} {{author.lastName}} <br />
+    {{author.address.streetAddress}} <br />
+    {{author.address.postalCode}} {{author.address.city}} <br />
+    Puhelin: {{author.phoneNumber}} <br />
+    Sähköposti: {{author.email}} <br />
+</p>
+
+<h1>SUOMEN RIISTAKESKUS</h1>
+
+<h2>Luvan numero: {{permit.permitNumber}}</h2>
+
+<h2>ILMOITUS PYYNNIN TULOKSESTA</h2>
+
+<p>Luvan {{permit.permitNumber}} metsästys ilmoitetaan päättyneeksi.</p>
+{{#if noHarvest}}
+<p>Ei saaliita.</p>
+{{else}}
+<p>
+    Myönnetyllä luvalla on saatu saalista seuraavasti:
+
+    <h3>Yhteenveto</h3>
+
+    <table border="1">
+        <thead>
+        <th></th>
+        <th></th>
+        <th colspan=3>Sukupuoli</th>
+        <th colspan=3>Ikä</th>
+        </thead>
+        <thead>
+        <th>Laji</th>
+        <th>Määrä</th>
+        <th>Naaras</th>
+        <th>Uros</th>
+        <th>Tuntematon</th>
+        <th>Aikuinen</th>
+        <th>Alle 1v</th>
+        <th>Tuntematon</th>
+        </thead>
+        <tbody>{{#each summaries}}
+            <tr>
+                <td>{{@key.nameFinnish}}</td>
+                <td>{{total}}</td>
+                <td>{{genderFemale}}</td>
+                <td>{{genderMale}}</td>
+                <td>{{genderUnknown}}</td>
+                <td>{{ageAdult}}</td>
+                <td>{{ageYoung}}</td>
+                <td>{{ageUnknown}}</td>
+            </tr>{{/each}}
+        </tbody>
+    </table>
+</p>
+{{/if}}
+<p>
+    (Viestin tunnistetiedot: {{timestamp timestamp "dd.MM.yyyy HH:mm:ss"}}, id={{id}}, revision={{rev}}, state={{state}}, c={{createdByUserId}}, m={{modifiedByUserId}})
+</p>

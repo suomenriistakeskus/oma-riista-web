@@ -1,0 +1,11 @@
+<h2 class="r-page-context-heading text-center" translate="account.roleselection.title"></h2>
+
+<div class="container-transparent text-center">
+    <a class="r-roleselection"
+       ng-repeat="role in $ctrl.availableRoles"
+       ng-click="$ctrl.selectRole(role)">
+        <h5>{{ 'global.role.' + role.type | translate}}</h5>
+        <span class="organisation-name r-wordwrap"
+              ng-bind="$ctrl.getRoleDisplayName(role) | uppercase"></span>
+    </a>
+</div>

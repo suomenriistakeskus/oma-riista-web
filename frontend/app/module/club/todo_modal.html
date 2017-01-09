@@ -1,0 +1,45 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" ng-submit="$ctrl.$close()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <div class="modal-title h3" translate="club.todo.title"></div>
+    </div>
+
+    <div class="modal-body">
+        <div class="r-club-hunting-reminder-message" translate="club.todo.message"></div>
+
+        <div ng-if="$ctrl.todos.areaMissing" class="r-club-hunting-reminder-item">
+            <div translate="club.todo.area.message"></div>
+            <button class="btn btn-primary"
+                    translate="club.todo.area.button"
+                    ng-click="$ctrl.fixAreaMissing()"></button>
+        </div>
+        <div ng-if="$ctrl.todos.groupMissing" class="r-club-hunting-reminder-item">
+            <div translate="club.todo.group.message"></div>
+            <button class="btn btn-primary"
+                    translate="club.todo.group.button"
+                    ng-disabled="$ctrl.todos.areaMissing"
+                    ng-click="$ctrl.fixGroupMissing()"></button>
+        </div>
+        <div ng-if="$ctrl.todos.groupPermitMissing" class="r-club-hunting-reminder-item">
+            <div translate="club.todo.groupPermit.message"></div>
+            <button class="btn btn-primary"
+                    translate="club.todo.groupPermit.button"
+                    ng-disabled="$ctrl.todos.groupMissing"
+                    ng-click="$ctrl.fixGroupPermitMissing()"></button>
+        </div>
+        <div ng-if="$ctrl.todos.groupLeaderMissing" class="r-club-hunting-reminder-item">
+            <div translate="club.todo.groupLeader.message"></div>
+            <button class="btn btn-primary"
+                    translate="club.todo.groupLeader.button"
+                    ng-disabled="$ctrl.todos.groupMissing"
+                    ng-click="$ctrl.fixGroupLeaderMissing()"></button>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.$dismiss()"
+                translate="global.button.close"></button>
+    </div>
+</form>

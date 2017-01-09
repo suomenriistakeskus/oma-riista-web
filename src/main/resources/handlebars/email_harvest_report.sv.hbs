@@ -1,0 +1,45 @@
+<pre>
+{{author.firstName}} {{author.lastName}}
+{{author.address.streetAddress}}
+{{author.address.postalCode}} {{author.address.city}}
+Telefon: {{author.phoneNumber}}
+E-post: {{author.email}}
+
+FINLANDS VILTCENTRAL
+{{#if permit}}
+Dispens nummer: {{permit.permitNumber}}
+{{/if}}
+MEDDELANDE OM JAKTENS RESULTAT
+{{#if permit}}
+Med beviljad dispens har byte erhållits enligt följande:
+{{/if}}
+{{toUpperCase species.name.sv}}
+
+Specifikation av djuret som erhållits som byte:
+Fångsttid: {{timestamp pointOfTime "dd.MM.yyyy HH:mm"}}
+Fångstplatsens koordinater: {{geoLocation.latitude}} {{geoLocation.longitude}} ETRS-TM35FIN
+Fastighetsbetecking: {{propertyIdentifier.delimitedValue}}
+{{#if quotaArea}}Kvotområde: {{quotaArea.nameSV}}{{/if}}
+{{#if rka}}Viltcentralens område: {{rka.nameSV}}{{/if}}
+{{#if rhy}}Jaktvårdsförening: {{rhy.nameSV}}{{/if}}
+{{#if huntingAreaType}}Fångstområde: {{i18n (enumName huntingAreaType) locale="sv"}}{{/if}}
+{{#if huntingParty}}Jaktföreningens/-sällskapets område, där bytet erhållits: {{huntingParty}}{{/if}}
+{{#if huntingAreaSize}}Jaktföreningens/-sällskapets område, där bytet erhölls: {{number huntingAreaSize "#.##" locale="sv"}} ha{{/if}}
+{{#if huntingMethod}}Jaktmetod: {{i18n (enumName huntingMethod) locale="sv"}}{{/if}}
+{{#if reportedWithPhoneCall}}Har ni anmält till bytestelefon också? {{i18n (boolName reportedWithPhoneCall) locale="sv"}}{{/if}}
+
+Uppgifter om djuret
+{{#if gender}}Kön: {{i18n (enumName gender) locale="sv"}}{{/if}}
+{{#if age}}Ålder: {{i18n (enumName age) locale="sv"}}{{/if}}
+{{#if weight}}Vikt: {{number weight "#.###" locale="sv"}} kg{{/if}}
+
+Fälld av:
+{{hunter.firstName}} {{hunter.lastName}}
+{{hunter.address.streetAddress}}
+{{hunter.address.postalCode}} {{hunter.address.city}}
+
+{{#if permit}}Anvisning: Detta bekräftelsemeddelande ska som sådant sändas vidare till polisen och för övriga myndigheter nämnda i
+dispensen senast den första vardagen efter, det att i dispensen avsett vilt har fällts.{{/if}}
+
+(Meddelandets identifikationsuppgifter: {{timestamp timestamp "dd.MM.yyyy HH:mm:ss"}}, id={{id}}, revision={{rev}}, state={{state}}, c={{createdByUserId}}, m={{modifiedByUserId}})
+</pre>

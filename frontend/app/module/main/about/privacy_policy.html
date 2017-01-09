@@ -1,0 +1,10 @@
+<!-- Prevent margin from collapsing -->
+<div>&nbsp;</div>
+
+<h2 class="r-page-context-heading text-center" translate="global.about.privacyPolicy"></h2>
+
+<div class="container">
+    <p ng-if="!authenticated"><a ui-sref="login" translate="global.toFrontpage"></a></p>
+
+    <div class="small text-muted" ng-include="'global.about.privacyPolicyContentPath' | translate | withVersion"></div>
+</div>

@@ -1,0 +1,10 @@
+<li class="r-main-search">
+    <a class="r-main-search-title"
+       ng-disabled="!$ctrl.activeSearch"
+       ng-click="$ctrl.activeSearchClicked()">
+        <span>{{$ctrl.activeSearch.title || ('global.menu.search' | translate)}}</span>
+    </a>
+    <input type="hidden"
+           ui-select2="$ctrl.select2Options"
+           ng-model="$ctrl.searchModel">
+</li>

@@ -1,0 +1,363 @@
+<div class="row">
+    <div class="col-md-5">
+        <h2>Käyttäjät</h2>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <td><span ng-if="!metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
+                <td>Rekisteröitynyt (Salasana)</td>
+                <td>Kaikki</td>
+            </tr>
+            </thead>
+            <tr>
+                <td class="col-sm-6">Henkilöitä</td>
+                <td class="col-sm-6 text-center">{{metrics.countNormalUser}}</td>
+                <td class="col-sm-6 text-center">{{metrics.countPerson}}</td>
+            </tr>
+
+            <tr>
+                <td>Henkilöitä joilla voimassaoleva tehtävä organisaatiossa</td>
+                <td class="text-center">{{metrics.countNormalUserWithOccupationAndPassword}}</td>
+                <td class="text-center">{{metrics.countAllPeopleWithOccupation}}</td>
+            </tr>
+
+            <tr>
+                <td>Moderaattoreita</td>
+                <td class="text-center">{{metrics.countModeratorWithPassword}}</td>
+                <td class="text-center">{{metrics.countAllModerators}}</td>
+            </tr>
+
+            <tr>
+                <td>Toiminnanohjaajia</td>
+                <td class="text-center">{{metrics.countRHYToiminnanohjaajaWithPassword}}</td>
+                <td class="text-center">{{metrics.countAllRHYToiminnanohjaaja}}</td>
+            </tr>
+        </table>
+
+        <h2>PDF lataukset</h2>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <td><span ng-if="!metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
+                <td>käyttäjiä</td>
+                <td>latauksia</td>
+            </tr>
+            </thead>
+            <tr>
+                <td>Metsästyskortti</td>
+                <td>{{metrics.countPdfCertificateUsers}}</td>
+                <td>{{metrics.countPdfCertificateDownloads}}</td>
+            </tr>
+            <tr>
+                <td>Todistus ulkomailla metsästystä varten</td>
+                <td>{{metrics.countForeignPdfCertificateUsers}}</td>
+                <td>{{metrics.countForeignPdfCertificateDownloads}}</td>
+            </tr>
+            <tr>
+                <td>Riistanhoitomaksun tilisiirtolomake</td>
+                <td>{{metrics.countHunterPaymentPdfUsers}}</td>
+                <td>{{metrics.countHunterPaymentPdfDownloads}}</td>
+            </tr>
+        </table>
+
+        <h2>Hirvieläinten metsästys kuluvana metsästysvuonna</h2>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <td>laji</td>
+                    <td>saalis&shy;yksilöitä</td>
+                    <td>havainto&shy;yksilöitä</td>
+                    <td>lupa auki</td>
+                    <td>lupa suljettu (massa&shy;tallennuksella)</td>
+                    <td>HTK-ryhmien määrä</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="c in metrics.mooselikeHuntingMetrics">
+                    <td>{{c.speciesName}}</td>
+                    <td>{{c.harvestCount}}</td>
+                    <td>{{c.observationCount}}</td>
+                    <td>{{c.openPermitCount}}</td>
+                    <td>{{c.closedPermitCount}}&nbsp;&nbsp;({{c.moderatorClosedPermitCount}})</td>
+                    <td>{{c.mooseDataCardGroupCount}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-6 col-md-offset-1">
+        <h2>Saaliskirjaukset ja -ilmoitukset</h2>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <td><span ng-if="!metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
+                <td>kirjauksia</td>
+                <td>yksilöitä</td>
+            </tr>
+            </thead>
+
+            <tr>
+                <td>Havaintokirjauksia yhteensä</td>
+                <td>{{metrics.countObservation}}</td>
+                <td>{{metrics.countObservationSpecimens}}</td>
+            </tr>
+
+            <tr>
+                <td>Havaintokirjauksia mobiilissa</td>
+                <td>{{metrics.countObservationFromMobile}}</td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>Havaintokirjauksia webissä</td>
+                <td>{{metrics.countObservationFromWeb}}</td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>Saaliskirjauksia yhteensä</td>
+                <td>{{metrics.countHarvest}}</td>
+                <td>{{metrics.countHarvestSpecimens}}</td>
+            </tr>
+
+            <tr>
+                <td>Saaliskirjauksia mobiilissa</td>
+                <td>{{metrics.countHarvestFromMobile}}</td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>Saaliskirjauksia webissä</td>
+                <td>{{metrics.countHarvestFromWeb}}</td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>Saalisilmoituksia hyväksytty / yhteensä</td>
+                <td>{{metrics.countHarvestReportApproved}} / {{metrics.countHarvestReport}}</td>
+            </tr>
+        </table>
+
+        <h2>SRVA-tapahtumat</h2>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <td><span ng-if="!metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
+                <td>kirjauksia</td>
+                <td>yksilöitä</td>
+            </tr>
+            </thead>
+
+            <tr>
+                <td>SRVA-kirjauksia yhteensä</td>
+                <td>{{metrics.countSrvaEvent}}</td>
+                <td>{{metrics.countSrvaEventSpecimen}}</td>
+            </tr>
+
+            <tr>
+                <td>SRVA-kirjauksia kesken</td>
+                <td>{{metrics.countSrvaEventUnfinished}}</td>
+                <td>{{metrics.countSrvaEventSpecimenUnfinished}}</td>
+            </tr>
+
+            <tr>
+                <td>SRVA-kirjauksia hyväksytty</td>
+                <td>{{metrics.countSrvaEventApproved}}</td>
+                <td>{{metrics.countSrvaEventSpecimenApproved}}</td>
+            </tr>
+
+            <tr>
+                <td>SRVA-kirjauksia hylätty</td>
+                <td>{{metrics.countSrvaEventRejected}}</td>
+                <td>{{metrics.countSrvaEventSpecimenRejected}}</td>
+            </tr>
+
+            <tr>
+                <td>SRVA-kirjauksia mobiilissa</td>
+                <td>{{metrics.countSrvaEventFromMobile}}</td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>SRVA-kirjauksia webissä</td>
+                <td>{{metrics.countSrvaEventFromWeb}}</td>
+                <td></td>
+            </tr>
+        </table>
+
+        <button type="button"
+                class="btn btn-primary"
+                ng-click="openEmailDialog()">Lähetä joukkoviesti rekisteröityneille
+        </button>
+    </div>
+</div>
+
+<hr>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Hyväksytyt saalisilmoitukset</h2>
+
+        <div class="form-group">
+            <div class="col-xs-2">
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="beginDate" id="beginDate"
+                           class="form-control r-wider-date-input"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           max-date="formDates.harvest.end"
+                           ng-model="formDates.harvest.begin"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                </div>
+            </div>
+            <div class="col-xs-2">
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="endDate" id="endDate"
+                           class="form-control r-wider-date-input"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           min-date="formDates.harvest.begin"
+                           ng-model="formDates.harvest.end"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                </div>
+            </div>
+            <div class="col-xs-8">
+                <form action="/api/v1/admin/harvestreportmetrics/excel" method="POST">
+                    <span class="btn btn-primary" ng-click="updateResolvedHarvestReportMetrics()">Päivitä</span>
+
+                    <input type="hidden" name="begin" value="{{postParams.harvest.begin}}"/>
+                    <input type="hidden" name="end" value="{{postParams.harvest.end}}"/>
+                    <input type="hidden" spring-csrf-cookie/>
+
+                    <button type="submit" class="btn btn-primary" ng-show="resolvedHarvestReportMetrics">
+                        <span class="glyphicon glyphicon-search"></span> &nbsp;
+                        <span translate="reporting.common.toExcel"></span>
+                    </button>
+
+                    <span ng-if="reportsInProgress" class="fa fa-refresh fa-spin fa-lg"></span>
+                </form>
+            </div>
+        </div>
+
+        <table class="table table-bordered table-striped table-condensed" ng-show="resolvedHarvestReportMetrics">
+            <thead>
+            <tr>
+                <th>Alue</th>
+                <th>Eläin</th>
+                <th>Lupatyyppi</th>
+                <th>Lupatyypin<br/> tunniste</th>
+                <th>Kausi</th>
+                <th>Lupa</th>
+                <th>Käyttäjien<br/> lisäämiä</th>
+                <th>Ylläpidon<br/> lisäämiä</th>
+                <th>Ilmoituksia<br/> yhteensä</th>
+            </tr>
+            </thead>
+            <tr ng-repeat="row in resolvedHarvestReportMetrics">
+                <td>{{row.rka}}</td>
+                <td>{{row.species}}</td>
+                <td>{{row.permitType}}</td>
+                <td>{{row.permitTypeCode}}</td>
+                <td><span ng-show="row.season">X</span></td>
+                <td><span ng-show="row.permit">X</span></td>
+                <td>{{row.userCount}}</td>
+                <td>{{row.moderatorCount}}</td>
+                <td>{{row.reportsTotal}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<hr>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>RHY tietojen muokkaukset</h2>
+
+        <div class="form-group">
+            <div class="col-xs-2">
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="beginDate" id="beginDate2"
+                           class="form-control r-wider-date-input"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           max-date="formDates.rhy.end"
+                           ng-model="formDates.rhy.begin"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                </div>
+            </div>
+            <div class="col-xs-2">
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="endDate" id="endDate2"
+                           class="form-control r-wider-date-input"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           min-date="formDates.rhy.begin"
+                           ng-model="formDates.rhy.end"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                </div>
+            </div>
+            <div class="col-xs-8">
+                <form action="/api/v1/admin/rhyeditmetrics/excel" method="POST">
+                    <span class="btn btn-primary" ng-click="updateResolvedRhyEditMetrics()">Päivitä</span>
+
+                    <input type="hidden" name="begin" value="{{postParams.rhy.begin}}"/>
+                    <input type="hidden" name="end" value="{{postParams.rhy.end}}"/>
+                    <input type="hidden" spring-csrf-cookie/>
+
+                    <button type="submit" class="btn btn-primary" ng-show="resolvedRhyEditMetrics">
+                        <span class="glyphicon glyphicon-search"></span> &nbsp;
+                        <span translate="reporting.common.toExcel"></span>
+                    </button>
+
+                    <span ng-if="rhyInProgress" class="fa fa-refresh fa-spin fa-lg"></span>
+                </form>
+            </div>
+        </div>
+
+        <table class="table table-bordered table-striped table-condensed" ng-show="resolvedRhyEditMetrics">
+            <thead>
+            <tr>
+                <th>Alue-koodi</th>
+                <th>RHY-koodi</th>
+                <th>RHY-nimi</th>
+                <th>Tehtävät toiminnanohjaajat</th>
+                <th>Tehtävät moderaattorit</th>
+                <th>Tapahtumat toiminnanohjaajat</th>
+                <th>Tapahtumat moderaattorit</th>
+            </tr>
+            </thead>
+            <tr ng-repeat="row in resolvedRhyEditMetrics">
+                <td>{{row.areaCode}}</td>
+                <td>{{row.rhyCode}}</td>
+                <td>{{row.rhyName}}</td>
+                <td>{{row.occupations.coordinator.sum}}</td>
+                <td>{{row.occupations.moderator.sum}}</td>
+                <td>{{row.events.coordinator.sum}}</td>
+                <td>{{row.events.moderator.sum}}</td>
+            </tr>
+        </table>
+    </div>
+</div>

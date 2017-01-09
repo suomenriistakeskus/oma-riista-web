@@ -1,0 +1,30 @@
+
+<div ng-if="permit.endOfHuntingReportRequired && !proposedHarvestsExist()">
+   <br>
+    <button type="button" class="btn btn-lg btn-primary"
+            ng-click="createOrViewEndOfHuntingReport(permit)">
+        <span class="glyphicon glyphicon-plus" title="{{'global.button.edit' | translate}}"></span>
+        <span ng-if="permit.harvestsAsList" translate="harvestpermit.button.createHarvestReportAndEndOfHuntingReport"></span>
+        <span ng-if="!permit.harvestsAsList"translate="harvestpermit.button.createEndOfHuntingReport"></span>
+    </button>
+</div>
+
+<div ng-if="!permit.endOfHuntingReportRequired">
+    <h4 translate="harvestpermit.title.endOfHuntingReport"></h4>
+    <div class="alert alert-info">
+        <span translate="harvestpermit.harvestReportDoneInfo"></span>
+    </div>
+
+    <div ng-if="permit.endOfHuntingReport">
+        <span class="r-harvestreport-state-text r-report-permit-row-state"
+              harvest-report-state-to-class="permit.endOfHuntingReport.state">
+            {{'harvestreport.state.' + permit.endOfHuntingReport.state | translate}}
+        </span>
+
+        <button type="button" class="btn btn-default"
+                ng-click="createOrViewEndOfHuntingReport(permit)">
+            <span class="glyphicon glyphicon-edit" title="{{'global.button.edit' | translate}}"></span>
+            <span translate="global.button.open"></span>
+        </button>
+    </div>
+</div>

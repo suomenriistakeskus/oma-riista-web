@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/lupahallinta/export/permitarea"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/lupahallinta/export/permitarea">
+
+    <xs:element name="permitArea">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="officialCode" type="xs:token"/>
+                <xs:element name="nameFinnish" type="xs:token"/>
+                <xs:element name="nameSwedish" type="xs:token"/>
+                <xs:element name="state" type="state"/>
+
+                <xs:element name="totalAreaSize" type="xs:long">
+                    <xs:annotation>
+                        <xs:documentation>Total area size including land and water area in square metres</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="waterAreaSize" type="xs:long">
+                    <xs:annotation>
+                        <xs:documentation>Water area size in square metres</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="rhy" type="nameWithOfficialCode" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:element name="hta" type="nameWithOfficialCode" minOccurs="1" maxOccurs="unbounded"/>
+
+                <xs:element name="partners" type="partner" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="nameWithOfficialCode">
+        <xs:sequence>
+            <xs:element name="officialCode" type="xs:token"/>
+            <xs:element name="nameFinnish" type="xs:token"/>
+            <xs:element name="nameSwedish" type="xs:token"/>
+            <xs:element name="areaSize" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>Intersection area size in square metres</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="partner">
+        <xs:sequence>
+            <xs:element name="officialCode" type="xs:token"/>
+            <xs:element name="nameFinnish" type="xs:token"/>
+            <xs:element name="nameSwedish" type="xs:token"/>
+            <xs:element name="totalAreaSize" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>Total area size including land and water area in square metres</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="waterAreaSize" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>Water area size in square metres</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="state">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="INCOMPLETE">
+                <xs:annotation>
+                    <xs:documentation>Permit area is not ready to be used in Lupahallinta.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="READY">
+                <xs:annotation>
+                    <xs:documentation>Permit area is ready to be used in Lupahallinta.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="LOCKED">
+                <xs:annotation>
+                    <xs:documentation>Permit area is used in Lupahallinta.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
+

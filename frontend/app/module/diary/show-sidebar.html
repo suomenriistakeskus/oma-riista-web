@@ -1,0 +1,156 @@
+<div class="content r-gamediary-entry-show">
+    <img ng-if="!entry.isOtherSpecies()" ng-src="/static/elainlajikuvat/96x96/{{entry.gameSpeciesCode}}.jpg"
+         class="r-gamediary-species-logo" width="96" height="96"/>
+    <span ng-if="entry.isOtherSpecies()" class="fa fa-question fa-2x"></span>
+
+    <span class="r-gamediary-species-name">{{ getGameNameWithAmount(entry) }}</span>
+    <span ng-if="entry.isOtherSpecies()" class="r-gamediary-species-name">&nbsp;-&nbsp;{{entry.otherSpeciesDescription}}</span>
+
+    <div ng-if="entry.harvestReportRequired">
+        <a class="btn btn-block"
+           ng-if="!entry.harvestReportState"
+           ng-click="$close()"
+           ui-sref="harvestreport.main.todo"
+           harvest-report-state-to-class="entry.harvestReportState">
+            <span translate="harvestreport.button.createReport"></span>
+        </a>
+
+        <a class="btn btn-block"
+           ng-if="entry.harvestReportState"
+           ng-click="editHarvestReport()"
+           harvest-report-state-to-class="entry.harvestReportState">
+            <span>{{'harvestreport.button.currentState.' + entry.harvestReportState | translate }}</span>
+        </a>
+    </div>
+
+    <div ng-if="entry.stateAcceptedToHarvestPermit">
+        <div class="r-harvestreport-state-text r-report-permit-row-state"
+             harvest-report-state-to-class="entry.stateAcceptedToHarvestPermit">
+            {{'gamediary.stateVerbose.' + (entry.stateAcceptedToHarvestPermit || 'PROPOSED') | translate}}
+        </div>
+    </div>
+
+    <div ng-if="permit" class="alert alert-info">
+        <h5 translate="gamediary.form.withPermit"></h5>
+        <div class="h6">
+            {{permit.permitType}} <br>
+            {{permit.permitNumber}}
+        </div>
+        <div ng-if="entry.permittedMethod">
+            <span translate="gamediary.form.withPermittedMethod"></span>
+            <ul>
+                <li ng-if="entry.permittedMethod.tapeRecorders"><span translate="permittedMethod.TAPE_RECORDERS"></span></li>
+                <li ng-if="entry.permittedMethod.traps"><span translate="permittedMethod.TRAPS"></span></li>
+                <li ng-if="entry.permittedMethod.other">
+                    <span translate="permittedMethod.OTHER"></span>:
+                    <span>{{entry.permittedMethod.description}}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div ng-if="entry.isSrva() && entry.state !== 'UNFINISHED'">
+        <div class="r-harvestreport-state-text" harvest-report-state-to-class="'{{entry.state}}'">
+            <span translate="srva.state.{{entry.state}}"></span>
+        </div>
+    </div>
+
+    <div class="alert alert-info" ng-show="entry.moderatorOverride">
+        <p translate="gamediary.moderatorOverride"></p>
+    </div>
+
+    <div>
+        <h5 ng-if="entry.isHarvest()" translate="gamediary.harvest"></h5>
+        <h5 ng-if="entry.isObservation()" translate="gamediary.observation"></h5>
+        <h5 ng-if="entry.isSrva()" translate="srva.form.srvaEvent"></h5>
+
+        <p>{{entry.pointOfTime | date:'d.M.yyyy HH:mm'}}</p>
+
+        <h5 translate="gamediary.form.location"></h5>
+
+        <p translate="global.geoLocation.coordinatesText" translate-values="entry.geoLocation"></p>
+
+    </div>
+
+    <div>
+        <h5 translate="gamediary.author"></h5>
+        <span>{{entry.authorInfo.byName}} {{entry.authorInfo.lastName}}</span>
+    </div>
+
+    <div ng-if="entry.isSrva() && entry.approverInfo">
+        <h5 translate="srva.form.approverOrRejecter"></h5>
+        <span>{{entry.approverInfo.firstName}} {{entry.approverInfo.lastName}}</span>
+    </div>
+
+    <div ng-if="!entry.isSrva()">
+        <h5 translate="{{ entry.isHarvest() ? 'gamediary.actualShooter' : 'gamediary.observer' }}"></h5>
+        <span>{{entry.actorInfo.byName}} {{entry.actorInfo.lastName}}</span>
+    </div>
+
+    <div ng-if="entry.isObservation()">
+        <h5 translate="gamediary.form.observationType"></h5>
+        <span translate="{{ 'observation.type.' + entry.observationType }}"></span>
+    </div>
+    <div ng-if="entry.isObservation() && isBoolean(entry.withinMooseHunting)">
+        <h5 translate="gamediary.form.withinMooseHunting"></h5>
+        <span translate="{{ entry.withinMooseHunting ? 'global.yes' : 'global.no' }}"></span>
+    </div>
+
+    <div ng-if="entry.isSrva()">
+        <h5 translate="srva.form.event"></h5>
+        <span translate="{{ 'srva.event.' + entry.eventName }}"></span>
+        <h5 translate="srva.form.type"></h5>
+        <span translate="{{ 'srva.type.' + entry.eventType }}"></span>
+        <span ng-if="entry.otherTypeDescription"><br/>{{entry.otherTypeDescription}}</span>
+        <div ng-if="entry.eventResult">
+            <h5 translate="srva.form.result"></h5>
+            <span translate="{{ 'srva.result.' + entry.eventResult }}"></span>
+        </div>
+        <div ng-if="showSrvaMethodsInSidebar(entry.methods)">
+            <h5 translate="srva.form.method"></h5>
+            <div ng-repeat="method in getSrvaMethodsForSidebar(entry.methods)" >
+                <span translate="{{ 'srva.method.' + method }}"></span>
+            </div>
+            <div ng-if="entry.otherMethodDescription">
+                <span>{{entry.otherMethodDescription}}</span>
+            </div>
+        </div>
+        <div ng-if="entry.personCount">
+            <h5 translate="srva.form.personsInvolved"></h5>
+            <span>{{entry.personCount}}</span>
+        </div>
+        <div ng-if="entry.timeSpent">
+            <h5 translate="srva.form.combinedHours"></h5>
+            <span>{{entry.timeSpent}}</span>
+        </div>
+    </div>
+
+    <div><r-show-entry-specimens entry="entry"></r-show-entry-specimens></div>
+
+    <div class="r-gamediary-entry-description">
+        <p ng-repeat="paragraph in entry.description.split('\n') track by $index">{{paragraph}}</p>
+    </div>
+
+    <div ng-repeat="uuid in entry.imageIds" class="r-gamediary-entry-show-image">
+        <img ng-src="{{getUrl(uuid, 330, 330, true)}}"/>
+    </div>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-default"
+            ng-click="cancel()"
+            translate="global.button.close"></button>
+
+    <button type="button" class="btn btn-danger"
+            ng-click="remove()"
+            ng-disabled="!allowDelete"
+            translate="global.button.delete"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-click="edit()"
+            ng-disabled="!allowEdit"
+            translate="global.button.edit"></button>
+</div>
+

@@ -1,0 +1,97 @@
+<form name="profileAddressForm"
+      role="form" class="form"
+      novalidate autocomplete="off"
+      ng-submit="$ctrl.save()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="account.edit.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-danger"
+             ng-show="$ctrlerror"
+             translate="account.edit.messages.error"></div>
+
+        <div class="form-group" show-errors>
+            <label for="streetAddress">
+                <span translate="account.edit.form.streetAddress"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <input type="text" name="streetAddress" id="streetAddress"
+                   class="form-control"
+                   ng-model="$ctrl.address.streetAddress"
+                   ng-required="$ctrl.address.editable"
+                   ng-maxlength="255"
+                   ng-disabled="!$ctrl.address.editable">
+
+            <p class="help-block"
+               ng-show="profileAddressForm.streetAddress.$invalid"
+               translate="account.edit.messages.invalid"></p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="city">
+                <span translate="account.edit.form.city"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <input type="text" name="city" id="city"
+                   class="form-control"
+                   ng-model="$ctrl.address.city"
+                   ng-required="$ctrl.address.editable"
+                   ng-maxlength="255"
+                   ng-disabled="!$ctrl.address.editable">
+
+            <p class="help-block"
+               ng-show="profileAddressForm.city.$invalid"
+               translate="account.edit.messages.invalid"></p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="postalCode">
+                <span translate="account.edit.form.postalCode"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <input type="text" name="postalCode" id="postalCode"
+                   class="form-control" style="width: 90px"
+                   ng-model="$ctrl.address.postalCode"
+                   ng-required="$ctrl.address.editable"
+                   ng-maxlength="10"
+                   ng-disabled="!$ctrl.address.editable">
+
+            <p class="help-block"
+               ng-show="profileAddressForm.postalCode.$invalid"
+               translate="account.edit.messages.invalid"></p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="country">
+                <span translate="account.edit.form.country"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <input type="text" name="country" id="country"
+                   class="form-control" style="width: 90px"
+                   ng-model="$ctrl.address.country"
+                   ng-required="$ctrl.address.editable"
+                   ng-disabled="!$ctrl.address.editable">
+
+            <p class="help-block"
+               ng-show="profileAddressForm.country.$invalid"
+               translate="account.edit.messages.invalid"></p>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="profileAddressForm.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

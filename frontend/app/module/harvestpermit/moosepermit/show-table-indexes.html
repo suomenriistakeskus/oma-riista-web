@@ -1,0 +1,49 @@
+<table class="table table-condensed table-striped moose-permit-infotable-indexes">
+    <thead>
+    <tr class="topheader">
+        <th colspan="1"></th>
+        <th colspan="1"><r-with-tooltip content-key="club.permit.allocation.huntingDays.top" tooltip-key="club.permit.allocation.huntingDays.topTooltip"/></th>
+        <th colspan="2"><r-with-tooltip content-key="club.permit.allocation.harvestsPer.top" tooltip-key="club.permit.allocation.harvestsPer.topTooltip"/></th>
+        <th colspan="2"><r-with-tooltip content-key="club.permit.allocation.observationsPer.top" tooltip-key="club.permit.allocation.observationsPer.topTooltip"/></th>
+    </tr>
+    <tr class="lowheader">
+        <th translate="club.permit.allocation.partner"></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.huntingDays.low" tooltip-key="club.permit.allocation.huntingDays.lowTooltip"/></th>
+
+        <th><r-with-tooltip content-key="club.permit.allocation.harvestsPer.day" tooltip-key="club.permit.allocation.harvestsPer.dayTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.harvestsPer.hunter" tooltip-key="club.permit.allocation.harvestsPer.hunterTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.observationsPer.day" tooltip-key="club.permit.allocation.observationsPer.dayTooltip"/></th>
+        <th><r-with-tooltip content-key="club.permit.allocation.observationsPer.hunter" tooltip-key="club.permit.allocation.observationsPer.hunterTooltip"/></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="summary">
+        <td translate="club.permit.sumTitle"></td>
+        <td><r-with-tooltip content-val="{{permit.totalStatistics.dayCount}}" tooltip-key="club.permit.allocation.huntingDays.cellTooltip"/></td>
+
+        <td><r-with-tooltip content-val="{{permit.totalStatistics.harvestsPerDay | number: 3}}" tooltip-key="club.permit.allocation.harvestsPer.dayCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.totalStatistics.harvestsPerHunter | number: 3}}" tooltip-key="club.permit.allocation.harvestsPer.hunterCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.totalStatistics.observationsPerDay | number: 3}}" tooltip-key="club.permit.allocation.observationsPer.dayCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{permit.totalStatistics.observationsPerHunter | number: 3}}" tooltip-key="club.permit.allocation.observationsPer.hunterCellTooltip"/></td>
+    </tr>
+    <tr ng-repeat="a in allocations" ng-class="{'current-club': isCurrentClub(a)}">
+        <td>
+            <div>
+                <moose-permit-todo todo="todos[a.huntingClubId]"></moose-permit-todo>
+                <span name-translated="a.huntingClubName"></span>
+                <span class="pull-right" ng-if="::(permit.summaryForPartnersTable[a.huntingClubId].fromMooseDataCard)"
+                      uib-tooltip="{{ 'club.permit.allocation.fromMooseDataCard' | translate }}" tooltip-popup-delay="0" tooltip-placement="right">
+                    <span class="fa fa-file-text"></span>
+                </span>
+            </div>
+        </td>
+        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].dayCount) || '0'}}" tooltip-key="club.permit.allocation.huntingDays.cellTooltip"/></td>
+
+        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].harvestsPerDay | number: 3) || '0'}}" tooltip-key="club.permit.allocation.harvestsPer.dayCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].harvestsPerHunter | number: 3) || '0'}}" tooltip-key="club.permit.allocation.harvestsPer.hunterCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].observationsPerDay | number: 3) || '0'}}" tooltip-key="club.permit.allocation.observationsPer.dayCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].observationsPerHunter | number: 3) || '0'}}" tooltip-key="club.permit.allocation.observationsPer.hunterCellTooltip"/></td>
+    </tr>
+
+    </tbody>
+</table>

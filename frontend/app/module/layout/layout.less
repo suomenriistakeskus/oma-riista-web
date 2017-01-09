@@ -1,0 +1,120 @@
+// Layout background
+// -------------------------
+body {
+  margin: 0;
+  background-color: #F7F7F7;
+}
+
+body > .wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+body > .wrapper > .site-background {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  max-height: 900px;
+  z-index: -1;
+  background-image: url('../images/riista-bg.jpg');
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+}
+
+body > .wrapper > .main-content {
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+body > .wrapper > .main-content > .container,
+body > .wrapper > .main-content > .container-fluid {
+  background: white;
+}
+
+body > .wrapper > .main-content > .container-transparent {
+  background: transparent;
+  border: 0;
+  min-height: 400px;
+}
+
+body > .wrapper > .main-content > .container {
+  margin: 20px auto;
+  padding: 20px;
+  min-height: 550px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+body > .wrapper > .main-content > .container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+  border: 0;
+}
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak],
+.ng-cloak, .x-ng-cloak,
+.ng-hide:not(.ng-hide-animate) {
+  display: none !important;
+}
+
+// Growl
+// -------------------------
+
+.growl-container.growl-fixed {
+  width: 45%;
+  max-width: 800px;
+}
+
+.growl-container.growl-fixed.top-right {
+  top: 5px;
+  right: 375px;
+
+  .growl-item {
+    box-shadow: -6px 9px 16px 0 rgba(50,50,50,0.6)
+  }
+}
+
+.growl-container > .growl-item {
+  padding: 15px;
+  padding-right: 35px;
+}
+
+// By default datepicker popup (and all other dropdowns) are positioned left aligned along the input field.
+// However, in narrow layout right side of the dropdown falls out of the view on the right side.
+// Adding this to the parent element will make dropdown right aligned.
+.r-dropdown-align-right {
+  position: relative;
+  .dropdown-menu {
+    left: auto !important;
+    right: 0px;
+    // off-canvas-container buttons are on bottom of screen and would hide popup
+    z-index: 1002; // +1 to off-canvas buttons z-index
+  }
+}
+
+// Sidebar layout
+// -------------------------
+
+.sidebar-layout {
+  .left-column.out {
+    width:0;
+  }
+
+  .main-column.in {
+    left: 0;
+  }
+
+  .close-button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 10px 15px;
+
+    a {
+      color: white;
+      font-size: 18px;
+    }
+  }
+}

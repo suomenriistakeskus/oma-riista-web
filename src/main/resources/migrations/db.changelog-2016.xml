@@ -1,0 +1,1664 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd"
+        logicalFilePath="migrations/db.changelog.xml">
+
+    <changeSet id="2016-01-11-drop-table-previous-password" author="vincit-kyostihe">
+        <dropTable tableName="system_user_previous_password"/>
+    </changeSet>
+
+    <changeSet id="2016-01-11-refactor-file-storage-tables" author="vincit-kyostihe">
+        <dropTable tableName="file_content"/>
+        <createTable tableName="file_content">
+            <column name="file_metadata_uuid" type="CHAR(36)">
+                <constraints primaryKey="true"
+                             primaryKeyName="file_content_pkey"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_file_content_metadata_uuid"
+                             deleteCascade="true"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_content" type="LONGVARBINARY">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <dropColumn tableName="file_metadata" columnName="file_name"/>
+        <dropColumn tableName="file_metadata" columnName="is_public"/>
+    </changeSet>
+
+    <changeSet id="2016-01-15-add-harvest--permit-species-amount-index-to-permit" author="vincit-terova">
+        <createIndex tableName="harvest_permit_species_amount" indexName="ndx_harvest_permit_species_amount_permit">
+            <column name="harvest_permit_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2015-11-26-add-table-moose_hunting_summary" author="vincit-jarkkoka">
+        <createTable tableName="moose_hunting_summary">
+            <column autoIncrement="true" name="moose_hunting_summary_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="moose_hunting_summary_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="harvest_permit_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="club_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="begin_date" type="DATE"/>
+            <column name="end_date" type="DATE"/>
+            <column name="hunting_end_date" type="DATE"/>
+            <column name="hunting_finished" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="total_hunting_area" type="INT"/>
+            <column name="effective_hunting_area" type="INT"/>
+            <column name="effective_hunting_area_percentage" type="DECIMAL(5,2)"/>
+            <column name="mooses_remaining_in_total_hunting_area" type="INT"/>
+            <column name="mooses_remaining_in_effective_hunting_area" type="INT"/>
+            <column name="hunting_area_type" type="CHAR(1)"/>
+
+            <column name="drowned_mooses" type="INT"/>
+            <column name="mooses_killed_by_bear" type="INT"/>
+            <column name="mooses_killed_by_wolf" type="INT"/>
+            <column name="mooses_killed_in_traffic_accident" type="INT"/>
+            <column name="mooses_killed_by_poaching" type="INT"/>
+            <column name="mooses_killed_in_rut_fight" type="INT"/>
+            <column name="starved_mooses" type="INT"/>
+            <column name="mooses_deceased_by_other_reason" type="INT"/>
+            <column name="cause_of_death" type="VARCHAR(255)"/>
+
+            <column name="white_tailed_deer_appeared" type="BOOLEAN"/>
+            <column name="white_tailed_deer_population_growth" type="CHAR(1)"/>
+            <column name="white_tailed_deer_estimated_specimen_amount" type="INT"/>
+
+            <column name="roe_deer_appeared" type="BOOLEAN"/>
+            <column name="roe_deer_population_growth" type="CHAR(1)"/>
+            <column name="roe_deer_estimated_specimen_amount" type="INT"/>
+
+            <column name="wild_forest_reindeer_appeared" type="BOOLEAN"/>
+            <column name="wild_forest_reindeer_population_growth" type="CHAR(1)"/>
+            <column name="wild_forest_reindeer_estimated_specimen_amount" type="INT"/>
+
+            <column name="fallow_deer_appeared" type="BOOLEAN"/>
+            <column name="fallow_deer_population_growth" type="CHAR(1)"/>
+            <column name="fallow_deer_estimated_specimen_amount" type="INT"/>
+
+            <column name="moose_heat_begin_date" type="DATE"/>
+            <column name="moose_heat_end_date" type="DATE"/>
+            <column name="moose_fawn_begin_date" type="DATE"/>
+            <column name="moose_fawn_end_date" type="DATE"/>
+            <column name="date_of_first_deer_fly_seen" type="DATE"/>
+            <column name="date_of_last_deer_fly_seen" type="DATE"/>
+            <column name="number_of_adult_mooses_having_flies" type="INT"/>
+            <column name="number_of_young_mooses_having_flies" type="INT"/>
+            <column name="deer_flies_appeared" type="BOOLEAN"/>
+            <column name="deer_fly_population_growth" type="CHAR(1)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="moose_hunting_summary"
+                                 baseColumnNames="harvest_permit_id"
+                                 constraintName="fk_moose_hunting_summary_permit"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="harvest_permit"
+                                 referencedColumnNames="harvest_permit_id"/>
+
+        <addForeignKeyConstraint baseTableName="moose_hunting_summary"
+                                 baseColumnNames="club_id"
+                                 constraintName="fk_moose_hunting_summary_club"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"/>
+
+        <createIndex tableName="moose_hunting_summary"
+                     indexName="ndx_moose_hunting_summary_club_permit"
+                     unique="true">
+
+            <column name="club_id"/>
+            <column name="harvest_permit_id"/>
+        </createIndex>
+
+        <!-- Additional integrity constraint -->
+        <addForeignKeyConstraint baseTableName="moose_hunting_summary"
+                                 baseColumnNames="harvest_permit_id, club_id"
+                                 constraintName="fk_moose_hunting_summary_harvest_permit_partners"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="harvest_permit_partners"
+                                 referencedColumnNames="harvest_permit_id, organisation_id"/>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_effective_hunting_area_exclusivity
+                    CHECK (effective_hunting_area IS NULL OR effective_hunting_area_percentage IS NULL);
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_effective_hunting_area_percentage
+                    CHECK (effective_hunting_area_percentage >= 0.0 AND effective_hunting_area_percentage <= 100.0);
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_total_hunting_area_restriction
+                    CHECK (total_hunting_area >= 0);
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_effective_hunting_area_restriction
+                    CHECK (effective_hunting_area >= 0 AND effective_hunting_area <= total_hunting_area);
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_mooses_remaining_in_total_hunting_area_restriction
+                    CHECK (mooses_remaining_in_total_hunting_area >= 0);
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_mooses_remaining_in_effective_hunting_area_restriction
+                    CHECK (mooses_remaining_in_effective_hunting_area >= 0
+                           AND mooses_remaining_in_effective_hunting_area <= mooses_remaining_in_total_hunting_area);
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_moose_hunting_summary_area_type
+                    CHECK (hunting_area_type IN ('S', 'W', 'B'));
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_white_tailed_deer_population_growth
+                    CHECK (white_tailed_deer_population_growth IN ('I', 'U', 'D'));
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_roe_deer_population_growth
+                    CHECK (roe_deer_population_growth IN ('I', 'U', 'D'));
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_wild_forest_reindeer_population_growth
+                    CHECK (wild_forest_reindeer_population_growth IN ('I', 'U', 'D'));
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_fallow_deer_population_growth
+                    CHECK (fallow_deer_population_growth IN ('I', 'U', 'D'));
+
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_deer_fly_population_growth
+                    CHECK (deer_fly_population_growth IN ('I', 'U', 'D'));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-01-15-enforce-group-uniqueness-in-harvest_permit_groups-table" author="vincit-jarkkoka">
+        <createIndex tableName="harvest_permit_groups"
+                     indexName="ndx_harvest_permit_groups_organisation_id"
+                     unique="true">
+            <column name="organisation_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-01-18-harvest-permit-hta" author="vincit-terova">
+        <addColumn tableName="harvest_permit">
+            <column name="hta_id" type="INTEGER"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2016-01-11-add-table-mooselike-price" author="vincit-terova">
+        <createTable tableName="mooselike_price">
+            <column autoIncrement="true" name="mooselike_price_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="mooselike_price_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="hunting_year" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="adult_price" type="NUMERIC(6,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="young_price" type="NUMERIC(6,2)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="iban" type="CHAR(18)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bic" type="VARCHAR(11)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient_name" type="VARCHAR(70)">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="mooselike_price"
+                baseColumnNames="game_species_id"
+                constraintName="fk_mooselike_price_game_species"
+                onDelete="NO ACTION" onUpdate="NO ACTION"
+                referencedColumnNames="game_species_id"
+                referencedTableName="game_species"/>
+
+        <createIndex tableName="mooselike_price" indexName="ndx_mooselike_price" unique="true">
+            <column name="hunting_year"/>
+            <column name="game_species_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-01-26-add-from_mobile-and-mobile_client_ref_id-to-srva_event" author="vincit-tonile">
+        <addColumn tableName="srva_event">
+            <column name="from_mobile" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="srva_event">
+            <column name="mobile_client_ref_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2016-02-22-update-harvest_specimen-payload-constraint" author="vincit-terova">
+        <sql>
+            ALTER TABLE harvest_specimen DROP CONSTRAINT ck_harvest_specimen_not_empty_payload;
+            ALTER TABLE harvest_specimen ADD CONSTRAINT ck_harvest_specimen_not_empty_payload
+            CHECK (age IS NOT NULL
+                OR gender IS NOT NULL
+                OR weight IS NOT NULL
+                OR weight_estimated IS NOT NULL
+                OR weight_measured IS NOT NULL
+                OR fitness_class IS NOT NULL
+                OR antlers_type IS NOT NULL
+                OR antlers_width IS NOT NULL
+                OR antler_points_left IS NOT NULL
+                OR antler_points_right IS NOT NULL
+                OR additional_info IS NOT NULL
+                OR not_edible IS NOT NULL);
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-02-05-add-from_moose_data_card-to-hunting-group" author="vincit-jarkkoka">
+        <addColumn tableName="organisation">
+            <column name="from_moose_data_card" type="BOOLEAN"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2016-02-26-add-email-token-table" author="vincit-kyostihe">
+        <createTable tableName="email_token">
+            <column name="token_data" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="email_token_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token_type" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT"/>
+            <column name="valid_from" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_until" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_remote_address" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revoked_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="revoke_remote_address" type="VARCHAR(255)"/>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="email_token"
+                                 constraintName="fk_email_token_system_user"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="user_id"
+                                 referencedTableName="system_user"/>
+        <sql><![CDATA[
+ALTER TABLE email_token ADD CONSTRAINT validity_period_check CHECK (valid_from < valid_until);
+        ]]>
+        </sql>
+        <createIndex tableName="email_token"
+                     indexName="ndx_email_token_email">
+            <column name="email"/>
+        </createIndex>
+        <createIndex tableName="email_token"
+                     indexName="ndx_email_token_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-02-29-add-vetuma-transaction-table" author="vincit-kyostihe">
+        <createTable tableName="vetuma_transaction">
+            <column name="vetuma_transaction_id" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="vetuma_transaction_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email_token" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="user_id" type="BIGINT"/>
+            <column name="response_so" type="VARCHAR(255)"/>
+            <column name="remote_address" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="vetuma_transaction"
+                                 constraintName="fk_vetuma_transaction_system_user"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="user_id"
+                                 referencedTableName="system_user"/>
+        <createIndex tableName="vetuma_transaction"
+                     indexName="ndx_vetuma_transaction_email">
+            <column name="email"/>
+        </createIndex>
+        <createIndex tableName="vetuma_transaction"
+                     indexName="ndx_vetuma_transaction_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-03-01-rename-ANIMAL_DEAD_AT_SITE-to-ANIMAL_FOUND_DEAD-to-srva_result_type" author="vincit-tonile">
+        <sql>
+            INSERT INTO srva_result_type VALUES ('ANIMAL_FOUND_DEAD');
+            UPDATE srva_event SET event_result = 'ANIMAL_FOUND_DEAD' WHERE event_result = 'ANIMAL_DEAD_AT_SITE';
+            DELETE FROM srva_result_type WHERE name = 'ANIMAL_DEAD_AT_SITE';
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-03-02-add-other_species_description-to-srva-event" author="vincit-tonile">
+        <addColumn tableName="srva_event">
+            <column name="other_species_description" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+            ALTER TABLE srva_event ALTER game_species_id DROP NOT NULL;
+            ALTER TABLE srva_event ADD CONSTRAINT ck_srva_event_exclusive_game_species_id_and_other_species_description_references CHECK ((game_species_id IS NOT NULL AND other_species_description IS NULL) OR (game_species_id IS NULL AND other_species_description IS NOT NULL));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-03-16-update-enum-harvest_luke_status" author="vincit-terova">
+        <update tableName="harvest_luke_status">
+            <column name="name" type="varchar(255)" value="CONFIRMED_ADULT"/>
+            <where>name = 'CONFIRMED_ALPHA_1TO2Y'</where>
+        </update><update tableName="harvest_luke_status">
+            <column name="name" type="varchar(255)" value="CONFIRMED_NOT_ADULT"/>
+            <where>name = 'CONFIRMED_POTENTIAL_ALPHA_1TO2Y'</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="2016-03-18-add-session-repository" author="vincit-kyostihe" dbms="postgresql">
+        <createTable tableName="spring_session">
+            <column name="session_id" type="CHAR(36)">
+                <constraints primaryKey="true" primaryKeyName="spring_session_pk"/>
+            </column>
+            <column name="last_access_time" type="BIGINT"/>
+            <column name="principal_name" type="VARCHAR(100)"/>
+            <column name="session_bytes" type="BYTEA"/>
+        </createTable>
+        <createIndex tableName="spring_session" indexName="spring_session_ix1">
+            <column name="last_access_time"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-03-18-add-session-repository" author="vincit-kyostihe" dbms="h2">
+        <createTable tableName="spring_session">
+            <column name="session_id" type="CHAR(36)">
+                <constraints primaryKey="true" primaryKeyName="spring_session_pk"/>
+            </column>
+            <column name="last_access_time" type="BIGINT"/>
+            <column name="principal_name" type="VARCHAR(100)"/>
+            <column name="session_bytes" type="LONGVARBINARY"/>
+        </createTable>
+        <createIndex tableName="spring_session" indexName="spring_session_ix1">
+            <column name="last_access_time"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-03-21-add-hunter-invoice-reference" author="vincit-kyostihe">
+        <addColumn tableName="person">
+            <column name="invoice_reference_current" type="VARCHAR(255)"/>
+            <column name="invoice_reference_previous" type="VARCHAR(255)"/>
+            <column name="invoice_reference_current_year" type="INT"/>
+            <column name="invoice_reference_previous_year" type="INT"/>
+        </addColumn>
+        <sql><![CDATA[
+ALTER TABLE person ADD CONSTRAINT invoice_reference_current_check CHECK (
+    (invoice_reference_current IS NULL AND invoice_reference_current_year IS NULL) OR
+    (invoice_reference_current IS NOT NULL AND invoice_reference_current_year IS NOT NULL));
+
+ALTER TABLE person ADD CONSTRAINT invoice_reference_previous_check CHECK (
+    (invoice_reference_previous IS NULL AND invoice_reference_previous_year IS NULL) OR
+    (invoice_reference_previous IS NOT NULL AND invoice_reference_previous_year IS NOT NULL));
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-03-13-insert-integration-email_hunting_leaders_to_rhy_coordinator" author="vincit-terova">
+        <sql>
+            INSERT INTO integration
+            (integration_id, created_by_user_id, deleted_by_user_id, modified_by_user_id, deletion_time, last_run)
+            VALUES ('email_hunting_leaders_to_rhy_coordinator', -1, -1, -1, NULL, NULL);
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-03-23-add-approver-to-srva_event" author="vincit-tonile">
+        <addColumn tableName="srva_event">
+            <column name="approver_as_user_id" type="BIGINT"></column>
+        </addColumn>
+        <addColumn tableName="srva_event">
+            <column name="approver_as_person_id" type="BIGINT"></column>
+        </addColumn>
+
+        <addForeignKeyConstraint baseColumnNames="approver_as_user_id"
+                                 baseTableName="srva_event"
+                                 constraintName="fk_srva_event_approver_as_user"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="user_id"
+                                 referencedTableName="system_user"/>
+        <addForeignKeyConstraint baseColumnNames="approver_as_person_id"
+                                 baseTableName="srva_event"
+                                 constraintName="fk_srva_event_approver_as_person"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="person_id"
+                                 referencedTableName="person"/>
+
+        <createIndex tableName="srva_event"
+                     indexName="ndx_srva_event_approver_as_user_id">
+            <column name="approver_as_user_id"/>
+        </createIndex>
+        <createIndex tableName="srva_event"
+                     indexName="ndx_srva_event_approver_as_person_id">
+            <column name="approver_as_person_id"/>
+        </createIndex>
+
+        <sql>
+            <![CDATA[
+            UPDATE srva_event SET
+                approver_as_person_id = (SELECT person_id FROM system_user WHERE user_id = srva_event.modified_by_user_id),
+                approver_as_user_id = modified_by_user_id
+                WHERE state <> 'UNFINISHED';
+            ALTER TABLE srva_event ADD CONSTRAINT ck_srva_event_approver_defined_for_other_than_unfinished CHECK ((state = 'UNFINISHED' AND approver_as_user_id IS NULL AND approver_as_person_id IS NULL) OR (state != 'UNFINISHED' AND approver_as_user_id IS NOT NULL))
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-04-08-organisation-hta-foreign-key" author="vincit-terova">
+        <addColumn tableName="organisation">
+            <column name="moose_area_id" type="BIGINT"></column>
+        </addColumn>
+
+        <addForeignKeyConstraint baseColumnNames="moose_area_id"
+                                 baseTableName="organisation"
+                                 constraintName="fk_organisation_moose_area"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="gid"
+                                 referencedTableName="hta"/>
+
+        <sql>UPDATE organisation SET moose_area_id=(SELECT gid FROM hta WHERE numero=moose_area_code) WHERE moose_area_code IS NOT NULL</sql>
+
+        <dropColumn tableName="organisation">
+            <column name="moose_area_code"></column>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet id="2016-04-08-harvest_permit-hta-foreign-key" author="vincit-terova">
+        <renameColumn tableName="harvest_permit" oldColumnName="hta_id" newColumnName="moose_area_id"></renameColumn>
+
+        <addForeignKeyConstraint baseColumnNames="moose_area_id"
+                                 baseTableName="harvest_permit"
+                                 constraintName="fk_harvest_permit_moose_area"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="gid"
+                                 referencedTableName="hta"/>
+    </changeSet>
+
+    <changeSet id="2016-04-08-add-zone-water-area" author="vincit-kyostihe">
+        <addColumn tableName="zone">
+            <column name="water_area_size" type="DOUBLE" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2016-04-11-remove-club-restriction" author="vincit-terova">
+        <dropColumn tableName="organisation" columnName="restriction"></dropColumn>
+    </changeSet>
+
+    <changeSet id="2016-04-19-rename-kohde-koodi" author="vincit-kyostihe">
+        <renameColumn tableName="zone_mh_hirvi" oldColumnName="kohde_koodi" newColumnName="mh_hirvi_id"/>
+    </changeSet>
+
+    <changeSet id="2016-04-18-add-organisation-hunting-area-ndx" author="vincit-kyostihe">
+        <createIndex tableName="organisation" indexName="ndx_organisation_hunting_area">
+            <column name="hunting_area_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-04-21-hunting-club-area-external-id" author="vincit-kyostihe">
+        <addColumn tableName="hunting_club_area">
+            <column name="external_id" type="VARCHAR(255)"/>
+        </addColumn>
+        <createIndex tableName="hunting_club_area" indexName="ndx_hunting_club_area_external_id" unique="true">
+            <column name="external_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-05-12-change-srva-description-type-to-text" author="vincit-terova">
+        <modifyDataType tableName="srva_event" columnName="description" newDataType="text"></modifyDataType>
+    </changeSet>
+
+    <changeSet id="2016-04-27-add-club-group-permit-modification-time" author="vincit-terova">
+        <addColumn tableName="organisation">
+            <column name="harvest_permit_modification_time" type="TIMESTAMP WITH TIME ZONE"></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2016-04-11-add-table-moose_harvest_report" author="vincit-terova">
+        <createTable tableName="moose_harvest_report">
+            <column autoIncrement="true" name="moose_harvest_report_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="moose_harvest_report_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="harvest_permit_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="receipt_file_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="moose_harvest_report"
+                                 baseColumnNames="harvest_permit_id"
+                                 constraintName="fk_moose_harvest_report_permit"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="harvest_permit"
+                                 referencedColumnNames="harvest_permit_id"/>
+
+        <addForeignKeyConstraint baseTableName="moose_harvest_report"
+                                 baseColumnNames="receipt_file_metadata_id"
+                                 constraintName="fk_moose_harvest_report_receipt_file_metadata"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="file_metadata"
+                                 referencedColumnNames="file_metadata_uuid"/>
+
+
+        <createIndex tableName="moose_harvest_report"
+                     indexName="ndx_moose_harvest_report_permit"
+                     unique="true">
+
+            <column name="harvest_permit_id"/>
+        </createIndex>
+
+    </changeSet>
+
+    <changeSet id="2016-02-26-add-table-moose_data_card_import" author="vincit-jarkkoka">
+        <createTable tableName="moose_data_card_import">
+            <column autoIncrement="true" name="moose_data_card_import_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="moose_data_card_import_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="hunting_group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="xml_file_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pdf_file_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="filename_timestamp" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="begin_date" type="DATE"/>
+            <column name="end_date" type="DATE"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="moose_data_card_import"
+                                 baseColumnNames="hunting_group_id"
+                                 constraintName="fk_moose_data_card_import_hunting_group"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"/>
+
+        <addForeignKeyConstraint baseTableName="moose_data_card_import"
+                                 baseColumnNames="xml_file_metadata_id"
+                                 constraintName="fk_moose_data_card_import_xml_file_metadata"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedTableName="file_metadata"
+                                 referencedColumnNames="file_metadata_uuid"/>
+
+        <addForeignKeyConstraint baseTableName="moose_data_card_import"
+                                 baseColumnNames="pdf_file_metadata_id"
+                                 constraintName="fk_moose_data_card_import_pdf_file_metadata"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedTableName="file_metadata"
+                                 referencedColumnNames="file_metadata_uuid"/>
+
+        <createIndex tableName="moose_data_card_import" indexName="ndx_moose_data_card_import_hunting_group">
+            <column name="hunting_group_id"/>
+        </createIndex>
+        <createIndex tableName="moose_data_card_import"
+                     indexName="ndx_moose_data_card_import_xml_file_metadata"
+                     unique="true">
+            <column name="xml_file_metadata_id"/>
+        </createIndex>
+        <createIndex tableName="moose_data_card_import"
+                     indexName="ndx_moose_data_card_import_pdf_file_metadata"
+                     unique="true">
+            <column name="pdf_file_metadata_id"/>
+        </createIndex>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE moose_data_card_import ADD CONSTRAINT ck_moose_data_card_import_date_range
+                    CHECK (begin_date <= end_date);
+            ]]>
+        </sql>
+
+        <addColumn tableName="group_hunting_day">
+            <column name="moose_data_card_import_id" type="BIGINT"/>
+        </addColumn>
+
+        <addForeignKeyConstraint baseTableName="group_hunting_day"
+                                 baseColumnNames="moose_data_card_import_id"
+                                 constraintName="fk_group_hunting_day_moose_data_card_import"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="moose_data_card_import"
+                                 referencedColumnNames="moose_data_card_import_id"/>
+
+        <createIndex tableName="group_hunting_day" indexName="ndx_group_hunting_day_moose_data_card_import">
+            <column name="moose_data_card_import_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-02-26-add-table-moose_data_card_import_message" author="vincit-jarkkoka">
+        <createTable tableName="moose_data_card_import_message">
+            <column name="import_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ordinal" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="VARCHAR(1023)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="moose_data_card_import_message"
+                       columnNames="import_id,ordinal"
+                       constraintName="moose_data_card_import_message_pkey"/>
+
+        <addForeignKeyConstraint baseTableName="moose_data_card_import_message"
+                                 baseColumnNames="import_id"
+                                 constraintName="fk_moose_data_card_import_message_import"
+                                 onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedTableName="moose_data_card_import"
+                                 referencedColumnNames="moose_data_card_import_id"/>
+    </changeSet>
+
+    <changeSet id="2016-05-12-change-weight-types" author="vincit-terova">
+        <sql dbms="postgresql">
+            WITH updatedharvests AS (
+              UPDATE harvest_specimen SET
+              weight = round(weight, 1)
+              RETURNING harvest_id as id
+            )
+            UPDATE harvest SET consistency_version = consistency_version + 1
+            FROM updatedharvests WHERE harvest_id = updatedharvests.id;
+
+            WITH updatedharvests AS (
+              UPDATE harvest_specimen SET
+              weight = 999
+              WHERE weight > 999
+              RETURNING harvest_id as id
+            )
+            UPDATE harvest SET consistency_version = consistency_version + 1
+            FROM updatedharvests WHERE harvest_id = updatedharvests.id;
+        </sql>
+        <sql>
+            ALTER TABLE harvest_specimen ALTER COLUMN weight TYPE DECIMAL(4, 1);
+            ALTER TABLE harvest_specimen ALTER COLUMN weight_estimated TYPE DECIMAL(4, 1);
+            ALTER TABLE harvest_specimen ALTER COLUMN weight_measured TYPE DECIMAL(4, 1);
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-05-27-permit-rhys" author="vincit-terova">
+        <createTable tableName="harvest_permit_rhys">
+            <column name="harvest_permit_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="harvest_permit_rhys" columnNames="harvest_permit_id, organisation_id"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_rhys"
+                                 baseColumnNames="harvest_permit_id"
+                                 constraintName="fk_harvest_permit_rhys_harvest_permit"
+                                 referencedTableName="harvest_permit"
+                                 referencedColumnNames="harvest_permit_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_rhys"
+                                 baseColumnNames="organisation_id"
+                                 constraintName="fk_harvest_permit_rhys_organisation"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+    </changeSet>
+
+    <changeSet id="2016-06-10-jht-training" author="vincit-kyostihe">
+        <createTable tableName="jht_training">
+            <column autoIncrement="true" name="jht_training_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="jht_training_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="external_id" type="VARCHAR(255)">
+                <constraints unique="true" uniqueConstraintName="uk_jht_training_external_id"/>
+            </column>
+
+            <column name="occupation_type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="occupation_type(name)"
+                             foreignKeyName="fk_jht_training_occupation_type"/>
+            </column>
+
+            <column name="training_type" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="training_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="training_location" type="TEXT"/>
+
+            <column name="person_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="person(person_id)"
+                             foreignKeyName="fk_jht_training_person_id"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="jht_training" indexName="ndx_jht_training_external_id">
+            <column name="external_id"/>
+        </createIndex>
+
+        <createIndex tableName="jht_training" indexName="ndx_jht_training_date">
+            <column name="training_date"/>
+        </createIndex>
+
+        <createIndex tableName="jht_training" indexName="ndx_jht_training_person">
+            <column name="person_id"/>
+        </createIndex>
+
+        <createIndex tableName="jht_training" indexName="ndx_jht_training_occupation_type">
+            <column name="occupation_type"/>
+        </createIndex>
+
+        <sql><![CDATA[
+            ALTER TABLE jht_training ADD CONSTRAINT ck_jht_training_type
+                CHECK (training_type IN ('L', 'S'));
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2016-06-13-jht-training-trgm-index" author="vincit-kyostihe" dbms="postgresql">
+        <preConditions onFail="CONTINUE">
+            <sqlCheck expectedResult="1">
+                select count(1) from pg_extension where extname = 'pg_trgm';
+            </sqlCheck>
+        </preConditions>
+        <sql><![CDATA[
+            CREATE INDEX ndx_jht_training_location_trgm ON jht_training USING GIST (training_location gist_trgm_ops);
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2016-06-20-add-hunting-area-mh-year" author="vincit-kyostihe">
+        <addColumn tableName="hunting_club_area">
+            <column name="metsahallitus_year" type="INT"/>
+        </addColumn>
+        <sql><![CDATA[
+            UPDATE hunting_club_area SET metsahallitus_year = hunting_year + 1;
+        ]]></sql>
+        <addNotNullConstraint tableName="hunting_club_area" columnName="metsahallitus_year" columnDataType="INT"/>
+    </changeSet>
+
+    <changeSet id="2016-06-10-occupation-nomination" author="vincit-kyostihe">
+        <createTable tableName="occupation_nomination">
+            <column autoIncrement="true" name="occupation_nomination_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="occupation_nomination_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="occupation_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="nomination_status" type="CHAR(1)" defaultValue="A">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="nomination_date" type="DATE"/>
+
+            <column name="decision_date" type="DATE"/>
+
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_occupation_nomination_rhy_id"/>
+            </column>
+
+            <column name="person_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="person(person_id)"
+                             foreignKeyName="fk_occupation_nomination_person_id"/>
+            </column>
+
+            <column name="rhy_person_id" type="BIGINT">
+                <constraints references="person(person_id)"
+                             foreignKeyName="fk_occupation_nomination_rhy_person_id"/>
+            </column>
+
+            <column name="moderator_user_id" type="BIGINT">
+                <constraints references="system_user(user_id)"
+                             foreignKeyName="fk_occupation_nomination_user_id"/>
+            </column>
+
+            <column name="occupation_id" type="BIGINT">
+                <constraints references="occupation(occupation_id)"
+                             deleteCascade="true"
+                             foreignKeyName="fk_occupation_nomination_occupation_id"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="occupation_nomination" indexName="ndx_occupation_nomination_rhy_type_status">
+            <column name="rhy_id"/>
+            <column name="occupation_type"/>
+            <column name="nomination_status"/>
+        </createIndex>
+
+        <createIndex tableName="occupation_nomination" indexName="ndx_occupation_nomination_occupation">
+            <column name="occupation_id"/>
+        </createIndex>
+
+        <sql dbms="postgresql"><![CDATA[
+            CREATE UNIQUE INDEX uk_occupation_nomination_status ON occupation_nomination (rhy_id, occupation_type, person_id)
+            WHERE nomination_status NOT IN ('H', 'N');
+        ]]></sql>
+
+        <sql><![CDATA[
+            ALTER TABLE occupation_nomination ADD CONSTRAINT ck_occupation_nomination_status
+                CHECK (nomination_status IN ('A', 'E', 'H', 'N'));
+
+            ALTER TABLE occupation_nomination ADD CONSTRAINT ck_rhy_person_required
+                CHECK (nomination_status = 'A' OR rhy_person_id IS NOT NULL);
+
+            ALTER TABLE occupation_nomination ADD CONSTRAINT ck_rhy_nomination_date_required
+                CHECK (nomination_status = 'A' OR nomination_date IS NOT NULL);
+
+            ALTER TABLE occupation_nomination ADD CONSTRAINT ck_moderator_required
+                CHECK (nomination_status NOT IN ('H', 'N') OR moderator_user_id IS NOT NULL);
+
+            ALTER TABLE occupation_nomination ADD CONSTRAINT ck_rhy_decision_date_required
+                CHECK (nomination_status NOT IN ('H', 'N') OR decision_date IS NOT NULL);
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2016-05-26-add_constraint_into_moose_hunting_summary" author="vincit-jarkkoka">
+        <sql>
+            <![CDATA[
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_hunting_area_and_remaining_population_must_be_given CHECK (
+                    hunting_finished = false
+                    OR total_hunting_area IS NOT NULL AND mooses_remaining_in_total_hunting_area IS NOT NULL
+                    OR mooses_remaining_in_effective_hunting_area IS NOT NULL
+                    AND (
+                        effective_hunting_area IS NOT NULL
+                        OR total_hunting_area IS NOT NULL AND effective_hunting_area_percentage IS NOT NULL
+                    ));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-05-26-add-table-basic_club_hunting_summary" author="vincit-jarkkoka">
+        <createTable tableName="basic_club_hunting_summary">
+            <column autoIncrement="true" name="hunting_summary_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="basic_club_hunting_summary_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="club_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="species_amount_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="hunting_end_date" type="DATE"/>
+            <column name="moderator_override" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="total_hunting_area" type="INT"/>
+            <column name="effective_hunting_area" type="INT"/>
+            <column name="remaining_population_in_total_area" type="INT"/>
+            <column name="remaining_population_in_effective_area" type="INT"/>
+
+            <column name="number_of_adult_males" type="INT"/>
+            <column name="number_of_adult_females" type="INT"/>
+            <column name="number_of_young_males" type="INT"/>
+            <column name="number_of_young_females" type="INT"/>
+            <column name="number_of_non_edible_adults" type="INT"/>
+            <column name="number_of_non_edible_youngs" type="INT"/>
+
+            <!-- Backup fields for case when moderator-overridden values are to be revoked. -->
+            <column name="original_hunting_end_date" type="DATE"/>
+            <column name="original_total_hunting_area" type="INT"/>
+            <column name="original_effective_hunting_area" type="INT"/>
+            <column name="original_remaining_population_in_total_area" type="INT"/>
+            <column name="original_remaining_population_in_effective_area" type="INT"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="basic_club_hunting_summary"
+                                 baseColumnNames="species_amount_id"
+                                 constraintName="fk_basic_club_hunting_summary_species_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="harvest_permit_species_amount"
+                                 referencedColumnNames="harvest_permit_species_amount_id"/>
+
+        <addForeignKeyConstraint baseTableName="basic_club_hunting_summary"
+                                 baseColumnNames="club_id"
+                                 constraintName="fk_basic_club_hunting_summary_club"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"/>
+
+        <createIndex tableName="basic_club_hunting_summary"
+                     indexName="ndx_basic_club_hunting_summary_club_species_amount"
+                     unique="true">
+
+            <column name="club_id"/>
+            <column name="species_amount_id"/>
+        </createIndex>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_total_hunting_area_restriction
+                    CHECK (total_hunting_area >= 0);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_effective_hunting_area_restriction
+                    CHECK (effective_hunting_area >= 0 AND effective_hunting_area <= total_hunting_area);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_remaining_population_in_total_area_restriction
+                    CHECK (remaining_population_in_total_area >= 0);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_remaining_population_in_effective_area_restriction
+                    CHECK (remaining_population_in_effective_area >= 0
+                           AND remaining_population_in_effective_area <= remaining_population_in_total_area);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_hunting_area_and_remaining_population_must_be_given CHECK (
+                    hunting_end_date IS NULL OR
+                    total_hunting_area IS NOT NULL AND remaining_population_in_total_area IS NOT NULL OR
+                    effective_hunting_area IS NOT NULL AND remaining_population_in_effective_area IS NOT NULL);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_range_of_adult_males
+                    CHECK (number_of_adult_males >= 0);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_range_of_adult_females
+                    CHECK (number_of_adult_females >= 0);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_range_of_young_males
+                    CHECK (number_of_young_males >= 0);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_range_of_young_females
+                    CHECK (number_of_young_females >= 0);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_range_of_non_edible_adults
+                    CHECK (number_of_non_edible_adults >= 0 AND number_of_non_edible_adults <= number_of_adult_males + number_of_adult_females);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_range_of_non_edible_youngs
+                    CHECK (number_of_non_edible_youngs >= 0 AND number_of_non_edible_youngs <= number_of_young_males + number_of_young_females);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_harvest_amounts_must_be_given_with_moderator_override
+                    CHECK (
+                        moderator_override = false OR
+                        number_of_adult_males IS NOT NULL AND number_of_adult_females IS NOT NULL AND
+                        number_of_young_males IS NOT NULL AND number_of_young_females IS NOT NULL AND
+                        number_of_non_edible_adults IS NOT NULL AND number_of_non_edible_youngs IS NOT NULL);
+
+                ALTER TABLE basic_club_hunting_summary ADD CONSTRAINT ck_basic_summary_harvest_amounts_must_not_be_given_without_moderator_override
+                    CHECK (
+                        moderator_override = true OR
+                        number_of_adult_males IS NULL AND number_of_adult_females IS NULL AND
+                        number_of_young_males IS NULL AND number_of_young_females IS NULL AND
+                        number_of_non_edible_adults IS NULL AND number_of_non_edible_youngs IS NULL);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-07-01-upgrade-session-repository" author="vincit-kyostihe" dbms="postgresql">
+        <dropTable tableName="spring_session"/>
+        <createTable tableName="spring_session">
+            <column name="session_id" type="CHAR(36)">
+                <constraints primaryKey="true" primaryKeyName="spring_session_pk"/>
+            </column>
+            <column name="creation_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_access_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_inactive_interval" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="principal_name" type="VARCHAR(100)"/>
+        </createTable>
+
+        <createIndex tableName="spring_session" indexName="spring_session_ix1">
+            <column name="last_access_time"/>
+        </createIndex>
+
+        <createTable tableName="spring_session_attributes">
+            <column name="session_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             references="spring_session(session_id)"
+                             foreignKeyName="spring_session_attributes_fk"
+                             deleteCascade="true"/>
+            </column>
+            <column name="attribute_name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_bytes" type="BYTEA"/>
+        </createTable>
+
+        <addPrimaryKey tableName="spring_session_attributes"
+                       constraintName="spring_session_attributes_pk"
+                       columnNames="session_id,attribute_name"/>
+    </changeSet>
+
+    <changeSet id="2016-07-01-upgrade-session-repository" author="vincit-kyostihe" dbms="h2">
+        <dropTable tableName="spring_session"/>
+        <createTable tableName="spring_session">
+            <column name="session_id" type="CHAR(36)">
+                <constraints primaryKey="true" primaryKeyName="spring_session_pk"/>
+            </column>
+            <column name="creation_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_access_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_inactive_interval" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="principal_name" type="VARCHAR(100)"/>
+        </createTable>
+
+        <createIndex tableName="spring_session" indexName="spring_session_ix1">
+            <column name="last_access_time"/>
+        </createIndex>
+
+        <createTable tableName="spring_session_attributes">
+            <column name="session_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             references="spring_session(session_id)"
+                             foreignKeyName="spring_session_attributes_fk"
+                             deleteCascade="true"/>
+            </column>
+            <column name="attribute_name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_bytes" type="LONGVARBINARY"/>
+        </createTable>
+
+        <addPrimaryKey tableName="spring_session_attributes"
+                       constraintName="spring_session_attributes_pk"
+                       columnNames="session_id,attribute_name"/>
+    </changeSet>
+    <changeSet id="2016-07-15-moose_harvest_report_no_harvests" author="vincit-terova">
+        <addColumn tableName="moose_harvest_report">
+            <column name="no_harvests" type="BOOLEAN"></column>
+        </addColumn>
+
+        <dropNotNullConstraint tableName="moose_harvest_report"
+                               columnName="receipt_file_metadata_id"
+                               columnDataType="CHAR(36)"/>
+
+        <sql>
+            ALTER TABLE moose_harvest_report ADD CONSTRAINT ck_moose_harvest_report_no_harvests
+            CHECK (no_harvests=true OR receipt_file_metadata_id IS NOT NULL);
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-07-12-game_species_uniq_official_code" author="vincit-terova">
+        <createIndex tableName="game_species"
+                     indexName="ndx_game_species_official_code"
+                     unique="true">
+            <column name="official_code"></column>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-07-12-moose_harvest_report_species_amount" author="vincit-terova">
+        <addColumn tableName="moose_harvest_report">
+            <column name="species_amount_id" type="BIGINT"></column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="moose_harvest_report"
+                baseColumnNames="species_amount_id"
+                constraintName="fk_moose_harvest_report_species_amount"
+                onDelete="NO ACTION" onUpdate="NO ACTION"
+                referencedTableName="harvest_permit_species_amount"
+                referencedColumnNames="harvest_permit_species_amount_id" />
+
+        <sql>
+            UPDATE moose_harvest_report
+            SET species_amount_id =
+            (SELECT hpsa.harvest_permit_species_amount_id
+            FROM harvest_permit_species_amount hpsa
+            JOIN game_species g ON (g.game_species_id=hpsa.game_species_id AND g.official_code=47503)
+            WHERE hpsa.harvest_permit_id=moose_harvest_report.harvest_permit_id
+            );
+        </sql>
+
+        <addNotNullConstraint tableName="moose_harvest_report" columnName="species_amount_id" columnDataType="BIGINT" />
+
+        <dropColumn tableName="moose_harvest_report" columnName="harvest_permit_id"></dropColumn>
+
+        <createIndex tableName="moose_harvest_report"
+                     indexName="ndx_moose_harvest_report_species_amount"
+                     unique="true">
+            <column name="species_amount_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-08-25-moose_harvest_report_moderator_override" author="vincit-terova">
+        <addColumn tableName="moose_harvest_report">
+            <column name="moderator_override" type="BOOLEAN" defaultValue="false"></column>
+        </addColumn>
+
+        <sql>
+            ALTER TABLE moose_harvest_report DROP CONSTRAINT ck_moose_harvest_report_no_harvests;
+            ALTER TABLE moose_harvest_report ADD CONSTRAINT ck_moose_harvest_report_consistency
+            CHECK (
+                (moderator_override=true AND no_harvests=false AND receipt_file_metadata_id IS NULL) OR
+                (moderator_override=false AND no_harvests=true AND receipt_file_metadata_id IS NULL) OR
+                (moderator_override=false AND no_harvests=false AND receipt_file_metadata_id IS NOT NULL)
+            );
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="2016-08-01-add-index-for-zone_palsta_is_changed" author="vincit-terova" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="zone_palsta" indexName="ndx_zone_palsta_is_changed" />
+            </not>
+        </preConditions>
+        <createIndex tableName="zone_palsta" indexName="ndx_zone_palsta_is_changed">
+            <column name="is_changed" type="boolean"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-08-29-diary-entry-moderator-override" author="vincit-kyostihe">
+        <addColumn tableName="harvest">
+            <column name="moderator_override" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="game_observation">
+            <column name="moderator_override" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2016-09-09-remove-group-permit-join-table" author="vincit-kyostihe">
+        <addColumn tableName="organisation">
+            <column name="harvest_permit_id" type="BIGINT">
+                <constraints foreignKeyName="fk_organisation_harvest_permit"
+                             referencedTableName="harvest_permit"
+                             referencedColumnNames="harvest_permit_id"/>
+            </column>
+        </addColumn>
+        <sql dbms="postgresql"><![CDATA[
+UPDATE organisation
+SET harvest_permit_id = hpg.harvest_permit_id
+FROM harvest_permit_groups hpg
+WHERE organisation_type = 'CLUBGROUP'
+AND organisation.organisation_id = hpg.organisation_id;
+        ]]></sql>
+        <dropTable tableName="harvest_permit_groups"/>
+    </changeSet>
+
+    <changeSet id="2016-10-04-add-harvest-permit-original-permit-index" author="vincit-kyostihe">
+        <createIndex tableName="harvest_permit" indexName="ndx_harvest_permit_original_permit_id">
+            <column name="original_permit_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-09-20-announcements" author="vincit-kyostihe">
+        <createTable tableName="announcement">
+            <column autoIncrement="true" name="announcement_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="announcement_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="subject" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_user_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="system_user(user_id)"
+                             foreignKeyName="fk_announcement_user_id"/>
+            </column>
+            <column name="from_occupation_type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="occupation_type(name)"
+                             foreignKeyName="fk_announcement_from_occupation_type"/>
+            </column>
+            <column name="from_organisation_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_announcement_from_organisation"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="announcement" indexName="ndx_announcement_from_organisation">
+            <column name="from_organisation_id"/>
+        </createIndex>
+
+        <createIndex tableName="announcement" indexName="ndx_announcement_from_user">
+            <column name="from_user_id"/>
+        </createIndex>
+
+        <createTable tableName="announcement_subscriber">
+            <column autoIncrement="true" name="announcement_subscriber_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="announcement_subscriber_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="announcement_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="announcement(announcement_id)"
+                             foreignKeyName="fk_announcement_subscriber_announcement"/>
+            </column>
+            <column name="organisation_id" type="BIGINT">
+                <constraints references="organisation(organisation_id)"
+                             foreignKeyName="fk_announcement_subscriber_organisation"/>
+            </column>
+            <column name="occupation_type" type="VARCHAR(255)">
+                <constraints references="occupation_type(name)"
+                             foreignKeyName="fk_announcement_subscriber_occupation_type"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="announcement_subscriber" indexName="ndx_announcement_subscriber_announcement">
+            <column name="announcement_id"/>
+        </createIndex>
+
+        <createIndex tableName="announcement_subscriber" indexName="ndx_announcement_subscriber_organisation">
+            <column name="organisation_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2016-07-29-update-deer-harvest_report_fields" author="vincit-terova">
+        <sql>
+            UPDATE harvest_report_fields
+            SET not_edible          = 'VOLUNTARY',
+                weight              = 'VOLUNTARY',
+                weight_measured     = 'VOLUNTARY',
+                weight_estimated    = 'VOLUNTARY',
+                antler_points_left  = 'VOLUNTARY',
+                antler_points_right = 'VOLUNTARY',
+                antlers_width       = 'VOLUNTARY',
+                additional_info     = 'VOLUNTARY'
+            WHERE game_species_id IN (SELECT game_species_id FROM game_species WHERE official_code IN (47629, 200556, 47484));
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-10-11-add-hunting_finished-flag-into-basic_club_hunting_summary" author="vincit-jarkkoka">
+        <addColumn tableName="basic_club_hunting_summary">
+            <column name="hunting_finished" type="BOOLEAN"/>
+            <column name="original_hunting_finished" type="BOOLEAN"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                UPDATE basic_club_hunting_summary SET hunting_finished = true WHERE hunting_end_date is not null;
+                UPDATE basic_club_hunting_summary SET hunting_finished = false WHERE hunting_end_date is null;
+                UPDATE basic_club_hunting_summary SET original_hunting_finished = true WHERE original_hunting_end_date is not null;
+            ]]>
+        </sql>
+
+        <!-- Add not-null constraint after data migration. -->
+        <addNotNullConstraint tableName="basic_club_hunting_summary"
+                              columnName="hunting_finished"
+                              columnDataType="BOOLEAN"/>
+    </changeSet>
+
+    <changeSet id="2016-10-18-moose_hunting_summary_wild_boar" author="vincit-terova">
+        <addColumn tableName="moose_hunting_summary">
+            <column name="wild_boar_appeared" type="BOOLEAN"/>
+            <column name="wild_boar_population_growth" type="CHAR(1)"/>
+            <column name="wild_boar_estimated_specimen_amount" type="INT"/>
+            <column name="wild_boar_estimated_amount_of_sow_with_piglets" type="INT"/>
+        </addColumn>
+        <sql>
+            <![CDATA[
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_wild_boar_population_growth
+                    CHECK (wild_boar_population_growth IN ('I', 'U', 'D'));
+            ]]>
+        </sql>
+
+    </changeSet>
+
+    <changeSet id="2016-10-26-copy_deers_weight_to_weight_estimated" author="vincit-terova" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                UPDATE harvest_specimen
+                SET weight_estimated = weight, weight = NULL
+                WHERE harvest_id IN (
+                  SELECT harvest_id FROM harvest h
+                  JOIN game_species g ON g.game_species_id = h.game_species_id AND g.official_code IN (47484, 47629, 200556)
+                )
+                AND weight_estimated IS NULL AND weight IS NOT NULL;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-10-31-add-column-area-size" author="vincit-terova">
+        <addColumn tableName="harvest_permit">
+            <column name="permit_area_size" type="INT" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2016-10-31-game_diary_entry_linked-to-hunting-day-by-person-and-timestamp" author="vincit-terova">
+        <addColumn tableName="harvest">
+            <column name="approver_to_hunting_day_id" type="BIGINT">
+                <constraints references="person(person_id)"
+                             foreignKeyName="fk_harvest_approver_to_hunting_day_person_id"/>
+            </column>
+            <column name="point_of_time_approved_to_hunting_day" type="TIMESTAMP WITH TIME ZONE" />
+        </addColumn>
+        <createIndex tableName="harvest" indexName="ndx_harvest_approver_to_hunting_day">
+            <column name="approver_to_hunting_day_id"/>
+        </createIndex>
+
+        <addColumn tableName="game_observation">
+            <column name="approver_to_hunting_day_id" type="BIGINT">
+                <constraints references="person(person_id)"
+                             foreignKeyName="fk_game_observation_approver_to_hunting_day_person_id"/>
+            </column>
+            <column name="point_of_time_approved_to_hunting_day" type="TIMESTAMP WITH TIME ZONE" />
+        </addColumn>
+        <createIndex tableName="game_observation" indexName="ndx_game_observation_approver_to_hunting_day">
+            <column name="approver_to_hunting_day_id"/>
+        </createIndex>
+
+    </changeSet>
+
+    <changeSet id="2016-11-22-add-new-observation-types-for-beavers" author="vincit-jarkkoka">
+        <insert tableName="observation_type">
+            <column name="name" value="PATO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="PESA_KEKO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="PESA_PENKKA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="PESA_SEKA"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2016-11-22-create-new-observation-metadata-because-of-beaver-change" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                -- Duplicate observation_base_fields for metadata version 2.
+
+                INSERT INTO observation_base_fields (game_species_id, metadata_version, within_moose_hunting)
+                SELECT game_species_id, 2, within_moose_hunting
+                FROM observation_base_fields
+                ORDER BY game_species_id ASC;
+
+                -- Duplicate observation_context_sensitive_fields for metadata version 2.
+
+                INSERT INTO observation_context_sensitive_fields (
+                    metadata_version, game_species_id, within_moose_hunting, observation_type,
+                    amount, age, extended_age_range, gender,
+                    wounded, dead, on_carcass,
+                    collar_or_radio, legring_or_wingmark, earmark,
+                    mooselike_male_amount,
+                    mooselike_female_amount,
+                    mooselike_female_1_calf_amount,
+                    mooselike_female_2_calfs_amount,
+                    mooselike_female_3_calfs_amount,
+                    mooselike_female_4_calfs_amount,
+                    mooselike_unknown_specimen_amount)
+                SELECT 2, game_species_id, within_moose_hunting, observation_type,
+                    amount, age, extended_age_range, gender,
+                    wounded, dead, on_carcass,
+                    collar_or_radio, legring_or_wingmark, earmark,
+                    mooselike_male_amount,
+                    mooselike_female_amount,
+                    mooselike_female_1_calf_amount,
+                    mooselike_female_2_calfs_amount,
+                    mooselike_female_3_calfs_amount,
+                    mooselike_female_4_calfs_amount,
+                    mooselike_unknown_specimen_amount
+                FROM observation_context_sensitive_fields
+                ORDER BY game_species_id ASC, observation_type ASC, within_moose_hunting ASC;
+
+                -- Change PESA to PESA_KEKO for 'euroopanmajava' and 'kanadanmajava' with metadata version 2.
+
+                UPDATE observation_context_sensitive_fields
+                SET observation_type = 'PESA_KEKO'
+                WHERE metadata_version = 2
+                    AND observation_type = 'PESA'
+                    AND game_species_id IN (SELECT game_species_id FROM game_species WHERE official_code IN (48250, 48251));
+
+                -- Add new rows into observation_context_sensitive_fields specific to 'euroopanmajava' and 'kanadanmajava'
+
+                INSERT INTO observation_context_sensitive_fields (metadata_version, game_species_id, observation_type)
+                SELECT 2, game_species_id, t.otype AS observation_type
+                FROM game_species, (
+                    SELECT 'PATO' AS otype
+                    UNION SELECT 'PESA_PENKKA' AS otype
+                    UNION SELECT 'PESA_SEKA' AS otype
+                ) t
+                WHERE official_code IN (48250, 48251)
+                ORDER BY game_species_id ASC, observation_type ASC;
+
+                -- Migrate existing observations to new observation types for 'euroopanmajava' and 'kanadanmajava'
+
+                UPDATE game_observation
+                SET observation_type = 'PESA_KEKO'
+                WHERE observation_type = 'PESA'
+                    AND game_species_id IN (SELECT game_species_id FROM game_species WHERE official_code IN (48250, 48251));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-12-16-harvest_permit_species_amount_date_constraints" author="vincit-terova">
+        <sql>
+            <![CDATA[
+                ALTER TABLE harvest_permit_species_amount
+                  ADD CONSTRAINT ck_harvest_permit_species_amount_dates
+                CHECK (
+                  begin_date <= end_date
+                  AND (begin_date2 IS NULL OR (end_date < begin_date2 AND begin_date2 <= end_date2))
+                );
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-12-15-change-announcement-sender-type" author="vincit-kyostihe">
+        <createTable tableName="announcement_sender_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="announcement_sender_type">
+            <column name="name" value="RIISTAKESKUS"/>
+        </insert>
+        <insert tableName="announcement_sender_type">
+            <column name="name" value="TOIMINNANOHJAAJA"/>
+        </insert>
+        <insert tableName="announcement_sender_type">
+            <column name="name" value="SEURAN_YHDYSHENKILO"/>
+        </insert>
+
+        <dropForeignKeyConstraint baseTableName="announcement" constraintName="fk_announcement_from_occupation_type"/>
+
+        <renameColumn tableName="announcement" oldColumnName="from_occupation_type" newColumnName="sender_type"/>
+
+        <addForeignKeyConstraint baseTableName="announcement"
+                                 baseColumnNames="sender_type"
+                                 constraintName="fk_announcement_sender_type"
+                                 referencedTableName="announcement_sender_type"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="2016-12-30-use-lh_address-as-other-address-when-no-other-addresses-present" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                UPDATE person
+                SET other_address_id = lh_address_id
+                WHERE
+                  lh_address_id IS NOT NULL
+                  AND mr_address_id IS NULL
+                  AND other_address_id IS NULL;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2016-12-30-remove-vtj_address-and-lh_address-from-person" author="vincit-jarkkoka">
+        <dropColumn tableName="person" columnName="vtj_address_id"/>
+        <dropColumn tableName="person" columnName="lh_address_id"/>
+    </changeSet>
+
+</databaseChangeLog>

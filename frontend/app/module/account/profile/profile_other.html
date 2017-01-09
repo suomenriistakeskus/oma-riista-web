@@ -1,0 +1,32 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="account.profile.title.otherInfo"></h3>
+    </div>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.byName"></td>
+                    <td ng-bind="::$ctrl.profile.byName"></td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.email"></td>
+                    <td ng-bind="::$ctrl.profile.email"></td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.phoneNumber"></td>
+                    <td ng-bind="::$ctrl.profile.phoneNumber"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-right">
+            <a class="btn btn-primary"
+               ng-click="$ctrl.editOtherInfo()"
+               translate="account.profile.button.editOtherInfo"></a>
+        </div>
+    </div>
+</div>

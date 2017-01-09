@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/srva/rvr"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/srva/rvr">
+
+    <xs:element name="srvaEvents">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="timeStamp" type="xs:dateTime">
+                    <xs:annotation>
+                        <xs:documentation>Creation time of this document.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="version" type="xs:token" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Version of this document.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="srvaEvent" type="srvaEvent" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>Contains all approved SRVA events.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="srvaEvent">
+        <xs:sequence>
+            <xs:element name="id" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>Unique identifier of SRVA event.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="rev" type="xs:int">
+                <xs:annotation>
+                    <xs:documentation>Revision of SRVA event.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="eventName" type="srvaEventNameEnum"/>
+
+            <xs:element name="eventType" type="srvaEventTypeEnum"/>
+
+            <xs:element name="otherTypeDescription" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SRVA event type description if eventType is 'OTHER'.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:choice>
+                <xs:element name="gameSpeciesOfficialCode" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Official code of game species of SRVA event.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="otherSpeciesDescription" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>SRVA event species description if gameSpeciesCode is not defined.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+
+            <xs:element name="gameSpeciesHumanReadableName" type="xs:token" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Human readable name of game species of SRVA event.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="totalSpecimenAmount" type="xs:int">
+                <xs:annotation>
+                    <xs:documentation>Amount of specimens in SRVA event.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="specimens" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Description of specimens in SRVA event.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="specimen" type="srvaSpecimen" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="pointOfTime" type="xs:dateTime">
+                <xs:annotation>
+                    <xs:documentation>Time stamp of SRVA event.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="geoLocation" type="geoLocation">
+                <xs:annotation>
+                    <xs:documentation>Location coordinates of SRVA event in ETRS-TM35FIN format.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <!-- Author and approver not included at this point -->
+            <!--
+            <xs:element name="author" type="person">
+                <xs:annotation>
+                    <xs:documentation>Identity of reporter of SRVA event.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="approver" type="person">
+                <xs:annotation>
+                    <xs:documentation>Identity of approver of SRVA event.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            -->
+
+            <xs:element name="rhyOfficialCode" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>Official code of game management association where SRVA event occured.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="rhyHumanReadableName" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>Human readable name of game management association where SRVA event occured.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="methods" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Methods used to resolve SRVA event</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="method" type="srvaMethodEnum" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="otherMethodDescription" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>SRVA event method description if methods contains 'OTHER'.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+
+            <xs:element name="eventResult" type="srvaResultEnum" minOccurs="0"/>
+
+            <xs:element name="personCount" type="xs:int" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Number of persons participated to resolve SRVA event.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="timeSpent" type="xs:int" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Combined time used by all participants in hours.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="geoLocation">
+        <xs:sequence>
+            <xs:element name="accuracy" type="xs:double" minOccurs="0"/>
+            <xs:element name="latitude" type="xs:int"/>
+            <xs:element name="longitude" type="xs:int"/>
+            <xs:element name="source" type="sourceEnum" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="sourceEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="GPS_DEVICE"/>
+            <xs:enumeration value="MANUAL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="srvaEventNameEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ACCIDENT"/>
+            <xs:enumeration value="DEPORTATION"/>
+            <xs:enumeration value="INJURED_ANIMAL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="srvaResultEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ANIMAL_FOUND_DEAD"/>
+            <xs:enumeration value="ANIMAL_FOUND_AND_TERMINATED"/>
+            <xs:enumeration value="ANIMAL_FOUND_AND_NOT_TERMINATED"/>
+            <xs:enumeration value="ACCIDENT_SITE_NOT_FOUND"/>
+            <xs:enumeration value="ANIMAL_TERMINATED"/>
+            <xs:enumeration value="ANIMAL_DEPORTED"/>
+            <xs:enumeration value="ANIMAL_NOT_FOUND"/>
+            <xs:enumeration value="UNDUE_ALARM"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="srvaEventTypeEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="TRAFFIC_ACCIDENT"/>
+            <xs:enumeration value="RAILWAY_ACCIDENT"/>
+            <xs:enumeration value="ANIMAL_NEAR_HOUSES_AREA"/>
+            <xs:enumeration value="ANIMAL_AT_FOOD_DESTINATION"/>
+            <xs:enumeration value="INJURED_ANIMAL"/>
+            <xs:enumeration value="ANIMAL_ON_ICE"/>
+            <xs:enumeration value="OTHER"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="srvaSpecimen">
+        <xs:sequence>
+            <xs:element name="age" type="gameAgeEnum" minOccurs="0"/>
+            <xs:element name="gender" type="gameGenderEnum" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="gameAgeEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ADULT"/>
+            <xs:enumeration value="YOUNG"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameGenderEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="FEMALE"/>
+            <xs:enumeration value="MALE"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="srvaMethodEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="DOG"/>
+            <xs:enumeration value="PAIN_EQUIPMENT"/>
+            <xs:enumeration value="SOUND_EQUIPMENT"/>
+            <xs:enumeration value="TRACED_WITH_DOG"/>
+            <xs:enumeration value="TRACED_WITHOUT_DOG"/>
+            <xs:enumeration value="OTHER"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Author and approver not included at this point -->
+    <!--
+    <xs:complexType name="person">
+    <xs:sequence>
+        <xs:choice>
+            <xs:element name="ssn" type="xs:token"/>
+            <xs:element name="userName" type="xs:token"/>
+        </xs:choice>
+        <xs:element name="firstName" type="xs:string"/>
+        <xs:element name="lastName" type="xs:string"/>
+    </xs:sequence>
+    </xs:complexType>
+    -->
+</xs:schema>
+

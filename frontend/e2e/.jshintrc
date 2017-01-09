@@ -1,0 +1,5 @@
+{
+  "jasmine": true,
+  "node": true,
+  "globals": "protractor, browser, by, $, $$, element"
+}

@@ -1,0 +1,27 @@
+<li uib-dropdown class="r-role-nav">
+    <a uib-dropdown-toggle class="role-title">
+        <span ng-if="$ctrl.selectedRole()" ng-bind="'global.role.' + $ctrl.selectedRole().type | translate"></span>
+        <br/>
+        <strong ng-bind="$ctrl.getRoleDisplayName($ctrl.selectedRole()) | uppercase"></strong>
+        <b class="caret"></b>
+    </a>
+
+    <ul class="dropdown-menu" uib-dropdown-menu>
+        <li ng-repeat="role in $ctrl.roles()"
+            ng-click="$ctrl.selectRole(role)"
+            ng-class="{'active': $ctrl.isSelectedRole(role)}">
+            <a class="role-title">
+                <span ng-if="role">{{ 'global.role.' + role.type | translate }}</span>
+                <br/>
+                <strong>{{ $ctrl.getRoleDisplayName(role) | uppercase }}</strong>
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a ui-sref="logout">
+                <span class="glyphicon glyphicon-log-out"></span>
+                <span translate="global.menu.account.logout"></span>
+            </a>
+        </li>
+    </ul>
+</li>

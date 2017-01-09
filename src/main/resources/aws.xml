@@ -1,0 +1,21 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aws-context="http://www.springframework.org/schema/cloud/aws/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/cloud/aws/context
+        http://www.springframework.org/schema/cloud/aws/context/spring-cloud-aws-context-1.0.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <aws-context:context-credentials>
+        <!-- Prefer instance profile, fallback to configuration file -->
+        <aws-context:instance-profile-credentials/>
+        <aws-context:simple-credentials access-key="${AWS_ACCESS_KEY_ID:}" secret-key="${AWS_SECRET_KEY:}"/>
+    </aws-context:context-credentials>
+
+    <aws-context:context-region region="eu-west-1"/>
+
+    <aws-context:context-resource-loader task-executor="awsExecutor"/>
+    <task:executor id="awsExecutor" pool-size="10" queue-capacity="0" rejection-policy="CALLER_RUNS" />
+</beans>

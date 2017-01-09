@@ -1,0 +1,2146 @@
+{
+    "DIALOGS_ERROR": "Error",
+    "DIALOGS_ERROR_MSG": "An unknown error has occurred.",
+    "DIALOGS_CLOSE": "Close",
+    "DIALOGS_PLEASE_WAIT": "Please Wait",
+    "DIALOGS_PLEASE_WAIT_ELIPS": "Please Wait...",
+    "DIALOGS_PLEASE_WAIT_MSG": "Waiting on operation to complete.",
+    "DIALOGS_PERCENT_COMPLETE": "% Complete",
+    "DIALOGS_NOTIFICATION": "Notification",
+    "DIALOGS_NOTIFICATION_MSG": "Unknown application notification.",
+    "DIALOGS_CONFIRMATION": "Oletko varma",
+    "DIALOGS_CONFIRMATION_MSG": "Haluatko varmasti suorittaa toimenpiteen?",
+    "DIALOGS_OK": "Hyväksy",
+    "DIALOGS_YES": "Kyllä",
+    "DIALOGS_NO": "Ei",
+    "global": {
+        "title": "oma.riista.fi",
+        "menu": {
+            "home": "Etusivu",
+            "account": {
+                "main": "Käyttäjätili",
+                "password": "Salasana",
+                "login": "Kirjaudu",
+                "logout": "Kirjaudu ulos"
+            },
+            "help": "Ohjeet",
+            "language": "Kieli",
+            "admin": "Ylläpito",
+            "reports": "Raportointi",
+            "search": "Hae..."
+        },
+        "idle": {
+            "warning": {
+                "title": "Istunnon aikakatkaisu",
+                "body": "Sinut kirjataan ulos automaattisesti {{ timeout }} sekunnin kuluttua. Voit estää uloskirjautumisen esimerkiksi liikuttamalla hiirtä."
+            },
+            "timeout": {
+                "title": "Automaattinen uloskirjautuminen",
+                "body": "Palvelin on kirjannut sinut ulos, koska et ole käyttänyt sitä 30 minuuttiin. Ole hyvä ja kirjaudu uudelleen."
+            }
+        },
+        "language": {
+            "fi": "Suomi",
+            "en": "English",
+            "sv": "Svenska"
+        },
+        "languageName": {
+            "fi": "Suomi",
+            "en": "Englanti",
+            "sv": "Ruotsi"
+        },
+        "dialog": {
+            "confirmation": {
+                "title": "Oletko varma",
+                "text": "Haluatko varmasti suorittaa toimenpiteen?"
+            },
+            "unsavedChangesConfirmation": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti suorittaa toimenpiteen?"
+        },
+        "inline-edit": {
+            "edit": "Muokkaa",
+            "save": "Tallenna",
+            "cancel": "Peruuta"
+        },
+        "pager": {
+            "current": "Sivu",
+            "previous": "Edellinen",
+            "next": "Seuraava",
+            "first": "Ensimmäinen",
+            "last": "Viimeinen"
+        },
+        "datePicker": {
+            "today": "Nyt",
+            "weeks": "Viikot",
+            "clear": "Tyhjennä",
+            "close": "Sulje"
+        },
+        "button": {
+            "save": "Tallenna",
+            "ok": "Hyväksy",
+            "cancel": "Peruuta",
+            "edit": "Muokkaa",
+            "delete": "Poista",
+            "close": "Sulje",
+            "exit": "Poistu",
+            "open": "Avaa",
+            "add": "Lisää",
+            "continue": "Jatka",
+            "search": "Hae",
+            "selectAll": "Valitse kaikki",
+            "accept": "Hyväksy",
+            "reject": "Hylkää",
+            "submit": "Lähetä",
+            "copy": "Kopioi"
+        },
+        "map": {
+            "toggleLayers": "Näytä / piilota kaikki"
+        },
+        "messages": {
+            "error": "Tietojen päivitys epäonnistui. Yritä myöhemmin uudelleen",
+            "success": "Tiedot päivitettiin onnistuneesti",
+            "appRevisionChanged": "Sivusto on päivittynyt. Ole hyvä ja <a href='#restart'>päivitä sivu</a>",
+            "invalid": "Annettu arvo ei kelpaa.",
+            "notSet": "Ei asetettu"
+        },
+        "role": {
+            "ROLE_ADMIN": "Pääkäyttäjä",
+            "ROLE_MODERATOR": "Moderaattori",
+            "ROLE_USER": "Yksityishenkilö",
+            "ROLE_REST": "Rajapintakäyttäjä",
+            "TOIMINNANOHJAAJA": "Toiminnanohjaaja",
+            "SEURAN_YHDYSHENKILO": "Seuran yhteyshenkilö",
+            "SEURAN_JASEN": "Seuran jäsen",
+            "RYHMAN_METSASTYKSENJOHTAJA": "Metsästyksenjohtaja",
+            "SRVA_YHTEYSHENKILO": "SRVA-Yhteyshenkilö"
+        },
+        "organisationType": {
+            "RK": "Riistakeskus",
+            "RKA": "Riistakeskuksen alue",
+            "VRN": "Valtakunnallinen riistaneuvosto",
+            "ARN": "Alueellinen riistaneuvosto",
+            "RHY": "Riistanhoitoyhdistys",
+            "CLUB": "Seura"
+        },
+        "address": {
+            "streetAddress": "Lähiosoite",
+            "city": "Kaupunki",
+            "country": "Maa",
+            "postalCode": "Postinumero"
+        },
+        "person": {
+            "name": "Nimi",
+            "firstName": "Etunimi",
+            "lastName": "Sukunimi",
+            "byName": "Kutsumanimi",
+            "ssn": "Henkilötunnus",
+            "homeMunicipality": "Kotikunta",
+            "nativeLanguage": "Äidinkieli",
+            "finnishCitizen": "Suomen kansalainen",
+            "email": "Sähköpostiosoite",
+            "address": "Osoite",
+            "phoneNumber": "Puhelinnumero",
+            "hunterNumber": "Metsästäjänumero"
+        },
+        "about": {
+            "about": "Tietoja palvelusta",
+            "aboutContentPath": "i18n/about_fi.html",
+            "termsAndConditions": "Käyttöehdot",
+            "termsAndConditionsContentPath": "i18n/terms_and_conditions_fi.html",
+            "privacyPolicy": "Rekisteriseloste",
+            "privacyPolicyContentPath": "i18n/privacy_policy_fi.html",
+            "technicalRequirements": "Tekniset vaatimukset",
+            "technicalRequirementsContentPath": "i18n/technical_requirements_fi.html",
+            "contactInformation": "Yhteystiedot",
+            "contactInformationContentPath": "i18n/contact_information_fi.html"
+        },
+        "block": {
+            "wait": "Odota..."
+        },
+        "geoLocation": {
+            "lat": "P",
+            "lon": "I",
+            "coordinatesText": "<strong>P</strong> {{latitude}} <strong>I</strong> {{longitude}} (ETRS-TM35FIN)",
+            "plainCoordinatesText": "P {{latitude}} I {{longitude}}",
+            "required": "Valitse sijainti kartalta"
+        },
+        "marker_messages": {
+            "species": "Eläinlaji",
+            "date": "Päivä",
+            "time": "Aika",
+            "coordinates": "Koordinaatit",
+            "doOpen": "Avaa"
+        },
+        "mapLayer": {
+            "empty": "Ei taustakarttaa",
+            "terrain": "Maastokartta",
+            "background": "Taustakartta",
+            "aerial": "Ortokuva"
+        },
+        "toFrontpage": "Etusivulle",
+        "yes": "Kyllä",
+        "no": "Ei",
+        "or": "tai",
+        "beginDate": "Alkupäivä",
+        "endDate": "Loppupäivä",
+        "state": "Tila",
+        "marking": "Merkintä",
+        "total": "Yhteensä",
+        "showAll": "Näytä kaikki"
+    },
+    "validation": {
+        "required": "Arvo vaaditaan",
+        "minlength": "Syöte on liian lyhyt",
+        "maxlength": "Syöte on liian pitkä",
+        "max": "Arvo on liian suuri",
+        "min": "Arvo on liian pieni",
+        "number": "Syöte ei ole numero",
+        "pattern": "Syöte ei kelpaa",
+        "date": "Päivämäärä ei kelpaa",
+        "invalidFinnishDateInPast": "Aika ei kelpaa",
+        "finnishDateTimeValidity": "Aika on tulevaisuudessa",
+        "timeInsideHuntingDay": "Aika metsästyspäivän ulkopuolella",
+        "validateDateBounds": "Päiväys ei ole sallittu",
+        "email": "Syötä laillinen sähköpostiosoite",
+        "phoneNumber": "Syötä laillinen puhelinnumero",
+        "hunterNumber": "Epäkelpo metsästäjänumero",
+        "finnishPersonalIdentity": "Epäkelpo henkilötunnus",
+        "duplicate": "Arvo löytyy jo järjestelmästä"
+    },
+    "main": {
+        "title": "Riistahallinnon asiointipalvelu",
+        "title2": "Tarjoamme riistanhoitoyhdistysten toiminnanohjaajille tavan ylläpitää yhdistysten yhteys- sekä tapahtumatietoja. Myöhemmin tänä vuonna avaamme kansalaisille tarkoitetun helppokäyttöisen riistapäiväkirjan.",
+        "title3": "Palveluun rekisteröitymiseen tarvitset verkkopankkitunnukset sekä henkilökohtaisen sähköpostiosoitteen.",
+        "news": "Ajankohtaista",
+        "logged": {
+            "message": "Olet kirjautunut käyttäjätunnuksella \"{{username}}\"."
+        },
+        "appTitle": "Lataa ilmainen sovellus puhelimeesi",
+        "footer": {
+            "title": "Suomen riistakeskus",
+            "support": {
+                "title": "Oma riista neuvonta",
+                "telephone": "Puhelin 029 431 2111 (arkisin klo 12-16)",
+                "email": "Sähköposti <a href=\"mailto:oma@riista.fi\">oma@riista.fi</a>"
+            },
+            "customerService": {
+                "title": "Asiakaspalvelu",
+                "telephone": "Puhelin 029 431 2001 (arkisin klo 9-15)",
+                "email": "Sähköposti <a href=\"mailto:asiakaspalvelu@riista.fi\">asiakaspalvelu@riista.fi</a>"
+            }
+        }
+    },
+    "login": {
+        "title": "Kirjaudu palveluun",
+        "register": "Luo Oma riista -tunnus",
+        "recoverPassword": "Unohtuiko salasana?",
+        "emailChanged": "Sähköpostiosoite vaihtunut?",
+        "instructionsTitle": "Ohjeita palvelun käyttöön",
+        "instructionsLink": "http://riista.fi/riistahallinto/sahkoinen-asiointi/",
+        "form": {
+            "usernamePlaceholder": "sähköpostiosoite",
+            "passwordPlaceholder": "salasana",
+            "rememberme": "Pidä minut kirjautuneena",
+            "button": "Kirjaudu"
+        },
+        "otp": {
+            "title": "Syötä vahvan kirjautumisen koodi",
+            "codeLabel": "Koodi (6 numeroa)",
+            "instructionText": "Kirjautumiseen vaaditaan vahvistuskoodi. Koodi on lähetetty sinulle rekisteröityyn puhelinnumeroon tekstiviestinä.",
+            "sendFailed": "Vahvistuskoodin lähetys epäonnistui tai käyttäjän puhelinnumeroa ei ole asetettu"
+        },
+        "messages": {
+            "error": {
+                "authentication": "Kirjautuminen epäonnistui. Ole hyvä ja tarkista käyttäjänimi sekä salasana."
+            }
+        }
+    },
+    "recover_password": {
+        "send": {
+            "title": "Unohditko salasanasi?",
+            "body": "Syötä kenttään sähköpostiosoite, jota käytettiin tilin rekisteröinnissä.",
+            "processing": "Sähköpostia lähetetään... Odota hetki.",
+            "error": "Tapahtui virhe käsitellessä pyyntöä.",
+            "email_required": "Sähköpostikenttää ei voi jättää tyhjäksi.",
+            "email_invalid": "Laillinen sähköpostiosoite vaaditaan.",
+            "button": "Lähetä palautuslinkki"
+        },
+        "email_sent": {
+            "msg": "Olemme lähettäneet ohjeet salasanan palautukseen annettuun sähköpostiosoitteeseen. Tarkista roskapostilaatikkosi jos sähköposti ei saavu muutaman minuutin kuluessa."
+        },
+        "from_email": {
+            "title": "Salasanan palautus",
+            "error": "Salasanan palautusyritys epäonnistui.",
+            "tokenError": "Salasanan palautuslinkki on vanhentunut. Tilaa linkki uudelleen alla olevalla lomakkeella.",
+            "no_match": "Salasanan varmistus ei täsmää.",
+            "button": "Tallenna"
+        },
+        "success": {
+            "msg": "Salasanasi on nyt vaihdettu."
+        }
+    },
+    "change_password": {
+        "title": "Salasanan vaihto",
+        "form": {
+            "newpassword": "Uusi salasana",
+            "confirmpassword": "Salasanan vahvistus",
+            "previouspassword": "Nykyinen salasana",
+            "button": "Tallenna",
+            "cancel": "Peruuta"
+        },
+        "messages": {
+            "error": {
+                "global": "<strong>Tapahtui virhe.</strong> Salasanaa ei voitu vaihtaa",
+                "dontmatch": "Salasanan vahvistus ei täsmää.",
+                "wrongPassword": "Nykyinen salasana ei täsmää"
+            },
+            "success": "Salasana vaihdettiin onnistuneesti.",
+            "validate": {
+                "newpassword": {
+                    "required": "Salasana vaaditaan.",
+                    "minlength": "Salasanan tulee olla vähintään 8 merkkiä."
+                },
+                "confirmpassword": {
+                    "required": "Salasanan vahvistus vaaditaan."
+                },
+                "previouspassword": {
+                    "required": "Nykyinen salasana vaaditaan."
+                }
+            }
+        }
+    },
+    "registration": {
+        "email": {
+            "titleHtml": "Rekisteröityminen <a>oma.riista.fi</a> -palveluun",
+            "textHtml": "<p>Rekisteröityäksesi <a>oma.riista.fi</a> -palveluun tarvitset toimivan, henkilökohtaisen sähköpostiosoitteen.<p>\n<p>Rekisteröintiprosessissa on viisi vaihetta:</p>\n<ol>\n<li>Lähetämme antamaasi sähköpostiosoitteeseen viestin, jolla varmistamme osoitteen toimivuuden.</li>\n<li>Jatkat rekisteröitymistä klikkaamalla sähköpostiviestissä olevaa linkkiä.</li>\n<li>Hyväksyt palvelun käyttöehdot.</li>\n<li>Tunnistaudut pankkitunnuksillasi Vetuma-palvelussa.</li>\n<li>Määrittelet itsellesi salasanan ja matkapuhelinnumeron.</li>\n</ol>\n<p>Tämän jälkeen voit kirjautua palveluun.</p>\n<p><strong>HUOM:</strong> Mikäli et saa sähköpostia viimeistään tunnin kuluessa, tarkista sähköpostiohjelmasi roskapostikansio. Joissakin harvoissa tapauksissa viestimme voi päätyä sinne.</p>\n<p><strong>HUOM:</strong> Emme hyväksy henkilökohtaisiksi sähköpostiosoitteiksi @riista.fi tai @rhy.riista.fi sähköpostiosoitteita.</p>\n",
+            "success": "Sähköposti lähetettiin onnistuneesti"
+        },
+        "emailChanged": {
+            "title": "Sähköpostiosoitteen vaihtaminen",
+            "textHtml": "<p><strong>Voit vaihtaa Oma riista -tunnuksena käytettämäsi sähköpostiosoitteen rekisteröitymällä palveluun uudelleen.</strong></p><p>Kaikki palveluun syöttämäsi tiedot säilyvät uudelleenrekisteröinnissä.</p>"
+        },
+        "processing": {
+            "error": "Tapahtui virhe käsitellessä pyyntöä. Rekisteröityminen ei ole juuri nyt mahdollista.",
+            "wait": "Sähköpostia lähetetään... Odota hetki."
+        },
+        "form": {
+            "email": "Sähköpostiosoite",
+            "required": "Kenttä on vaadittu.",
+            "invalid": {
+                "email": "Laillinen sähköpostiosoite vaaditaan.",
+                "emailEndsWithRiistaFi": "'riista.fi'-päätteinen sähköpostiosoite ei ole sallittu."
+            },
+            "button": {
+                "send": "Aloita rekisteröityminen"
+            }
+        },
+        "confirmation": {
+            "titleHtml": "<a>Oma.riista.fi</a> -käyttöehtojen hyväksyminen",
+            "textHtml": "<p>Olet vahvistanut sähköpostiosoitteesi onnistuneesti. Ole hyvä ja tutustu seuraavaksi alla oleviin <a>oma.riista.fi</a> -käyttöehtoihin ja -rekisteriselosteeseen.</p>\n<p>Hyväksy käyttöehdot sivun alareunassa olevalla painikkeella. Tämän jälkeen tunnistamme sinut pankkitunnuksillasi Vetuma-palvelussa.</p>\n",
+            "termsAndConditions": "Suomen riistakeskuksen sähköisen asioinnin verkkopalvelun (oma.riista.fi) käyttöehdot ja säännöt",
+            "confirmText": "Hyväksyn palvelun ehdot ja hyväksyn henkilötietojeni käytön palvelussa",
+            "status": {
+                "waiting": "Sähköpostiosoitettasi tarkistetaan...",
+                "ok": "Sähköpostiosoitteesi on vahvistettu.",
+                "expired": "Sähköpostiosoitteesi tarkistus epäonnistui. Käyttämäsi linkki on vanhentunut. Aloita rekisteröityminen alusta.",
+                "error": "Tapahtui virhe"
+            },
+            "button": {
+                "continue": "Siirry Vetumaan tästä"
+            }
+        },
+        "completion": {
+            "button": {
+                "createAccount": "Luo käyttäjätili"
+            },
+            "title": "Tunnistautuminen onnistui",
+            "msg": "Tunnistautuminen onnistui. Luo käyttäjätili täyttämällä vaaditut tiedot.",
+            "success": "<p>Oma riista -rekisteröintisi onnistui. Voit käyttää sähköpostiosoitettasi ja juuri määrittelemääsi salasanaa kirjautuaksesi Oma riista -palveluun.</p>\n<p>Mikäli loit Oma riista -tunnuksen jotain muuta riistahallinnon palvelua varten, voit siirtyä kyseisen palvelun etusivulle ja kirjautua siellä Oma riista -tunnuksilla: <a href='http://riistakolmiot.fi'>http://riistakolmiot.fi</a></p>"
+        }
+    },
+    "admin": {
+        "menu": {
+            "main": "Etusivu",
+            "users": "Käyttäjätilit"
+        },
+        "users": {
+            "title": "Käyttäjätilit",
+            "selectRoles": "Valitse näytettävät roolit",
+            "noMatches": "Ei valittavaa",
+            "username": "Käyttäjänimi",
+            "role": "Rooli",
+            "ipWhiteList": "Sallitut IP-osoitteet",
+            "active": "Aktiivinen",
+            "email": "Sähköpostiosoite",
+            "phonenumber": "Puhelinnumero",
+            "firstname": "Etunimi",
+            "lastname": "Sukunimi",
+            "password": "Salasana",
+            "passwordConfirm": "Salasanan vahvistus",
+            "create": "Luo uusi käyttäjä",
+            "create_title": "Luo uusi käyttäjätili",
+            "edit": "Muokkaa",
+            "edit_title": "Muokkaa käyttäjätilin tietoja",
+            "delete": "Poista",
+            "delete_confirm": "Oletko varma että haluat poistaa käyttäjän {{username}}?",
+            "delete_success": "Käyttäjätili poistettiin.",
+            "cancel": "Peruuta",
+            "save": "Tallenna",
+            "save_success": "Muutokset tallennettiin.",
+            "admins": "Pääkäyttäjät",
+            "moderators": "Moderaattorit",
+            "rest_users": "Rajapintakäyttäjät",
+            "privileges": "Rajapintakäyttäjän oikeudet"
+        }
+    },
+    "account": {
+        "announcements": {
+            "title": "Viestit",
+            "messageFrom": "Lähettäjä:"
+        },
+        "edit": {
+            "title": "Muokkaa osoitetietoja",
+            "otherinfo_title": "Muokkaa tietoja",
+            "form": {
+                "streetAddress": "Lähiosoite",
+                "city": "Kaupunki",
+                "country": "Maa",
+                "postalCode": "Postinumero",
+                "email": "Sähköpostiosoite",
+                "phoneNumber": "Puhelinnumero",
+                "byName": "Kutsumanimi"
+            },
+            "messages": {
+                "error": "Tietojen päivitys epäonnistui. Yritä myöhemmin uudelleen",
+                "success": "Tiedot päivitettiin onnistuneesti",
+                "invalid": "Annettu arvo ei kelpaa.",
+                "userIsRegistered": "Sähköpostiosoitetta ei voi muokata koska käyttäjä on rekisteröitynyt. Sähköpostin voi vaihtaa rekisteröitymällä uudelleen."
+            }
+        },
+        "profile": {
+            "menu": {
+                "profile": "Omat tiedot",
+                "gameDiary": "Riistaloki",
+                "announcements": "Viestit",
+                "harvestreports": "Luvat ja saalisilmoitukset"
+            },
+            "title": {
+                "personDetails": "Henkilötiedot",
+                "address": "Osoitetiedot",
+                "otherInfo": "Muut tiedot",
+                "password": "Salasana",
+                "occupations": "Toimet ja roolit",
+                "deactivate": "Deaktivointi",
+                "hunterRegistry": "Metsästäjärekisteri",
+                "trainings": "Koulutukset",
+                "clubs": "Seurat",
+                "clubInvitations": "Seurojen jäsenkutsut",
+                "clubInvitationsRejected": "Hylätyt seurojen jäsenkutsut"
+            },
+            "password": "Salasana",
+            "sourcePopulationInformationSystem": "Tiedot tulevat Väestötietojärjestelmästä",
+            "sourceHunterRegistry": "Tiedot tulevat Metsästäjärekisteristä",
+            "modifyUsingItella": "Voit tehdä osoitemuutoksen <strong><a href='http://www.posti.fi/muuttoilmoitus/' target='_blank'>tekemällä muuttoilmoituksen postille</a></strong>.",
+            "modifyUsingMetsastajarekisteri": "Lehti, Lehden kieli ja Markkinointikielto -tiedot tulevat suoraan Metsästäjärekisteristä. Jos haluat niitä muuttaa, ota yhteyttä Metsästäjärekisteriin (metsastajarekisteri@innofactor.com).",
+            "deactivate": {
+                "title": "Deaktivoi käyttäjätili",
+                "info1": "Käyttäjätilin deaktivointi estää henkilöä kirjautumasta järjestelmään.",
+                "info2": "Henkilö voi aktivoida uuden käyttäjätilin rekisteröitymällä uudelleen.",
+                "deactivated": "Henkilöllä ei ole aktiivista käyttäjätiliä."
+            },
+            "mr": {
+                "syncTime": "Tiedot päivitetty Metsästäjärekisteristä viimeksi",
+                "paymentInfo": "Riistanhoitomaksu",
+                "examDate": "Tutkinnon suorituspäivä",
+                "lastPayment": "Maksettu",
+                "expired": "Metsästystutkinto vanhentunut",
+                "expirationWarning": "Maksamatta, metsästäjätutkinto vanhenee",
+                "rhyMembership": "RHY jäsenyys",
+                "noMembership": "Ei jäsen",
+                "magazineLanguage": "Lehden kieli",
+                "denyMagazine": "Lehti",
+                "denyMagazineYes": "Ei",
+                "denyMagazineNo": "Kyllä",
+                "denyMarketing": "Markkinointikielto",
+                "huntingBan": "Metsästyskielto voimassa"
+            },
+            "pdf": {
+                "download": "Lataa tiedosto",
+                "button": "Lataa",
+                "huntingCard": {
+                    "fi": "Metsästyskortti (suomi)",
+                    "sv": "Metsästyskortti (ruotsi)"
+                },
+                "foreign": {
+                    "en": "Todistus ulkomailla metsästystä varten (englanti)",
+                    "de": "Todistus ulkomailla metsästystä varten (saksa)"
+                },
+                "huntingPayment": "Riistanhoitomaksun tilisiirtolomake"
+            },
+            "button": {
+                "editAddress": "Muokkaa osoitetietoja",
+                "editOtherInfo": "Muokkaa tietoja",
+                "changePassword": "Vaihda tilin salasana",
+                "deactivate": "Deaktivoi käyttäjätili",
+                "clubConfig": "Seurojen asetukset",
+                "registerClub": "Ota seura haltuun",
+                "createClub": "Luo uusi seura"
+            },
+            "training": {
+                "name": "Koulutus",
+                "date": "Suorituspäivä"
+            },
+            "invitation": {
+                "button": {
+                    "accept": "Hyväksy jäsenyys",
+                    "reject": "Hylkää jäsenyys",
+                    "reSend": "Lähetä kutsu uudelleen",
+                    "remove": "Poista kutsu"
+                },
+                "rejected": "Kutsu hylätty",
+                "info": "<p>Hyväksymällä seuran jäsenyyden annat seuralle luvan liittää seuran saalistilastoon saamiesi saaliiden lukumäärätiedon.</p><p>Lisäksi hyväksyt pyynti- tai poikkeusluvalla tapahtuvassa metsästyksessä (hirvi, karhu, ilves, jne) saamasi saalistiedon näkyvyyden metsästyksenjohtajalle tai luvan yhteyshenkilölle.</p><p>Lisäksi annat luvan nimesi ja paikkakuntasi näkyvyyteen seuralle. Yhteystietojen näkyvyyden määrittelet erikseen hyväksymisen jälkeen.</p>"
+            },
+            "club": {
+                "name": "Seura",
+                "share": "Yhteystietojen jako",
+                "role": "Rooli"
+            },
+            "registerClub": {
+                "title": "Seuran haltuunottaminen",
+                "alreadyRegistered": "Seura on jo otettu haltuun.",
+                "alreadyRegisteredContactPerson": "Nykyinen yhteyshenkilö on",
+                "alreadyRegisteredSearchInfo": "Tähdellä merkityt hakutulokset on jo otettu haltuun",
+                "searchByName": "Nimihaku",
+                "searchByCode": "Asiakasnumerolla haku",
+                "confirmSelectedClub": "Ota haltuun",
+                "informationBoxPath": "i18n/club_register_information_fi.html"
+            },
+            "createClub": {
+                "title": "Luo uusi seura",
+                "note": "Olet luomassa uutta seuraa. Olethan varmistanut, että seuraa ei ole jo olemassa, yrittämällä ottaa se haltuun.",
+                "confirm": "Luo uusi seura",
+                "nameFI": "Nimi suomeksi",
+                "nameSV": "Nimi ruotsiksi",
+                "location": "Paikka",
+                "rhy": "Riistanhoitoyhdistys",
+                "geoLocation": "Sijainti"
+            },
+            "srva": {
+                "title": "SRVA",
+                "enabled": "SRVA toiminnot ovat päällä",
+                "disabled": "SRVA toiminnot eivät ole päällä",
+                "activate": "Käännä SRVA päälle",
+                "activateConfirmation": "<p>Olet ottamassa käyttöön Oma riista -palvelun SRVA raportointiominaisuutta.</p><p>Suurriistavirka-apu (SRVA) on riistanhoitoyhdistysten ylläpitämä organisaatio, joka välittää poliisille metsästäjien virka-apua suurriistakonflikteissa. Toiminta perustuu poliisin ja riistanhoitoyhdistysten välisiin sopimuksiin. Hälytysjärjestelmä käynnistyy poliisin antamalla virka-apupyynnöllä. </p><p>Oma riista –tunnuksesi voidaan sulkea mahdollisten väärinkäytösten vuoksi.</p>",
+                "deactivate": "Käännä SRVA pois päältä"
+            }
+        },
+        "roleselection": {
+            "title": "Valitse tehtävä"
+        }
+    },
+    "occupation": {
+        "type": {
+            "TOIMINNANOHJAAJA": "Toiminnanohjaaja",
+            "SRVA_YHTEYSHENKILO": "SRVA-yhteyshenkilö",
+            "PETOYHDYSHENKILO": "Petoyhdyshenkilö",
+            "METSASTYKSENVALVOJA": "Metsästyksenvalvoja",
+            "METSASTAJATUTKINNON_VASTAANOTTAJA": "Metsästäjätutkinnon vastaanottaja",
+            "AMPUMAKOKEEN_VASTAANOTTAJA": "Ampumakokeen vastaanottaja",
+            "RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA": "RHY:n edustaja riistavahinkojen maastokatselmuksessa",
+            "METSASTAJATUTKINTOON_VALMENTAVAN_KOULUTUKSEN_KOULUTTAJA": "Metsästäjätutkintoon valmentavan koulutuksen kouluttaja",
+            "PUHEENJOHTAJA": "Puheenjohtaja",
+            "VARAPUHEENJOHTAJA": "Varapuheenjohtaja",
+            "HALLITUKSEN_JASEN": "Hallituksen jäsen",
+            "HALLITUKSEN_VARAJASEN": "Hallituksen varajäsen",
+            "JASEN": "Jäsen",
+            "VARAJASEN": "Varajäsen",
+            "JALJESTYSKOIRAN_OHJAAJA_HIRVI": "Jäljestyskoiran ohjaaja, hirvi",
+            "JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET": "Jäljestyskoiran ohjaaja, pienet hirvieläimet",
+            "JALJESTYSKOIRAN_OHJAAJA_SUURPEDOT": "Jäljestyskoiran ohjaaja, suurpedot",
+            "SEURAN_JASEN": "Seuran jäsen",
+            "SEURAN_YHDYSHENKILO": "Seuran yhteyshenkilö",
+            "RYHMAN_JASEN": "Ryhmän jäsen",
+            "RYHMAN_METSASTYKSENJOHTAJA": "Metsästyksenjohtaja"
+        },
+        "occupations": "Tehtävät",
+        "board": "Hallitus",
+        "name_and_address": "Nimi ja yhteystiedot",
+        "phonenumber_and_email": "Puh ja email",
+        "no_phonenumber": "Ei puhelinnumeroa",
+        "no_email": "Ei sähköpostiosoitetta",
+        "occupation": "Tehtävä",
+        "callOrder": "Soittojärjestys",
+        "additionalInfo": "Lisätiedot",
+        "validity": "Voimassa",
+        "start_date": "Alkupäivä",
+        "end_date": "Loppupäivä",
+        "indefinitely": "toistaiseksi",
+        "starting": "alkaen",
+        "ending": "päättyen",
+        "registered": "Henkilö on rekisteröitynyt palvelun käyttäjäksi",
+        "unregistered": "Henkilö ei ole rekisteröitynyt palvelun käyttäjäksi",
+        "button": {
+            "current": "Nykyiset",
+            "future": "Tulevat",
+            "past": "Menneet",
+            "add": "Lisää tehtävä",
+            "edit": "Muokkaa",
+            "remove": "Poista"
+        },
+        "form": {
+            "titleAdd": "Lisää tehtävä",
+            "titleEdit": "Muokkaa tehtävää",
+            "selectPerson": "Henkilön valinta",
+            "selectFromList": "Listalta",
+            "selectBySSN": "Henkilötunnuksella",
+            "selectByHunterNumber": "Metsästäjänumerolla",
+            "person": "Henkilö",
+            "ssn": "HETU",
+            "validity": "Aika",
+            "email": "Sähköposti",
+            "phoneNumber": "Puhelin",
+            "phoneNumberRequiredByType": "Valitussa tehtävässä puhelinnumero on pakollinen.",
+            "button": {
+                "cancel": "Peruuta",
+                "save": "Tallenna",
+                "search_person": "Hae henkilön tiedot"
+            },
+            "error": {
+                "person_not_found": "Henkilöä ei löydy"
+            }
+        },
+        "remove": {
+            "title": "Poista tehtävä",
+            "info": "Tehtäviä ei yleensä pidä poistaa, vaan muokata niiden alkamis- ja loppumispäivää. Tehtävän poisto on tarkoitettu virheellisesti syötetyn tiedon poistoon.",
+            "ssn": "HETU",
+            "validity": "Aika",
+            "button": {
+                "cancel": "Peruuta",
+                "save": "Poista"
+            }
+        },
+        "nominationStatus": {
+            "KOULUTUS": "Koulutettu",
+            "EHDOLLA": "Esitetään",
+            "ESITETTY": "Esitetty",
+            "NIMITETTY": "Nimitetty",
+            "HYLATTY": "Hylätty"
+        },
+        "trainingType": {
+            "LAHI": "Lähikoulutus",
+            "SAHKOINEN": "Sähköinen"
+        },
+        "trainingSearchTypeLabel": "Hakutapa",
+        "trainingSearchType": {
+            "PREVIOUS_OCCUPATION": "RHY:n aiemman tehtävän perusteella",
+            "HOME_RHY": "Uudet koulutetut RHY:n jäsenet",
+            "TRAINING_LOCATION": "Koulutuspaikan perusteella",
+            "PERSON": "Henkilön tunnisteella"
+        },
+        "nomination": {
+            "title": {
+                "addTraining": "Lisää suoritus",
+                "nominate": "Nimitä tehtävään"
+            },
+            "button": {
+                "addTraining": "Lisää suoritus",
+                "proposeTraining": "Lisää esityslistalle",
+                "proposeTrainingSelected": "Lisää valitut esityslistalle",
+                "deleteTraining": "Poista koulutus",
+                "propose": "Esitä nimitettäväksi",
+                "proposeSelected": "Esitä valitut nimitettäväksi",
+                "cancel": "Poista",
+                "cancelSelected": "Poista valitut",
+                "accept": "Nimitä tehtävään",
+                "acceptSelected": "Nimitä valitut",
+                "reject": "Hylkää",
+                "rejectSelected": "Hylkää valitut"
+            },
+            "message": {
+                "periodTooLong": "Aikaväli on yli 5 vuotta tai alle 4 vuotta pitkä!"
+            },
+            "organisationSearch": {
+                "chooseRka": "Valitse alue",
+                "chooseRhy": "Valitse RHY"
+            },
+            "field": {
+                "occupationType": "Tehtävän tyyppi",
+                "trainingLocation": "Koulutuspaikka",
+                "trainingDate": "Koulutuspäivämäärä",
+                "moderatorName": "Käsittelijän nimi",
+                "nominationDate": "Esityspäivä",
+                "decisionDate": "Päätöspäivä",
+                "occupationPeriod": "Tehtävän kesto",
+                "person": "Henkilö",
+                "rhy": "RHY"
+            },
+            "list": {
+                "noResults": "Ei hakutuloksia",
+                "alertUnderage": "Henkilöä ei voi valita, koska henkilö on alaikäinen.",
+                "alertHuntingBan": "Henkilöä ei voi valita, koska henkilöllä on voimassaoleva metsästyskielto."
+            }
+        }
+    },
+    "organisation": {
+        "menu": {
+            "main": "Yleinen",
+            "occupations": "Tehtävät",
+            "events": "Tapahtumat",
+            "venues": "Paikat"
+        },
+        "parentOrganisation": "Yläorganisaatio",
+        "organisation": "Organisaatio",
+        "nameFI": "Nimi",
+        "nameSV": "Nimi ruotsiksi",
+        "organisationType": {
+            "RK": "Riistakeskus",
+            "RKA": "Riistakeskuksen alue",
+            "VRN": "Valtakunnallinen riistaneuvosto",
+            "ARN": "Alueellinen riistaneuvosto",
+            "RHY": "Riistanhoitoyhdistys"
+        }
+    },
+    "rhy": {
+        "menu": {
+            "main": "Yleinen",
+            "occupations": "Tehtävät",
+            "events": "Tapahtumat",
+            "venues": "Paikat",
+            "harvestreports": "Saalisilmoitukset",
+            "permits": "Muut luvat",
+            "jht": "JHT-nimitykset",
+            "srva": "SRVA",
+            "srvaList": "Listaus",
+            "srvaMap": "Kartta",
+            "clubs": "Seurat",
+            "mooselike": "Hirvieläimet",
+            "mooselikeHarvestMap": "Saaliit",
+            "mooselikePermits": "Luvat",
+            "mooselikeStats": "Tilasto"
+        },
+        "edit": {
+            "title": "Muokkaa yhteystietoja",
+            "form": {
+                "streetAddress": "Lähiosoite",
+                "city": "Kaupunki",
+                "postalCode": "Postinumero",
+                "phoneNumber": "Puhelinnumero",
+                "email": "Sähköpostiosoite",
+                "hasOwnAddress": "RHY:n oma osoite",
+                "hasOwnAddressHelp": "Koska RHY:llä ei ole omaa osoitetta, käytetään toiminnanohjaajan osoitetta.",
+                "hasOwnEmail": "RHY:n oma sähköpostiosoite",
+                "hasOwnEmailHelp": "Koska RHY:llä ei ole omaa sähköpostiosoitetta, käytetään toiminnanohjaajan sähköpostiosoitetta.",
+                "hasOwnPhoneNumber": "RHY:n oma puhelinnumero",
+                "hasOwnPhoneNumberHelp": "Koska RHY:llä ei ole omaa puhelinnumeroa, käytetään toiminnanohjaajan puhelinnumeroa."
+            }
+        },
+        "basicInfo": "Yhdistyksen perustiedot",
+        "officialCode": "RHY-numero",
+        "nameFI": "Nimi",
+        "nameSV": "Nimi ruotsiksi",
+        "contactInfo": "Yhteystiedot",
+        "button": {
+            "editContactInfo": "Muokkaa yhteystietoja"
+        },
+        "club": {
+            "contacts": {
+                "menuTitle": "Yhteyshenkilöt"
+            },
+            "huntingLeaders": {
+                "menuTitle": "Metsästyksenjohtajat"
+            },
+            "club": "Seura",
+            "group": "Ryhmä",
+            "name": "Nimi",
+            "email": "email",
+            "phoneNumber": "Puhelinnumero"
+        },
+        "harvestMap": {
+            "partner": "Osakkaan tiedot",
+            "partnerName": "Nimi",
+            "species": "Eläinlaji",
+            "filteringScheme": "Näytä saaliit",
+            "filterByAreaIntersection": "RHY:n alueelta",
+            "filterByPermit": "RHY:n luville"
+        },
+        "moosePermitStats": {
+            "buttons": {
+                "RKA": "Riistakeskuksen alue",
+                "HTA": "Hirvitalousalue",
+                "RHY": "Riistanhoitoyhdistys"
+            },
+            "totalRowTitle": "Yhteensä",
+            "permit": "Lupanumero",
+            "permitTotalTop": "Myönnetyt",
+            "permitTotal": "Luvat<br>yhteensä",
+            "permitTotalTooltip": "Myönnetyt luvat yhteensä",
+            "permitUsedTop": "Saalis",
+            "a": "AIK<br>YHT",
+            "aTooltip": "Kaadetut aikuiset yhteensä",
+            "au": "AU",
+            "auTooltip": "Kaadetut urokset",
+            "an": "AN",
+            "anTooltip": "Kaadetut naaraat",
+            "v": "V<br>YHT",
+            "vTooltip": "Kaadetut vasat yhteensä",
+            "vu": "VU",
+            "vuTooltip": "Kaadetut urosvasat",
+            "vn": "VN",
+            "vnTooltip": "Kaadetut naarasvasat",
+            "total": "Kaikki<br>yht",
+            "totalTooltip": "Kaikki kaadettu yhteensä",
+            "permitUsedPercentage": "Luvista <br>käytetty %",
+            "permitUsedPercentageTooltip": "Luvista käytetty %",
+            "vPercentage": "V%",
+            "vPercentageTooltip": "Vasaprosentti kaikista",
+            "auPercentage": "AU%",
+            "auPercentageTooltip": "Urososuus aikuisista",
+            "area": {
+                "top": "Pinta-ala",
+                "total": "Koko",
+                "totalTooltip": "Kokonaispinta-ala",
+                "effective": "Käyt",
+                "effectiveTooltip": "Metsästykseen käytetty pinta-ala"
+            },
+            "remainingPer1000": {
+                "top": "Jää / 1000 HA",
+                "total": "Koko",
+                "totalTooltip": "Jää / 1000 HA koko ala",
+                "effective": "Käyt",
+                "effectiveTooltip": "Jää / 1000 HA metsästykseen käytetty ala"
+            },
+            "remaining": {
+                "top": "Jäävä<br>kanta",
+                "topTooltip": "Jäävä kanta",
+                "total": "Koko",
+                "totalTooltip": "Jäävä kanta koko alueelle",
+                "effective": "Käyt",
+                "effectiveTooltip": "Jäävä kanta metsästykseen käytetylle alueelle"
+            },
+            "huntingFinished": "Luvalla metsästys päättynyt"
+        }
+    },
+    "venue": {
+        "button": {
+            "add": "Lisää tapahtumapaikka",
+            "create": "Luo uusi",
+            "edit": "Muokkaa tapahtumapaikkaa",
+            "remove": "Poista tapahtumapaikka listasta",
+            "use": "Käytä tätä"
+        },
+        "venue": "Paikka",
+        "info": "Lisätiedot",
+        "add": {
+            "title": "Lisää tapahtumapaikka",
+            "infotext": "Hae tapahtumapaikkaa nimellä. Jos paikkaa ei löydy voit luoda uuden.",
+            "searchTitle": "Hae nimellä",
+            "noSearchResults": "Tapahtumapaikkaa ei löytynyt, voit luoda uuden."
+        },
+        "form": {
+            "titleAdd": "Lisää tapahtumapaikka",
+            "titleEdit": "Muokkaa tapahtumapaikkaa",
+            "name": "Nimi",
+            "info": "Lisätiedot"
+        },
+        "remove": {
+            "title": "Poista tapahtumapaikka listasta?",
+            "info": "Haluatko poistaa tapahtumapaikan tapahtumapaikkalistasta? Poistettuasi paikan et voi lisätä paikkaan tapahtumaa."
+        }
+    },
+    "event": {
+        "button": {
+            "add": "Lisää tapahtuma",
+            "clone": "Kopioi uudeksi tapahtumaksi",
+            "edit": "Muokkaa tapahtumaa",
+            "remove": "Poista tapahtuma"
+        },
+        "date": "Aika",
+        "event": "Tapahtuma",
+        "venue": "Paikka",
+        "description": "Kuvaus",
+        "type": {
+            "AMPUMAKOE": "Ampumakoe",
+            "METSASTAJAKURSSI": "Metsästäjäkurssi",
+            "METSASTAJATUTKINTO": "Metsästäjätutkinto",
+            "KOULUTUSTILAISUUS": "Koulutustilaisuus",
+            "VUOSIKOKOUS": "Vuosikokous",
+            "YLIMAARAINEN_KOKOUS": "Ylimääräinen kokous",
+            "NUORISOTAPAHTUMA": "Nuorisotapahtuma",
+            "AMPUMAKILPAILU": "Ampumakilpailu",
+            "RIISTAPOLKUKILPAILU": "Riistapolkukilpailu",
+            "ERATAPAHTUMA": "Erätapahtuma",
+            "HARJOITUSAMMUNTA": "Harjoitusammunta"
+        },
+        "form": {
+            "titleAdd": "Lisää tapahtuma",
+            "titleEdit": "Muokkaa tapahtumaa",
+            "eventType": "Tapahtumatyyppi",
+            "venue": "Paikka",
+            "date": "Päivä",
+            "beginTime": "Alkuaika",
+            "endTime": "Päättymisaika",
+            "name": "Tapahtuman nimi",
+            "description": "Kuvaus"
+        },
+        "remove": {
+            "title": "Poista tapahtuma?",
+            "info": "Haluatko poistaa tapahtuman?"
+        }
+    },
+    "search": {
+        "placeholder": "Hae...",
+        "formatInputTooShort": "Syötä vielä {{count}} kirjainta",
+        "formatSearching": "Haetaan...",
+        "formatNoMatches": "Ei tuloksia",
+        "ORG": "Organisaatio",
+        "RHY": "Riistanhoitoyhdistys",
+        "PERSON": "Henkilö",
+        "CLUB": "Metsästysseura"
+    },
+    "reporting": {
+        "menu": {
+            "contacts": "Yhteystiedot",
+            "permits": "Luvat",
+            "occupations": "Tehtävät",
+            "rhys": "Riistanhoitoyhdistykset",
+            "clubs": "Seurat",
+            "mooseDataCard": "Hirvitietokortti"
+        },
+        "common": {
+            "toExcel": "Vie Excel-tiedostoon",
+            "copyEmails": "Kopioi sähköpostiosoitteet"
+        },
+        "contacts": {
+            "allAreas": "Kaikki alueet",
+            "allRHYs": "Kaikki RHY:t",
+            "allOccupations": "Kaikki tehtävät",
+            "search": "Hae",
+            "noResults": "Ei tuloksia",
+            "resultCount": "Tuloksia {{count}} kpl"
+        },
+        "mooseDataCardUpload": {
+            "dzHelpMessage": "Pudota tähän skannatun hirvitietokortin tiedostot tai klikkaa valitaksesi tiedostoja.",
+            "removeUploadFile": "Poista tiedosto",
+            "successfulImports": "Onnistuneet sisäänluennat",
+            "failedImports": "Epäonnistuneet sisäänluennat",
+            "errorMessages": {
+                "fileTooBig": "Tiedosto on liian iso ({{filesize}} MiB). Maksimikoko: {{maxFilesize}} MiB.",
+                "maxFilesExceeded": "Voit lisätä vain kaksi tiedostoa kerrallaan. Ylimääräiset poistetaan automaattisesti.",
+                "unacceptedFileExtension": "Hirvitietokortin sisäänluennassa kelpuutetaan vain pdf- ja xml-tiedostot. Yritit lähettää tiedoston, jonka pääte on: {{ extension }}"
+            }
+        },
+        "huntingSummary": {
+            "overridden": "Riistakeskus tallentanut tiedot",
+            "title": "Metsästyksen päättäminen",
+            "selectedSpecies": "Valittu eläinlaji",
+            "disclaimer": "Yliajamalla osakkaan metsästyksen päättyneeksi osakkaiden itse ilmoittamat tiedot jäävät järjestelmään mutta niitä ei huomioida virallisesti.",
+            "completeHuntingOfPermit": "Päätä kaikkien osakkaiden metsästys ja luvan metsästys",
+            "completeOnlyHuntingOfSelectedPartners": "Päätä vain valittujen osakkaiden metsästys, luvan metsätystä ei päätetä",
+            "huntingPartner": "Lupaosakas",
+            "override": "Yliaja",
+            "moderatorOverridden": "Yliajettu",
+            "area": {
+                "top": "Metsästysalue",
+                "topTooltip": "Metsästysalueen pinta-ala",
+                "total": "KOKO",
+                "totalTooltip": "Koko metsästysalueen pinta-ala",
+                "effective": "KÄYT",
+                "effectiveTooltip": "Käytetyn metsästysalueen pinta-ala"
+            },
+            "harvestedSpecimens": {
+                "top": "Saadut saaliit<br>(yksilöitä)",
+                "topTooltip": "Saadut saaliit (yksilöitä)",
+                "au": "AU",
+                "auTooltip": "Saadut saaliit (yksilöitä) aikuisia uroksia",
+                "an": "AN",
+                "anTooltip": "Saadut saaliit (yksilöitä) aikuisia naaraita",
+                "vu": "VU",
+                "vuTooltip": "Saadut saaliit (yksilöitä) vasoja uroksia",
+                "vn": "VN",
+                "vnTooltip": "Saadut saaliit (yksilöitä) vasoja naaraita"
+            },
+            "notEdible": {
+                "top": "Ihmisravinnoksi<br>kelpaamattomia",
+                "topTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia",
+                "a": "A",
+                "aTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia aikuisia",
+                "v": "V",
+                "vTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia vasoja"
+            },
+            "remainingPopulation": {
+                "top": "Jäävä<br>kanta",
+                "topTooltip": "Metsästysalueelle jäävä kanta",
+                "total": "KOKO",
+                "totalTooltip": "Koko metsästysalueelle jäävä kanta",
+                "effective": "KÄYT",
+                "effectiveTooltip": "Käytetylle metsästysalueelle jäävä kanta"
+            },
+            "delete": "Poista muutokset",
+            "deleteConfirmationMessage": "Oletko varma, että haluat poistaa moderaattorin tekemät metsästyksen päättymisilmoitukset koko luvan osalta?",
+            "onSavedNotification": "Metsästyksen päättymisilmoitusten tallennus onnistui",
+            "onDeletedNotification": "Moderaattorin tekemien metsästyksen päättymisilmoitusten poisto onnistui"
+        }
+    },
+    "observation": {
+        "gamestate": {
+            "HEALTHY": "Terve",
+            "ILL": "Sairas",
+            "WOUNDED": "Loukkaantunut",
+            "CARCASS": "Haaska",
+            "DEAD": "Kuollut"
+        },
+        "marking": {
+            "NOT_MARKED": "Ei merkkiä",
+            "COLLAR_OR_RADIO_TRANSMITTER": "Panta / radiolähetin",
+            "LEG_RING_OR_WING_TAG": "Jalkarengas, siipimerkki",
+            "EARMARK": "Korvamerkki"
+        },
+        "type": {
+            "HIRVENMETSASTYKSEN_YHTEYDESSA": "Hirvenmetsästyksen yhteydessä",
+            "NAKO": "Näkö",
+            "JALKI": "Jälki",
+            "ULOSTE": "Uloste",
+            "AANI": "Ääni",
+            "RIISTAKAMERA": "Riistakamera",
+            "KOIRAN_RIISTATYO": "Koiran riistatyö",
+            "MAASTOLASKENTA": "Maastolaskenta",
+            "KOLMIOLASKENTA": "Kolmiolaskenta",
+            "LENTOLASKENTA": "Lentolaskenta",
+            "HAASKA": "Haaska",
+            "SYONNOS": "Syönnös",
+            "KELOMISPUU": "Kelomispuu",
+            "KIIMAKUOPPA": "Kiimakuoppa",
+            "MAKUUPAIKKA": "Makuupaikka",
+            "PATO": "Pato",
+            "PESA": "Pesä",
+            "PESA_KEKO": "Kekopesä",
+            "PESA_PENKKA": "Penkkapesä",
+            "PESA_SEKA": "Sekapesä",
+            "SOIDIN": "Soidin",
+            "LUOLASTO": "Luolasto",
+            "PESIMALUOTO": "Pesimäluoto",
+            "LEPAILYLUOTO": "Lepäilyluoto",
+            "PESIMASUO": "Pesimäsuo",
+            "MUUTON_AIKAINEN_LEPAILYALUE": "Muuton aikainen lepäilyalue",
+            "RIISTANKULKUPAIKKA": "Riistankulkupaikka",
+            "MUU": "Muu"
+        }
+    },
+    "gamediary": {
+        "button": {
+            "addHarvest": "Kirjaa saalis",
+            "addObservation": "Kirjaa havainto",
+            "doHarvestReport": "Tee lakisääteinen saalisilmoitus",
+            "addImage": "Lisää kuva",
+            "changeImage": "Vaihda kuva",
+            "search": "Hae",
+            "selectAll": "Valitse kaikki",
+            "deselectAll": "Tyhjennä",
+            "changeStateTo": {
+                "ACCEPTED": "Hyväksy",
+                "REJECTED": "Hylkää"
+            },
+            "exportToExcel": "Vie kaikki saaliit ja havainnot Excel-tiedostoon"
+        },
+        "form": {
+            "titleHarvestAnimal": "Saaliseläin",
+            "titleObservationAnimal": "Riistaeläin",
+            "titleAddHarvest": "Kirjaa saalis",
+            "titleEditHarvest": "Muokkaa saaliskirjausta",
+            "titleViewHarvest": "Katso saaliskirjausta",
+            "titleAddObservation": "Kirjaa havainto",
+            "titleEditObservation": "Muokkaa havaintoa",
+            "titleViewObservation": "Katso havaintoa",
+            "species": "Laji",
+            "amount": "Määrä",
+            "age": "Ikä",
+            "gender": "Sukupuoli",
+            "weight": "Paino (kg)",
+            "additionalInfo": "Lisätiedot",
+            "additionalInfoHelp": "Lisätiedot, esim. sarvet pudonneet, sikiöt, loiset, sairaudet, petojen raatelujäljet, hirvikärpäset, kolarivammat, värimuunnokset, kiimatiedot",
+            "weightEstimated": "Arvioitu teuraspaino (kg)",
+            "weightMeasured": "Punnittu teuraspaino (kg)",
+            "backFat": "Selkärasva (mm)",
+            "fitnessClass": "Kuntoluokka",
+            "antlersType": "Sarvityyppi",
+            "antlersWidth": "Sarvien kärkiväli (cm)",
+            "antlerPointsLeft": "Sarvipiikit vasen",
+            "antlerPointsRight": "Sarvipiikit oikea",
+            "notEdible": "Ihmisravinnoksi kelpaamaton",
+            "location": "Sijainti",
+            "date": "Päivä",
+            "time": "Aika",
+            "author": "Ilmoittaja",
+            "harvestPermit": "Lupa",
+            "description": "Kuvaus",
+            "image": "Kuva",
+            "titleAddImage": "Lisää kuva",
+            "titleReplaceImage": "Vaihda kuva",
+            "selectImage": "Valitse kuva",
+            "hunterNumberOfActualShooter": "Ampuja",
+            "iamTheShooter": "Olen saaliin ampuja",
+            "iamTheObserver": "Olen havaitsija",
+            "onBehalfAuthor": "Saaliin on puolestasi kirjannut",
+            "titleTimeAndPlace": "Paikka ja aika",
+            "titleActualShooter": "Ampujan tiedot",
+            "titleShowSpecimens": "Yksilötiedot",
+            "withPermit": "Saalis on pyydetty Riistakeskuksen myöntämällä poikkeus- tai pyyntiluvalla",
+            "withPermitNote": "HUOM: Hirvieläinten metsästyksen yhteydessä ei tarvitse syöttää lupanumeroa",
+            "withPermittedMethod": "Käytetty kiellettyä pyyntimenetelmää",
+            "permittedMethod": "Pyyntimenetelmä",
+            "permittedMethodDescription": "Pyyntimenetelmän kuvaus",
+            "invalidSpeciesForDate": "Väärä <strong>laji</strong> tai <strong>päivä</strong>. Lupa ei ole voimassa valitulle lajille annettuna päivänä.",
+            "invalidDate": "Väärä <strong>päivä</strong>.",
+            "permitUnusable": "Lupa ei ole käytettävissä. Ota yhteyttä luvansaajaan.",
+            "nameOfObserver": "Havaitsijan nimi",
+            "phoneNumberOfObserver": "Havaitsijan puhelinnumero",
+            "observationType": "Havaintotyyppi",
+            "withinMooseHunting": "Hirvenmetsästyksen yhteydessä",
+            "gameState": "Eläimen tila",
+            "gameMarking": "Eläin merkitty"
+        },
+        "mooselikeAbbrv": {
+            "mooselikeMaleAmount": "U",
+            "mooselikeFemaleAmount": "N+0",
+            "mooselikeFemale1CalfAmount": "N+1",
+            "mooselikeFemale2CalfsAmount": "N+2",
+            "mooselikeFemale3CalfsAmount": "N+3",
+            "mooselikeFemale4CalfsAmount": "N+4",
+            "mooselikeUnknownSpecimenAmount": "T"
+        },
+        "mooselike": {
+            "mooselikeMaleAmount": "Aikuisia uroksia",
+            "mooselikeFemaleAmount": "Vasattomia naaraita",
+            "mooselikeFemale1CalfAmount": "Naaras + 1 vasa",
+            "mooselikeFemale2CalfsAmount": "Naaras + 2 vasaa",
+            "mooselikeFemale3CalfsAmount": "Naaras + 3 vasaa",
+            "mooselikeFemale4CalfsAmount": "Naaras + 4 vasaa",
+            "mooselikeUnknownSpecimenAmount": "Tuntemattomia"
+        },
+        "menuTitles": {
+            "filters": "Rajaa tuloksia",
+            "huntingDays": "Tapahtumat"
+        },
+        "search": {
+            "noresults": "Ei tuloksia",
+            "species": "Eläinlaji",
+            "selectSpeciesTitle": "Valitse esitettävät eläinlajit",
+            "gameInfo": "Eläimen tiedot",
+            "pointOfTime": "Pyyntiaika",
+            "pieces": "kpl",
+            "showSpecies": "Lisää eläinlaji",
+            "author": "Kirjaaja",
+            "reportedForOthers": "Muille kirjaamani",
+            "showHarvest": "Näytä saaliit",
+            "showObservation": "Näytä havainnot"
+        },
+        "moderatorOverride": "Riistakeskus on muokannut tätä merkintää",
+        "messages": {
+            "notFound": "Metsästäjänumeroa ei löydy",
+            "insertHunterNumber": "Anna 8-numeroinen metsästäjänumero",
+            "uploadingImage": "Kuvaa tallennetaan...",
+            "imageUploaded": "Kuva tallennettu"
+        },
+        "remove": {
+            "harvestTitle": "Poista saaliskirjaus?",
+            "harvestInfo": "Haluatko poistaa saaliskirjauksen? Poistamalla saaliskirjauksen poistat myös saaliskirjaukseen liitetyt kuvat.",
+            "observationTitle": "Poista havaintokirjaus?",
+            "observationInfo": "Haluatko poistaa havaintokirjauksen? Poistamalla havaintokirjauksen poistat myös havaintoon liitetyt kuvat.",
+            "srvaTitle": "Poista SRVA-tapahtuman kirjaus?",
+            "srvaInfo": "Haluatko poistaa SRVA-tapahtuman kirjauksen? Poistamalla kirjauksen poistat myös SRVA-tapahtumaan liitetyt kuvat."
+        },
+        "age": {
+            "ADULT": "Aikuinen",
+            "YOUNG": "Alle 1 v",
+            "LT1Y": "Alle 1 v",
+            "_1TO2Y": "1-2-vuotias",
+            "ERAUS": "Eraus",
+            "UNKNOWN": "Tuntematon"
+        },
+        "gender": {
+            "FEMALE": "Naaras",
+            "MALE": "Uros",
+            "UNKNOWN": "Tuntematon"
+        },
+        "fitnessClass": {
+            "ERINOMAINEN": "Erinomainen",
+            "NORMAALI": "Normaali",
+            "LAIHA": "Laiha",
+            "NAANTYNYT": "Nääntynyt"
+        },
+        "antlersType": {
+            "HANKO": "Hanko",
+            "LAPIO": "Lapio",
+            "SEKA": "Seka"
+        },
+        "harvest": "Saalis",
+        "observation": "Havainto",
+        "author": "Ilmoittaja",
+        "actualShooter": "Ampuja",
+        "observer": "Havaitsija",
+        "state": {
+            "title": "Tila",
+            "PROPOSED": "Esitetty",
+            "ACCEPTED": "Hyväksytty",
+            "REJECTED": "Hylätty"
+        },
+        "stateVerbose": {
+            "PROPOSED": "Esitetty lupaan",
+            "ACCEPTED": "Hyväksytty lupaan",
+            "REJECTED": "Hylätty luvasta"
+        }
+    },
+    "permittedMethod": {
+        "TAPE_RECORDERS": "Ääntä synnyttävä koneellinen laite",
+        "TRAPS": "Varishäkki/Lokkiloukku",
+        "OTHER": "Muu"
+    },
+    "harvestreport": {
+        "menu": {
+            "todo": "Täydennettävät",
+            "moosePermits": "Hirvieläinluvat",
+            "permits": "Muut luvat",
+            "done": "Tekemäsi saalisilmoitukset"
+        },
+        "button": {
+            "createReport": "Tee lakisääteinen saalisilmoitus",
+            "sendReport": "Lähetä saalisilmoitus",
+            "reportDone": "Saalisilmoitus tehty",
+            "createReportOnBehalf": "Tee saalisilmoitus henkilön puolesta",
+            "searchPerson": "Etsi",
+            "changeStateTo": {
+                "PROPOSED": "Esitä",
+                "SENT_FOR_APPROVAL": "Takaisin odottamaan käsittelyä",
+                "APPROVED": "Hyväksy",
+                "REJECTED": "Hylkää"
+            },
+            "currentState": {
+                "PROPOSED": "Saalisilmoitus esitetty",
+                "SENT_FOR_APPROVAL": "Saalisilmoitus lähetetty",
+                "APPROVED": "Saalisilmoitus hyväksytty",
+                "REJECTED": "Saalisilmoitus hylätty"
+            },
+            "changeStateToUser": {
+                "SENT_FOR_APPROVAL": "Lähetä",
+                "PROPOSED": "Esitä"
+            },
+            "new": "Tee uusi",
+            "complete": "Täydennä"
+        },
+        "title": {
+            "new": "Tee uusi lakisääteinen saalisilmoitus",
+            "required": "Riistalokin merkinnät joista vaaditaan saalisilmoitus",
+            "pendingApprovalToPermit": "Riistalokin merkinnät jotka odottavat hyväksyntää luvalle",
+            "rejectedFromPermit": "Riistalokin merkinnät jotka luvan yhteyshenkilö on hylännyt",
+            "done": "Tekemäsi saalisilmoitukset",
+            "selectSpecies": "Valitse eläin",
+            "selectPermit": "Valitse lupa"
+        },
+        "wizard": {
+            "new": "Tee uusi",
+            "complete": "Täydennä",
+            "selectSpecies": "Valitse eläin",
+            "form": "Ilmoituslomake",
+            "harvestCreated": "Saalistieto on tallennettu riistalokiisi ja lähetetty luvansaajalle hyväksyttäväksi. Asia on osaltasi kunnossa.",
+            "harvestCreatedContactPerson": "Saalistieto on tallennettu riistalokiisi ja kirjattu lupaan {{permitNumber}}. Muistathan luvansaajana tehdä pyynnin päätyttyä koko luvasta saalisilmoituksen."
+        },
+        "form": {
+            "titleAdd": "Tee saalisilmoitus",
+            "titleEdit": "Muokkaa saalisilmoitusta",
+            "titleView": "Katso saalisilmoitusta",
+            "titleModeratorEdit": "Muokkaa käsittelijänä",
+            "titleModeratorProcess": "Käsittele saalisilmoitus",
+            "creator": "Kirjaaja",
+            "author": "Ilmoittaja",
+            "hunter": "Ampuja",
+            "reportType": "Ilmoitustyyppi",
+            "rhy": "Riistanhoitoyhdistys",
+            "rhyHelp": "Valitse riistanhoitoyhdistys jonka alueella saalis kaadettu",
+            "harvestarea": "Kiintiöalue",
+            "age": "Ikä",
+            "gender": "Sukupuoli",
+            "weight": "Paino (kg)",
+            "location": "Paikka",
+            "locationInput": "Paikan syöttö",
+            "setlocation": "Aseta sijainti",
+            "date": "Päivä",
+            "time": "Aika",
+            "huntingMethod": "Saalistustapa",
+            "reportedWithPhoneCall": "Onko ilmoitettu myös saalispuhelimeen?",
+            "permitNumber": "Lupanumero",
+            "permitNumberRequired": "Syötä lupanumero",
+            "permitNumberNotFound": "Ei löydy",
+            "permitNotApplicable": "Lupaa ei ole myönnetty valitulle lajille",
+            "huntingAreaType": "Pyyntialue",
+            "huntingParty": "Metsästysseuran tai seurueen nimi",
+            "huntingAreaSize": "Alueen pinta-ala (ha)",
+            "description": "Henkilökunnan muistiinpanoja",
+            "lukeStatus": "Luonnonvarakeskuksen tieto yksilöstä",
+            "lukeStatusInstruction": "Huom. Tieto syötetään vain kannanhoidollisella luvalla pyydetyille susisaaliille.",
+            "propertyIdentifier": "Kiinteistörekisterinumero",
+            "propertyIdentifierSearching": "Kiinteistörekisterinumeroa haetaan...",
+            "propertyIdentifierErrorUser": "Virhe kiinteistörekisterinumeron haussa. Tämä ei estä ilmoituksen tallentamista ja lähettämistä.",
+            "propertyIdentifierErrorModerator": "Virhe kiinteistörekisterinumeron haussa.",
+            "changeHunter": "Vaihda ampuja"
+        },
+        "remove": {
+            "title": "Poista saalisilmoitus",
+            "info": "Haluatko poistaa saalisilmoituksen?"
+        },
+        "reportType": {
+            "OTHERS": "Muut saaliit",
+            "PERMIT": "Luvanvaraiset saaliit"
+        },
+        "age": {
+            "ADULT": "Aikuinen",
+            "YOUNG": "Alle 1 v",
+            "UNKNOWN": "Tuntematon"
+        },
+        "gender": {
+            "FEMALE": "Naaras",
+            "MALE": "Uros",
+            "UNKNOWN": "Tuntematon"
+        },
+        "lukeStatus": {
+            "PENDING": "Odottaa vahvistusta",
+            "CONFIRMED_ALPHA": "Vahvistettu, alfayksilö",
+            "CONFIRMED_ALPHA_ADULT": "Vahvistettu, aikuinen, alfayksilö",
+            "CONFIRMED_ADULT": "Vahvistettu, aikuinen",
+            "CONFIRMED_POTENTIAL_ALPHA_ADULT": "Vahvistettu, aikuinen, mahdollinen alfayksilö",
+            "CONFIRMED_NOT_ADULT": "Vahvistettu, ei aikuinen",
+            "CONFIRMED_NOT_ALPHA": "Vahvistettu, ei alfayksilö",
+            "CONFIRMED_NOT_ALPHA_ADULT": "Vahvistettu, aikuinen, ei alfayksilö",
+            "CONFIRMED_NOT_ALPHA_1TO2Y": "Vahvistettu, 1-vuotias",
+            "CONFIRMED_NOT_ALPHA_LT1Y": "Vahvistettu, alle 1-vuotias"
+        },
+        "huntingMethod": {
+            "SHOT": "Ammuttu",
+            "CAPTURED_ALIVE": "Elävänä pyytävällä loukulla pyydetty",
+            "SHOT_BUT_LOST": "Ammuttu, mutta menetetty"
+        },
+        "huntingAreaType": {
+            "HUNTING_SOCIETY": "Metsästysseuran alue",
+            "PROPERTY": "Erillinen tila"
+        },
+        "state": {
+            "title": "Tila",
+            "required": "Ilmoittamatta",
+            "PROPOSED": "Esitetty",
+            "SENT_FOR_APPROVAL": "Lähetetty",
+            "APPROVED": "Hyväksytty",
+            "REJECTED": "Hylätty"
+        },
+        "admin": {
+            "button": {
+                "search": "Hae"
+            },
+            "menu": "Saalisilmoitukset",
+            "all": "Kaikki",
+            "noresults": "Ei tuloksia",
+            "state": "Tila",
+            "pointOfTime": "Pyyntiaika",
+            "area": "Pyyntialue",
+            "person": "Henkilö",
+            "gameInfo": "Eläimen tiedot",
+            "reasonTitle": "Muutos vaatii syyn kirjaamisen",
+            "reason": "Syy",
+            "textSearch": "Henkilöstön muistiinpanoista haku",
+            "textSearchHelp": "Etsii saalisilmoitukset, joiden muistiinpanoista löytyvät <strong>kaikki</strong> haettavat sanat tai niiden osat."
+        },
+        "searchperson": {
+            "title": "Etsi henkilö",
+            "notfound": "Ei löydy"
+        }
+    },
+    "harvestpermit": {
+        "button": {
+            "createHarvestReportAndEndOfHuntingReport": "Tee lakisääteinen saalisilmoitus / Ilmoita metsästys päättyneeksi",
+            "createEndOfHuntingReport": "Ilmoita metsästys päättyneeksi",
+            "add": "Lisää yhteyshenkilö",
+            "editContactPersons": "Muokkaa yhteyshenkilöitä",
+            "removeEndOfHuntingReport": "Poista päättymisilmoitus"
+        },
+        "form": {
+            "title": "Muokkaa yhteyshenkilöitä"
+        },
+        "admin": {
+            "species": "Laji",
+            "permitNumberHelp": "Lupanumero muodossa 2015-1-123-12345-1",
+            "year": "Vuosi"
+        },
+        "title": {
+            "endOfHuntingReport": "Luvanvaraisten eläinten pyynnin päättymisilmoitus",
+            "speciesAmounts": "Luvassa myönnetyt saalismäärät ja metsästysajat",
+            "contactPersons": "Luvan yhteyshenkilöt",
+            "harvests": "Luvalle raportoidut saaliit",
+            "selectSpecies": "Valitse laji"
+        },
+        "permit": "Lupa",
+        "permitNumber": "Lupanumero",
+        "contactPersons": "Yhteyshenkilöt",
+        "noPermits": "Ei lupia",
+        "noHarvests": "Ei saaliita",
+        "speciesAndAmount": "Eläin ja määrä",
+        "contactPerson": "Yhteyshenkilö",
+        "pcs": "kpl",
+        "harvestReport": "Saalisilmoitus",
+        "harvestReportNotDoneInfo": "Tekemällä saalisilmoituksen ilmoitat samalla myös metsästyksen päättyneeksi.",
+        "harvestReportDoneInfo": "Metsästys on ilmoitettu päättyneeksi.",
+        "harvestsProposed": "Voit tehdä saalisilmoituksen kun kaikki raportoidut saaliit on joko hyväksytty tai hylätty.",
+        "pointOfTime": "Pyyntiaika",
+        "gameInfo": "Eläimen tiedot",
+        "amount": {
+            "granted": "Myönnetty",
+            "used": "Käytetty",
+            "remaining": "Jäljellä",
+            "period": "Myönnetty metsästysaika",
+            "grantedUsedMsg": "Myönnetty määrä käytetty",
+            "exceededMsg": "Myönnetty määrä ylitetty",
+            "restriction": {
+                "type": "Rajoite",
+                "amount": "Rajoitettu määrä",
+                "AE": "Aikuista enintään",
+                "AU": "Aikuista urosta enintään"
+            }
+        }
+    },
+    "announcements": {
+        "senderType": {
+            "RIISTAKESKUS": "Suomen Riistakeskus",
+            "TOIMINNANOHJAAJA": "Toiminnanohjaaja",
+            "SEURAN_YHDYSHENKILO": "Seuran yhteyshenkilö"
+        },
+        "list": {
+            "title": "Viestit",
+            "buttonSend": "Lähetä viesti",
+            "showButton": "Avaa",
+            "messageFrom": "Lähettäjä:",
+            "received": "Vastaanotetut",
+            "sent": "Lähetetyt",
+            "showSubscribers": "Näytä vastaanottajat",
+            "hideSubscribers": "Piilota vastaanottajat",
+            "subscriberOrganisations": "Vastaanottaja organisaatio(t):",
+            "subscriberOccupations": "Vastaanottajien tehtävä(t):"
+        },
+        "form": {
+            "createTitle": "Uusi viesti",
+            "editTitle": "Muokkaa viestiä",
+            "addOccupationType": "Lisää tehtävätyyppi",
+            "addOrganisation": "Lisää kohdeorganisaatio",
+            "chooseOccupationTypes": "Valitse tehtävätyypit",
+            "chooseOrganisations": "Valitse kohdeorganisaatiot",
+            "targetOccupations": "Tehtävätyypit",
+            "targetOrganisations": "Organisaatiot",
+            "subject": "Otsikko",
+            "body": "Viesti"
+        },
+        "confirmSendEmail": {
+            "title": "Sähköpostiviesti?",
+            "body": "Tämä viesti näytetään oletuksena vain viestiseinällä. Haluatko että viesti lähetetään myös sähköpostilla vastaanottajille?"
+        }
+    },
+    "club": {
+        "config": {
+            "title": "Seurojen asetukset",
+            "info": "Voit määritellä miten yhteystietosi (osoite, puhelinnumero, sähköposti) näkyvät seuroissa, joihin kuulut.",
+            "resignTitle": "Seurasta eroaminen",
+            "contactShare": {
+                "title": "Yhteystietojen näkyvyys",
+                "none": "Yhteystietoja ei näytetä",
+                "onlyOfficials": "Yhteystiedot näkyvät vain seuran yhteyshenkilöille ja metsästyksenjohtajille",
+                "allMembers": "Yhteystiedot näkyvät kaikille seuran jäsenille"
+            },
+            "button": {
+                "resign": "Eroa",
+                "undoResign": "Kumoa ero"
+            }
+        },
+        "menu": {
+            "main": "Yleinen",
+            "members": "Jäsenet",
+            "groups": "Ryhmät",
+            "areas": "Alueet",
+            "hunting": "Metsästys",
+            "harvestsummary": "Tilasto",
+            "permits": "Luvat"
+        },
+        "main": {
+            "title": "Yleistiedot",
+            "general": {
+                "title": "Seuran perustiedot",
+                "titleEdit": "Muokkaa seuran tietoja",
+                "nameFI": "Nimi suomeksi",
+                "nameSV": "Nimi ruotsiksi",
+                "location": "Paikka",
+                "rhy": "Riistanhoitoyhdistys",
+                "customerId": "Asiakasnumero",
+                "geoLocation": "Sijainti",
+                "mooseArea": "Hirvitalousalue"
+            },
+            "contactPersons": {
+                "title": "Yhteyshenkilöt",
+                "primary": "Ensisijainen",
+                "setPrimaryContact": "Aseta ensisijaiseksi yhteyshenkilöksi",
+                "warningRemoveOnlyContactPersonWithData": "Seuran yhteyshenkilö voidaan poistaa vain jos seuraan ei ole liitetty merkintöjä, jäseniä tai alueita.",
+                "warningRemoveContactPersonSelf": "Jos poistat seuran yhteyshenkilön roolin itseltäsi, niin et voi enää muokata seuran tietoja. Oletko varma?"
+            },
+            "location":  "Sijainti"
+        },
+        "genericMember": {
+            "title": "Jäsenet",
+            "titleAdd": "Lisää jäsen",
+            "titleInvite": "Kutsutut jäsenet",
+            "titleInviteForm": "Kutsu jäseneksi",
+            "hunterNumbersPlaceholder": "Syötä metsästäjänumerot (käytä erottimena rivinvaihtoa, pilkkua tai puolipistettä)",
+            "hunterNumbersInvalid": "Korjaa virheelliset metsästäjänumerot:",
+            "hunterNumbersNotFound": "Seuraavia metsästäjiä ei löydy:",
+            "inviteToGroup": "Lisää kutsutut henkilöt ryhmään",
+            "button": {
+                "add": "Lisää jäsen",
+                "remove": "Poista jäsen",
+                "invite": "Kutsu jäseneksi"
+            },
+            "selectExistingMember": "Valitse jäsen",
+            "notFound": "Ei löydy",
+            "alreadyMemberOrInvited": "Henkilö on jo jäsen tai kutsuttu."
+        },
+        "todo": {
+            "title": "Muistutus",
+            "message": "Korjaa seuraavat puuttuvat tiedot:",
+            "area": {
+                "message": "<strong>Määrittele seuran metsästysalue</strong> kuluvalle metsästysvuodelle.",
+                "button": "Siirry määrittämään alueet"
+            },
+            "group": {
+                "message": "<strong>Määrittele seuralle ryhmä</strong> kuluvalle metsästysvuodelle.",
+                "button": "Siirry määrittämään ryhmät"
+            },
+            "groupPermit": {
+                "message": "<strong>Valitse kaikille ryhmille lupa.</strong>",
+                "button": "Siirry määrittämään ryhmät"
+            },
+            "groupLeader": {
+                "message": "<strong>Valitse kaikille ryhmille metsästyksenjohtaja.</strong>",
+                "button": "Siirry määrittämään ryhmät"
+            }
+        },
+        "group": {
+            "listTitle": "Ryhmät",
+            "memberOrder": "Järjestys",
+            "leaderCreated": "Tallennettu",
+            "button": {
+                "add": "Lisää ryhmä",
+                "remove": "Poista ryhmä",
+                "toCSV": "Vie CSV-tiedostoon"
+            },
+            "form": {
+                "titleAdd": "Lisää ryhmä",
+                "titleEdit": "Muokkaa ryhmää",
+                "titleCopy": "Kopioi ryhmä",
+                "species": "Laji",
+                "huntingYear": "Metsästysvuosi",
+                "huntingArea": "Metsästysalue",
+                "huntingAreaNotSet": "Ei asetettu",
+                "harvestPermit": "Lupa",
+                "harvestPermitNotSet": "Ei asetettu",
+                "choosePermit": "Valitse lupa",
+                "clearPermit": "Poista lupa",
+                "nameFI": "Nimi suomeksi",
+                "nameSV": "Nimi ruotsiksi",
+                "name": "Nimi",
+                "huntingFinished": "Metsästys päättynyt"
+            },
+            "members": {
+                "warningRemoveOnlyHuntingLeaderWithData": "Ryhmän metsästyksenjohtaja voidaan poistaa vain jos ryhmään ei ole liitetty merkintöjä, jäseniä tai alueita.",
+                "warningRemoveHuntingLeaderSelf": "Jos poistat ryhmän metsästyksenjohtajan roolin itseltäsi, niin et voi enää muokata ryhmän tietoja. Oletko varma?"
+            },
+            "mooseDataCardImport": {
+                "listTitle": "Sisäänluetut hirvitietokortit",
+                "revokedListTitle": "Poistetut hirvitietokortit",
+                "revocationDialogTitle": "Poista hirvitietokortti?",
+                "revocationInfo": "Haluatko poistaa hirvitietokortin? Poistamalla hirvitietokortin poistat myös sen kautta luodut metsästyspäivät sekä saalis- ja havaintokirjaukset.",
+                "importTimestamp": "Sisäänluvun ajanhetki",
+                "filenameTimestamp": "Tiedostonimen aikaleima",
+                "revocationTimestamp": "Poistoajanhetki",
+                "reportingPeriod": "Raportointijakso",
+                "fileDownload": "PDF&nbsp;+&nbsp;XML",
+                "messages": "Viestit"
+            }
+        },
+        "area": {
+            "tabHeaders": {
+                "areaList": "Omat alueet",
+                "proposalList": "Lupa-alueet"
+            },
+            "button": {
+                "add": "Lisää alue",
+                "remove": "Poista alue",
+                "editArea": "Määrittele metsästysalue",
+                "functionMenu": "Toiminnot",
+                "importArea": "Lataa tiedostosta",
+                "exportArea": "Vie tiedostoon",
+                "printArea": "Tulosta kartta (PDF)",
+                "toExcel": "Muodosta tilaluettelo (XLS)",
+                "toChangesExcel": "Muuttuneet tilat (XLS)",
+                "toGeojson": "Muodosta aluerajat (GeoJSON/zip)",
+                "toGarmin": "Muodosta aluerajat (Garmin)",
+                "activate": "Aktivoi",
+                "deactivate": "Deaktivoi"
+            },
+            "list": {
+                "title": "Alueet",
+                "hasPendingChanges": "Aluetiedoissa päivityksiä",
+                "areaIsDeactive": "Alue on deaktivoitu",
+                "showDeactive": "Näytä myös deaktivoidut"
+            },
+            "proposal": {
+                "listTitle": "Yhteislupa-alueet"
+            },
+            "import": {
+                "confirmTitle": "Varmistus",
+                "confirmBody": "Oletko varma, että haluat korvata alueen '{{ areaName }}' nykyiset tiedot tiedostosta tuotavilla aluetiedoilla?",
+                "modalTitle": "Tuo kartta",
+                "instructions": "Ole hyvä ja valitse GeoJSON-tiedosto joka sisältää aluemäärittelyn.",
+                "selectFile": "Valitse tiedosto",
+                "success": "Tiedostosta ladattiin vain aluegeometriat joiden eläinlajitiedoksi oli merkitty \"kaikki riista\" tai \"hirvi\"."
+            },
+            "form": {
+                "titleAdd": "Lisää alue",
+                "titleEdit": "Muokkaa aluetta",
+                "titleCopy": "Kopioi alue",
+                "huntingYear": "Metsästysvuosi",
+                "nameFI": "Nimi suomeksi",
+                "nameSV": "Nimi ruotsiksi",
+                "externalId": "Alueen tunnus",
+                "copyGroups": "Kopioi myös alueeseen liitetyt ryhmät",
+                "lastModified": "Viimeisin muokkaus"
+            },
+            "print": {
+                "modalTitle": "Alueen tulostus",
+                "paperSizeLabel": "Arkin koko",
+                "paperDpiLabel": "Tulostustarkkuus",
+                "paperOrientationLabel": "Tulostussuunta",
+                "paperOrientation": {
+                    "portrait": "Pysty",
+                    "landscape": "Vaaka"
+                },
+                "submitButton": "Tulosta"
+            },
+            "map": {
+                "toolbar": {
+                    "move": "Siirrä karttaa",
+                    "palsta": {
+                        "add": {
+                            "single": "Lisää/poista yksittäisiä palstoja",
+                            "marquee": "Lisää palstoja maalaamalla"
+                        },
+                        "remove": {
+                            "marquee": "Poista palstoja maalaamalla"
+                        }
+                    },
+                    "exclude": {
+                        "title": "Leikkaa palstan osia",
+                        "lasso": {
+                            "add": "Piirrä (vapaa viiva)",
+                            "remove": "Pyyhi (vapaa viiva)"
+                        },
+                        "polyLasso": {
+                            "add": "Piirrä (murtoviiva)",
+                            "remove": "Pyyhi (murtoviiva)"
+                        }
+                    }
+                },
+                "selectedArea": {
+                    "title": "Valitun alueen tietoja",
+                    "propertyIdentifier": "Kiinteistötunnus",
+                    "areaName": "Palstan nimi",
+                    "landAreaSize": "Maapinta-ala",
+                    "waterAreaSize": "Vesipinta-ala",
+                    "areaSize": "Kokonaispinta-ala",
+                    "calculatingAreaSize": "Lasketaan...",
+                    "changeTitle": "Muutokset",
+                    "changeAmount": "Muutos",
+                    "fix": "Yritä korjata automaattisesti",
+                    "lastModified": "Viimeisin muokkaus"
+                },
+                "tab": {
+                    "selectedAreas": {
+                        "title": "Valitut alueet",
+                        "propertyIdentifier": "Kiinteistötunnus",
+                        "areaSize": "Pinta-ala"
+                    },
+                    "changed": {
+                        "title": "Muutokset",
+                        "fix": "Korjaa"
+                    },
+                    "massInsert": {
+                        "title": "Massasyöttö",
+                        "inputPropertyIdentifier": "Syötä kiinteistörekisteritunnukset (käytä erottimena rivinvaihtoa, pilkkua tai puolipistettä)",
+                        "placeholder": "Syötä muodossa 111-222-3333-4444 tai 1-2-3-4 tai 11122233334444",
+                        "buttonAdd": "Lisää",
+                        "okPropertyCount": "Kiinteistöjä valittu onnistuneesti {{count}} kpl",
+                        "propertyIdentifiersNotFound": "Seuraavia kiinteistörekisteritunnuksia ei löydy:"
+                    },
+                    "metsahallitus": {
+                        "title": "MH",
+                        "heading": "Metsähallituksen hirvialueet",
+                        "search": "Haku",
+                        "emptySelection": "Ei valittuja metsähallituksen alueita"
+                    }
+                }
+            }
+        },
+        "hunting": {
+            "tabHeaders": {
+                "filters": "Suodata",
+                "huntingDays": "Metsästyspäivät"
+            },
+            "species": "Eläinlaji",
+            "group": "Ryhmä",
+            "approval": "Hyväksyntä",
+            "createHuntingDay": "Luo metsästyspäivä",
+            "openProposalForEdit": "Siirry hyväksymään",
+            "detachFromHuntingDay": "Peru liitos metsästyspäivään",
+            "harvestProposalDialog": {
+                "message": "Hyväksymällä saaliskirjauksen liität sen ryhmän metsästyspäivään. Hylkäämällä poistat sen näkymästä ryhmän saaliiden joukossa.",
+                "title": "Ehdotettu saalis"
+            },
+            "harvestRejectedDialog": {
+                "message": "Hyväksymällä saaliskirjauksen liität sen ryhmän metsästyspäivään.",
+                "title": "Hylätty saalis"
+            },
+            "observationProposalDialog": {
+                "message": "Hyväksymällä havaintokirjauksen liität sen ryhmän metsästyspäivään. Hylkäämällä poistat sen näkymästä ryhmän havaintojen joukossa.",
+                "title": "Ehdotettu havainto"
+            },
+            "observationRejectedDialog": {
+                "message": "Hyväksymällä havaintokirjauksen liität sen ryhmän metsästyspäivään.",
+                "title": "Hylätty havainto"
+            },
+            "pointOfTime": "Ajankohta",
+            "nextDayHunting": "Seuraava vuorokausi",
+            "huntingDay": {
+                "createTitle": "Luo metsästyspäivä",
+                "editTitle": "Muokkaa metsästyspäivää",
+                "exportToExcel": "Vie Excel-tiedostoon",
+                "duplicateDate": "Metsästyspäivä on jo olemassa",
+                "outsidePermitInterval": "Päivä on sallitun lupa-ajan ulkopuolella",
+                "startDate": "Alku pvm",
+                "endDate": "Loppu pvm",
+                "startTime": "Alku klo",
+                "endTime": "Loppu klo",
+                "snowDepth": "Lumen syvyys",
+                "duration": "Metsästyksen kesto",
+                "durationInvalid": "Virheellinen alku tai loppu",
+                "breakDuration": "Taukojen kesto",
+                "huntingMethod": "Metsästystapa",
+                "numberOfHunters": "Metsästäjien lkm",
+                "numberOfHounds": "Koirien lkm",
+                "noHarvests": "Ei saaliita",
+                "noObservations": "Ei havaintoja"
+            },
+            "huntingMethod": {
+                "OPTION_1": "passilinja, koira ohjaajineen metsässä",
+                "OPTION_2": "hiipiminen pysäyttävälle koiralle",
+                "OPTION_3": "passilinja ja tiivis ajoketju",
+                "OPTION_4": "passilinja ja miesajo jäljityksenä",
+                "OPTION_5": "jäljitys eli naakiminen ilman passeja",
+                "OPTION_6": "väijyntä kulkupaikoilta",
+                "OPTION_7": "väijyntä ravintokohteilta",
+                "OPTION_8": "houkuttelu",
+                "OPTION_9": "muu, mikä"
+            },
+            "huntingYear": "Kausi",
+            "huntingSummary": {
+                "menuTitle": "Osakkaan metsästyksen päättäminen",
+                "status": "Osakas päättänyt metsästyksen",
+                "editTitle": "Täydennä tiedot metsästyksen päättymisestä",
+                "finalSubmitDoneTitle": "Metsästys päättynyt",
+                "huntingFinishingTitle": "Pyynnin päättyminen",
+                "totalHuntingArea": "Metsästysalueen kokonaispinta-ala (täysinä hehtaareina)",
+                "effectiveHuntingArea": "Metsästykseen käytetyn alueen koko (täysinä hehtaareina)",
+                "huntingEndDate": "Pyynti päättynyt",
+                "saveUnfinished": "Tallenna keskeneräiseksi",
+                "markUnfinished": "Peru päättyminen"
+            },
+            "deerHuntingSummary": {
+                "huntingAreaAndEstimatedPopulationTitle": "Metsästyksen päätyttyä arvioitu kanta:",
+                "remainingPopulationInTotalArea": "Koko metsästysalueelle jäi peuroja yhteensä",
+                "remainingPopulationInEffectiveArea": "Metsästykseen käytetylle alueelle jäi peuroja yhteensä"
+            },
+            "mooseHuntingSummary": {
+                "otherMooselikeSpeciesTitle": "Muut hirvieläimet",
+                "huntingAreaAndEstimatedPopulationTitle": "Metsästyksen päätyttyä arvioitu hirvikanta",
+                "deadMoosesTitle": "Seurueenne alueella löydetyt muista syistä kuolleet hirvet",
+                "otherObservationsTitle": "Muita havaintoja",
+                "effectiveHuntingAreaPercentage": "Metsästykseen käytetyn alueen osuus kokonaispinta-alasta",
+                "remainingPopulationInTotalArea": "Koko metsästysalueelle jäi hirviä yhteensä",
+                "remainingPopulationInEffectiveArea": "Metsästykseen käytetylle alueelle jäi hirviä yhteensä",
+                "huntingAreaType": "Metsästysalueemme on",
+                "huntingAreaTypes": {
+                    "SUMMER_PASTURE": "Kesälaidunaluetta",
+                    "WINTER_PASTURE": "Talvilaidunaluetta",
+                    "BOTH": "Molempia"
+                },
+                "numberOfDrownedMooses": "Hukkuneet",
+                "numberOfMoosesKilledByBear": "Karhun tappamat",
+                "numberOfMoosesKilledByWolf": "Suden tappamat",
+                "numberOfMoosesKilledInTrafficAccident": "Kolarissa kuolleet",
+                "numberOfMoosesKilledByPoaching": "Salakaadetut",
+                "numberOfMoosesKilledInRutFight": "Kiimatappelussa kuolleet",
+                "numberOfStarvedMooses": "Nälkiintyneet",
+                "numberOfMoosesDeceasedByOtherReason": "Muu syy",
+                "causeOfDeath": "Muu syy",
+                "appearance": "Esiintyminen",
+                "trendOfMooselikePopulationGrowth": "Kanta",
+                "estimatedAmountOfSpecimens": "Arvio yksilömäärästä",
+                "mooseHeatBeginDate": "Ensimmäinen kiimahavainto",
+                "mooseHeatEndDate": "Viimeisin kiimahavainto",
+                "mooseFawnBeginDate": "Ensimmäinen vasominen",
+                "mooseFawnEndDate": "Viimeisin vasominen",
+                "deerFliesAppeared": "Alueellamme esiintyy hirven täikärpästä",
+                "dateOfFirstDeerFlySeen": "Ensimmäiset täikärpäset",
+                "dateOfLastDeerFlySeen": "Viimeiset täikärpäset",
+                "numberOfAdultMoosesHavingFlies": "Kaadettujen aikuisten hirvien määrä, joissa hirvikärpäsiä",
+                "numberOfYoungMoosesHavingFlies": "Kaadettujen vasojen määrä, joissa hirvikärpäsiä",
+                "trendOfDeerFlyPopulationGrowth": "Hirvikärpästen määrä",
+                "populationGrowthTrend": {
+                    "INCREASED": "Lisääntynyt",
+                    "DECREASED": "Vähentynyt",
+                    "UNCHANGED": "Ennallaan"
+                },
+                "wildBoarTitle": "Villisika",
+                "estimatedAmountOfSowWithPiglets": "Arvio porsaallisten emakoiden määrästä"
+            },
+            "selectGroup": "Valitse ryhmä",
+            "selectSpecies": "Valitse laji",
+            "selectHuntingYear": "Valitse kausi",
+            "showOnlyRejectedHarvestsAndObservations": "Näytä vain hylätyt saaliit ja havainnot",
+            "showOnlyRejectedHarvests": "Näytä vain hylätyt saaliit",
+            "specimenAbbrv": {
+                "ADULT": "A",
+                "FEMALE": "N",
+                "FEMALE_ADULT": "AN",
+                "FEMALE_UNKNOWN": "N",
+                "FEMALE_YOUNG": "VN",
+                "FEMALE__1TO2Y": "VN",
+                "FEMALE_LT1Y": "VN",
+                "MALE": "U",
+                "MALE_ADULT": "AU",
+                "MALE_UNKNOWN": "U",
+                "MALE_YOUNG": "VU",
+                "MALE__1TO2Y": "VU",
+                "MALE_LT1Y": "VU",
+                "UNKNOWN": "?",
+                "UNKNOWN_ADULT": "A",
+                "UNKNOWN_UNKNOWN": "?",
+                "UNKNOWN_YOUNG": "V",
+                "UNKNOWN__1TO2Y": "V",
+                "UNKNOWN_LT1Y": "V",
+                "YOUNG": "V",
+                "_1TO2Y": "V",
+                "LT1Y": "V"
+            },
+            "stats": {
+                "harvestsTitle": "Saaliit",
+                "observationsTitle": "Havainnot"
+            }
+        },
+        "harvestsummary": {
+            "gameCategory": "Eläinlajiluokka",
+            "gameCategory1": "Riistalintu",
+            "gameCategory2": "Riistanisäkäs",
+            "gameCategory3": "Rauhoittamaton",
+            "gameSpecies": "Eläinlaji",
+            "count": "Lukumäärä"
+        },
+        "permit": {
+            "list": "Luvat",
+            "permitHolder": "Luvansaaja",
+            "originalPermitAmount": "Pyyntilupien määrä",
+            "amendmentPermitAmount": "Uusien lupien määrä (ML 29§)",
+            "amendmentPermitName": "Uusi lupa (ML 29§)<br>",
+            "relatedRhy": "Tiedoksi",
+            "permitName": "Lupa",
+            "permitAmountTotal": "Luvat yhteensä",
+            "sumTitle": "Yhteensä",
+            "permitUnallocated": "Jakamatta",
+            "usedPermitCount": "Käytetty",
+            "notEdibleCount": "Ihmisravinnoksi kelpaamattomia",
+            "finishHunting": "Päätä metsästys",
+            "huntingFinished": "Metsästys päättynyt",
+            "finishHuntingByModeratorOverride": "Saaliiden massatallennus",
+            "amendmentPermitsDoNotMatchHarvests": "Myönnetyt uudet luvat eivät täsmää saaliiden kanssa, jotka on merkitty ihmisravinnoksi kelpaamattomiksi.<br><br>Tarkistakaa, että ihmisravinnoksi kelpaamattomiksi on merkitty vain ne, joihin on myönnetty uusi lupa.",
+            "mooseHarvestReport": {
+                "menuTitle": "Maksukuitin liittäminen ja luvalla metsästyksen päättäminen",
+                "title": "Maksukuitin liittäminen ja luvalla metsästyksen päättäminen",
+                "finishPermit": "Päätä lupa pudottamalla tähän kuitti tai klikkaa valitaksesi",
+                "permitFinished": "Luvalla metsästys on päätetty",
+                "unfinishPermit": "Peru päättyminen",
+                "finishedWithoutHarvests": "Metsästys päätetty ilman saaliita",
+                "finishWithoutHarvests": "Päätä metsästys ilman saaliita",
+                "downloadReceipt": "Lataa kuitti",
+                "iban": "IBAN",
+                "bic": "BIC",
+                "creditorReference": "Viitenumero",
+                "dueDate": "Eräpäivä",
+                "totalPayment": "Maksettava summa",
+                "cannotCreateMooseHarvestReport": {
+                    "header": "Maksukuitin voi liittää ja luvan metsästyksen päättää kun",
+                    "allPartnersFinishedHunting": "kaikki osakkaat ovat päättäneet metsästyksen",
+                    "amendmentPermitsMatchHarvests": "myönnetyt uudet luvat täsmäävät ihmisravinnoksi kelpaamattomiksi merkittyjen kanssa"
+                },
+                "priceBreakdown": {
+                    "title": "Maksuerittely",
+                    "eurPerPcs": "&euro; / kpl",
+                    "eur": "&euro;",
+                    "pcs": "kpl",
+                    "sumOfPayments": "Maksettava yhteensä",
+                    "adults": "Aikuisia",
+                    "notEdibleAdults": "Ihmisravinnoksi kelpaamattomia aikuisia",
+                    "adultsToBePaid": "Maksettavia aikuisia",
+                    "adultPrice": "Aikuisen hinta",
+                    "adultsPayment": "Maksettava summa aikuisista",
+                    "young": "Vasoja",
+                    "notEdibleYoung": "Ihmisravinnoksi kelpaamattomia vasoja",
+                    "youngToBePaid": "Maksettavia vasoja",
+                    "youngPrice": "Vasan hinta",
+                    "youngPayment": "Maksettava summa vasoista"
+                }
+            },
+            "button": {
+                "functionMenu": "Toiminnot",
+                "table": "Taulukko",
+                "map": "Kartta",
+                "lukeReports": "Raportit",
+                "listLeaders": "Metsästyksenjohtajat"
+            },
+            "percentage": {
+                "allocated": "Suunniteltu<br>(jaetut luvat)",
+                "harvests": "Toteutunut<br>(saatu saalis)",
+                "males": "Urososuus aikuisista",
+                "young": "Vasaosuus kaikista"
+            },
+            "map": {
+                "partner": "Osakkaan tiedot",
+                "partnerName": "Nimi"
+            },
+            "lukeReports": {
+                "COUNTRY": "Suomi",
+                "AREA": "Riistakeskuksen alue",
+                "HTA": "Hirvitalousalue",
+                "RHY": "Riistanhoitoyhdistys",
+                "CLUB": "Seura",
+                "FIGURE": "Kaaviot",
+                "MAP": "Kartat",
+                "TABLE_FULL": "Taulukot koko kausi",
+                "TABLE_COMPARISON": "Taulukot vertailu",
+                "noReports": "Ei raportteja."
+            },
+            "leaders": {
+                "title": "Metsästyksenjohtajat",
+                "name": "Nimi",
+                "club": "Seura"
+            },
+            "tabHunting": "Metsästys",
+            "tabIndexes": "Indeksit",
+            "tabPayments": "Maksutiedot",
+            "allocation": {
+                "buttonText": "Jaa luvat",
+                "menuText": "Jaa luvat osakkaille",
+                "partner": "Osakas",
+                "fromMooseDataCard": "Tiedot annettu hirvitietokortilla",
+                "huntingFinished": {
+                    "top": "Metsästys<br>päättynyt",
+                    "topTooltip": "Metsästys päättynyt",
+                    "low": "PVÄ",
+                    "lowTooltip": "Metsästyksen päättymispäivä",
+                    "cellTooltip": "Metsästyksen päättymispäivä"
+                },
+                "latestUpdate": {
+                    "top": "Viimeisin<br>päivitys",
+                    "topTooltip": "Viimeisin päivitys",
+                    "low": "PVÄ",
+                    "lowTooltip": "Viimeisin päivitys päivä",
+                    "cellTooltip": "Viimeisin päivitys päivä"
+                },
+                "sumOfAllocated": {
+                    "top": "Jaet.<br>Lup.",
+                    "topTooltip": "Jaettu lupia",
+                    "low": "YHT",
+                    "lowTooltip": "Jaettu lupia yhteensä",
+                    "cellTooltip": "Jaettu lupia yhteensä"
+                },
+                "huntingPlan": {
+                    "top": "Suun.<br>(yks.)",
+                    "topTooltip": "Metsästyssuunnitelma (yksilöitä)",
+                    "au": "AU",
+                    "auTooltip": "Metsästyssuunnitelma (yksilöitä) aikuisia uroksia",
+                    "auCellTooltip": "Metsästyssuunnitelma (yksilöitä) aikuisia uroksia",
+                    "an": "AN",
+                    "anTooltip": "Metsästyssuunnitelma (yksilöitä) aikuisia naaraita",
+                    "anCellTooltip": "Metsästyssuunnitelma (yksilöitä) aikuisia naaraita",
+                    "v": "V",
+                    "vTooltip": "Metsästyssuunnitelma (yksilöitä) vasoja",
+                    "vCellTooltip": "Metsästyssuunnitelma (yksilöitä) vasoja"
+                },
+                "usedPermits": {
+                    "top": "Käyt.<br>lup.",
+                    "topTooltip": "Käytetty lupia",
+                    "low": "YHT",
+                    "lowTooltip": "Käytetty lupia yhteensä",
+                    "cellTooltip": "Käytetty lupia yhteensä"
+                },
+                "harvestedSpecimens": {
+                    "top": "Saadut saaliit<br>(yksilöitä)",
+                    "topTooltip": "Saadut saaliit (yksilöitä)",
+                    "a": "A<br>YHT",
+                    "aTooltip": "Saadut saaliit (yksilöitä) aikuisia yhteensä",
+                    "aCellTooltip": "Saadut saaliit (yksilöitä) aikuisia yhteensä",
+                    "au": "AU",
+                    "auTooltip": "Saadut saaliit (yksilöitä) aikuisia uroksia",
+                    "auCellTooltip": "Saadut saaliit (yksilöitä) aikuisia uroksia",
+                    "an": "AN",
+                    "anTooltip": "Saadut saaliit (yksilöitä) aikuisia naaraita",
+                    "anCellTooltip": "Saadut saaliit (yksilöitä) aikuisia naaraita",
+                    "v": "V<br>YHT",
+                    "vTooltip": "Saadut saaliit (yksilöitä) vasoja yhteensä",
+                    "vCellTooltip": "Saadut saaliit (yksilöitä) vasoja yhteensä",
+                    "vu": "VU",
+                    "vuTooltip": "Saadut saaliit (yksilöitä) vasoja uroksia",
+                    "vuCellTooltip": "Saadut saaliit (yksilöitä) vasoja uroksia",
+                    "vn": "VN",
+                    "vnTooltip": "Saadut saaliit (yksilöitä) vasoja naaraita",
+                    "vnCellTooltip": "Saadut saaliit (yksilöitä) vasoja naaraita"
+                },
+                "notEdible": {
+                    "top": "Ihm.rav<br>kpmttia",
+                    "topTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia",
+                    "a": "A",
+                    "aTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia aikuisia",
+                    "aCellTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia aikuisia",
+                    "v": "V",
+                    "vTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia vasoja",
+                    "vCellTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia vasoja"
+                },
+                "remaining": {
+                    "top": "Jäävä<br>kanta",
+                    "topTooltip": "Jäävä kanta",
+                    "total": "Koko",
+                    "totalTooltip": "Jäävä kanta koko alueelle",
+                    "totalCellTooltip": "Jäävä kanta koko alueelle",
+                    "effective": "Käyt",
+                    "effectiveTooltip": "Jäävä kanta metsästykseen käytetylle alueelle",
+                    "effectiveCellTooltip": "Jäävä kanta metsästykseen käytetylle alueelle"
+                },
+                "huntingDays": {
+                    "top": "Mets.<br>päiviä",
+                    "topTooltip": "Metsästyspäiviä",
+                    "low": "KPL",
+                    "lowTooltip": "Metsästyspäivien lukumäärä",
+                    "cellTooltip": "Metsästyspäivien lukumäärä"
+                },
+                "harvestsPer": {
+                    "top": "Saalista<br>per",
+                    "topTooltip": "Saalista per",
+                    "day": "seurue-<br>päivä",
+                    "dayTooltip": "Saalista per seuruepäivä",
+                    "dayCellTooltip": "Saalista per seuruepäivä",
+                    "hunter": "miestyö-<br>päivä",
+                    "hunterTooltip": "Saalista per miestyöpäivä",
+                    "hunterCellTooltip": "Saalista per miestyöpäivä"
+                },
+                "observationsPer": {
+                    "top": "Havaintoja<br>per",
+                    "topTooltip": "Havaintoja per",
+                    "day": "seurue-<br>päivä",
+                    "dayTooltip": "Havaintoja per seuruepäivä",
+                    "dayCellTooltip": "Havaintoja per seuruepäivä",
+                    "hunter": "miestyö-<br>päivä",
+                    "hunterTooltip": "Havaintoja per miestyöpäivä",
+                    "hunterCellTooltip": "Havaintoja per miestyöpäivä"
+                },
+                "payment": {
+                    "top": "Maksut",
+                    "topTooltip": "Maksut",
+                    "adults": "Aik EUR",
+                    "adultsTooltip": "Aikuiset EUR",
+                    "adultsCellTooltip": "Aikuiset EUR",
+                    "young": "Vas EUR",
+                    "youngTooltip": "Vasat EUR",
+                    "youngCellTooltip": "Vasat EUR",
+                    "total": "Yht EUR",
+                    "totalTooltip": "Yhteensä EUR",
+                    "totalCellTooltip": "Yhteensä EUR"
+                }
+            },
+            "todo": {
+                "prefix": "Tarkista",
+                "area": "alue",
+                "group": "ryhmä",
+                "groupPermit": "ryhmän liittäminen lupaan",
+                "groupLeader": "metsästyksenjohtajat"
+            }
+        }
+    },
+    "srva": {
+        "form": {
+            "srvaEvent": "SRVA-tapahtuma",
+            "bookSrvaEvent": "Kirjaa SRVA-tapahtuma",
+            "event": "Tapahtuma",
+            "type": "Tyyppi",
+            "result": "Tulos",
+            "method": "Menetelmä",
+            "personsInvolved": "Osallistuneita henkilöitä",
+            "combinedHours": "Työtunteja yhteensä",
+            "additionalInformation": "Lisätiedot",
+            "methodDescription": "Menetelmän kuvaus",
+            "typeDescription": "Tyypin kuvaus",
+            "showSrvaEvent": "Näytä SRVA-tapahtumat",
+            "animal": "Eläin",
+            "amount": "Määrä",
+            "events": "Tapahtumat",
+            "map": "Kartta",
+            "notAllEventsInfo": "Onnettomuudet näkyvät koko maasta, muut tapahtumat oman RHY:n alueelta.",
+            "otherSpecies": "Muu laji",
+            "rejectConfirmation": "Haluatko varmasti hylätä SRVA tapahtuman?",
+            "approverOrRejecter": "Hyväksyjä / Hylkääjä"
+        },
+        "event": {
+            "ACCIDENT": "Onnettomuus",
+            "DEPORTATION": "Karkotus",
+            "INJURED_ANIMAL": "Sairas eläin"
+        },
+        "type": {
+            "TRAFFIC_ACCIDENT": "Liikenneonnettomuus",
+            "RAILWAY_ACCIDENT": "Onnettomuus rautatiellä",
+            "ANIMAL_NEAR_HOUSES_AREA": "Eläin asutuksen tuntumassa",
+            "ANIMAL_AT_FOOD_DESTINATION": "Eläin ravintokohteilla",
+            "INJURED_ANIMAL": "Loukkaantunut eläin",
+            "ANIMAL_ON_ICE": "Eläin jäällä",
+            "OTHER": "Muu, mikä?"
+        },
+        "result": {
+            "ANIMAL_FOUND_DEAD": "Eläin löydettiin kuolleena",
+            "ANIMAL_FOUND_AND_TERMINATED": "Eläin löydettiin ja lopetettiin",
+            "ANIMAL_FOUND_AND_NOT_TERMINATED": "Eläin löydettiin ja jätettiin henkiin",
+            "ANIMAL_NOT_FOUND": "Eläintä ei löydetty",
+            "ANIMAL_TERMINATED": "Eläin lopetettiin",
+            "ANIMAL_DEPORTED": "Eläin karkotettiin",
+            "UNDUE_ALARM": "Aiheeton hälytys",
+            "ACCIDENT_SITE_NOT_FOUND": "Onnettomuuspaikkaa ei löytynyt"
+        },
+        "method": {
+            "DOG": "Koira",
+            "PAIN_EQUIPMENT": "Kipua tuottavat laitteet",
+            "SOUND_EQUIPMENT": "Ääntä tuottavat laitteet",
+            "TRACED_WITH_DOG": "Jäljitettiin koiran kanssa",
+            "TRACED_WITHOUT_DOG": "Jäljitettiin ilman koiraa",
+            "OTHER": "Muu, mikä?"
+        },
+        "state": {
+            "UNFINISHED": "Kesken",
+            "APPROVED": "Hyväksytty",
+            "REJECTED": "Hylätty"
+        }
+    }
+}

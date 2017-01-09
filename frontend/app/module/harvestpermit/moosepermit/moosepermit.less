@@ -1,0 +1,257 @@
+@r-moose-permits-left-sidebar-width: 400px;
+
+.r-moose-permits-layout {
+  overflow: hidden;
+
+  .left-column,
+  .main-column {
+    position: fixed;
+    overflow: auto;
+    overflow-x: hidden;
+    min-height: 1px;
+    background: #fff;
+  }
+
+  .left-column {
+    position: fixed;
+    width: @r-moose-permits-left-sidebar-width;
+    top: @main-nav-height;
+    bottom: 0;
+    padding: 10px 10px 0;
+
+    > h3 {
+      padding-left: 10px;
+      margin-bottom: 20px;
+
+      button {
+        float: right;
+        font-family: @font-family-base;
+      }
+    }
+
+    table {
+      margin-bottom: 0;
+    }
+
+    .panel {
+      margin: 0 auto 15px;
+
+      .panel-heading {
+        overflow: auto;
+      }
+
+      .panel-title {
+        margin-top: 5px;
+      }
+
+      .panel-body > .btn {
+        margin-top: 10px;
+        float: right;
+      }
+    }
+
+    .list-group > .list-group-item {
+      .buttons {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 10px 5px;
+
+        > span {
+          font-size: 12px;
+          padding-right: 5px;
+        }
+
+        .btn {
+          padding: 0 3px;
+        }
+      }
+
+      .list-group-item-heading {
+        display: block;
+        margin-right: 150px;
+      }
+    }
+    .year-species-menu {
+      padding-bottom: 10px;
+      div.left {
+        padding-right: 5px;
+      }
+      div.right {
+        padding-left: 5px;
+      }
+    }
+  }
+
+  .main-column {
+    top: @main-nav-height;
+    left: @r-moose-permits-left-sidebar-width;
+    bottom: 0;
+    right: 0;
+
+    .container-fluid {
+      padding: 10px;
+      height: 100%;
+    }
+
+    .permit-species-logo {
+      float:left;
+      padding: 0 20px;
+    }
+
+    .permit-percentage-table {
+      width: 500px;
+    }
+  }
+
+  .main-column.in {
+    top: @sub-nav-height;
+  }
+}
+
+.moose-permit-infotable {
+  @moose-permit-infotable-header-border-style: 1px solid #c5c5c5;
+  @moose-permit-infotable-border-style: 1px solid rgb(221, 221, 221);
+
+  td:first-child {
+    width: 250px;
+  }
+  th, td:not(:first-child) {
+    .text-center;
+    padding: 2px !important;
+  }
+
+  .topheader {
+    th {
+      border-bottom: none;
+
+      &:not(:first-child) {
+        border-left: @moose-permit-infotable-header-border-style;
+      }
+    }
+  }
+
+  .lowheader {
+    th {
+      border-top: 0;
+    }
+  }
+
+  .summary {
+    font-weight: bold;
+  }
+
+  .current-club {
+    td {
+      color: white;
+      background-color: darkgray !important;
+    }
+  }
+
+  tr {
+    &:hover {
+      text-decoration: underline;
+    }
+    td {
+      // Hide spinner on number input fields
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+        .text-right;
+        width: 51px;
+      }
+
+      padding: 1px !important;
+
+      .fa {
+        padding-left: 3px;
+        padding-right: 3px;
+      }
+    }
+  }
+}
+
+.loop-moose-permit-border-left(@cols; @index: 1) when (@index <= length(@cols)) {
+  .loop-moose-permit-border-left(@cols; (@index + 1));
+
+  @i: extract(@cols, @index);
+  &:nth-of-type(@{i}) {
+    border-left: @moose-permit-infotable-header-border-style;
+  }
+}
+
+.moose-permit-infotable-hunting {
+  .moose-permit-infotable;
+
+  @moose-permit-infotable-hunting-border-indexes: 2 3 4 5 8 9 15 17;
+
+  .lowheader > th {
+    .loop-moose-permit-border-left(@moose-permit-infotable-hunting-border-indexes);
+  }
+  tr > td {
+    .loop-moose-permit-border-left(@moose-permit-infotable-hunting-border-indexes);
+  }
+}
+
+.moose-permit-infotable-indexes {
+  .moose-permit-infotable;
+
+  @moose-permit-infotable-indexes-border-indexes: 2 3 5;
+
+  .lowheader > th {
+    .loop-moose-permit-border-left(@moose-permit-infotable-indexes-border-indexes);
+  }
+  tr > td {
+    .loop-moose-permit-border-left(@moose-permit-infotable-indexes-border-indexes);
+  }
+}
+
+.moose-permit-infotable-payments {
+  .moose-permit-infotable;
+
+  @moose-permit-infotable-payments-border-indexes: 2 4 6;
+
+  .lowheader > th {
+    .loop-moose-permit-border-left(@moose-permit-infotable-payments-border-indexes);
+  }
+  tr > td {
+    .loop-moose-permit-border-left(@moose-permit-infotable-payments-border-indexes);
+  }
+}
+
+.moose-permit-statistics {
+  .container-fluid;
+
+  .nav {
+    padding-top: 10px;
+  }
+
+  .luke-data {
+    margin-right: 10px;
+
+    .caption {
+      .help-block;
+      .alert;
+      .alert-info;
+    }
+
+    table {
+      .table;
+      .table-condensed;
+      .table-striped;
+      th, td {
+        .text-center;
+      }
+    }
+  }
+
+  .luke-data-missing {
+    margin-top: 10px;
+    .alert;
+    .alert-info;
+  }
+}

@@ -1,0 +1,12 @@
+<leaflet id="club-permit-map"
+         class="r-cursor-pointer"
+         defaults="ctrl.mapDefaults"
+         layers="ctrl.mapDefaults.mmlLayers"
+         controls="ctrl.mapDefaults.controls"
+         lf-center="ctrl.mapState.center"
+         bounds="ctrl.mapState.viewBounds"
+         event-broadcast="ctrl.mapEvents"
+         r-viewport-height
+         width="100%">
+    <marker-cluster id="permitMapMarkers" leaflet-markers="ctrl.markers" />
+</leaflet>

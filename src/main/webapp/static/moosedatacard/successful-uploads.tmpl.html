@@ -1,0 +1,20 @@
+{{#if successfulUploads}}
+<h4>Onnistuneet sisäänluennat</h4>
+
+<div class="uploads-info-container">
+    <ul>
+        {{#each successfulUploads}}
+        <li class="upload-item">
+            <span class="upload-item-filename">{{ filename }}</span>
+            <ul>
+                {{#each messages}}
+                <li>
+                    <span>{{ this }}</span>
+                </li>
+                {{/each}}
+            </ul>
+        </li>
+        {{/each}}
+    </ul>
+</div>
+{{/if}}

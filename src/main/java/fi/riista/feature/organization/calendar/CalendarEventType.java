@@ -1,0 +1,15 @@
+package fi.riista.feature.organization.calendar;
+
+public enum CalendarEventType {
+    AMPUMAKOE,
+    METSASTAJAKURSSI,
+    METSASTAJATUTKINTO,
+    KOULUTUSTILAISUUS,
+    VUOSIKOKOUS,
+    YLIMAARAINEN_KOKOUS,
+    NUORISOTAPAHTUMA,
+    AMPUMAKILPAILU,
+    RIISTAPOLKUKILPAILU,
+    ERATAPAHTUMA,
+    HARJOITUSAMMUNTA
+}

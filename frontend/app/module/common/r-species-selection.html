@@ -1,0 +1,7 @@
+<select name="gameSpecies" id="gameSpecies"
+        class="form-control"
+        ng-model="$ctrl.selectedSpecies"
+        ng-options="(s.name | rI18nNameFilter:'translated') for s in $ctrl.availableSpecies | orderBy:'name.translated' track by s.code"
+        ng-change="$ctrl.onSpeciesChanged()">
+    <option disabled value="">{{'club.hunting.selectSpecies' | translate}}</option>
+</select>

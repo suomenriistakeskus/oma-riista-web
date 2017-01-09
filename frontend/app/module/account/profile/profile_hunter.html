@@ -1,0 +1,128 @@
+<div class="panel panel-default"
+     ng-if="$ctrl.profile && $ctrl.profile.hunterNumber">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="account.profile.title.hunterRegistry"></h3>
+    </div>
+
+    <div class="panel-body">
+        <p class="text-right info"
+           translate="account.profile.modifyUsingMetsastajarekisteri"></p>
+
+        <div class="table-responsive">
+            <table class="table table-condensed"
+                   ng-show="::$ctrl.profile.huntingBanActive">
+                <tbody>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="account.profile.mr.huntingBan"></td>
+                    <td class="text-danger">
+                        {{::($ctrl.profile.huntingBanStart | date:'d.M.yyyy')}}
+                        &minus;
+                        {{::($ctrl.profile.huntingBanEnd | date:'d.M.yyyy')}}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <table class="table table-condensed"
+                   ng-hide="::$ctrl.profile.hunterExamValid">
+                <tbody>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="account.profile.mr.examDate"></td>
+                    <td class="text-danger">
+                        <span>
+                            <span translate="account.profile.mr.expired"></span>
+                            {{::($ctrl.profile.hunterExamExpirationDate | date:'d.M.yyyy')}}
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <table class="table table-condensed"
+                   ng-show="::($ctrl.profile.hunterExamValid && !$ctrl.profile.huntingBanActive)">
+                <tbody>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="global.person.hunterNumber"></td>
+                    <td>{{::$ctrl.profile.hunterNumber}}</td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6">
+                        <span translate="account.profile.mr.paymentInfo"></span>
+                    </td>
+                    <td>
+                        <span ng-hide="::$ctrl.profile.huntingPaymentPending">
+                            <span translate="account.profile.mr.lastPayment"></span>
+
+                            <span ng-show="::$ctrl.profile.huntingCardStart">
+                                {{::($ctrl.profile.huntingCardStart | date:'d.M.yyyy')}} -
+                                {{::($ctrl.profile.huntingCardEnd | date:'d.M.yyyy')}}
+                            </span>
+                        </span>
+
+                        <span class="text-danger"
+                              ng-show="::$ctrl.profile.huntingPaymentPending">
+                            {{'account.profile.mr.expirationWarning' | translate}}
+                            {{::($ctrl.profile.hunterExamExpirationDate | date:'d.M.yyyy')}}
+                        </span>
+                    </td>
+                </tr>
+                <tr ng-show="::$ctrl.profile.hunterExamDate">
+                    <td class="r-legend col-xs-6" translate="account.profile.mr.examDate"></td>
+                    <td ng-bind="::($ctrl.profile.hunterExamDate | date:'d.M.yyyy')"></td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="account.profile.mr.rhyMembership"></td>
+                    <td>
+                        <span ng-hide="::$ctrl.profile.rhyMembership"
+                              translate="account.profile.mr.noMembership"></span>
+
+                        <span ng-show="::$ctrl.profile.rhyMembership"
+                              ng-bind="::($ctrl.profile.rhyMembership | rI18nNameFilter)"></span>
+
+                        <span ng-show="::$ctrl.profile.rhyMembership"
+                              ng-bind="::$ctrl.profile.rhyMembership.officialCode"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="account.profile.mr.denyMagazine"></td>
+                    <td>{{::($ctrl.profile.denyMagazine
+                        ? 'account.profile.mr.denyMagazineYes'
+                        : 'account.profile.mr.denyMagazineNo') | translate}}
+                    </td>
+                </tr>
+                <tr ng-show="::($ctrl.profile.magazineLanguageCode && !$ctrl.profile.denyMagazine)">
+                    <td class="r-legend col-xs-6" translate="account.profile.mr.magazineLanguage"></td>
+                    <td>{{::($ctrl.profile.magazineLanguageCode | languageCodeName | lowercase)}}</td>
+                </tr>
+                <tr>
+                    <td class="r-legend col-xs-6" translate="account.profile.mr.denyMarketing"></td>
+                    <td>{{::($ctrl.profile.denyPost ? 'global.yes' : 'global.no' | translate)}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="::$ctrl.profile.mrSyncTime">
+            <p class="info text-right">
+                <span translate="account.profile.mr.syncTime"></span>
+                {{::($ctrl.profile.mrSyncTime | date:'d.M.yyyy')}}
+            </p>
+        </div>
+
+        <div ang-show="::($ctrl.pdfOptions && $ctrl.pdfOptions.length)">
+            <h4 translate="account.profile.pdf.download"></h4>
+
+            <div class="input-group">
+                <select name="pdfSelection" id="pdfSelection"
+                        class="form-control"
+                        ng-model="$ctrl.pdfSelection"
+                        ng-options="c.title for c in ::$ctrl.pdfOptions"></select>
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-primary btn-large"
+                            ng-click="$ctrl.printPdf()"
+                            translate="account.profile.pdf.button"></button>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

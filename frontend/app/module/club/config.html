@@ -1,0 +1,116 @@
+<h3 class="modal-title" translate="club.config.title"></h3>
+
+<div class="alert alert-info" translate="club.config.info"></div>
+<div class="alert alert-info">
+    <div>
+        <span r-club-contact-share="null" r-club-contact-share-large="true"></span>
+        &nbsp;
+        <span translate="club.config.contactShare.none"></span>
+    </div>
+    <div>
+        <span r-club-contact-share="'ONLY_OFFICIALS'" r-club-contact-share-large="true"></span>
+        &nbsp;
+        <span translate="club.config.contactShare.onlyOfficials"></span>
+    </div>
+    <div>
+        <span r-club-contact-share="'ALL_MEMBERS'" r-club-contact-share-large="true"></span>
+        &nbsp;
+        <span translate="club.config.contactShare.allMembers"></span>
+    </div>
+</div>
+
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped">
+        <thead>
+        <tr>
+            <th class="col-xs-6"></th>
+            <th class="col-xs-3"></th>
+            <th colspan="3" class="col-xs-3 text-center" translate="club.config.contactShare.title"></th>
+        </tr>
+        <tr>
+            <th class="col-xs-6" translate="account.profile.club.name"></th>
+            <th class="col-xs-3" translate="account.profile.club.role"></th>
+            <th class="col-xs-1 text-center">
+                <span r-club-contact-share="null" r-club-contact-share-large="true"></span>
+            </th>
+            <th class="col-xs-1 text-center">
+                <span r-club-contact-share="'ONLY_OFFICIALS'" r-club-contact-share-large="true"></span>
+            </th>
+            <th class="col-xs-1 text-center">
+                <span r-club-contact-share="'ALL_MEMBERS'" r-club-contact-share-large="true"></span>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="member in clubOccupations">
+            <td class="col-xs-5">
+                <span name-translated="member.organisation"></span><br>
+                <div>
+                    <span ng-if="member.endDate">
+                        {{member.beginDate|date:'d.M.yyyy'}} - {{member.endDate|date:'d.M.yyyy'}}
+                    </span>
+                    <span ng-if="!member.endDate">
+                        {{member.beginDate|date:'d.M.yyyy'}}
+                    </span>
+                </div>
+            </td>
+            <td class="col-xs-3"><span>{{'occupation.type.'+member.occupationType | translate}}</span></td>
+            <td class="col-xs-1 text-center">
+                <input type="radio" ng-model="member.contactInfoShare" ng-change="save(member)" ng-value="null">
+            </td>
+            <td class="col-xs-1 text-center">
+                <input type="radio" ng-model="member.contactInfoShare" ng-change="save(member)" ng-value="'ONLY_OFFICIALS'">
+            </td>
+            <td class="col-xs-1 text-center">
+                <input type="radio" ng-model="member.contactInfoShare" ng-change="save(member)" ng-value="'ALL_MEMBERS'">
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<hr>
+
+<div ng-init="isCollapsed=true">
+    <a class="h5" ng-click="isCollapsed = !isCollapsed">
+        <span translate="club.config.resignTitle"></span>
+        <span class="glyphicon"
+           ng-class="{'glyphicon-chevron-down': !isCollapsed, 'glyphicon-chevron-right': isCollapsed}"></span>
+    </a>
+    <div uib-collapse="isCollapsed" class="well">
+        <div class="table-responsive">
+            <table class="table table-condensed table-striped">
+                <thead>
+                <tr>
+                    <th class="col-xs-6" translate="account.profile.club.name"></th>
+                    <th class="col-xs-3" translate="account.profile.club.role"></th>
+                    <th class="col-xs-3 text-center">&nbsp;</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="member in clubOccupations">
+                    <td class="col-xs-6">
+                        <span name-translated="member.organisation"></span><br>
+                        <div>
+                    <span ng-if="member.endDate">
+                        {{member.beginDate|date:'d.M.yyyy'}} - {{member.endDate|date:'d.M.yyyy'}}
+                    </span>
+                    <span ng-if="!member.endDate">
+                        {{member.beginDate|date:'d.M.yyyy'}}
+                    </span>
+                        </div>
+                    </td>
+                    <td class="col-xs-3"><span>{{'occupation.type.'+member.occupationType | translate}}</span></td>
+                    <td class="col-xs-3 text-center">
+                        <button ng-if="!member.endDate"
+                                class="btn btn-sm btn-default"
+                                ng-click="leaveClub(member)"
+                                translate="club.config.button.resign"></button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

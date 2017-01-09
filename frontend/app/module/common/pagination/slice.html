@@ -1,0 +1,22 @@
+<ul class="pager" ng-if="$ctrl.hasPreviousPage() || $ctrl.hasNextPage()">
+    <li class="previous"
+        ng-class="{'disabled': !$ctrl.hasPreviousPage()}">
+        <a ng-click="$ctrl.previousPage()">
+            <span aria-hidden="true">&larr;</span>
+            <span translate="global.pager.previous"></span>
+        </a>
+    </li>
+    <li>
+        <div class="total-pages">
+            <span translate="global.pager.current"></span>
+            <span ng-bind="$ctrl.slice.pageable.page + 1"></span>
+        </div>
+    </li>
+    <li class="next"
+        ng-class="{'disabled': !$ctrl.hasNextPage()}">
+        <a ng-click="$ctrl.nextPage()">
+            <span translate="global.pager.next"></span>
+            <span aria-hidden="true">&rarr;</span>
+        </a>
+    </li>
+</ul>

@@ -1,0 +1,13 @@
+<div ng-if="!moderatorView">
+    <div class="h4" translate="harvestreport.title.new"></div>
+    <button class="btn btn-primary btn-lg"
+            ng-controller="HarvestReportInitSpeciesListController"
+            ng-click="init()">
+        <span class="glyphicon glyphicon-plus"></span>
+        <span translate="harvestreport.button.new"></span>
+    </button>
+</div>
+
+<div ng-include="'harvestreport/listrequired.html'"></div>
+<div ng-include="'harvestreport/listrejected.html'"></div>
+<div ng-include="'harvestreport/listproposed.html'"></div>

@@ -1,0 +1,70 @@
+<div growl></div>
+
+<div class="r-gamediary-layout">
+    <div class="left-column" ng-init="filtersCollapsed = false">
+        <div class="r-header" ng-click="filtersCollapsed = !filtersCollapsed">
+            <span class="glyphicon glyphicon-chevron-right" ng-show="filtersCollapsed"></span>
+            <span class="glyphicon glyphicon-chevron-down" ng-hide="filtersCollapsed"></span>
+            <span translate=gamediary.menuTitles.filters></span>
+        </div>
+
+        <div class="r-content" uib-collapse="filtersCollapsed">
+            <div ng-include="'diary/list/filters.html'"></div>
+        </div>
+
+        <div class="r-header">
+            <span translate="gamediary.menuTitles.huntingDays"></span>
+            <div class="btn-group pull-right" uib-dropdown dropdown-append-to-body>
+                <div uib-dropdown-toggle>
+                    <span class="glyphicon glyphicon-cog"></span>
+                </div>
+
+                <ul class="dropdown-menu" uib-dropdown-menu>
+                    <li>
+                        <form action="/api/v1/gamediary/excel" method="POST">
+                            <input type="hidden" spring-csrf-cookie/>
+                            <button type="submit" class="btn btn-info">
+                                <span class="glyphicon glyphicon-export"></span>
+                                <span translate="gamediary.button.exportToExcel"></span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="r-diary-days">
+            <div ng-include="'diary/list/days.html'"></div>
+        </div>
+    </div>
+
+    <div class="main-column">
+        <div class="r-gamediary-map-button-area">
+            <a ng-click="addHarvest()" class="btn btn-primary">
+                <span class="fa fa-crosshairs"></span>&nbsp;
+                <span translate="gamediary.button.addHarvest"></span>
+            </a>
+            <a ng-click="addObservation()" class="btn btn-primary">
+                <span r-binoculars-symbol></span>&nbsp;
+                <span translate="gamediary.button.addObservation"></span>
+            </a>
+            <a ng-click="addSrva()" ng-show="enableSrva" class="btn btn-primary">
+                <span class="fa fa-exclamation-triangle"></span>&nbsp;
+                <span translate="srva.form.bookSrvaEvent"></span>
+            </a>
+        </div>
+
+        <leaflet class="r-cursor-pointer"
+                 id="diaryMap"
+                 r-viewport-height
+                 defaults="mapDefaults"
+                 layers="mapDefaults.mmlLayers"
+                 controls="mapDefaults.controls"
+                 lf-center="mapState.center"
+                 bounds="mapState.viewBounds"
+                 event-broadcast="mapEvents"
+                 width="100%">
+            <marker-cluster id="diaryEntryMarkers" leaflet-markers="markers" />
+        </leaflet>
+    </div>
+</div>

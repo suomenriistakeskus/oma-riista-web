@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/koulutusportaali/jht/2016/06"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/koulutusportaali/jht/2016/06"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xs:element name="suoritukset">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="suoritus" type="Suoritus" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="Suoritus">
+        <xs:sequence>
+            <xs:element name="id" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>
+                        Koulutustapahtuman yksilöivä tunniste lähdejärjestelmässä.
+                        Esimerkiksi UUID.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:choice>
+                <xs:annotation>
+                    <xs:documentation>
+                        Henkilö tulee yksilöidä vain yhdellä tunnisteella. Vaihtoehdoista ensisijainen on HETU.
+                    </xs:documentation>
+                </xs:annotation>
+
+                <xs:element name="hetu" type="HenkiloTunnus">
+                    <xs:annotation>
+                        <xs:documentation>Koulutuksen suorittaneen henkilön henkilötunnus</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="metsastajaNumero" type="MetsastajaNumero">
+                    <xs:annotation>
+                        <xs:documentation>Koulutuksen suorittaneen henkilön metsästäjänumero</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="omaRiistaPersonId" type="xs:long">
+                    <xs:annotation>
+                        <xs:documentation>
+                            oma.riista.fi kirjautumisrajapinnasta saatu personId-parametri
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+
+            <xs:element name="tehtavaTyyppi" type="TehtavaTyyppi">
+                <xs:annotation>
+                    <xs:documentation>Koulutusta vastaavan JHT-tehtävän tyyppi</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="suoritusPvm" type="xs:date">
+                <xs:annotation>
+                    <xs:documentation>Hyväksytyn koulutuksen suorituspäivämäärä</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="TehtavaTyyppi">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="METSASTYKSENVALVOJA"/>
+            <xs:enumeration value="AMPUMAKOKEEN_VASTAANOTTAJA"/>
+            <xs:enumeration value="METSASTAJATUTKINNON_VASTAANOTTAJA"/>
+            <xs:enumeration value="RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="RhyKoodi">
+        <xs:restriction base="xs:token">
+            <xs:length value="3"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="HenkiloTunnus">
+        <xs:restriction base="xs:token">
+            <xs:length value="11"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MetsastajaNumero">
+        <xs:restriction base="xs:token">
+            <xs:length value="8"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

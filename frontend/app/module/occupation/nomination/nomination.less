@@ -1,0 +1,114 @@
+.r-nomination-list-tabs {
+  margin-bottom: 15px;
+
+  .nav-pills > .active > a > .badge {
+    color: white;
+    background-color: #777;
+  }
+}
+
+.r-nomination-list-filters {
+  .form-group {
+    margin-bottom: 5px;
+  }
+}
+
+.r-nomination-list-container {
+  ul.pagination {
+    margin-bottom: 15px;
+  }
+}
+
+.r-nomination-list-header {
+  position: relative;
+  overflow: auto;
+  min-height: 40px;
+  padding: 5px 15px;
+  margin-bottom: 15px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 1px rgba(0,0,0,.05);
+
+  .left-column {
+    .make-xs-column(3, 0);
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .right-column {
+    .make-xs-column(9, 0);
+    text-align: right;
+  }
+
+  input[type=checkbox] {
+    margin: 6px 0 0 -25px;
+  }
+
+  label.checkbox-inline {
+    padding-left: 25px;
+  }
+
+  .btn {
+    margin-left: 10px;
+  }
+}
+
+.r-nomination-list-empty {
+  position: relative;
+  overflow: auto;
+  width: 100%;
+  text-align: center;
+  font-size: 18px;
+  color: #ccc;
+}
+
+.r-nomination-list-element {
+  &.panel {
+    margin-bottom: 5px;
+  }
+
+  .panel-heading {
+    position: relative;
+    padding: 5px 15px;
+    font-size: 16px;
+    line-height: 32px;
+
+    input[type=checkbox] {
+      margin: 10px 0 0 -25px;
+    }
+
+    label.checkbox-inline {
+      padding-left: 25px;
+    }
+
+    .badge {
+      margin: auto 10px;
+    }
+
+    .btn {
+      position: absolute;
+      right: 15px;
+      top: 5px;
+    }
+  }
+
+  .panel-body {
+    padding: 15px 15px 5px;
+
+    .btn-group {
+      margin-top: 15px;
+    }
+
+    .left-column, .center-column {
+      p.header {
+        font-weight: bold;
+        margin: 0;
+      }
+
+      p {
+        margin: 0 0 10px;
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+<form>
+    <div class="form-group" ng-if="$ctrl.showRk">
+        <select class="form-control" name="organisationSelect" id="organisationSelect"
+                ng-model="$ctrl.selectedOrganisationType"
+                ng-change="$ctrl.updateModel()"
+                ng-options="'global.organisationType.' + o | translate for o in $ctrl.organisationTypes"></select>
+    </div>
+
+    <div class="form-group" ng-if="$ctrl.selectedOrganisationType !== 'RK'" show-errors>
+        <label for="rkaSelect" class="control-label" translate="occupation.nomination.organisationSearch.chooseRka"></label>
+        <select class="form-control" name="rkaSelect" id="rkaSelect"
+                ng-model="$ctrl.selectedArea"
+                required
+                ng-change="$ctrl.updateModel()"
+                ng-options="a.name for a in $ctrl.areas track by a.officialCode">
+            <option value="">{{'occupation.nomination.organisationSearch.chooseRka' | translate}}</option>
+        </select>
+    </div>
+
+    <div class="form-group" ng-if="$ctrl.selectedArea && $ctrl.selectedOrganisationType === 'RHY'" show-errors>
+        <label for="rhySelect" class="control-label" translate="occupation.nomination.organisationSearch.chooseRhy"></label>
+        <select class="form-control" name="rhySelect" id="rhySelect"
+                ng-model="$ctrl.selectedRhy"
+                required
+                ng-change="$ctrl.updateModel()"
+                ng-options="rhy.name for rhy in $ctrl.selectedArea.subOrganisations track by rhy.officialCode">
+            <option value="">{{'occupation.nomination.organisationSearch.chooseRhy' | translate}}</option>
+        </select>
+    </div>
+</form>

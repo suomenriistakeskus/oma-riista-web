@@ -1,0 +1,153 @@
+<div class="announcement-modal">
+    <div class="modal-header">
+        <h3 class="modal-title" ng-hide="$ctrl.announcement.id" translate="announcements.form.createTitle"></h3>
+        <h3 class="modal-title" ng-show="$ctrl.announcement.id" translate="announcements.form.editTitle"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="row">
+
+            <!--Left column-->
+            <div class="col-md-4">
+                <form name="selectionForm"
+                      role="form" class="form"
+                      novalidate autocomplete="off">
+
+                    <fieldset>
+                        <legend translate="announcements.form.addOccupationType"></legend>
+
+                        <div class="form-group">
+                            <select class="form-control"
+                                    name="targetOccupations" id="targetOccupations"
+                                    ng-model="$ctrl.targetRole"
+                                    ng-options="o.key as o.value group by o.group for o in $ctrl.occupationTypeChoices | orderBy:['group']">
+                            </select>
+                        </div>
+
+                        <button class="btn btn-default pull-right" type="button"
+                                ng-click="$ctrl.addOccupationType($ctrl.targetRole)">
+                            <span translate="global.button.add"></span>
+                        </button>
+                    </fieldset>
+
+                    <hr ng-if="$ctrl.showOrganisationSelect()"/>
+
+                    <fieldset ng-if="$ctrl.showOrganisationSelect()">
+                        <legend translate="announcements.form.addOrganisation"></legend>
+
+                        <div class="form-group">
+                            <organisation-selection
+                                    show-rk="true"
+                                    show-rka="true"
+                                    area-code="$ctrl.areaCode"
+                                    rhy-code="$ctrl.rhyCode"></organisation-selection>
+                        </div>
+
+                        <button class="btn btn-default pull-right" type="button"
+                                ng-click="$ctrl.addOrganisation($ctrl.areaCode, $ctrl.rhyCode)">
+                            <span translate="global.button.add"></span>
+                        </button>
+                    </fieldset>
+                </form>
+            </div>
+
+            <!--Right column-->
+            <div class="col-md-8">
+                <form name="announcementForm"
+                      role="form" class="form"
+                      novalidate autocomplete="off">
+                    <div ng-class="{'has-error': $ctrl.occupationTypeMissing()}">
+                        <label>
+                            <span translate="announcements.form.targetOccupations"></span>
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
+
+                        <div class="form-control-static">
+                            <div ng-repeat="o in $ctrl.announcement.occupationTypes" class="badge">
+                                <span ng-bind="o | translateWithPrefix:'occupation.type.' | truncateCharacters:20"></span>
+                                <span class="glyphicon glyphicon-remove"
+                                      ng-click="$ctrl.removeOccupationType(o)"></span>
+                            </div>
+
+                            <p class="text-danger" ng-show="$ctrl.occupationTypeMissing()">
+                                <span translate="announcements.form.chooseOccupationTypes"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div ng-if="$ctrl.showOrganisationSelect()"
+                         ng-class="{'has-error': $ctrl.organisationMissing()}">
+                        <label>
+                            <span translate="announcements.form.targetOrganisations"></span>
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
+
+                        <div class="form-control-static">
+                            <div ng-repeat="o in $ctrl.selectedOrganisations" class="badge">
+                                <organisation-name-label organisation="o"></organisation-name-label>
+                                <span class="glyphicon glyphicon-remove"
+                                      ng-click="$ctrl.removeOrganisation(o)"></span>
+                            </div>
+
+                            <p class="text-danger" ng-show="$ctrl.organisationMissing()">
+                                <span translate="announcements.form.chooseOrganisations"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="form-group" show-errors>
+                        <label for="subject">
+                            <span translate="announcements.form.subject"></span>
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
+
+                        <input type="text"
+                               name="subject" id="subject"
+                               class="form-control"
+                               required
+                               ng-minlength="5"
+                               ng-maxlength="255"
+                               ng-model="$ctrl.announcement.subject"/>
+
+                        <p class="help-block has-error"
+                           ng-show="announcementForm.subject.$invalid"
+                           ng-messages="announcementForm.subject.$error">
+                            <span ng-messages-include="common/errorMessages.html"></span>
+                        </p>
+                    </div>
+
+                    <div class="form-group" show-errors>
+                        <label for="body">
+                            <span translate="announcements.form.body"></span>
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
+
+                        <textarea name="body" id="body"
+                                  class="form-control"
+                                  rows="10"
+                                  required
+                                  ng-minlength="10"
+                                  ng-model="$ctrl.announcement.body"></textarea>
+
+                        <p class="help-block has-error"
+                           ng-show="announcementForm.body.$invalid"
+                           ng-messages="announcementForm.body.$error">
+                            <span ng-messages-include="common/errorMessages.html"></span>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-click="$ctrl.submit()"
+                ng-disabled="$ctrl.canNotSubmit(announcementForm)"
+                translate="global.button.submit"></button>
+    </div>
+</div>

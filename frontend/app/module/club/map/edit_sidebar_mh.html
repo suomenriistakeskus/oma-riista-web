@@ -1,0 +1,45 @@
+<h3 translate="club.area.map.tab.metsahallitus.heading"></h3>
+
+<form class="form-horizontal">
+    <div class="form-group">
+        <label for="mhSearch" class="control-label col-xs-3 text-right">
+            <span translate="club.area.map.tab.metsahallitus.search"></span>
+        </label>
+
+        <div class="col-xs-9">
+            <input type="text" id="mhSearch" name="mhSearch"
+                   class="form-control"
+                   ng-model="userInput.mooseAreaSearchQuery"
+                   typeahead-on-select="onSelectMooseArea($item)"
+                   uib-typeahead="(area.number + ' ' + area.name) for area in mh.filterMooseAreaList($viewValue) | limitTo:10">
+        </div>
+    </div>
+</form>
+
+<p class="well well-sm" ng-if="mh.isEmptySelection()">
+    <span translate="club.area.map.tab.metsahallitus.emptySelection"></span>
+</p>
+
+<ul class="list-group">
+    <li class="list-group-item"
+        ng-click="focusMooseArea(area)"
+        ng-repeat="area in mh.getSelectedAreaList() | orderBy:['number'] track by area.number">
+
+        <span class="list-group-item-heading">
+            {{ ::area.number  }} {{ ::area.name  }}
+        </span>
+
+        <div class="pull-right">
+            <button type="button" class="btn btn-default"
+                    ng-confirm-click
+                    ng-confirm-click-action="removeMooseArea(area)">
+                <span translate="global.button.delete"></span>
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+            </button>
+        </div>
+
+        <div class="list-group-item-text">
+            <strong>{{ area.size | number:2 }} ha</strong>
+        </div>
+    </li>
+</ul>

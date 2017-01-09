@@ -1,0 +1,51 @@
+<div class="form-group" show-errors>
+    <label for="memberSelect-{{::$id}}" class="control-label">
+        <span translate="club.genericMember.selectExistingMember"></span>
+        <small class="glyphicon glyphicon-asterisk text-danger"></small>
+    </label>
+
+    <div class="form-control-wrapper">
+        <select name="member-{{::$id}}" id="memberSelect-{{::$id}}" class="form-control"
+                ng-model="$ctrl.selectedMember"
+                ng-change="$ctrl.onMemberSelected()"
+                ng-options="m as $ctrl.formatPersonName(m.person) for m in ::$ctrl.memberList | orderBy:['person.lastName', 'person.byName'] track by m.id">
+            <option value=""></option>
+        </select>
+    </div>
+</div>
+
+<div class="form-group" show-errors>
+    <label for="hunterNumber-{{::$id}}" class="control-label">
+        <span translate="global.person.hunterNumber"></span>
+    </label>
+
+    <div class="form-control-wrapper">
+        <input type="text" name="hunterNumber-{{::$id}}" id="hunterNumber-{{::$id}}"
+               class="form-control"
+               ng-model="$ctrl.searchHunterNumber"
+               ng-change="$ctrl.onHunterNumberSearch()"
+               valid-hunter-number
+               ng-required="!$ctrl.isHunterSet()"
+               ng-disabled="$ctrl.selectedMember"
+               maxlength="8">
+    </div>
+</div>
+
+<div class="form-group" ng-if="$ctrl.searchHunterNumber">
+    <div class="form-control-offset-wrapper" ng-show="$ctrl.modelValue && !$ctrl.selectedMember">
+        <p class="form-control-static"
+           ng-bind="$ctrl.formatPersonName($ctrl.modelValue)"></p>
+    </div>
+
+    <div class="form-control-offset-wrapper" ng-show="$ctrl.searchResultNotFound">
+        <p class="form-control-static text-danger"
+           translate="gamediary.messages.notFound"></p>
+    </div>
+</div>
+
+<div class="form-group" ng-if="!$ctrl.searchHunterNumber && !$ctrl.isHunterSet()">
+    <div class="form-control-offset-wrapper">
+        <p class="form-control-static text-info"
+           translate="gamediary.messages.insertHunterNumber"></p>
+    </div>
+</div>

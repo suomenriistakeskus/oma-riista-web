@@ -1,0 +1,28 @@
+
+<table class="table table-condensed">
+    <thead>
+    <tr>
+        <th class="col-xs-2" translate="gamediary.form.species"></th>
+        <th class="col-xs-2" translate="harvestpermit.amount.granted"></th>
+        <th class="col-xs-2" translate="harvestpermit.amount.used "></th>
+        <th class="col-xs-2" translate="harvestpermit.amount.remaining"></th>
+        <th class="col-xs-2" translate="harvestpermit.amount.period"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="speciesAmount in permit.speciesAmounts"
+            ng-init="remaining=getRemainingSum(speciesAmount)"
+            ng-class="{danger: remaining < 0}">
+        <td><span name-translated="speciesAmount.gameSpecies.name"></span></td>
+        <td>{{speciesAmount.amount}}</td>
+        <td>{{getReportedSum(speciesAmount)}}</td>
+        <td>
+            <span ng-if="remaining > 0">{{remaining}}</span>
+            <span ng-if="remaining == 0" class="badge" translate="harvestpermit.amount.grantedUsedMsg"></span>
+            <span ng-if="remaining < 0" class="r-badge-red" translate="harvestpermit.amount.exceededMsg"></span>
+        </td>
+
+        <td><span>{{speciesAmount | speciesAmountIntervalText}}</span></td>
+    </tr>
+    </tbody>
+</table>

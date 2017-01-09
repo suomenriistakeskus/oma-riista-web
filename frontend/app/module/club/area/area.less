@@ -1,0 +1,83 @@
+@r-club-areas-left-sidebar-width: 400px;
+
+.r-club-areas-layout {
+  .make-row(0);
+
+  .left-column {
+    position: fixed;
+    width: @r-club-areas-left-sidebar-width;
+    top: @main-nav-height;
+    bottom: 0;
+    overflow: auto;
+    overflow-x: hidden;
+    min-height: 1px;
+    margin-top: -1px;
+    background: #fff;
+    padding: 20px;
+
+    .r-club-area-category-selection {
+      margin-bottom: 10px;
+    }
+
+    > h3 {
+      padding-left: 10px;
+      margin-bottom: 20px;
+
+      button {
+        float: right;
+        font-family: @font-family-base;
+      }
+    }
+
+    table {
+      margin-bottom: 0;
+    }
+
+    .panel {
+      margin: 0 auto 15px;
+
+      .panel-heading {
+        overflow: auto;
+      }
+
+      .panel-title {
+        margin-top: 5px;
+      }
+
+      .panel-body > .btn {
+        margin-top: 10px;
+        float: right;
+      }
+    }
+
+    .list-group > .list-group-item {
+      .buttons {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 10px 5px;
+
+        > span {
+          font-size: 12px;
+          padding-right: 5px;
+        }
+
+        .btn {
+          padding: 0 3px;
+        }
+      }
+
+      .list-group-item-heading {
+        display: block;
+        margin-right: 150px;
+      }
+    }
+  }
+
+  .main-column {
+    position: fixed;
+    left: @r-club-areas-left-sidebar-width;
+    right: 0;
+    min-height: 1px;
+  }
+}

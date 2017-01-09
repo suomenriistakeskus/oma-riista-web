@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     Customized version of XML schema provided by ABBYY on behalf of Suomen Riistakeskus.
+     Custom changes commented inline.
+-->
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified"
+            targetNamespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/Hirvitietokortti.xsd"
+            xmlns="http://www.abbyy.com/FlexiCapture/Schemas/Export/Hirvitietokortti.xsd"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:import schemaLocation="AdditionalFormData_v1.0.xsd"
+                namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+
+    <!--
+         StringExt, NumericExt, DateExt and BooleanExt are replaced by their wrapped standard XML
+         base types because it is difficult to get mapping to Java (via JAXB) sound otherwise.
+    -->
+    <!--
+    <xsd:complexType name="StringExt">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="DateExt">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:date">
+                <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="NumericExt">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:decimal">
+                <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="BooleanExt">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:boolean">
+                <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    -->
+
+    <!--
+         Customization: This group is extracted as a separate entity and included where needed.
+    -->
+    <xsd:group name="ETRS_TM35FIN_CoordinateType">
+        <xsd:sequence>
+            <xsd:element name="_Koordinaatit_P" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Koordinaatit_I" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:group>
+
+    <!--
+         Customization: This group is extracted as a separate entity and included where needed.
+    -->
+    <xsd:group name="DateAndLocationType">
+        <xsd:sequence>
+            <xsd:element name="_Päivämäärä" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:group ref="ETRS_TM35FIN_CoordinateType"/>
+        </xsd:sequence>
+    </xsd:group>
+
+    <!--
+         Customization: This group is extracted as a separate entity and included where needed.
+    -->
+    <xsd:group name="MooseHarvestBasicInfoType">
+        <xsd:sequence>
+            <xsd:group ref="DateAndLocationType"/>
+            <xsd:element name="_Punnittu" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Arvioitu" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:group>
+
+    <!--
+         Customization: This group is extracted as a separate entity and included where needed.
+    -->
+    <xsd:group name="MooseHarvestConditionType">
+        <xsd:sequence>
+            <xsd:element name="_Kuntoluokka" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Lisätietoja" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ihmisravinnoksi_kelpaamaton" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:group>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_1.1Type">
+        <xsd:sequence>
+            <xsd:element name="_Pyyntiluvan_saajan_nimi" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästysseura_tai_-seurue" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Seurueen_koordinaatit" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Riistanhoitoyhdistys" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_1.2Type">
+        <xsd:sequence>
+            <xsd:element name="_Sukunimi_Etunimi" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Henkilötunnus" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästäjänumero" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Lähiosoite" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Postinumero_ja_-toimipaikka" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Puhelin" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Sähköpostiosoite" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_Sivu_1Type">
+        <xsd:sequence>
+            <xsd:element name="_1.1" type="_1.1Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_1.2" type="_1.2Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Asiakasnumero" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ilmoitus_on_ajalta_1" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ilmoitus_on_ajalta_2" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Pyyntilupa" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_Metsästyspäivien_olosuhdetiedotType">
+        <xsd:sequence>
+            <xsd:element name="_Päivämäärä" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästysaika" type="xsd:float" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Lumen_syvyys" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästystapa" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästäjiä" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästyskoiria" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_2.1Type">
+        <xsd:sequence>
+            <xsd:element name="_Metsästyspäivien_olosuhdetiedot" type="_Metsästyspäivien_olosuhdetiedotType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_Sivu_2Type">
+        <xsd:sequence>
+            <xsd:element name="_2.1" type="_2.1Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Asiakasnumero" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_Päivittäiset_hirvihavainnotType">
+        <xsd:sequence>
+            <xsd:group ref="DateAndLocationType"/>
+            <xsd:element name="_AU" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_N0" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_N1" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_N2" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_N3" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_T" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_3.1Type">
+        <xsd:sequence>
+            <xsd:element name="_Päivittäiset_hirvihavainnot" type="_Päivittäiset_hirvihavainnotType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_Sivu_3Type">
+        <xsd:sequence>
+            <xsd:element name="_3.1" type="_3.1Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Asiakasnumero" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_UroksetType">
+        <xsd:sequence>
+            <xsd:group ref="MooseHarvestBasicInfoType"/>
+            <xsd:element name="_Vasen" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Oikea" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Sarvityyppi" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Sarvien_kärkiväli" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:group ref="MooseHarvestConditionType"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_4.1Type">
+        <xsd:sequence>
+            <xsd:element name="_Urokset" type="_UroksetType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_Sivu_4Type">
+        <xsd:sequence>
+            <xsd:element name="_4.1" type="_4.1Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Asiakasnumero" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_NaaraatType">
+        <xsd:sequence>
+            <xsd:group ref="MooseHarvestBasicInfoType"/>
+            <xsd:group ref="MooseHarvestConditionType"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_5.1Type">
+        <xsd:sequence>
+            <xsd:element name="_Naaraat" type="_NaaraatType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_Sivu_5Type">
+        <xsd:sequence>
+            <xsd:element name="_5.1" type="_5.1Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Asiakasnumero" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_VasatType">
+        <xsd:sequence>
+            <xsd:group ref="MooseHarvestBasicInfoType"/>
+            <xsd:element name="_Sukupuoli" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:group ref="MooseHarvestConditionType"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_6.1Type">
+        <xsd:sequence>
+            <xsd:element name="_Vasat" type="_VasatType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_Sivu_6Type">
+        <xsd:sequence>
+            <xsd:element name="_6.1" type="_6.1Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Asiakasnumero" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_SuurpetohavainnotType">
+        <xsd:sequence>
+            <xsd:group ref="DateAndLocationType"/>
+            <xsd:element name="_Susi" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Havaintotyyppi" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Lisätiedot" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Karhu" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ilves" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ahma" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_7.1Type">
+        <xsd:sequence>
+            <xsd:element name="_Suurpetohavainnot" type="_SuurpetohavainnotType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="_EsiintyminenType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value=""/>
+            <xsd:enumeration value="Ei"/>
+            <xsd:enumeration value="Kyllä"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!--
+         _EsiintyminenTypeExt is commented out because it creates unnecessary wrapper class into
+         class hierarchy.
+    -->
+    <!--
+    <xsd:complexType name="_EsiintyminenTypeExt">
+        <xsd:simpleContent>
+            <xsd:extension base="_EsiintyminenType">
+                <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    -->
+
+    <xsd:complexType name="_Sivu_7Type">
+        <xsd:sequence>
+            <xsd:element name="_7.1" type="_7.1Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Asiakasnumero" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Esiintyminen" type="_EsiintyminenType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_MuutoksetExport" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Arvio_yksilömäärästä" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Esiintyminen1" type="_EsiintyminenType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_MuutoksetExport1" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Arvio_yksilömäärästä1" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Esiintyminen2" type="_EsiintyminenType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_MuutoksetExport2" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Arvio_yksilömäärästä2" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Esiintyminen3" type="_EsiintyminenType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_MuutoksetExport3" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Arvio_yksilömäärästä3" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="_Metsästysalueemme_onType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value=""/>
+            <xsd:enumeration value="Kesälaidunaluetta"/>
+            <xsd:enumeration value="Talvilaidunaluetta"/>
+            <xsd:enumeration value="Molempia"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!--
+         _Metsästysalueemme_onTypeExt is commented out because it creates unnecessary wrapper class into
+         class hierarchy.
+    -->
+    <!--    
+    <xsd:complexType name="_Metsästysalueemme_onTypeExt">
+        <xsd:simpleContent>
+            <xsd:extension base="_Metsästysalueemme_onType">
+                <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    -->
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_8.1Type">
+        <xsd:sequence>
+            <xsd:element name="_Metsästysalueen_kokonaispinta-ala" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästykseen_käytetyn_alueen_koko" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästykseen_käytetyn_alueen_koko_2" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Koko_metsästysalueelle_jäi_hirviä_yhteensä" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästykseen_käytetylle_alueelle_jäi_hirviä_yhteensä" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästysalueemme_on" type="_Metsästysalueemme_onType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_8.2Type">
+        <xsd:sequence>
+            <xsd:element name="_Aikuiset_urokset" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Aikuiset_naaraat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Urosvasat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Naarasvasat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ihmisravinnoksi_kelpaamattom_aikuiset" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ihmisravinnoksi_kelpaamattom_vasat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Maksettava_120" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Maksettava_50" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Vähennä_120" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Vähennä_50" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Yhteensä_maksettavaa" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_8.3Type">
+        <xsd:sequence>
+            <xsd:element name="_Hukkuneet" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Karhun_tappamat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Suden_tappamat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Kolarissa_kuolleet" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Salakaadetut" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Kiimatappelussa_kuolleet" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Nälkiintyneet" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Muu_syy" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Yhteensä" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Muu_syy_2" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="_MääräType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value=""/>
+            <xsd:enumeration value="vähentynyt"/>
+            <xsd:enumeration value="ennallaan"/>
+            <xsd:enumeration value="lisääntynyt"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!--
+         _MääräTypeExt is commented out because it creates unnecessary wrapper class into class
+         hierarchy.
+    -->
+    <!--
+    <xsd:complexType name="_MääräTypeExt">
+        <xsd:simpleContent>
+            <xsd:extension base="_MääräType">
+                <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    -->
+
+    <!-- Customization: mixed="true" attribute removed -->
+    <xsd:complexType name="_8.4Type">
+        <xsd:sequence>
+            <xsd:element name="_Ensimmäiset" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Viimeiset" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ensimmäiset_2" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Viimeiset_2" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ensimmäiset_3" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Viimeiset_3" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Aikuisessa" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Vasassa" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Alueellamme_esiintyy_hirven_täikärpästä" type="_EsiintyminenType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Määrä" type="_MääräType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="CorrectnessAssurance">
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_Sivu_8Type">
+        <xsd:sequence>
+            <xsd:element name="_8.1" type="_8.1Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_8.2" type="_8.2Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_8.3" type="_8.3Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_8.4" type="_8.4Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Organisaatiotunnus" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Pyynti_päättynyt" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Vakuutan_tiedot_oikeiksi" type="CorrectnessAssurance" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="ImageType">
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="_HirvitietokorttiType">
+        <xsd:sequence>
+            <xsd:element name="_Sivu_1" type="_Sivu_1Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Sivu_2" type="_Sivu_2Type" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="_Sivu_3" type="_Sivu_3Type" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="_Sivu_4" type="_Sivu_4Type" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="_Sivu_5" type="_Sivu_5Type" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="_Sivu_6" type="_Sivu_6Type" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="_Sivu_7" type="_Sivu_7Type" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="_Sivu_8" type="_Sivu_8Type" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="_PAGE_IMAGES" type="ImageType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
+    </xsd:complexType>
+
+    <xsd:element name="_Hirvitietokortti" type="_HirvitietokorttiType"/>
+
+</xsd:schema>

@@ -1,0 +1,87 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off"
+      r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="account.profile.createClub.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-info" translate="account.profile.createClub.note"></div>
+
+        <div class="form-group" show-errors>
+            <label for="nameFI" class="col-xs-3 control-label">
+                <span translate="account.profile.createClub.nameFI"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <input type="text" name="nameFI" id="nameFI"
+                       class="form-control"
+                       ng-model="modalCtrl.club.nameFI"
+                       unique-club-name
+                       ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                       minlength="5"
+                       maxlength="255"
+                       required
+                       autocomplete="off"/>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="nameSV" class="col-xs-3 control-label">
+                <span translate="account.profile.createClub.nameSV"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <input type="text" name="nameSV" id="nameSV"
+                       class="form-control"
+                       ng-model="modalCtrl.club.nameSV"
+                       unique-club-name
+                       ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                       minlength="5"
+                       maxlength="255"
+                       required
+                       autocomplete="off"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-xs-3 control-label">
+                <span translate="account.profile.createClub.location"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <span ng-show="modalCtrl.club.geoLocation" translate="global.geoLocation.coordinatesText" translate-values="modalCtrl.club.geoLocation"></span>
+                <span ng-show="!modalCtrl.club.geoLocation" translate="global.geoLocation.required" class="text text-danger"></span>
+
+                <leaflet class="r-cursor-pointer"
+                         id="viewClubCreateMap"
+                         defaults="modalCtrl.mapDefaults"
+                         layers="modalCtrl.mapDefaults.mmlLayers"
+                         controls="modalCtrl.mapDefaults.controls"
+                         event-broadcast="modalCtrl.mapEvents"
+                         r-geolocation-center="modalCtrl.club.geoLocation"
+                         r-geolocation-marker="modalCtrl.club.geoLocation"
+                         r-geolocation-editable="true"
+                         r-geolocation-marker-force-finland="true"
+                         height="300px">
+                </leaflet>
+                <hr>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="modalCtrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="modalCtrl.save()"
+                ng-disabled="form.$invalid || !modalCtrl.canSave()"
+                translate="account.profile.createClub.confirm"></button>
+    </div>
+</form>

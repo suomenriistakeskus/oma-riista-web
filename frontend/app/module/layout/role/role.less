@@ -1,0 +1,35 @@
+.r-main-navbar-nav-right > li.r-role-nav {
+  .role-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 85%;
+  }
+
+  > a {
+    width: 220px;
+    padding: 10px 15px 7px;
+
+    .caret {
+      display: inline-block;
+      position: absolute;
+      top: 30px;
+      right: 10px;
+    }
+  }
+
+  ul.dropdown-menu {
+    width: 220px;
+    padding-top: 0;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    z-index: 1002;
+
+    > li > a.role-title {
+      clear: both;
+      padding: 6px 15px;
+      line-height: 20px;
+      width: 100%;
+    }
+  }
+}

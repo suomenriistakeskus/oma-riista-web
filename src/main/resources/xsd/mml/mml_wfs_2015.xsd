@@ -1,0 +1,1068 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:gml="http://www.opengis.net/gml"
+        xmlns:ktjkiiwfs="http://xml.nls.fi/ktjkiiwfs/2010/02"
+        xmlns:smil20="http://www.w3.org/2001/SMIL20/"
+        xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:smil20lang="http://www.w3.org/2001/SMIL20/Language"
+        targetNamespace="http://xml.nls.fi/ktjkiiwfs/2010/02" elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+  <import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.1.1/base/gml.xsd"/>
+
+  <element name="_Feature" type="gml:AbstractFeatureType" abstract="true" substitutionGroup="gml:_Feature"/>
+  <element name="KiinteistorajanTietoja" type="ktjkiiwfs:KiinteistorajanTietojaType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KiinteistorajanTietojaType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kiinteistorajalaji" minOccurs="0" type="ktjkiiwfs:Kiinteistorajalaji"/>
+          <element name="lahdeaineisto" minOccurs="0" type="ktjkiiwfs:Lahdeaineisto"/>
+          <element name="paivityspvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="interpolointitapa" minOccurs="0" type="ktjkiiwfs:Interpolointitapa"/>
+          <element name="sijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="KayttooikeusyksikonOsaKoyLT" type="ktjkiiwfs:KayttooikeusyksikonOsaKoyLTType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KayttooikeusyksikonOsaKoyLTType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kayttooikeusyksikonOsanKtjkiiPalveluavain" type="string"/>
+          <element name="kayttooikeusyksikonOsanNumero" type="string"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenLeveysrajaus" minOccurs="0" type="string"/>
+          <element name="rajauksenVoimaantulopvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenVoimassaoloselitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="rajauksenVoimassaoloselitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="rajauksenSelitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="rajauksenSelitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="sijainnillisuus" minOccurs="0" type="ktjkiiwfs:Sijainnillisuus"/>
+          <element name="laskennallinenPituus" minOccurs="0" type="double"/>
+          <element name="tekstiKartalla" minOccurs="0" type="string"/>
+          <element name="interpolointitapa" minOccurs="0" type="ktjkiiwfs:Interpolointitapa"/>
+          <element name="sijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+          <element name="tunnuspisteSijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+          <element name="oikeutettuSuhde" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="rasitettuSuhde" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="osapuoliSuhde" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="Tiekunta" type="ktjkiiwfs:TiekuntaType" substitutionGroup="gml:_Feature"/>
+  <complexType name="TiekuntaType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="nimi" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="RajamerkinTietoja" type="ktjkiiwfs:RajamerkinTietojaType" substitutionGroup="gml:_Feature"/>
+  <complexType name="RajamerkinTietojaType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="rajamerkkilaji" minOccurs="0" type="ktjkiiwfs:Rajamerkkilaji"/>
+          <element name="numero" minOccurs="0" type="string"/>
+          <element name="numeronSiirtymaP" minOccurs="0" type="double"/>
+          <element name="numeronSiirtymaI" minOccurs="0" type="double"/>
+          <element name="tasosijaintitarkkuus" minOccurs="0" type="double"/>
+          <element name="rakenne" minOccurs="0" type="ktjkiiwfs:RajamerkinRakenne"/>
+          <element name="lahdeaineisto" minOccurs="0" type="ktjkiiwfs:Lahdeaineisto"/>
+          <element name="suhdeMaanpintaan" minOccurs="0" type="ktjkiiwfs:RajamerkinSuhdeMaanpintaan"/>
+          <element name="olemassaolo" minOccurs="0" type="ktjkiiwfs:RajamerkinOlemassaolo"/>
+          <element name="paivityspvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="sijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="Osoite" type="ktjkiiwfs:OsoiteType" substitutionGroup="gml:_Feature"/>
+  <complexType name="OsoiteType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="osoite" type="string"/>
+          <element name="osoitetaydenne" minOccurs="0" type="string"/>
+          <element name="postinumero" minOccurs="0" type="string"/>
+          <element name="postitoimipaikka" minOccurs="0" type="string"/>
+          <element name="valtio" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="ViranomaispaatosTieto" type="ktjkiiwfs:ViranomaispaatosTietoType" substitutionGroup="gml:_Feature"/>
+  <complexType name="ViranomaispaatosTietoType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="paatospvm" type="ktjkiiwfs:Paivays"/>
+          <element name="paatostunniste" minOccurs="0" type="string"/>
+          <element name="viranomainen" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="KayttooikeusyksikonPerustiedot" type="ktjkiiwfs:KayttooikeusyksikonPerustiedotType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KayttooikeusyksikonPerustiedotType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kayttooikeusyksikkotunnus" type="ktjkiiwfs:Kayttooikeusyksikkotunnus"/>
+          <element name="olotila" type="ktjkiiwfs:Olotila"/>
+          <element name="kayttooikeusyksikkopaalaji" type="ktjkiiwfs:Kayttooikeusyksikkopaalaji"/>
+          <element name="kayttooikeusyksikkolaji" type="ktjkiiwfs:Kayttooikeusyksikkolaji"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="lakkaamispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="viimeisinPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="nimi" minOccurs="0" type="string"/>
+          <element name="tiekunnallisuus" type="ktjkiiwfs:Tiekunnallisuus"/>
+          <element name="kayttooikeusyksikonOsienLukumaara" minOccurs="0" type="int"/>
+          <element name="sijainnillisuus" minOccurs="0" type="string"/>
+          <element name="viranomaispaatosTieto" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="kayttooikeusyksikonOsa" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="KuntaTieto" type="ktjkiiwfs:KuntaTietoType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KuntaTietoType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kuntatunnus" type="ktjkiiwfs:Kuntatunnus"/>
+          <element name="olotila" type="ktjkiiwfs:Olotila"/>
+          <element name="alkupvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="loppupvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="nimiSuomeksi" type="string"/>
+          <element name="nimiRuotsiksi" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="Sijaintikunta" type="ktjkiiwfs:SijaintiKuntaType" substitutionGroup="gml:_Feature"/>
+  <complexType name="SijaintiKuntaType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="laskennallinenPituusSijaintikunnassa" minOccurs="0" type="double"/>
+          <element name="kuntaTieto" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="YksityistienPerustiedot" type="ktjkiiwfs:YksityistienPerustiedotType" substitutionGroup="gml:_Feature"/>
+  <complexType name="YksityistienPerustiedotType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kayttooikeusyksikkotunnus" type="ktjkiiwfs:Kayttooikeusyksikkotunnus"/>
+          <element name="olotila" type="ktjkiiwfs:Olotila"/>
+          <element name="kayttooikeusyksikkopaalaji" type="ktjkiiwfs:Kayttooikeusyksikkopaalaji"/>
+          <element name="kayttooikeusyksikkolaji" type="ktjkiiwfs:Kayttooikeusyksikkolaji"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="lakkaamispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="viimeisinPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="nimi" minOccurs="0" type="string"/>
+          <element name="tiekunnallisuus" type="ktjkiiwfs:Tiekunnallisuus"/>
+          <element name="kayttooikeusyksikonOsienLukumaara" minOccurs="0" type="int"/>
+          <element name="sijainnillisuus" minOccurs="0" type="string"/>
+          <element name="tiekuntaYksitTie" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="yksityistie" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="sijaintikunta" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="kayttooikeusyksikonOsa" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="OsapuoliSuhde" type="ktjkiiwfs:OsapuoliSuhdeType" substitutionGroup="gml:_Feature"/>
+  <complexType name="OsapuoliSuhdeType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="poikkeavaLeveysrajaus" minOccurs="0" type="string"/>
+          <element name="poikkeavaVoimaantulopvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="poikkeavaPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="poikkeavaVoimassaoloselitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="poikkeavaVoimassaoloselitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="poikkeavaSelitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="poikkeavaSelitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="kohderekisteriyksikko" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="juridinenHenkilo" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="kuntaTieto" minOccurs="0" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="ExceptionReport" type="ktjkiiwfs:ExceptionReportType" substitutionGroup="gml:_Feature"/>
+  <complexType name="ExceptionReportType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="Exception" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="RekisteriyksikonPalstanTietoja" type="ktjkiiwfs:PalstanTietojaType" substitutionGroup="gml:_Feature"/>
+  <complexType name="PalstanTietojaType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="paivityspvm" type="ktjkiiwfs:Paivays"/>
+          <element name="tekstiKartalla" minOccurs="0" type="string"/>
+          <element name="rekisteriyksikonKiinteistotunnus" type="ktjkiiwfs:Kiinteistotunnus"/>
+          <element name="sijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+          <element name="tunnuspisteSijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+          <element name="kiinteistorajanTietoja" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="rajamerkinTietoja" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="KayttooikeusyksikkoKoyOsanLT" type="ktjkiiwfs:KayttooikeusyksikkoKoyOsanLTType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KayttooikeusyksikkoKoyOsanLTType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kayttooikeusyksikkotunnus" type="ktjkiiwfs:Kayttooikeusyksikkotunnus"/>
+          <element name="olotila" type="ktjkiiwfs:Olotila"/>
+          <element name="kayttooikeusyksikkopaalaji" type="ktjkiiwfs:Kayttooikeusyksikkopaalaji"/>
+          <element name="kayttooikeusyksikkolaji" type="ktjkiiwfs:Kayttooikeusyksikkolaji"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="lakkaamispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="viimeisinPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="nimi" minOccurs="0" type="string"/>
+          <element name="tiekunnallisuus" type="ktjkiiwfs:Tiekunnallisuus"/>
+          <element name="kayttooikeusyksikonOsienLukumaara" minOccurs="0" type="int"/>
+          <element name="sijainnillisuus" minOccurs="0" type="string"/>
+          <element name="viranomaispaatosTieto" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="sijaintikunta" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="TiekuntaKoyLT" type="ktjkiiwfs:TiekuntaKoyLTType" substitutionGroup="gml:_Feature"/>
+  <complexType name="TiekuntaKoyLTType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="nimi" type="string"/>
+          <element name="kuntaTieto" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="yhteyshenkiloKoyLT" minOccurs="0" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="KayttooikeusyksikonLaajatTiedot" type="ktjkiiwfs:KayttooikeusyksikonLaajatTiedotType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KayttooikeusyksikonLaajatTiedotType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kayttooikeusyksikkotunnus" type="ktjkiiwfs:Kayttooikeusyksikkotunnus"/>
+          <element name="olotila" type="ktjkiiwfs:Olotila"/>
+          <element name="kayttooikeusyksikkopaalaji" type="ktjkiiwfs:Kayttooikeusyksikkopaalaji"/>
+          <element name="kayttooikeusyksikkolaji" type="ktjkiiwfs:Kayttooikeusyksikkolaji"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="lakkaamispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="viimeisinPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="nimi" minOccurs="0" type="string"/>
+          <element name="tiekunnallisuus" type="ktjkiiwfs:Tiekunnallisuus"/>
+          <element name="kayttooikeusyksikonOsienLukumaara" minOccurs="0" type="int"/>
+          <element name="sijainnillisuus" minOccurs="0" type="string"/>
+          <element name="tiekuntaKoyLT" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="yksityistie" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="sijaintikunta" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="viranomaispaatosTieto" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="kayttooikeusyksikonOsaKoyLT" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="OikeutettuSuhde" type="ktjkiiwfs:OikeutettuSuhdeType" substitutionGroup="gml:_Feature"/>
+  <complexType name="OikeutettuSuhdeType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="poikkeavaLeveysrajaus" minOccurs="0" type="string"/>
+          <element name="poikkeavaVoimaantulopvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="poikkeavaPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="poikkeavaVoimassaoloselitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="poikkeavaVoimassaoloselitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="poikkeavaSelitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="poikkeavaSelitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="rakennustunnus" minOccurs="0" type="ktjkiiwfs:Rakennustunnus"/>
+          <element name="laitostunnus" minOccurs="0" type="ktjkiiwfs:Laitostunnus"/>
+          <element name="kaivostunniste" minOccurs="0" type="string"/>
+          <element name="kohderekisteriyksikko" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="kohdeMaaraala" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="juridinenHenkilo" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="kuntaTieto" minOccurs="0" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="TiekuntaYksitTie" type="ktjkiiwfs:TiekuntaYksitTieType" substitutionGroup="gml:_Feature"/>
+  <complexType name="TiekuntaYksitTieType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="nimi" type="string"/>
+          <element name="kuntaTieto" minOccurs="0" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="PalstanTietoja" type="ktjkiiwfs:PalstanTietojaType" substitutionGroup="gml:_Feature"/>
+  <element name="RasitettuSuhde" type="ktjkiiwfs:RasitettuSuhdeType" substitutionGroup="gml:_Feature"/>
+  <complexType name="RasitettuSuhdeType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="kohderekisteriyksikko" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="YhteyshenkiloKoyLT" type="ktjkiiwfs:YhteyshenkiloKoyLTType" substitutionGroup="gml:_Feature"/>
+  <complexType name="YhteyshenkiloKoyLTType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="nimi" type="string"/>
+          <element name="osoite" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="Yhteyshenkilo" type="ktjkiiwfs:YhteyshenkiloType" substitutionGroup="gml:_Feature"/>
+  <complexType name="YhteyshenkiloType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="nimi" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="JuridinenHenkilo" type="ktjkiiwfs:JuridinenHenkiloType" substitutionGroup="gml:_Feature"/>
+  <complexType name="JuridinenHenkiloType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="nimi" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="TiekunnanPerustiedot" type="ktjkiiwfs:TiekunnanPerustiedotType" substitutionGroup="gml:_Feature"/>
+  <complexType name="TiekunnanPerustiedotType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="nimi" type="string"/>
+          <element name="kuntaTieto" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="yhteyshenkilo" minOccurs="0" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="RekisteriyksikonTietoja" type="ktjkiiwfs:RekisteriyksikonTietojaType" substitutionGroup="gml:_Feature"/>
+  <complexType name="RekisteriyksikonTietojaType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kiinteistotunnus" type="ktjkiiwfs:Kiinteistotunnus"/>
+          <element name="olotila" type="ktjkiiwfs:Olotila"/>
+          <element name="rekisteriyksikkolaji" type="ktjkiiwfs:Rekisteriyksikkolaji"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="lakkaamispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="nimi" minOccurs="0" type="string"/>
+          <element name="maapintaala" minOccurs="0" type="ktjkiiwfs:Pintaala"/>
+          <element name="vesipintaala" minOccurs="0" type="ktjkiiwfs:Pintaala"/>
+          <element name="kuntaTieto" minOccurs="0" type="gml:FeaturePropertyType"/>
+          <element name="rekisteriyksikonPalstanTietoja" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="Kohdemaaraala" type="ktjkiiwfs:KohdemaaraalaType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KohdemaaraalaType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="maaraalatunnus" type="ktjkiiwfs:Maaraalatunnus"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="Kohderekisteriyksikko" type="ktjkiiwfs:KohderekisteriyksikkoType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KohderekisteriyksikkoType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kiinteistotunnus" type="ktjkiiwfs:Kiinteistotunnus"/>
+          <element name="nimi" minOccurs="0" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="KayttooikeusyksikonOsanPerustiedot" type="ktjkiiwfs:KayttooikeusyksikonOsanPerustiedotType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KayttooikeusyksikonOsanPerustiedotType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kayttooikeusyksikonOsanKtjkiiPalveluavain" type="string"/>
+          <element name="kayttooikeusyksikonOsanNumero" type="string"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenLeveysrajaus" minOccurs="0" type="string"/>
+          <element name="rajauksenVoimaantulopvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenVoimassaoloselitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="rajauksenVoimassaoloselitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="rajauksenSelitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="rajauksenSelitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="sijainnillisuus" minOccurs="0" type="ktjkiiwfs:Sijainnillisuus"/>
+          <element name="laskennallinenPituus" minOccurs="0" type="double"/>
+          <element name="tekstiKartalla" minOccurs="0" type="string"/>
+          <element name="interpolointitapa" minOccurs="0" type="ktjkiiwfs:Interpolointitapa"/>
+          <element name="sijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+          <element name="tunnuspisteSijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+          <element name="kayttooikeusyksikko" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="Yksityistie" type="ktjkiiwfs:YksityistieType" substitutionGroup="gml:_Feature"/>
+  <complexType name="YksityistieType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="yksityistienTunnus" type="string"/>
+          <element name="kuntaTieto" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="KiinteistorajanSijaintitiedot" type="ktjkiiwfs:KiinteistorajanSijaintitiedotType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KiinteistorajanSijaintitiedotType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="paivityspvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="interpolointitapa" type="ktjkiiwfs:Interpolointitapa"/>
+          <element name="sijainti" type="gml:GeometryPropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="PalstanTunnuspisteenSijaintitiedot" type="ktjkiiwfs:PalstanTunnuspisteenSijaintitiedotType" substitutionGroup="gml:_Feature"/>
+  <complexType name="PalstanTunnuspisteenSijaintitiedotType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="paivityspvm" type="ktjkiiwfs:Paivays"/>
+          <element name="tekstiKartalla" type="string"/>
+          <element name="tunnuspisteSijainti" type="gml:GeometryPropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="KayttooikeusyksikonOsa" type="ktjkiiwfs:KayttooikeusyksikonOsaType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KayttooikeusyksikonOsaType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kayttooikeusyksikonOsanKtjkiiPalveluavain" type="string"/>
+          <element name="kayttooikeusyksikonOsanNumero" type="string"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenLeveysrajaus" minOccurs="0" type="string"/>
+          <element name="rajauksenVoimaantulopvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenVoimassaoloselitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="rajauksenVoimassaoloselitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="rajauksenSelitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="rajauksenSelitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="sijainnillisuus" minOccurs="0" type="ktjkiiwfs:Sijainnillisuus"/>
+          <element name="laskennallinenPituus" minOccurs="0" type="double"/>
+          <element name="tekstiKartalla" minOccurs="0" type="string"/>
+          <element name="interpolointitapa" minOccurs="0" type="ktjkiiwfs:Interpolointitapa"/>
+          <element name="sijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+          <element name="tunnuspisteSijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="Kayttooikeusyksikko" type="ktjkiiwfs:KayttooikeusyksikkoType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KayttooikeusyksikkoType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kayttooikeusyksikkotunnus" type="ktjkiiwfs:Kayttooikeusyksikkotunnus"/>
+          <element name="olotila" type="ktjkiiwfs:Olotila"/>
+          <element name="kayttooikeusyksikkopaalaji" type="ktjkiiwfs:Kayttooikeusyksikkopaalaji"/>
+          <element name="kayttooikeusyksikkolaji" type="ktjkiiwfs:Kayttooikeusyksikkolaji"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="lakkaamispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="viimeisinPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="nimi" minOccurs="0" type="string"/>
+          <element name="tiekunnallisuus" type="ktjkiiwfs:Tiekunnallisuus"/>
+          <element name="kayttooikeusyksikonOsienLukumaara" minOccurs="0" type="int"/>
+          <element name="sijainnillisuus" minOccurs="0" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="KayttooikeusyksikonOsanLaajatTiedot" type="ktjkiiwfs:KayttooikeusyksikonOsanLaajatTiedotType" substitutionGroup="gml:_Feature"/>
+  <complexType name="KayttooikeusyksikonOsanLaajatTiedotType">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="kayttooikeusyksikonOsanKtjkiiPalveluavain" type="string"/>
+          <element name="kayttooikeusyksikonOsanNumero" type="string"/>
+          <element name="rekisterointipvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenLeveysrajaus" minOccurs="0" type="string"/>
+          <element name="rajauksenVoimaantulopvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenPaattymispvm" minOccurs="0" type="ktjkiiwfs:Paivays"/>
+          <element name="rajauksenVoimassaoloselitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="rajauksenVoimassaoloselitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="rajauksenSelitysSuomeksi" minOccurs="0" type="string"/>
+          <element name="rajauksenSelitysRuotsiksi" minOccurs="0" type="string"/>
+          <element name="sijainnillisuus" minOccurs="0" type="ktjkiiwfs:Sijainnillisuus"/>
+          <element name="laskennallinenPituus" minOccurs="0" type="double"/>
+          <element name="tekstiKartalla" minOccurs="0" type="string"/>
+          <element name="interpolointitapa" minOccurs="0" type="ktjkiiwfs:Interpolointitapa"/>
+          <element name="sijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+          <element name="tunnuspisteSijainti" minOccurs="0" type="gml:GeometryPropertyType"/>
+          <element name="kayttooikeusyksikkoKoyOsanLT" type="gml:FeaturePropertyType"/>
+          <element name="oikeutettuSuhde" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="rasitettuSuhde" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+          <element name="osapuoliSuhde" minOccurs="0" maxOccurs="unbounded" type="gml:FeaturePropertyType"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <simpleType name="Rajamerkkilaji">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="600"/>
+      <enumeration value="609"/>
+      <enumeration value="610"/>
+      <enumeration value="650"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Maaraalatunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Ryhmatunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Tonttijakotunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Laitostunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Yksilointitunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Kayttooikeusyksikkotunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Yritysjayhteisotunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Jakautumisperusteluku">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Paivays">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Tiekunnallisuus">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="1"/>
+      <enumeration value="2"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Osalukumuutossumma">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Osaluku">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Sijaintialuetunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Manttaalimuutossumma">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="RajamerkinRakenne">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="1"/>
+      <enumeration value="2"/>
+      <enumeration value="3"/>
+      <enumeration value="4"/>
+      <enumeration value="5"/>
+      <enumeration value="6"/>
+      <enumeration value="7"/>
+      <enumeration value="8"/>
+      <enumeration value="9"/>
+      <enumeration value="10"/>
+      <enumeration value="11"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Toimenpidetunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="MaaraalatunnusKartalla">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Kaavatunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Kiinteistorajalaji">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="651"/>
+      <enumeration value="653"/>
+      <enumeration value="661"/>
+      <enumeration value="696"/>
+      <enumeration value="697"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Kayttooikeusyksikkopaalaji">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="1"/>
+      <enumeration value="2"/>
+      <enumeration value="3"/>
+      <enumeration value="4"/>
+      <enumeration value="5"/>
+      <enumeration value="7"/>
+      <enumeration value="8"/>
+      <enumeration value="11"/>
+      <enumeration value="12"/>
+      <enumeration value="14"/>
+      <enumeration value="15"/>
+      <enumeration value="16"/>
+      <enumeration value="18"/>
+      <enumeration value="23"/>
+      <enumeration value="24"/>
+      <enumeration value="25"/>
+      <enumeration value="26"/>
+      <enumeration value="27"/>
+      <enumeration value="29"/>
+      <enumeration value="31"/>
+      <enumeration value="32"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Osuuksiensumma">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="RajamerkinSuhdeMaanpintaan">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="1"/>
+      <enumeration value="2"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Kayttooikeusyksikonosannumero">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Kuntanumero">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Osuudensuuruus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Kiinteistotunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Interpolointitapa">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="1"/>
+      <enumeration value="2"/>
+      <enumeration value="3"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="KiinteistotunnusKartalla">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Manttaali">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="RajamerkinOlemassaolo">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="1"/>
+      <enumeration value="2"/>
+      <enumeration value="3"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Sijainnillisuus">
+    <restriction base="string">
+      <enumeration value="1"/>
+      <enumeration value="2"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Kuntatunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Rekisteriyksikkolaji">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="1"/>
+      <enumeration value="3"/>
+      <enumeration value="4"/>
+      <enumeration value="5"/>
+      <enumeration value="6"/>
+      <enumeration value="7"/>
+      <enumeration value="8"/>
+      <enumeration value="9"/>
+      <enumeration value="10"/>
+      <enumeration value="11"/>
+      <enumeration value="12"/>
+      <enumeration value="13"/>
+      <enumeration value="14"/>
+      <enumeration value="15"/>
+      <enumeration value="17"/>
+      <enumeration value="18"/>
+      <enumeration value="19"/>
+      <enumeration value="21"/>
+      <enumeration value="22"/>
+      <enumeration value="23"/>
+      <enumeration value="24"/>
+      <enumeration value="25"/>
+      <enumeration value="99"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Rakennustunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Yksikkonumero">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Avain">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Lahdeaineisto">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="4"/>
+      <enumeration value="14"/>
+      <enumeration value="20"/>
+      <enumeration value="30"/>
+      <enumeration value="50"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Ryhmanumero">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="pvm_4_8">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="HenkilotunnusYritysjayhteisotunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Kayttooikeusyksikkolaji">
+    <restriction base="string">
+      <enumeration value="0"/>
+      <enumeration value="1"/>
+      <enumeration value="2"/>
+      <enumeration value="3"/>
+      <enumeration value="4"/>
+      <enumeration value="5"/>
+      <enumeration value="6"/>
+      <enumeration value="7"/>
+      <enumeration value="8"/>
+      <enumeration value="9"/>
+      <enumeration value="10"/>
+      <enumeration value="11"/>
+      <enumeration value="12"/>
+      <enumeration value="13"/>
+      <enumeration value="14"/>
+      <enumeration value="15"/>
+      <enumeration value="16"/>
+      <enumeration value="17"/>
+      <enumeration value="18"/>
+      <enumeration value="19"/>
+      <enumeration value="20"/>
+      <enumeration value="21"/>
+      <enumeration value="22"/>
+      <enumeration value="23"/>
+      <enumeration value="24"/>
+      <enumeration value="25"/>
+      <enumeration value="26"/>
+      <enumeration value="27"/>
+      <enumeration value="28"/>
+      <enumeration value="29"/>
+      <enumeration value="30"/>
+      <enumeration value="31"/>
+      <enumeration value="32"/>
+      <enumeration value="33"/>
+      <enumeration value="34"/>
+      <enumeration value="35"/>
+      <enumeration value="36"/>
+      <enumeration value="37"/>
+      <enumeration value="38"/>
+      <enumeration value="39"/>
+      <enumeration value="40"/>
+      <enumeration value="41"/>
+      <enumeration value="42"/>
+      <enumeration value="43"/>
+      <enumeration value="44"/>
+      <enumeration value="45"/>
+      <enumeration value="46"/>
+      <enumeration value="47"/>
+      <enumeration value="48"/>
+      <enumeration value="49"/>
+      <enumeration value="50"/>
+      <enumeration value="51"/>
+      <enumeration value="52"/>
+      <enumeration value="53"/>
+      <enumeration value="54"/>
+      <enumeration value="55"/>
+      <enumeration value="56"/>
+      <enumeration value="57"/>
+      <enumeration value="58"/>
+      <enumeration value="59"/>
+      <enumeration value="60"/>
+      <enumeration value="61"/>
+      <enumeration value="62"/>
+      <enumeration value="63"/>
+      <enumeration value="64"/>
+      <enumeration value="65"/>
+      <enumeration value="66"/>
+      <enumeration value="67"/>
+      <enumeration value="70"/>
+      <enumeration value="71"/>
+      <enumeration value="72"/>
+      <enumeration value="73"/>
+      <enumeration value="74"/>
+      <enumeration value="75"/>
+      <enumeration value="76"/>
+      <enumeration value="77"/>
+      <enumeration value="78"/>
+      <enumeration value="85"/>
+      <enumeration value="86"/>
+      <enumeration value="87"/>
+      <enumeration value="88"/>
+      <enumeration value="89"/>
+      <enumeration value="99"/>
+      <enumeration value="101"/>
+      <enumeration value="102"/>
+      <enumeration value="103"/>
+      <enumeration value="104"/>
+      <enumeration value="105"/>
+      <enumeration value="106"/>
+      <enumeration value="107"/>
+      <enumeration value="108"/>
+      <enumeration value="109"/>
+      <enumeration value="110"/>
+      <enumeration value="111"/>
+      <enumeration value="112"/>
+      <enumeration value="113"/>
+      <enumeration value="114"/>
+      <enumeration value="115"/>
+      <enumeration value="116"/>
+      <enumeration value="117"/>
+      <enumeration value="118"/>
+      <enumeration value="119"/>
+      <enumeration value="120"/>
+      <enumeration value="121"/>
+      <enumeration value="122"/>
+      <enumeration value="123"/>
+      <enumeration value="124"/>
+      <enumeration value="125"/>
+      <enumeration value="126"/>
+      <enumeration value="127"/>
+      <enumeration value="128"/>
+      <enumeration value="129"/>
+      <enumeration value="130"/>
+      <enumeration value="131"/>
+      <enumeration value="132"/>
+      <enumeration value="133"/>
+      <enumeration value="134"/>
+      <enumeration value="135"/>
+      <enumeration value="190"/>
+      <enumeration value="191"/>
+      <enumeration value="192"/>
+      <enumeration value="193"/>
+      <enumeration value="194"/>
+      <enumeration value="201"/>
+      <enumeration value="202"/>
+      <enumeration value="203"/>
+      <enumeration value="204"/>
+      <enumeration value="205"/>
+      <enumeration value="206"/>
+      <enumeration value="207"/>
+      <enumeration value="208"/>
+      <enumeration value="209"/>
+      <enumeration value="210"/>
+      <enumeration value="211"/>
+      <enumeration value="212"/>
+      <enumeration value="213"/>
+      <enumeration value="214"/>
+      <enumeration value="216"/>
+      <enumeration value="218"/>
+      <enumeration value="220"/>
+      <enumeration value="222"/>
+      <enumeration value="224"/>
+      <enumeration value="226"/>
+      <enumeration value="228"/>
+      <enumeration value="230"/>
+      <enumeration value="240"/>
+      <enumeration value="242"/>
+      <enumeration value="244"/>
+      <enumeration value="246"/>
+      <enumeration value="247"/>
+      <enumeration value="301"/>
+      <enumeration value="302"/>
+      <enumeration value="303"/>
+      <enumeration value="304"/>
+      <enumeration value="305"/>
+      <enumeration value="306"/>
+      <enumeration value="307"/>
+      <enumeration value="308"/>
+      <enumeration value="309"/>
+      <enumeration value="310"/>
+      <enumeration value="401"/>
+      <enumeration value="402"/>
+      <enumeration value="403"/>
+      <enumeration value="404"/>
+      <enumeration value="501"/>
+      <enumeration value="502"/>
+      <enumeration value="503"/>
+      <enumeration value="504"/>
+      <enumeration value="505"/>
+      <enumeration value="506"/>
+      <enumeration value="701"/>
+      <enumeration value="702"/>
+      <enumeration value="703"/>
+      <enumeration value="704"/>
+      <enumeration value="705"/>
+      <enumeration value="706"/>
+      <enumeration value="707"/>
+      <enumeration value="708"/>
+      <enumeration value="709"/>
+      <enumeration value="710"/>
+      <enumeration value="711"/>
+      <enumeration value="800"/>
+      <enumeration value="1101"/>
+      <enumeration value="1102"/>
+      <enumeration value="1103"/>
+      <enumeration value="1104"/>
+      <enumeration value="1105"/>
+      <enumeration value="1106"/>
+      <enumeration value="1107"/>
+      <enumeration value="1111"/>
+      <enumeration value="1201"/>
+      <enumeration value="1202"/>
+      <enumeration value="1203"/>
+      <enumeration value="1204"/>
+      <enumeration value="1205"/>
+      <enumeration value="1206"/>
+      <enumeration value="1207"/>
+      <enumeration value="1401"/>
+      <enumeration value="1402"/>
+      <enumeration value="1403"/>
+      <enumeration value="1404"/>
+      <enumeration value="1405"/>
+      <enumeration value="1406"/>
+      <enumeration value="1407"/>
+      <enumeration value="1501"/>
+      <enumeration value="1502"/>
+      <enumeration value="1503"/>
+      <enumeration value="1504"/>
+      <enumeration value="1601"/>
+      <enumeration value="1800"/>
+      <enumeration value="1802"/>
+      <enumeration value="1803"/>
+      <enumeration value="1806"/>
+      <enumeration value="2301"/>
+      <enumeration value="2501"/>
+      <enumeration value="2502"/>
+      <enumeration value="2503"/>
+      <enumeration value="2504"/>
+      <enumeration value="2505"/>
+      <enumeration value="2901"/>
+      <enumeration value="3101"/>
+      <enumeration value="3102"/>
+      <enumeration value="3103"/>
+      <enumeration value="3104"/>
+      <enumeration value="3105"/>
+      <enumeration value="3106"/>
+      <enumeration value="3201"/>
+      <enumeration value="3202"/>
+      <enumeration value="3203"/>
+      <enumeration value="3204"/>
+      <enumeration value="9101"/>
+      <enumeration value="9102"/>
+      <enumeration value="9103"/>
+      <enumeration value="9104"/>
+      <enumeration value="9105"/>
+      <enumeration value="9106"/>
+      <enumeration value="9107"/>
+      <enumeration value="9108"/>
+      <enumeration value="9109"/>
+      <enumeration value="9110"/>
+      <enumeration value="9111"/>
+      <enumeration value="9112"/>
+      <enumeration value="9113"/>
+      <enumeration value="9114"/>
+      <enumeration value="9115"/>
+      <enumeration value="9116"/>
+      <enumeration value="9117"/>
+      <enumeration value="9118"/>
+      <enumeration value="9119"/>
+      <enumeration value="9120"/>
+      <enumeration value="9121"/>
+      <enumeration value="9122"/>
+      <enumeration value="9123"/>
+      <enumeration value="9124"/>
+      <enumeration value="9125"/>
+      <enumeration value="9126"/>
+      <enumeration value="9127"/>
+      <enumeration value="9128"/>
+      <enumeration value="9129"/>
+      <enumeration value="9130"/>
+      <enumeration value="9190"/>
+      <enumeration value="9191"/>
+      <enumeration value="9192"/>
+      <enumeration value="9193"/>
+      <enumeration value="9194"/>
+      <enumeration value="9301"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Pintaala">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Pintaalamuutossumma">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Sijaintialuenumero">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Rakennuskieltotunnus">
+    <restriction base="string"/>
+  </simpleType>
+  <simpleType name="Olotila">
+    <restriction base="string">
+      <enumeration value="1"/>
+      <enumeration value="2"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Henkilotunnus">
+    <restriction base="string"/>
+  </simpleType>
+</schema>

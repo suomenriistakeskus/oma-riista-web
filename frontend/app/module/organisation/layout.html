@@ -1,0 +1,17 @@
+<nav class="navbar r-subnav-navbar" role="navigation">
+    <div class="container">
+        <div class="navbar-collapse collapse" class="in">
+            <ul class="nav navbar-nav r-subnav-nav" ng-show="authenticated">
+                <li ui-sref-active="active"><a ui-sref=".show" translate="organisation.menu.main"></a></li>
+                <li ui-sref-active="active" ng-show="showOccupationMenu"><a ui-sref=".occupations" translate="organisation.menu.occupations"></a></li>
+                <li ui-sref-active="active"><a ui-sref=".events" translate="organisation.menu.events"></a></li>
+                <li ui-sref-active="active"><a ui-sref=".locations" translate="organisation.menu.venues"></a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div growl inline="true"></div>
+
+    <div ui-view autoscroll="false"></div>
+</div>

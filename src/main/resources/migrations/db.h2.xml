@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="postgis-emulation" author="vincit" dbms="h2">
+        <preConditions onFail="CONTINUE">
+            <customPrecondition className="fi.riista.config.H2GisLiquibasePrecondition"/>
+        </preConditions>
+        <sql>
+            CREATE ALIAS IF NOT EXISTS H2GIS_FUNCTIONS FOR "org.h2gis.functions.factory.H2GISFunctions.load";
+            CALL H2GIS_FUNCTIONS();
+        </sql>
+    </changeSet>
+</databaseChangeLog>

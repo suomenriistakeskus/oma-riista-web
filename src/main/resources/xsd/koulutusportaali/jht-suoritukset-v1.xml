@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<suoritukset xmlns="http://riista.fi/integration/koulutusportaali/jht/2016/06">
+    <suoritus>
+        <id>c1769030-3d16-4f0c-9a8e-c282c59f9e03</id>
+        <hetu>111111-1023</hetu>
+        <tehtavaTyyppi>AMPUMAKOKEEN_VASTAANOTTAJA</tehtavaTyyppi>
+        <suoritusPvm>2017-01-01</suoritusPvm>
+    </suoritus>
+
+    <suoritus>
+        <id>d1110daf-3a04-42c7-b643-9ad806c9e75b</id>
+        <metsastajaNumero>11111111</metsastajaNumero>
+        <tehtavaTyyppi>METSASTAJATUTKINNON_VASTAANOTTAJA</tehtavaTyyppi>
+        <suoritusPvm>2017-01-01</suoritusPvm>
+    </suoritus>
+
+    <suoritus>
+        <id>3078b23a-c415-487d-843d-083f300b56be</id>
+        <omaRiistaPersonId>53425</omaRiistaPersonId>
+        <tehtavaTyyppi>RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA</tehtavaTyyppi>
+        <suoritusPvm>2017-01-01</suoritusPvm>
+    </suoritus>
+</suoritukset>

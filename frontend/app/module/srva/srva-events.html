@@ -1,0 +1,254 @@
+<div class="col-xs-12">
+    <div class="col-xs-2">
+        <h5 translate="gamediary.state.title"></h5>
+        <div class="checkbox" ng-repeat="state in $ctrl.searchParams.states">
+            <label>
+                <input type="checkbox" ng-model="state.isChecked">
+                <span translate="srva.state.{{state.name}}"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="col-xs-3">
+        <h5 translate="global.beginDate"></h5>
+        <div class="input-group" ng-controller="DatePickerController">
+            <input type="text" name="beginDate" id="beginDate"
+                   class="form-control"
+                   ng-model="$ctrl.searchParams.dateRange.beginDate"
+                   uib-datepicker-popup is-open="isDatePickerOpen"
+                   max-date="$ctrl.searchParams.dateRange.endDate"/>
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-default"
+                        ng-click="toggleDatePopup($event)">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </button>
+            </span>
+        </div>
+        <h5 translate="global.endDate"></h5>
+        <div class="input-group" ng-controller="DatePickerController">
+            <input type="text" name="endDate" id="endDate"
+                   class="form-control"
+                   ng-model="$ctrl.searchParams.dateRange.endDate"
+                   uib-datepicker-popup is-open="isDatePickerOpen"
+                   min-date="$ctrl.searchParams.dateRange.beginDate"
+                   max-date="today()"/>
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-default"
+                        ng-click="toggleDatePopup($event)">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+    <div class="col-xs-3">
+        <h5 translate="srva.form.animal"></h5>
+        <select name="srvaSpeciesId" id="srvaSpeciesId"
+                class="form-control"
+                ng-model="$ctrl.searchParams.gameSpeciesCode"
+                ng-options="item.code as $ctrl.getGameName(item.code, item) for item in $ctrl.srvaSpecies"
+                ie10-optgroup-fix>
+            <!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+            IE10 complains of unselected value if  'required', therefore we force existence of this field manually -->
+            <option value="" translate="harvestreport.admin.all"></option>
+        </select>
+    </div>
+
+    <div class="col-xs-2">
+        <h5 translate="srva.form.event"></h5>
+        <div class="checkbox" ng-repeat="event in $ctrl.searchParams.eventNames">
+            <label>
+                <input type="checkbox" ng-model="event.isChecked">
+                <span translate="srva.event.{{event.name}}"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="col-xs-2">
+    </div>
+</div>
+
+<div class="col-xs-12">
+    <div class="col-xs-6">
+        <a ng-click="$ctrl.search(true)" class="btn btn-primary">
+            <span class="glyphicon glyphicon-search"></span> &nbsp;
+            <span translate="gamediary.button.search"></span>
+        </a>
+    </div>
+
+    <div class="col-xs-6">
+        <div class="form-group pull-right">
+            <a class="btn btn-primary" ng-click="$ctrl.exportSrva()">
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="reporting.common.toExcel"></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div ng-show="$ctrl.srvaEvents.length <= 0" class="col-xs-12 well" style="margin-top: 20px">
+    <h5 translate="gamediary.search.noresults"></h5>
+</div>
+
+<div ng-show="$ctrl.srvaEvents.length > 0" class="col-xs-12">
+    <div class="col-md-9 text-center">
+        <ul uib-pagination
+            ng-model="$ctrl.pager.page"
+            ng-change="$ctrl.search(false)"
+            total-items="$ctrl.pager.total"
+            items-per-page="$ctrl.pager.pageSize"
+            rotate="true"
+            max-size="8"
+            boundary-links="true"
+            previous-text="{{'global.pager.previous' | translate}}"
+            next-text="{{'global.pager.next' | translate}}"
+            first-text="{{'global.pager.first' | translate}}"
+            last-text="{{'global.pager.last' | translate}}"></ul>
+    </div>
+
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th class="col-xs-1" translate="gamediary.state.title"></th>
+            <th class="col-xs-2" translate="gamediary.form.time"></th>
+            <th class="col-xs-2" translate="gamediary.author"></th>
+            <th class="col-xs-2" translate="srva.form.animal"></th>
+            <th class="col-xs-1" translate="srva.form.event"></th>
+            <th class="col-xs-3"></th>
+            <th class="col-xs-1"></th>
+        </tr>
+        </thead>
+        <tbody>
+
+
+        <!-- Summary row-->
+        <tr ng-repeat-start="entry in $ctrl.srvaEvents track by entry.id">
+            <td>
+                <div ng-if="entry.state === 'UNFINISHED'"
+                     class="r-harvestreport-state-text r-report-permit-row-state"
+                     harvest-report-state-to-class="'PROPOSED'">
+                    <span translate="{{'srva.state.' + entry.state}}"></span>
+                </div>
+                <div ng-if="entry.state === 'REJECTED'"
+                     class="r-harvestreport-state-text r-report-permit-row-state"
+                     harvest-report-state-to-class="'{{entry.state}}'">
+                    <span translate="{{'srva.state.' + entry.state}}"></span>
+                </div>
+                <div ng-if="entry.state === 'APPROVED'"
+                     class="r-harvestreport-state-text r-report-permit-row-state"
+                     harvest-report-state-to-class="'{{entry.state}}'">
+                    <span translate="{{'srva.state.' + entry.state}}"></span>
+                </div>
+            </td>
+            <td>{{::(entry.pointOfTime | date:'d.M.yyyy HH:mm')}}</td>
+            <td>{{entry.authorInfo.byName}} {{entry.authorInfo.lastName}}</td>
+            <td>
+                <div>{{ $ctrl.getGameNameWithAmount(entry) }}</div>
+                <div ng-if="entry.otherSpeciesDescription">{{ entry.otherSpeciesDescription }}</div>
+            </td>
+            <td>
+                <span translate="{{ 'srva.event.' + entry.eventName }}"></span>
+            </td>
+            <td class="text-right">
+                <div class="btn-group" role="group">
+                    <button type="button"
+                            ng-disabled="entry.state === 'REJECTED'"
+                            class="btn btn-default"
+                            harvest-report-state-to-class="'REJECTED'"
+                            ng-confirm-click-action="$ctrl.rejectSrvaEvent(entry)"
+                            ng-confirm-click="{{'srva.form.rejectConfirmation' | translate}}"><span translate="gamediary.button.changeStateTo.REJECTED"></span>
+                    </button>
+                    <button type="button"
+                            ng-disabled="entry.state === 'APPROVED'"
+                            class="btn btn-default"
+                            harvest-report-state-to-class="'APPROVED'"
+                            ng-click="$ctrl.acceptSrvaEvent(entry)">
+                        <span translate="gamediary.button.changeStateTo.ACCEPTED"></span>
+                    </button>
+                </div>
+            </td>
+            <td>
+                <button type="button"
+                        class="btn btn-default"
+                        ng-click="entry._showThisEvent = !entry._showThisEvent">
+                    <span ng-if="!entry._showThisEvent" translate="global.button.open"></span>
+                    <span ng-if="entry._showThisEvent" translate="global.button.close"></span>
+                </button>
+            </td>
+        </tr>
+
+        <!-- Details row-->
+        <tr ng-repeat-end ng-if="entry._showThisEvent">
+            <td colspan="4">
+                <leaflet id="rhy-srva-map-show"
+                         defaults="$ctrl.mapDefaults"
+                         layers="$ctrl.mapDefaults.mmlLayers"
+                         controls="$ctrl.mapDefaults.controls"
+                         r-geolocation-center="entry.geoLocation"
+                         r-geolocation-marker="entry.geoLocation"
+                         height="300px">
+                </leaflet>
+            </td>
+            <td colspan="3">
+                <div>
+                    <div>
+                        <button type="button"
+                                class="btn btn-primary"
+                                ng-disabled="entry.state === 'APPROVED'"
+                                ng-click="$ctrl.edit(entry)">
+                            <span translate="global.button.edit"></span>
+                        </button>
+                    </div>
+
+                    <h5 translate="srva.form.type"></h5>
+                    <div>
+                        <span translate="{{ 'srva.type.' + entry.eventType }}"></span>
+                    </div>
+                    <div ng-if="entry.otherTypeDescription">
+                        <span>&emsp;&emsp;&emsp;{{entry.otherTypeDescription}}</span>
+                    </div>
+
+                    <h5 translate="srva.form.approverOrRejecter"></h5>
+                    <div ng-if="entry.approverInfo">
+                        <span>{{ entry.approverInfo.firstName }} {{ entry.approverInfo.lastName }}</span>
+                    </div>
+
+                    <h5 translate="srva.form.result"></h5>
+                    <div ng-if="entry.eventResult">
+                        <span translate="{{ 'srva.result.' + entry.eventResult }}"></span>
+                    </div>
+
+                    <h5 translate="srva.form.method"></h5>
+                    <div ng-repeat="method in entry.methods">
+                        <span ng-if="method.isChecked" translate="{{ 'srva.method.' + method.name }}"></span>
+                    </div>
+                    <div ng-if="entry.otherMethodDescription">
+                        <span>&emsp;&emsp;&emsp;{{entry.otherMethodDescription}}</span>
+                    </div>
+
+                    <h5 translate="srva.form.personsInvolved"></h5>
+                    <div ng-if="entry.personCount">
+                        <span>{{entry.personCount}}</span>
+                    </div>
+
+                    <h5 translate="srva.form.combinedHours"></h5>
+                    <div ng-if="entry.timeSpent">
+                        <span>{{entry.timeSpent}}</span>
+                    </div>
+
+                </div>
+
+                <r-show-srva-specimens entry="entry"></r-show-srva-specimens>
+
+                <div class="r-gamediary-entry-description">
+                    <p ng-repeat="paragraph in entry.description.split('\n') track by $index">{{paragraph}}</p>
+                </div>
+
+                <div ng-repeat="uuid in entry.imageIds" class="r-gamediary-entry-show-image">
+                    <img ng-src="{{$ctrl.getImageUrl(uuid, 330, 330, true)}}"/>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

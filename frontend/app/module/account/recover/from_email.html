@@ -1,0 +1,53 @@
+<!-- Prevent margin from collapsing -->
+<div>&nbsp;</div>
+
+<h2 class="r-page-context-heading text-center" translate="recover_password.from_email.title"></h2>
+
+<div class="container">
+    <div class="alert alert-danger" ng-show="error" translate="recover_password.from_email.error"></div>
+
+    <div class="alert alert-danger" ng-show="doNotMatch" translate="recover_password.from_email.no_match"></div>
+
+    <form name="form" role="form" novalidate ng-submit="submit()">
+
+        <div class="form-group" ng-class="getValidationClasses(form.password)">
+            <label for="password" translate="change_password.form.newpassword"></label>
+
+            <input type="password" name="password" id="password"
+                   class="form-control"
+                   autocomplete="false" autocorrect="off" autocapitalize="none"
+                   autofocus="true" focus-me="true"
+                   required
+                   ng-model="password"
+                   ng-minlength="8">
+
+            <ul id="r-pw-strength" check-pw-strength="password"></ul>
+
+            <p class="help-block" ng-show="form.password.$error.required  && form.password.$dirty"
+               translate="change_password.messages.validate.newpassword.required"></p>
+
+            <p class="help-block" ng-show="form.password.$error.minlength && form.password.$dirty"
+               translate="change_password.messages.validate.newpassword.minlength"></p>
+        </div>
+
+        <div class="form-group" ng-class="getValidationClasses(form.confirmPassword)">
+            <label for="confirmPassword" translate="change_password.form.confirmpassword"></label>
+
+            <input type="password" name="confirmPassword" id="confirmPassword"
+                   class="form-control"
+                   autocomplete="false" autocorrect="off" autocapitalize="none"
+                   ng-model="confirmPassword" required>
+
+            <p class="help-block" ng-show="form.confirmPassword.$error.required && form.confirmPassword.$dirty"
+               translate="change_password.messages.validate.confirmpassword.required"></p>
+        </div>
+
+        <div class="form-group">
+            <div class="text-right">
+                <button type="submit" ng-disabled="form.$invalid" class="btn btn-primary btn-lg">
+                    <span translate="recover_password.from_email.button"></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

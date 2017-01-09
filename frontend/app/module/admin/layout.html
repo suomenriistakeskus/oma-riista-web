@@ -1,0 +1,16 @@
+<nav class="navbar r-subnav-navbar" role="navigation">
+    <div class="container">
+        <div class="navbar-collapse collapse" class="in">
+            <ul class="nav navbar-nav r-subnav-nav" ng-show="authenticated">
+                <li ui-sref-active="active"><a ui-sref=".home" translate="admin.menu.main"></a></li>
+                <li ui-sref-active="active"><a ui-sref=".users" translate="admin.menu.users"></a></li>
+                <li ui-sref-active="active"><a ui-sref=".harvest">Saalis</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div growl inline="true"></div>
+
+    <div ui-view autoscroll="false"></div>
+</div>

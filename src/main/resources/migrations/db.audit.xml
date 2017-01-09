@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="audit-table" author="vincit" dbms="postgresql">
+        <!--
+         Adding extension requires super-user rights on database. Run this command manually:
+            CREATE EXTENSION IF NOT EXISTS hstore;
+        -->
+        <preConditions onFail="CONTINUE">
+            <sqlCheck expectedResult="1">
+                select count(1) from pg_extension where extname = 'hstore';
+            </sqlCheck>
+        </preConditions>
+        <sqlFile path="postgres-audit-table.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="audit-trigger" author="vincit" dbms="postgresql" runOnChange="true">
+        <preConditions onFail="CONTINUE">
+            <sqlCheck expectedResult="1">
+                select count(1) from pg_extension where extname = 'hstore';
+            </sqlCheck>
+        </preConditions>
+        <createProcedure path="postgres-audit-trigger.sql" relativeToChangelogFile="true" />
+        <createProcedure path="postgres-audit-helper.sql" relativeToChangelogFile="true" />
+    </changeSet>
+</databaseChangeLog>

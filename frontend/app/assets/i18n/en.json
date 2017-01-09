@@ -1,0 +1,2146 @@
+{
+    "DIALOGS_ERROR": "Error",
+    "DIALOGS_ERROR_MSG": "An unknown error has occurred.",
+    "DIALOGS_CLOSE": "Close",
+    "DIALOGS_PLEASE_WAIT": "Please Wait",
+    "DIALOGS_PLEASE_WAIT_ELIPS": "Please Wait...",
+    "DIALOGS_PLEASE_WAIT_MSG": "Waiting on operation to complete.",
+    "DIALOGS_PERCENT_COMPLETE": "% Complete",
+    "DIALOGS_NOTIFICATION": "Notification",
+    "DIALOGS_NOTIFICATION_MSG": "Unknown application notification.",
+    "DIALOGS_CONFIRMATION": "Are you sure?",
+    "DIALOGS_CONFIRMATION_MSG": "Do you really want to proceed?",
+    "DIALOGS_OK": "OK",
+    "DIALOGS_YES": "Yes",
+    "DIALOGS_NO": "No",
+    "global": {
+        "title": "oma.riista.fi",
+        "menu": {
+            "home": "Front page",
+            "account": {
+                "main": "User account",
+                "password": "Password",
+                "login": "Login",
+                "logout": "Logout"
+            },
+            "help": "Instructions",
+            "language": "Language",
+            "admin": "Admin",
+            "reports": "Reports",
+            "search": "Search..."
+        },
+        "idle": {
+            "warning": {
+                "title": "Session expiration warning",
+                "body": "You will be signed out in {{ timeout }} seconds. You can prevent signout by moving the mouse."
+            },
+            "timeout": {
+                "title": "Session has expired",
+                "body": "You have been signed off automatically due to inactivity. Please login again."
+            }
+        },
+        "language": {
+            "fi": "Suomi",
+            "en": "English",
+            "sv": "Svenska"
+        },
+        "languageName": {
+            "fi": "Suomi",
+            "en": "Englanti",
+            "sv": "Ruotsi"
+        },
+        "dialog": {
+            "confirmation": {
+                "title": "Are you sure?",
+                "text": "Do you really want to proceed?"
+            },
+            "unsavedChangesConfirmation": "You have unsaved changes. Do you really want to proceed?"
+        },
+        "inline-edit": {
+            "edit": "Edit",
+            "save": "Save",
+            "cancel": "Cancel"
+        },
+        "pager": {
+            "current": "Page",
+            "previous": "Previous",
+            "next": "Next",
+            "first": "First",
+            "last": "Last"
+        },
+        "datePicker": {
+            "today": "Today",
+            "weeks": "Weeks",
+            "clear": "Clear",
+            "close": "Close"
+        },
+        "button": {
+            "save": "Save",
+            "ok": "Accept",
+            "cancel": "Cancel",
+            "edit": "Edit",
+            "delete": "Delete",
+            "close": "Close",
+            "exit": "Exit",
+            "open": "Open",
+            "add": "Add",
+            "continue": "Continue",
+            "search": "Search",
+            "selectAll": "Select all",
+            "accept": "Accept",
+            "reject": "Reject",
+            "submit": "Submit",
+            "copy": "Copy"
+        },
+        "map": {
+            "toggleLayers": "Show / hide all"
+        },
+        "messages": {
+            "error": "Updating of your information failed. Please, try again later.",
+            "success": "Information updated successfully",
+            "appRevisionChanged": "The web site has been updated. <a href='#restart'>Please refresh the page</a>",
+            "invalid": "Given value is invalid, try again.",
+            "notSet": "Not set"
+        },
+        "role": {
+            "ROLE_ADMIN": "Admin",
+            "ROLE_MODERATOR": "Moderator",
+            "ROLE_USER": "Private person",
+            "ROLE_REST": "API user",
+            "TOIMINNANOHJAAJA": "Executive Manager",
+            "SEURAN_YHDYSHENKILO": "Hunting club contact person",
+            "SEURAN_JASEN": "Association member",
+            "RYHMAN_METSASTYKSENJOHTAJA": "Hunting director",
+            "SRVA_YHTEYSHENKILO": "SRVA-contact person"
+        },
+        "organisationType": {
+            "RK": "Finnish Wildlife Agency",
+            "RKA": "Finnish Wildlife Agency, regional level",
+            "VRN": "National Wildlife Council",
+            "ARN": "Regional Wildlife Council",
+            "RHY": "Game Management Association",
+            "CLUB": "Hunting Club"
+        },
+        "address": {
+            "streetAddress": "Street address",
+            "city": "City",
+            "country": "Country",
+            "postalCode": "Postal Code"
+        },
+        "person": {
+            "name": "Name",
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "byName": "By name",
+            "ssn": "Social Security Number",
+            "homeMunicipality": "Hometown",
+            "nativeLanguage": "First Language",
+            "finnishCitizen": "Citizenship",
+            "email": "E-mail",
+            "address": "Address",
+            "phoneNumber": "Phone number",
+            "hunterNumber": "Hunter's ID number"
+        },
+        "about": {
+            "about": "Information of this service",
+            "aboutContentPath": "i18n/about_fi.html",
+            "termsAndConditions": "Terms and conditions",
+            "termsAndConditionsContentPath": "i18n/terms_and_conditions_fi.html",
+            "privacyPolicy": "Privacy policy",
+            "privacyPolicyContentPath": "i18n/privacy_policy_fi.html",
+            "technicalRequirements": "Technical requirements",
+            "technicalRequirementsContentPath": "i18n/technical_requirements_fi.html",
+            "contactInformation": "Contact information",
+            "contactInformationContentPath": "i18n/contact_information_fi.html"
+        },
+        "block": {
+            "wait": "Wait"
+        },
+        "geoLocation": {
+            "lat": "P",
+            "lon": "I",
+            "coordinatesText": "<strong>P</strong> {{latitude}} <strong>I</strong> {{longitude}} (ETRS-TM35FIN)",
+            "plainCoordinatesText": "P {{latitude}} I {{longitude}}",
+            "required": "Select location from map"
+        },
+        "marker_messages": {
+            "species": "Species",
+            "date": "Date",
+            "time": "Time",
+            "coordinates": "Coordinates",
+            "doOpen": "Open"
+        },
+        "mapLayer": {
+            "empty": "No baselayer",
+            "terrain": "Topographic map",
+            "background": "Background map",
+            "aerial": "Aerial photo"
+        },
+        "toFrontpage": "To front page",
+        "yes": "Yes",
+        "no": "No",
+        "or": "or",
+        "beginDate": "Start Date",
+        "endDate": "End Date",
+        "state": "State",
+        "marking": "Marking",
+        "total": "Total",
+        "showAll": "Show all"
+    },
+    "validation": {
+        "required": "Field is required",
+        "minlength": "Field value is too short",
+        "maxlength": "Field value is too long",
+        "max": "Value is too large",
+        "min": "Value is too small",
+        "number": "Input is not a number",
+        "pattern": "Input is invalid",
+        "date": "Give date is invalid",
+        "invalidFinnishDateInPast": "Invalid time",
+        "finnishDateTimeValidity": "Time is in future",
+        "timeInsideHuntingDay": "Time outside hunting day",
+        "validateDateBounds": "Date is not accepted",
+        "email": "Valid email address is required",
+        "phoneNumber": "Invalid phone number",
+        "hunterNumber": "Invalid hunter number",
+        "finnishPersonalIdentity": "Invalid social security number",
+        "duplicate": "Duplicate"
+    },
+    "main": {
+        "title": "Portal of the Wildlife Administration",
+        "title2": "Offers for the executive managers of Game Management Associations a way to update contact and other information . Easy-to-use hunting diary available for hunters later this year ",
+        "title3": "For registration a reliable electronic identification (Offered by Banks in Finland) and personal e-mail address are required.",
+        "news": "News",
+        "logged": {
+            "message": "You are logged in with username \"{{username}}\"."
+        },
+        "appTitle": "Download free mobile application",
+        "footer": {
+            "title": "Finnish Wildlife Agency",
+            "support": {
+                "title": "Oma riista helpdesk",
+                "telephone": "Tel +358 29 431 2111 (workdays at 12-16)",
+                "email": "Email <a href=\"mailto:oma@riista.fi\">oma@riista.fi</a>"
+            },
+            "customerService": {
+                "title": "Customer service",
+                "telephone": "Tel +358 29 431 2001 (workdays at 9-15)",
+                "email": "Email <a href=\"mailto:asiakaspalvelu@riista.fi\">asiakaspalvelu@riista.fi</a>"
+            }
+        }
+    },
+    "login": {
+        "title": "Login",
+        "register": "Create 'Oma Riista' account",
+        "recoverPassword": "Forgot password?",
+        "emailChanged": "E-mail address changed?",
+        "instructionsTitle": "Instructions",
+        "instructionsLink": "http://riista.fi/riistahallinto/sahkoinen-asiointi/",
+        "form": {
+            "usernamePlaceholder": "e-mail address",
+            "passwordPlaceholder": "Password",
+            "rememberme": "Remember my login",
+            "button": "Login"
+        },
+        "otp": {
+            "title": "Type your code for reliable identification",
+            "codeLabel": "Code (6 characters)",
+            "instructionText": "Login requires verification code. The code has been send to your registered GSM as a SMS.",
+            "sendFailed": "Delivery of verification code failed or user has not registered GSM number"
+        },
+        "messages": {
+            "error": {
+                "authentication": "Login failed. Please, check your username and password."
+            }
+        }
+    },
+    "recover_password": {
+        "send": {
+            "title": "Forgot your password?",
+            "body": "Type in the e-mail address used when registering the account.",
+            "processing": "E-mail being sent, Please wait.",
+            "error": "An error occurred while processing the request.",
+            "email_required": "E-mail field cannot be empty.",
+            "email_invalid": "Valid e-mail required.",
+            "button": "Send a reclaim link"
+        },
+        "email_sent": {
+            "msg": "Guidelines for reclaiming your password has been send to your e-mail. Please, check your spam folder, if you don't receive the e-mail within few minutes."
+        },
+        "from_email": {
+            "title": "Password reclaim",
+            "error": "Password reclaim failed.",
+            "tokenError": "Password reclaim link is expired. Order a new reclaim link with the form below.",
+            "no_match": "Password verification does not match.",
+            "button": "Save"
+        },
+        "success": {
+            "msg": "Your passwords has been changed."
+        }
+    },
+    "change_password": {
+        "title": "Change Password",
+        "form": {
+            "newpassword": "New Password",
+            "confirmpassword": "Confirm Password",
+            "previouspassword": "Previous Password",
+            "button": "Save",
+            "cancel": "Cancel"
+        },
+        "messages": {
+            "error": {
+                "global": "<strong>An error occurred.</strong> Password could not be changed",
+                "dontmatch": "Password confirmation did not match.",
+                "wrongPassword": "Previous Password does not match"
+            },
+            "success": "Password changed successfully.",
+            "validate": {
+                "newpassword": {
+                    "required": "Password required.",
+                    "minlength": "Password has to be at least 8 characters."
+                },
+                "confirmpassword": {
+                    "required": "Password confirmation required."
+                },
+                "previouspassword": {
+                    "required": "Previous Password required."
+                }
+            }
+        }
+    },
+    "registration": {
+        "email": {
+            "titleHtml": "Registration <a>oma.riista.fi</a> -portal",
+            "textHtml": "<p>To register <a>oma.riista.fi</a> -portal you need functioning personal e-mail address.<p>\n<p>Registration process has 5 steps:</p>\n<ol>\n<li>An e-mail is sent to your address to confirm your e-mail is working properly.</li>\n<li>You continue registration by clicking the link in the e-mail you received.</li>\n<li>Accept the terms and conditions of the portal.</li>\n<li>Verify your identity (bank-account codes / VETUMA service in Finland).</li>\n<li>Register your Password and GSM number.</li>\n</ol>\n<p>Your are ready to login to the portal.</p>\n<p><strong>NOTE:</strong> If you don't receive an e-mail within 1 hour, check the spam folder of your e-mail, in rare occasions our message can end up there.</p>\n<p><strong>NOTE:</strong> E-mail addresses ending with @riista.fi or @rhy.riista.fi cannot be accepted as personal e-mail.</p>\n",
+            "success": "E-mail sent successfully"
+        },
+        "emailChanged": {
+            "title": "Changing e-mail",
+            "textHtml": "<p><strong>You can change the e-mail address you have used as username by re-registeration.</strong></p><p>Kaikki palveluun syöttämäsi tiedot säilyvät uudelleenrekisteröinnissä.</p>"
+        },
+        "processing": {
+            "error": "Error occurred. Registration is not possible right now.",
+            "wait": "Sending e-mail... Please wait."
+        },
+        "form": {
+            "email": "E-mail address",
+            "required": "Field required.",
+            "invalid": {
+                "email": "Valid e-mail required.",
+                "emailEndsWithRiistaFi": "'riista.fi -e-mail is not allowed."
+            },
+            "button": {
+                "send": "Start your registration"
+            }
+        },
+        "confirmation": {
+            "titleHtml": "<a>Oma.riista.fi</a> -Accepting terms and conditions",
+            "textHtml": "<p>Successful confirmation of your e-mail. Please read following <a>oma.riista.fi</a> -terms and conditions of this portal.</p>\n<p>Accept the terms and conditions by clicking the button at the bottom of the page. On the next step your will be identified by electronic identification (bank code and VETUMA service in Finland).</p>\n",
+            "termsAndConditions": "Terms and conditions od the Finnish Wildlife Agency Web portal (oma.riista.fi)",
+            "confirmText": "I accept the terms and conditions and accept that my personal data is used in the portal",
+            "status": {
+                "waiting": "Checking your e-mail address...",
+                "ok": "E-mail confirmed.",
+                "expired": "E-mail confirmation failed. Link you used has expired. Restart registration from beginning.",
+                "error": "Error occurred"
+            },
+            "button": {
+                "continue": "Continue to electronic identification here (VETUMA)"
+            }
+        },
+        "completion": {
+            "button": {
+                "createAccount": "Create user account"
+            },
+            "title": "Successful identification",
+            "msg": "Successful identification. Create user account by filling in required information.",
+            "success": "<p>Oma riista -successful registration. You can login to Oma Riista by using e-mail address and established password.</p>\n<p>If your created your account to use another portal of wildlife administration, please move to the front page of the portal and login with Oma Riista username and password: <a href='http://riistakolmiot.fi'>http://riistakolmiot.fi</a></p>"
+        }
+    },
+    "admin": {
+        "menu": {
+            "main": "Login",
+            "users": "User accounts"
+        },
+        "users": {
+            "title": "User accounts",
+            "selectRoles": "Select roles",
+            "noMatches": "No match",
+            "username": "Username",
+            "role": "Role",
+            "ipWhiteList": "Accepted IP-addresses",
+            "active": "Active",
+            "email": "E-mail",
+            "phonenumber": "Phone number",
+            "firstname": "First name",
+            "lastname": "Last name",
+            "password": "Password",
+            "passwordConfirm": "Confirm password",
+            "create": "Create new username",
+            "create_title": "Create new user account",
+            "edit": "Edit",
+            "edit_title": "Edit user account",
+            "delete": "Delete",
+            "delete_confirm": "Confirm that you want to delete username {{username}}?",
+            "delete_success": "Username deleted.",
+            "cancel": "Cancel",
+            "save": "Save",
+            "save_success": "Editing saved.",
+            "admins": "Administrators",
+            "moderators": "Moderators",
+            "rest_users": "API users",
+            "privileges": "API user privileges"
+        }
+    },
+    "account": {
+        "announcements": {
+            "title": "Messages",
+            "messageFrom": "Sender:"
+        },
+        "edit": {
+            "title": "Edit address",
+            "otherinfo_title": "Edit information",
+            "form": {
+                "streetAddress": "Street address",
+                "city": "Town",
+                "country": "Country",
+                "postalCode": "Postal code",
+                "email": "E-mail",
+                "phoneNumber": "Phone number",
+                "byName": "Calling name"
+            },
+            "messages": {
+                "error": "Information update failed. Try again later",
+                "success": "Successful update",
+                "invalid": "Invalid value.",
+                "userIsRegistered": "E-mail address cannot be changed as user has already registered. E-mail can be changed by re-registration."
+            }
+        },
+        "profile": {
+            "menu": {
+                "profile": "Own profile",
+                "gameDiary": "Journal",
+                "announcements": "Messages",
+                "harvestreports": "Permits and harvest reports"
+            },
+            "title": {
+                "personDetails": "Personal info",
+                "address": "Contact info",
+                "otherInfo": "Other info",
+                "password": "Password",
+                "occupations": "Duties and roles",
+                "deactivate": "Deactivation",
+                "hunterRegistry": "Hunters register",
+                "trainings": "Trainings",
+                "clubs": "Hunting clubs",
+                "clubInvitations": "Hunting club invitations",
+                "clubInvitationsRejected": "Rejected hunting club invitations"
+            },
+            "password": "Password",
+            "sourcePopulationInformationSystem": "Information derived from official Population Register",
+            "sourceHunterRegistry": "Information derived from Hunters Register",
+            "modifyUsingItella": "Address changes by official announcement to Post office<strong><a href='http://www.posti.fi/muuttoilmoitus/' target='_blank'></a></strong>.",
+            "modifyUsingMetsastajarekisteri": "The following information: Magazine, Language of the magazine (Finnish/Swedish) and Ban on advertising, marketing and promotion are obtained from the Register of Hunters. If you wish to change any of this data, please contact the Register of Hunters (metsastajarekisteri@innofactor.com).",
+            "deactivate": {
+                "title": "Deactivate user account",
+                "info1": "User account deactivation prohibits persons from logging in to the portal.",
+                "info2": "Person can activate new user account by new registration.",
+                "deactivated": "Person has no active user account."
+            },
+            "mr": {
+                "syncTime": "Information synchronized from hunters register at",
+                "paymentInfo": "Game management fee",
+                "examDate": "Date of Hunters exam",
+                "lastPayment": "Paid",
+                "expired": "Hunters exam expired",
+                "expirationWarning": "Game management fee not paid, Hunters' exam will expire",
+                "rhyMembership": "Membership of Game Management Association",
+                "noMembership": "No membership in Game Management Association",
+                "magazineLanguage": "Language of Hunters Magazine",
+                "denyMagazine": "Magazine",
+                "denyMagazineYes": "No",
+                "denyMagazineNo": "Yes",
+                "denyMarketing": "No marketing",
+                "huntingBan": "Hunting Ban"
+            },
+            "pdf": {
+                "download": "Download file",
+                "button": "Download",
+                "huntingCard": {
+                    "fi": "Hunting card (finnish)",
+                    "sv": "Hunting card (swedish)"
+                },
+                "foreign": {
+                    "en": "Certificate for hunting in foreign country (english)",
+                    "de": "Certificate for hunting in foreign country (german)"
+                },
+                "huntingPayment": "The game management fee invoice"
+            },
+            "button": {
+                "editAddress": "Edit address",
+                "editOtherInfo": "Edit other info",
+                "changePassword": "Change Password",
+                "deactivate": "Deactivate user account",
+                "clubConfig": "Configuration",
+                "registerClub": "Register club",
+                "createClub": "Create new club"
+            },
+            "training": {
+                "name": "Training",
+                "date": "Training date"
+            },
+            "invitation": {
+                "button": {
+                    "accept": "Accept invitation",
+                    "reject": "Reject invitation",
+                    "reSend": "Resend invitation",
+                    "remove": "Delete invitation"
+                },
+                "rejected": "Invitation rejected",
+                "info": "<p>By accepting membership to the hunting club you give permission to count number of your harvests to hunting club's statistics.</p><p>In addition, you accept that when hunting is based on (moose, bear, bobcat, etc) permit your harvests are visible to hunting club.</p><p>Furthermore, you give a permission to show your name and city. Visibility of your contact details you define after approval.</p>"
+            },
+            "club": {
+                "name": "Club",
+                "share": "Contact info share",
+                "role": "Role"
+            },
+            "registerClub": {
+                "title": "Club registration",
+                "alreadyRegistered": "Club has already been registered",
+                "alreadyRegisteredContactPerson": "Current contact person is",
+                "alreadyRegisteredSearchInfo": "Clubs already registered are indicated by an asterisk",
+                "searchByName": "Search by name",
+                "searchByCode": "Search by official code",
+                "confirmSelectedClub": "Register",
+                "informationBoxPath": "i18n/club_register_information_fi.html"
+            },
+            "createClub": {
+                "title": "Luo uusi seura",
+                "note": "Olet luomassa uutta seuraa. Olethan varmistanut, että seuraa ei ole jo olemassa, yrittämällä ottaa se haltuun.",
+                "confirm": "Luo uusi seura",
+                "nameFI": "Nimi suomeksi",
+                "nameSV": "Nimi ruotsiksi",
+                "location": "Paikka",
+                "rhy": "Riistanhoitoyhdistys",
+                "geoLocation": "Sijainti"
+            },
+            "srva": {
+                "title": "SRVA",
+                "enabled": "SRVA toiminnot ovat päällä",
+                "disabled": "SRVA toiminnot eivät ole päällä",
+                "activate": "Käännä SRVA päälle",
+                "activateConfirmation": "<p>Olet ottamassa käyttöön Oma riista -palvelun SRVA raportointiominaisuutta.</p><p>Suurriistavirka-apu (SRVA) on riistanhoitoyhdistysten ylläpitämä organisaatio, joka välittää poliisille metsästäjien virka-apua suurriistakonflikteissa. Toiminta perustuu poliisin ja riistanhoitoyhdistysten välisiin sopimuksiin. Hälytysjärjestelmä käynnistyy poliisin antamalla virka-apupyynnöllä. </p><p>Oma riista –tunnuksesi voidaan sulkea mahdollisten väärinkäytösten vuoksi.</p>",
+                "deactivate": "Käännä SRVA pois päältä"
+            }
+        },
+        "roleselection": {
+            "title": "Select role"
+        }
+    },
+    "occupation": {
+        "type": {
+            "TOIMINNANOHJAAJA": "Executive director",
+            "SRVA_YHTEYSHENKILO": "SRVA-contact person",
+            "PETOYHDYSHENKILO": "Large carnivore contact person",
+            "METSASTYKSENVALVOJA": "Game warden",
+            "METSASTAJATUTKINNON_VASTAANOTTAJA": "Hunter exam supervisor",
+            "AMPUMAKOKEEN_VASTAANOTTAJA": "Shooting test supervisor",
+            "RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA": "GMA representative in wildlife damage field survey",
+            "METSASTAJATUTKINTOON_VALMENTAVAN_KOULUTUKSEN_KOULUTTAJA": "Hunters exam training course instructor",
+            "PUHEENJOHTAJA": "Chairman",
+            "VARAPUHEENJOHTAJA": "Vice Chairman",
+            "HALLITUKSEN_JASEN": "Board member",
+            "HALLITUKSEN_VARAJASEN": "Board vice member",
+            "JASEN": "Member",
+            "VARAJASEN": "Vice member",
+            "JALJESTYSKOIRAN_OHJAAJA_HIRVI": "Tracking hound supervisor, moose",
+            "JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET": "Tracking hound supervisor, deer",
+            "JALJESTYSKOIRAN_OHJAAJA_SUURPEDOT": "Tracking hound supervisor, large carnivores, wild boar",
+            "SEURAN_JASEN": "Association member",
+            "SEURAN_YHDYSHENKILO": "Contact person",
+            "RYHMAN_JASEN": "Group member",
+            "RYHMAN_METSASTYKSENJOHTAJA": "Hunting director"
+        },
+        "occupations": "Duties and roles",
+        "board": "Board",
+        "name_and_address": "Name and contact information",
+        "phonenumber_and_email": "Phone and e-mail",
+        "no_phonenumber": "No phone number",
+        "no_email": "No e-mail",
+        "occupation": "Roles",
+        "callOrder": "Call order",
+        "additionalInfo": "Additional information",
+        "validity": "Valid",
+        "start_date": "Start date",
+        "end_date": "End date",
+        "indefinitely": "Indefinitely",
+        "starting": "Starting",
+        "ending": "Ending",
+        "registered": "Person is registered user",
+        "unregistered": "Person has not registered as a user",
+        "button": {
+            "current": "Current",
+            "future": "Forthcoming",
+            "past": "Past",
+            "add": "Add role",
+            "edit": "Edit",
+            "remove": "Remove"
+        },
+        "form": {
+            "titleAdd": "Add role",
+            "titleEdit": "Edit role",
+            "selectPerson": "Select person",
+            "selectFromList": "From list",
+            "selectBySSN": "By social security number",
+            "selectByHunterNumber": "By Hunters' number",
+            "person": "Person",
+            "ssn": "Social Security Number",
+            "validity": "Time",
+            "email": "E-mail",
+            "phoneNumber": "Phone",
+            "phoneNumberRequiredByType": "Phone number required in the selected role.",
+            "button": {
+                "cancel": "Cancel",
+                "save": "Save",
+                "search_person": "Search for person"
+            },
+            "error": {
+                "person_not_found": "Person not found"
+            }
+        },
+        "remove": {
+            "title": "Remove role",
+            "info": "Roles are not usually deleted, but the start and end dates are edited. Deleting role is used to remove incorrect information.",
+            "ssn": "Social Security Number",
+            "validity": "Time",
+            "button": {
+                "cancel": "Cancel",
+                "save": "Delete"
+            }
+        },
+        "nominationStatus": {
+            "KOULUTUS": "Trainings",
+            "EHDOLLA": "Suggested",
+            "ESITETTY": "Proposed",
+            "NIMITETTY": "Nominated",
+            "HYLATTY": "Rejected"
+        },
+        "trainingType": {
+            "LAHI": "On-site",
+            "SAHKOINEN": "Online"
+        },
+        "trainingSearchTypeLabel": "Search method",
+        "trainingSearchType": {
+            "PREVIOUS_OCCUPATION": "RHY:n aiemman tehtävän perusteella",
+            "HOME_RHY": "Uudet koulutetut RHY:n jäsenet",
+            "TRAINING_LOCATION": "Koulutuspaikan perusteella",
+            "PERSON": "Henkilön tunnisteella"
+        },
+        "nomination": {
+            "title": {
+                "addTraining": "Add training",
+                "nominate": "Nominate for occupation"
+            },
+            "button": {
+                "addTraining": "Add training",
+                "proposeTraining": "Propose training",
+                "proposeTrainingSelected": "Propose selected",
+                "deleteTraining": "Delete training",
+                "propose": "Nominate",
+                "proposeSelected": "Nominate selected",
+                "cancel": "Cancel",
+                "cancelSelected": "Cancel selected",
+                "accept": "Accept nomination",
+                "acceptSelected": "Accept selected",
+                "reject": "Reject",
+                "rejectSelected": "Reject selected"
+            },
+            "message": {
+                "periodTooLong": "Period is over 5 years or less than 4 years"
+            },
+            "organisationSearch": {
+                "chooseRka": "Choose area",
+                "chooseRhy": "Choose RHY"
+            },
+            "field": {
+                "occupationType": "Occupation type",
+                "trainingLocation": "Training locaiton",
+                "trainingDate": "Training date",
+                "moderatorName": "Moderator name",
+                "nominationDate": "Nomination date",
+                "decisionDate": "Decision date",
+                "occupationPeriod": "Occupation period",
+                "person": "Person",
+                "rhy": "RHY"
+            },
+            "list": {
+                "noResults": "No results",
+                "alertUnderage": "Underaged person cannot be selected.",
+                "alertHuntingBan": "Person cannot be selected because of active hunting ban."
+            }
+        }
+    },
+    "organisation": {
+        "menu": {
+            "main": "General",
+            "occupations": "Roles",
+            "events": "Events",
+            "venues": "Venues"
+        },
+        "parentOrganisation": "Head organisation",
+        "organisation": "Organisation",
+        "nameFI": "Name",
+        "nameSV": "Name in swedish",
+        "organisationType": {
+            "RK": "Finnish Wildlife Agency",
+            "RKA": "Finnish Wildlife Agency, regional office",
+            "VRN": "National Wildlife Council",
+            "ARN": "Regional Wildlife Council",
+            "RHY": "Game Management Association"
+        }
+    },
+    "rhy": {
+        "menu": {
+            "main": "General",
+            "occupations": "Roles",
+            "events": "Events",
+            "venues": "Venues",
+            "harvestreports": "Harvest reports",
+            "permits": "Other permits",
+            "jht": "JHT-nominations",
+            "srva": "SRVA",
+            "srvaList": "List",
+            "srvaMap": "Map",
+            "clubs": "Hunting clubs",
+            "mooselike": "Moose/Deers",
+            "mooselikeHarvestMap": "Harvests",
+            "mooselikePermits": "Permits",
+            "mooselikeStats": "Statistics"
+        },
+        "edit": {
+            "title": "Edit contact info",
+            "form": {
+                "streetAddress": "Street address",
+                "city": "Town",
+                "postalCode": "Postal code",
+                "phoneNumber": "Phone number",
+                "email": "E-mail address",
+                "hasOwnAddress": "GMA own address",
+                "hasOwnAddressHelp": "GMA don't have own address, Please use e-mail of Executive Director.",
+                "hasOwnEmail": "GMA own e-mail",
+                "hasOwnEmailHelp": "GMA don't have own address, Please use e-mail of Executive Director.",
+                "hasOwnPhoneNumber": "GMA own phone number",
+                "hasOwnPhoneNumberHelp": "GMA don't have own phone, Please use phone number of Executive Director."
+            }
+        },
+        "basicInfo": "Basic information of GMA",
+        "officialCode": "GMA-number",
+        "nameFI": "Name",
+        "nameSV": "Name in swedish",
+        "contactInfo": "Contact info",
+        "button": {
+            "editContactInfo": "Edit contact info"
+        },
+        "club": {
+            "contacts": {
+                "menuTitle": "Contact persons"
+            },
+            "huntingLeaders": {
+                "menuTitle": "Hunting leaders"
+            },
+            "club": "Hunting club",
+            "group": "Hunting group",
+            "name": "Name",
+            "email": "email",
+            "phoneNumber": "Phone number"
+        },
+        "harvestMap": {
+            "partner": "Osakkaan tiedot",
+            "partnerName": "Name",
+            "species": "Species",
+            "filteringScheme": "Show",
+            "filterByAreaIntersection": "Harvests in RHY's area",
+            "filterByPermit": "Harvests associated with RHY's permit"
+        },
+        "moosePermitStats": {
+            "buttons": {
+                "RKA": "Finnish Wildlife Agency, regional office",
+                "HTA": "Hirvitalousalue",
+                "RHY": "Game Management Association"
+            },
+            "totalRowTitle": "Yhteensä",
+            "permit": "Lupanumero",
+            "permitTotalTop": "Myönnetyt",
+            "permitTotal": "Luvat<br>yhteensä",
+            "permitTotalTooltip": "Myönnetyt luvat yhteensä",
+            "permitUsedTop": "Saalis",
+            "a": "AIK<br>YHT",
+            "aTooltip": "Kaadetut aikuiset yhteensä",
+            "au": "AU",
+            "auTooltip": "Kaadetut urokset",
+            "an": "AN",
+            "anTooltip": "Kaadetut naaraat",
+            "v": "V<br>YHT",
+            "vTooltip": "Kaadetut vasat yhteensä",
+            "vu": "VU",
+            "vuTooltip": "Kaadetut urosvasat",
+            "vn": "VN",
+            "vnTooltip": "Kaadetut naarasvasat",
+            "total": "Kaikki<br>yht",
+            "totalTooltip": "Kaikki kaadettu yhteensä",
+            "permitUsedPercentage": "Luvista <br>käytetty %",
+            "permitUsedPercentageTooltip": "Luvista käytetty %",
+            "vPercentage": "V%",
+            "vPercentageTooltip": "Vasaprosentti kaikista",
+            "auPercentage": "AU%",
+            "auPercentageTooltip": "Urososuus aikuisista",
+            "area": {
+                "top": "Pinta-ala",
+                "total": "Koko",
+                "totalTooltip": "Kokonaispinta-ala",
+                "effective": "Käyt",
+                "effectiveTooltip": "Metsästykseen käytetty pinta-ala"
+            },
+            "remainingPer1000": {
+                "top": "Jää / 1000 HA",
+                "total": "Koko",
+                "totalTooltip": "Jää / 1000 HA koko ala",
+                "effective": "Käyt",
+                "effectiveTooltip": "Jää / 1000 HA metsästykseen käytetty ala"
+            },
+            "remaining": {
+                "top": "Jäävä<br>kanta",
+                "topTooltip": "Jäävä kanta",
+                "total": "Koko",
+                "totalTooltip": "Jäävä kanta koko alueelle",
+                "effective": "Käyt",
+                "effectiveTooltip": "Jäävä kanta metsästykseen käytetylle alueelle"
+            },
+            "huntingFinished": "Hunting finished"
+        }
+    },
+    "venue": {
+        "button": {
+            "add": "Add venue",
+            "create": "Create venue",
+            "edit": "Edit venue",
+            "remove": "remove venue from the list",
+            "use": "Use this"
+        },
+        "venue": "Venue",
+        "info": "Additional info",
+        "add": {
+            "title": "Add venue",
+            "infotext": "Search venue by name. If venue is not found, create new venue.",
+            "searchTitle": "Search by name",
+            "noSearchResults": "If venue is not found, create new venue."
+        },
+        "form": {
+            "titleAdd": "Add venue",
+            "titleEdit": "Edit venue",
+            "name": "Name",
+            "info": "Additional info"
+        },
+        "remove": {
+            "title": "Remove venue from the list?",
+            "info": "Do you want to remove the venue from list? After removal you cannot add event to the venue."
+        }
+    },
+    "event": {
+        "button": {
+            "add": "Add event",
+            "clone": "Clone event",
+            "edit": "Edit event",
+            "remove": "Remove event"
+        },
+        "date": "Date",
+        "event": "Event",
+        "venue": "Venue",
+        "description": "Description",
+        "type": {
+            "AMPUMAKOE": "Shooting test",
+            "METSASTAJAKURSSI": "Hunters' exam training course",
+            "METSASTAJATUTKINTO": "Hunters' exam",
+            "KOULUTUSTILAISUUS": "Education event",
+            "VUOSIKOKOUS": "General meeting",
+            "YLIMAARAINEN_KOKOUS": "Extraordinary meeting",
+            "NUORISOTAPAHTUMA": "Youth event",
+            "AMPUMAKILPAILU": "Shooting competition",
+            "RIISTAPOLKUKILPAILU": "Field & Game shooting competition",
+            "ERATAPAHTUMA": "Outdoors event",
+            "HARJOITUSAMMUNTA": "Practice shooting"
+        },
+        "form": {
+            "titleAdd": "Add event",
+            "titleEdit": "Edit event",
+            "eventType": "Event type",
+            "venue": "Venue",
+            "date": "Date",
+            "beginTime": "Begins",
+            "endTime": "Ends",
+            "name": "Name of event",
+            "description": "Description"
+        },
+        "remove": {
+            "title": "Remove event?",
+            "info": "Do you want to remove event?"
+        }
+    },
+    "search": {
+        "placeholder": "Search ...",
+        "formatInputTooShort": "Type in more {{count}} characters",
+        "formatSearching": "Searching...",
+        "formatNoMatches": "No match",
+        "ORG": "Organisation",
+        "RHY": "Game management association",
+        "PERSON": "Person",
+        "CLUB": "Hunting club"
+    },
+    "reporting": {
+        "menu": {
+            "contacts": "Contact info",
+            "permits": "Permit and licenses",
+            "occupations": "Roles",
+            "rhys": "Game Management Associations",
+            "clubs": "Hunting clubs",
+            "mooseDataCard": "Moose data card"
+        },
+        "common": {
+            "toExcel": "Export to Excel file",
+            "copyEmails": "Copy e-mail addresses"
+        },
+        "contacts": {
+            "allAreas": "All regions",
+            "allRHYs": "All GMAs",
+            "allOccupations": "All roles",
+            "search": "Search",
+            "noResults": "No match",
+            "resultCount": "{{count}} Results"
+        },
+        "mooseDataCardUpload": {
+            "dzHelpMessage": "Drop here scanned files of moose hunting report or click to upload.",
+            "removeUploadFile": "Remove file",
+            "successfulImports": "Successful imports",
+            "failedImports": "Failed imports",
+            "errorMessages": {
+                "fileTooBig": "File is too big ({{filesize}} MiB). Max filesize: {{maxFilesize}} MiB.",
+                "maxFilesExceeded": "You can upload only two files at a time. Additional files are removed automatically.",
+                "unacceptedFileExtension": "Only pdf/xml files are accepted within importing of moose hunting report. You tried upload file with extension: {{ extension }}"
+            }
+        },
+        "huntingSummary": {
+            "overridden": "Riistakeskus tallentanut tiedot",
+            "title": "Finish hunting",
+            "selectedSpecies": "Selected game species",
+            "disclaimer": "By overriding partner's hunting to be completed, all the data input by that partner will be overruled.",
+            "completeHuntingOfPermit": "Päätä kaikkien osakkaiden metsästys ja luvan metsästys",
+            "completeOnlyHuntingOfSelectedPartners": "Päätä vain valittujen osakkaiden metsästys, luvan metsätystä ei päätetä",
+            "huntingPartner": "Hunting partner",
+            "override": "Override",
+            "moderatorOverridden": "Overridden",
+            "area": {
+                "top": "Hunting<br>area",
+                "topTooltip": "Hunting area",
+                "total": "TOTAL",
+                "totalTooltip": "Total hunting area",
+                "effective": "USED",
+                "effectiveTooltip": "Effective hunting area"
+            },
+            "harvestedSpecimens": {
+                "top": "Harvests<br>(specimens)",
+                "topTooltip": "Harvests (individual)",
+                "au": "AM",
+                "auTooltip": "Harvested adult males (individual)",
+                "an": "AF",
+                "anTooltip": "Harvested adult females (individual)",
+                "vu": "JM",
+                "vuTooltip": "Harvested juvenile males (individual)",
+                "vn": "JF",
+                "vnTooltip": "Harvested juvenile females (individual)"
+            },
+            "notEdible": {
+                "top": "Non-edible",
+                "topTooltip": "Non-edible harvests",
+                "a": "A",
+                "aTooltip": "Non-edible harvests (adult)",
+                "v": "J",
+                "vTooltip": "Non-edible harvests (juvenile)"
+            },
+            "remainingPopulation": {
+                "top": "Remaining",
+                "topTooltip": "Remaining<br>population",
+                "total": "TOTAL",
+                "totalTooltip": "Remaining population in total hunting area",
+                "effective": "USED",
+                "effectiveTooltip": "Remaining population in effective hunting area"
+            },
+            "delete": "Remove changes",
+            "deleteConfirmationMessage": "Do you really want to delete all moderated hunting summaries for the permit?",
+            "onSavedNotification": "Hunting summaries were successfully saved",
+            "onDeletedNotification": "Moderator overridden hunting summaries were successfully removed"
+        }
+    },
+    "observation": {
+        "gamestate": {
+            "HEALTHY": "Healthy",
+            "ILL": "Ill",
+            "WOUNDED": "Wounded",
+            "CARCASS": "Carcass",
+            "DEAD": "Dead"
+        },
+        "marking": {
+            "NOT_MARKED": "Not marked",
+            "COLLAR_OR_RADIO_TRANSMITTER": "Collar / radio transmitter",
+            "LEG_RING_OR_WING_TAG": "Leg ring, wing mark",
+            "EARMARK": "Earmark"
+        },
+        "type": {
+            "HIRVENMETSASTYKSEN_YHTEYDESSA": "During moose hunting",
+            "NAKO": "Sight observation",
+            "JALKI": "Track",
+            "ULOSTE": "Scat",
+            "AANI": "Sound",
+            "RIISTAKAMERA": "Scout camera",
+            "KOIRAN_RIISTATYO": "Hunting dog's activity",
+            "MAASTOLASKENTA": "Ground survey",
+            "KOLMIOLASKENTA": "Wildlife triangle survey",
+            "LENTOLASKENTA": "Aerial survey",
+            "HAASKA": "Bait",
+            "SYONNOS": "Feeding marks",
+            "KELOMISPUU": "Rub marks",
+            "KIIMAKUOPPA": "Scraping marks",
+            "MAKUUPAIKKA": "Bedding sight",
+            "PATO": "Dam",
+            "PESA": "Nest/hut/den",
+            "PESA_KEKO": "Free-standing lodge",
+            "PESA_PENKKA": "Bank burrow",
+            "PESA_SEKA": "Bank lodge",
+            "SOIDIN": "Play area",
+            "LUOLASTO": "Den",
+            "PESIMALUOTO": "Breeding island",
+            "LEPAILYLUOTO": "Resting island",
+            "PESIMASUO": "Breeding mire",
+            "MUUTON_AIKAINEN_LEPAILYALUE": "Staging area",
+            "RIISTANKULKUPAIKKA": "Game trail",
+            "MUU": "Other"
+        }
+    },
+    "gamediary": {
+        "button": {
+            "addHarvest": "Add harvest",
+            "addObservation": "Add observation",
+            "doHarvestReport": "Generate mandatory harvest report",
+            "addImage": "Add photo",
+            "changeImage": "Change photo",
+            "search": "Search",
+            "selectAll": "Select all",
+            "deselectAll": "Delete all",
+            "changeStateTo": {
+                "ACCEPTED": "Accept",
+                "REJECTED": "Reject"
+            },
+            "exportToExcel": "Export all harvests and observations to Excel file"
+        },
+        "form": {
+            "titleHarvestAnimal": "Game species",
+            "titleObservationAnimal": "Game species",
+            "titleAddHarvest": "Add harvest",
+            "titleEditHarvest": "Edit harvest",
+            "titleViewHarvest": "View harvest",
+            "titleAddObservation": "Add observation",
+            "titleEditObservation": "Edit observation",
+            "titleViewObservation": "View observation",
+            "species": "Species",
+            "amount": "Amount",
+            "age": "Age",
+            "gender": "Gender",
+            "weight": "Weight (kg)",
+            "additionalInfo": "Additional information",
+            "additionalInfoHelp": "Lisätiedot, esim. sarvet pudonneet, sikiöt, loiset, sairaudet, petojen raatelujäljet, hirvikärpäset, kolarivammat, värimuunnokset, kiimatiedot",
+            "weightEstimated": "Estimated dressed weight (kg)",
+            "weightMeasured": "Weighted dressed weight (kg)",
+            "backFat": "Back fat (mm)",
+            "fitnessClass": "Fitness class",
+            "antlersType": "Antler type",
+            "antlersWidth": "Antler spread (cm)",
+            "antlerPointsLeft": "Antler points left",
+            "antlerPointsRight": "Antler points right",
+            "notEdible": "Not edible",
+            "location": "Location",
+            "date": "Date",
+            "time": "Time",
+            "author": "Reporter",
+            "harvestPermit": "Permit",
+            "description": "Description",
+            "image": "Photo",
+            "titleAddImage": "Add Photo",
+            "titleReplaceImage": "Change photo",
+            "selectImage": "Select photo",
+            "hunterNumberOfActualShooter": "Hunter's registration number",
+            "iamTheShooter": "I am the hunter",
+            "iamTheObserver": "I am the observer",
+            "onBehalfAuthor": "Your harvest is reported by",
+            "titleTimeAndPlace": "Place and time",
+            "titleActualShooter": "Hunter information",
+            "titleShowSpecimens": "Specimen information",
+            "withPermit": "Harvested with permit issued by Finnish Wildlife Agency",
+            "withPermitNote": "NOTE: Permit number is not required within hunting of moose and deers",
+            "withPermittedMethod": "Used permitted method",
+            "permittedMethod": "Permitted method",
+            "permittedMethodDescription": "Permitted method description",
+            "invalidSpeciesForDate": "Wrong <strong>species</strong> or <strong>date</strong>. Permit is not valid for selected species on a given day.",
+            "invalidDate": "Wrong <strong>date</strong>.",
+            "permitUnusable": "Permit is not valid, please contact the permit holder/contact person.",
+            "nameOfObserver": "Observer's name",
+            "phoneNumberOfObserver": "Observer's phone number",
+            "observationType": "Observation type",
+            "withinMooseHunting": "During moose hunt",
+            "gameState": "Animal state",
+            "gameMarking": "Marking"
+        },
+        "mooselikeAbbrv": {
+            "mooselikeMaleAmount": "M",
+            "mooselikeFemaleAmount": "F+0",
+            "mooselikeFemale1CalfAmount": "F+1",
+            "mooselikeFemale2CalfsAmount": "F+2",
+            "mooselikeFemale3CalfsAmount": "F+3",
+            "mooselikeFemale4CalfsAmount": "F+4",
+            "mooselikeUnknownSpecimenAmount": "U"
+        },
+        "mooselike": {
+            "mooselikeMaleAmount": "Adult males",
+            "mooselikeFemaleAmount": "Females without juveniles",
+            "mooselikeFemale1CalfAmount": "Female + 1 juvenile",
+            "mooselikeFemale2CalfsAmount": "Females + 2 juveniles",
+            "mooselikeFemale3CalfsAmount": "Females + 3 juveniles",
+            "mooselikeFemale4CalfsAmount": "Females + 4 juveniles",
+            "mooselikeUnknownSpecimenAmount": "Unknown"
+        },
+        "menuTitles": {
+            "filters": "Filter results",
+            "huntingDays": "Events"
+        },
+        "search": {
+            "noresults": "No results",
+            "species": "Game species",
+            "selectSpeciesTitle": "Select species for the list",
+            "gameInfo": "Game information",
+            "pointOfTime": "Time of harvest",
+            "pieces": "pcs",
+            "showSpecies": "Add species",
+            "author": "Reported by",
+            "reportedForOthers": "Harvest reported for other",
+            "showHarvest": "Show harvests",
+            "showObservation": "Show observations"
+        },
+        "moderatorOverride": "This diary entry has been modified by the Wildlife Agency",
+        "messages": {
+            "notFound": "Hunters registration number not found",
+            "insertHunterNumber": "Type 8-digit hunters registration number",
+            "uploadingImage": "Uploading photo...",
+            "imageUploaded": "Photo uploaded"
+        },
+        "remove": {
+            "harvestTitle": "Delete harvest?",
+            "harvestInfo": "Do you want to delete this harvest? By deleting the harvest you also delete attached photos.",
+            "observationTitle": "Delete observation?",
+            "observationInfo": "Do you want to delete this observation? By deleting the observation you also delete attached photos.",
+            "srvaTitle": "Remove SRVA event?",
+            "srvaInfo": "Haluatko poistaa SRVA-tapahtuman kirjauksen? Poistamalla kirjauksen poistat myös SRVA-tapahtumaan liitetyt kuvat."
+        },
+        "age": {
+            "ADULT": "Adult",
+            "YOUNG": "Young (less than 1-year-old)",
+            "LT1Y": "Less than 1-year-old",
+            "_1TO2Y": "1-to-2-year-old",
+            "ERAUS": "Sub-adult",
+            "UNKNOWN": "Unknown"
+        },
+        "gender": {
+            "FEMALE": "Female",
+            "MALE": "Male",
+            "UNKNOWN": "Unknown"
+        },
+        "fitnessClass": {
+            "ERINOMAINEN": "Excellent",
+            "NORMAALI": "Normal",
+            "LAIHA": "Skinny",
+            "NAANTYNYT": "Starved"
+        },
+        "antlersType": {
+            "HANKO": "Hanko",
+            "LAPIO": "Lapio",
+            "SEKA": "Seka"
+        },
+        "harvest": "Harvest",
+        "observation": "Observation",
+        "author": "Reporter",
+        "actualShooter": "Hunter",
+        "observer": "Observer",
+        "state": {
+            "title": "Title",
+            "PROPOSED": "submitted",
+            "ACCEPTED": "Accepted",
+            "REJECTED": "Rejected"
+        },
+        "stateVerbose": {
+            "PROPOSED": "Harvest proposed for filling the permit",
+            "ACCEPTED": "Accepted for the permit",
+            "REJECTED": "Rejected from the permit"
+        }
+    },
+    "permittedMethod": {
+        "TAPE_RECORDERS": "Tape recorders",
+        "TRAPS": "Traps",
+        "OTHER": "Other"
+    },
+    "harvestreport": {
+        "menu": {
+            "todo": "To be completed",
+            "moosePermits": "Moose/Deer permits",
+            "permits": "Other permits",
+            "done": "Completed harvest reports"
+        },
+        "button": {
+            "createReport": "Created mandatory harvest report based on hunting act",
+            "sendReport": "Submit harvest report",
+            "reportDone": "Harvest report submitted",
+            "createReportOnBehalf": "Create harvest report on behalf of another person",
+            "searchPerson": "Search",
+            "changeStateTo": {
+                "PROPOSED": "Propose",
+                "SENT_FOR_APPROVAL": "Waiting to be processed",
+                "APPROVED": "Approved",
+                "REJECTED": "Rejected"
+            },
+            "currentState": {
+                "PROPOSED": "Harvest report prepared",
+                "SENT_FOR_APPROVAL": "Harvest report submitted",
+                "APPROVED": "Harvest report approved",
+                "REJECTED": "Harvest report rejected"
+            },
+            "changeStateToUser": {
+                "SENT_FOR_APPROVAL": "Submit",
+                "PROPOSED": "Prepare"
+            },
+            "new": "Create new",
+            "complete": "Complete"
+        },
+        "title": {
+            "new": "Create new mandatory harvest report",
+            "required": "Journal entries which require mandatory harvest report",
+            "pendingApprovalToPermit": "Journal entries which are waiting the be accepted for the permit",
+            "rejectedFromPermit": "Journal entries rejected by the permit holder/contact person",
+            "done": "Your harvest reports",
+            "selectSpecies": "Select species",
+            "selectPermit": "Select permit"
+        },
+        "wizard": {
+            "new": "Create new",
+            "complete": "Complete",
+            "selectSpecies": "Select species",
+            "form": "Reporting form",
+            "harvestCreated": "Harvest information has been saved into your journal and send for the permit holder to be approved. You are OK",
+            "harvestCreatedContactPerson": "Harvest entry has been saved top your journal and added to the permit number {{permitNumber}}. As a permit holder/contact person, please remember to submit the harvest report including all harvested animals after the permit has expired."
+        },
+        "form": {
+            "titleAdd": "Create harvest report",
+            "titleEdit": "Edit harvest report",
+            "titleView": "View harvest report",
+            "titleModeratorEdit": "Edit as moderator",
+            "titleModeratorProcess": "Process harvest report",
+            "creator": "Creator of the harvest report",
+            "author": "Reporter",
+            "hunter": "Hunter",
+            "reportType": "Report type",
+            "rhy": "Game Management Association",
+            "rhyHelp": "Select Game Management Association in which the harvest occurred",
+            "harvestarea": "Hunting zone/area",
+            "age": "Age",
+            "gender": "Gender",
+            "weight": "Weight (kg)",
+            "location": "Location",
+            "locationInput": "Input location",
+            "setlocation": "Set location",
+            "date": "Date",
+            "time": "Time",
+            "huntingMethod": "Hunting method",
+            "reportedWithPhoneCall": "Have you reported also by phone call?",
+            "permitNumber": "Permit number",
+            "permitNumberRequired": "Type in permit number",
+            "permitNumberNotFound": "Not found",
+            "permitNotApplicable": "Permit is not issues for selected species",
+            "huntingAreaType": "Hunting area",
+            "huntingParty": "Name of the hunting club",
+            "huntingAreaSize": "Size of the hunting area (ha)",
+            "description": "Staff notes",
+            "lukeStatus": "Status information of individual of game research",
+            "lukeStatusInstruction": "Note. Field is required only with wolf prey using population harvest permit.",
+            "propertyIdentifier": "Property registration number",
+            "propertyIdentifierSearching": "Searching for property registration number...",
+            "propertyIdentifierErrorUser": "Error in search of property registration number. You can still save and submit your harvest report",
+            "propertyIdentifierErrorModerator": "Error in search of property registration number.",
+            "changeHunter": "Change hunter"
+        },
+        "remove": {
+            "title": "Delete harvest report",
+            "info": "Do you want to delete harvest report?"
+        },
+        "reportType": {
+            "OTHERS": "Other harvest",
+            "PERMIT": "Harvested with permits"
+        },
+        "age": {
+            "ADULT": "Adult",
+            "YOUNG": "Young(less than 1-year-old)",
+            "UNKNOWN": "Unknown"
+        },
+        "gender": {
+            "FEMALE": "Female",
+            "MALE": "Male",
+            "UNKNOWN": "Unknown"
+        },
+        "lukeStatus": {
+            "PENDING": "Waiting for confirmation",
+            "CONFIRMED_ALPHA": "Confirmed, alpha individual",
+            "CONFIRMED_ALPHA_ADULT": "Confirmed, adult, alpha individual",
+            "CONFIRMED_ADULT": "Confirmed, adult",
+            "CONFIRMED_POTENTIAL_ALPHA_ADULT": "Confirmed, adult, potential alpha individual",
+            "CONFIRMED_NOT_ADULT": "Confirmed, not adult",
+            "CONFIRMED_NOT_ALPHA": "Confirmed, non-alpha individual",
+            "CONFIRMED_NOT_ALPHA_ADULT": "Confirmed, adult, non-alpha individual",
+            "CONFIRMED_NOT_ALPHA_1TO2Y": "Confirmed, 1 year old",
+            "CONFIRMED_NOT_ALPHA_LT1Y": "Confirmed, less than 1 year old"
+        },
+        "huntingMethod": {
+            "SHOT": "Hunting, shot",
+            "CAPTURED_ALIVE": "Trapped, live trap",
+            "SHOT_BUT_LOST": "Shot but not retrieved"
+        },
+        "huntingAreaType": {
+            "HUNTING_SOCIETY": "Hunting club area",
+            "PROPERTY": "Private property"
+        },
+        "state": {
+            "title": "State",
+            "required": "Not reported",
+            "PROPOSED": "Proposed",
+            "SENT_FOR_APPROVAL": "Submitted",
+            "APPROVED": "Approved",
+            "REJECTED": "Rejected"
+        },
+        "admin": {
+            "button": {
+                "search": "Search"
+            },
+            "menu": "Harvest reports",
+            "all": "All",
+            "noresults": "No results",
+            "state": "Status",
+            "pointOfTime": "Time of harvest",
+            "area": "Hunting area",
+            "person": "Person",
+            "gameInfo": "Information of harvested animal",
+            "reasonTitle": "This type of edit requires you to state the reason for making this edit.",
+            "reason": "Reason",
+            "textSearch": "Search staff notes",
+            "textSearchHelp": "Search from harvest reports in which notes <strong> all </strong> following words or word parts are found."
+        },
+        "searchperson": {
+            "title": "Search person",
+            "notfound": "Not found"
+        }
+    },
+    "harvestpermit": {
+        "button": {
+            "createHarvestReportAndEndOfHuntingReport": "Tee lakisääteinen saalisilmoitus / Ilmoita metsästys päättyneeksi",
+            "createEndOfHuntingReport": "Ilmoita metsästys päättyneeksi",
+            "add": "Add contact person",
+            "editContactPersons": "Edit contact persons",
+            "removeEndOfHuntingReport": "Remove end of hunt notice"
+        },
+        "form": {
+            "title": "Edit contact persons"
+        },
+        "admin": {
+            "species": "Species",
+            "permitNumberHelp": "Permit number if following format 2015-1-123-12345-1",
+            "year": "Year"
+        },
+        "title": {
+            "endOfHuntingReport": "Luvanvaraisten eläinten pyynnin päättymisilmoitus",
+            "speciesAmounts": "Issued quota and valid hunting time of the permit",
+            "contactPersons": "Contact persons of the permit",
+            "harvests": "Harvest reported for the permit",
+            "selectSpecies": "Select species"
+        },
+        "permit": "Permit",
+        "permitNumber": "Permit number",
+        "contactPersons": "Contact persons",
+        "noPermits": "No permits",
+        "noHarvests": "No harvest",
+        "speciesAndAmount": "Species and quantity",
+        "contactPerson": "Contact person",
+        "pcs": "pcs",
+        "harvestReport": "Harvest report",
+        "harvestReportNotDoneInfo": "By submitting harvest report you also declare that hunting has ended",
+        "harvestReportDoneInfo": "Hunting has been declared ended.",
+        "harvestsProposed": "You can created harvest report when all harvest entries are either approved or rejected.",
+        "pointOfTime": "Time of harvest",
+        "gameInfo": "Information of the harvested animal",
+        "amount": {
+            "granted": "Issued",
+            "used": "Used",
+            "remaining": "Quota remaining",
+            "period": "Issued hunting period / Valid hunting time",
+            "grantedUsedMsg": "Quota filled",
+            "exceededMsg": "Quota exceeded",
+            "restriction": {
+                "type": "Restriction",
+                "amount": "Restricted number of animals",
+                "AE": "Maximum number of adults",
+                "AU": "Maximun number of adult males"
+            }
+        }
+    },
+    "announcements": {
+        "senderType": {
+            "RIISTAKESKUS": "Finnish Wildlife Agency",
+            "TOIMINNANOHJAAJA": "Coordinator",
+            "SEURAN_YHDYSHENKILO": "Club contact person"
+        },
+        "list": {
+            "title": "Messages",
+            "buttonSend": "Send message",
+            "showButton": "Show",
+            "messageFrom": "From:",
+            "received": "Received",
+            "sent": "Sent",
+            "showSubscribers": "Show subscribers",
+            "hideSubscribers": "Hide subscribers",
+            "subscriberOrganisations": "Receiver organisations:",
+            "subscriberOccupations": "Receiver occupation types:"
+        },
+        "form": {
+            "createTitle": "New message",
+            "editTitle": "Edit message",
+            "addOccupationType": "Add occupation type",
+            "addOrganisation": "Add target organisation",
+            "chooseOccupationTypes": "Choose occupation types",
+            "chooseOrganisations": "Choose organisations",
+            "targetOccupations": "Occupations types",
+            "targetOrganisations": "Organisations",
+            "subject": "Subject",
+            "body": "Body"
+        },
+        "confirmSendEmail": {
+            "title": "Send email?",
+            "body": "This message will be visible on the announcement page. Would you like to send the message by email also?"
+        }
+    },
+    "club": {
+        "config": {
+            "title": "Configuration",
+            "info": "Täällä voit määrittää kuinka yhteystietosi (osoite, puhelinnumero, sähköposti) näkyvät seuroissa ja seurojen ryhmissä.",
+            "resignTitle": "Resign from hunting club",
+            "contactShare": {
+                "title": "Contact information visibility",
+                "none": "Contact information not shared",
+                "onlyOfficials": "Contact information shared only with club contact persons and hunting directors",
+                "allMembers": "Contact information shared with all club members"
+            },
+            "button": {
+                "resign": "Resign",
+                "undoResign": "Undo resign"
+            }
+        },
+        "menu": {
+            "main": "Main menu",
+            "members": "Members",
+            "groups": "Parties",
+            "areas": "Areas",
+            "hunting": "Hunting",
+            "harvestsummary": "Summary",
+            "permits": "Permits"
+        },
+        "main": {
+            "title": "General information",
+            "general": {
+                "title": "General information of hunting club",
+                "titleEdit": "Edit club information",
+                "nameFI": "Name in Finnish",
+                "nameSV": "Name on Swedish",
+                "location": "Location",
+                "rhy": "Game Management Association",
+                "customerId": "Customer number",
+                "geoLocation": "Location",
+                "mooseArea": "Moose area"
+            },
+            "contactPersons": {
+                "title": "Contact persons",
+                "primary": "Primary",
+                "setPrimaryContact": "Set as primary contact person",
+                "warningRemoveOnlyContactPersonWithData": "Cannot remove remaining contact person for club with associated data",
+                "warningRemoveContactPersonSelf": "Jos poistat seuran yhteyshenkilön roolin itseltäsi, niin et voi enää muokata seuran tietoja. Oletko varma?"
+            },
+            "location": "Location"
+        },
+        "genericMember": {
+            "title": "Members",
+            "titleAdd": "Add member",
+            "titleInvite": "Invited members",
+            "titleInviteForm": "Invite member",
+            "hunterNumbersPlaceholder": "Hunter numbers (use new line, comma or semicolon as a separator)",
+            "hunterNumbersInvalid": "Fix invalid hunter numbers:",
+            "hunterNumbersNotFound": "Following hunters are not found:",
+            "inviteToGroup": "Add invited hunters to a group",
+            "button": {
+                "add": "Add member",
+                "remove": "Delete member",
+                "invite": "Invite member"
+            },
+            "selectExistingMember": "Select member",
+            "notFound": "Not found",
+            "alreadyMemberOrInvited": "Person is already invited or a member."
+        },
+        "todo": {
+            "title": "Notice",
+            "message": "Fix following missing information:",
+            "area": {
+                "message": "<strong>Määrittele seuran metsästysalue</strong> kuluvalle metsästysvuodelle.",
+                "button": "Siirry määrittämään alueet"
+            },
+            "group": {
+                "message": "<strong>Määrittele seuralle ryhmä</strong> kuluvalle metsästysvuodelle.",
+                "button": "Siirry määrittämään ryhmät"
+            },
+            "groupPermit": {
+                "message": "<strong>Valitse kaikille ryhmille lupa.</strong>",
+                "button": "Siirry määrittämään ryhmät"
+            },
+            "groupLeader": {
+                "message": "<strong>Valitse kaikille ryhmille metsästyksenjohtaja.</strong>",
+                "button": "Siirry määrittämään ryhmät"
+            }
+        },
+        "group": {
+            "listTitle": "Groups",
+            "memberOrder": "Order",
+            "leaderCreated": "Created",
+            "button": {
+                "add": "Add group",
+                "remove": "Delete group",
+                "toCSV": "Export to CSV file"
+            },
+            "form": {
+                "titleAdd": "Add group",
+                "titleEdit": "Edit group",
+                "titleCopy": "Copy group",
+                "species": "Species",
+                "huntingYear": "Hunting year",
+                "huntingArea": "Hunting area",
+                "huntingAreaNotSet": "Not set",
+                "harvestPermit": "Harvest permit",
+                "harvestPermitNotSet": "Not set",
+                "choosePermit": "Choose permit",
+                "clearPermit": "Clear permit",
+                "nameFI": "Name in Finnish",
+                "nameSV": "Name in Swedish",
+                "name": "Name",
+                "huntingFinished": "Hunting finished"
+            },
+            "members": {
+                "warningRemoveOnlyHuntingLeaderWithData": "Cannot remove remaining hunting leader for group with associated data",
+                "warningRemoveHuntingLeaderSelf": "If you remove your role as group hunting leader, you can no longer edit data for the group. Area you sure?"
+            },
+            "mooseDataCardImport": {
+                "listTitle": "Imported moose data cards",
+                "revokedListTitle": "Revoked moose data card imports",
+                "revocationDialogTitle": "Revoke moose data card import?",
+                "revocationInfo": "Do you want to revoke importing of moose data card? By revoking moose data card import all the associated hunting days, harvests and game observations are deleted as well.",
+                "importTimestamp": "Time of import",
+                "filenameTimestamp": "Filename timestamp",
+                "revocationTimestamp": "Revocation timestamp",
+                "reportingPeriod": "Reporting period",
+                "fileDownload": "PDF&nbsp;+&nbsp;XML",
+                "messages": "Messages"
+            }
+        },
+        "area": {
+            "tabHeaders": {
+                "areaList": "Omat alueet",
+                "proposalList": "Lupa-alueet"
+            },
+            "button": {
+                "add": "Add area",
+                "remove": "Delete area",
+                "editArea": "Edit area",
+                "functionMenu": "Options",
+                "importArea": "Load from file",
+                "exportArea": "Export to file",
+                "printArea": "Print",
+                "toExcel": "Excel",
+                "toChangesExcel": "Changed properties (XLS)",
+                "toGeojson": "Export geometry (GeoJSON/zip)",
+                "toGarmin": "Export geometry (Garmin)",
+                "activate": "Activate",
+                "deactivate": "Deactivate"
+            },
+            "list": {
+                "title": "Areas",
+                "hasPendingChanges": "Pending updates",
+                "areaIsDeactive": "Area is not active",
+                "showDeactive": "Display deactivated"
+            },
+            "proposal": {
+                "listTitle": "Yhteislupa-alueet"
+            },
+            "import": {
+                "confirmTitle": "Confirmation",
+                "confirmBody": "Are you sure that you want to replace current area definitions for '{{ areaName }}' with imported content?",
+                "modalTitle": "Import area geometry",
+                "instructions": "Please select a file with GeoJSON content for the area geometry.",
+                "selectFile": "Choose file",
+                "success": "Only areas with no hunting restriction or moose as selected species were imported."
+            },
+            "form": {
+                "titleAdd": "Add area",
+                "titleEdit": "Edit area",
+                "titleCopy": "Copy area",
+                "huntingYear": "Hunting year",
+                "nameFI": "Name in Finnish",
+                "nameSV": "Name in Swedish",
+                "externalId": "Area identifier",
+                "copyGroups": "Copy also groups linked to area",
+                "lastModified": "Last modified"
+            },
+            "print": {
+                "modalTitle": "Print area",
+                "paperSizeLabel": "Paper size",
+                "paperDpiLabel": "Paper print density",
+                "paperOrientationLabel": "Paper orientation",
+                "paperOrientation": {
+                    "portrait": "Portrait",
+                    "landscape": "Landscape"
+                },
+                "submitButton": "Print"
+            },
+            "map": {
+                "toolbar": {
+                    "move": "Move map",
+                    "palsta": {
+                        "add": {
+                            "single": "Add/remove properties",
+                            "marquee": "Add properties using marquee"
+                        },
+                        "remove": {
+                            "marquee": "Remove properties using marquee"
+                        }
+                    },
+                    "exclude": {
+                        "title": "Exclude property area",
+                        "lasso": {
+                            "add": "Increase excluded area using lasso",
+                            "remove": "Decrease excluded area using lasso"
+                        },
+                        "polyLasso": {
+                            "add": "Increase excluded area using line",
+                            "remove": "Decrease excluded area using line"
+                        }
+                    }
+                },
+                "selectedArea": {
+                    "title": "Selected area details",
+                    "propertyIdentifier": "Property identifier",
+                    "areaName": "Property patch name",
+                    "landAreaSize": "Land area size",
+                    "waterAreaSize": "Water area size",
+                    "calculatingAreaSize": "Counting...",
+                    "areaSize": "Total area size",
+                    "changeTitle": "Changes",
+                    "changeAmount": "Change",
+                    "fix": "Try to fix automatically",
+                    "lastModified": "Last modified"
+                },
+                "tab": {
+                    "selectedAreas": {
+                        "title": "Selected areas",
+                        "propertyIdentifier": "Property identifier",
+                        "areaSize": "Area"
+                    },
+                    "changed": {
+                        "title": "Changes",
+                        "fix": "Fix"
+                    },
+                    "massInsert": {
+                        "title": "Mass insert",
+                        "inputPropertyIdentifier": "Property identifier",
+                        "placeholder": "Format using 111-222-3333-4444 or 1-2-3-4 or 11122233334444",
+                        "buttonAdd": "Add",
+                        "okPropertyCount": "Properties added successfully {{count}} pcs",
+                        "propertyIdentifiersNotFound": "Following property identifiers are not found:"
+                    },
+                    "metsahallitus": {
+                        "title": "MH",
+                        "heading": "Metsähallituksen hirvialueet",
+                        "search": "Search",
+                        "emptySelection": "Empty selection"
+                    }
+                }
+            }
+        },
+        "hunting": {
+            "tabHeaders": {
+                "filters": "Filter results",
+                "huntingDays": "Hunting days"
+            },
+            "species": "Species",
+            "group": "Group",
+            "approval": "Hyväksyntä",
+            "createHuntingDay": "Create hunting day",
+            "openProposalForEdit": "Edit proposal",
+            "detachFromHuntingDay": "Detach from hunting day",
+            "harvestProposalDialog": {
+                "message": "By accepting the harvest you attach it to the groups hunting day. By rejecting you remove it from groups view.",
+                "title": "Proposed harvest"
+            },
+            "harvestRejectedDialog": {
+                "message": "By accepting the harvest you attach it to the groups hunting day.",
+                "title": "Rejected harvest"
+            },
+            "observationProposalDialog": {
+                "message": "By accepting the observation you attach it to the groups hunting day. By rejecting you remove it from groups view.",
+                "title": "Proposed observation"
+            },
+            "observationRejectedDialog": {
+                "message": "By accepting the observation you attach it to the groups hunting day.",
+                "title": "Rejected observation"
+            },
+            "pointOfTime": "Date",
+            "nextDayHunting": "During the following day",
+            "huntingDay": {
+                "createTitle": "Create hunting day",
+                "editTitle": "Edit hunting day",
+                "exportToExcel": "Export to Excel-file",
+                "duplicateDate": "Given date already exists",
+                "outsidePermitInterval": "Permit is not valid on given date",
+                "startDate": "Start date",
+                "endDate": "End date",
+                "startTime": "Start time",
+                "endTime": "End time",
+                "snowDepth": "Snow depth",
+                "duration": "Hunting duration",
+                "durationInvalid": "Duration is invalid",
+                "breakDuration": "Break duration",
+                "huntingMethod": "Hunting method",
+                "numberOfHunters": "Number of hunters",
+                "numberOfHounds": "Number of hounds",
+                "noHarvests": "No harvests",
+                "noObservations": "No observations"
+            },
+            "huntingMethod": {
+                "OPTION_1": "passilinja, koira ohjaajineen metsässä",
+                "OPTION_2": "hiipiminen pysäyttävälle koiralle",
+                "OPTION_3": "passilinja ja tiivis ajoketju",
+                "OPTION_4": "passilinja ja miesajo jäljityksenä",
+                "OPTION_5": "jäljitys eli naakiminen ilman passeja",
+                "OPTION_6": "väijyntä kulkupaikoilta",
+                "OPTION_7": "väijyntä ravintokohteilta",
+                "OPTION_8": "houkuttelu",
+                "OPTION_9": "muu, mikä"
+            },
+            "huntingYear": "Season",
+            "huntingSummary": {
+                "menuTitle": "Osakkaan metsästyksen päättäminen",
+                "status": "Osakas päättänyt metsästyksen",
+                "editTitle": "Complete hunting summary",
+                "finalSubmitDoneTitle": "Hunting is finished",
+                "huntingFinishingTitle": "Finishing hunting",
+                "totalHuntingArea": "Total hunting area",
+                "effectiveHuntingArea": "Effective hunting area",
+                "huntingEndDate": "Hunting finished",
+                "saveUnfinished": "Save as unfinished",
+                "markUnfinished": "Mark unfinished"
+            },
+            "deerHuntingSummary": {
+                "huntingAreaAndEstimatedPopulationTitle": "Estimated population after hunting finished:",
+                "remainingPopulationInTotalArea": "Deers remaining in total hunting area",
+                "remainingPopulationInEffectiveArea": "Deers remaining in effective hunting area"
+            },
+            "mooseHuntingSummary": {
+                "otherMooselikeSpeciesTitle": "Other mooselike species",
+                "huntingAreaAndEstimatedPopulationTitle": "Estimated population after hunting finished",
+                "deadMoosesTitle": "Dead mooses found in hunting area",
+                "otherObservationsTitle": "Other observations",
+                "effectiveHuntingAreaPercentage": "Effective hunting area percentage",
+                "remainingPopulationInTotalArea": "Mooses remaining in total hunting area",
+                "remainingPopulationInEffectiveArea": "Mooses remaining in effective hunting area",
+                "huntingAreaType": "Our hunting area is",
+                "huntingAreaTypes": {
+                    "SUMMER_PASTURE": "Summer pasture",
+                    "WINTER_PASTURE": "Winter pasture",
+                    "BOTH": "Both"
+                },
+                "numberOfDrownedMooses": "Drowned",
+                "numberOfMoosesKilledByBear": "Killed by bear",
+                "numberOfMoosesKilledByWolf": "Killed by wolf",
+                "numberOfMoosesKilledInTrafficAccident": "Traffic accident",
+                "numberOfMoosesKilledByPoaching": "Poached",
+                "numberOfMoosesKilledInRutFight": "Rut fight",
+                "numberOfStarvedMooses": "Starved",
+                "numberOfMoosesDeceasedByOtherReason": "Other reason",
+                "causeOfDeath": "Other reason",
+                "appearance": "Appearance",
+                "trendOfMooselikePopulationGrowth": "Population",
+                "estimatedAmountOfSpecimens": "Estimated specimen amount",
+                "mooseHeatBeginDate": "First heat",
+                "mooseHeatEndDate": "Last heat",
+                "mooseFawnBeginDate": "First fawn",
+                "mooseFawnEndDate": "Last fawn",
+                "deerFliesAppeared": "Deer flies appeared in our hunting area",
+                "dateOfFirstDeerFlySeen": "First deer flies seen",
+                "dateOfLastDeerFlySeen": "Last deer flies seen",
+                "numberOfAdultMoosesHavingFlies": "Number of adult moose harvests having deer flies",
+                "numberOfYoungMoosesHavingFlies": "Number of young moose harvests having deer flies",
+                "trendOfDeerFlyPopulationGrowth": "Deer fly population",
+                "populationGrowthTrend": {
+                    "INCREASED": "Increased",
+                    "DECREASED": "Decreased",
+                    "UNCHANGED": "Unchanged"
+                },
+                "wildBoarTitle": "Wild boar",
+                "estimatedAmountOfSowWithPiglets": "Estimate of sow with piglets"
+            },
+            "selectGroup": "Select group",
+            "selectSpecies": "Select species",
+            "selectHuntingYear": "Select year",
+            "showOnlyRejectedHarvestsAndObservations": "Show only rejected harvests and observations",
+            "showOnlyRejectedHarvests": "Show only rejected harvests",
+            "specimenAbbrv": {
+                "ADULT": "A",
+                "FEMALE": "F",
+                "FEMALE_ADULT": "AF",
+                "FEMALE_UNKNOWN": "F",
+                "FEMALE_YOUNG": "YF",
+                "FEMALE__1TO2Y": "YF",
+                "FEMALE_LT1Y": "YF",
+                "MALE": "M",
+                "MALE_ADULT": "AM",
+                "MALE_UNKNOWN": "M",
+                "MALE_YOUNG": "YM",
+                "MALE__1TO2Y": "YM",
+                "MALE_LT1Y": "VM",
+                "UNKNOWN": "?",
+                "UNKNOWN_ADULT": "A",
+                "UNKNOWN_UNKNOWN": "?",
+                "UNKNOWN_YOUNG": "V",
+                "UNKNOWN__1TO2Y": "V",
+                "UNKNOWN_LT1Y": "V",
+                "YOUNG": "Y",
+                "_1TO2Y": "Y",
+                "LT1Y": "Y"
+            },
+            "stats": {
+                "harvestsTitle": "Harvests",
+                "observationsTitle": "Observations"
+            }
+        },
+        "harvestsummary": {
+            "gameCategory": "Species category",
+            "gameCategory1": "Fowl",
+            "gameCategory2": "Game mammal",
+            "gameCategory3": "Unprotected",
+            "gameSpecies": "Species",
+            "count": "Amount"
+        },
+        "permit": {
+            "list": "Permits",
+            "permitHolder": "Luvansaaja",
+            "originalPermitAmount": "Allowed amount",
+            "amendmentPermitAmount": "Amendment amount (ML 29§)",
+            "amendmentPermitName": "New permit (ML 29§)<br>",
+            "relatedRhy": "For your information",
+            "permitName": "Permit",
+            "permitAmountTotal": "Total number of permits",
+            "sumTitle": "Summary",
+            "permitUnallocated": "Unallocated",
+            "usedPermitCount": "Harvested",
+            "notEdibleCount": "Not edible",
+            "finishHunting": "Finish hunting",
+            "huntingFinished": "Hunting finished",
+            "finishHuntingByModeratorOverride": "Moderate finishing of permitted hunting",
+            "amendmentPermitsDoNotMatchHarvests": "Myönnetyt uudet luvat eivät täsmää saaliiden kanssa, jotka on merkitty ihmisravinnoksi kelpaamattomiksi.<br><br>Tarkistakaa, että ihmisravinnoksi kelpaamattomiksi on merkitty vain ne, joihin on myönnetty uusi lupa.",
+            "mooseHarvestReport": {
+                "menuTitle": "Maksukuitin liittäminen ja luvalla metsästyksen päättäminen",
+                "title": "Maksukuitin liittäminen ja luvalla metsästyksen päättäminen",
+                "finishPermit": "Päätä lupa pudottamalla tähän kuitti tai klikkaa valitaksesi",
+                "permitFinished": "Luvalla metsästys on päätetty",
+                "unfinishPermit": "Peru päättyminen",
+                "finishedWithoutHarvests": "Metsästys päätetty ilman saaliita",
+                "finishWithoutHarvests": "Päätä metsästys ilman saaliita",
+                "downloadReceipt": "Download receipt",
+                "iban": "IBAN",
+                "bic": "BIC",
+                "creditorReference": "Reference number",
+                "dueDate": "Due date",
+                "totalPayment": "Maksettava summa",
+                "cannotCreateMooseHarvestReport": {
+                    "header": "Maksukuitin voi liittää ja luvan metsästyksen päättää kun",
+                    "allPartnersFinishedHunting": "kaikki osakkaat ovat päättäneet metsästyksen",
+                    "amendmentPermitsMatchHarvests": "myönnetyt uudet luvat täsmäävät ihmisravinnoksi kelpaamattomiksi merkittyjen kanssa"
+                },
+                "priceBreakdown": {
+                    "title": "Maksuerittely",
+                    "eurPerPcs": "&euro; / pcs",
+                    "eur": "&euro;",
+                    "pcs": "pcs",
+                    "sumOfPayments": "Total to be paid",
+                    "adults": "Adults",
+                    "notEdibleAdults": "Ihmisravinnoksi kelpaamattomia aikuisia",
+                    "adultsToBePaid": "Maksettavia aikuisia",
+                    "adultPrice": "Aikuisen hinta",
+                    "adultsPayment": "Maksettava summa aikuisista",
+                    "young": "Vasoja",
+                    "notEdibleYoung": "Ihmisravinnoksi kelpaamattomia vasoja",
+                    "youngToBePaid": "Maksettavia vasoja",
+                    "youngPrice": "Vasan hinta",
+                    "youngPayment": "Maksettava summa vasoista"
+                }
+            },
+            "button": {
+                "functionMenu": "Toiminnot",
+                "table": "Table",
+                "map": "Map",
+                "lukeReports": "Reports",
+                "listLeaders": "Hunting leaders"
+            },
+            "percentage": {
+                "allocated": "Planned<br>(allocated permits)",
+                "harvests": "Harvested",
+                "males": "Males of all adults",
+                "young": "Young of all"
+            },
+            "map": {
+                "partner": "Osakkaan tiedot",
+                "partnerName": "Name"
+            },
+            "lukeReports": {
+                "COUNTRY": "Suomi",
+                "AREA": "Game management district",
+                "HTA": "Moose management district",
+                "RHY": "Game management association",
+                "CLUB": "Hunting club",
+                "FIGURE": "Figures",
+                "MAP": "Maps",
+                "TABLE_FULL": "Tables full season",
+                "TABLE_COMPARISON": "Tables comparison",
+                "noReports": "No reports"
+            },
+            "leaders": {
+                "title": "Hunting leaders",
+                "name": "Name",
+                "club": "Club"
+            },
+            "tabHunting": "Hunting",
+            "tabIndexes": "Indexes",
+            "tabPayments": "Payment information",
+            "allocation": {
+                "buttonText": "Divide quota",
+                "menuText": "Jaa luvat osakkaille",
+                "partner": "Osakas",
+                "fromMooseDataCard": "Information provided using moose data card",
+                "huntingFinished": {
+                    "top": "Hunting<br>finished",
+                    "topTooltip": "Hunting finished",
+                    "low": "PVÄ",
+                    "lowTooltip": "Hunting end date",
+                    "cellTooltip": "Hunting end date"
+                },
+                "latestUpdate": {
+                    "top": "Latest<br>update",
+                    "topTooltip": "Latest update",
+                    "low": "DATE",
+                    "lowTooltip": "Latest update date",
+                    "cellTooltip": "Latest update date"
+                },
+                "sumOfAllocated": {
+                    "top": "divided<br>permits",
+                    "topTooltip": "Divided permits",
+                    "low": "TOT",
+                    "lowTooltip": "Total of divided permits",
+                    "cellTooltip": "Jaettu lupia yhteensä"
+                },
+                "huntingPlan": {
+                    "top": "Plann.<br>(ind.)",
+                    "topTooltip": "Harvest plan (individual)",
+                    "au": "AU",
+                    "auTooltip": "Metsästyssuunnitelma (yksilöitä) aikuisia uroksia",
+                    "auCellTooltip": "Metsästyssuunnitelma (yksilöitä) aikuisia uroksia",
+                    "an": "AN",
+                    "anTooltip": "Metsästyssuunnitelma (yksilöitä) aikuisia naaraita",
+                    "anCellTooltip": "Metsästyssuunnitelma (yksilöitä) aikuisia naaraita",
+                    "v": "V",
+                    "vTooltip": "Metsästyssuunnitelma (yksilöitä) vasoja",
+                    "vCellTooltip": "Metsästyssuunnitelma (yksilöitä) vasoja"
+                },
+                "usedPermits": {
+                    "top": "Käyt.<br>lup.",
+                    "topTooltip": "Käytetty lupia",
+                    "low": "YHT",
+                    "lowTooltip": "Käytetty lupia yhteensä",
+                    "cellTooltip": "Käytetty lupia yhteensä"
+                },
+                "harvestedSpecimens": {
+                    "top": "Saadut saaliit<br>(yksilöitä)",
+                    "topTooltip": "Saadut saaliit (yksilöitä)",
+                    "a": "A<br>YHT",
+                    "aTooltip": "Saadut saaliit (yksilöitä) aikuisia yhteensä",
+                    "aCellTooltip": "Saadut saaliit (yksilöitä) aikuisia yhteensä",
+                    "au": "AU",
+                    "auTooltip": "Saadut saaliit (yksilöitä) aikuisia uroksia",
+                    "auCellTooltip": "Saadut saaliit (yksilöitä) aikuisia uroksia",
+                    "an": "AN",
+                    "anTooltip": "Saadut saaliit (yksilöitä) aikuisia naaraita",
+                    "anCellTooltip": "Saadut saaliit (yksilöitä) aikuisia naaraita",
+                    "v": "V<br>YHT",
+                    "vTooltip": "Saadut saaliit (yksilöitä) vasoja yhteensä",
+                    "vCellTooltip": "Saadut saaliit (yksilöitä) vasoja yhteensä",
+                    "vu": "VU",
+                    "vuTooltip": "Saadut saaliit (yksilöitä) vasoja uroksia",
+                    "vuCellTooltip": "Saadut saaliit (yksilöitä) vasoja uroksia",
+                    "vn": "VN",
+                    "vnTooltip": "Saadut saaliit (yksilöitä) vasoja naaraita",
+                    "vnCellTooltip": "Saadut saaliit (yksilöitä) vasoja naaraita"
+                },
+                "notEdible": {
+                    "top": "Ihm.rav<br>kpmttia",
+                    "topTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia",
+                    "a": "A",
+                    "aTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia aikuisia",
+                    "aCellTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia aikuisia",
+                    "v": "V",
+                    "vTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia vasoja",
+                    "vCellTooltip": "Saaduista saalista ihmisravinnoksi kelpaamattomia vasoja"
+                },
+                "remaining": {
+                    "top": "Jäävä<br>kanta",
+                    "topTooltip": "Jäävä kanta",
+                    "total": "Koko",
+                    "totalTooltip": "Jäävä kanta koko alueelle",
+                    "totalCellTooltip": "Jäävä kanta koko alueelle",
+                    "effective": "Käyt",
+                    "effectiveTooltip": "Jäävä kanta metsästykseen käytetylle alueelle",
+                    "effectiveCellTooltip": "Jäävä kanta metsästykseen käytetylle alueelle"
+                },
+                "huntingDays": {
+                    "top": "Mets.<br>päiviä",
+                    "topTooltip": "Metsästyspäiviä",
+                    "low": "KPL",
+                    "lowTooltip": "Metsästyspäivien lukumäärä",
+                    "cellTooltip": "Metsästyspäivien lukumäärä"
+                },
+                "harvestsPer": {
+                    "top": "Saalista<br>per",
+                    "topTooltip": "Saalista per",
+                    "day": "seurue-<br>päivä",
+                    "dayTooltip": "Saalista per seuruepäivä",
+                    "dayCellTooltip": "Saalista per seuruepäivä",
+                    "hunter": "miestyö-<br>päivä",
+                    "hunterTooltip": "Saalista per miestyöpäivä",
+                    "hunterCellTooltip": "Saalista per miestyöpäivä"
+                },
+                "observationsPer": {
+                    "top": "Havaintoja<br>per",
+                    "topTooltip": "Havaintoja per",
+                    "day": "seurue-<br>päivä",
+                    "dayTooltip": "Havaintoja per seuruepäivä",
+                    "dayCellTooltip": "Havaintoja per seuruepäivä",
+                    "hunter": "miestyö-<br>päivä",
+                    "hunterTooltip": "Havaintoja per miestyöpäivä",
+                    "hunterCellTooltip": "Havaintoja per miestyöpäivä"
+                },
+                "payment": {
+                    "top": "Maksut",
+                    "topTooltip": "Maksut",
+                    "adults": "Aik EUR",
+                    "adultsTooltip": "Aikuiset EUR",
+                    "adultsCellTooltip": "Aikuiset EUR",
+                    "young": "Vas EUR",
+                    "youngTooltip": "Vasat EUR",
+                    "youngCellTooltip": "Vasat EUR",
+                    "total": "Yht EUR",
+                    "totalTooltip": "Yhteensä EUR",
+                    "totalCellTooltip": "Yhteensä EUR"
+                }
+            },
+            "todo": {
+                "prefix": "Tarkista",
+                "area": "alue",
+                "group": "ryhmä",
+                "groupPermit": "ryhmän liittäminen lupaan",
+                "groupLeader": "metsästyksenjohtajat"
+            }
+        }
+    },
+    "srva": {
+        "form": {
+            "srvaEvent": "SRVA-event",
+            "bookSrvaEvent": "Add SRVA-event",
+            "event": "Event",
+            "type": "Type",
+            "result": "Result",
+            "method": "Method",
+            "personsInvolved": "Participants",
+            "combinedHours": "Overall work hours",
+            "additionalInformation": "Additional information",
+            "methodDescription": "Method description",
+            "typeDescription": "Type description",
+            "showSrvaEvent": "Show SRVA-events",
+            "animal": "Species",
+            "amount": "Amount",
+            "events": "Events",
+            "map": "Map",
+            "notAllEventsInfo": "Accidents are shown from whole country, other events only from own GMA area.",
+            "otherSpecies": "Other species",
+            "rejectConfirmation": "Do you really want to reject SRVA event?",
+            "approverOrRejecter": "Approver / Rejecter"
+        },
+        "event": {
+            "ACCIDENT": "Accident",
+            "DEPORTATION": "Deportation",
+            "INJURED_ANIMAL": "Injured animal"
+        },
+        "type": {
+            "TRAFFIC_ACCIDENT": "Traffic accident",
+            "RAILWAY_ACCIDENT": "Railway accident",
+            "ANIMAL_NEAR_HOUSES_AREA": "Animal near houses area",
+            "ANIMAL_AT_FOOD_DESTINATION": "Animal at the food destination",
+            "INJURED_ANIMAL": "Injured animal",
+            "ANIMAL_ON_ICE": "Animal on the ice",
+            "OTHER": "Other, what?"
+        },
+        "result": {
+            "ANIMAL_FOUND_DEAD": "Animal was found dead",
+            "ANIMAL_FOUND_AND_TERMINATED": "Animal was found and put to death",
+            "ANIMAL_FOUND_AND_NOT_TERMINATED": "Animal was found and left alive",
+            "ANIMAL_NOT_FOUND": "Animal was not found",
+            "ANIMAL_TERMINATED": "Animal was put to death",
+            "ANIMAL_DEPORTED": "Animal was deported",
+            "UNDUE_ALARM": "Undue alarm",
+            "ACCIDENT_SITE_NOT_FOUND": "Accident site was not found"
+        },
+        "method": {
+            "DOG": "Dog",
+            "PAIN_EQUIPMENT": "Pain equipment",
+            "SOUND_EQUIPMENT": "Sound equipment",
+            "TRACED_WITH_DOG": "Traced with dog",
+            "TRACED_WITHOUT_DOG": "Traced without dog",
+            "OTHER": "Other, what?"
+        },
+        "state": {
+            "UNFINISHED": "Unfinished",
+            "APPROVED": "Approved",
+            "REJECTED": "Rejected"
+        }
+    }
+}

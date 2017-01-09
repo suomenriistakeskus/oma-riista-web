@@ -1,0 +1,35 @@
+<div class="center-block btn btn-primary btn-upload"
+     upload-button
+     url="/api/v1/harvestpermit/admin/import/permit"
+     on-upload="onUpload(files)"
+     on-complete="onComplete(response)"
+     data="formdata">
+        <span>Import luvat CSV muodossa</span>
+</div>
+
+
+<h5>Metsästyskaudet</h5>
+<div class="well" ng-repeat="season in admin.seasons">
+    <img width="96" height="96" ng-src="/static/elainlajikuvat/96x96/{{season.fields.species.code}}.jpg"/>
+    {{season.fields.species.name.fi}}
+    {{season.beginDate | date}} - {{season.endDate | date}} ({{season.endOfReportingDate | date}})
+    <div class="well" ng-repeat="quota in season.quotas">
+        {{quota.harvestArea.nameFI}} Kiintiö: {{quota.quota}}
+    </div>
+</div>
+
+<h5>Alueet</h5>
+<div class="well">todo lista alueista ja niiden rhy:stä</div>
+
+<h5>Saalisilmoitusten kentät</h5>
+<div class="well" ng-repeat="field in admin.fields">
+    <h6>Nimi:{{field.name}} Eläin:{{field.species.name.fi}} Alkupäivä: {{field.beginDate}} Loppupäivä:
+        {{field.endDate}}</h6>
+    <br>Pyyntialueen tyyppi (seura/erillinen): {{field.huntingAreaType}}
+    <br>Metsästysseuran/-seurueen nimi: {{field.huntingParty}}
+    <br>Alueen pinta-ala: {{field.huntingAreaSize}}
+    <br>Lupanumero: {{field.permitNumber}}
+    <br>Saalistustapa: {{field.huntingMethod}}
+    <br>Paino: {{field.weight}}
+    <br>Onko ilmoitettu myös saalispuhelimeen: {{field.reportedWithPhoneCall}}
+</div>

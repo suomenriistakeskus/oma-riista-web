@@ -1,0 +1,135 @@
+<form role="form" class="form form-horizontal" name="form" novalidate
+      ng-submit="save(form)">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="rhy.edit.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-danger" ng-show="error" translate="global.messages.error"></div>
+
+        <!-- email -->
+        <div class="form-group">
+            <div class="checkbox col-xs-5">
+                <label>
+                    <input type="checkbox" ng-model="rhy.hasOwnEmail">
+                    <span translate="rhy.edit.form.hasOwnEmail"></span>
+                </label>
+            </div>
+        </div>
+
+        <div uib-collapse="rhy.hasOwnEmail">
+            <div class="alert alert-info" translate="rhy.edit.form.hasOwnEmailHelp"></div>
+        </div>
+        <div uib-collapse="!rhy.hasOwnEmail">
+            <div class="form-group" show-errors>
+                <label for="email" class="col-xs-3 control-label" translate="rhy.edit.form.email"></label>
+
+                <div class="col-xs-9">
+                    <input type="email" id="email" name="email"
+                           class="form-control"
+                           ng-model="rhy.email"
+                           ng-required="rhy.hasOwnEmail"
+                           ng-maxlength="255"
+                           ng-controller="ValidRhyEmailController"
+                           uib-typeahead="address for address in getRhyEmail($viewValue)">
+                </div>
+            </div>
+        </div>
+
+        <hr/>
+
+        <!-- phone -->
+        <div class="form-group">
+            <div class="checkbox col-xs-5">
+                <label>
+                    <input type="checkbox" ng-model="rhy.hasOwnPhoneNumber">
+                    <span translate="rhy.edit.form.hasOwnPhoneNumber"></span>
+                </label>
+            </div>
+        </div>
+
+        <div uib-collapse="rhy.hasOwnPhoneNumber">
+            <div class="alert alert-info" translate="rhy.edit.form.hasOwnPhoneNumberHelp"></div>
+        </div>
+        <div uib-collapse="!rhy.hasOwnPhoneNumber">
+            <div class="form-group" show-errors>
+                <label for="phoneNumber" class="col-xs-3 control-label"
+                       translate="rhy.edit.form.phoneNumber"></label>
+
+                <div class="col-xs-9">
+                    <input type="text" id="phoneNumber" name="phoneNumber"
+                           class="form-control"
+                           ng-model="rhy.phoneNumber"
+                           ng-required="rhy.hasOwnPhoneNumber"
+                           validate-phonenumber
+                           ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                           ng-maxlength="255">
+                    <p class="help-block" ng-show="form.phoneNumber.$invalid" translate="global.messages.invalid"></p>
+                </div>
+            </div>
+        </div>
+
+        <hr/>
+
+        <!-- address -->
+        <div class="form-group">
+            <div class="checkbox col-xs-5">
+                <label>
+                    <input type="checkbox" ng-model="rhy.hasOwnAddress">
+                    <span translate="rhy.edit.form.hasOwnAddress"></span>
+                </label>
+            </div>
+        </div>
+
+        <div uib-collapse="rhy.hasOwnAddress">
+            <div class="alert alert-info" translate="rhy.edit.form.hasOwnAddressHelp"></div>
+        </div>
+
+        <div uib-collapse="!rhy.hasOwnAddress">
+            <div class="form-group" show-errors>
+                <label for="streetAddress" class="col-xs-3 control-label">
+                    <span translate="rhy.edit.form.streetAddress"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-9">
+                    <input type="text" id="streetAddress" name="streetAddress" ng-model="rhy.address.streetAddress"
+                           ng-required="rhy.hasOwnAddress" ng-maxlength="255" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="postalCode" class="col-xs-3 control-label">
+                    <span translate="rhy.edit.form.postalCode"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-3">
+                    <input type="text" id="postalCode" name="postalCode" ng-model="rhy.address.postalCode"
+                           ng-required="rhy.hasOwnAddress" ui-mask="99999" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="city" class="col-xs-3 control-label">
+                    <span translate="rhy.edit.form.city"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span></label>
+
+                <div class="col-xs-9">
+                    <input type="text" id="city" name="city" ng-model="rhy.address.city"
+                           ng-required="rhy.hasOwnAddress" ng-maxlength="255" class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$dismiss('cancel')"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" ng-disabled="form.$invalid" class="btn btn-primary"
+                translate="global.button.save"></button>
+    </div>
+</form>

@@ -1,0 +1,23 @@
+{{#if features}}
+<p style="font-weight: bold;">{{title}}{{#if showQuota}}
+    (återstående kvot {{remainingQuota}})
+    {{/if}}
+</p>
+
+<table class="table table-striped table-condensed">
+    <tr>
+        <th width="10%">&nbsp;</th>
+        <th width="20%">Dag</th>
+        <th width="40%">Kommun</th>
+        <th width="30%">Kön</th>
+    </tr>
+    {{#each features}}{{#with properties}}
+    <tr data-ndx="{{id}}">
+        <td><a># {{order}}</a></td>
+        <td><a>{{day}}</a></td>
+        <td><a>{{municipality_sv}}</a></td>
+        <td><a>{{gender}}</a></td>
+    </tr>
+    {{/with}}{{/each}}
+</table>
+{{/if}}

@@ -1,0 +1,106 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" ng-submit="ok()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="harvestreport.searchperson.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="hunterNumber" class="col-xs-3 control-label">
+                <span translate="global.person.hunterNumber"></span>
+            </label>
+
+            <div class="col-xs-4">
+                <input type="text" name="hunterNumber" id="hunterNumber"
+                       class="form-control"
+                       ng-model="search.hunterNumber"
+                       valid-hunter-number
+                       focus-me="true"
+                       maxlength="8"/>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-show="showSsnSearch">
+            <label for="ssn" class="col-xs-3 control-label">
+                <span translate="global.person.ssn"></span>
+            </label>
+
+            <div class="col-xs-4">
+                <input type="text" name="ssn" id="ssn"
+                       class="form-control"
+                       ng-model="search.ssn"
+                       autocomplete="off"
+                       valid-ssn/>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-show="showPermitNumberSearch">
+            <label for="permitNumber" class="col-xs-3 control-label">
+                <span translate="harvestpermit.permitNumber"></span>
+            </label>
+
+            <div class="col-xs-4">
+                <input type="text" name="permitNumber" id="permitNumber"
+                       class="form-control"
+                       ng-model="search.permitNumber"
+                       autocomplete="off"
+                       valid-permit-number/>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors ng-show="showPermitNumberSearch">
+            <label for="personName" class="col-xs-3 control-label">
+                <span translate="global.person.name"></span>
+            </label>
+
+            <div class="col-xs-7">
+                <input type="text" name="personName" id="personName"
+                       class="form-control"
+                       ng-model="search.person"
+                       uib-typeahead="person as getName(person) for person in searchByName($viewValue)"
+                       typeahead-wait-ms="500"
+                       typeahead-min-length="3"
+                       typeahead-on-select='onPersonSelect($item, $model, $label)'
+                       typeahead-loading="isPersonSearchLoading"
+                       autocomplete="off" />
+            </div>
+            <div class="col-xs-1" ng-show="isPersonSearchLoading">
+                <span translate="search.formatSearching"></span>
+            </div>
+        </div>
+
+
+        <div ng-show="personWithHunterNumber" class="well">
+            <div class="form-group">
+                <label class="col-xs-3 control-label">
+                    <span>Nimi</span>
+                </label>
+
+                <div class="col-xs-3">
+                    <p class="form-control-static">{{personWithHunterNumber.byName}}
+                        {{personWithHunterNumber.lastName}}</p>
+                </div>
+            </div>
+            <div ng-show="personWithHunterNumber.hunterNumber" class="form-group">
+                <label class="col-xs-3 control-label">
+                    <span>Metsästäjänumero</span>
+                </label>
+
+                <div class="col-xs-3">
+                    <p class="form-control-static">{{personWithHunterNumber.hunterNumber}}</p>
+                </div>
+            </div>
+        </div>
+        <p ng-show="notFound" class="help-block" translate="harvestreport.searchperson.notfound"></p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="!personWithHunterNumber"
+                translate="global.button.ok"></button>
+    </div>
+</form>

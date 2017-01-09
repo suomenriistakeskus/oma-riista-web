@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <style>
+        #search-form {
+            float: left;
+            margin-right: 10px;
+        }
+        #search-form select {
+            width: 250px;
+        }
+        #map-container {
+            float: left;
+        }
+        #search-results-container {
+            clear: both;
+        }
+        #search-results-container table td {
+            vertical-align: top;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+
+<script type="text/javascript" src="contacts-app.js"></script>
+<script type="text/javascript" src="../maps/image-maps.js"></script>
+<script type="text/javascript">
+    /*
+     * WordPress compatible jQuery "no conflict" wrapper.
+     */
+    jQuery(document).ready(function() {
+        var options = {
+            backendUrl: "/api/v1/anon",
+            formSelector: "#search-form",
+            areaSelector: "#area-selection",
+            rhySelector: "#rhy-selection",
+            occupationSelector: "#occupation-selection",
+            mapContainerSelector: "#map-container",
+            searchResultsSelector: "#search-results-container",
+            searchLimit: 500,
+            lang: "fi",
+            translations: {
+                "all": "kaikki",
+                "tooManyResults": "Hakusi tuotti liikaa tuloksia, tarkenna hakua.",
+                "noResults": "Ei tuloksia."
+            },
+            headerColor: '#ccc',
+            evenColor: '#fff',
+            oddColor: '#eee'
+        };
+        var app = new ContactsApp(options);
+        app.start();
+    });
+</script>
+
+<form id="search-form">
+    <h4>Valitse alue</h4>
+    <select id="area-selection"></select>
+
+    <h4>Valitse riistanhoitoyhdistys</h4>
+    <select id="rhy-selection"></select>
+
+    <h4>Valitse haettava tieto</h4>
+    <select id="occupation-selection"></select>
+    <br/><br/>
+    <input type="submit" value="Hae"/>
+</form>
+<div id="map-container"></div>
+<div id="search-results-container"></div>
+
+</body>
+</html>

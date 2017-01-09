@@ -1,0 +1,342 @@
+@r-club-hunting-left-sidebar-width: 320px;
+
+.r-club-hunting-layout {
+  .make-row(0);
+
+  .left-column {
+    position: fixed;
+    width: @r-club-hunting-left-sidebar-width;
+    top: @main-nav-height;
+    bottom: 0;
+    overflow-y: auto;
+    min-height: 1px;
+    margin-top: -1px;
+    background: #fff;
+
+    ul.nav {
+      li {
+        vertical-align: top;
+        padding: 5px;
+        margin-bottom: auto;
+
+        a {
+          .count {
+            display: block;
+            font-size: 26px;
+            line-height: 28px;
+            margin-bottom: 10px;
+          }
+
+          .count:after {
+            content: "\A";
+            white-space: pre;
+          }
+        }
+      }
+    }
+
+    .tab-content {
+      margin-top: 5px;
+    }
+
+    .r-map-menu-title {
+      margin: 0 0 15px 0;
+    }
+
+    .wrapper {
+      // Do not change left-right padding value!
+      padding: 0 15px;
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    .r-hunting-statistics {
+      position: relative;
+      width: 100%;
+      background-color: #f5f5f5;
+      border: 1px solid #e3e3e3;
+      border-radius: 10px;
+      font-weight: bold;
+      color: #777;
+
+      header {
+        text-align: center;
+        color: #555;
+        padding: 5px 0;
+      }
+
+      hr {
+        margin: 5px 0;
+        border-top: 1px solid #ddd;
+      }
+
+      table {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+
+        td, th {
+          text-align: center;
+        }
+
+        th {
+          color: #777;
+        }
+      }
+    }
+
+    .btn-group.buttons {
+      padding: 0 0 10px 0;
+    }
+
+    .panel-group {
+      .panel + .panel {
+        margin-top: 0;
+      }
+
+      .panel.panel-open {
+        .panel-heading {
+          background-color: #fefefe;
+        }
+      }
+
+      .panel {
+        border: 0;
+        border-bottom: 1px solid #e6e6e6;
+
+        .panel-heading {
+          background-color: #F0F5F2;
+          border-radius: 0;
+          cursor: pointer;
+          font-weight: bold;
+          line-height: 16px;
+          padding: 8px 15px;
+
+          &:focus {
+            outline: none;
+          }
+
+          .harvest-counter {
+            display: inline-block;
+            font-weight: normal;
+            font-size: 14px;
+            width: 45px;
+
+            .fa {
+              color: @brand-primary;
+              margin-left: 4px
+            }
+
+            .r-gamediary-binoculars {
+              margin-left: 4px;
+            }
+          }
+
+          .count-zero {
+            font-weight: bold;
+            .text-danger;
+            .fa {
+              .text-danger;
+            }
+          }
+
+          a {
+            display: inline-block;
+            padding: 0 10px;
+
+            .glyphicon {
+              color: @brand-info;
+              font-size: 14px;
+            }
+          }
+
+          .row > div {
+            padding-left: 5px;
+            padding-right: 0;
+            white-space: nowrap;
+          }
+        }
+
+        .panel-body {
+          padding: 0 8px;
+
+          table {
+            width: 100%;
+
+            thead {
+              td {
+                font-size: 12px;
+                font-family: @font-family-open-sans;
+                color: #333;
+                text-align: right;
+              }
+
+              th {
+                min-width: 50%;
+                font-size: 10px;
+                font-weight: bold;
+                text-transform: uppercase;
+                color: #777;
+                white-space: nowrap;
+              }
+            }
+
+            tbody {
+              td {
+                padding: 5px 0;
+                cursor: pointer;
+                font-size: 12px;
+                line-height: 22px;
+              }
+
+              td:hover {
+                background-color: #f5f5f5;
+              }
+            }
+          }
+
+          .diary-entry-row {
+            .make-row(0);
+
+            > :nth-child(1) {
+              .make-xs-column(1, 0);
+            }
+
+            > :nth-child(2) {
+              .make-xs-column(5, 0);
+              padding-left: 5px;
+              font-size: 11px;
+              text-transform: uppercase;
+              font-weight: 700;
+            }
+
+            > :nth-child(3) {
+              .make-xs-column(1, 0);
+              font-weight: 700;
+            }
+
+            > :nth-child(4) {
+              .make-xs-column(2, 0);
+            }
+
+            > :nth-child(5) {
+              .make-xs-column(2, 0);
+            }
+
+            > :nth-child(6) {
+              .make-xs-column(1, 0);
+              text-align: right;
+
+              .fa {
+                color: @brand-primary;
+                font-size: 14px;
+                margin: 4px 0;
+              }
+            }
+          }
+
+          .count-zero {
+            .text-danger;
+            font-weight: bold;
+            text-align: center;
+          }
+        }
+      }
+    }
+  }
+
+  .main-column {
+    position: fixed;
+    left: @r-club-hunting-left-sidebar-width;
+    right: 0;
+    min-height: 1px;
+  }
+}
+
+.make-form-group(@control-label-grid-columns, @form-control-wrapper-grid-columns) {
+  .form-group {
+    .control-label {
+      .make-xs-column(@control-label-grid-columns);
+    }
+
+    .form-control-offset-wrapper {
+      .make-xs-column-offset(@control-label-grid-columns);
+      .make-xs-column(@form-control-wrapper-grid-columns);
+    }
+
+    .form-control-wrapper {
+      .make-xs-column(@form-control-wrapper-grid-columns);
+    }
+  }
+}
+
+.r-club-sidebar-content {
+  .make-form-group(5, 7);
+
+  @media (min-width: 768px) {
+    .r-moose-summary-hunting-area {
+      .make-form-group(4.1, 7.9);
+    }
+
+    .r-dead-moose-count-form-group {
+      .make-form-group(7, 5);
+    }
+
+    .r-two-column-number-fields {
+      .make-form-group(8, 4);
+    }
+
+    .r-cause-of-death-form-group {
+      .make-form-group(2.333, 9.666);
+    }
+
+    .r-moose-summary-mooselike-population-growth {
+      .make-form-group(2.5, 9.5);
+    }
+
+    .r-moose-summary-mooselike-estimated-amount {
+      .make-form-group(7.5, 4.5);
+    }
+
+    .r-moose-summary-mooselike-estimated-amount-piglets {
+      .make-form-group(10.1, 1.9);
+    }
+
+    .r-moose-summary-deer-fly-population-growth {
+      .make-form-group(3, 9);
+    }
+  }
+
+  table {
+    margin-bottom: 0;
+
+    td.species-name {
+      p {
+        font-weight: bold;
+        font-size: 18px;
+        line-height: 80px;
+        text-align: left;
+      }
+    }
+  }
+}
+
+.r-club-sidebar-buttons {
+  > .pull-left > .btn-group {
+    margin-left: 10px;
+  }
+}
+
+.r-map-filter-form {
+  .form-label-group {
+    margin-bottom: 0;
+  }
+
+  .hunting-finished-indicator {
+    color: @r-red;
+
+    label {
+      font-weight: bold;
+    }
+  }
+}

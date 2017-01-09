@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+               xmlns:namespace="http://jaxb2-commons.dev.java.net/namespace-prefix"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               schemaLocation="LupaHallintaExport.xsd"
+               node="/xsd:schema"
+               jaxb:extensionBindingPrefixes="xjc"
+               version="2.1">
+
+    <jaxb:schemaBindings>
+        <jaxb:package name="fi.riista.integration.lupahallinta.model"/>
+
+        <!-- LH stands for LupaHallinta
+        <jaxb:nameXmlTransform>
+            <jaxb:typeName prefix="LH_"/>
+            <jaxb:anonymousTypeName prefix="LH_"/>
+            <jaxb:elementName prefix="LH_"/>
+        </jaxb:nameXmlTransform>
+        -->
+    </jaxb:schemaBindings>
+
+    <jaxb:bindings>
+        <namespace:prefix name=""/>
+    </jaxb:bindings>
+
+    <jaxb:bindings node="//xsd:simpleType[@name='TehtavaTyyppi']">
+        <jaxb:typesafeEnumClass name="LH_PositionType"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Organisaatio']">
+        <jaxb:class name="LH_Organisation"/>
+
+        <jaxb:bindings node="./xsd:attribute[@name='riistakeskusAlue']">
+            <jaxb:property>
+                <jaxb:baseType name="LH_Organisation"/>
+            </jaxb:property>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Tehtava']">
+        <jaxb:class name="LH_Position"/>
+
+        <jaxb:bindings node="./xsd:attribute[@name='organisaatio']">
+            <jaxb:property>
+                <jaxb:baseType name="LH_Organisation"/>
+            </jaxb:property>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Henkilo']">
+        <jaxb:class name="LH_Person"/>
+        <jaxb:bindings node="./xsd:sequence/xsd:element[@name='Tehtavat']/xsd:complexType">
+            <jaxb:class name="LH_Positions"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="./xsd:attribute[@name='rhyJasenyys']">
+            <jaxb:property>
+                <jaxb:baseType name="LH_Organisation"/>
+            </jaxb:property>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:element[@name='Riistakeskus']">
+        <jaxb:class name="LH_Export"/>
+
+        <jaxb:bindings node="./xsd:complexType/xsd:sequence/xsd:element[@name='Organisaatiot']/xsd:complexType">
+            <jaxb:class name="LH_Organisations"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="./xsd:complexType/xsd:sequence/xsd:element[@name='Henkilot']/xsd:complexType">
+            <jaxb:class name="LH_Persons"/>
+        </jaxb:bindings>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='GeoSijainti']">
+        <jaxb:class name="LH_GeoLocation"/>
+    </jaxb:bindings>
+
+</jaxb:bindings>

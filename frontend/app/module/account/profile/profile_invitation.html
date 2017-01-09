@@ -1,0 +1,39 @@
+<div class="panel panel-default"
+     ng-if="$ctrl.clubInvitations && $ctrl.clubInvitations.length">
+    <div class="panel-heading">
+        <div class="h3 panel-title">
+            <span translate="account.profile.title.clubInvitations"></span>
+            <span r-account-todo="'invitations'"></span>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                <tr ng-repeat="invitation in ::$ctrl.clubInvitations track by invitation.id">
+                    <td>
+                        <h5 name-translated="invitation.club"></h5>
+
+                        <div class="pull-right"
+                             ng-if="$ctrl.isUserOwnProfile">
+                            <button class="btn btn-default"
+                                    ng-confirm-click
+                                    ng-confirm-click-action="$ctrl.rejectInvitation(invitation)">
+                                <span class="glyphicon glyphicon-thumbs-down"></span>
+                                <span translate="account.profile.invitation.button.reject"></span>
+                            </button>
+
+                            <button class="btn btn-success"
+                                    ng-confirm-click="{{'account.profile.invitation.info' | translate}}"
+                                    ng-confirm-click-action="$ctrl.acceptInvitation(invitation)"><span
+                                    class="glyphicon glyphicon-thumbs-up"></span>
+                                <span translate="account.profile.invitation.button.accept"></span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

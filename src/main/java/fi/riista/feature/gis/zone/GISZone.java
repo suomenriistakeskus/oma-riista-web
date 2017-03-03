@@ -68,9 +68,8 @@ public class GISZone extends LifecycleEntity<Long> {
     @CollectionTable(name = "zone_mh_hirvi", joinColumns = @JoinColumn(name = ID_COLUMN_NAME))
     private Set<Integer> metsahallitusHirvi = new HashSet<>();
 
-    // For persistence provider
     public GISZone() {
-        setSourceType(SourceType.LOCAL);
+        this(SourceType.LOCAL);
     }
 
     public GISZone(final SourceType sourceType) {

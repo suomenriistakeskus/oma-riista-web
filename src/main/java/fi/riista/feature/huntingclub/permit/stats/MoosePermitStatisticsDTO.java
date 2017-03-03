@@ -7,6 +7,7 @@ import fi.riista.util.LocalisedString;
 import java.util.Map;
 
 public class MoosePermitStatisticsDTO {
+    private Long permitId;
     private String permitNumber;
     private LocalisedString permitHolderLocalisedString;
     private String permitHolderOfficialCode;
@@ -15,6 +16,10 @@ public class MoosePermitStatisticsDTO {
     private MoosePermitStatisticsCount harvestCount;
 
     // Builder methods
+    public MoosePermitStatisticsDTO withPermitId(final Long permitId) {
+        this.permitId = permitId;
+        return this;
+    }
 
     public MoosePermitStatisticsDTO withPermitNumber(final String permitNumber) {
         this.permitNumber = permitNumber;

@@ -26,6 +26,20 @@ angular.module('app.club.controllers', [])
                 controller: 'ClubShowController'
             })
 
+            .state('club.announcements', {
+                url: '/announcements',
+                controllerAs: '$ctrl',
+                templateUrl: 'club/announcements.html',
+                resolve: {
+                    club: function (Clubs, clubId) {
+                        return Clubs.get({id: clubId}).$promise;
+                    }
+                },
+                controller: function ($state, $stateParams, club) {
+                    this.club = club;
+                }
+            })
+
             .state('club.harvestsummary', {
                 url: '/harvestsummary?year',
                 templateUrl: 'club/harvestsummary.html',

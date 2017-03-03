@@ -1,19 +1,18 @@
 package fi.riista.feature.gamediary.srva;
 
-import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.ActiveUserService;
-import fi.riista.feature.gamediary.image.GameDiaryImage;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.gamediary.srva.method.SrvaMethod;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.util.DateUtil;
 import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
@@ -41,7 +40,6 @@ public class SrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<SrvaEve
     @Resource
     private ActiveUserService activeUserService;
 
-    @Transactional(readOnly = true)
     @Nonnull
     @Override
     protected List<SrvaEventDTO> transform(@Nonnull final List<SrvaEvent> srvaEvents) {

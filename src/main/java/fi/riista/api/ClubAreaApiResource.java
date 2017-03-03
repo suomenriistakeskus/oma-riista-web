@@ -1,13 +1,13 @@
 package fi.riista.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.riista.feature.gis.geojson.FeatureCollectionWithProperties;
 import fi.riista.feature.gis.garmin.CGPSMapperAdapter;
+import fi.riista.feature.gis.geojson.FeatureCollectionWithProperties;
 import fi.riista.feature.huntingclub.area.HuntingClubAreaCrudFeature;
 import fi.riista.feature.huntingclub.area.HuntingClubAreaDTO;
 import fi.riista.feature.huntingclub.area.excel.HuntingClubAreaExcelFeature;
-import fi.riista.feature.huntingclub.area.print.HuntingClubAreaPrintFeature;
-import fi.riista.feature.huntingclub.area.print.HuntingClubAreaPrintRequestDTO;
+import fi.riista.feature.huntingclub.area.print.AreaPrintFeature;
+import fi.riista.feature.huntingclub.area.print.AreaPrintRequestDTO;
 import fi.riista.feature.huntingclub.area.transfer.HuntingClubAreaExportFeature;
 import fi.riista.feature.huntingclub.area.transfer.HuntingClubAreaImportFeature;
 import fi.riista.feature.huntingclub.area.zone.HuntingClubAreaZoneFeature;
@@ -65,7 +65,7 @@ public class ClubAreaApiResource {
     private HuntingClubAreaExcelFeature huntingClubAreaExcelFeature;
 
     @Resource
-    private HuntingClubAreaPrintFeature huntingClubAreaPrintFeature;
+    private AreaPrintFeature huntingClubAreaPrintFeature;
 
     @Resource
     private CGPSMapperAdapter cgpsMapperAdapter;
@@ -171,9 +171,8 @@ public class ClubAreaApiResource {
                 .body(zipFile);
     }
 
-    @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/{id:\\d+}/garmin", method = RequestMethod.POST)
-    public ResponseEntity<?> exportGarmin(@PathVariable long id) throws Exception {
+    public ResponseEntity<?> exportGarmin(@PathVariable long id) {
         final HuntingClubAreaDTO areaDTO = huntingClubAreaCrudFeature.read(id);
         final FeatureCollection featureCollection = huntingClubAreaExportFeature.exportCombinedGeoJsonForGarmin(id);
         final String filename = "omariista-" + areaDTO.getExternalId() + ".img";
@@ -203,12 +202,12 @@ public class ClubAreaApiResource {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<?> print(@PathVariable final long id,
-                                   @ModelAttribute @Valid final HuntingClubAreaPrintRequestDTO dto) {
+                                   @ModelAttribute @Valid final AreaPrintRequestDTO dto) {
         try {
             final Locale locale = LocaleContextHolder.getLocale();
-            final FeatureCollection featureCollection = huntingClubAreaPrintFeature.exportFeatures(id, locale);
+            final FeatureCollection featureCollection = huntingClubAreaPrintFeature.exportClubAreaFeatures(id, locale);
 
-            final String filename = huntingClubAreaPrintFeature.getExportFileName(id, locale);
+            final String filename = huntingClubAreaPrintFeature.getClubAreaExportFileName(id, locale);
             final byte[] imageData = huntingClubAreaPrintFeature.printGeoJson(dto, featureCollection);
             final MediaType mediaType = MediaTypeExtras.APPLICATION_PDF;
 
@@ -219,7 +218,7 @@ public class ClubAreaApiResource {
                     .body(imageData);
 
         } catch (final Exception ex) {
-            LOG.error("Map export for printing has failed", ex);
+            LOG.error("Club area map export for printing has failed", ex);
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Kartan tulostus epäonnistui. Yritä myöhemmin uudelleen");

@@ -2,23 +2,21 @@ package fi.riista.feature.huntingclub.permit;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.gamediary.GameDiaryService;
-import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.harvestpermit.HarvestPermitSpecs;
-import fi.riista.feature.harvestpermit.HarvestPermitAuthorization;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount_;
-import fi.riista.feature.harvestpermit.HarvestPermit_;
-import fi.riista.feature.harvestpermit.season.MooselikePrice;
-import fi.riista.feature.harvestpermit.allocation.HarvestPermitAllocationRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount_;
+import fi.riista.feature.harvestpermit.HarvestPermitSpecs;
+import fi.riista.feature.harvestpermit.HarvestPermit_;
+import fi.riista.feature.harvestpermit.allocation.HarvestPermitAllocationRepository;
+import fi.riista.feature.harvestpermit.season.MooselikePrice;
 import fi.riista.feature.harvestpermit.season.MooselikePriceRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryRepository;
@@ -27,7 +25,6 @@ import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportDTO;
 import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.permit.summary.ClubHuntingSummaryBasicInfoDTO;
 import fi.riista.feature.huntingclub.permit.summary.HuntingEndStatus;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
@@ -58,9 +55,9 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.HarvestPermitPermission.CREATE_REMOVE_MOOSE_HARVEST_REPORT;
-import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.HarvestPermitPermission.LIST_LEADERS;
-import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.HarvestPermitPermission.UPDATE_ALLOCATIONS;
+import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.CREATE_REMOVE_MOOSE_HARVEST_REPORT;
+import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.LIST_LEADERS;
+import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.UPDATE_ALLOCATIONS;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.fetch;
 import static java.util.function.Function.identity;
@@ -107,9 +104,6 @@ public class HuntingClubPermitFeature {
 
     @Resource
     private HuntingClubPermitService huntingPermitService;
-
-    @Resource
-    private HarvestPermitAuthorization harvestPermitAuthorization;
 
     private NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -182,10 +176,7 @@ public class HuntingClubPermitFeature {
     public MooselikePermitListingDTO getPermitListingDTOWithoutAuthorization
             (final HarvestPermit permit, final int speciesCode, final Long viewedClubId) {
 
-        final SystemUser activeUser = activeUserService.getActiveUser();
-        final Person person = activeUser.getPerson();
-
-        final boolean canEditAllocations = harvestPermitAuthorization.hasPermission(permit, person, UPDATE_ALLOCATIONS);
+        final boolean canEditAllocations = activeUserService.checkHasPermission(permit, UPDATE_ALLOCATIONS);
 
         final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(speciesCode);
         final HarvestPermitSpeciesAmount speciesAmount = getOneSpeciesAmount(
@@ -206,7 +197,7 @@ public class HuntingClubPermitFeature {
         final boolean amendmentPermitsMatchHarvests = checkAmendmentPermitsMatchHarvests(amendmentPermits, harvestCounts);
 
         final boolean hasPermissionToCreateOrRemove =
-                harvestPermitAuthorization.hasPermission(permit, person, CREATE_REMOVE_MOOSE_HARVEST_REPORT);
+                activeUserService.checkHasPermission(permit, CREATE_REMOVE_MOOSE_HARVEST_REPORT);
 
         final MooseHarvestReport mooseHarvestReport = mooseHarvestReportRepository.findBySpeciesAmount(speciesAmount);
 
@@ -215,8 +206,7 @@ public class HuntingClubPermitFeature {
 
         final boolean allPartnersFinishedHunting = didAllPartnersFinishedHunting(summariesByClubId);
 
-
-        final boolean listLeadersButtonVisible = harvestPermitAuthorization.hasPermission(permit, person, LIST_LEADERS);
+        final boolean listLeadersButtonVisible = activeUserService.checkHasPermission(permit, LIST_LEADERS);
 
         final boolean huntingFinished = Optional.ofNullable(viewedClubId)
                 .map(summariesByClubId::get)
@@ -228,12 +218,15 @@ public class HuntingClubPermitFeature {
                 .map(ClubHuntingSummaryBasicInfoDTO::isHuntingFinishedByModeration)
                 .orElse(false);
 
+        final boolean viewedClubIsPartner = viewedClubInPartners(viewedClubId, permit);
+
         return new MooselikePermitListingDTOBuilder()
                 .setPermit(permit)
                 .setSpa(speciesAmount)
                 .setSpecies(species)
                 .setAmendmentPermits(amendmentPermits)
                 .setViewedClubId(viewedClubId)
+                .setViewedClubIsPartner(viewedClubIsPartner)
                 .setCanEditAllocations(canEditAllocations)
                 .setHasPermissionToCreateOrRemove(hasPermissionToCreateOrRemove && isNotLocked(huntingYear))
                 .setAmendmentPermitsMatchHarvests(amendmentPermitsMatchHarvests)
@@ -260,9 +253,7 @@ public class HuntingClubPermitFeature {
     public HuntingClubPermitDTO getPermitWithoutAuthorization(final HarvestPermit permit,
                                                               final int speciesCode,
                                                               final Long viewedClubId) {
-        final SystemUser activeUser = activeUserService.getActiveUser();
-        final Person person = activeUser.getPerson();
-        final boolean canEditAllocations = harvestPermitAuthorization.hasPermission(permit, person, UPDATE_ALLOCATIONS);
+        final boolean canEditAllocations = activeUserService.checkHasPermission(permit, UPDATE_ALLOCATIONS);
 
         final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(speciesCode);
         final HarvestPermitSpeciesAmount speciesAmount = getOneSpeciesAmount(
@@ -368,8 +359,8 @@ public class HuntingClubPermitFeature {
 
         final Specification<HarvestPermitSpeciesAmount> speciesAmountSpec = where(
                 equal(HarvestPermitSpeciesAmount_.harvestPermit, HarvestPermit_.originalPermit, permit))
-                        .and(equal(HarvestPermitSpeciesAmount_.gameSpecies, species))
-                        .and(fetch(HarvestPermitSpeciesAmount_.harvestPermit));
+                .and(equal(HarvestPermitSpeciesAmount_.gameSpecies, species))
+                .and(fetch(HarvestPermitSpeciesAmount_.harvestPermit));
 
         final TreeMap<String, Float> result = new TreeMap<>();
 

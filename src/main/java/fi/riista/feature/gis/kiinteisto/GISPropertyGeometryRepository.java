@@ -109,7 +109,6 @@ public class GISPropertyGeometryRepository {
             feature.setId(String.valueOf(resultSet.getLong("id")));
             feature.setGeometry(GISUtils.parseGeoJSONGeometry(objectMapper, resultSet.getString("geom")));
             feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER, StringUtils.leftPad(Long.toString(resultSet.getLong("tunnus")), 14, '0'));
-            feature.setProperty(GeoJSONConstants.PROPERTY_NAME, resultSet.getString("nimi"));
             feature.setProperty(GeoJSONConstants.PROPERTY_SIZE, resultSet.getDouble("area_size"));
 
             return feature;

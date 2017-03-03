@@ -3,13 +3,14 @@ package fi.riista.integration.srva.callring;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.util.F;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
@@ -56,8 +56,7 @@ public class SrvaCallRingConfigurationService {
             final List<String> notificationEmailList = getNotificationEmailList(rhy, contactPersons);
 
             // Repeat all phone numbers twice as fallback
-            final List<Phonenumber.PhoneNumber> repeatedPhoneNumberList =
-                    Stream.concat(phoneNumberList.stream(), phoneNumberList.stream()).collect(toList());
+            final List<Phonenumber.PhoneNumber> repeatedPhoneNumberList = F.concat(phoneNumberList, phoneNumberList);
 
             return new SrvaCallRingConfiguration(rhy.getOfficialCode(), repeatedPhoneNumberList, notificationEmailList);
 

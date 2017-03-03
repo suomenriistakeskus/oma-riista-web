@@ -10,14 +10,12 @@ import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage8;
-
+import fi.riista.util.ValidationUtils;
 import javaslang.control.Validation;
-
 import org.joda.time.LocalDate;
 import org.springframework.beans.BeanUtils;
 
 import javax.annotation.Nonnull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -85,9 +83,7 @@ public class MooseDataCardSummaryValidator {
         });
 
         return errorMsgs.isEmpty()
-                ? Optional.ofNullable(mutatedCardRef.get())
-                        .<Validation<List<String>, MooseDataCard>> map(Validation::valid)
-                        .orElse(valid(mooseDataCard))
+                ? ValidationUtils.toValidation(Optional.ofNullable(mutatedCardRef.get()), () -> valid(mooseDataCard))
                 : invalid(errorMsgs);
     }
 

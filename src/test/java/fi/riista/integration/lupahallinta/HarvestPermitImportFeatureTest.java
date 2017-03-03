@@ -6,8 +6,8 @@ import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.lupahallinta.LHOrganisation;
@@ -290,9 +290,7 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
         final HuntingClub club = model().newHuntingClub(rhy);
         final HuntingClubGroup group = model().newHuntingClubGroup(club);
 
-        final HarvestPermit originalPermit = model().newHarvestPermit(rhy);
-        originalPermit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
-
+        final HarvestPermit originalPermit = model().newMooselikePermit(rhy);
         originalPermit.setPermitHolder(club);
         originalPermit.getPermitPartners().add(club);
         group.updateHarvestPermit(originalPermit);
@@ -337,9 +335,7 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
         final HuntingClub partner = model().newHuntingClub(rhy);
         final HuntingClubGroup partnerGroup = model().newHuntingClubGroup(partner);
 
-        final HarvestPermit originalPermit = model().newHarvestPermit(rhy);
-        originalPermit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
-
+        final HarvestPermit originalPermit = model().newMooselikePermit(rhy);
         originalPermit.setPermitHolder(club);
         originalPermit.getPermitPartners().add(club);
         originalPermit.getPermitPartners().add(partner);

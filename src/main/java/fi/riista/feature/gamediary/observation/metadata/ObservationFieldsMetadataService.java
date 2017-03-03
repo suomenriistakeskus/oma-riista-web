@@ -2,18 +2,16 @@ package fi.riista.feature.gamediary.observation.metadata;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
-
 import fi.riista.config.Constants;
 import fi.riista.feature.common.entity.Required;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gamediary.GameDiaryService;
-import fi.riista.feature.gamediary.observation.specimen.GameMarking;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
 import fi.riista.feature.gamediary.GameSpeciesRepository;
+import fi.riista.feature.gamediary.observation.specimen.GameMarking;
+import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
 import fi.riista.util.jpa.JpaGroupingUtils;
 import fi.riista.util.jpa.JpaSpecs;
-
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +47,8 @@ public class ObservationFieldsMetadataService {
             dto.removeDenyingFieldRequirements();
         }
 
-        dto.setLastModified(getMaxLastModifiedTimestamp(fields, listOfContextSensitiveFields));
+        dto.setLastModified(getMaxLastModifiedTimestamp(fields, listOfContextSensitiveFields)
+                .orElseThrow(() -> new IllegalStateException("maxLastModifiedTimestamp not found")));
 
         return dto;
     }
@@ -117,7 +115,7 @@ public class ObservationFieldsMetadataService {
         Preconditions.checkArgument(metadataVersion >= 1, "Metadata version must be positive integer");
     }
 
-    private static DateTime getMaxLastModifiedTimestamp(
+    private static Optional<DateTime> getMaxLastModifiedTimestamp(
             final ObservationBaseFields baseFields, final List<ObservationContextSensitiveFields> ctxSensitiveFields) {
 
         return Stream
@@ -125,8 +123,7 @@ public class ObservationFieldsMetadataService {
                         Stream.of(baseFields.getModificationTime()),
                         ctxSensitiveFields.stream().map(ObservationContextSensitiveFields::getModificationTime))
                 .max(Ordering.natural().nullsFirst())
-                .get()
-                .withZone(Constants.DEFAULT_TIMEZONE);
+                .map(d -> d.withZone(Constants.DEFAULT_TIMEZONE));
     }
 
     @Resource
@@ -188,7 +185,8 @@ public class ObservationFieldsMetadataService {
                     fieldsDTO.removeDenyingFieldRequirements();
 
                     // Update last-modified timestamp as side-effect.
-                    final DateTime maxTS = getMaxLastModifiedTimestamp(baseFields, ctxSensitiveFields);
+                    final DateTime maxTS = getMaxLastModifiedTimestamp(baseFields, ctxSensitiveFields)
+                            .orElseThrow(() -> new IllegalStateException("maxLastModifiedTimestamp not found"));
                     final DateTime currentMaxTS = lastModifiedTS.get();
                     if (currentMaxTS == null || maxTS.isAfter(currentMaxTS)) {
                         lastModifiedTS.set(maxTS);

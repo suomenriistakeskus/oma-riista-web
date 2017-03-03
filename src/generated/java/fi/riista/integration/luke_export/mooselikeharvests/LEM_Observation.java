@@ -294,4 +294,12 @@ public class LEM_Observation {
         return this.specimens;
     }
 
+    public void setMooseLikeFemaleAndCalfs(List<LEM_FemaleAndCalfs> value) {
+        this.mooseLikeFemaleAndCalfs = value;
+    }
+
+    public void setSpecimens(List<LEM_ObservationSpecimen> value) {
+        this.specimens = value;
+    }
+
 }

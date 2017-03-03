@@ -63,7 +63,7 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<Long, Set<Occupation>> findActiveByOccupationTypeGroupByOrganisationId(final OccupationType occupationType) {
         Objects.requireNonNull(occupationType, "occupationType is null");
 

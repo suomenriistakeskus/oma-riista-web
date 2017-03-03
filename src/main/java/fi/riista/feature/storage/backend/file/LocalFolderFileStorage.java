@@ -15,6 +15,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -107,11 +108,13 @@ public class LocalFolderFileStorage implements FileStorageSpi {
     }
 
     private static void checkDirectoryExistsAndWritable(final Path directory) throws IOException {
-        if (Files.notExists(directory)) {
+        final File file = directory.toFile();
+
+        if (!file.exists()) {
             Files.createDirectory(directory);
         } else {
-            Preconditions.checkState(Files.isDirectory(directory), "Storage path is not directory");
-            Preconditions.checkState(Files.isWritable(directory), "Storage path is not writable");
+            Preconditions.checkState(file.isDirectory(), "Storage path is not directory");
+            Preconditions.checkState(file.canWrite(), "Storage path is not writable");
         }
     }
 

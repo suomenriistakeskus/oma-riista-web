@@ -3,8 +3,8 @@ package fi.riista.feature.huntingclub.permit;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReport;
 import fi.riista.feature.huntingclub.permit.allocation.HuntingClubPermitAllocationDTO;
+import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReport;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,6 +16,7 @@ public class MooselikePermitListingDTOBuilder {
     private GameSpecies species;
     private Map<String, Float> amendmentPermits;
     private Long viewedClubId;
+    private boolean viewedClubIsPartner;
     private boolean canEditAllocations;
     private boolean hasPermissionToCreateOrRemove;
     private boolean allPartnersFinishedHunting;
@@ -50,6 +51,11 @@ public class MooselikePermitListingDTOBuilder {
 
     public MooselikePermitListingDTOBuilder setViewedClubId(Long viewedClubId) {
         this.viewedClubId = viewedClubId;
+        return this;
+    }
+
+    public MooselikePermitListingDTOBuilder setViewedClubIsPartner(boolean viewedClubIsPartner) {
+        this.viewedClubIsPartner = viewedClubIsPartner;
         return this;
     }
 
@@ -109,7 +115,7 @@ public class MooselikePermitListingDTOBuilder {
     }
 
     public MooselikePermitListingDTO createMooselikePermitListingDTO() {
-        return new MooselikePermitListingDTO(permit, spa, species, amendmentPermits, viewedClubId,
+        return new MooselikePermitListingDTO(permit, spa, species, amendmentPermits, viewedClubId, viewedClubIsPartner,
                 canEditAllocations, hasPermissionToCreateOrRemove,
                 allPartnersFinishedHunting, amendmentPermitsMatchHarvests, mooseHarvestReport,
                 listLeadersButtonVisible, huntingFinished, huntingFinishedByModeration, harvests, allocations, totalPayment);

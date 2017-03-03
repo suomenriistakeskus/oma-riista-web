@@ -27,6 +27,7 @@
                                class="form-control"
                                ng-model="$ctrl.searchParams.dateRange.beginDate"
                                uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-append-to-body="true"
                                max-date="$ctrl.searchParams.dateRange.endDate"/>
                         <span class="input-group-btn">
                                 <button type="button" class="btn btn-default"
@@ -44,6 +45,7 @@
                                class="form-control"
                                ng-model="$ctrl.searchParams.dateRange.endDate"
                                uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-append-to-body="true"
                                min-date="$ctrl.dateRange.beginDate"
                                max-date="today()"/>
                         <span class="input-group-btn">

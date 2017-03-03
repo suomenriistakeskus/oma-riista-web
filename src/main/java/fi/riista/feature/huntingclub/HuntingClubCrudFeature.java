@@ -1,6 +1,6 @@
 package fi.riista.feature.huntingclub;
 
-import fi.riista.feature.SimpleAbstractCrudFeature;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gis.GISQueryService;
 import fi.riista.feature.gis.hta.GISHirvitalousalueDTO;
@@ -18,14 +18,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 
 @Component
-public class HuntingClubCrudFeature extends SimpleAbstractCrudFeature<Long, HuntingClub, HuntingClubDTO> {
+public class HuntingClubCrudFeature extends AbstractCrudFeature<Long, HuntingClub, HuntingClubDTO> {
 
     @Resource
     private HuntingClubRepository huntingClubRepository;
@@ -51,27 +51,26 @@ public class HuntingClubCrudFeature extends SimpleAbstractCrudFeature<Long, Hunt
 
         if (club.isNew()) {
             club.updateLocation(dto.getGeoLocation(), gisQueryService);
-
-            huntingClubRepository.saveAndFlush(club);
-
-            // needs id, create official code after flush
-            club.setOfficialCode(Long.toString(HuntingClub.CREATED_CLUB_MIN_OFFICIAL_CODE + club.getId()));
-
-            final Person person = activeUserService.requireActivePerson();
-            final Occupation contactPerson = new Occupation(person, club, OccupationType.SEURAN_YHDYSHENKILO);
-            contactPerson.setBeginDate(OrganisationType.CLUB.getBeginDateForNewOccupation());
-            contactPerson.setContactInfoShare(ContactInfoShare.ALL_MEMBERS);
-            occupationRepository.save(contactPerson);
         }
     }
 
     @Override
-    protected Function<HuntingClub, HuntingClubDTO> entityToDTOFunction() {
-        return club -> {
-            final boolean editable = activeUserService.checkHasPermission(club, EntityPermission.UPDATE);
-            final GISHirvitalousalueDTO mooseAreaDto = GISHirvitalousalueDTO.create(club.getMooseArea());
-            return HuntingClubDTO.create(club, editable, getYhdyshenkilot(club), mooseAreaDto);
-        };
+    protected void afterCreate(final HuntingClub club) {
+        // needs id, create official code after flush
+        club.setOfficialCode(Long.toString(HuntingClub.CREATED_CLUB_MIN_OFFICIAL_CODE + club.getId()));
+
+        final Person person = activeUserService.requireActivePerson();
+        final Occupation contactPerson = new Occupation(person, club, OccupationType.SEURAN_YHDYSHENKILO);
+        contactPerson.setBeginDate(OrganisationType.CLUB.getBeginDateForNewOccupation());
+        contactPerson.setContactInfoShare(ContactInfoShare.ALL_MEMBERS);
+        occupationRepository.save(contactPerson);
+    }
+
+    @Override
+    protected HuntingClubDTO toDTO(@Nonnull final HuntingClub club) {
+        final boolean editable = activeUserService.checkHasPermission(club, EntityPermission.UPDATE);
+        final GISHirvitalousalueDTO mooseAreaDto = GISHirvitalousalueDTO.create(club.getMooseArea());
+        return HuntingClubDTO.create(club, editable, getYhdyshenkilot(club), mooseAreaDto);
     }
 
     private List<OccupationDTO> getYhdyshenkilot(final HuntingClub club) {

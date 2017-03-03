@@ -9,12 +9,12 @@ import com.kscs.util.jaxb.Copyable;
 import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
-import fi.riista.feature.gamediary.harvest.specimen.GameFitnessClass;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.specimen.GameFitnessClass;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest;
+import fi.riista.feature.organization.person.Person;
 
 import javaslang.Tuple2;
 
@@ -31,8 +31,9 @@ public abstract class MooseDataCardHarvestConverterTest<T extends MooseDataCardH
 
     protected abstract T newHarvestSource();
 
-    protected abstract MooseDataCardHarvestConverter<T> newConverter(
-            @Nonnull GameSpecies mooseSpecies, @Nonnull Person person, @Nonnull GeoLocation defaultCoordinates);
+    protected abstract MooseDataCardHarvestConverter<T> newConverter(@Nonnull GameSpecies mooseSpecies,
+                                                                     @Nonnull Person person,
+                                                                     @Nonnull GeoLocation defaultCoordinates);
 
     @Test
     public void testCommonHarvestFields() {
@@ -49,9 +50,8 @@ public abstract class MooseDataCardHarvestConverterTest<T extends MooseDataCardH
 
             assertEquals(source.getWeightEstimated(), specimen.getWeightEstimated());
             assertEquals(source.getWeightMeasured(), specimen.getWeightMeasured());
-            assertEquals(HasMooseDataCardEncoding
-                    .enumOf(GameFitnessClass.class, source.getFitnessClass())
-                    .getOrElseThrow(invalid -> new IllegalStateException("Could not convert fitness class")),
+            assertEquals(
+                    HasMooseDataCardEncoding.getEnum(GameFitnessClass.class, source.getFitnessClass()),
                     specimen.getFitnessClass());
             assertEquals(source.getAdditionalInfo(), specimen.getAdditionalInfo());
 
@@ -102,10 +102,9 @@ public abstract class MooseDataCardHarvestConverterTest<T extends MooseDataCardH
         });
     }
 
-    protected void testConversion(
-            final T source,
-            final Consumer<Harvest> harvestAssertions,
-            final Consumer<HarvestSpecimen> specimenAssertions) {
+    protected void testConversion(final T source,
+                                  final Consumer<Harvest> harvestAssertions,
+                                  final Consumer<HarvestSpecimen> specimenAssertions) {
 
         final GameSpecies moose = new GameSpecies();
         final Person contactPerson = new Person();

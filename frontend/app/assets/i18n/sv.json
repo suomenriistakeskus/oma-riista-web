@@ -1,13 +1,13 @@
 {
     "DIALOGS_ERROR": "Error",
-    "DIALOGS_ERROR_MSG": "An unknown error has occurred.",
-    "DIALOGS_CLOSE": "Close",
-    "DIALOGS_PLEASE_WAIT": "Please Wait",
-    "DIALOGS_PLEASE_WAIT_ELIPS": "Please Wait...",
-    "DIALOGS_PLEASE_WAIT_MSG": "Waiting on operation to complete.",
-    "DIALOGS_PERCENT_COMPLETE": "% Complete",
-    "DIALOGS_NOTIFICATION": "Notification",
-    "DIALOGS_NOTIFICATION_MSG": "Unknown application notification.",
+    "DIALOGS_ERROR_MSG": "Ett okänt fel har uppstått.",
+    "DIALOGS_CLOSE": "Stäng",
+    "DIALOGS_PLEASE_WAIT": "Var god vänta",
+    "DIALOGS_PLEASE_WAIT_ELIPS": "Var god vänta...",
+    "DIALOGS_PLEASE_WAIT_MSG": "Väntar på att funktionen ska avslutas.",
+    "DIALOGS_PERCENT_COMPLETE": "% avslutad",
+    "DIALOGS_NOTIFICATION": "Notis",
+    "DIALOGS_NOTIFICATION_MSG": "Okänd applikations notis.",
     "DIALOGS_CONFIRMATION": "Är du säker",
     "DIALOGS_CONFIRMATION_MSG": "Är du säker att du vill genomföra åtgärden?",
     "DIALOGS_OK": "OK",
@@ -83,7 +83,7 @@
             "close": "Stäng",
             "exit": "Lämna",
             "open": "Öppna",
-            "add": "Lisää",
+            "add": "Lägg till",
             "continue": "Fortsätt",
             "search": "Sök",
             "selectAll": "Välj alla",
@@ -93,7 +93,14 @@
             "copy": "Kopiera"
         },
         "map": {
-            "toggleLayers": "Näytä / piilota kaikki"
+            "map": "Karta",
+            "toggleLayers": "Visa / dölj alla",
+            "layer": {
+                "empty": "Ingen bakgrundskarta",
+                "terrain": "Terrängkarta",
+                "background": "Grundkarta",
+                "aerial": "Ortofoton"
+            }
         },
         "messages": {
             "error": "Uppdateringen av uppgifterna misslyckades. Försök på nytt senare",
@@ -135,7 +142,6 @@
             "ssn": "Personbeteckning",
             "homeMunicipality": "Hemkommun",
             "nativeLanguage": "Modersmål",
-            "finnishCitizen": "Finsk medborgare",
             "email": "E-postadress",
             "address": "Address",
             "phoneNumber": "Telefonnummer",
@@ -170,22 +176,19 @@
             "coordinates": "Plats",
             "doOpen": "Öppna"
         },
-        "mapLayer": {
-            "empty": "Ingen bakgrundskarta",
-            "terrain": "Terrängkarta",
-            "background": "Grundkarta",
-            "aerial": "Ortofoton"
-        },
         "toFrontpage": "Framsida",
         "yes": "Ja",
         "no": "Nej",
         "or": "eller",
         "beginDate": "Startdatum",
         "endDate": "Slutdatum",
+        "huntingYear": "Jaktår",
         "state": "Status",
         "marking": "Märkning",
         "total": "Totalt",
-        "showAll": "Näytä kaikki"
+        "showAll": "Visa alla",
+        "nameFI": "Namn på finska",
+        "nameSV": "Namn på svenska"
     },
     "validation": {
         "required": "Field is required",
@@ -202,7 +205,7 @@
         "validateDateBounds": "Datum är inte tillåtet",
         "email": "Valid email address is required",
         "phoneNumber": "Invalid phone number",
-        "hunterNumber": "Epäkelpo metsästäjänumero",
+        "hunterNumber": "Ogiltigt jägarnummer",
         "finnishPersonalIdentity": "Invalid social security number",
         "duplicate": "Duplicate"
     },
@@ -311,7 +314,7 @@
     "registration": {
         "email": {
             "titleHtml": "Registrering till <a>oma.riista.fi</a> -tjänst",
-            "textHtml": "<p>Vid registrering i tjänsten <a>oma.riista.fi</a> behöver du en personlig, fungerande e-postadress.<p>\n<p>Registreringsprocessen består av fem skeden:</p>\n<ol>\n<li>Till den e-postadress du har meddelat skickar vi ett meddelande, genom vilket vi försäkrar oss om att adressen fungerar.</li>\n<li>Du fortsätter registreringen genom att klicka på länken i e-postmeddelandet.</li>\n<li>Du godkänner tjänstens användarvillkor.</li>\n<li>Du identifierar dig med dina bankkoder i tjänsten Vetuma.</li>\n<li>Du anger ett lösenord och din mobilnummer.</li>\n</ol>\n<p>Efter detta kan du logga in i tjänsten.</p>\n<p><strong>OBS:</strong> Om du inte får ett e-postmeddelande inom en timme, kontrollera skräppostboxen i ditt e-postsystem. I undantagsfall kan vårt meddelande hamna där.</p>\n<p><strong>OBS:</strong> Som personlig e-postadress godkänner vi inte @riista.fi eller @rhy.riista.fi.</p>",
+            "textHtml": "<p>Vid registrering i tjänsten <a>oma.riista.fi</a> behöver du en personlig, fungerande e-postadress.<p>\n<p>Registreringsprocessen består av fem skeden:</p>\n<ol>\n<li>Till den e-postadress du har meddelat skickar vi ett meddelande, genom vilket vi försäkrar oss om att adressen fungerar.</li>\n<li>Du fortsätter registreringen genom att klicka på länken i e-postmeddelandet.</li>\n<li>Du godkänner tjänstens användarvillkor.</li>\n<li>Du identifierar dig med dina bankkoder i tjänsten Suomi.fi.</li>\n<li>Du anger ett lösenord och din mobilnummer.</li>\n</ol>\n<p>Efter detta kan du logga in i tjänsten.</p>\n<p><strong>OBS:</strong> Om du inte får ett e-postmeddelande inom en timme, kontrollera skräppostboxen i ditt e-postsystem. I undantagsfall kan vårt meddelande hamna där.</p>\n<p><strong>OBS:</strong> Som personlig e-postadress godkänner vi inte @riista.fi eller @rhy.riista.fi.</p>",
             "success": "E-post har skickats"
         },
         "emailChanged": {
@@ -335,7 +338,7 @@
         },
         "confirmation": {
             "titleHtml": "Godkännande av användarvillkoren för <a>Oma.riista.fi</a>",
-            "textHtml": "<p> Bekräftelsen av din e-postadress lyckades. Vänligen bekanta dig med användarvillkoren och registerredogörelsen för <a>oma.riista.fi</a> nedan.</p> <p>Godkänn användarvillkoren med knappen i nedre kanten av sidan. Därefter identifierar vi dig i tjänsten Vetuma med hjälp av dina bankkoder.</p>",
+            "textHtml": "<p> Bekräftelsen av din e-postadress lyckades. Vänligen bekanta dig med användarvillkoren och registerredogörelsen för <a>oma.riista.fi</a> nedan.</p> <p>Godkänn användarvillkoren med knappen i nedre kanten av sidan. Därefter identifierar vi dig i tjänsten Suomi.fi med hjälp av dina bankkoder.</p>",
             "termsAndConditions": "Användarvillkor och regler för Finlands viltcentrals elektroniska nättjänst (oma.riista.fi)",
             "confirmText": "Jag godkänner villkoren för tjänsten och godkänner att mina personuppgifter används i tjänsten",
             "status": {
@@ -345,7 +348,7 @@
                 "error": "Ett fel inträffade"
             },
             "button": {
-                "continue": "Förflytta dig till Vetuma här"
+                "continue": "Förflytta dig till Suomi.fi här"
             }
         },
         "completion": {
@@ -369,6 +372,7 @@
             "username": "Användarnamn",
             "role": "Roll",
             "ipWhiteList": "Lagliga IP-addresser",
+            "twoFactorMode": "Stark inloggning",
             "active": "Aktiv",
             "email": "E-postadress",
             "phonenumber": "Telefonnummer",
@@ -389,7 +393,7 @@
             "admins": "Huvudanvändare",
             "moderators": "Moderatorer",
             "rest_users": "Gränssnittsanvändare",
-            "privileges": "Rajapintakäyttäjän oikeudet"
+            "privileges": "Rättigheter för användaren av gränsytor"
         }
     },
     "account": {
@@ -483,7 +487,7 @@
                 "deactivate": "Deaktivera användarkontot",
                 "clubConfig": "Inställningar",
                 "registerClub": "Ta föreningen i besittning",
-                "createClub": "Luo uusi seura"
+                "createClub": "Skapa en ny förening"
             },
             "training": {
                 "name": "Träning",
@@ -515,22 +519,20 @@
                 "informationBoxPath": "i18n/club_register_information_sv.html"
             },
             "createClub": {
-                "title": "Luo uusi seura",
-                "note": "Olet luomassa uutta seuraa. Olethan varmistanut, että seuraa ei ole jo olemassa, yrittämällä ottaa se haltuun.",
-                "confirm": "Luo uusi seura",
-                "nameFI": "Nimi suomeksi",
-                "nameSV": "Nimi ruotsiksi",
-                "location": "Paikka",
-                "rhy": "Riistanhoitoyhdistys",
-                "geoLocation": "Sijainti"
+                "title": "Skapa en ny förening",
+                "note": "Du är i färd med att skapa en ny förening. Du har väl försäkrat dig om, att föreningen inte redan finns, genom att försöka ta den i besitting.",
+                "confirm": "Skap en ny förening",
+                "location": "Plats",
+                "rhy": "Jaktvårdsförening",
+                "geoLocation": "Positionering"
             },
             "srva": {
                 "title": "SRVA",
-                "enabled": "SRVA toiminnot ovat päällä",
-                "disabled": "SRVA toiminnot eivät ole päällä",
-                "activate": "Käännä SRVA päälle",
+                "enabled": "SRVA funktionerna är påslagna",
+                "disabled": "SRVA funktionerna är inte påslagna",
+                "activate": "Slå på SRVA",
                 "activateConfirmation": "<p>Du är i färd med att ta Oma riista –tjänstens SRVA-rapporteringsegenskap i bruk.</p><p>Storviltstjänstehjälp (SRVA) är en organisation som upprätthålls av jaktvårdsföreningarna, som förmedlar tjänstehjälp till polisen vid storviltskonflikter. Verksamheten grundar sig på avtal mellan polisen och jaktvårdsföreningarna. Alarmeringssystemet startar med polisens tjänstebegäran om handräckning. </p><p>Ditt Oma riista –signum kan stängas på grund av eventuellt missbruk.</p>",
-                "deactivate": "Käännä SRVA pois päältä"
+                "deactivate": "Slå av SRVA"
             }
         },
         "roleselection": {
@@ -710,7 +712,6 @@
             "jht": "OFU-utnämningar",
             "srva": "SRVA",
             "srvaList": "Listan",
-            "srvaMap": "Karta",
             "clubs": "Föreningar",
             "mooselike": "Hjortdjur",
             "mooselikeHarvestMap": "Byten",
@@ -758,9 +759,9 @@
             "partner": "Samsöksdeltagarens uppgifter",
             "partnerName": "Namn",
             "species": "Art",
-            "filteringScheme": "Näytä saaliit",
-            "filterByAreaIntersection": "RHY:n alueelta",
-            "filterByPermit": "RHY:n luville"
+            "filteringScheme": "Visa byten",
+            "filterByAreaIntersection": "från JVF:s område",
+            "filterByPermit": "till JVF:s licenser"
         },
         "moosePermitStats": {
             "buttons": {
@@ -768,45 +769,45 @@
                 "HTA": "Älgförvaltningsområde",
                 "RHY": "Jaktvårdsförening"
             },
-            "totalRowTitle": "Yhteensä",
-            "permit": "Lupanumero",
-            "permitTotalTop": "Myönnetyt",
-            "permitTotal": "Luvat<br>yhteensä",
-            "permitTotalTooltip": "Myönnetyt luvat yhteensä",
-            "permitUsedTop": "Saalis",
-            "a": "AIK<br>YHT",
-            "aTooltip": "Kaadetut aikuiset yhteensä",
-            "au": "AU",
-            "auTooltip": "Kaadetut urokset",
-            "an": "AN",
-            "anTooltip": "Kaadetut naaraat",
-            "v": "V<br>YHT",
-            "vTooltip": "Kaadetut vasat yhteensä",
-            "vu": "VU",
-            "vuTooltip": "Kaadetut urosvasat",
-            "vn": "VN",
-            "vnTooltip": "Kaadetut naarasvasat",
-            "total": "Kaikki<br>yht",
-            "totalTooltip": "Kaikki kaadettu yhteensä",
-            "permitUsedPercentage": "Luvista <br>käytetty %",
-            "permitUsedPercentageTooltip": "Luvista käytetty %",
-            "vPercentage": "V%",
-            "vPercentageTooltip": "Vasaprosentti kaikista",
-            "auPercentage": "AU%",
-            "auPercentageTooltip": "Urososuus aikuisista",
+            "totalRowTitle": "Sammanlagt",
+            "permit": "Licensnummer",
+            "permitTotalTop": "Beviljade",
+            "permitTotal": "Licenser<br>totalt",
+            "permitTotalTooltip": "Beviljade licenser totalt",
+            "permitUsedTop": "Byte",
+            "a": "V<br>TOT",
+            "aTooltip": "Fällda vuxna totalt",
+            "au": "VT",
+            "auTooltip": "Fällda tjurar",
+            "an": "VK",
+            "anTooltip": "Fällda kor",
+            "v": "K<br>TOT",
+            "vTooltip": "Fällda kalvar totalt",
+            "vu": "TK",
+            "vuTooltip": "Fällda kalvtjurar",
+            "vn": "KK",
+            "vnTooltip": "Fällda kokalvar",
+            "total": "Alla<br>tot",
+            "totalTooltip": "Alla fällda totalt",
+            "permitUsedPercentage": "Av licenserna <br>använts %",
+            "permitUsedPercentageTooltip": "Av licenserna använts %",
+            "vPercentage": "K%",
+            "vPercentageTooltip": "Kalvprocenten av alla",
+            "auPercentage": "VT%",
+            "auPercentageTooltip": "Tjurprocenten av alla fullvuxna",
             "area": {
-                "top": "Pinta-ala",
-                "total": "Koko",
-                "totalTooltip": "Kokonaispinta-ala",
-                "effective": "Käyt",
-                "effectiveTooltip": "Metsästykseen käytetty pinta-ala"
+                "top": "Areal",
+                "total": "Storlek",
+                "totalTooltip": "Totala arealen",
+                "effective": "Anv",
+                "effectiveTooltip": "Till jakten använd areal"
             },
             "remainingPer1000": {
-                "top": "Jää / 1000 HA",
-                "total": "Koko",
-                "totalTooltip": "Jää / 1000 HA koko ala",
-                "effective": "Käyt",
-                "effectiveTooltip": "Jää / 1000 HA metsästykseen käytetty ala"
+                "top": "Kvar / 1000 HA",
+                "total": "Storlek",
+                "totalTooltip": "Kvar / 1000 HA hela arealen",
+                "effective": "Anv",
+                "effectiveTooltip": "Kvar / 1000 HA till jakt använd areal"
             },
             "remaining": {
                 "top": "Stam<br>kvar",
@@ -929,22 +930,22 @@
             }
         },
         "huntingSummary": {
-            "overridden": "Riistakeskus tallentanut tiedot",
-            "title": "Metsästyksen päättäminen",
+            "overridden": "Viltcentralen har sparat uppgifterna",
+            "title": "Avslutande av jakten",
             "selectedSpecies": "Väljd art",
-            "disclaimer": "Yliajamalla osakkaan metsästyksen päättyneeksi osakkaiden itse ilmoittamat tiedot jäävät järjestelmään mutta niitä ei huomioida virallisesti.",
-            "completeHuntingOfPermit": "Päätä kaikkien osakkaiden metsästys ja luvan metsästys",
-            "completeOnlyHuntingOfSelectedPartners": "Päätä vain valittujen osakkaiden metsästys, luvan metsätystä ei päätetä",
+            "disclaimer": "Genom att köra över av samdeltagaren själv meddelade uppgifter om att samdeltagarnas jakt är avslutad lämnar informationen kvar i systemet men dessa beaktas inte officiellt.",
+            "completeHuntingOfPermit": "Avsluta alla samdeltagares jakt och jakt med licensen",
+            "completeOnlyHuntingOfSelectedPartners": "Avsluta endast valda samdeltagares jakt, avsluta inte jakten med licensen",
             "huntingPartner": "Samsöksdeltagare",
-            "override": "Yliaja",
-            "moderatorOverridden": "Yliajettu",
+            "override": "Kör över",
+            "moderatorOverridden": "Överkörd",
             "area": {
-                "top": "Metsästysalue",
-                "topTooltip": "Metsästysalueen pinta-ala",
-                "total": "KOKO",
-                "totalTooltip": "Koko metsästysalueen pinta-ala",
-                "effective": "KÄYT",
-                "effectiveTooltip": "Käytetyn metsästysalueen pinta-ala"
+                "top": "Jaktområde",
+                "topTooltip": "Jaktområdets areal",
+                "total": "STORLEK",
+                "totalTooltip": "Hela jaktområdets areal",
+                "effective": "ANV",
+                "effectiveTooltip": "Arealen för jaktområde som använts"
             },
             "harvestedSpecimens": {
                 "top": "Erhållet byte<br>(individer)",
@@ -974,10 +975,10 @@
                 "effective": "Anv",
                 "effectiveTooltip": "Stam kvar på området som användes för jakt"
             },
-            "delete": "Poista muutokset",
-            "deleteConfirmationMessage": "Oletko varma, että haluat poistaa moderaattorin tekemät metsästyksen päättymisilmoitukset koko luvan osalta?",
-            "onSavedNotification": "Metsästyksen päättymisilmoitusten tallennus onnistui",
-            "onDeletedNotification": "Moderaattorin tekemien metsästyksen päättymisilmoitusten poisto onnistui"
+            "delete": "Ta bort ändringarna",
+            "deleteConfirmationMessage": "Är du säker på, att du vill ta bort av moderatorn gjorda anmälningar om att jakten avslutats för hela licensen?",
+            "onSavedNotification": "Sparandet av anmälningen om att jakten avslutats lyckades.",
+            "onDeletedNotification": "Avlägsnandet av moderatorn gjorda anmälningar om att jakten avslutats lyckades. "
         }
     },
     "observation": {
@@ -1084,7 +1085,7 @@
             "titleActualShooter": "Skyttens uppgifter",
             "titleShowSpecimens": "Individuppgifter",
             "withPermit": "Bytet har fångats med stöd av Viltcentralen beviljad dispens eller jaktlicens",
-            "withPermitNote": "HUOM: Hirvieläinten metsästyksen yhteydessä ei tarvitse syöttää lupanumeroa",
+            "withPermitNote": "OBS: I samband med jakt på hjortdjur behöver man inte mata in licensnumret",
             "withPermittedMethod": "Använts förbjudna fångstmetoder",
             "permittedMethod": "Fångstmetod",
             "permittedMethodDescription": "Beskrivning av fångstmetoden",
@@ -1133,7 +1134,7 @@
             "showHarvest": "Visa byten",
             "showObservation": "Visa observationer"
         },
-        "moderatorOverride": "Riistakeskus on muokannut tätä merkintää",
+        "moderatorOverride": "Viltcentralen har redigerat den här anteckningen",
         "messages": {
             "notFound": "Jägarnumret hittas inte",
             "insertHunterNumber": "Ge den 8-siffriga jägarnummern",
@@ -1197,7 +1198,7 @@
     "harvestreport": {
         "menu": {
             "todo": "Skall kompletteras",
-            "moosePermits": "Hirvieläinluvat",
+            "moosePermits": "Hjortdjurslicenser",
             "permits": "Övriga licenser/dispenser",
             "done": "Av dig gjorda bytesanmälningar"
         },
@@ -1412,12 +1413,11 @@
         "list": {
             "title": "Meddelanden",
             "buttonSend": "Sänd meddelande",
-            "showButton": "Öppna",
             "messageFrom": "Avsändare:",
             "received": "Mottagna",
             "sent": "Skickat",
-            "showSubscribers": "Visa mottagare",
-            "hideSubscribers": "Dölja mottagare",
+            "showMessage": "Visa meddelande",
+            "hideMessage": "Dölja meddelande",
             "subscriberOrganisations": "Mottagande organisationer",
             "subscriberOccupations": "Mottagande uppdrag"
         },
@@ -1474,7 +1474,8 @@
                 "rhy": "Jaktvårdsförening",
                 "customerId": "Kundnummer",
                 "geoLocation": "Läge",
-                "mooseArea": "Älgförvaltningsområde"
+                "mooseArea": "Älgförvaltningsområde",
+                "duplicateName": "Namnet är reserverat för en annan föreningen"
             },
             "contactPersons": {
                 "title": "Kontaktpersoner",
@@ -1504,23 +1505,23 @@
             "alreadyMemberOrInvited": "Personen är redan medlem eller inbjuden."
         },
         "todo": {
-            "title": "Muistutus",
-            "message": "Korjaa seuraavat puuttuvat tiedot:",
+            "title": "Påminnelse",
+            "message": "Korrigera följande uppgifter som saknas:",
             "area": {
-                "message": "<strong>Määrittele seuran metsästysalue</strong> kuluvalle metsästysvuodelle.",
-                "button": "Siirry määrittämään alueet"
+                "message": "<strong>Fastställ föreningens jaktområde</strong> för innevarande jaktår.",
+                "button": "Gå för att fastställa områdena."
             },
             "group": {
-                "message": "<strong>Määrittele seuralle ryhmä</strong> kuluvalle metsästysvuodelle.",
-                "button": "Siirry määrittämään ryhmät"
+                "message": "<strong>Fastställ grupp för föreningen</strong> för innevarande jaktår.",
+                "button": "Gå för att fastställa grupperna"
             },
             "groupPermit": {
-                "message": "<strong>Valitse kaikille ryhmille lupa.</strong>",
-                "button": "Siirry määrittämään ryhmät"
+                "message": "<strong>Välj licens för alla grupper.</strong>",
+                "button": "Gå för att fastställa grupperna"
             },
             "groupLeader": {
-                "message": "<strong>Valitse kaikille ryhmille metsästyksenjohtaja.</strong>",
-                "button": "Siirry määrittämään ryhmät"
+                "message": "<strong>Välj jaktledare för alla grupper.</strong>",
+                "button": "Gå för att fastställa grupperna"
             }
         },
         "group": {
@@ -1537,15 +1538,12 @@
                 "titleEdit": "Redigera grupp",
                 "titleCopy": "Kopiera grupp",
                 "species": "Art",
-                "huntingYear": "Jaktår",
                 "huntingArea": "Jaktområde",
                 "huntingAreaNotSet": "Ej fastställts",
                 "harvestPermit": "Licens",
                 "harvestPermitNotSet": "Inte valt",
                 "choosePermit": "Välj licens",
-                "clearPermit": "Poista lupa",
-                "nameFI": "Namn på finska",
-                "nameSV": "Namn på svenska",
+                "clearPermit": "Ta bort licens",
                 "name": "Namn",
                 "huntingFinished": "Jakten upphört"
             },
@@ -1568,32 +1566,82 @@
         },
         "area": {
             "tabHeaders": {
-                "areaList": "Omat alueet",
-                "proposalList": "Lupa-alueet"
+                "clubAreaList": "Föreningens område",
+                "proposalList": "Licensområde"
             },
             "button": {
                 "add": "Lägg till område",
                 "remove": "Ta bort område",
-                "editArea": "Redigera området",
+                "edit": "Redigera information",
+                "editGeometry": "Redigera området",
+                "copy": "Kopiera",
                 "functionMenu": "Funktioner",
                 "importArea": "Ladda från filen",
                 "exportArea": "För till filen",
                 "printArea": "Skriv ut",
                 "toExcel": "Excel",
-                "toChangesExcel": "Muuttuneet tilat (XLS)",
+                "toChangesExcel": "Lägenheter som ändrats (XLS)",
                 "toGeojson": "Skapa områdesgränser (GeoJSON/zip)",
-                "toGarmin": "Muodosta aluerajat (Garmin)",
+                "toGarmin": "Skapa områdesgränser (Garmin)",
                 "activate": "Aktivera",
                 "deactivate": "Deaktivera"
             },
             "list": {
-                "title": "Områden",
                 "hasPendingChanges": "Uppdateringar i områdesuppgifterna",
                 "areaIsDeactive": "Området har deaktiverats",
                 "showDeactive": "Visa också deaktiverade"
             },
             "proposal": {
-                "listTitle": "Yhteislupa-alueet"
+                "listTitle": "Licensområde",
+                "partnerList": "Samdeltagare",
+                "externalIdDescription": "På luvat.riista.fi vid elektronisk licensansökning används denna kod",
+                "notDisplayedWhenIncomplete": "Licensområdets kod, karta och areal syns när licensområdet är märkt färdig",
+                "state": {
+                    "INCOMPLETE": "Halvfärdig",
+                    "PENDING": "Inväntar beräkning",
+                    "PROCESSING": "Beräknas",
+                    "PROCESSING_FAILED": "Beräkningen misslyckades",
+                    "READY": "Färdig",
+                    "LOCKED": "Låst"
+                },
+                "button": {
+                    "add": "Lägg till licensområde",
+                    "addClubArea": "Lägg till område",
+                    "functionMenu": "Funktioner",
+                    "editName": "Redigera namn",
+                    "ready": "Färdigställ",
+                    "incomplete": "Ställ som halvfärdigt",
+                    "updateGeometry": "Uppdatera områdesgeometrin",
+                    "partnersExcel": "För samdeltagarlistan till Excel-fil"
+                },
+                "partnerTable": {
+                    "clubName": "Samdeltagarens namn",
+                    "clubOfficialCode": "Samdeltagarens kundnummer",
+                    "clubAreaName": "Namn på föreningens område",
+                    "areaExternalId": "Föreningens områdeskod",
+                    "totalAreaSize": "Tot.areal",
+                    "landAreaSize": "Markareal",
+                    "waterAreaSize": "Vattenareal",
+                    "clubAreaChanged": "Föreningens område har uppdaterats efter det, att dess kopia bifogades till licensansökan",
+                    "rhy": "Licensområdet är beläget på följande jaktvårdsföreningars område",
+                    "hta": "Licensområdet är beläget inom följande älgförvaltningsområden"
+                },
+                "addClubArea": {
+                    "title": "Lägg till föreningens område",
+                    "notFound": "Med den inmatade koden hittades inga områden",
+                    "areaExternalId": "Kod för föreningens område"
+                },
+                "pendingModal": {
+                    "title": "Var god och vänta!",
+                    "infoText": "Skapandet av området kan dröja 0 - 15 minuter.",
+                    "waiting": "Inväntar att beräkningen ska börja ...",
+                    "processing": "Beräkning pågår ..."
+                },
+                "form": {
+                    "titleAdd": "Lägg till licensområde",
+                    "titleEdit": "Redigera licensområdet",
+                    "externalId": "Licensområdets kod"
+                }
             },
             "import": {
                 "confirmTitle": "Bekräftelse",
@@ -1607,12 +1655,8 @@
                 "titleAdd": "Lägg till område",
                 "titleEdit": "Redigera området",
                 "titleCopy": "Kopiera området",
-                "huntingYear": "Jaktår",
-                "nameFI": "Namn på finska",
-                "nameSV": "Namn på svenska",
                 "externalId": "Områdets kod",
-                "copyGroups": "Kopiera också till området anslutna grupper",
-                "lastModified": "Viimeisin muokkaus"
+                "copyGroups": "Kopiera också till området anslutna grupper"
             },
             "print": {
                 "modalTitle": "Skriv ut ömrådet",
@@ -1652,15 +1696,12 @@
                 "selectedArea": {
                     "title": "Det valda områdets uppgifter",
                     "propertyIdentifier": "Fastighetsbeteckning",
-                    "areaName": "Skiftets namn",
-                    "landAreaSize": "Markyta",
-                    "waterAreaSize": "Vattenarealen",
-                    "areaSize": "Areal",
-                    "calculatingAreaSize": "Lasketaan...",
+                    "areaCode": "Kod",
+                    "areaName": "Namn",
+                    "calculatingAreaSize": "Beräknar...",
                     "changeTitle": "Ändringar",
                     "changeAmount": "Ändring",
-                    "fix": "Försök korrigera automatiskt",
-                    "lastModified": "Viimeisin muokkaus"
+                    "fix": "Försök korrigera automatiskt"
                 },
                 "tab": {
                     "selectedAreas": {
@@ -1687,7 +1728,11 @@
                         "emptySelection": "Inte valda forststyrelseområden"
                     }
                 }
-            }
+            },
+            "landAreaSize": "Markyta",
+            "waterAreaSize": "Vattenarealen",
+            "totalAreaSize": "Areal",
+            "lastModified": "Sista redigera"
         },
         "hunting": {
             "tabHeaders": {
@@ -1696,7 +1741,7 @@
             },
             "species": "Art",
             "group": "Grupp",
-            "approval": "Hyväksyntä",
+            "approval": "Godkännande",
             "createHuntingDay": "Skapa jaktdag",
             "openProposalForEdit": "Gå för att godkänna",
             "detachFromHuntingDay": "Ångra kopplingen till jaktdagen",
@@ -1706,7 +1751,7 @@
             },
             "harvestRejectedDialog": {
                 "message": "Genom att godkänna bytesanteckningen bifogas den till gruppens jaktdag.",
-                "title": "Hylätty saalis"
+                "title": "Förkastat byte"
             },
             "observationProposalDialog": {
                 "message": "Genom att godkänna observationsanteckningen bifogas den till gruppens jaktdag. Genom att avslå raderas den från panoramat gruppens observationen.",
@@ -1714,7 +1759,7 @@
             },
             "observationRejectedDialog": {
                 "message": "Genom att godkänna observationsanteckningen bifogas den till gruppens jaktdag.",
-                "title": "Hylätty havainto"
+                "title": "Förkastad observation"
             },
             "pointOfTime": "Fångsttid",
             "nextDayHunting": "Följande dygn",
@@ -1723,7 +1768,7 @@
                 "editTitle": "Redigera jaktdagen",
                 "exportToExcel": "Exportera till Exel-fil",
                 "duplicateDate": "Jaktdagen finns redan",
-                "outsidePermitInterval": "Päivä on sallitun lupa-ajan ulkopuolella",
+                "outsidePermitInterval": "Dagen är ytterom den tillåtna licenstiden",
                 "startDate": "Start dat",
                 "endDate": "Slut dat",
                 "startTime": "Start kl",
@@ -1760,7 +1805,8 @@
                 "effectiveHuntingArea": "Det vid jakten använda områdets storlek (i hela hektar)",
                 "huntingEndDate": "Fångsten upphört",
                 "saveUnfinished": "Spara oavslutade",
-                "markUnfinished": "Annullera upphörandet"
+                "markUnfinished": "Annullera upphörandet",
+                "totalHuntingAreaInfoText": "Metsästysalueen kokonaispinta-ala ei voi ylittää luvan pinta-alaa:"
             },
             "deerHuntingSummary": {
                 "huntingAreaAndEstimatedPopulationTitle": "Uppskattad hjortstam efter att jakten avslutats:",
@@ -1814,8 +1860,8 @@
             "selectGroup": "Välj grupp",
             "selectSpecies": "Välj djur",
             "selectHuntingYear": "Välj säsong",
-            "showOnlyRejectedHarvestsAndObservations": "Näytä vain hylätyt saaliit ja havainnot",
-            "showOnlyRejectedHarvests": "Näytä vain hylätyt saaliit",
+            "showOnlyRejectedHarvestsAndObservations": "Visa endast förkastade byten och observationer",
+            "showOnlyRejectedHarvests": "Visa endast förkastade byten",
             "specimenAbbrv": {
                 "ADULT": "V",
                 "FEMALE": "K",
@@ -1859,7 +1905,7 @@
             "originalPermitAmount": "Jaktlicensernas antal",
             "amendmentPermitAmount": "Antalet nya licenser (JL 29 §)",
             "amendmentPermitName": "Ny licens (JL 29§)<br>",
-            "relatedRhy": "Tiedoksi",
+            "relatedRhy": "För kännedom",
             "permitName": "Licens",
             "permitAmountTotal": "Licenser sammanlagt",
             "sumTitle": "Totalt",
@@ -1868,26 +1914,28 @@
             "notEdibleCount": "Odugliga som människoföda",
             "finishHunting": "Avsluta jakten",
             "huntingFinished": "Jakten är avslutad",
-            "finishHuntingByModeratorOverride": "Saaliiden massatallennus",
+            "finishHuntingByModeratorOverride": "Massainmatning av byten",
             "amendmentPermitsDoNotMatchHarvests": "Beviljade nya licenser överensstämmer inte med bytet som markerats som odugligt till människoföda.<br><br>Kontrollera att endast de som var odugliga som människoföda, för vilka det beviljats ny licens, markerats. ",
             "mooseHarvestReport": {
                 "menuTitle": "Bifogande av betalkvitto och avslutande av jakt me d licens",
                 "title": "Bifogande av betalkvitto och avslutande av jakt me d licens",
                 "finishPermit": "Avsluta licensen genom att fälla ner kvittot här eller klicka för att välja",
+                "fileTypeNotAccepted": "Filtypen stöds inte",
                 "permitFinished": "Licensens jakt har avslutats",
                 "unfinishPermit": "Ångra avslutandet",
-                "finishedWithoutHarvests": "Metsästys päätetty ilman saaliita",
-                "finishWithoutHarvests": "Päätä metsästys ilman saaliita",
+                "finishedWithoutHarvests": "Jakten avslutats utan byten",
+                "finishWithoutHarvests": "Avsluta jakten utan byten",
                 "downloadReceipt": "Ladda kvitto",
+                "paymentRecipientName": "Mottagare",
                 "iban": "IBAN",
                 "bic": "BIC",
                 "creditorReference": "Referensnummer",
                 "dueDate": "Förfallodag",
                 "totalPayment": "Summa att betala",
                 "cannotCreateMooseHarvestReport": {
-                    "header": "Maksukuitin voi liittää ja luvan metsästyksen päättää kun",
-                    "allPartnersFinishedHunting": "kaikki osakkaat ovat päättäneet metsästyksen",
-                    "amendmentPermitsMatchHarvests": "myönnetyt uudet luvat täsmäävät ihmisravinnoksi kelpaamattomiksi merkittyjen kanssa"
+                    "header": "Betalningskvittot kan bifogas och licensens jakt avslutas då",
+                    "allPartnersFinishedHunting": "alla samdeltagare har avslutat jakten",
+                    "amendmentPermitsMatchHarvests": "beviljade nya licenser överenstämmer med de som antecknats som odugliga till människoföda"
                 },
                 "priceBreakdown": {
                     "title": "Betalningsspecifikation",
@@ -1910,9 +1958,9 @@
             "button": {
                 "functionMenu": "Funktioner",
                 "table": "Tabell",
-                "map": "Karta",
                 "lukeReports": "Rapport",
-                "listLeaders": "Jaktledare"
+                "listLeaders": "Jaktledare",
+                "rhyStatistics": "JVF statistik"
             },
             "percentage": {
                 "allocated": "Planerats<br>(utdelade licenser)",
@@ -2074,11 +2122,11 @@
                 }
             },
             "todo": {
-                "prefix": "Tarkista",
-                "area": "alue",
-                "group": "ryhmä",
-                "groupPermit": "ryhmän liittäminen lupaan",
-                "groupLeader": "metsästyksenjohtajat"
+                "prefix": "Granska",
+                "area": "område",
+                "group": "grupp",
+                "groupPermit": "anslutande av gruppen till licensen",
+                "groupLeader": "jaktledarna"
             }
         }
     },
@@ -2099,7 +2147,6 @@
             "animal": "Djur",
             "amount": "Antal",
             "events": "Händelser",
-            "map": "Karta",
             "notAllEventsInfo": "Olyckorna visas för hela landet, övriga händelser från det egna JVF:s området.",
             "otherSpecies": "Annan art",
             "rejectConfirmation": "Vill du säkert förkasta SRVA händelsen?",

@@ -42,7 +42,7 @@ public class GroupHuntingDayService {
     private GroupHuntingDayRepository huntingDayRepository;
 
     @Resource
-    private GroupHuntingDayTransformer huntingDayTransformer;
+    private GroupHuntingDayDTOTransformer dtoTransformer;
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -162,6 +162,6 @@ public class GroupHuntingDayService {
         }
 
         final JpaSort sort = new JpaSort(Sort.Direction.DESC, GroupHuntingDay_.startTime);
-        return huntingDayTransformer.apply(huntingDayRepository.findAllAsList(predicate, sort));
+        return dtoTransformer.apply(huntingDayRepository.findAllAsList(predicate, sort));
     }
 }

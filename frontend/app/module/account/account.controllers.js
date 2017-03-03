@@ -211,6 +211,25 @@ angular.module('app.account.controllers', ['ui.router', 'app.account.services'])
                         return bounds || findBoundsFromPermitRhy();
                     }
                 }
+            })
+            .state('profile.harvestreport.moosepermit.rhystats', {
+                url: '/{permitId:[0-9]{1,8}}/rhy-stats',
+                template: '<moose-permit-stats-table statistics="$ctrl.statistics"></moose-permit-stats-table>',
+                controller: function (statistics) {
+                    this.statistics = statistics;
+                },
+                controllerAs: '$ctrl',
+                bindToController: true,
+                wideLayout: true,
+                resolve: {
+                    permitId: function ($stateParams, MoosePermitSelection) {
+                        return MoosePermitSelection.updateSelectedPermitId($stateParams);
+                    },
+                    statistics: function (HarvestPermits, permitId, selectedYearAndSpecies) {
+                        var params = {permitId: permitId, speciesCode: selectedYearAndSpecies.species};
+                        return HarvestPermits.moosePermitRhyStats(params).$promise;
+                    }
+                }
             });
     })
 

@@ -45,8 +45,7 @@ public class RiistanhoitoyhdistysCrudFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private HarvestPermit newHarvestPermit(Riistanhoitoyhdistys rhy, GameSpecies species) {
-        final HarvestPermit permit = model().newHarvestPermit(rhy);
-        permit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+        final HarvestPermit permit = model().newMooselikePermit(rhy);
         permit.setPermitHolder(model().newHuntingClub(rhy));
 
         model().newHarvestPermitSpeciesAmount(permit, species).setCreditorReference(creditorReference());

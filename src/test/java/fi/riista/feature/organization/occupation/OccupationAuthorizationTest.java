@@ -186,30 +186,19 @@ public class OccupationAuthorizationTest extends EmbeddedDatabaseTest {
             final HuntingClub club = createClub();
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                final OccupationDTO dto = new OccupationDTO();
-                dto.setPersonId(person.getId());
-                dto.setOrganisationId(club.getId());
+                final Occupation occupation = new Occupation();
+                occupation.setPerson(person);
+                occupation.setOrganisationAndOccupationType(club, OccupationType.SEURAN_JASEN);
 
-                assertPermissions(dto, EnumSet.of(EntityPermission.CREATE, EntityPermission.DELETE));
+                assertPermissions(occupation, EnumSet.of(EntityPermission.CREATE, EntityPermission.DELETE));
             });
         });
     }
 
     private void assertPermissions(final Occupation occupation, final EnumSet<EntityPermission> permissions) {
-        final OccupationDTO occupationDTO = OccupationDTO.createWithPerson(occupation);
-
         runInTransaction(() -> {
             assertHasPermissions(occupation, permissions);
-            assertHasPermissions(occupationDTO, permissions);
             assertNoPermissions(occupation, EnumSet.complementOf(permissions));
-            assertNoPermissions(occupationDTO, EnumSet.complementOf(permissions));
-        });
-    }
-
-    private void assertPermissions(final OccupationDTO object, final EnumSet<EntityPermission> permissions) {
-        runInTransaction(() -> {
-            assertHasPermissions(object, permissions);
-            assertNoPermissions(object, EnumSet.complementOf(permissions));
         });
     }
 

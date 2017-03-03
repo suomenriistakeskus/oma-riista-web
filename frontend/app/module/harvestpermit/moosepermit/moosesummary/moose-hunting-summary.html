@@ -10,6 +10,12 @@
             <h4 translate="club.hunting.mooseHuntingSummary.huntingAreaAndEstimatedPopulationTitle"></h4>
 
             <div class="row r-two-column-number-fields">
+                <div ng-show="showPermitAreaSize()" class="col-xs-12">
+                    <div class="alert alert-warning">
+                        <span translate="club.hunting.huntingSummary.totalHuntingAreaInfoText"></span>
+                        <span>{{huntingSummary.permitAreaSize}} ha</span>
+                    </div>
+                </div>
                 <div class="col-sm-6">
                     <div class="form-group" show-errors>
                         <label for="totalHuntingArea" class="control-label">

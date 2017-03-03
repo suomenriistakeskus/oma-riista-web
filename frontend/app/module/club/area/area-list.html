@@ -1,0 +1,36 @@
+<uib-accordion close-others="true">
+    <div uib-accordion-group class="panel-default"
+         is-open="area.isOpen"
+         template-url="common/accordion-group.html"
+         ng-click="$ctrl.selectArea($event, area)"
+         ng-repeat="area in $ctrl.areas track by area.id">
+
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-8">
+                    <span ng-class="$ctrl.getAreaToggleClasses(area)"></span>
+                    &nbsp;
+                    <span ng-bind="area | rI18nNameFilter"></span>
+                    &nbsp;
+                    <span class="text-danger glyphicon glyphicon-lock"
+                          ng-show="area.sourceType === 'EXTERNAL'"></span>
+                    <span class="text-danger glyphicon glyphicon-alert"
+                          ng-show="$ctrl.canEdit && area.hasPendingZoneChanges"></span>
+                    <span class="text-danger"
+                          ng-show="$ctrl.canEdit && area.hasPendingZoneChanges"
+                          translate="club.area.list.hasPendingChanges"></span>
+                    <span class="text-danger glyphicon glyphicon-remove-circle"
+                          title="{{ 'club.area.list.areaIsDeactive' | translate }}"
+                          ng-hide="area.active"></span>
+                </div>
+
+                <div class="col-xs-4">
+                    <strong ng-show="area.computedAreaSize" class="pull-right"
+                            ng-bind="area.computedAreaSize | prettyAreaSize"></strong>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <club-area-list-details area="area"></club-area-list-details>
+    </div>
+</uib-accordion>

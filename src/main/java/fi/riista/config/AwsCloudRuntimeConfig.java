@@ -42,9 +42,10 @@ public class AwsCloudRuntimeConfig {
                 final String s3config = ctx.getEnvironment().getProperty("aws.config.s3location");
                 final Resource resource = ctx.getBean(SimpleStorageResourceLoader.class).getResource(s3config);
                 return Optional.of(new ResourcePropertySource("aws", resource));
-            } else {
-                return Optional.empty();
             }
+
+            return Optional.empty();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

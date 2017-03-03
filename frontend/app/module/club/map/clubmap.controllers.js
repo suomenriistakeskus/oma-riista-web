@@ -111,30 +111,29 @@ angular.module('app.clubmap.controllers', ['app.map.services'])
             };
 
             $scope.focusMooseArea = function (area) {
-                $scope.editor.api.zoom(MHAreaService.getMooseFeatureId(area));
+                $scope.editor.api.zoom(area.id);
             };
 
             $scope.onSelectMooseArea = function (area) {
                 UnsavedChangesConfirmationService.setChanges(true);
 
-                $scope.editor.api.features.removeMooseArea(area);
-
                 // De-select
                 $scope.userInput.mooseAreaSearchQuery = null;
 
                 // Show geometry
-                GIS.getMetsahallitusHirviById(area.id).then(function (response) {
-                    var feature = response.data;
-                    $scope.editor.api.addFeatures(feature);
-                    area.selected = true;
-                    $scope.focusMooseArea(area);
+                GIS.getMetsahallitusHirviById(area.gid).then(function (response) {
+                    $scope.editor.api.features.removeMooseArea(area);
+                    $scope.editor.api.addFeatures(response.data);
+
+                    var mooseArea = mh.addSelectedArea(area);
+                    $scope.focusMooseArea(mooseArea);
                 });
             };
 
             $scope.removeMooseArea = function (area) {
                 UnsavedChangesConfirmationService.setChanges(true);
+                mh.removeSelectedArea(area);
                 $scope.editor.api.features.removeMooseArea(area);
-                area.selected = false;
             };
 
             $scope.updateChangedFeature = function (feature) {

@@ -13,6 +13,7 @@ import fi.riista.integration.lupahallinta.MooselikeHarvestExportToLupahallintaFe
 import fi.riista.integration.lupahallinta.club.LHHuntingClubCSVRow;
 import fi.riista.integration.lupahallinta.club.LHMooselikeHarvestsCSVRow;
 import fi.riista.integration.lupahallinta.permitarea.LHHarvestPermitAreaFeature;
+import fi.riista.integration.lupahallinta.permitarea.LHPA_PermitArea;
 import fi.riista.util.MediaTypeExtras;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
@@ -74,23 +75,29 @@ public class LHExportApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "permitarea/{id}", produces = MediaType.APPLICATION_XML_VALUE)
-    public String findByExternalId(@PathVariable("id") String id) {
-        return lhHarvestPermitAreaFeature.findByExternalId(id);
+    @GetMapping(value = "permitarea/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public LHPA_PermitArea getByExternalId(@PathVariable("id") String id) {
+        return lhHarvestPermitAreaFeature.getByExternalId(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @PostMapping(value = "permitarea/{id}/lock", produces = MediaType.APPLICATION_XML_VALUE)
-    public String lock(@PathVariable("id") String id) {
+    @GetMapping(value = "permitarea/{id}/xml", produces = MediaType.APPLICATION_XML_VALUE)
+    public String getByExternalIdXml(@PathVariable("id") String id) {
+        return lhHarvestPermitAreaFeature.getByExternalIdXml(id);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @PostMapping(value = "permitarea/{id}/lock", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public LHPA_PermitArea lock(@PathVariable("id") String id) {
         lhHarvestPermitAreaFeature.updateLockedStatus(id, true);
-        return lhHarvestPermitAreaFeature.findByExternalId(id);
+        return lhHarvestPermitAreaFeature.getByExternalId(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @PostMapping(value = "permitarea/{id}/unlock", produces = MediaType.APPLICATION_XML_VALUE)
-    public String unlock(@PathVariable("id") String id) {
+    @PostMapping(value = "permitarea/{id}/unlock", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public LHPA_PermitArea unlock(@PathVariable("id") String id) {
         lhHarvestPermitAreaFeature.updateLockedStatus(id, false);
-        return lhHarvestPermitAreaFeature.findByExternalId(id);
+        return lhHarvestPermitAreaFeature.getByExternalId(id);
     }
 
 }

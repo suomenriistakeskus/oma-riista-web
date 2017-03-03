@@ -1,0 +1,47 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" ng-submit="$ctrl.save()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <div class="modal-title h3">
+            <span translate="club.area.form.titleCopy"></span>:
+            <span>{{$ctrl.area | rI18nNameFilter}}</span>
+        </div>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="huntingYear" class="col-xs-3 control-label">
+                <span translate="global.huntingYear"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <select name="huntingYear" id="huntingYear" class="form-control"
+                        ng-model="$ctrl.areaCopyData.huntingYear"
+                        ng-options="y.year as y.name for y in $ctrl.huntingYears"
+                        required>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-offset-3 col-xs-9">
+                <label>
+                    <input id="copyGroups" name="copyGroups" type="checkbox"
+                           ng-model="$ctrl.areaCopyData.copyGroups">
+                    <span translate="club.area.form.copyGroups"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="form.$invalid"
+                translate="global.button.ok"></button>
+    </div>
+</form>

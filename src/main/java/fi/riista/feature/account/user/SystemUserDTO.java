@@ -60,6 +60,8 @@ public class SystemUserDTO extends BaseEntityDTO<Long> {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE, groups = { Edit.class, Create.class })
     private String ipWhiteList;
 
+    private SystemUser.TwoFactorAuthenticationMode twoFactorAuthentication;
+
     private TimeZone timeZone;
 
     private Locale locale;
@@ -200,6 +202,14 @@ public class SystemUserDTO extends BaseEntityDTO<Long> {
 
     public void setIpWhiteList(String ipWhiteList) {
         this.ipWhiteList = ipWhiteList;
+    }
+
+    public SystemUser.TwoFactorAuthenticationMode getTwoFactorAuthentication() {
+        return twoFactorAuthentication;
+    }
+
+    public void setTwoFactorAuthentication(final SystemUser.TwoFactorAuthenticationMode twoFactorAuthentication) {
+        this.twoFactorAuthentication = twoFactorAuthentication;
     }
 
     public Set<SystemUserPrivilege> getPrivileges() {

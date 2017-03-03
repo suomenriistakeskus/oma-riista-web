@@ -1,15 +1,14 @@
 package fi.riista.feature.organization.person;
 
 import com.google.common.collect.ImmutableSet;
-import fi.riista.feature.organization.person.Person;
 import org.joda.time.LocalDate;
 import org.junit.Test;
+
+import java.util.Optional;
 
 import static fi.riista.util.DateUtil.today;
 import static fi.riista.util.TestUtils.ld;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class PersonEntityTest {
     private static final String INVOICE_REFERENCE1 = "14507700161";
@@ -130,31 +129,30 @@ public class PersonEntityTest {
 
     @Test
     public void testPaymentDate() {
-        Person p = new Person();
-        p.setHuntingPaymentOneYear(2015);
-        p.setHuntingPaymentOneDay(ld(2015, 6, 9));
+        final LocalDate paymentOneDay = ld(2015, 6, 9);
 
-        assertTrue(p.getHuntingPaymentDateForNextOrCurrentSeason(2015).isPresent());
-        assertFalse(p.getHuntingPaymentDateForNextOrCurrentSeason(2016).isPresent());
+        final Person p = new Person();
+        p.setHuntingPaymentOneDay(paymentOneDay);
+        p.setHuntingPaymentOneYear(paymentOneDay.getYear());
 
-        assertEquals(ld(2015, 6, 9), p.getHuntingPaymentDateForNextOrCurrentSeason(2015).get());
+        assertEquals(Optional.of(paymentOneDay), p.getHuntingPaymentDateForNextOrCurrentSeason(2015));
+        assertEquals(Optional.empty(), p.getHuntingPaymentDateForNextOrCurrentSeason(2016));
     }
 
     @Test
     public void testPaymentDate_PreferNextSeason() {
-        Person p = new Person();
-        p.setHuntingPaymentOneYear(2015);
-        p.setHuntingPaymentOneDay(ld(2015, 6, 9));
-        p.setHuntingPaymentTwoYear(2016);
-        p.setHuntingPaymentTwoDay(ld(2016, 6, 9));
+        final LocalDate paymentOneDay = ld(2015, 6, 9);
+        final LocalDate paymentTwoDay = paymentOneDay.plusYears(1);
 
-        assertTrue(p.getHuntingPaymentDateForNextOrCurrentSeason(2014).isPresent());
-        assertTrue(p.getHuntingPaymentDateForNextOrCurrentSeason(2015).isPresent());
-        assertTrue(p.getHuntingPaymentDateForNextOrCurrentSeason(2016).isPresent());
+        final Person p = new Person();
+        p.setHuntingPaymentOneDay(paymentOneDay);
+        p.setHuntingPaymentOneYear(paymentOneDay.getYear());
+        p.setHuntingPaymentTwoDay(paymentTwoDay);
+        p.setHuntingPaymentTwoYear(paymentTwoDay.getYear());
 
-        assertEquals(ld(2015, 6, 9), p.getHuntingPaymentDateForNextOrCurrentSeason(2014).get());
-        assertEquals(ld(2016, 6, 9), p.getHuntingPaymentDateForNextOrCurrentSeason(2015).get());
-        assertEquals(ld(2016, 6, 9), p.getHuntingPaymentDateForNextOrCurrentSeason(2016).get());
+        assertEquals(Optional.of(paymentOneDay), p.getHuntingPaymentDateForNextOrCurrentSeason(2014));
+        assertEquals(Optional.of(paymentTwoDay), p.getHuntingPaymentDateForNextOrCurrentSeason(2015));
+        assertEquals(Optional.of(paymentTwoDay), p.getHuntingPaymentDateForNextOrCurrentSeason(2016));
     }
 
     @Test
@@ -172,7 +170,8 @@ public class PersonEntityTest {
         p.setInvoiceReferenceCurrent(INVOICE_REFERENCE1);
         p.setInvoiceReferenceCurrentYear(nextHuntingYear);
 
-        assertEquals("next hunting year is included", ImmutableSet.of(nextHuntingYear), p.getHuntingPaymentPdfYears(2015));
+        assertEquals("next hunting year is included",
+                ImmutableSet.of(nextHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
     }
 
     @Test
@@ -186,7 +185,8 @@ public class PersonEntityTest {
         p.setInvoiceReferencePrevious(INVOICE_REFERENCE2);
         p.setInvoiceReferencePreviousYear(currentHuntingYear);
 
-        assertEquals("both hunting years are included", ImmutableSet.of(currentHuntingYear, nextHuntingYear), p.getHuntingPaymentPdfYears(2015));
+        assertEquals("both hunting years are included",
+                ImmutableSet.of(currentHuntingYear, nextHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
     }
 
     @Test
@@ -197,7 +197,8 @@ public class PersonEntityTest {
         p.setInvoiceReferencePrevious(INVOICE_REFERENCE1);
         p.setInvoiceReferencePreviousYear(currentHuntingYear);
 
-        assertEquals("current year reference is included", ImmutableSet.of(currentHuntingYear), p.getHuntingPaymentPdfYears(2015));
+        assertEquals("current year reference is included",
+                ImmutableSet.of(currentHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
     }
 
     @Test
@@ -209,7 +210,7 @@ public class PersonEntityTest {
         p.setInvoiceReferencePrevious(INVOICE_REFERENCE1);
         p.setInvoiceReferencePreviousYear(oldHuntingYear);
 
-        assertEquals("old reference is ignored", ImmutableSet.of(), p.getHuntingPaymentPdfYears(2015));
+        assertEquals("old reference is ignored", ImmutableSet.of(), p.getHuntingPaymentPdfYears(currentHuntingYear));
     }
 
     @Test
@@ -227,7 +228,8 @@ public class PersonEntityTest {
         p.setHuntingPaymentTwoYear(2013);
         p.setHuntingPaymentTwoDay(ld(2013, 6, 9));
 
-        assertEquals("both hunting years are included", ImmutableSet.of(currentHuntingYear, nextHuntingYear), p.getHuntingPaymentPdfYears(2015));
+        assertEquals("both hunting years are included",
+                ImmutableSet.of(currentHuntingYear, nextHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
     }
 
     @Test
@@ -243,7 +245,8 @@ public class PersonEntityTest {
         p.setHuntingPaymentOneYear(currentHuntingYear);
         p.setHuntingPaymentOneDay(ld(currentHuntingYear, 6, 9));
 
-        assertEquals("both hunting years are included", ImmutableSet.of(nextHuntingYear), p.getHuntingPaymentPdfYears(2015));
+        assertEquals("both hunting years are included",
+                ImmutableSet.of(nextHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
     }
 
     @Test
@@ -261,6 +264,7 @@ public class PersonEntityTest {
         p.setHuntingPaymentTwoYear(currentHuntingYear);
         p.setHuntingPaymentTwoDay(ld(currentHuntingYear, 6, 9));
 
-        assertEquals("both hunting years are excluded", ImmutableSet.of(), p.getHuntingPaymentPdfYears(2015));
+        assertEquals("both hunting years are excluded",
+                ImmutableSet.of(), p.getHuntingPaymentPdfYears(currentHuntingYear));
     }
 }

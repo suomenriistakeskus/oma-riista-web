@@ -4,16 +4,15 @@ import static javaslang.control.Validation.invalid;
 import static javaslang.control.Validation.valid;
 
 import com.google.common.collect.Range;
-
+import fi.riista.util.ValidationUtils;
 import javaslang.control.Validation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public abstract class NumericFieldMeta<T, N extends Number & Comparable<N>> implements Function<T, N> {
 
@@ -34,21 +33,41 @@ public abstract class NumericFieldMeta<T, N extends Number & Comparable<N>> impl
     @Nullable
     @Override
     public N apply(@Nullable final T obj) {
-        return Optional.ofNullable(obj).map(this::doApply).orElse(null);
+        return findFieldValue(obj).orElse(null);
     }
 
     @Nonnull
     public Validation<String, Optional<N>> validate(@Nullable final T obj) {
-        return Optional.ofNullable(obj)
-                .map(this::doApply)
-                .<Validation<String, Optional<N>>> map(value -> range.contains(value)
-                        ? valid(Optional.of(value))
-                        : invalid(getInvalidMessageFunction(obj).apply(value)))
-                .orElseGet(() -> valid(Optional.empty()));
+        return mapToValidation(findFieldValue(obj), num -> range.contains(num), getInvalidMessageFunction(obj));
     }
 
     @Nonnull
-    public Optional<N> getValidOrEmpty(@Nullable final T obj) {
+    public Validation<String, Optional<N>> validateRangeAndEquality(
+            @Nullable final T obj,
+            @Nonnull final N expected,
+            @Nonnull final Function<N, String> onNotMatchingMessageFunction) {
+
+        Objects.requireNonNull(expected, "expected is null");
+        Objects.requireNonNull(onNotMatchingMessageFunction, "onNotMatchingMessageFunction is null");
+
+        return validate(obj).flatMap(numOpt -> mapToValidation(numOpt, expected::equals, onNotMatchingMessageFunction));
+    }
+
+    private Optional<N> findFieldValue(@Nullable final T obj) {
+        return Optional.ofNullable(obj).map(this::doApply);
+    }
+
+    private Validation<String, Optional<N>> mapToValidation(final Optional<N> optional,
+                                                            final Predicate<N> predicate,
+                                                            final Function<N, String> onFailingTestMessageFunction) {
+        return ValidationUtils.toValidation(
+                optional,
+                num -> predicate.test(num) ? valid(optional) : invalid(onFailingTestMessageFunction.apply(num)),
+                () -> valid(Optional.empty()));
+    }
+
+    @Nonnull
+    public Optional<N> findValid(@Nullable final T obj) {
         return validate(obj).fold(invalid -> Optional.empty(), Function.identity());
     }
 
@@ -59,12 +78,6 @@ public abstract class NumericFieldMeta<T, N extends Number & Comparable<N>> impl
 
     public boolean isValueInRange(@Nullable final N value) {
         return value != null && range.contains(value);
-    }
-
-    public void ifNotNullAndValid(@Nullable final N value, @Nonnull final Consumer<N> consumer) {
-        if (isValueInRange(value)) {
-            consumer.accept(value);
-        }
     }
 
     public Optional<N> findLowerBound() {

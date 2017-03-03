@@ -84,10 +84,15 @@ public class PasswordResetFeature {
         LOG.debug("Send password renewal link to '{}'", email);
 
         // There can be multiple users with the same email
-        final SystemUser user = userRepository.findByUsernameIgnoreCaseAndActive(email, true);
+        final SystemUser user = userRepository.findByUsernameIgnoreCase(email);
 
         if (user == null) {
             LOG.error("Could not find registered SystemUser using email {}", email);
+            return;
+        }
+
+        if (!user.isActive()) {
+            LOG.error("Cannot reset password for inactive userId={}", user.getId());
             return;
         }
 

@@ -11,11 +11,11 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardSection81Validator.validate;
 import static fi.riista.util.Asserts.assertNumericFieldValidationError;
 import static fi.riista.util.Asserts.assertValidationErrors;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_1;
 import fi.riista.util.Asserts;
-
 import org.junit.Test;
 
 import java.util.stream.Stream;
@@ -24,7 +24,9 @@ public class MooseDataCardSection81ValidatorTest {
 
     @Test
     public void testValidate_withValidData() {
-        assertTrue(validate(newSection81()).isValid());
+        final MooseDataCardSection_8_1 section = newSection81();
+
+        Asserts.assertValid(validate(section), s -> assertEquals(section.toString(), s.toString()));
     }
 
     @Test
@@ -37,12 +39,14 @@ public class MooseDataCardSection81ValidatorTest {
         final MooseDataCardSection_8_1 section = new MooseDataCardSection_8_1()
                 .withTotalHuntingArea(-1.0)
                 .withEffectiveHuntingArea(-1.0)
+                .withEffectiveHuntingAreaPercentage(-1.0)
                 .withMoosesRemainingInTotalHuntingArea(-1)
                 .withMoosesRemainingInEffectiveHuntingArea(-1);
 
         Asserts.assertNumericFieldValidationErrors(section, MooseDataCardSection81Validator::validate, Stream.of(
                 MooseDataCardSummaryField.TOTAL_HUNTING_AREA,
                 MooseDataCardSummaryField.EFFECTIVE_HUNTING_AREA,
+                MooseDataCardSummaryField.EFFECTIVE_HUNTING_AREA_PERCENTAGE,
                 MooseDataCardSummaryField.MOOSES_REMAINING_IN_TOTAL_HUNTING_AREA,
                 MooseDataCardSummaryField.MOOSES_REMAINING_IN_EFFECTIVE_HUNTING_AREA));
     }

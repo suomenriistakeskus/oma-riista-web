@@ -1,7 +1,6 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
 import static com.google.common.base.Strings.emptyToNull;
-import static java.util.function.Function.identity;
 
 import fi.riista.config.Constants;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
@@ -33,6 +32,7 @@ import fi.riista.util.F;
 
 import javaslang.control.Try;
 
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
@@ -220,7 +220,7 @@ public final class MooseDataCardExtractor {
                 section.getNumberOfMoosesKilledInRutFight(),
                 section.getNumberOfStarvedMooses(),
                 section.getNumberOfMoosesDeceasedByOtherReason(),
-                F.trimToOptional(section.getExplanationForOtherReason()).orElse(null));
+                StringUtils.trimToNull(section.getExplanationForOtherReason()));
     }
 
     public static boolean notEmpty(final MooseDataCardSection_8_4 section) {
@@ -255,7 +255,7 @@ public final class MooseDataCardExtractor {
     public static TrendOfPopulationGrowth convertTrendOfPopulationGrowthOfMooselikeSpecies(
             @Nullable final String value) {
 
-        return HasMooseDataCardEncoding.enumOf(TrendOfPopulationGrowth.class, value).fold(invalid -> null, identity());
+        return HasMooseDataCardEncoding.getEnumOrNull(TrendOfPopulationGrowth.class, value);
     }
 
     @Nullable

@@ -88,6 +88,8 @@ angular.module('app.moosepermit.controllers', [])
         $ctrl.edit = createStateTransition(initialState + '.edit');
         $ctrl.map = createStateTransition(initialState + '.map');
         $ctrl.lukereports = createStateTransition(initialState + '.lukereports');
+        $ctrl.rhystats = createStateTransition(initialState + '.rhystats');
+
         $ctrl.leaders = function () {
             MoosePermitLeadersService.showLeaders({
                 id: MoosePermitSelection.permitId,
@@ -127,8 +129,9 @@ angular.module('app.moosepermit.controllers', [])
                                                        ClubPermits,
                                                        GameSpeciesCodes,
                                                        MoosePermitCounterService,
+                                                       ActiveRoleService,
                                                        NotificationService,
-                                                       permit, edit, todos, initialState) {
+                                                       permit, edit, todos, initialState, selectedYearAndSpecies) {
 
         $scope.permit = permit;
         $scope.todos = todos;
@@ -152,6 +155,17 @@ angular.module('app.moosepermit.controllers', [])
 
         $scope.isMoose = function () {
             return GameSpeciesCodes.isMoose($scope.permit.speciesAmount.gameSpecies.code);
+        };
+
+        $scope.canNavigateToClub = ActiveRoleService.isModerator;
+
+        $scope.navigateToClub = function (row) {
+            $state.go('club.permit.show', {
+                id: row.huntingClubId,
+                permitId: $scope.permit.id,
+                huntingYear: selectedYearAndSpecies.huntingYear,
+                species: selectedYearAndSpecies.species
+            });
         };
 
         // calculate
@@ -287,7 +301,7 @@ angular.module('app.moosepermit.controllers', [])
         };
 
         $scope.showFilesForSelectedOrg = function () {
-            return _.get(lukeReportParams.reportsAvailability, $scope.uiState.org.name + '.' + $scope.uiState.presentation.name);
+            return $scope.uiState.org.name !== 'CLUB' || lukeReportParams.clubReportsExist;
         };
 
         $scope.noFilesForSelectedClub = function () {

@@ -96,9 +96,7 @@ public final class ReflectionTestUtils {
 
         return Stream
                 .concat(
-                        Stream.concat(
-                                Stream.of(type),
-                                getAllSuperTypes(type.getSuperclass(), includeJavaLangObject).stream()),
+                        F.stream(type, getAllSuperTypes(type.getSuperclass(), includeJavaLangObject)),
                         Stream.of(type.getInterfaces())
                                 .flatMap(ifc -> getAllSuperTypes(ifc, includeJavaLangObject).stream()))
                 .collect(toSet());

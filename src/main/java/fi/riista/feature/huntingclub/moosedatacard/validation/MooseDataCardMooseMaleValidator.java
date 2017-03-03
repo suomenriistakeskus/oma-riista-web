@@ -21,8 +21,8 @@ public class MooseDataCardMooseMaleValidator extends MooseDataCardHarvestValidat
         super(defaultCoordinates);
     }
 
-    public MooseDataCardMooseMaleValidator(
-            @Nonnull final Has2BeginEndDates permitSeason, @Nonnull final GeoLocation defaultCoordinates) {
+    public MooseDataCardMooseMaleValidator(@Nonnull final Has2BeginEndDates permitSeason,
+                                           @Nonnull final GeoLocation defaultCoordinates) {
 
         super(permitSeason, defaultCoordinates);
     }

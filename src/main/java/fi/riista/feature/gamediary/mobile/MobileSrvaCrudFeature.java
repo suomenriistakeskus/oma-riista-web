@@ -4,10 +4,10 @@ import fi.riista.feature.error.MessageExposableValidationException;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.error.RevisionConflictException;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.gamediary.srva.AbstractSrvaCrudFeature;
-import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
+import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
 
 @Service
 public class MobileSrvaCrudFeature extends AbstractSrvaCrudFeature<MobileSrvaEventDTO> {
@@ -40,7 +39,7 @@ public class MobileSrvaCrudFeature extends AbstractSrvaCrudFeature<MobileSrvaEve
     }
 
     @Override
-    protected Function<SrvaEvent, MobileSrvaEventDTO> entityToDTOFunction() {
+    protected MobileSrvaEventDTO toDTO(@Nonnull final SrvaEvent entity) {
         throw new UnsupportedOperationException("No transformation without srvaEventSpecVersion supported");
     }
 
@@ -99,7 +98,7 @@ public class MobileSrvaCrudFeature extends AbstractSrvaCrudFeature<MobileSrvaEve
 
     }
 
-    @Transactional(rollbackFor = IOException.class)
+    @Transactional
     public void deleteImage(@Nonnull final UUID imageUuid) {
         try {
             final GameDiaryImage image = gameDiaryImageService.getSrvaEventImageForAuthor(imageUuid, activeUserService.requireActivePerson());

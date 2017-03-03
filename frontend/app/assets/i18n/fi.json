@@ -93,7 +93,14 @@
             "copy": "Kopioi"
         },
         "map": {
-            "toggleLayers": "Näytä / piilota kaikki"
+            "map": "Kartta",
+            "toggleLayers": "Näytä / piilota kaikki",
+            "layer": {
+                "empty": "Ei taustakarttaa",
+                "terrain": "Maastokartta",
+                "background": "Taustakartta",
+                "aerial": "Ortokuva"
+            }
         },
         "messages": {
             "error": "Tietojen päivitys epäonnistui. Yritä myöhemmin uudelleen",
@@ -135,7 +142,6 @@
             "ssn": "Henkilötunnus",
             "homeMunicipality": "Kotikunta",
             "nativeLanguage": "Äidinkieli",
-            "finnishCitizen": "Suomen kansalainen",
             "email": "Sähköpostiosoite",
             "address": "Osoite",
             "phoneNumber": "Puhelinnumero",
@@ -170,22 +176,19 @@
             "coordinates": "Koordinaatit",
             "doOpen": "Avaa"
         },
-        "mapLayer": {
-            "empty": "Ei taustakarttaa",
-            "terrain": "Maastokartta",
-            "background": "Taustakartta",
-            "aerial": "Ortokuva"
-        },
         "toFrontpage": "Etusivulle",
         "yes": "Kyllä",
         "no": "Ei",
         "or": "tai",
         "beginDate": "Alkupäivä",
         "endDate": "Loppupäivä",
+        "huntingYear": "Metsästysvuosi",
         "state": "Tila",
         "marking": "Merkintä",
         "total": "Yhteensä",
-        "showAll": "Näytä kaikki"
+        "showAll": "Näytä kaikki",
+        "nameFI": "Nimi suomeksi",
+        "nameSV": "Nimi ruotsiksi"
     },
     "validation": {
         "required": "Arvo vaaditaan",
@@ -311,7 +314,7 @@
     "registration": {
         "email": {
             "titleHtml": "Rekisteröityminen <a>oma.riista.fi</a> -palveluun",
-            "textHtml": "<p>Rekisteröityäksesi <a>oma.riista.fi</a> -palveluun tarvitset toimivan, henkilökohtaisen sähköpostiosoitteen.<p>\n<p>Rekisteröintiprosessissa on viisi vaihetta:</p>\n<ol>\n<li>Lähetämme antamaasi sähköpostiosoitteeseen viestin, jolla varmistamme osoitteen toimivuuden.</li>\n<li>Jatkat rekisteröitymistä klikkaamalla sähköpostiviestissä olevaa linkkiä.</li>\n<li>Hyväksyt palvelun käyttöehdot.</li>\n<li>Tunnistaudut pankkitunnuksillasi Vetuma-palvelussa.</li>\n<li>Määrittelet itsellesi salasanan ja matkapuhelinnumeron.</li>\n</ol>\n<p>Tämän jälkeen voit kirjautua palveluun.</p>\n<p><strong>HUOM:</strong> Mikäli et saa sähköpostia viimeistään tunnin kuluessa, tarkista sähköpostiohjelmasi roskapostikansio. Joissakin harvoissa tapauksissa viestimme voi päätyä sinne.</p>\n<p><strong>HUOM:</strong> Emme hyväksy henkilökohtaisiksi sähköpostiosoitteiksi @riista.fi tai @rhy.riista.fi sähköpostiosoitteita.</p>\n",
+            "textHtml": "<p>Rekisteröityäksesi <a>oma.riista.fi</a> -palveluun tarvitset toimivan, henkilökohtaisen sähköpostiosoitteen.<p>\n<p>Rekisteröintiprosessissa on viisi vaihetta:</p>\n<ol>\n<li>Lähetämme antamaasi sähköpostiosoitteeseen viestin, jolla varmistamme osoitteen toimivuuden.</li>\n<li>Jatkat rekisteröitymistä klikkaamalla sähköpostiviestissä olevaa linkkiä.</li>\n<li>Hyväksyt palvelun käyttöehdot.</li>\n<li>Tunnistaudut pankkitunnuksillasi Suomi.fi-tunnistuspalvelussa.</li>\n<li>Määrittelet itsellesi salasanan ja matkapuhelinnumeron.</li>\n</ol>\n<p>Tämän jälkeen voit kirjautua palveluun.</p>\n<p><strong>HUOM:</strong> Mikäli et saa sähköpostia viimeistään tunnin kuluessa, tarkista sähköpostiohjelmasi roskapostikansio. Joissakin harvoissa tapauksissa viestimme voi päätyä sinne.</p>\n<p><strong>HUOM:</strong> Emme hyväksy henkilökohtaisiksi sähköpostiosoitteiksi @riista.fi tai @rhy.riista.fi sähköpostiosoitteita.</p>\n",
             "success": "Sähköposti lähetettiin onnistuneesti"
         },
         "emailChanged": {
@@ -335,7 +338,7 @@
         },
         "confirmation": {
             "titleHtml": "<a>Oma.riista.fi</a> -käyttöehtojen hyväksyminen",
-            "textHtml": "<p>Olet vahvistanut sähköpostiosoitteesi onnistuneesti. Ole hyvä ja tutustu seuraavaksi alla oleviin <a>oma.riista.fi</a> -käyttöehtoihin ja -rekisteriselosteeseen.</p>\n<p>Hyväksy käyttöehdot sivun alareunassa olevalla painikkeella. Tämän jälkeen tunnistamme sinut pankkitunnuksillasi Vetuma-palvelussa.</p>\n",
+            "textHtml": "<p>Olet vahvistanut sähköpostiosoitteesi onnistuneesti. Ole hyvä ja tutustu seuraavaksi alla oleviin <a>oma.riista.fi</a> -käyttöehtoihin ja -rekisteriselosteeseen.</p>\n<p>Hyväksy käyttöehdot sivun alareunassa olevalla painikkeella. Tämän jälkeen tunnistamme sinut pankkitunnuksillasi Suomi.fi-tunnistuspalvelussa.</p>\n",
             "termsAndConditions": "Suomen riistakeskuksen sähköisen asioinnin verkkopalvelun (oma.riista.fi) käyttöehdot ja säännöt",
             "confirmText": "Hyväksyn palvelun ehdot ja hyväksyn henkilötietojeni käytön palvelussa",
             "status": {
@@ -345,7 +348,7 @@
                 "error": "Tapahtui virhe"
             },
             "button": {
-                "continue": "Siirry Vetumaan tästä"
+                "continue": "Siirry Suomi.fi-tunnistukseen tästä"
             }
         },
         "completion": {
@@ -369,6 +372,7 @@
             "username": "Käyttäjänimi",
             "role": "Rooli",
             "ipWhiteList": "Sallitut IP-osoitteet",
+            "twoFactorMode": "Vahvakirjautuminen",
             "active": "Aktiivinen",
             "email": "Sähköpostiosoite",
             "phonenumber": "Puhelinnumero",
@@ -518,8 +522,6 @@
                 "title": "Luo uusi seura",
                 "note": "Olet luomassa uutta seuraa. Olethan varmistanut, että seuraa ei ole jo olemassa, yrittämällä ottaa se haltuun.",
                 "confirm": "Luo uusi seura",
-                "nameFI": "Nimi suomeksi",
-                "nameSV": "Nimi ruotsiksi",
                 "location": "Paikka",
                 "rhy": "Riistanhoitoyhdistys",
                 "geoLocation": "Sijainti"
@@ -710,7 +712,6 @@
             "jht": "JHT-nimitykset",
             "srva": "SRVA",
             "srvaList": "Listaus",
-            "srvaMap": "Kartta",
             "clubs": "Seurat",
             "mooselike": "Hirvieläimet",
             "mooselikeHarvestMap": "Saaliit",
@@ -1412,12 +1413,11 @@
         "list": {
             "title": "Viestit",
             "buttonSend": "Lähetä viesti",
-            "showButton": "Avaa",
             "messageFrom": "Lähettäjä:",
             "received": "Vastaanotetut",
             "sent": "Lähetetyt",
-            "showSubscribers": "Näytä vastaanottajat",
-            "hideSubscribers": "Piilota vastaanottajat",
+            "showMessage": "Avaa viesti",
+            "hideMessage": "Sulje viesti",
             "subscriberOrganisations": "Vastaanottaja organisaatio(t):",
             "subscriberOccupations": "Vastaanottajien tehtävä(t):"
         },
@@ -1474,7 +1474,8 @@
                 "rhy": "Riistanhoitoyhdistys",
                 "customerId": "Asiakasnumero",
                 "geoLocation": "Sijainti",
-                "mooseArea": "Hirvitalousalue"
+                "mooseArea": "Hirvitalousalue",
+                "duplicateName": "Nimi on varattu toiselle seuralle"
             },
             "contactPersons": {
                 "title": "Yhteyshenkilöt",
@@ -1537,15 +1538,12 @@
                 "titleEdit": "Muokkaa ryhmää",
                 "titleCopy": "Kopioi ryhmä",
                 "species": "Laji",
-                "huntingYear": "Metsästysvuosi",
                 "huntingArea": "Metsästysalue",
                 "huntingAreaNotSet": "Ei asetettu",
                 "harvestPermit": "Lupa",
                 "harvestPermitNotSet": "Ei asetettu",
                 "choosePermit": "Valitse lupa",
                 "clearPermit": "Poista lupa",
-                "nameFI": "Nimi suomeksi",
-                "nameSV": "Nimi ruotsiksi",
                 "name": "Nimi",
                 "huntingFinished": "Metsästys päättynyt"
             },
@@ -1568,13 +1566,15 @@
         },
         "area": {
             "tabHeaders": {
-                "areaList": "Omat alueet",
+                "clubAreaList": "Seuran alueet",
                 "proposalList": "Lupa-alueet"
             },
             "button": {
                 "add": "Lisää alue",
                 "remove": "Poista alue",
-                "editArea": "Määrittele metsästysalue",
+                "edit": "Muokkaa nimeä",
+                "editGeometry": "Määrittele metsästysalue",
+                "copy": "Kopioi uuteen",
                 "functionMenu": "Toiminnot",
                 "importArea": "Lataa tiedostosta",
                 "exportArea": "Vie tiedostoon",
@@ -1587,13 +1587,61 @@
                 "deactivate": "Deaktivoi"
             },
             "list": {
-                "title": "Alueet",
                 "hasPendingChanges": "Aluetiedoissa päivityksiä",
                 "areaIsDeactive": "Alue on deaktivoitu",
                 "showDeactive": "Näytä myös deaktivoidut"
             },
             "proposal": {
-                "listTitle": "Yhteislupa-alueet"
+                "listTitle": "Lupa-alueet",
+                "partnerList": "Osakkaat",
+                "externalIdDescription": "Tätä tunnusta käytetään luvat.riista.fi sähköisessä lupahaussa.",
+                "notDisplayedWhenIncomplete": "Lupa-alueen tunnus, kartta ja pinta-alat näytetään, kun lupa-alue on merkitty valmiiksi",
+                "state": {
+                    "INCOMPLETE": "Keskeneräinen",
+                    "PENDING": "Odottaa laskentaa",
+                    "PROCESSING": "Lasketaan",
+                    "PROCESSING_FAILED": "Laskenta epäonnistui",
+                    "READY": "Valmis",
+                    "LOCKED": "Lukittu"
+                },
+                "button": {
+                    "add": "Lisää lupa-alue",
+                    "addClubArea": "Lisää alue",
+                    "functionMenu": "Toiminnot",
+                    "editName": "Muokkaa nimeä",
+                    "ready": "Aseta valmiiksi",
+                    "incomplete": "Aseta keskeneräiseksi",
+                    "updateGeometry": "Päivitä aluegeometria",
+                    "partnersExcel": "Vie osakaslista Excel-tiedostoon"
+                },
+                "partnerTable": {
+                    "clubName": "Osakkaan nimi",
+                    "clubOfficialCode": "Osakkaan asiakasnumero",
+                    "clubAreaName": "Seuran alueen nimi",
+                    "areaExternalId": "Seuran alueen tunnus",
+                    "totalAreaSize": "Kok.pinta-ala",
+                    "landAreaSize": "Maapinta-ala",
+                    "waterAreaSize": "Vesipinta-ala",
+                    "clubAreaChanged": "Seuran alue on päivittynyt sen jälkeen, kun sen kopio liitettiin lupahakemukseen",
+                    "rhy": "Lupa-alue sijaitsee seuraavien riistanhoitoyhdistysten alueella",
+                    "hta": "Lupa-alue sijaitsee seuraavien hirvitalousalueiden alueella"
+                },
+                "addClubArea": {
+                    "title": "Lisää seuran alue",
+                    "notFound": "Syötetyllä koodilla ei löytynyt alueita",
+                    "areaExternalId": "Seuran alueen tunnus"
+                },
+                "pendingModal": {
+                    "title": "Ole hyvä ja odota!",
+                    "infoText": "Alueen muodostaminen saattaa kestää 0 - 15 minuuttia.",
+                    "waiting": "Odotetaan laskennan alkamista ...",
+                    "processing": "Laskenta on meneillään ..."
+                },
+                "form": {
+                    "titleAdd": "Lisää lupa-alue",
+                    "titleEdit": "Muokkaa lupa-aluetta",
+                    "externalId": "Lupa-alueen tunnus"
+                }
             },
             "import": {
                 "confirmTitle": "Varmistus",
@@ -1607,12 +1655,8 @@
                 "titleAdd": "Lisää alue",
                 "titleEdit": "Muokkaa aluetta",
                 "titleCopy": "Kopioi alue",
-                "huntingYear": "Metsästysvuosi",
-                "nameFI": "Nimi suomeksi",
-                "nameSV": "Nimi ruotsiksi",
                 "externalId": "Alueen tunnus",
-                "copyGroups": "Kopioi myös alueeseen liitetyt ryhmät",
-                "lastModified": "Viimeisin muokkaus"
+                "copyGroups": "Kopioi myös alueeseen liitetyt ryhmät"
             },
             "print": {
                 "modalTitle": "Alueen tulostus",
@@ -1652,15 +1696,12 @@
                 "selectedArea": {
                     "title": "Valitun alueen tietoja",
                     "propertyIdentifier": "Kiinteistötunnus",
-                    "areaName": "Palstan nimi",
-                    "landAreaSize": "Maapinta-ala",
-                    "waterAreaSize": "Vesipinta-ala",
-                    "areaSize": "Kokonaispinta-ala",
+                    "areaCode": "Tunnus",
+                    "areaName": "Nimi",
                     "calculatingAreaSize": "Lasketaan...",
                     "changeTitle": "Muutokset",
                     "changeAmount": "Muutos",
-                    "fix": "Yritä korjata automaattisesti",
-                    "lastModified": "Viimeisin muokkaus"
+                    "fix": "Yritä korjata automaattisesti"
                 },
                 "tab": {
                     "selectedAreas": {
@@ -1687,7 +1728,11 @@
                         "emptySelection": "Ei valittuja metsähallituksen alueita"
                     }
                 }
-            }
+            },
+            "landAreaSize": "Maapinta-ala",
+            "waterAreaSize": "Vesipinta-ala",
+            "totalAreaSize": "Kokonaispinta-ala",
+            "lastModified": "Viimeisin muokkaus"
         },
         "hunting": {
             "tabHeaders": {
@@ -1760,7 +1805,8 @@
                 "effectiveHuntingArea": "Metsästykseen käytetyn alueen koko (täysinä hehtaareina)",
                 "huntingEndDate": "Pyynti päättynyt",
                 "saveUnfinished": "Tallenna keskeneräiseksi",
-                "markUnfinished": "Peru päättyminen"
+                "markUnfinished": "Peru päättyminen",
+                "totalHuntingAreaInfoText": "Metsästysalueen kokonaispinta-ala ei voi ylittää luvan pinta-alaa:"
             },
             "deerHuntingSummary": {
                 "huntingAreaAndEstimatedPopulationTitle": "Metsästyksen päätyttyä arvioitu kanta:",
@@ -1874,11 +1920,13 @@
                 "menuTitle": "Maksukuitin liittäminen ja luvalla metsästyksen päättäminen",
                 "title": "Maksukuitin liittäminen ja luvalla metsästyksen päättäminen",
                 "finishPermit": "Päätä lupa pudottamalla tähän kuitti tai klikkaa valitaksesi",
+                "fileTypeNotAccepted": "Tiedostotyyppiä ei tueta",
                 "permitFinished": "Luvalla metsästys on päätetty",
                 "unfinishPermit": "Peru päättyminen",
                 "finishedWithoutHarvests": "Metsästys päätetty ilman saaliita",
                 "finishWithoutHarvests": "Päätä metsästys ilman saaliita",
                 "downloadReceipt": "Lataa kuitti",
+                "paymentRecipientName": "Saaja",
                 "iban": "IBAN",
                 "bic": "BIC",
                 "creditorReference": "Viitenumero",
@@ -1910,9 +1958,9 @@
             "button": {
                 "functionMenu": "Toiminnot",
                 "table": "Taulukko",
-                "map": "Kartta",
                 "lukeReports": "Raportit",
-                "listLeaders": "Metsästyksenjohtajat"
+                "listLeaders": "Metsästyksenjohtajat",
+                "rhyStatistics": "RHY tilasto"
             },
             "percentage": {
                 "allocated": "Suunniteltu<br>(jaetut luvat)",
@@ -2099,7 +2147,6 @@
             "animal": "Eläin",
             "amount": "Määrä",
             "events": "Tapahtumat",
-            "map": "Kartta",
             "notAllEventsInfo": "Onnettomuudet näkyvät koko maasta, muut tapahtumat oman RHY:n alueelta.",
             "otherSpecies": "Muu laji",
             "rejectConfirmation": "Haluatko varmasti hylätä SRVA tapahtuman?",

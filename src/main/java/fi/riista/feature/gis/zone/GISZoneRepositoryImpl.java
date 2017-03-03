@@ -3,6 +3,10 @@ package fi.riista.feature.gis.zone;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.sql.JPASQLQuery;
 import com.querydsl.sql.SQLTemplates;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKBReader;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.feature.gis.geojson.PalstaFeatureCollection;
 import fi.riista.feature.gis.zone.query.CalculateCombinedGeometryQueries;
@@ -15,7 +19,6 @@ import fi.riista.feature.gis.zone.query.UpdateExternalFeatureQueries;
 import fi.riista.feature.gis.zone.query.UpdatePalstaFeatureQueries;
 import fi.riista.feature.huntingclub.area.zone.HuntingClubAreaFeatureDTO;
 import fi.riista.sql.SQZone;
-import fi.riista.util.F;
 import fi.riista.util.GISUtils;
 import fi.riista.util.JdbcTemplateEnhancer;
 import org.geojson.FeatureCollection;
@@ -39,14 +42,13 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 
 @Repository
-@Transactional
 public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
 
     private JdbcOperations jdbcTemplate;
     private NamedParameterJdbcOperations namedParameterJdbcTemplate;
+    private NamedParameterJdbcOperations enchancedJdbcTemplate;
 
     @Resource
     private CustomJacksonObjectMapper objectMapper;
@@ -69,14 +71,15 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.namedParameterJdbcTemplate = JdbcTemplateEnhancer.wrap(new NamedParameterJdbcTemplate(this.jdbcTemplate));
+        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(this.jdbcTemplate);
+        this.enchancedJdbcTemplate = JdbcTemplateEnhancer.wrap(this.namedParameterJdbcTemplate);
         this.getPalstaFeatureCollectionQuery = new GetPalstaFeatureCollectionQuery(namedParameterJdbcTemplate, objectMapper);
         this.getExternalFeatureCollectionQuery = new GetExternalFeatureCollectionQuery(namedParameterJdbcTemplate, objectMapper);
         this.getCombinedFeatureCollectionQuery = new GetCombinedFeatureCollectionQuery(namedParameterJdbcTemplate, objectMapper);
         this.updatePalstaFeatureQueries = new UpdatePalstaFeatureQueries(jdbcTemplate);
         this.updateExternalFeatureQueries = new UpdateExternalFeatureQueries(jdbcTemplate);
-        this.calculateCombinedGeometryQueries = new CalculateCombinedGeometryQueries(this.namedParameterJdbcTemplate);
-        this.calculateZoneAreaSizeQueries = new CalculateZoneAreaSizeQueries(namedParameterJdbcTemplate);
+        this.calculateCombinedGeometryQueries = new CalculateCombinedGeometryQueries(this.enchancedJdbcTemplate);
+        this.calculateZoneAreaSizeQueries = new CalculateZoneAreaSizeQueries(enchancedJdbcTemplate);
         this.copyZoneGeometryQueries = new CopyZoneGeometryQueries(namedParameterJdbcTemplate);
     }
 
@@ -118,6 +121,7 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     }
 
     @Override
+    @Transactional
     public void updatePalstaFeatures(final long zoneId, final FeatureCollection featureCollection) {
         final List<Integer> currentPalstaIds = jdbcTemplate.queryForList(
                 "SELECT palsta_id FROM zone_palsta WHERE zone_id = ?", Integer.class, zoneId);
@@ -143,7 +147,7 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<GISZoneWithoutGeometryDTO> fetchWithoutGeometry(final Collection<Long> zoneIds) {
         if (zoneIds.isEmpty()) {
             return emptyList();
@@ -152,8 +156,8 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
         return new JPASQLQuery<>(entityManager, queryDslSqlTemplates)
                 .from(SQZone.zone)
                 .select(Projections.constructor(GISZoneWithoutGeometryDTO.class,
-                        SQZone.zone.zoneId, SQZone.zone.sourceType,
-                        SQZone.zone.computedAreaSize, SQZone.zone.waterAreaSize))
+                        SQZone.zone.zoneId, SQZone.zone.sourceType, SQZone.zone.computedAreaSize,
+                        SQZone.zone.waterAreaSize, SQZone.zone.modificationTime))
                 .where(SQZone.zone.zoneId.in(zoneIds))
                 .fetch();
     }
@@ -181,10 +185,7 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     @Override
     @Transactional
     public GISZone copyZone(final GISZone from, final GISZone to) {
-        if (to.getId() != null) {
-            updatePalstaFeatureQueries.removeZonePalsta(to.getId());
-            updateExternalFeatureQueries.removeZoneFeatures(to.getId());
-        }
+        removeZonePalstaAndFeatures(to);
 
         to.setSourceType(from.getSourceType());
         to.setExcludedGeom(from.getExcludedGeom());
@@ -202,24 +203,37 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Geometry> loadSplicedGeometries(final Collection<Long> zoneIds) {
+        if (zoneIds.isEmpty()) {
+            return emptyList();
+        }
+
+        final GeometryFactory geometryFactory = GISUtils.getGeometryFactory(GISUtils.SRID.ETRS_TM35FIN);
+        final WKBReader wkbReader = new WKBReader(geometryFactory);
+        final MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("chunkSize", 2048)
+                .addValue("zoneIds", zoneIds);
+
+        return namedParameterJdbcTemplate.query(
+                "SELECT ST_AsBinary(ST_SubDivide(geom, :chunkSize)) AS geom FROM zone WHERE zone_id IN (:zoneIds)",
+                params, (resultSet, i) -> {
+                    final byte[] wkb = resultSet.getBytes("geom");
+
+                    try {
+                        return wkbReader.read(wkb);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    @Override
     @Transactional
-    public GISZone mergeZones(final List<GISZone> fromList, final GISZone zone) {
+    public void removeZonePalstaAndFeatures(final GISZone zone) {
         if (zone.getId() != null) {
             updatePalstaFeatureQueries.removeZonePalsta(zone.getId());
             updateExternalFeatureQueries.removeZoneFeatures(zone.getId());
         }
-
-        zone.setComputedAreaSize(F.sum(fromList, GISZone::getComputedAreaSize));
-        zone.setWaterAreaSize(F.sum(fromList, GISZone::getWaterAreaSize));
-        zone.setMetsahallitusHirvi(emptySet());
-        zone.setGeom(GISUtils.computeUnion(fromList));
-        zone.setExcludedGeom(null);
-
-        entityManager.persist(zone);
-        entityManager.flush();
-
-        calculateAreaSize(zone.getId());
-
-        return zone;
     }
 }

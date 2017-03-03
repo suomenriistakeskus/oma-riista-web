@@ -1,5 +1,6 @@
 package fi.riista.api;
 
+import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.huntingclub.hunting.overview.CoordinatorClubHarvestFeature;
 import fi.riista.feature.huntingclub.members.rhy.RhyClubOccupationDTO;
@@ -7,6 +8,7 @@ import fi.riista.feature.huntingclub.members.rhy.RiistanhoitoyhdistysClubFeature
 import fi.riista.feature.huntingclub.permit.MooselikeHuntingYearDTO;
 import fi.riista.feature.huntingclub.permit.MooselikePermitListingDTO;
 import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsDTO;
+import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsExcelView;
 import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsFeature;
 import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsFeature.OrgList;
 import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsFeature.OrgType;
@@ -16,6 +18,7 @@ import fi.riista.util.MediaTypeExtras;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.joda.time.LocalDate;
+import org.springframework.context.MessageSource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,6 +51,9 @@ public class RiistanhoitoyhdistysApiResource {
 
     @Resource
     private MoosePermitStatisticsFeature moosePermitStatisticsFeature;
+
+    @Resource
+    private MessageSource messageSource;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "{id:\\d+}", method = RequestMethod.GET)
@@ -100,8 +106,10 @@ public class RiistanhoitoyhdistysApiResource {
     public List<HarvestDTO> listHarvests(@PathVariable final Long id,
                                          @RequestParam final int speciesCode,
                                          @RequestParam final boolean filterByAreaGeometry,
-                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate begin,
-                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate end) {
+                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                         final LocalDate begin,
+                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                         final LocalDate end) {
 
         return coordinatorClubHarvestFeature.listHarvest(id, speciesCode, filterByAreaGeometry, begin, end);
     }
@@ -136,5 +144,23 @@ public class RiistanhoitoyhdistysApiResource {
                                                                  @RequestParam String orgCode,
                                                                  Locale locale) {
         return moosePermitStatisticsFeature.calculateByHolder(id, locale, species, year, orgType, orgCode);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @RequestMapping(value = "{id:\\d+}/moosepermit/statistics/excel",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            produces = MediaTypeExtras.APPLICATION_EXCEL_VALUE)
+    public ModelAndView exportRhyMooseStatisticsExcel(@PathVariable long id,
+                                                      @RequestParam int year,
+                                                      @RequestParam int species,
+                                                      @RequestParam OrgType orgType,
+                                                      @RequestParam String orgCode,
+                                                      Locale locale) {
+
+        final List<MoosePermitStatisticsDTO> stats =
+                moosePermitStatisticsFeature.calculateByHolder(id, locale, species, year, orgType, orgCode);
+        final EnumLocaliser localiser = new EnumLocaliser(messageSource, locale);
+        return new ModelAndView(new MoosePermitStatisticsExcelView(locale, localiser, stats));
     }
 }

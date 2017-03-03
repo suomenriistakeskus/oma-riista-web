@@ -8,21 +8,21 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.report.HarvestReport;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import org.hamcrest.Matchers;
-import org.joda.time.LocalDate;
 import org.junit.Test;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.Map;
 
+import static fi.riista.util.DateUtil.today;
+import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -32,8 +32,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
     private HuntingClubHarvestStatisticsFeature huntingClubHarvestSummaryFeature;
 
     private SystemUser createContactUserForClub(final HuntingClub club) {
-        final Person clubContact = model().newHuntingClubMember(club, OccupationType.SEURAN_YHDYSHENKILO).getPerson();
-        return createUser(clubContact);
+        return createUser(model().newHuntingClubMember(club, OccupationType.SEURAN_YHDYSHENKILO).getPerson());
     }
 
     @Test
@@ -47,73 +46,47 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final GameSpecies species = model().newGameSpecies();
         createHarvestWithLocationAndHuntingDay(location, hunter, species);
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of(
-                species.getOfficialCode(), 1L));
+        assertHarvestCount(club, species, 1L);
     }
 
     @Test
     public void testMatchHunterOnly() {
-        final GeoLocation location = geoLocation();
-        final HuntingClub club = createClubWithAreaAndZone(location);
+        withPerson(author -> withPerson(hunter -> {
+            final GeoLocation location = geoLocation();
+            final HuntingClub club = createClubWithAreaAndZone(location);
 
-        final Person hunter = model().newPerson();
-        model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
+            model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-        final Person author = model().newPerson();
+            final GameSpecies species = model().newGameSpecies();
 
-        final GameSpecies species = model().newGameSpecies();
-        final Harvest harvest = model().newHarvest(species, author, hunter);
-        harvest.setGeoLocation(location);
+            model().newHarvest(species, author, hunter).setGeoLocation(location);
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of(
-                species.getOfficialCode(), 1L));
+            assertHarvestCount(club, species, 1L);
+        }));
     }
 
     @Test
     public void testMatchAuthorOnly() {
-        final GeoLocation location = geoLocation();
-        final HuntingClub club = createClubWithAreaAndZone(location);
+        withPerson(author -> withPerson(hunter -> {
+            final GeoLocation location = geoLocation();
+            final HuntingClub club = createClubWithAreaAndZone(location);
 
-        final Person hunter = model().newPerson();
+            model().newOccupation(club, author, OccupationType.SEURAN_JASEN);
 
-        final Person author = model().newPerson();
-        model().newOccupation(club, author, OccupationType.SEURAN_JASEN);
+            final GameSpecies species = model().newGameSpecies();
+            model().newHarvest(species, author, hunter).setGeoLocation(location);
 
-        final GameSpecies species = model().newGameSpecies();
-        final Harvest harvest = model().newHarvest(species, author, hunter);
-        harvest.setGeoLocation(location);
-
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of(
-                species.getOfficialCode(), 1L));
+            assertHarvestCount(club, species, 1L);
+        }));
     }
 
     @Test
     public void testOccupationRestriction() {
         final GeoLocation location = geoLocation();
-        final HuntingClub club = createClubWithAreaAndZone(location);
 
-        final Person hunter = model().newPerson();
+        createHarvestWithLocationAndHuntingDay(location, model().newPerson(), model().newGameSpecies());
 
-        final GameSpecies species = model().newGameSpecies();
-        createHarvestWithLocationAndHuntingDay(location, hunter, species);
-
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of());
+        assertNoHarvests(createClubWithAreaAndZone(location));
     }
 
     @Test
@@ -124,16 +97,11 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Person hunter = model().newPerson();
         final Occupation occupation = model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
         // Validity end set to yesterday
-        occupation.setEndDate(DateUtil.today().minusDays(1));
+        occupation.setEndDate(today().minusDays(1));
 
-        final GameSpecies species = model().newGameSpecies();
-        createHarvestWithLocationAndHuntingDay(location, hunter, species);
+        createHarvestWithLocationAndHuntingDay(location, hunter, model().newGameSpecies());
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of());
+        assertNoHarvests(club);
     }
 
     @Test
@@ -142,17 +110,11 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final HuntingClub club = createClubWithAreaAndZone(location);
 
         final Person hunter = model().newPerson();
-        final Occupation occupation = model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
-        occupation.softDelete();
+        model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN).softDelete();
 
-        final GameSpecies species = model().newGameSpecies();
-        createHarvestWithLocationAndHuntingDay(location, hunter, species);
+        createHarvestWithLocationAndHuntingDay(location, hunter, model().newGameSpecies());
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of());
+        assertNoHarvests(club);
     }
 
     @Test
@@ -168,12 +130,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final GameSpecies species = model().newGameSpecies();
         createHarvestWithLocationAndHuntingDay(location, hunter, species);
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of(
-                species.getOfficialCode(), 1L));
+        assertHarvestCount(club, species, 1L);
     }
 
     @Test
@@ -182,8 +139,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final HuntingClub club = createClubWithAreaAndZone(location);
 
         final GameSpecies species = model().newGameSpecies();
-        final HuntingClubGroup group =
-                model().newHuntingClubGroupWithAreaContaining(location, club, species);
+        final HuntingClubGroup group = model().newHuntingClubGroupWithAreaContaining(location, club, species);
         // Hunting year not current year
         group.getHuntingArea().setHuntingYear(group.getHuntingArea().getHuntingYear() - 1);
 
@@ -192,12 +148,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocationAndHuntingDay(location, hunter, species);
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of(
-                species.getOfficialCode(), 1L));
+        assertHarvestCount(club, species, 1L);
     }
 
     @Test
@@ -210,11 +161,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocationAndHuntingDay(location.move(10, 10), hunter, model().newGameSpecies());
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of());
+        assertNoHarvests(club);
     }
 
     @Test
@@ -225,16 +172,11 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Person hunter = model().newPerson();
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-        for (final int speciesCode : GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING) {
-            final GameSpecies species = model().newGameSpecies(speciesCode);
-            createHarvestWithLocationAndHuntingDay(location, hunter, species);
-        }
+        GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.forEach(speciesCode -> {
+            createHarvestWithLocationAndHuntingDay(location, hunter, model().newGameSpecies(speciesCode));
+        });
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of());
+        assertNoHarvests(club);
     }
 
     @Test
@@ -247,11 +189,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocationAndHuntingDay(location, hunter, model().newGameSpecies());
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of());
+        assertNoHarvests(club);
     }
 
     private void assertClubMemberHarvests(final HuntingClub club, final Map<Integer, Long> expectedCounts) {
@@ -264,11 +202,8 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
     }
 
     private static Map<Integer, Long> getSpeciesCounts(final HuntingClubHarvestStatisticsDTO dto) {
-        final HashMap<Integer, Long> result = new HashMap<>();
-        for (HuntingClubHarvestStatisticsDTO.SummaryRow row : dto.getItems()) {
-            result.put(row.getSpecies().getCode(), row.getCount());
-        }
-        return result;
+        return dto.getItems().stream().collect(toMap(
+                row -> row.getSpecies().getCode(), row -> row.getCount()));
     }
 
     private HuntingClub createClubWithAreaAndZone(GeoLocation location) {
@@ -292,15 +227,12 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         final GameSpecies species = model().newGameSpecies();
         createHarvestWithHarvestReportRequiredWithReport(location, hunter, species, null);
+
         for (HarvestReport.State s : HarvestReport.State.values()) {
             createHarvestWithHarvestReportRequiredWithReport(location, hunter, species, s);
         }
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of(species.getOfficialCode(), 1L));
+        assertHarvestCount(club, species, 1L);
     }
 
     private void createHarvestWithHarvestReportRequiredWithReport(GeoLocation location, Person hunter, GameSpecies species, HarvestReport.State state) {
@@ -320,64 +252,48 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Person hunter = model().newPerson();
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-        for (final int speciesCode : GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING) {
+        GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.forEach(speciesCode -> {
             final GameSpecies species = model().newGameSpecies(speciesCode);
             createHarvestWithLocationAndHuntingDay(location, hunter, species);
             createHarvestWithLocationAndHuntingDay(location.move(100, 100), hunter, species);
-        }
+        });
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of());
+        assertNoHarvests(club);
     }
 
     @Test
     public void mooselikeLinkedToGroup() {
         final int huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
-        final LocalDate huntingDate = DateUtil.today();
 
         final GeoLocation location = geoLocation();
         final GameSpecies species = model().newGameSpeciesMoose();
         final HuntingClub club = createClubWithAreaAndZone(location);
         final HuntingClubGroup group = model().newHuntingClubGroup(club, species, huntingYear);
-        final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, huntingDate);
+        final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, today());
 
         final Person hunter = model().newPerson();
         // note that hunter is not a member
 
-        final Harvest h1 = createHarvestWithLocationAndHuntingDay(location, hunter, species, huntingDay);
-        final Harvest h2 = createHarvestWithLocationAndHuntingDay(location.move(100, 100), hunter, species, huntingDay);
+        createHarvestWithLocationAndHuntingDay(location, hunter, species, huntingDay);
+        createHarvestWithLocationAndHuntingDay(location.move(100, 100), hunter, species, huntingDay);
 
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of(species.getOfficialCode(), 2L));
+        assertHarvestCount(club, species, 2L);
     }
 
     @Test
     public void mooselikeLinkedToGroup_WrongHuntingYear() {
         // Group is for previous huntingYear
         final int huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear() - 1;
-        final LocalDate huntingDate = DateUtil.today().minusYears(1);
 
         final GeoLocation location = geoLocation();
         final GameSpecies species = model().newGameSpeciesMoose();
         final HuntingClub club = createClubWithAreaAndZone(location);
         final HuntingClubGroup group = model().newHuntingClubGroup(club, species, huntingYear);
-        final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, huntingDate);
+        final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, today().minusYears(1));
 
-        final Person hunter = model().newPerson();
+        createHarvestWithLocationAndHuntingDay(location, model().newPerson(), species, huntingDay);
 
-        final Harvest harvest = createHarvestWithLocationAndHuntingDay(location, hunter, species, huntingDay);
-
-        final SystemUser contactUser = createContactUserForClub(club);
-        persistInNewTransaction();
-        authenticate(contactUser);
-
-        assertClubMemberHarvests(club, ImmutableMap.of());
+        assertNoHarvests(club);
     }
 
     private Harvest createHarvestWithLocationAndHuntingDay(GeoLocation location, Person hunter, GameSpecies species) {
@@ -391,5 +307,17 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         harvest.setGeoLocation(location);
         harvest.updateHuntingDayOfGroup(huntingDay, null);
         return harvest;
+    }
+
+    private void assertNoHarvests(HuntingClub club) {
+        onSavedAndAuthenticated(createContactUserForClub(club), () -> {
+            assertClubMemberHarvests(club, ImmutableMap.of());
+        });
+    }
+
+    private void assertHarvestCount(HuntingClub club, GameSpecies species, long count) {
+        onSavedAndAuthenticated(createContactUserForClub(club), () -> {
+            assertClubMemberHarvests(club, ImmutableMap.of(species.getOfficialCode(), count));
+        });
     }
 }

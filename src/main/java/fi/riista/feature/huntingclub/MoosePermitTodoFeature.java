@@ -7,12 +7,12 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermitSpeciesAmount;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.huntingclub.area.QHuntingClubArea;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
@@ -43,8 +44,6 @@ public class MoosePermitTodoFeature {
     @Transactional(readOnly = true)
     public TodoDto listTodosForClub(long clubId, int year) {
         final QHarvestPermit permit = QHarvestPermit.harvestPermit;
-        final QHarvestPermitSpeciesAmount hpsa = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
-        final QGameSpecies species = QGameSpecies.gameSpecies;
 
         final QHuntingClub club = QHuntingClub.huntingClub;
         final QHuntingClubArea area = QHuntingClubArea.huntingClubArea;
@@ -98,7 +97,8 @@ public class MoosePermitTodoFeature {
 
     @Transactional(readOnly = true)
     public Map<Long, TodoDto> listTodos(final long permitId, final int speciesCode) {
-        final int year = findHuntingYear(entityService.requireHarvestPermit(permitId, EntityPermission.READ), speciesCode);
+        final int year = findHuntingYear(entityService.requireHarvestPermit(permitId, EntityPermission.READ), speciesCode)
+                .orElseThrow(() -> new IllegalStateException("Could not find huntingYear"));
 
         final QHarvestPermit permit = QHarvestPermit.harvestPermit;
         final QHarvestPermitSpeciesAmount hpsa = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
@@ -156,10 +156,10 @@ public class MoosePermitTodoFeature {
                 .collect(toMap(TodoDto::getClubId, Function.identity()));
     }
 
-    private int findHuntingYear(HarvestPermit p, int speciesCode) {
+    private OptionalInt findHuntingYear(HarvestPermit p, int speciesCode) {
         return harvestPermitSpeciesAmountRepository.findOneByHarvestPermitIdAndSpeciesCode(p.getId(), speciesCode)
-                .flatMap(HarvestPermitSpeciesAmount::findUnambiguousHuntingYear)
-                .get();
+                .map(Has2BeginEndDates::findUnambiguousHuntingYear)
+                .orElseGet(OptionalInt::empty);
     }
 
     private JPQLQuery<Long> baseQuery(final long permitId,

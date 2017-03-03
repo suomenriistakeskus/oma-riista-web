@@ -1,11 +1,12 @@
 package fi.riista.feature.account.user;
 
 import com.google.common.collect.ImmutableSet;
-import fi.riista.feature.SimpleAbstractCrudFeature;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.account.password.ChangePasswordService;
 import fi.riista.feature.common.entity.EntityAuditFields;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.security.UserInfo;
+import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 import fi.riista.util.jpa.JpaSpecs;
 import org.springframework.data.domain.Page;
@@ -16,19 +17,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
 import static fi.riista.util.jpa.JpaSpecs.inCollection;
 import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Component
-public class UserCrudFeature extends SimpleAbstractCrudFeature<Long, SystemUser, SystemUserDTO> {
+public class UserCrudFeature extends AbstractCrudFeature<Long, SystemUser, SystemUserDTO> {
     @Resource
     private UserRepository userRepository;
 
@@ -40,16 +41,46 @@ public class UserCrudFeature extends SimpleAbstractCrudFeature<Long, SystemUser,
         return userRepository;
     }
 
+    @Override
+    protected SystemUserDTO toDTO(@Nonnull final SystemUser user) {
+        final SystemUserDTO dto = new SystemUserDTO();
+
+        dto.setId(user.getId());
+        dto.setRev(user.getConsistencyVersion());
+        dto.setUsername(user.getUsername());
+        dto.setActive(user.isActive());
+        dto.setRole(user.getRole());
+        dto.setEmail(user.getEmail());
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setLocale(user.getLocale());
+        dto.setTimeZone(user.getTimeZone());
+        dto.setIpWhiteList(user.getIpWhiteList());
+        dto.setTwoFactorAuthentication(user.getTwoFactorAuthentication());
+
+        if (user.getPerson() != null) {
+            dto.setFirstName(user.getPerson().getFirstName());
+            dto.setLastName(user.getPerson().getLastName());
+        } else {
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setNameEditable(true);
+        }
+        if (user.getRole() == SystemUser.Role.ROLE_REST) {
+            dto.setPrivileges(ImmutableSet.copyOf(user.getPrivileges()));
+        }
+        return dto;
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public Page<SystemUserDTO> list(Pageable page) {
-        return toDTO(userRepository.findAll(page), page);
+        return DtoUtil.toDTO(userRepository.findAll(page), page, this::toDTO);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public Page<SystemUserDTO> listHavingAnyOfRole(List<SystemUser.Role> roles, Pageable page) {
-        return toDTO(userRepository.listHavingAnyOfRole(roles, page), page);
+        return DtoUtil.toDTO(userRepository.listHavingAnyOfRole(roles, page), page, this::toDTO);
     }
 
     @Override
@@ -75,6 +106,7 @@ public class UserCrudFeature extends SimpleAbstractCrudFeature<Long, SystemUser,
             user.setLocale(dto.getLocale());
             user.setTimeZone(dto.getTimeZone());
             user.setIpWhiteList(dto.getIpWhiteList());
+            user.setTwoFactorAuthentication(dto.getTwoFactorAuthentication());
 
             if (dto.getPassword() != null) {
                 changePasswordService.setUserPassword(user, dto.getPassword());
@@ -85,37 +117,6 @@ public class UserCrudFeature extends SimpleAbstractCrudFeature<Long, SystemUser,
                 dto.getPrivileges().forEach(user::addPrivilege);
             }
         }
-    }
-
-    @Override
-    protected Function<SystemUser, SystemUserDTO> entityToDTOFunction() {
-        return user -> {
-            final SystemUserDTO dto = new SystemUserDTO();
-
-            dto.setId(user.getId());
-            dto.setRev(user.getConsistencyVersion());
-            dto.setUsername(user.getUsername());
-            dto.setActive(user.isActive());
-            dto.setRole(user.getRole());
-            dto.setEmail(user.getEmail());
-            dto.setPhoneNumber(user.getPhoneNumber());
-            dto.setLocale(user.getLocale());
-            dto.setTimeZone(user.getTimeZone());
-            dto.setIpWhiteList(user.getIpWhiteList());
-
-            if (user.getPerson() != null) {
-                dto.setFirstName(user.getPerson().getFirstName());
-                dto.setLastName(user.getPerson().getLastName());
-            } else {
-                dto.setFirstName(user.getFirstName());
-                dto.setLastName(user.getLastName());
-                dto.setNameEditable(true);
-            }
-            if (user.getRole() == SystemUser.Role.ROLE_REST) {
-                dto.setPrivileges(ImmutableSet.copyOf(user.getPrivileges()));
-            }
-            return dto;
-        };
     }
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)

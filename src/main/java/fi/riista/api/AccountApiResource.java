@@ -1,13 +1,15 @@
 package fi.riista.api;
 
-import fi.riista.feature.account.AccountEditFeature;
-import fi.riista.feature.account.todo.AccountTodoFeature;
-import fi.riista.feature.account.AccountViewFeature;
-import fi.riista.feature.account.payment.HunterPaymentPdfFeature;
 import fi.riista.feature.account.AccountDTO;
+import fi.riista.feature.account.AccountEditFeature;
+import fi.riista.feature.account.AccountViewFeature;
+import fi.riista.feature.account.ModifyTwoFactorAuthenticationDTO;
+import fi.riista.feature.account.ModifyTwoFactorAuthenticationFeature;
+import fi.riista.feature.account.password.ChangePasswordDTO;
+import fi.riista.feature.account.payment.HunterPaymentPdfFeature;
 import fi.riista.feature.account.todo.AccountSrvaTodoCountDTO;
 import fi.riista.feature.account.todo.AccountTodoCountDTO;
-import fi.riista.feature.account.password.ChangePasswordDTO;
+import fi.riista.feature.account.todo.AccountTodoFeature;
 import fi.riista.feature.announcement.show.ListAnnouncementDTO;
 import fi.riista.feature.announcement.show.ListAnnouncementFeature;
 import fi.riista.feature.announcement.show.ListAnnouncementRequest;
@@ -54,6 +56,9 @@ public class AccountApiResource {
     private AccountTodoFeature accountTodoFeature;
 
     @Resource
+    private ModifyTwoFactorAuthenticationFeature modifyTwoFactorAuthenticationFeature;
+
+    @Resource
     private HunterPaymentPdfFeature hunterPaymentPdfFeature;
 
     @Resource
@@ -91,6 +96,20 @@ public class AccountApiResource {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(@RequestBody @Valid ChangePasswordDTO dto) {
         accountEditFeature.changeActiveUserPassword(dto);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @RequestMapping(value = "twofactor", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ModifyTwoFactorAuthenticationDTO getTwoFactorAuthentication() {
+        return modifyTwoFactorAuthenticationFeature.getTwoFactorAuthentication();
+    }
+
+    @RequestMapping(value = "twofactor", method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ModifyTwoFactorAuthenticationDTO modifyTwoFactorAuthentication(
+            @RequestBody @Valid ModifyTwoFactorAuthenticationDTO dto) {
+        return modifyTwoFactorAuthenticationFeature.updateTwoFactorAuthentication(dto);
     }
 
     @RequestMapping(value = "deactivate", method = RequestMethod.POST)

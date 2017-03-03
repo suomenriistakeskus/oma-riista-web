@@ -1,57 +1,39 @@
 package fi.riista.feature.harvestpermit.report;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.common.collect.Lists;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.dto.DoNotValidate;
-import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
+import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.util.F;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
+
+import static java.util.stream.Collectors.toList;
 
 public class HarvestReportForListPermitDTO extends HarvestReportDTOBase {
 
     @Nonnull
-    public static List<HarvestReportForListPermitDTO> create(@Nonnull Iterable<HarvestReport> reports,
-                                                             final SystemUser user,
-                                                             final Map<Long, SystemUser> moderatorCreators,
-                                                             final boolean includeHarvests,
-                                                             final HarvestDTOTransformer dtoTransformer) {
-
-        return F.mapNonNullsToList(reports, report -> HarvestReportForListPermitDTO.create(
-                report, user, moderatorCreators, includeHarvests, dtoTransformer));
-    }
-
-
-    @Nonnull
     public static HarvestReportForListPermitDTO create(@Nonnull final HarvestReport report,
-                                                       final SystemUser user,
+                                                       @Nonnull final SystemUser user,
+                                                       @Nonnull final Map<Long, SystemUser> moderatorCreators,
                                                        final boolean includeHarvests,
-                                                       final HarvestDTOTransformer dtoTransformer) {
-        return create(report, user, Collections.emptyMap(), includeHarvests, dtoTransformer);
-    }
+                                                       @Nonnull final HarvestDTOTransformer dtoTransformer,
+                                                       final Predicate<Harvest> harvestFilter) {
 
-    @Nonnull
-    public static HarvestReportForListPermitDTO create(@Nonnull final HarvestReport report,
-                                                       final SystemUser user,
-                                                       final Map<Long, SystemUser> moderatorCreators,
-                                                       final boolean includeHarvests,
-                                                       final HarvestDTOTransformer dtoTransformer) {
-        final HarvestReportForListPermitDTO dto = createReadOnly(report, includeHarvests, dtoTransformer);
-        HarvestReportDTOBase.copyBaseFields(report, dto, user, moderatorCreators);
-        return dto;
-    }
-
-    @Nonnull
-    private static HarvestReportForListPermitDTO createReadOnly(@Nonnull final HarvestReport report,
-                                                                final boolean includeHarvests,
-                                                                final HarvestDTOTransformer dtoTransformer) {
+        Objects.requireNonNull(report);
+        Objects.requireNonNull(user);
+        Objects.requireNonNull(moderatorCreators);
+        Objects.requireNonNull(dtoTransformer);
+        if (includeHarvests) {
+            Objects.requireNonNull(harvestFilter, "When includeHarvests=true, then harvestFilter must be non-null");
+        }
         final HarvestReportForListPermitDTO dto = new HarvestReportForListPermitDTO();
         dto.setState(report.getState());
 
@@ -60,9 +42,10 @@ public class HarvestReportForListPermitDTO extends HarvestReportDTOBase {
         dto.setRhyId(permit.getRhy().getId());
 
         if (includeHarvests) {
-            dto.setHarvests(dtoTransformer.transform(Lists.newArrayList(report.getHarvests())));
+            dto.setHarvests(dtoTransformer.transform(report.getHarvests().stream().filter(harvestFilter).collect(toList())));
         }
 
+        HarvestReportDTOBase.copyBaseFields(report, dto, user, moderatorCreators);
         return dto;
     }
 

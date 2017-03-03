@@ -31,7 +31,7 @@ public class DatabaseFileStorage implements FileStorageSpi {
     }
 
     @Override
-    @Transactional(rollbackFor = IOException.class)
+    @Transactional
     public void retrieveFile(final PersistentFileMetadata metadata, final OutputStream outputStream) {
         final Object[] params = {metadata.getId().toString()};
 
@@ -45,7 +45,7 @@ public class DatabaseFileStorage implements FileStorageSpi {
     }
 
     @Override
-    @Transactional(rollbackFor = IOException.class)
+    @Transactional
     public void storeFile(final FileType fileType,
                           final PersistentFileMetadata metadata,
                           final InputStream inputStream) {

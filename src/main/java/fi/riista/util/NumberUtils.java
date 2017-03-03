@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public final class NumberUtils {
 
-    private static final double EPSILON = 0.00001;
+    public static final double EPSILON = 0.00001;
 
     private NumberUtils() {
         throw new AssertionError();
@@ -40,6 +40,10 @@ public final class NumberUtils {
         if (eitherNull || expected != null && actual != null && expected.compareTo(actual) != 0) {
             throw new AssertionError(String.format("expected %s but was: %s", expected, actual));
         }
+    }
+
+    public static long squareMetersToHectares(double squareMeters) {
+        return Math.round(squareMeters / 10_000);
     }
 
 }

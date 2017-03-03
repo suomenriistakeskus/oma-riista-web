@@ -204,7 +204,7 @@ public final class MooseDataCardImportFailureReasons {
         return String.format("%s ei ole sallitulla välillä %s: %s",
                 fieldMeta.getNameFinnish(),
                 fieldMeta.getRange().toString(),
-                Optional.ofNullable(value).map(Object::toString).orElse(null));
+                value != null ? value.toString() : null);
     }
 
     @Nonnull

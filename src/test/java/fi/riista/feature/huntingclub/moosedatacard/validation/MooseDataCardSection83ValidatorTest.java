@@ -2,11 +2,11 @@ package fi.riista.feature.huntingclub.moosedatacard.validation;
 
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newSection83;
 import static fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardSection83Validator.validate;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_3;
 import fi.riista.util.Asserts;
-
 import org.junit.Test;
 
 import java.util.stream.Stream;
@@ -15,7 +15,9 @@ public class MooseDataCardSection83ValidatorTest {
 
     @Test
     public void testValidate_withValidData() {
-        assertTrue(validate(newSection83()).isValid());
+        final MooseDataCardSection_8_3 section = newSection83();
+
+        Asserts.assertValid(validate(section), s -> assertEquals(section.toString(), s.toString()));
     }
 
     @Test

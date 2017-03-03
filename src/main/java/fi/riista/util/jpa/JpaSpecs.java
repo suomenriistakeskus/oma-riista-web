@@ -6,7 +6,7 @@ import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.common.entity.LifecycleEntity_;
 import fi.riista.util.DateUtil;
-import fi.riista.util.F;
+import javaslang.Function3;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Objects;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public final class JpaSpecs {
 
@@ -390,41 +392,50 @@ public final class JpaSpecs {
     }
 
     @Nonnull
-    public static <T> Specification<T> and(@Nonnull final Iterable<? extends Specification<T>> specs) {
-        return reduce(specs, (first, second, cb) -> cb.and(first, second));
+    public static <T> Specification<T> and(@Nonnull final Collection<? extends Specification<T>> specs) {
+        Objects.requireNonNull(specs);
+        Preconditions.checkArgument(specs.size() > 0, "At least one specification must be given");
+        return reduceConjunction(specs::stream);
     }
 
     @Nonnull
     @SafeVarargs
     public static <T> Specification<T> and(@Nonnull final Specification<T>... specs) {
-        return and(Arrays.asList(specs));
+        Objects.requireNonNull(specs);
+        Preconditions.checkArgument(specs.length > 0, "At least one specification must be given");
+        return specs.length == 1 ? specs[0] : reduceConjunction(() -> Arrays.stream(specs));
     }
 
     @Nonnull
-    public static <T> Specification<T> or(@Nonnull final Iterable<? extends Specification<T>> specs) {
-        return reduce(specs, (first, second, cb) -> cb.or(first, second));
+    public static <T> Specification<T> or(@Nonnull final Collection<? extends Specification<T>> specs) {
+        Objects.requireNonNull(specs);
+        Preconditions.checkArgument(specs.size() > 0, "At least one specification must be given");
+        return reduceDisjunction(specs::stream);
     }
 
     @Nonnull
     @SafeVarargs
     public static <T> Specification<T> or(@Nonnull final Specification<T>... specs) {
-        return or(Arrays.asList(specs));
+        Objects.requireNonNull(specs);
+        Preconditions.checkArgument(specs.length > 0, "At least one specification must be given");
+        return specs.length == 1 ? specs[0] : reduceDisjunction(() -> Arrays.stream(specs));
     }
 
-    private static <T> Specification<T> reduce(
-            final Iterable<? extends Specification<T>> specs, final PredicateReducer reducer) {
-
-        Preconditions.checkArgument(!F.isNullOrEmpty(specs), "At least one specification must be given");
-
-        return (root, query, cb) -> F.foldLeft(specs, (acc, spec) -> {
-            Objects.requireNonNull(spec);
-            final Predicate newPredicate = spec.toPredicate(root, query, cb);
-            return acc == null ? newPredicate : reducer.reduce(acc, newPredicate, cb);
-        }, null);
+    private static <T> Specification<T> reduceConjunction(final Supplier<Stream<? extends Specification<T>>> streamSupplier) {
+        return reduce(streamSupplier, (first, second, cb) -> cb.and(first, second));
     }
 
-    private interface PredicateReducer {
-        Predicate reduce(@Nonnull Predicate first, @Nonnull Predicate second, @Nonnull CriteriaBuilder cb);
+    private static <T> Specification<T> reduceDisjunction(final Supplier<Stream<? extends Specification<T>>> streamSupplier) {
+        return reduce(streamSupplier, (first, second, cb) -> cb.or(first, second));
+    }
+
+    private static <T> Specification<T> reduce(final Supplier<Stream<? extends Specification<T>>> streamSupplier,
+                                               final Function3<Predicate, Predicate, CriteriaBuilder, Predicate> reducer) {
+
+        return (root, query, cb) -> streamSupplier.get()
+                .map(spec -> spec.toPredicate(root, query, cb))
+                .reduce((p1, p2) -> reducer.apply(p1, p2, cb))
+                .get();
     }
 
 }

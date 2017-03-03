@@ -33,6 +33,7 @@
         "L": false,
         "moment": false,
         "greinerHormann": false,
+        "QRCode": false,
         // Angular Mocks
         "inject": false,
         // JASMINE

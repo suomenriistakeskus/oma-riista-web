@@ -75,7 +75,7 @@ public class MooseDataCardSummaryValidatorTest {
     }
 
     private static Has2BeginEndDates newPermitSeason(final LocalDate beginDate, final LocalDate endDate) {
-        return new Has2BeginEndDatesDTO(beginDate, endDate, null, null);
+        return new Has2BeginEndDatesDTO(beginDate, endDate);
     }
 
 }

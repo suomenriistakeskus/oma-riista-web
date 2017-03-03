@@ -4,37 +4,37 @@ import com.google.common.base.Preconditions;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.SimpleAbstractCrudFeature;
 import fi.riista.feature.common.entity.Required;
-import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenService;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
-import fi.riista.feature.gamediary.harvest.QHarvest;
+import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.QHarvest;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenRepository;
-import fi.riista.feature.gis.kiinteisto.CoordinatePropertyLookupFeature;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenService;
 import fi.riista.feature.gis.GISPoint;
 import fi.riista.feature.gis.GISQueryService;
+import fi.riista.feature.gis.kiinteisto.CoordinatePropertyLookupFeature;
+import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
 import fi.riista.feature.harvestpermit.report.fields.HarvestReportFieldsRepository;
 import fi.riista.feature.harvestpermit.report.state.HarvestReportStateHistory;
 import fi.riista.feature.harvestpermit.report.state.HarvestReportStateHistoryRepository;
-import fi.riista.feature.harvestpermit.season.HarvestSeasonDTO;
-import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.season.HarvestQuota;
-import fi.riista.feature.harvestpermit.season.HarvestSeason;
-import fi.riista.feature.harvestpermit.QHarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.season.HarvestQuotaRepository;
+import fi.riista.feature.harvestpermit.season.HarvestSeason;
+import fi.riista.feature.harvestpermit.season.HarvestSeasonDTO;
 import fi.riista.feature.harvestpermit.season.HarvestSeasonRepository;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.integration.mml.dto.MMLRekisteriyksikonTietoja;
 import fi.riista.security.EntityPermission;
@@ -47,6 +47,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
@@ -57,9 +58,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @Component
-public class HarvestReportCrudFeature extends SimpleAbstractCrudFeature<Long, HarvestReport, HarvestReportDTOBase> {
+public class HarvestReportCrudFeature extends AbstractCrudFeature<Long, HarvestReport, HarvestReportDTOBase> {
 
     private static final Logger LOG = LoggerFactory.getLogger(HarvestReportCrudFeature.class);
 
@@ -114,6 +116,32 @@ public class HarvestReportCrudFeature extends SimpleAbstractCrudFeature<Long, Ha
     @Override
     protected JpaRepository<HarvestReport, Long> getRepository() {
         return harvestReportRepository;
+    }
+
+    @Override
+    protected HarvestReportDTOBase toDTO(@Nonnull final HarvestReport entity) {
+        return entityToDTOFunction(Collections.emptyMap(), false, null).apply(entity);
+    }
+
+    public Function<HarvestReport, HarvestReportDTOBase> entityToDTOFunction(
+            final Map<Long, SystemUser> moderatorCreators,
+            final boolean includeHarvests,
+            final Predicate<Harvest> harvestFilter) {
+
+        return new Function<HarvestReport, HarvestReportDTOBase>() {
+            @Nullable
+            @Override
+            public HarvestReportDTOBase apply(@Nullable HarvestReport input) {
+                if (input == null) {
+                    return null;
+                }
+                if (input.getHarvestPermit() != null && input.getHarvestPermit().isHarvestsAsList()) {
+                    return HarvestReportForListPermitDTO.create(input, activeUserService.getActiveUser(),
+                            moderatorCreators, includeHarvests, dtoTransformer, harvestFilter);
+                }
+                return HarvestReportSingleHarvestDTO.create(input, activeUserService.getActiveUser(), moderatorCreators);
+            }
+        };
     }
 
     @Override
@@ -439,8 +467,8 @@ public class HarvestReportCrudFeature extends SimpleAbstractCrudFeature<Long, Ha
         final BooleanExpression harvestExistsAsShooter = JPAExpressions.selectFrom(harvest)
                 .leftJoin(harvest.harvestPermit, harvestPermit)
                 .where(harvest.harvestReport.id.eq(harvestReport.id)
-                                .and(harvest.actualShooter.eq(person))
-                                .and(harvestPermit.isNull().or(harvestPermit.harvestsAsList.eq(false)))
+                        .and(harvest.actualShooter.eq(person))
+                        .and(harvestPermit.isNull().or(harvestPermit.harvestsAsList.eq(false)))
                 )
                 .exists();
         final List<HarvestReport> res = new JPAQuery<>(entityManager).from(harvestReport)
@@ -449,34 +477,7 @@ public class HarvestReportCrudFeature extends SimpleAbstractCrudFeature<Long, Ha
                         .and(harvestReport.state.ne(HarvestReport.State.DELETED)))
                 .select(harvestReport)
                 .fetch();
-        return F.mapNonNullsToList(res, entityToDTOFunction());
-    }
-
-    @Override
-    protected Function<HarvestReport, HarvestReportDTOBase> entityToDTOFunction() {
-        return entityToDTOFunction(Collections.emptyMap(), false);
-    }
-
-    public Function<HarvestReport, HarvestReportDTOBase> entityToDTOFunction(final boolean includeHarvests) {
-        return entityToDTOFunction(Collections.emptyMap(), includeHarvests);
-    }
-
-    public Function<HarvestReport, HarvestReportDTOBase> entityToDTOFunction(
-            final Map<Long, SystemUser> moderatorCreators, final boolean includeHarvests) {
-        return new Function<HarvestReport, HarvestReportDTOBase>() {
-            @Nullable
-            @Override
-            public HarvestReportDTOBase apply(@Nullable HarvestReport input) {
-                if (input == null) {
-                    return null;
-                }
-                if (input.getHarvestPermit() != null && input.getHarvestPermit().isHarvestsAsList()) {
-                    return HarvestReportForListPermitDTO.create(input, activeUserService.getActiveUser(),
-                            moderatorCreators, includeHarvests, dtoTransformer);
-                }
-                return HarvestReportSingleHarvestDTO.create(input, activeUserService.getActiveUser(), moderatorCreators);
-            }
-        };
+        return F.mapNonNullsToList(res, this::toDTO);
     }
 
     @Transactional

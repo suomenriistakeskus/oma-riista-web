@@ -60,10 +60,10 @@ public class GetCombinedFeatureCollectionQuery {
         return feature;
     }
 
-    public FeatureCollection execute(final Set<Long> zoneIds,
-                                     final GISUtils.SRID srid,
-                                     final double simplifyAmount) {
+    @Nonnull
+    public FeatureCollection execute(final Set<Long> zoneIds, final GISUtils.SRID srid, final double simplifyAmount) {
         final FeatureCollection featureCollection = new FeatureCollection();
+        featureCollection.setCrs(srid.getGeoJsonCrs());
 
         if (zoneIds.isEmpty()) {
             return featureCollection;

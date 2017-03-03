@@ -1,81 +1,48 @@
 package fi.riista.feature.gamediary.image;
 
-import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.account.user.UserRepository;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
 import fi.riista.security.authorization.AbstractEntityAuthorization;
-import fi.riista.security.authorization.api.EntityAuthorizationTarget;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.Optional;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 
 @Component
-public class GameDiaryImageAuthorization extends AbstractEntityAuthorization {
+public class GameDiaryImageAuthorization extends AbstractEntityAuthorization<GameDiaryImage> {
 
     private enum Role {
         GAME_DIARY_OWNER
     }
 
     @Resource
-    private UserRepository userRepository;
-
-    @Resource
-    private GameDiaryImageRepository gameDiaryImageRepository;
+    private UserAuthorizationHelper userAuthorizationHelper;
 
     public GameDiaryImageAuthorization() {
-        super("GameDiaryImage");
-
-        allow(READ,   ROLE_ADMIN, Role.GAME_DIARY_OWNER);
-        allow(CREATE, ROLE_ADMIN, Role.GAME_DIARY_OWNER);
-        allow(UPDATE, ROLE_ADMIN, Role.GAME_DIARY_OWNER);
-        allow(DELETE, ROLE_ADMIN, Role.GAME_DIARY_OWNER);
+        allow(EntityPermission.READ, ROLE_ADMIN, Role.GAME_DIARY_OWNER);
+        allow(EntityPermission.CREATE, ROLE_ADMIN, Role.GAME_DIARY_OWNER);
+        allow(EntityPermission.UPDATE, ROLE_ADMIN, Role.GAME_DIARY_OWNER);
+        allow(EntityPermission.DELETE, ROLE_ADMIN, Role.GAME_DIARY_OWNER);
     }
 
     @Override
-    protected void authorizeTarget(
-            AuthorizationTokenCollector collector, final EntityAuthorizationTarget target, final UserInfo userInfo) {
+    protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,
+                                   @Nonnull final GameDiaryImage image,
+                                   @Nonnull final UserInfo userInfo) {
 
-        collector.addAuthorizationRole(Role.GAME_DIARY_OWNER, () -> isOwnerOfTarget(target, userInfo));
+        userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
+            collector.addAuthorizationRole(Role.GAME_DIARY_OWNER, () -> isOwner(image, activePerson));
+        });
     }
 
-    private boolean isOwnerOfTarget(final EntityAuthorizationTarget target, final UserInfo userInfo) {
-        final Person person = getAuthenticatedPerson(userInfo);
+    private static boolean isOwner(final GameDiaryImage image, final Person person) {
+        return image.getHarvest() != null && image.getHarvest().isAuthor(person) ||
+                image.getObservation() != null && image.getObservation().isAuthor(person);
 
-        if (person == null) {
-            return false;
-        }
-
-        final GameDiaryImage image = Optional.ofNullable((Long) target.getAuthorizationTargetId())
-                .map(gameDiaryImageRepository::findOne)
-                .orElseGet(() -> target.getAuthorizationTarget(GameDiaryImage.class));
-
-        if (image != null) {
-            if (image.getHarvest() != null) {
-                return image.getHarvest().isAuthor(person);
-            }
-            if (image.getObservation() != null) {
-                return image.getObservation().isAuthor(person);
-            }
-        }
-
-        return false;
     }
-
-    private Person getAuthenticatedPerson(final UserInfo userInfo) {
-        return Optional.ofNullable(userInfo.getUserId())
-                .map(userRepository::findOne)
-                .map(SystemUser::getPerson)
-                .orElse(null);
-    }
-
-    @Override
-    public Class<?>[] getSupportedTypes() {
-        return new Class[] { GameDiaryImage.class };
-    }
-
 }

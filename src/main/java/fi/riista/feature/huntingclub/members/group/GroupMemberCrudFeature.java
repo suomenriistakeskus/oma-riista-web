@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.huntingclub.HuntingClub;
@@ -11,21 +12,19 @@ import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.huntingclub.members.HuntingClubOccupationDTOTransformer;
-import fi.riista.feature.organization.person.PersonLookupService;
-import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.organization.occupation.OccupationDTO;
-import fi.riista.feature.organization.person.ContactInfoShare;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationDTO;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationSort;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.occupation.Occupation_;
+import fi.riista.feature.organization.person.ContactInfoShare;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonLookupService;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import fi.riista.util.ListTransformer;
 import fi.riista.util.jpa.JpaSpecs;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
@@ -33,6 +32,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.List;
@@ -69,13 +69,13 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
     private UserAuthorizationHelper userAuthorizationHelper;
 
     @Override
-    protected ListTransformer<Occupation, OccupationDTO> dtoTransformer() {
-        return clubOccupationDTOTransformer;
+    protected JpaRepository<Occupation, Long> getRepository() {
+        return occupationRepository;
     }
 
     @Override
-    protected JpaRepository<Occupation, Long> getRepository() {
-        return occupationRepository;
+    protected OccupationDTO toDTO(@Nonnull final Occupation entity) {
+        return clubOccupationDTOTransformer.apply(entity);
     }
 
     @Transactional(readOnly = true)

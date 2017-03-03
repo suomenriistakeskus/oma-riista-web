@@ -7,37 +7,39 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingInTotalHuntingAreaGivenButAreaMissing;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingNotGivenAtAll;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.totalHuntingAreaMissingAndEffectiveHuntingAreaGivenAsPercentageShare;
+import static java.util.Arrays.asList;
 import static javaslang.control.Validation.invalid;
 import static javaslang.control.Validation.valid;
 
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_1;
-import fi.riista.util.F;
-
+import fi.riista.util.ValidationUtils;
 import javaslang.control.Validation;
 
 import javax.annotation.Nonnull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class MooseDataCardSection81Validator {
+
+    private static final List<Function<MooseDataCardSection_8_1, Validation<String, ?>>> RANGE_VALIDATIONS = asList(
+            MooseDataCardSummaryField.TOTAL_HUNTING_AREA::validate,
+            MooseDataCardSummaryField.EFFECTIVE_HUNTING_AREA::validate,
+            MooseDataCardSummaryField.EFFECTIVE_HUNTING_AREA_PERCENTAGE::validate,
+            MooseDataCardSummaryField.MOOSES_REMAINING_IN_TOTAL_HUNTING_AREA::validate,
+            MooseDataCardSummaryField.MOOSES_REMAINING_IN_EFFECTIVE_HUNTING_AREA::validate);
 
     public static Validation<List<String>, MooseDataCardSection_8_1> validate(
             @Nonnull final MooseDataCardSection_8_1 section) {
 
         Objects.requireNonNull(section);
 
-        final Validation<? extends Iterable<String>, MooseDataCardSection_8_1> rangeValidation =
-                MooseDataCardSummaryField.TOTAL_HUNTING_AREA.validate(section)
-                        .combine(MooseDataCardSummaryField.EFFECTIVE_HUNTING_AREA.validate(section))
-                        .combine(MooseDataCardSummaryField.EFFECTIVE_HUNTING_AREA_PERCENTAGE.validate(section))
-                        .combine(MooseDataCardSummaryField.MOOSES_REMAINING_IN_TOTAL_HUNTING_AREA.validate(section))
-                        .combine(MooseDataCardSummaryField.MOOSES_REMAINING_IN_EFFECTIVE_HUNTING_AREA.validate(section))
-                        .ap((_1, _2, _3, _4, _5) -> section);
+        final Validation<List<String>, MooseDataCardSection_8_1> rangeValidations =
+                ValidationUtils.validate(section, RANGE_VALIDATIONS);
 
-        return F.combine(rangeValidation, validateCombinatorialPresence(section)).map(list -> section);
+        return ValidationUtils.reduce(rangeValidations, validateCombinatorialPresence(section), (_1, _2) -> section);
     }
 
     private static Validation<List<String>, MooseDataCardSection_8_1> validateCombinatorialPresence(

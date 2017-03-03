@@ -64,7 +64,7 @@ public class MooseDataCardObjectFactoryTest {
         assertNotNull(male.getGeoLocation());
         assertNotNull(male.getWeightMeasured());
         assertNotNull(male.getWeightEstimated());
-        assertTrue(HasMooseDataCardEncoding.enumOf(GameAntlersType.class, male.getAntlersType()).isRight());
+        assertTrue(HasMooseDataCardEncoding.eitherInvalidOrValid(GameAntlersType.class, male.getAntlersType()).isRight());
         assertNotNull(male.getAntlersWidth());
         assertNotNull(male.getAntlerPointsLeft());
         assertNotNull(male.getAntlerPointsRight());
@@ -90,7 +90,7 @@ public class MooseDataCardObjectFactoryTest {
         assertNotNull(calf);
         assertNotNull(calf.getDate());
         assertNotNull(calf.getGeoLocation());
-        assertTrue(HasMooseDataCardEncoding.enumOf(GameGender.class, calf.getGender()).isRight());
+        assertTrue(HasMooseDataCardEncoding.eitherInvalidOrValid(GameGender.class, calf.getGender()).isRight());
         assertNotNull(calf.getWeightMeasured());
         assertNotNull(calf.getWeightEstimated());
         assertFitnessClass(calf);
@@ -105,7 +105,7 @@ public class MooseDataCardObjectFactoryTest {
         assertNotNull(observation);
         assertNotNull(observation.getDate());
         assertNotNull(observation.getGeoLocation());
-        assertTrue(HasMooseDataCardEncoding.enumOf(ObservationType.class, observation.getObservationType()).isRight());
+        assertTrue(HasMooseDataCardEncoding.eitherInvalidOrValid(ObservationType.class, observation.getObservationType()).isRight());
         assertNotNull(observation.getNumberOfWolves());
         assertNotNull(observation.getNumberOfBears());
         assertNotNull(observation.getNumberOfLynxes());
@@ -114,7 +114,7 @@ public class MooseDataCardObjectFactoryTest {
     }
 
     private static void assertFitnessClass(final MooseDataCardHarvest harvest) {
-        assertTrue(HasMooseDataCardEncoding.enumOf(GameFitnessClass.class, harvest.getFitnessClass()).isRight());
+        assertTrue(HasMooseDataCardEncoding.eitherInvalidOrValid(GameFitnessClass.class, harvest.getFitnessClass()).isRight());
     }
 
     @Test

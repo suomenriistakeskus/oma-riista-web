@@ -1,8 +1,10 @@
 package fi.riista.feature.announcement.crud;
 
 import com.google.common.base.Preconditions;
-import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementRepository;
 import fi.riista.feature.announcement.AnnouncementSenderType;
@@ -10,15 +12,13 @@ import fi.riista.feature.announcement.AnnouncementSubscriber;
 import fi.riista.feature.announcement.AnnouncementSubscriberRepository;
 import fi.riista.feature.announcement.email.AnnouncementEmailResolver;
 import fi.riista.feature.announcement.email.AnnouncementEmailService;
-import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.F;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -214,12 +214,11 @@ public class AnnouncementCrudFeature {
             }
 
             return result;
-
-        } else {
-            return dto.getOccupationTypes().stream()
-                    .map(occupationType -> new AnnouncementSubscriber(announcement, fromOrganisation, occupationType))
-                    .collect(Collectors.toList());
         }
+
+        return dto.getOccupationTypes().stream()
+                .map(occupationType -> new AnnouncementSubscriber(announcement, fromOrganisation, occupationType))
+                .collect(Collectors.toList());
     }
 
     private void sendEmail(final Announcement announcement, final List<AnnouncementSubscriber> subscribers) {

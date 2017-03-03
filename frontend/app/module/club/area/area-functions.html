@@ -1,0 +1,59 @@
+<div class="btn-group" uib-dropdown dropdown-append-to-body>
+    <button type="button" class="btn btn-default" uib-dropdown-toggle>
+        <span translate="club.area.button.functionMenu"></span>
+        &nbsp;
+        <span class="caret"></span>
+    </button>
+
+    <ul class="dropdown-menu" uib-dropdown-menu>
+        <li>
+            <a ng-show="$ctrl.isContactPerson()" ng-click="$ctrl.editArea()">
+                <span class="fa fa-edit"></span> &nbsp;
+                <span translate="club.area.button.edit"/>
+            </a>
+        </li>
+        <li>
+            <a ng-show="$ctrl.isContactPerson()" ng-click="$ctrl.copyArea()">
+                <span class="fa fa-clone"></span> &nbsp;
+                <span translate="club.area.button.copy"/>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isContactPerson()">
+            <a ng-click="$ctrl.importArea()">
+                <span class="glyphicon glyphicon-import"></span> &nbsp;
+                <span translate="club.area.button.importArea"></span>
+            </a>
+        </li>
+        <li class="divider" ng-show="$ctrl.isContactPerson()"></li>
+        <li>
+            <a ng-click="$ctrl.printArea()">
+                <span class="glyphicon glyphicon-print"></span> &nbsp;
+                <span translate="club.area.button.printArea"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isLocalAreaWithGeometry()">
+            <a ng-click="$ctrl.exportExcel('all')">
+                <span class="glyphicon glyphicon-export"></span> &nbsp;
+                <span translate="club.area.button.toExcel"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isLocalAreaWithGeometry()">
+            <a ng-click="$ctrl.exportExcel('changed')">
+                <span class="glyphicon glyphicon-export"></span> &nbsp;
+                <span translate="club.area.button.toChangesExcel"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.exportGeoJson()">
+                <span class="glyphicon glyphicon-globe"></span> &nbsp;
+                <span translate="club.area.button.toGeojson"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.exportGarmin()">
+                <span class="glyphicon glyphicon-globe"></span> &nbsp;
+                <span translate="club.area.button.toGarmin"></span>
+            </a>
+        </li>
+    </ul>
+</div>

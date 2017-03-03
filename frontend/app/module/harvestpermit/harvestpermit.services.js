@@ -34,6 +34,12 @@ angular.module('app.harvestpermit.services', ['ngResource'])
                 url: 'api/v1/harvestpermit/moosepermit/rhy/:permitId',
                 params: {permitId: '@permitId'}
             },
+            moosePermitRhyStats: {
+                method: 'GET',
+                url: 'api/v1/harvestpermit/moosepermit/rhy/stats/:permitId/:speciesCode',
+                params: {'permitId': '@permitId', 'speciesCode': '@speciesCode'},
+                isArray: true
+            },
             moosePermitHuntingYears: {
                 method: 'GET',
                 url: 'api/v1/harvestpermit/moosepermit/huntingyears',

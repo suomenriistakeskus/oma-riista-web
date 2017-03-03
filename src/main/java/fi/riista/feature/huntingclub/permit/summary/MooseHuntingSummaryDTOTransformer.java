@@ -19,7 +19,6 @@ import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
 import fi.riista.feature.huntingclub.permit.harvestreport.QMooseHarvestReport;
 import fi.riista.security.EntityPermission;
-import fi.riista.security.authorization.api.AuthorizationTargetFactory;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 import fi.riista.util.ListTransformer;
@@ -41,9 +40,6 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
 
     @Resource
     private MooseHuntingSummaryAuthorization authorization;
-
-    @Resource
-    private AuthorizationTargetFactory authzTargetFactory;
 
     @Resource
     protected ActiveUserService activeUserService;
@@ -84,12 +80,13 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
     }
 
     private boolean hasPermissionToEdit(final MooseHuntingSummary summary) {
-        return authorization.hasPermission(authzTargetFactory.create(summary), EntityPermission.UPDATE);
+        return activeUserService.checkHasPermission(summary, EntityPermission.UPDATE);
     }
 
     public MooseHuntingSummaryDTO transformBasicSummary(final BasicClubHuntingSummary summary) {
         final HarvestPermit harvestPermit = summary.getSpeciesAmount().getHarvestPermit();
-        final MooseHuntingSummaryDTO dto = createInternal(summary.getBasicInfo(), false, harvestPermit.getPermitAreaSize());
+        final int permitAreaSize = Objects.requireNonNull(harvestPermit.getPermitAreaSize(), "permitAreaSize is null");
+        final MooseHuntingSummaryDTO dto = createInternal(summary.getBasicInfo(), false, permitAreaSize);
         Preconditions.checkState(summary.isModeratorOverride(), "moderator override required");
         Preconditions.checkArgument(F.hasId(summary.getSpeciesAmount()), "speciesAmount must have ID");
         dto.setHarvestPermitId(harvestPermit.getId());

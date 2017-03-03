@@ -1,11 +1,11 @@
 package fi.riista.api;
 
 import com.google.common.collect.ImmutableSet;
-import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.common.ContentTypeChecker;
+import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
-import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitContactPersonDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitCrudFeature;
 import fi.riista.feature.harvestpermit.HarvestPermitDTO;
@@ -27,6 +27,7 @@ import fi.riista.feature.huntingclub.permit.allocation.HuntingClubPermitAllocati
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryDTO;
 import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportCrudFeature;
 import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportDTO;
+import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsDTO;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummaryCrudFeature;
 import fi.riista.feature.huntingclub.statistics.luke.LukeReportFeature;
 import fi.riista.feature.huntingclub.statistics.luke.LukeReportParams;
@@ -67,9 +68,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -86,6 +89,7 @@ public class HarvestPermitApiResource {
             MediaTypeExtras.IMAGE_TIFF_VALUE,
             MediaType.TEXT_PLAIN_VALUE,
             MediaType.TEXT_HTML_VALUE,
+            MediaType.APPLICATION_XHTML_XML_VALUE,
             MediaTypeExtras.TEXT_CSV_VALUE,
             MediaTypeExtras.APPLICATION_PDF_VALUE);
 
@@ -202,6 +206,14 @@ public class HarvestPermitApiResource {
     @RequestMapping(value = "moosepermit/rhy/{permitId:\\d+}", method = RequestMethod.GET)
     public OrganisationNameDTO getRhyCode(@PathVariable long permitId) {
         return harvestPermitCrudFeature.getRhyCode(permitId);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @RequestMapping(value = "moosepermit/rhy/stats/{permitId:\\d+}/{speciesCode:\\d+}", method = RequestMethod.GET)
+    public List<MoosePermitStatisticsDTO> getRhyStats(@PathVariable long permitId,
+                                                      @PathVariable final int speciesCode,
+                                                      Locale locale) {
+        return harvestPermitCrudFeature.getRhyStatistics(permitId, speciesCode, locale);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -348,8 +360,8 @@ public class HarvestPermitApiResource {
                                @RequestParam LukeReportParams.Organisation org,
                                @RequestParam LukeReportParams.Presentation presentation,
                                @RequestParam String fileName,
-                               HttpServletResponse response) throws IOException {
-        final URL lukeReportUrl = lukeReportFeature.getLukeReportUrl(clubId, permitId, org, presentation, fileName);
+                               HttpServletResponse response) {
+        final URI lukeReportUrl = lukeReportFeature.getLukeReportUrl(clubId, permitId, org, presentation, fileName);
         lukeReportFeature.getLukeReport(lukeReportUrl, response);
     }
 

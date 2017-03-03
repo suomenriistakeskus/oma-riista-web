@@ -63,7 +63,7 @@ public class RuntimeEnvironmentUtil {
     }
 
     public boolean isIntegrationTestEnvironment() {
-        return "integration-test".equals(getEnvironmentId());
+        return "e2e-test".equals(getEnvironmentId());
     }
 
     public URI getBackendBaseUri() {

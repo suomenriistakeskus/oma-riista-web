@@ -1,8 +1,6 @@
 package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.EmbeddedDatabaseTest;
-import fi.riista.feature.gamediary.mobile.MobileGameDiaryFeature;
-import fi.riista.feature.gamediary.mobile.MobileHarvestPermitExistsDTO;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.report.HarvestReport;
@@ -41,8 +39,7 @@ public abstract class MobileGameDiaryFeatureTest extends EmbeddedDatabaseTest {
             // these 3 permits should not be preloaded
             model().newHarvestPermit(rhy, true);
 
-            final HarvestPermit originalPermit = model().newHarvestPermit(rhy);
-            originalPermit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+            final HarvestPermit originalPermit = model().newMooselikePermit(rhy);
 
             final HarvestPermit amendmentPermit = model().newHarvestPermit(originalPermit);
             amendmentPermit.setPermitTypeCode(HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE);
@@ -65,10 +62,9 @@ public abstract class MobileGameDiaryFeatureTest extends EmbeddedDatabaseTest {
 
                 final List<MobileHarvestPermitExistsDTO> permitDtos = feature().preloadPermits();
 
-                final Set<Long> dtoIds = F.getUniqueIds(permitDtos);
                 final Set<Long> permitIds =
                         F.getUniqueIds(permit, listPermit, permitWhereContactPerson, listPermitWhereContactPerson);
-                assertEquals(permitIds, dtoIds);
+                assertEquals(permitIds, F.getUniqueIds(permitDtos));
             });
         }));
     }

@@ -13,11 +13,12 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.missingPermitNumber;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.permitNumberMismatchBetweenNameAndContentOfXmlFile;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.reportingPeriodBeginDateIsAfterEndDate;
+import static fi.riista.util.ValidationUtils.reduce;
+import static fi.riista.util.ValidationUtils.toValidation;
 import static javaslang.control.Validation.invalid;
 import static javaslang.control.Validation.valid;
 
 import com.google.common.collect.Range;
-
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardContactPerson;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage1;
@@ -26,16 +27,15 @@ import fi.riista.util.Patterns;
 import fi.riista.validation.FinnishHunterNumberValidator;
 import fi.riista.validation.FinnishHuntingPermitNumberValidator;
 import fi.riista.validation.FinnishSocialSecurityNumberValidator;
-
-import javaslang.Value;
+import javaslang.Tuple;
+import javaslang.Tuple3;
+import javaslang.collection.List;
 import javaslang.control.Either;
 import javaslang.control.Validation;
-
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
-
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -54,123 +54,122 @@ public class MooseDataCardPage1Validator {
             clubCode -> CLUB_CODE_PATTERN.matcher(clubCode).matches();
 
     @Nonnull
-    public Validation<List<String>, MooseDataCardPage1Validation> validate(
+    public Validation<java.util.List<String>, MooseDataCardPage1Validation> validate(
             @Nonnull final MooseDataCardPage1 page, @Nonnull final MooseDataCardFilenameValidation filenameValidation) {
 
         Objects.requireNonNull(page, "page is null");
         Objects.requireNonNull(filenameValidation, "filenameValidation is null");
 
-        return validateHuntingNumberAndSsn(page.getContactPerson())
-                .combine(validatePermitNumber(page, filenameValidation))
-                .combine(validateClubCode(page, filenameValidation))
-                .combine(validateClubCoordinates(page))
-                .combine(validateReportingPeriod(page))
-                .ap((hunterNumberOpt, ssnOpt, permitNumber, clubCode, clubCoordinates, reportingPeriodDateRange) -> {
+        final Validation<List<String>, Either<String, String>> validationOfHunterNumberAndSsn =
+                validateHunterNumberAndSsn(page.getContactPerson());
 
-                    final Either<String, String> eitherHunterNumberOrSsn = hunterNumberOpt.isPresent()
-                            ? Either.left(hunterNumberOpt.get()) : Either.right(ssnOpt.get());
+        final Validation<List<String>, Tuple3<String, String, GeoLocation>> validationOfRest =
+                validatePermitNumber(page, filenameValidation)
+                        .combine(validateClubCode(page, filenameValidation))
+                        .combine(validateClubCoordinates(page))
+                        .combine(validateReportingPeriod(page))
+                        .ap((permitNumber, clubCode, clubCoordinates, reportingPeriod) -> {
+                            return Tuple.of(permitNumber, clubCode, clubCoordinates);
+                        });
 
-                    return new MooseDataCardPage1Validation(
-                            eitherHunterNumberOrSsn, permitNumber, clubCode, clubCoordinates);
-                })
-                .leftMap(Value::toJavaList);
+        return reduce(validationOfHunterNumberAndSsn, validationOfRest, (eitherHunterNumberOrSsn, tuple3) -> {
+            return new MooseDataCardPage1Validation(eitherHunterNumberOrSsn, tuple3._1, tuple3._2, tuple3._3);
+        });
     }
 
     @Nonnull
-    private static Validation.Builder<String, Optional<String>, Optional<String>> validateHuntingNumberAndSsn(
+    private static Validation<List<String>, Either<String, String>> validateHunterNumberAndSsn(
             @Nonnull final MooseDataCardContactPerson contactPerson) {
 
-        final Validation.Builder<String, Optional<String>, Optional<String>> builder =
-                validateHunterNumber(contactPerson).combine(validateSsn(contactPerson));
-
-        final Validation<? extends Iterable<String>, Boolean> personReferencePresent = builder.ap((hnOpt, ssnOpt) -> {
-            return hnOpt.map(hn -> true).orElseGet(() -> ssnOpt.map(ssn -> true).orElse(false));
-        });
-
-        return personReferencePresent.fold(errMsgs -> builder, isRefFound -> {
-            if (!isRefFound) {
-                final Validation.Builder<String, Optional<String>, Optional<String>> invalidBuilder = Validation
-                        .combine(invalid(hunterNumberAndSsnMissingForContactPerson()), valid(Optional.empty()));
-                return invalidBuilder;
-            }
-
-            return builder;
-        });
+        return validateHunterNumber(contactPerson)
+                .combine(validateSsn(contactPerson))
+                .ap((hunterNumberOpt, ssnOpt) -> F.optionallyEither(hunterNumberOpt, () -> ssnOpt))
+                .flatMap(optionallyEitherHunterNumberOrSsn -> toValidation(
+                        optionallyEitherHunterNumberOrSsn,
+                        () -> invalid(List.of(hunterNumberAndSsnMissingForContactPerson()))));
     }
 
     @Nonnull
     private static Validation<String, Optional<String>> validateHunterNumber(
             @Nonnull final MooseDataCardContactPerson contactPerson) {
 
-        return F.trimToOptional(contactPerson.getHunterNumber())
-                .<Validation<String, Optional<String>>> map(hunterNumber -> {
-                    return FinnishHunterNumberValidator.validate(hunterNumber, true)
-                            ? valid(Optional.of(hunterNumber))
-                            : invalid(invalidHunterNumber(hunterNumber));
-                })
-                .orElseGet(() -> valid(Optional.empty()));
+        final String hunterNumber = StringUtils.trimToNull(contactPerson.getHunterNumber());
+
+        if (hunterNumber == null) {
+            return valid(Optional.empty());
+        }
+
+        return FinnishHunterNumberValidator.validate(hunterNumber, true)
+                ? valid(Optional.of(hunterNumber))
+                : invalid(invalidHunterNumber(hunterNumber));
     }
 
     @Nonnull
     private static Validation<String, Optional<String>> validateSsn(
             @Nonnull final MooseDataCardContactPerson contactPerson) {
 
-        return F.trimToOptional(contactPerson.getSsn())
-                .<Validation<String, Optional<String>>> map(ssn -> SSN_VALIDATOR.isValid(ssn, null)
-                        ? valid(Optional.of(ssn))
-                        : invalid(invalidSsn()))
-                .orElseGet(() -> valid(Optional.empty()));
+        final String ssn = StringUtils.trimToNull(contactPerson.getSsn());
+
+        return ssn == null
+                ? valid(Optional.empty())
+                : SSN_VALIDATOR.isValid(ssn, null) ? valid(Optional.of(ssn)) : invalid(invalidSsn());
     }
 
     @Nonnull
     private static Validation<String, String> validatePermitNumber(
             @Nonnull final MooseDataCardPage1 page, @Nonnull final MooseDataCardFilenameValidation filenameValidation) {
 
-        return F.trimToOptional(page.getPermitNumber())
-                .<Validation<String, String>> map(
-                        permitNumber -> FinnishHuntingPermitNumberValidator.validate(permitNumber, true)
-                                ? valid(permitNumber)
-                                : invalid(invalidPermitNumber(permitNumber)))
-                .orElseGet(() -> invalid(missingPermitNumber()))
-                .flatMap(permitNumber -> filenameValidation.permitNumber.equals(permitNumber)
-                        ? valid(permitNumber)
-                        : invalid(permitNumberMismatchBetweenNameAndContentOfXmlFile(permitNumber)));
+        final String permitNumber = StringUtils.trimToNull(page.getPermitNumber());
+
+        if (permitNumber == null) {
+            return invalid(missingPermitNumber());
+        } else if (!FinnishHuntingPermitNumberValidator.validate(permitNumber, true)) {
+            return invalid(invalidPermitNumber(permitNumber));
+        }
+
+        return filenameValidation.permitNumber.equals(permitNumber)
+                ? valid(permitNumber)
+                : invalid(permitNumberMismatchBetweenNameAndContentOfXmlFile(permitNumber));
     }
 
     @Nonnull
-    private static Validation<String, String> validateClubCode(
-            @Nonnull final MooseDataCardPage1 page, @Nonnull final MooseDataCardFilenameValidation filenameValidation) {
+    private static Validation<String, String> validateClubCode(@Nonnull final MooseDataCardPage1 page,
+                                                               @Nonnull final MooseDataCardFilenameValidation filenameValidation) {
 
-        return F.trimToOptional(page.getHuntingClubCode())
-                .<Validation<String, String>> map(clubCode -> CLUB_CODE_TESTER.test(clubCode)
-                        ? valid(clubCode)
-                        : invalid(invalidClubCode(clubCode)))
-                .orElseGet(() -> invalid(missingClubCode()))
-                .flatMap(clubCode -> filenameValidation.clubCode.equals(clubCode)
-                        ? valid(clubCode)
-                        : invalid(huntingClubCodeMismatchBetweenNameAndContentOfXmlFile(clubCode)));
+        final String clubCode = StringUtils.trimToNull(page.getHuntingClubCode());
+
+        if (clubCode == null) {
+            return invalid(missingClubCode());
+        } else if (!CLUB_CODE_TESTER.test(clubCode)) {
+            return invalid(invalidClubCode(clubCode));
+        }
+
+        return filenameValidation.clubCode.equals(clubCode)
+                ? valid(clubCode)
+                : invalid(huntingClubCodeMismatchBetweenNameAndContentOfXmlFile(clubCode));
     }
 
     @Nonnull
     private static Validation<String, GeoLocation> validateClubCoordinates(@Nonnull final MooseDataCardPage1 page) {
-        return F.trimToOptional(page.getClubInfo().getHuntingClubCoordinate())
-                .<Validation<String, GeoLocation>> map(coordinates -> {
-                    final Matcher matcher = CLUB_COORDINATES_PATTERN.matcher(coordinates);
+        final String coordinates = StringUtils.trimToNull(page.getClubInfo().getHuntingClubCoordinate());
 
-                    if (!matcher.matches()) {
-                        return invalid(invalidClubCoordinates(coordinates));
-                    }
+        if (coordinates == null) {
+            return invalid(missingClubCoordinates());
+        }
 
-                    final long lat = Long.parseLong(matcher.group(1));
-                    final long lng = Long.parseLong(matcher.group(2));
+        final Matcher matcher = CLUB_COORDINATES_PATTERN.matcher(coordinates);
 
-                    if (!BoundariesOfFinland.isWithinBoundaries(lat, lng)) {
-                        return invalid(clubCoordinatesOutOfFinland(lat, lng));
-                    }
+        if (!matcher.matches()) {
+            return invalid(invalidClubCoordinates(coordinates));
+        }
 
-                    return valid(new GeoLocation((int) lat, (int) lng));
-                })
-                .orElseGet(() -> invalid(missingClubCoordinates()));
+        final long lat = Long.parseLong(matcher.group(1));
+        final long lng = Long.parseLong(matcher.group(2));
+
+        return BoundariesOfFinland.isWithinBoundaries(lat, lng)
+                // Valid values can be safely casted.
+                ? valid(new GeoLocation((int) lat, (int) lng))
+                : invalid(clubCoordinatesOutOfFinland(lat, lng));
     }
 
     @Nonnull
@@ -187,7 +186,8 @@ public class MooseDataCardPage1Validator {
         }
 
         final Range<LocalDate> dateRange = beginDate != null
-                ? Range.atLeast(beginDate) : endDate != null ? Range.atMost(endDate) : Range.all();
+                ? Range.atLeast(beginDate)
+                : endDate != null ? Range.atMost(endDate) : Range.all();
 
         return valid(dateRange);
     }

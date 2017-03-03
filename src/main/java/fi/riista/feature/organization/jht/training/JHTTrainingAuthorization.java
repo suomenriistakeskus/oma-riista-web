@@ -1,52 +1,42 @@
 package fi.riista.feature.organization.jht.training;
 
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.organization.rhy.RhyRole;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
-import fi.riista.security.authorization.SimpleEntityDTOAuthorization;
-import fi.riista.security.authorization.api.EntityAuthorizationTarget;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
-import org.springframework.data.jpa.repository.JpaRepository;
+import fi.riista.security.authorization.AbstractEntityAuthorization;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
+import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
+import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
+
 @Component
-public class JHTTrainingAuthorization
-        extends SimpleEntityDTOAuthorization<JHTTraining, JHTTrainingDTO, Long> {
+public class JHTTrainingAuthorization extends AbstractEntityAuthorization<JHTTraining> {
 
     public enum Permission {
         PROPOSE
     }
 
     @Resource
-    private JHTTrainingRepository jhtTrainingRepository;
-
-    @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
     public JHTTrainingAuthorization() {
-        super("jhtTraining");
-
-        allow(CREATE, RhyRole.COORDINATOR, SystemUser.Role.ROLE_MODERATOR, SystemUser.Role.ROLE_ADMIN);
-        allow(DELETE, SystemUser.Role.ROLE_MODERATOR, SystemUser.Role.ROLE_ADMIN);
-        allow(Permission.PROPOSE, RhyRole.COORDINATOR);
+        allow(EntityPermission.CREATE, TOIMINNANOHJAAJA, ROLE_MODERATOR, SystemUser.Role.ROLE_ADMIN);
+        allow(EntityPermission.DELETE, ROLE_MODERATOR, SystemUser.Role.ROLE_ADMIN);
+        allow(Permission.PROPOSE, TOIMINNANOHJAAJA);
     }
 
     @Override
-    protected JpaRepository<JHTTraining, Long> getRepository() {
-        return jhtTrainingRepository;
-    }
-
-    @Override
-    protected void authorizeTarget(final AuthorizationTokenCollector collector,
-                                   final EntityAuthorizationTarget target,
-                                   final UserInfo userInfo) {
-        final Person activePerson = userAuthorizationHelper.getPerson(userInfo);
-
-        collector.addAuthorizationRole(RhyRole.COORDINATOR,
-                () -> activePerson != null && userAuthorizationHelper.isCoordinatorAnywhere(activePerson));
+    protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,
+                                   @Nonnull final JHTTraining training,
+                                   @Nonnull final UserInfo userInfo) {
+        userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
+            collector.addAuthorizationRole(TOIMINNANOHJAAJA, () ->
+                    userAuthorizationHelper.isCoordinatorAnywhere(activePerson));
+        });
     }
 }

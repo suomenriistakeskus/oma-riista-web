@@ -75,4 +75,8 @@ public class JHT_Suoritukset {
         return this.suoritus;
     }
 
+    public void setSuoritus(List<JHT_Suoritus> value) {
+        this.suoritus = value;
+    }
+
 }

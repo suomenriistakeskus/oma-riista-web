@@ -378,4 +378,12 @@ public class LEM_HuntingDay {
         return this.observations;
     }
 
+    public void setMooseHarvests(List<LEM_Harvest> value) {
+        this.mooseHarvests = value;
+    }
+
+    public void setObservations(List<LEM_Observation> value) {
+        this.observations = value;
+    }
+
 }

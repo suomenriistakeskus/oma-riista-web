@@ -25,6 +25,7 @@ import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
+import fi.riista.util.F;
 import javaslang.Tuple3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static java.util.stream.Collectors.toList;
@@ -88,11 +88,7 @@ public class RegisterHuntingClubFeature {
                 queryString, MAX_FUZZY_DISTANCE_ORGANISATION_NAME,
                 new PageRequest(0, MAX_RESULT_ORGANISATION));
 
-        final List<LHOrganisation> allMatches = Stream
-                .concat(finnishNameMatches.stream(), swedishNameMatches.stream())
-                .collect(toList());
-
-        return processSearchResults(allMatches);
+        return processSearchResults(F.concat(finnishNameMatches, swedishNameMatches));
     }
 
     @Transactional(readOnly = true)

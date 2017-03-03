@@ -36,6 +36,7 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
     private final String phoneNumber;
     private final String ipWhiteList;
     private final Set<SystemUserPrivilege> privileges;
+    private final SystemUser.TwoFactorAuthenticationMode twoFactorAuthentication;
 
     public static UserInfo extractFrom(final Authentication authentication) {
         Objects.requireNonNull(authentication, "No authentication available");
@@ -58,6 +59,25 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
                 + userDetails.getClass().getSimpleName());
     }
 
+    public static long extractUserIdForEntity(final Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication.getPrincipal() == null) {
+                return -2L;
+
+            } else if (authentication.getPrincipal() instanceof UserInfo) {
+                final Long userId = UserInfo.extractFrom(authentication).getUserId();
+
+                // This check is needed when database is empty and there exists no
+                // users at all initially.
+                return userId != null ? userId : -3L;
+            }
+
+            return -4L;
+        }
+
+        return -1L;
+    }
+
     public static class UserInfoBuilder {
         private String username;
         private String password;
@@ -68,6 +88,7 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
         private SystemUser.Role role;
         private Set<SystemUserPrivilege> privileges;
         private boolean coordinator;
+        private SystemUser.TwoFactorAuthenticationMode twoFactorAuthentication;
 
         public UserInfoBuilder(final String username,
                                final Long userId,
@@ -92,6 +113,7 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
             this.role = user.getRole();
             this.privileges = ImmutableSet.copyOf(user.getPrivileges());
             this.coordinator = false;
+            this.twoFactorAuthentication = user.getTwoFactorAuthentication();
         }
 
         public UserInfoBuilder withOccupations(SystemUser user, OccupationRepository occupationRepository) {
@@ -127,6 +149,7 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
         this.userId = builder.userId;
         this.phoneNumber = builder.phoneNumber;
         this.ipWhiteList = builder.ipWhiteList;
+        this.twoFactorAuthentication = builder.twoFactorAuthentication;
     }
 
     public boolean isAdmin() {
@@ -155,6 +178,10 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
 
     public boolean hasPrivilege(final SystemUserPrivilege privilege) {
         return privilege != null && this.privileges.contains(privilege);
+    }
+
+    public SystemUser.TwoFactorAuthenticationMode getTwoFactorAuthentication() {
+        return twoFactorAuthentication;
     }
 
     @Override

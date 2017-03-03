@@ -100,10 +100,11 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
             permitPartner = model().newHuntingClub(rhy);
 
             permit = createPermit(rhy);
-            holderGroup = createGroup(permitHolder, permit, huntingYear);
-            partnerGroup = createGroup(permitPartner, permit, huntingYear);
-
             speciesAmount = createSpeciesAmount(permit, huntingYear);
+
+            holderGroup = model().newHuntingClubGroup(permitHolder, speciesAmount);
+            partnerGroup = model().newHuntingClubGroup(permitPartner, speciesAmount);
+
             model().newMooselikePrice(huntingYear, species);
 
             nextYearPermit = createPermit(rhy);
@@ -116,8 +117,7 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
     }
 
     private HarvestPermit createPermit(Riistanhoitoyhdistys rhy) {
-        final HarvestPermit p = model().newHarvestPermitWithPermitAreaSize(rhy);
-        p.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+        final HarvestPermit p = model().newMooselikePermit(rhy);
         p.setPermitHolder(permitHolder);
         Stream.of(permitHolder, permitPartner).forEach(p.getPermitPartners()::add);
         return p;
@@ -131,20 +131,13 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
         return s;
     }
 
-    private HuntingClubGroup createGroup(
-            final HuntingClub permitHolder, final HarvestPermit permit, final int huntingYear) {
-
-        final HuntingClubGroup g = model().newHuntingClubGroup(permitHolder, species, huntingYear);
-        g.updateHarvestPermit(permit);
-        return g;
-    }
-
     @Test
     public void testGetHuntingSummariesForModeration_inCaseOfMooseSpecies() {
         final HuntingClub partner2 = model().newHuntingClub(permit.getRhy());
         final HuntingClub partner3 = model().newHuntingClub(permit.getRhy());
         final HuntingClub partner4 = model().newHuntingClub(permit.getRhy());
-        Stream.of(partner2, partner3, partner4).forEach(permit.getPermitPartners()::add);
+        final HuntingClub partner5 = model().newHuntingClub(permit.getRhy());
+        Stream.of(partner2, partner3, partner4, partner5).forEach(permit.getPermitPartners()::add);
 
         // Need to flush before creating MooseHuntingSummary in order to have
         // harvest_permit_partners table populated.
@@ -159,8 +152,12 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
         unfinishedMooseSummary2.getAreaSizeAndPopulation().setRemainingPopulationInTotalArea(null);
         unfinishedMooseSummary2.getAreaSizeAndPopulation().setRemainingPopulationInEffectiveArea(null);
 
-        final HuntingClubGroup partner2Group = model().newHuntingClubGroup(partner2, species);
-        partner2Group.updateHarvestPermit(permit);
+        final MooseHuntingSummary unfinishedMooseSummary3 = model().newMooseHuntingSummary(permit, partner5, false);
+        unfinishedMooseSummary3.getAreaSizeAndPopulation().setTotalHuntingArea(100);
+        unfinishedMooseSummary3.getAreaSizeAndPopulation().setEffectiveHuntingArea(null);
+        unfinishedMooseSummary3.setEffectiveHuntingAreaPercentage(80F);
+
+        final HuntingClubGroup partner2Group = model().newHuntingClubGroup(partner2, speciesAmount);
         model().newHuntingClubGroupMember(person, partner2Group);
 
         final HasHarvestCountsForPermit harvestCountsForHolder = testDataHelper.generateHarvestCounts();
@@ -177,7 +174,7 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
                             .collect(toList());
 
             assertEquals(
-                    asList(false, true, false, false, false),
+                    asList(false, true, false, false, false, false),
                     F.mapNonNullsToList(summaries, BasicClubHuntingSummaryDTO::isModeratorOverridden));
 
             final List<AreaSizeAndRemainingPopulation> expectedAreasAndPopulations = asList(
@@ -185,7 +182,9 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
                     moderatedSummary.getAreaSizeAndPopulation(),
                     new AreaSizeAndRemainingPopulation(),
                     unfinishedMooseSummary.getAreaSizeAndPopulation(),
-                    unfinishedMooseSummary2.getAreaSizeAndPopulation());
+                    unfinishedMooseSummary2.getAreaSizeAndPopulation(),
+                    unfinishedMooseSummary3.getAreaSizeAndPopulation()
+                            .calculateMissingValues(unfinishedMooseSummary3.getEffectiveHuntingAreaPercentage(), 0));
 
             Asserts.assertEqualAfterTransformation(
                     expectedAreasAndPopulations,
@@ -194,7 +193,7 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
 
             final List<HasHarvestCountsForPermit> expectedHarvestCounts = asList(
                     harvestCountsForHolder, moderatedSummary.getHarvestCounts(), harvestCountsForPartner2,
-                    HasHarvestCountsForPermit.zeros(), HasHarvestCountsForPermit.zeros());
+                    HasHarvestCountsForPermit.zeros(), HasHarvestCountsForPermit.zeros(), HasHarvestCountsForPermit.zeros());
 
             Asserts.assertEqualAfterTransformation(
                     expectedHarvestCounts,
@@ -214,8 +213,7 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
         final BasicClubHuntingSummary moderatedSummary =
                 model().newModeratedBasicHuntingSummary(speciesAmount, permitPartner);
 
-        final HuntingClubGroup anotherPartnerGroup = model().newHuntingClubGroup(anotherPartner, species);
-        anotherPartnerGroup.updateHarvestPermit(permit);
+        final HuntingClubGroup anotherPartnerGroup = model().newHuntingClubGroup(anotherPartner, speciesAmount);
         model().newHuntingClubGroupMember(person, anotherPartnerGroup);
 
         final HasHarvestCountsForPermit harvestCountsForHolder = testDataHelper.generateHarvestCounts();

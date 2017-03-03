@@ -6,22 +6,22 @@ import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.members.HuntingClubOccupationDTOTransformer;
-import fi.riista.feature.organization.person.PersonLookupService;
-import fi.riista.feature.organization.occupation.OccupationDTO;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationDTO;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationSort;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonLookupService;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
-import fi.riista.util.ListTransformer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.List;
@@ -51,13 +51,13 @@ public class HuntingClubMemberCrudFeature extends AbstractCrudFeature<Long, Occu
     protected HuntingClubRepository huntingClubRepository;
 
     @Override
-    protected ListTransformer<Occupation, OccupationDTO> dtoTransformer() {
-        return clubOccupationDTOTransformer;
+    protected JpaRepository<Occupation, Long> getRepository() {
+        return occupationRepository;
     }
 
     @Override
-    protected JpaRepository<Occupation, Long> getRepository() {
-        return occupationRepository;
+    protected OccupationDTO toDTO(@Nonnull final Occupation entity) {
+        return clubOccupationDTOTransformer.apply(entity);
     }
 
     @Override

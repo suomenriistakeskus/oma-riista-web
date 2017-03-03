@@ -1,0 +1,39 @@
+<form name="form" role="form" novalidate class="form" ng-submit="$ctrl.save()">
+    <div class="modal-header">
+        <h3 class="modal-title" translate="login.otp.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <p class="text-danger" ng-show="$ctrl.errorMessage">
+            <span ng-bind="$ctrl.errorMessage"></span>
+        </p>
+
+        <div class="form-group text-center">
+            <span qr-code="$ctrl.twoFactorCodeUrl"></span>
+        </div>
+
+        <hr class="invisible"/>
+
+        <div class="form-group text-center" show-errors>
+            <label for="otp" class="control-label">
+                <span translate="login.otp.codeLabel"></span>
+            </label>
+
+            <input type="text" name="otp" id="otp"
+                   class="form-control input-lg"
+                   focus-me="true"
+                   maxlength="6"
+                   required
+                   ng-model="$ctrl.twoFactorCode"
+                   ng-pattern="/^\d{6}$/">
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid"
+                translate="global.button.ok"></button>
+    </div>
+</form>

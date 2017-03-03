@@ -155,10 +155,6 @@ public class MetsastajaRekisteriImportService {
 
             if (person.isNew()) {
                 person.setSsn(item.getSsn());
-
-                // Field is only updated during Vetuma registration currently
-                final boolean foreignRhy = RHY_FOREIGN_MEMBER_CODE.equals(item.getMembershipRhyOfficialCode());
-                person.setFinnishCitizen(!foreignRhy);
             }
 
             updateName(person, item);

@@ -1,6 +1,7 @@
 package fi.riista.security.otp;
 
 import com.google.i18n.phonenumbers.NumberParseException;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.sms.SMSSentMessage;
 import fi.riista.feature.sms.SMSService;
 import fi.riista.feature.sms.storage.SMSMessageStatus;
@@ -22,7 +23,13 @@ public class OneTimePasswordSMSService {
     public boolean sendCodeUsingSMS(final OneTimePasswordRequiredException otpException) {
         if (otpException.getUserDetails() instanceof UserInfo) {
             try {
-                return sendCodeUsingSMS((UserInfo) otpException.getUserDetails(), otpException.getExpectedCode());
+                final UserInfo userInfo = (UserInfo) otpException.getUserDetails();
+
+                if (userInfo.getTwoFactorAuthentication() != SystemUser.TwoFactorAuthenticationMode.OFFLINE) {
+                    return sendCodeUsingSMS(userInfo, otpException.getExpectedCode());
+                }
+
+                return true;
 
             } catch (Exception ex) {
                 LOG.error("Could not send one time password using SMS", ex);

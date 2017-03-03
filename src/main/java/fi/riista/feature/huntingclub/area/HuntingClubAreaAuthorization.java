@@ -1,77 +1,45 @@
 package fi.riista.feature.huntingclub.area;
 
-import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
 import fi.riista.security.authorization.AbstractEntityAuthorization;
-import fi.riista.security.authorization.api.EntityAuthorizationTarget;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
-import static fi.riista.feature.huntingclub.members.ClubRole.SEURAN_JASEN;
-import static fi.riista.feature.huntingclub.members.ClubRole.SEURAN_YHDYSHENKILO;
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
 
 @Component
-public class HuntingClubAreaAuthorization extends AbstractEntityAuthorization {
+public class HuntingClubAreaAuthorization extends AbstractEntityAuthorization<HuntingClubArea> {
 
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
-    @Resource
-    private HuntingClubAreaRepository huntingClubAreaRepository;
-
     public HuntingClubAreaAuthorization() {
-        super("huntingClubArea");
-
-        allow(READ, ROLE_ADMIN, ROLE_MODERATOR, SEURAN_YHDYSHENKILO, SEURAN_JASEN);
-        allow(CREATE, ROLE_ADMIN, ROLE_MODERATOR, SEURAN_YHDYSHENKILO);
-        allow(UPDATE, ROLE_ADMIN, ROLE_MODERATOR, SEURAN_YHDYSHENKILO);
-        allow(DELETE, ROLE_ADMIN, ROLE_MODERATOR, SEURAN_YHDYSHENKILO);
+        allowCRUD(ROLE_ADMIN, ROLE_MODERATOR);
+        allowCRUD(SEURAN_YHDYSHENKILO);
+        allow(EntityPermission.READ, SEURAN_JASEN);
     }
 
     @Override
-    protected void authorizeTarget(final AuthorizationTokenCollector collector,
-                                   final EntityAuthorizationTarget target,
-                                   final UserInfo userInfo) {
+    protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,
+                                   @Nonnull final HuntingClubArea area,
+                                   @Nonnull final UserInfo userInfo) {
+        userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
+            final HuntingClub club = area.getClub();
 
-        final Person person = userAuthorizationHelper.getPerson(userInfo);
+            collector.addAuthorizationRole(SEURAN_YHDYSHENKILO,
+                    () -> userAuthorizationHelper.isClubContact(club, activePerson));
 
-        if (person == null) {
-            return;
-        }
-
-        final HuntingClubArea area = getArea(target);
-
-        if (area == null) {
-            collector.addAuthorizationRole(
-                    SEURAN_YHDYSHENKILO,
-                    () -> userAuthorizationHelper.hasRoleAnywhere(person, OccupationType.SEURAN_YHDYSHENKILO));
-
-        } else {
-            final HuntingClub org = area.getClub();
-
-            collector.addAuthorizationRole(
-                    SEURAN_YHDYSHENKILO, () -> userAuthorizationHelper.isClubContact(org, person));
-
-            collector.addAuthorizationRole(SEURAN_JASEN, () -> userAuthorizationHelper.isClubMember(org, person));
-        }
+            collector.addAuthorizationRole(SEURAN_JASEN,
+                    () -> userAuthorizationHelper.isClubMember(club, activePerson));
+        });
     }
-
-    private HuntingClubArea getArea(final EntityAuthorizationTarget target) {
-        return target.getAuthorizationTargetId() != null
-                ? huntingClubAreaRepository.findOne((Long) target.getAuthorizationTargetId())
-                : target.getAuthorizationTarget(HuntingClubArea.class);
-    }
-
-    @Override
-    public Class<?>[] getSupportedTypes() {
-        return new Class[] { HuntingClubArea.class, HuntingClubAreaDTO.class };
-    }
-
 }

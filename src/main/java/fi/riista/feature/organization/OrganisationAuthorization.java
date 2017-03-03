@@ -1,75 +1,41 @@
 package fi.riista.feature.organization;
 
 import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysDTO;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
 import fi.riista.security.authorization.AbstractEntityAuthorization;
-import fi.riista.security.authorization.api.EntityAuthorizationTarget;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.Optional;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
-import static fi.riista.feature.organization.OrganisationAuthorization.OrganisationPermission.LIST_SRVA;
-import static fi.riista.feature.organization.rhy.RhyRole.COORDINATOR;
-import static fi.riista.feature.organization.rhy.RhyRole.SRVA_CONTACT_PERSON;
+import static fi.riista.feature.organization.occupation.OccupationType.SRVA_YHTEYSHENKILO;
+import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 
 @Component
-public class OrganisationAuthorization extends AbstractEntityAuthorization {
-
-    public enum OrganisationPermission {
-        LIST_SRVA
-    }
+public class OrganisationAuthorization extends AbstractEntityAuthorization<Organisation> {
 
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
-    @Resource
-    private OrganisationRepository organisationRepository;
-
     public OrganisationAuthorization() {
-        super("organisation");
-
-        allow(READ,      ROLE_ADMIN, ROLE_MODERATOR, COORDINATOR);
-        allow(UPDATE,    ROLE_ADMIN, ROLE_MODERATOR, COORDINATOR);
-        allow(LIST_SRVA, ROLE_ADMIN, ROLE_MODERATOR, COORDINATOR, SRVA_CONTACT_PERSON);
+        allow(EntityPermission.READ, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA);
+        allow(EntityPermission.UPDATE, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA);
     }
 
     @Override
-    protected void authorizeTarget(final AuthorizationTokenCollector collector,
-                                   final EntityAuthorizationTarget target,
-                                   final UserInfo userInfo) {
+    protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,
+                                   @Nonnull final Organisation organisation,
+                                   @Nonnull final UserInfo userInfo) {
+        if (organisation.getOrganisationType() == OrganisationType.RHY) {
+            collector.addAuthorizationRole(TOIMINNANOHJAAJA, () ->
+                    userAuthorizationHelper.isCoordinator(organisation, userInfo));
 
-        Optional.ofNullable(getOrganisation(target))
-                .filter(org -> org.getOrganisationType() == OrganisationType.RHY)
-                .ifPresent(rhy -> {
-                    collector.addAuthorizationRole(
-                            COORDINATOR, () -> userAuthorizationHelper.isCoordinator(rhy, userInfo));
-
-                    collector.addAuthorizationRole(
-                            SRVA_CONTACT_PERSON, () -> userAuthorizationHelper.isSrvaContactPerson(rhy, userInfo));
-                });
-    }
-
-    private Organisation getOrganisation(final EntityAuthorizationTarget target) {
-        return target.getAuthorizationTargetId() != null
-                ? organisationRepository.findOne((Long) target.getAuthorizationTargetId())
-                : target.getAuthorizationTarget(Organisation.class);
-    }
-
-    @Override
-    public Class<?>[] getSupportedTypes() {
-        return new Class[]{
-                Organisation.class, OrganisationDTO.class,
-                Riistakeskus.class,
-                ValtakunnallinenRiistaneuvosto.class,
-                AlueellinenRiistaneuvosto.class,
-                RiistakeskuksenAlue.class,
-                Riistanhoitoyhdistys.class, RiistanhoitoyhdistysDTO.class
-        };
+            collector.addAuthorizationRole(SRVA_YHTEYSHENKILO, () ->
+                    userAuthorizationHelper.isSrvaContactPerson(organisation, userInfo));
+        }
     }
 }

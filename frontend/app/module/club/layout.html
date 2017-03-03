@@ -6,6 +6,10 @@
                     <a ui-sref="club.main({ id: club.id })" translate="club.menu.main"></a>
                 </li>
 
+                <li active-if-state-includes="club.announcements">
+                    <a ui-sref="club.announcements" translate="announcements.list.title"></a>
+                </li>
+
                 <li active-if-state-includes="club.area,club.map">
                     <a ui-sref="club.area.list({ id: club.id })" translate="club.menu.areas"></a>
                 </li>

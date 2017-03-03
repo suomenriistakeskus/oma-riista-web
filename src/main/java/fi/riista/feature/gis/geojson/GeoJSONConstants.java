@@ -11,6 +11,7 @@ public class GeoJSONConstants {
     public static final String PROPERTY_NAME = "name";
     public static final String PROPERTY_CLUB_NAME = "clubName";
     public static final String PROPERTY_AREA_NAME = "areaName";
+    public static final String PROPERTY_YEAR = "year";
 
     public static final String PROPERTY_SIZE = "size";
     public static final String PROPERTY_SIZE_DIFF = "diff_area";

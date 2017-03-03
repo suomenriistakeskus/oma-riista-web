@@ -22,8 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.singleton;
-
 @Component
 public class HuntingClubAreaZoneFeature {
 
@@ -86,11 +84,10 @@ public class HuntingClubAreaZoneFeature {
     @Transactional(timeout = 120)
     public void updateAreaSize(final long zoneId) {
         zoneRepository.calculateAreaSize(zoneId);
+        zoneRepository.getOne(zoneId).forceRevisionUpdate();
     }
 
-    private static Geometry extractExcludedFeature(
-            final FeatureCollection featureCollection) {
-
+    private static Geometry extractExcludedFeature(final FeatureCollection featureCollection) {
         return featureCollection.getFeatures().stream()
                 .filter(f -> f.getGeometry() != null && GeoJSONConstants.ID_EXCLUDED.equals(f.getId()))
                 .findAny()
@@ -110,12 +107,8 @@ public class HuntingClubAreaZoneFeature {
 
     @Transactional(readOnly = true, timeout = 60)
     public FeatureCollection combinedGeoJSON(final long clubAreaId) {
-        final HuntingClubArea huntingClubArea = requireEntityService
-                .requireHuntingClubArea(clubAreaId, EntityPermission.READ);
+        final HuntingClubArea clubArea = requireEntityService.requireHuntingClubArea(clubAreaId, EntityPermission.READ);
 
-        return Optional.ofNullable(huntingClubArea.getZone())
-                .map(GISZone::getId)
-                .map(zoneId -> zoneRepository.getCombinedFeatures(singleton(zoneId), GISUtils.SRID.WGS84, SIMPLIFY_AMOUNT))
-                .orElseGet(FeatureCollection::new);
+        return clubArea.computeCombinedFeatures(zoneRepository, SIMPLIFY_AMOUNT).orElseGet(FeatureCollection::new);
     }
 }

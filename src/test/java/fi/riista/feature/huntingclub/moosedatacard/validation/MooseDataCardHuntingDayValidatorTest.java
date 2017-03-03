@@ -148,7 +148,7 @@ public class MooseDataCardHuntingDayValidatorTest {
     }
 
     private static Has2BeginEndDates newSeason(final LocalDate startDate, final LocalDate endDate) {
-        return new Has2BeginEndDatesDTO(startDate, endDate, null, null);
+        return new Has2BeginEndDatesDTO(startDate, endDate);
     }
 
 }

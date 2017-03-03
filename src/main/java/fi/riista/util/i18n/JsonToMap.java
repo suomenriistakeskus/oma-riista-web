@@ -32,10 +32,10 @@ public final class JsonToMap {
 
     private final JsonParser parser;
 
-    public static LinkedHashMap<String, String> readFileToMap(String jsonFilePath) throws Exception {
-        JsonFactory jfactory = new JsonFactory();
+    public static LinkedHashMap<String, String> readFileToMap(final String jsonFilePath) throws Exception {
+        final JsonFactory jfactory = new JsonFactory();
 
-        try (JsonParser p = jfactory.createParser(new File(jsonFilePath))) {
+        try (final JsonParser p = jfactory.createParser(new File(jsonFilePath))) {
             return new JsonToMap(p).toMap();
         }
     }
@@ -45,14 +45,14 @@ public final class JsonToMap {
     }
 
     private LinkedHashMap<String, String> toMap() throws Exception {
-        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        final LinkedHashMap<String, String> map = new LinkedHashMap<>();
         doExport(null, map);
         return map;
     }
 
-    private void doExport(String path, Map<String, String> map) throws Exception {
+    private void doExport(final String path, final Map<String, String> map) throws Exception {
         while (parser.nextToken() != JsonToken.END_OBJECT && parser.hasCurrentToken()) {
-            String currentName = parser.getCurrentName();
+            final String currentName = parser.getCurrentName();
             assertJsonKey(currentName);
             if (parser.getCurrentToken() == JsonToken.START_OBJECT) {
                 doExport(createPath(path, currentName), map);
@@ -62,19 +62,16 @@ public final class JsonToMap {
         }
     }
 
-    private static void assertJsonKey(String key) {
+    private static void assertJsonKey(final String key) {
         if (key != null && key.contains(".")) {
             throw new IllegalArgumentException(String.format("JSON key contains dot, key:'%s'", key));
         }
     }
 
-    private static String createPath(String path, String currentName) {
+    private static String createPath(final String path, final String currentName) {
         if (currentName == null) {
             return "";
         }
-        if (StringUtils.isEmpty(path)) {
-            return currentName;
-        }
-        return path + "." + currentName;
+        return StringUtils.isEmpty(path) ? currentName : path + "." + currentName;
     }
 }

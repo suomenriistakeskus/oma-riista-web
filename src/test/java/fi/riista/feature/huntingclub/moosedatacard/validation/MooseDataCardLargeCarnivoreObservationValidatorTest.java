@@ -9,11 +9,9 @@ import static org.junit.Assert.assertNull;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardLargeCarnivoreObservation;
-
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
-
 import java.util.stream.Stream;
 
 public class MooseDataCardLargeCarnivoreObservationValidatorTest
@@ -34,10 +32,11 @@ public class MooseDataCardLargeCarnivoreObservationValidatorTest
     @Test
     public void testWhenAllSpeciesAmountsGreaterThanZero() {
         final MooseDataCardLargeCarnivoreObservation input = newObservation();
+        input.setGeoLocation(DEFAULT_COORDINATES);
 
         assertAccepted(input, output -> {
             assertEquals(input.getDate(), output.getDate());
-            assertEquals(input.getGeoLocation(), output.getGeoLocation());
+            assertEquals(DEFAULT_COORDINATES, output.getGeoLocation());
             assertEquals(input.getObservationType(), output.getObservationType());
             assertEquals(input.getAdditionalInfo(), output.getAdditionalInfo());
             assertEquals(input.getNumberOfWolves(), output.getNumberOfWolves());

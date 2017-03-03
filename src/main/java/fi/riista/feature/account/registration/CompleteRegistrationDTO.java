@@ -6,13 +6,14 @@ import fi.riista.validation.VetumaTransactionId;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 public class CompleteRegistrationDTO implements Serializable {
     @XssSafe
     @VetumaTransactionId
-    private String transaction;
+    private String trid;
 
     @XssSafe
     @NotBlank
@@ -33,13 +34,10 @@ public class CompleteRegistrationDTO implements Serializable {
     @PhoneNumber
     private String phoneNumber;
 
+    @NotNull
+    @Size(min = 2, max = 2)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String homeMunicipality;
-
-    private boolean finnishCitizen;
-
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String languageCode;
+    private String lang;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String ssn;
@@ -58,12 +56,12 @@ public class CompleteRegistrationDTO implements Serializable {
 
     private boolean addressEditable;
 
-    public String getTransaction() {
-        return transaction;
+    public String getTrid() {
+        return trid;
     }
 
-    public void setTransaction(final String transaction) {
-        this.transaction = transaction;
+    public void setTrid(final String trid) {
+        this.trid = trid;
     }
 
     public String getPassword() {
@@ -114,28 +112,12 @@ public class CompleteRegistrationDTO implements Serializable {
         this.ssn = ssn;
     }
 
-    public String getHomeMunicipality() {
-        return homeMunicipality;
+    public void setLang(String lang) {
+        this.lang = lang;
     }
 
-    public void setHomeMunicipality(String homeMunicipality) {
-        this.homeMunicipality = homeMunicipality;
-    }
-
-    public void setFinnishCitizen(boolean finnishCitizen) {
-        this.finnishCitizen = finnishCitizen;
-    }
-
-    public boolean isFinnishCitizen() {
-        return finnishCitizen;
-    }
-
-    public void setLanguageCode(String languageCode) {
-        this.languageCode = languageCode;
-    }
-
-    public String getLanguageCode() {
-        return languageCode;
+    public String getLang() {
+        return lang;
     }
 
     public String getStreetAddress() {

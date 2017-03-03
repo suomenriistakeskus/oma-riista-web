@@ -1,0 +1,50 @@
+<div class="r-club-areas-layout">
+    <div class="left-column">
+        <r-club-area-category-selection active-tab-index="1"></r-club-area-category-selection>
+
+        <div class="area-selection">
+            <div class="row">
+                <div class="form-group col-xs-5">
+                    <select name="yearSelect" id="yearSelect"
+                            class="form-control"
+                            ng-model="$ctrl.selectedYear"
+                            ng-change="$ctrl.reloadAreas()"
+                            ng-options="year.year as year.name for year in $ctrl.huntingYears | orderBy:'year'">
+                    </select>
+                </div>
+                <div class="text-right col-xs-7">
+                    <button type="button" class="btn btn-primary"
+                            ng-show="$ctrl.isContactPerson()"
+                            ng-click="$ctrl.addAreaProposal()">
+                        <span class="glyphicon glyphicon-plus"></span>&nbsp;
+                        <span translate="club.area.proposal.button.add"></span>
+                    </button>
+                </div>
+            </div>
+
+            <area-proposal-list
+                    areas="$ctrl.areas"
+                    reload-areas="$ctrl.reloadAreas()"
+                    on-area-select="$ctrl.onAreaSelect(area)"
+                    on-area-changed="$ctrl.onAreaChanged(area)"
+                    map-view-active="$ctrl.mapTabActivated"
+                    show-map="$ctrl.showMap()"
+                    show-partner-list="$ctrl.showPartnerList()">
+            </area-proposal-list>
+        </div>
+    </div>
+
+    <div class="main-column">
+        <div ng-if="$ctrl.isMapViewActivated()">
+            <r-geojson-map initial-view-bounds="$ctrl.rhyBounds"
+                           feature-collection="$ctrl.featureCollection"></r-geojson-map>
+        </div>
+
+        <div ng-if="!$ctrl.isMapViewActivated() && $ctrl.selectedArea">
+            <r-area-proposal-partner-list area="$ctrl.selectedArea"
+                                          partners="$ctrl.partners"
+                                          is-contact-person="$ctrl.isContactPerson()"
+                                          on-partner-changed="$ctrl.reloadAreas()"></r-area-proposal-partner-list>
+        </div>
+    </div>
+</div>

@@ -4,11 +4,10 @@ import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Resource;
@@ -30,8 +29,7 @@ public class HuntingClubStatisticsFeatureTest extends EmbeddedDatabaseTest {
 
     private HuntingClub createNotRegisteredWithPermit(Riistanhoitoyhdistys rhy) {
         final HuntingClub huntingClub = createClubOnly(rhy);
-        final HarvestPermit harvestPermit = model().newHarvestPermit(rhy);
-        harvestPermit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+        final HarvestPermit harvestPermit = model().newMooselikePermit(rhy);
         harvestPermit.setPermitPartners(Collections.singleton(huntingClub));
         return huntingClub;
     }
@@ -238,7 +236,6 @@ public class HuntingClubStatisticsFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    @Ignore
     public void testByRkaStatistics() {
         final RiistakeskuksenAlue rka1 = model().newRiistakeskuksenAlue("100");
         final RiistakeskuksenAlue rka2 = model().newRiistakeskuksenAlue("200");

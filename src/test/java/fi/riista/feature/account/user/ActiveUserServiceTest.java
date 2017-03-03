@@ -1,7 +1,6 @@
 package fi.riista.feature.account.user;
 
 import fi.riista.feature.EmbeddedDatabaseTest;
-import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.organization.person.Person;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,10 +14,10 @@ public class ActiveUserServiceTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testAuthorizeAndGetPerson() {
-        withPerson(person -> onSavedAndAuthenticated(createUser(person), () -> {
+        withPerson(person -> onSavedAndAuthenticated(createUser(person), () -> runInTransaction(() -> {
             final Person authorizedPerson = activeUserService().requireActivePerson();
             assertEquals(person.getId(), authorizedPerson.getId());
-        }));
+        })));
     }
 
     @Test
@@ -26,7 +25,7 @@ public class ActiveUserServiceTest extends EmbeddedDatabaseTest {
         thrown.expect(RuntimeException.class);
         thrown.expectMessage("User id not available in security context");
 
-        runInTransaction(activeUserService()::requireActivePerson);
+        runInTransaction(() -> activeUserService().requireActivePerson());
     }
 
     @Test
@@ -34,7 +33,8 @@ public class ActiveUserServiceTest extends EmbeddedDatabaseTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Active user is not associated with person");
 
-        onSavedAndAuthenticated(createNewUser(), activeUserService()::requireActivePerson);
+        onSavedAndAuthenticated(createNewUser(), () -> runInTransaction(
+                () -> activeUserService().requireActivePerson()));
     }
 
     @Test
@@ -46,6 +46,7 @@ public class ActiveUserServiceTest extends EmbeddedDatabaseTest {
         final SystemUser user = createUser(person);
         user.setRole(someOtherThan(SystemUser.Role.ROLE_USER, SystemUser.Role.class));
 
-        onSavedAndAuthenticated(user, activeUserService()::requireActivePerson);
+        onSavedAndAuthenticated(user, () -> runInTransaction(
+                () -> activeUserService().requireActivePerson()));
     }
 }

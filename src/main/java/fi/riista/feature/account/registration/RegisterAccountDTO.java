@@ -12,7 +12,7 @@ public class RegisterAccountDTO {
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @NotBlank
-    private String languageCode;
+    private String lang;
 
     public String getEmail() {
         return email;
@@ -22,11 +22,11 @@ public class RegisterAccountDTO {
         this.email = email;
     }
 
-    public String getLanguageCode() {
-        return languageCode;
+    public String getLang() {
+        return lang;
     }
 
-    public void setLanguageCode(String languageCode) {
-        this.languageCode = languageCode;
+    public void setLang(String lang) {
+        this.lang = lang;
     }
 }

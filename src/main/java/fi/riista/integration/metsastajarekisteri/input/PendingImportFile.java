@@ -1,9 +1,6 @@
 package fi.riista.integration.metsastajarekisteri.input;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -14,8 +11,6 @@ import java.nio.file.attribute.FileTime;
 import java.util.Objects;
 
 public final class PendingImportFile implements Comparable<PendingImportFile> {
-    public static final DateTimeFormatter ARCHIVE_DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyyMMddHHmmss");
-
     private final Path sourceFile;
     private Path markerFile;
     private final FileTime creationTime;
@@ -39,25 +34,6 @@ public final class PendingImportFile implements Comparable<PendingImportFile> {
 
     public FileTime getLastModifiedAt() {
         return lastModifiedAt;
-    }
-
-    public Path getArchiveFile(Path archiveFolder) {
-        Objects.requireNonNull(archiveFolder, "Archive folder is empty");
-        Preconditions.checkState(Files.isDirectory(archiveFolder), "Archive folder is invalid");
-        Preconditions.checkState(Files.isWritable(archiveFolder), "Cannot write to archive folder");
-
-        return archiveFolder.resolve(createArchiveFileName()).toAbsolutePath();
-    }
-
-    private String createArchiveFileName() {
-        StringBuilder sb = new StringBuilder();
-
-        // Add timestamp
-        sb.append(ARCHIVE_DATE_TIME_FORMAT.print(this.creationTime.toMillis()));
-        sb.append("-");
-        sb.append(this.sourceFile.getFileName().toString());
-
-        return sb.toString();
     }
 
     public void removeMarkerFile() throws IOException {

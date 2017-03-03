@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
-import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.mail.MailService;
 import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.organization.Organisation;
@@ -46,9 +45,6 @@ public class LupahallintaImportMailHandler {
 
     @Resource
     private OrganisationRepository organisationRepository;
-
-    @Resource
-    private RuntimeEnvironmentUtil environmentUtil;
 
     public void handleError(Exception e) {
         if (e instanceof HarvestPermitImportException) {
@@ -114,9 +110,7 @@ public class LupahallintaImportMailHandler {
     }
 
     private Set<String> otherReceivers(Set<String> rkaCodes) {
-        return true
-                ? Sets.union(OTHER_RECEIVERS, rkaEmails(rkaCodes))
-                : Collections.emptySet();
+        return Sets.union(OTHER_RECEIVERS, rkaEmails(rkaCodes));
     }
 
 
@@ -131,7 +125,7 @@ public class LupahallintaImportMailHandler {
     // protected for tests
     protected static Set<String> collectRkaOfficialCodes(List<HarvestPermitImportResultDTO.PermitParsingError> allErrors) {
         return allErrors.stream()
-                .map(e -> e.getPermitNumber())
+                .map(HarvestPermitImportResultDTO.PermitParsingError::getPermitNumber)
                 .map(LupahallintaImportMailHandler::resolveRkaOfficialCode)
                 .collect(toSet());
     }
@@ -147,7 +141,7 @@ public class LupahallintaImportMailHandler {
                 JpaSpecs.inCollection(Organisation_.officialCode, rkaCodes));
         return organisationRepository.findAll(spec)
                 .stream()
-                .map(rka -> rka.getEmail())
+                .map(Organisation::getEmail)
                 .collect(toSet());
     }
 }

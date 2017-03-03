@@ -3,17 +3,16 @@ package fi.riista.feature.huntingclub.permit.partner;
 import fi.riista.feature.gamediary.GameDiaryService;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitContactPerson;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitTotalPaymentDTO;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTO;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitFeature;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
+import fi.riista.feature.huntingclub.permit.HuntingClubPermitTotalPaymentDTO;
 import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.OccupationRepository;
-import fi.riista.util.F;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.util.LocalisedString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +23,6 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -40,9 +36,6 @@ public class AllPartnersFinishedHuntingMailFeature {
 
     @Resource
     private OccupationRepository occupationRepository;
-
-    @Resource
-    private HuntingClubGroupRepository huntingClubGroupRepository;
 
     @Resource
     private AllPartnersFinishedHuntingMailService mailService;
@@ -84,7 +77,7 @@ public class AllPartnersFinishedHuntingMailFeature {
                     mailService.sendEmailAsync(emails, data);
                 } catch (RuntimeException ex) {
                     // Exception should be handled, so that HTTP status code is not altered
-                    LOG.error("Error occured while sending emails", ex);
+                    LOG.error("Error occurred while sending emails", ex);
                 }
             }
         });
@@ -92,27 +85,24 @@ public class AllPartnersFinishedHuntingMailFeature {
 
     private Set<String> findEmails(final HarvestPermit permit) {
         final HuntingClub permitHolder = permit.getPermitHolder();
-        return Stream.concat(findContactPersons(permitHolder), huntingLeaders(permit, permitHolder))
-                .map(occ -> occ.getPerson().getEmail())
+        return Stream.concat(findClubContactPersons(permitHolder), findPermitContactPersons(permit))
+                .map(Person::getEmail)
                 // Persons not associated with active user may have null e-mail address.
                 .filter(Objects::nonNull)
                 .collect(toSet());
     }
 
-    private Stream<Occupation> findContactPersons(final HuntingClub permitHolder) {
+    private Stream<Person> findClubContactPersons(final HuntingClub permitHolder) {
         return occupationRepository
-                .findActiveByOrganisationAndOccupationType(permitHolder, OccupationType.SEURAN_YHDYSHENKILO).stream();
+                .findActiveByOrganisationAndOccupationType(permitHolder, OccupationType.SEURAN_YHDYSHENKILO)
+                .stream()
+                .map(Occupation::getPerson);
     }
 
-    private Stream<Occupation> huntingLeaders(final HarvestPermit permit, final HuntingClub permitHolder) {
-        final List<HuntingClubGroup> groups =
-                huntingClubGroupRepository.findByPermitAndClubs(permit, Collections.singleton(permitHolder));
-
-        // permit holder might not have any groups, this is normal
-        return groups.isEmpty()
-                ? Stream.empty()
-                : occupationRepository.findActiveByOrganisationsAndTypes(
-                            F.getUniqueIds(groups), EnumSet.of(OccupationType.RYHMAN_METSASTYKSENJOHTAJA)).stream();
+    private static Stream<Person> findPermitContactPersons(final HarvestPermit permit) {
+        return Stream.concat(
+                Stream.of(permit.getOriginalContactPerson()),
+                permit.getContactPersons().stream().map(HarvestPermitContactPerson::getContactPerson));
     }
 
     private AllPartnersFinishedHuntingMailService.MailData getMailData(

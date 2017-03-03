@@ -11,10 +11,11 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardSection82Validator.validate;
 import static fi.riista.util.Asserts.assertNumericFieldValidationErrors;
 import static fi.riista.util.Asserts.assertValidationErrors;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
-
+import fi.riista.util.Asserts;
 import org.junit.Test;
 
 import java.util.function.Function;
@@ -25,7 +26,10 @@ public class MooseDataCardSection82ValidatorTest {
     @Test
     public void testValidate_withValidData() {
         final MooseDataCardSection_8_2 section = newSection82();
-        assertTrue(validate(section, newHarvestAmounts(section)).isValid());
+
+        Asserts.assertValid(validate(section, newHarvestAmounts(section)), s -> {
+            assertEquals(section.toString(), s.toString());
+        });
     }
 
     @Test

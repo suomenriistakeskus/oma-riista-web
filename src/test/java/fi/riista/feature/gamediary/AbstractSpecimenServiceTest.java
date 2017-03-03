@@ -1,7 +1,5 @@
 package fi.riista.feature.gamediary;
 
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.partition;
 import static fi.riista.util.Asserts.assertEmpty;
 import static fi.riista.util.Filters.hasAnyIdOf;
@@ -272,7 +270,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
             ctx.mutateContent(updatedDtos);
 
             final List<DTO> newDtos = ctx.createDTOs(2);
-            final List<DTO> newAndToBeUpdatedDtos = newArrayList(concat(updatedDtos, newDtos));
+            final List<DTO> newAndToBeUpdatedDtos = F.concat(updatedDtos, newDtos);
 
             final List<ENTITY> specimensAfterUpdate =
                     ctx.invokeSet(newAndToBeUpdatedDtos.size(), newAndToBeUpdatedDtos);

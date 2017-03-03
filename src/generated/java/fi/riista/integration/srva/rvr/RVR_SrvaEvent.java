@@ -658,6 +658,10 @@ public class RVR_SrvaEvent {
             return this.method;
         }
 
+        public void setMethod(List<RVR_SrvaMethodEnum> value) {
+            this.method = value;
+        }
+
     }
 
 
@@ -715,6 +719,10 @@ public class RVR_SrvaEvent {
                 specimen = new ArrayList<RVR_SrvaSpecimen>();
             }
             return this.specimen;
+        }
+
+        public void setSpecimen(List<RVR_SrvaSpecimen> value) {
+            this.specimen = value;
         }
 
     }

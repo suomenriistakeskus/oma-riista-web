@@ -51,7 +51,7 @@ public class JPAConfig {
         protected DataSource dataSource;
 
         @Resource
-        protected JPAProperties jpaProperties;
+        protected JPAProperties jpaPropertiesBuilder;
 
         @Resource
         protected LiquibaseConfig liquibaseConfig;
@@ -100,7 +100,7 @@ public class JPAConfig {
         }
 
         protected Map<String, Object> jpaProperties() {
-            return jpaProperties.build();
+            return jpaPropertiesBuilder.build();
         }
     }
 
@@ -114,7 +114,7 @@ public class JPAConfig {
 
         @Override
         protected Map<String, Object> jpaProperties() {
-            final Map<String, Object> jpaProperties = this.jpaProperties.build();
+            final Map<String, Object> jpaProperties = this.jpaPropertiesBuilder.build();
             jpaProperties.put(AvailableSettings.HBM2DDL_AUTO, "update");
             jpaProperties.put(AvailableSettings.GENERATE_STATISTICS, true);
             return jpaProperties;

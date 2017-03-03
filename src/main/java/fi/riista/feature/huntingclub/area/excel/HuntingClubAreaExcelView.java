@@ -31,7 +31,6 @@ public class HuntingClubAreaExcelView extends AbstractXlsView {
             "propertyIdentifierPart3",
             "propertyIdentifierPart4",
             "palstaId",
-            "propertyName",
             "propertySize",
             "propertyOriginalSize",
             "propertyIsChanged"
@@ -94,7 +93,6 @@ public class HuntingClubAreaExcelView extends AbstractXlsView {
                     .appendTextCell(feature.getPropertyIdentifier().getRyhmanumero())
                     .appendTextCell(feature.getPropertyIdentifier().getYksikkonumero())
                     .appendNumberCell(feature.getPalstaId())
-                    .appendTextCell(feature.getPropertyName())
                     .appendDoubleCell(feature.formatActualSize(), 2)
                     .appendDoubleCell(feature.formatOriginalSize(), 2)
                     .appendTextCell(feature.isChanged() ? booleanTrue : booleanFalse);
@@ -105,7 +103,6 @@ public class HuntingClubAreaExcelView extends AbstractXlsView {
 
     public static class ExcelRow {
         private final Integer palstaId;
-        private final String propertyName;
         private final Double originalSize;
         private final Double excludedSize;
         private final PropertyIdentifier propertyIdentifier;
@@ -113,13 +110,11 @@ public class HuntingClubAreaExcelView extends AbstractXlsView {
 
         public ExcelRow(final Integer palstaId,
                         final PropertyIdentifier propertyIdentifier,
-                        final String propertyName,
                         final Double originalSize,
                         final Double excludedSize,
                         final Boolean changed) {
             this.palstaId = Objects.requireNonNull(palstaId);
             this.propertyIdentifier = Objects.requireNonNull(propertyIdentifier);
-            this.propertyName = propertyName;
             this.originalSize = Objects.requireNonNull(originalSize);
             this.excludedSize = Objects.requireNonNull(excludedSize);
             this.changed = Objects.requireNonNull(changed);
@@ -137,10 +132,6 @@ public class HuntingClubAreaExcelView extends AbstractXlsView {
 
         public Integer getPalstaId() {
             return palstaId;
-        }
-
-        public String getPropertyName() {
-            return propertyName;
         }
 
         public PropertyIdentifier getPropertyIdentifier() {

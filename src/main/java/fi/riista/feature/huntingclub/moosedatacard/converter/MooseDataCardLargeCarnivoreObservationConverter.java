@@ -3,12 +3,12 @@ package fi.riista.feature.huntingclub.moosedatacard.converter;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.gamediary.GameDiaryService;
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationType;
+import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardLargeCarnivoreObservationValidator;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardLargeCarnivoreObservation;
-import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardLargeCarnivoreObservationValidator;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
@@ -28,10 +28,9 @@ public class MooseDataCardLargeCarnivoreObservationConverter
 
     private final GameDiaryService diaryService;
 
-    public MooseDataCardLargeCarnivoreObservationConverter(
-            @Nonnull final GameDiaryService diaryService,
-            @Nonnull final Person contactPerson,
-            @Nonnull final GeoLocation defaultCoordinates) {
+    public MooseDataCardLargeCarnivoreObservationConverter(@Nonnull final GameDiaryService diaryService,
+                                                           @Nonnull final Person contactPerson,
+                                                           @Nonnull final GeoLocation defaultCoordinates) {
 
         super(new MooseDataCardLargeCarnivoreObservationValidator(defaultCoordinates), contactPerson);
         this.diaryService = Objects.requireNonNull(diaryService);
@@ -61,20 +60,20 @@ public class MooseDataCardLargeCarnivoreObservationConverter
                         optionalSpeciesAmountTuple(wolverineSupplier, validInput.getNumberOfWolverines()))
                         .filter(Optional::isPresent)
                         .map(Optional::get)
-                        .map(speciesAmountTuple -> {
+                        .map(speciesAmountTuple -> speciesAmountTuple.transform((species, amount) -> {
                             final Observation observation = createObservation(validInput);
-                            observation.setSpecies(speciesAmountTuple._1);
-                            observation.setAmount(speciesAmountTuple._2);
+                            observation.setSpecies(species);
+                            observation.setAmount(amount);
                             observation.setDescription(validInput.getAdditionalInfo());
 
                             observation.setObservationType(HasMooseDataCardEncoding
-                                    .enumOf(ObservationType.class, validInput.getObservationType())
-                                    .getOrElseThrow(invalid -> new IllegalStateException(
-                                            "Invalid observation type should not have passed validation: "
-                                                    + invalid.orElse("<null>"))));
+                                    .getEnumOrThrow(ObservationType.class, validInput.getObservationType(), invalid -> {
+                                        return new IllegalStateException("Invalid observation type should not have passed validation: "
+                                                + invalid.map(s -> '"' + s + '"').orElse("null"));
+                                    }));
 
                             return observation;
-                        }));
+                        })));
     }
 
     private static Optional<Tuple2<GameSpecies, Integer>> optionalSpeciesAmountTuple(

@@ -11,7 +11,7 @@
 
         <div class="form-group" show-errors>
             <label for="nameFI" class="col-xs-3 control-label">
-                <span translate="account.profile.createClub.nameFI"></span>
+                <span translate="global.nameFI"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
@@ -21,16 +21,21 @@
                        ng-model="modalCtrl.club.nameFI"
                        unique-club-name
                        ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                       r-copy-on-blur-to-empty-input="nameSV"
                        minlength="5"
                        maxlength="255"
                        required
                        autocomplete="off"/>
+
+                <p class="help-block"
+                   ng-show="form.nameFI.$error.validClubName"
+                   translate="club.main.general.duplicateName"></p>
             </div>
         </div>
 
         <div class="form-group" show-errors>
             <label for="nameSV" class="col-xs-3 control-label">
-                <span translate="account.profile.createClub.nameSV"></span>
+                <span translate="global.nameSV"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
@@ -40,10 +45,15 @@
                        ng-model="modalCtrl.club.nameSV"
                        unique-club-name
                        ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                       r-copy-on-blur-to-empty-input="nameFI"
                        minlength="5"
                        maxlength="255"
                        required
                        autocomplete="off"/>
+
+                <p class="help-block"
+                   ng-show="form.nameSV.$error.validClubName"
+                   translate="club.main.general.duplicateName"></p>
             </div>
         </div>
 

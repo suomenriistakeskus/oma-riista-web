@@ -43,6 +43,7 @@
                         class="form-control"
                         ng-model="selectedFieldOrSeason"
                         ng-options="o as o.name group by o.type for o in fieldsAndSeasons | orderBy:'name'"
+                        ng-change="fieldOrSeasonChanged()"
                         ie10-optgroup-fix>
                     <option value="">{{'harvestreport.admin.all'|translate}}</option>
                 </select>
@@ -91,19 +92,21 @@
 
     <div class="col-md-9">
 
-        <leaflet class="r-cursor-pointer"
-                 id="rhyHarvestReportMap"
-                 defaults="mapDefaults"
-                 layers="mapDefaults.mmlLayers"
-                 controls="mapDefaults.controls"
-                 lf-center="mapCenter"
-                 bounds="bounds"
-                 geojson="rhyGeometry"
-                 geojson-watch-options="mapDefaults.geojsonWatchOptions"
-                 event-broadcast="mapEvents"
-                 height="550px">
-            <marker-cluster id="rhyHarvestReportMarkers" leaflet-markers="markers" />
-        </leaflet>
+        <div><!-- This div is required for IE11, otherwise listing below the map is never shown -->
+            <leaflet class="r-cursor-pointer"
+                     id="rhyHarvestReportMap"
+                     defaults="mapDefaults"
+                     layers="mapDefaults.mmlLayers"
+                     controls="mapDefaults.controls"
+                     lf-center="mapCenter"
+                     bounds="bounds"
+                     geojson="rhyGeometry"
+                     geojson-watch-options="mapDefaults.geojsonWatchOptions"
+                     event-broadcast="mapEvents"
+                     height="550px">
+                <marker-cluster id="rhyHarvestReportMarkers" leaflet-markers="markers" />
+            </leaflet>
+        </div>
 
         <p>&nbsp;</p>
 

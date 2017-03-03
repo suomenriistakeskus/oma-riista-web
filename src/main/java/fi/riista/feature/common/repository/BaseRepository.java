@@ -42,9 +42,4 @@ public interface BaseRepository<T, ID extends Serializable> extends
 
     Stream<T> findAllAsStream(OrderSpecifier<?>... orders);
 
-    // iterable conversions
-
-    List<T> iterableToList(Iterable<T> i);
-
-    Stream<T> iterableToStream(Iterable<T> i);
 }

@@ -262,4 +262,8 @@ public class LEM_Club {
         this.overrides = value;
     }
 
+    public void setGroups(List<LEM_Group> value) {
+        this.groups = value;
+    }
+
 }

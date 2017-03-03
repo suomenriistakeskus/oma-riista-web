@@ -1,16 +1,16 @@
 package fi.riista.feature.harvestpermit.report.excel;
 
 import com.google.common.base.Joiner;
+import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.PropertyIdentifier;
-import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.harvest.HuntingAreaType;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.harvestpermit.report.HarvestReport;
-import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import fi.riista.util.Localiser;
@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
 
@@ -34,17 +35,19 @@ import static java.util.stream.Collectors.toList;
 public class HarvestReportExportExcelDTO {
 
     public static List<HarvestReportExportExcelDTO> create(final Collection<HarvestReport> harvestReports,
-                                                           final EnumLocaliser enumLocaliser) {
+                                                           final EnumLocaliser enumLocaliser,
+                                                           final Predicate<Harvest> harvestFilter) {
         return Objects.requireNonNull(harvestReports, "harvestReports is null").stream()
                 .filter(Objects::nonNull)
                 .map(HarvestReport::getHarvests)
                 .flatMap(Set::stream)
+                .filter(harvestFilter)
                 .map(input -> HarvestReportExportExcelDTO.create(input.getHarvestReport(), input, enumLocaliser))
                 .collect(toList());
     }
 
-    public static HarvestReportExportExcelDTO create(HarvestReport report,
-                                                     Harvest harvest,
+    public static HarvestReportExportExcelDTO create(final HarvestReport report,
+                                                     final Harvest harvest,
                                                      final EnumLocaliser enumLocaliser) {
         final HarvestReportExportExcelDTO dto = new HarvestReportExportExcelDTO();
 

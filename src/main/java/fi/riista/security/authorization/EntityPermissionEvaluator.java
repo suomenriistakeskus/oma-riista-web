@@ -1,111 +1,56 @@
 package fi.riista.security.authorization;
 
-import fi.riista.security.authorization.api.AuthorizationTargetFactory;
-import fi.riista.security.authorization.api.EntityAuthorizationTarget;
-import fi.riista.security.authorization.spi.AuthorizationAuditListener;
-import fi.riista.security.authorization.spi.EntityAuthorizationStrategy;
-import fi.riista.security.authorization.support.EntityAuthorizationStrategyRegistry;
+import fi.riista.feature.common.entity.BaseEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.PermissionEvaluator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
-import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
-/**
- * Strategy used in expression evaluation to determine whether a user has a permission or permissions
- * for a given domain object.
- * <p/>
- * For usage check @PreAuthorize and supported expressions in
- *
- * @see org.springframework.security.access.expression.SecurityExpressionRoot
- */
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
 @Component
-public class EntityPermissionEvaluator implements PermissionEvaluator {
+public class EntityPermissionEvaluator {
     private static final Logger LOG = LoggerFactory.getLogger(EntityPermissionEvaluator.class);
 
-    @Resource
-    private EntityAuthorizationStrategyRegistry authorizationStrategyRegistry;
+    private final Map<Class, EntityAuthorizationStrategy> registry;
 
-    @Resource
-    private AuthorizationTargetFactory authorizationTargetFactory;
-
-    @Resource
-    private AuthorizationAuditListener auditListener;
-
-    /**
-     * @param authentication     represents the user in question. Should not be null.
-     * @param targetDomainObject the domain object for which permissions should be checked. May be null
-     *                           in which case implementations should return false, as the null condition can be checked explicitly
-     *                           in the expression.
-     * @param permission         a representation of the permission object as supplied by the expression system. Not null.
-     * @return true if the permission is granted, false otherwise
-     */
-    @Override
-    public boolean hasPermission(final Authentication authentication, final Object targetDomainObject, final Object permission) {
-        Objects.requireNonNull(authentication, "User is not authenticated");
-        Objects.requireNonNull(permission, "Permission is null");
-
-        final EntityAuthorizationTarget authorizationTarget =
-                authorizationTargetFactory.create(targetDomainObject);
-
-        if (authorizationTarget == null) {
-            LOG.warn("Unknown authorization target object. permission={} authentication={} target={}",
-                    permission, authentication, targetDomainObject);
-
-            return false;
-        }
-
-        return hasPermission(authentication, authorizationTarget, permission);
+    @Autowired
+    public EntityPermissionEvaluator(final List<EntityAuthorizationStrategy> strategies) {
+        this.registry = strategies.stream().collect(toMap(EntityAuthorizationStrategy::getEntityClass, identity()));
     }
 
-    /**
-     * Alternative method for evaluating a permission where only the identifier of the target object
-     * is available, rather than the target instance itself.
-     *
-     * @param authentication represents the user in question. Should not be null.
-     * @param targetId       the identifier for the object instance (usually a Long)
-     * @param targetType     a String representing the target's type (usually a Java classname). Not null.
-     * @param permission     a representation of the permission object as supplied by the expression system. Not null.
-     * @return true if the permission is granted, false otherwise
-     */
-    @Override
-    public boolean hasPermission(final Authentication authentication, final Serializable targetId,
-                                 final String targetType, final Object permission) {
-        Objects.requireNonNull(authentication, "User is not authenticated");
-        Objects.requireNonNull(targetType, "Target type is null");
-        Objects.requireNonNull(permission, "Permission is null");
+    @SuppressWarnings({"unchecked"})
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean hasPermission(final Authentication authentication,
+                                 final BaseEntity<?> entity,
+                                 final Enum<?> permission) {
+        Objects.requireNonNull(authentication, "user is null");
+        Objects.requireNonNull(entity, "entity is null");
+        Objects.requireNonNull(permission, "permission is null");
 
-        final EntityAuthorizationTarget authorizationTarget =
-                authorizationTargetFactory.create(targetType, targetId);
-
-        if (authorizationTarget == null) {
-            LOG.warn("Unknown authorization target object. permission={} authentication={} targetType={} targetId={}",
-                    permission, authentication, targetType, targetId);
-
-            return false;
-        }
-
-        return hasPermission(authentication, authorizationTarget, permission);
+        return lookupAuthorizationStrategy(entity)
+                .map(strategy -> strategy.hasPermission(entity, permission, authentication))
+                .orElse(Boolean.FALSE);
     }
 
-    /**
-     * Consult matching entity authorization strategy implementation for permission on "target".
-     */
-    private boolean hasPermission(final Authentication authentication,
-                                  final EntityAuthorizationTarget target,
-                                  final Object permission) {
-        final EntityAuthorizationStrategy authorizationStrategy =
-                authorizationStrategyRegistry.lookupAuthorizationStrategy(target);
+    private Optional<EntityAuthorizationStrategy> lookupAuthorizationStrategy(final BaseEntity<?> entity) {
+        final Class<?> persistentClass = BaseEntity.getClassWithoutInitializingProxy(entity);
 
-        final boolean accessGranted = authorizationStrategy.hasPermission(target, permission, authentication);
+        if (registry.containsKey(persistentClass)) {
+            return Optional.of(registry.get(persistentClass));
+        }
 
-        // Audit event
-        auditListener.onAccessDecision(accessGranted, permission, target, authentication);
+        LOG.error("No authorization strategy can handle authorizationTarget={}", entity);
 
-        return accessGranted;
+        return Optional.empty();
     }
 }

@@ -283,6 +283,25 @@ angular.module('app.rhy.controllers', [])
                         return bounds || GIS.getRhyBounds(rhy.officialCode);
                     }
                 }
+            })
+            .state('rhy.moosepermit.rhystats', {
+                url: '/{permitId:[0-9]{1,8}}/rhy-stats',
+                template: '<moose-permit-stats-table statistics="$ctrl.statistics"></moose-permit-stats-table>',
+                controller: function (statistics) {
+                    this.statistics = statistics;
+                },
+                controllerAs: '$ctrl',
+                bindToController: true,
+                wideLayout: true,
+                resolve: {
+                    permitId: function ($stateParams, MoosePermitSelection) {
+                        return MoosePermitSelection.updateSelectedPermitId($stateParams);
+                    },
+                    statistics: function (HarvestPermits, permitId, selectedYearAndSpecies) {
+                        var params = {permitId: permitId, speciesCode: selectedYearAndSpecies.species};
+                        return HarvestPermits.moosePermitRhyStats(params).$promise;
+                    }
+                }
             });
     })
 
@@ -459,6 +478,17 @@ angular.module('app.rhy.controllers', [])
                 HarvestReportSearch.findAllForRhy(params).then(function (response) {
                     $scope.harvestReports = response.data;
                 });
+            };
+
+            $scope.fieldOrSeasonChanged = function () {
+                var season = $scope.selectedFieldOrSeason.season;
+                if (season) {
+                    $scope.dates.beginDate = season.beginDate;
+                    $scope.dates.endDate = season.endDate2 ? season.endDate2 : season.endDate;
+                } else {
+                    $scope.dates.beginDate = HuntingYearService.getBeginDateStr();
+                    $scope.dates.endDate = HuntingYearService.getEndDateStr();
+                }
             };
 
             var markerDefaults = {

@@ -18,9 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
-import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.HarvestPermitPermission.CREATE_REMOVE_MOOSE_HARVEST_REPORT;
-import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.HarvestPermitPermission.LIST_LEADERS;
-import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.HarvestPermitPermission.UPDATE_ALLOCATIONS;
+import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.CREATE_REMOVE_MOOSE_HARVEST_REPORT;
+import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.LIST_LEADERS;
+import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.UPDATE_ALLOCATIONS;
 import static fi.riista.security.EntityPermission.READ;
 import static fi.riista.security.EntityPermission.UPDATE;
 import static fi.riista.util.DateUtil.today;

@@ -136,7 +136,7 @@ public class MooseHuntingSummaryCrudFeatureTest extends EmbeddedDatabaseTest {
             }
 
             onSavedAndAuthenticated(userFn.apply(f.club, f.group), tx(() -> {
-                final MooseHuntingSummaryDTO dto = feature.dtoTransformer().apply(summary);
+                final MooseHuntingSummaryDTO dto = feature.toDTO(summary);
                 assertEquals(f.permit.getId(), Long.valueOf(dto.getHarvestPermitId()));
                 assertEquals(f.club.getId(), Long.valueOf(dto.getClubId()));
                 assertEquals(expectedLocked, dto.isLocked());

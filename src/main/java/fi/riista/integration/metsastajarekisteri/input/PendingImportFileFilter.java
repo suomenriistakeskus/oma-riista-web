@@ -16,9 +16,9 @@ import java.util.Set;
 
 public final class PendingImportFileFilter {
 
-    public static final List<String> DEFAULT_SUFFIX_LIST = Arrays.asList(
+    private static final List<String> DEFAULT_SUFFIX_LIST = Arrays.asList(
             "csv", "csv.enc", "csv.gz", "csv.gz.enc", "csv.enc.gz");
-    public static final String DEFAULT_SUFFIX_COMPLETE = ".complete";
+    private static final String DEFAULT_SUFFIX_COMPLETE = ".complete";
 
     public static PendingImportFileFilter createDefault() {
         return new PendingImportFileFilter(DEFAULT_SUFFIX_LIST, DEFAULT_SUFFIX_COMPLETE);
@@ -36,7 +36,7 @@ public final class PendingImportFileFilter {
     private final String completeSuffix;
     private final Set<PendingImportFile> collectedFiles = Sets.newTreeSet();
 
-    PendingImportFileFilter(List<String> validSuffixes, String completeSuffix) {
+    private PendingImportFileFilter(List<String> validSuffixes, String completeSuffix) {
         if (!StringUtils.hasText(completeSuffix)) {
             throw new IllegalArgumentException("Invalid complete suffix");
         }
@@ -49,17 +49,17 @@ public final class PendingImportFileFilter {
         this.completeSuffix = completeSuffix;
     }
 
-    public Set<PendingImportFile> getCollectedFiles() {
+    private Set<PendingImportFile> getCollectedFiles() {
         return ImmutableSet.copyOf(collectedFiles);
     }
 
-    public Set<PendingImportFile> processPath(Path basePath) {
-        if (!Files.isDirectory(basePath)) {
+    public Set<PendingImportFile> processPath(final Path basePath) {
+        if (!basePath.toFile().isDirectory()) {
             throw new IllegalArgumentException("Input directory does not exist: " + basePath);
         }
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(basePath, globExpression)) {
-            for (Path inputFile : stream) {
+        try (final DirectoryStream<Path> stream = Files.newDirectoryStream(basePath, globExpression)) {
+            for (final Path inputFile : stream) {
                 final PendingImportFile pending = filterValidFile(inputFile);
 
                 if (pending != null) {
@@ -76,17 +76,17 @@ public final class PendingImportFileFilter {
 
     private PendingImportFile filterValidFile(Path inputFile) throws IOException {
         final BasicFileAttributes fileAttributes = Files.readAttributes(inputFile, BasicFileAttributes.class);
-        final Path markerFile = getMarkerFile(inputFile);
+        final Path markerPath = getMarkerFile(inputFile);
 
         if (!fileAttributes.isRegularFile() || fileAttributes.size() == 0) {
             return null;
         }
 
-        if (!Files.exists(markerFile)) {
+        if (!markerPath.toFile().exists()) {
             return null;
         }
 
-        return new PendingImportFile(inputFile, fileAttributes, markerFile);
+        return new PendingImportFile(inputFile, fileAttributes, markerPath);
     }
 
     private Path getMarkerFile(final Path inputFile) {

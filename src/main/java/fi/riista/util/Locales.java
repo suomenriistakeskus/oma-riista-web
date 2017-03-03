@@ -39,32 +39,28 @@ public final class Locales {
     }
 
     @Nonnull
-    public static Locale getAltLocale(@Nullable final Locale locale) {
-        return FI.equals(locale) ? SV : FI;
-    }
-
-    @Nonnull
     public static Locale getLocaleByLanguageCode(@Nullable final String languageCode) {
         return getLocaleByLanguageCode(languageCode, FI);
     }
 
-    @Nullable
-    public static Locale getLocaleByLanguageCode(
-            @Nullable final String languageCode, @Nullable final Locale defaultLocale) {
+    @Nonnull
+    private static Locale getLocaleByLanguageCode(
+            @Nullable final String languageCode, @Nonnull final Locale defaultLocale) {
 
         if (languageCode == null) {
             return defaultLocale;
         }
 
-        final String canonicalCode = languageCode.trim().toLowerCase();
-        if (canonicalCode.equals("fi")) {
-            return FI;
-        } else if (canonicalCode.equals("sv")) {
-            return SV;
-        } else if (canonicalCode.equals("en")) {
-            return EN;
+        switch (languageCode.trim().toLowerCase()) {
+            case "fi":
+                return FI;
+            case "sv":
+                return SV;
+            case "en":
+                return EN;
+            default:
+                return defaultLocale;
         }
-        return defaultLocale;
     }
 
     private Locales() {

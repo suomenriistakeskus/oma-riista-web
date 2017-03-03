@@ -93,7 +93,14 @@
             "copy": "Copy"
         },
         "map": {
-            "toggleLayers": "Show / hide all"
+            "map": "Map",
+            "toggleLayers": "Show / hide all",
+            "layer": {
+                "empty": "No baselayer",
+                "terrain": "Topographic map",
+                "background": "Background map",
+                "aerial": "Aerial photo"
+            }
         },
         "messages": {
             "error": "Updating of your information failed. Please, try again later.",
@@ -135,7 +142,6 @@
             "ssn": "Social Security Number",
             "homeMunicipality": "Hometown",
             "nativeLanguage": "First Language",
-            "finnishCitizen": "Citizenship",
             "email": "E-mail",
             "address": "Address",
             "phoneNumber": "Phone number",
@@ -170,22 +176,19 @@
             "coordinates": "Coordinates",
             "doOpen": "Open"
         },
-        "mapLayer": {
-            "empty": "No baselayer",
-            "terrain": "Topographic map",
-            "background": "Background map",
-            "aerial": "Aerial photo"
-        },
         "toFrontpage": "To front page",
         "yes": "Yes",
         "no": "No",
         "or": "or",
         "beginDate": "Start Date",
         "endDate": "End Date",
+        "huntingYear": "Hunting year",
         "state": "State",
         "marking": "Marking",
         "total": "Total",
-        "showAll": "Show all"
+        "showAll": "Show all",
+        "nameFI": "Name in Finnish",
+        "nameSV": "Name in Swedish"
     },
     "validation": {
         "required": "Field is required",
@@ -311,7 +314,7 @@
     "registration": {
         "email": {
             "titleHtml": "Registration <a>oma.riista.fi</a> -portal",
-            "textHtml": "<p>To register <a>oma.riista.fi</a> -portal you need functioning personal e-mail address.<p>\n<p>Registration process has 5 steps:</p>\n<ol>\n<li>An e-mail is sent to your address to confirm your e-mail is working properly.</li>\n<li>You continue registration by clicking the link in the e-mail you received.</li>\n<li>Accept the terms and conditions of the portal.</li>\n<li>Verify your identity (bank-account codes / VETUMA service in Finland).</li>\n<li>Register your Password and GSM number.</li>\n</ol>\n<p>Your are ready to login to the portal.</p>\n<p><strong>NOTE:</strong> If you don't receive an e-mail within 1 hour, check the spam folder of your e-mail, in rare occasions our message can end up there.</p>\n<p><strong>NOTE:</strong> E-mail addresses ending with @riista.fi or @rhy.riista.fi cannot be accepted as personal e-mail.</p>\n",
+            "textHtml": "<p>To register <a>oma.riista.fi</a> -portal you need functioning personal e-mail address.<p>\n<p>Registration process has 5 steps:</p>\n<ol>\n<li>An e-mail is sent to your address to confirm your e-mail is working properly.</li>\n<li>You continue registration by clicking the link in the e-mail you received.</li>\n<li>Accept the terms and conditions of the portal.</li>\n<li>Verify your identity (bank-account codes / Suomi.fi service in Finland).</li>\n<li>Register your Password and GSM number.</li>\n</ol>\n<p>Your are ready to login to the portal.</p>\n<p><strong>NOTE:</strong> If you don't receive an e-mail within 1 hour, check the spam folder of your e-mail, in rare occasions our message can end up there.</p>\n<p><strong>NOTE:</strong> E-mail addresses ending with @riista.fi or @rhy.riista.fi cannot be accepted as personal e-mail.</p>\n",
             "success": "E-mail sent successfully"
         },
         "emailChanged": {
@@ -335,7 +338,7 @@
         },
         "confirmation": {
             "titleHtml": "<a>Oma.riista.fi</a> -Accepting terms and conditions",
-            "textHtml": "<p>Successful confirmation of your e-mail. Please read following <a>oma.riista.fi</a> -terms and conditions of this portal.</p>\n<p>Accept the terms and conditions by clicking the button at the bottom of the page. On the next step your will be identified by electronic identification (bank code and VETUMA service in Finland).</p>\n",
+            "textHtml": "<p>Successful confirmation of your e-mail. Please read following <a>oma.riista.fi</a> -terms and conditions of this portal.</p>\n<p>Accept the terms and conditions by clicking the button at the bottom of the page. On the next step your will be identified by electronic identification (bank code and Suomi.fi service in Finland).</p>\n",
             "termsAndConditions": "Terms and conditions od the Finnish Wildlife Agency Web portal (oma.riista.fi)",
             "confirmText": "I accept the terms and conditions and accept that my personal data is used in the portal",
             "status": {
@@ -345,7 +348,7 @@
                 "error": "Error occurred"
             },
             "button": {
-                "continue": "Continue to electronic identification here (VETUMA)"
+                "continue": "Continue to electronic identification here (Suomi.fi)"
             }
         },
         "completion": {
@@ -369,6 +372,7 @@
             "username": "Username",
             "role": "Role",
             "ipWhiteList": "Accepted IP-addresses",
+            "twoFactorMode": "Two factor authentication",
             "active": "Active",
             "email": "E-mail",
             "phonenumber": "Phone number",
@@ -518,8 +522,6 @@
                 "title": "Luo uusi seura",
                 "note": "Olet luomassa uutta seuraa. Olethan varmistanut, että seuraa ei ole jo olemassa, yrittämällä ottaa se haltuun.",
                 "confirm": "Luo uusi seura",
-                "nameFI": "Nimi suomeksi",
-                "nameSV": "Nimi ruotsiksi",
                 "location": "Paikka",
                 "rhy": "Riistanhoitoyhdistys",
                 "geoLocation": "Sijainti"
@@ -710,7 +712,6 @@
             "jht": "JHT-nominations",
             "srva": "SRVA",
             "srvaList": "List",
-            "srvaMap": "Map",
             "clubs": "Hunting clubs",
             "mooselike": "Moose/Deers",
             "mooselikeHarvestMap": "Harvests",
@@ -1412,12 +1413,11 @@
         "list": {
             "title": "Messages",
             "buttonSend": "Send message",
-            "showButton": "Show",
             "messageFrom": "From:",
             "received": "Received",
             "sent": "Sent",
-            "showSubscribers": "Show subscribers",
-            "hideSubscribers": "Hide subscribers",
+            "showMessage": "Show message",
+            "hideMessage": "Hide message",
             "subscriberOrganisations": "Receiver organisations:",
             "subscriberOccupations": "Receiver occupation types:"
         },
@@ -1469,12 +1469,13 @@
                 "title": "General information of hunting club",
                 "titleEdit": "Edit club information",
                 "nameFI": "Name in Finnish",
-                "nameSV": "Name on Swedish",
+                "nameSV": "Name in Swedish",
                 "location": "Location",
                 "rhy": "Game Management Association",
                 "customerId": "Customer number",
                 "geoLocation": "Location",
-                "mooseArea": "Moose area"
+                "mooseArea": "Moose area",
+                "duplicateName": "Name is already reserved for another club"
             },
             "contactPersons": {
                 "title": "Contact persons",
@@ -1537,15 +1538,12 @@
                 "titleEdit": "Edit group",
                 "titleCopy": "Copy group",
                 "species": "Species",
-                "huntingYear": "Hunting year",
                 "huntingArea": "Hunting area",
                 "huntingAreaNotSet": "Not set",
                 "harvestPermit": "Harvest permit",
                 "harvestPermitNotSet": "Not set",
                 "choosePermit": "Choose permit",
                 "clearPermit": "Clear permit",
-                "nameFI": "Name in Finnish",
-                "nameSV": "Name in Swedish",
                 "name": "Name",
                 "huntingFinished": "Hunting finished"
             },
@@ -1568,13 +1566,15 @@
         },
         "area": {
             "tabHeaders": {
-                "areaList": "Omat alueet",
+                "clubAreaList": "Seuran alueet",
                 "proposalList": "Lupa-alueet"
             },
             "button": {
                 "add": "Add area",
                 "remove": "Delete area",
-                "editArea": "Edit area",
+                "edit": "Edit area",
+                "editGeometry": "Edit area",
+                "copy": "Clone",
                 "functionMenu": "Options",
                 "importArea": "Load from file",
                 "exportArea": "Export to file",
@@ -1587,13 +1587,61 @@
                 "deactivate": "Deactivate"
             },
             "list": {
-                "title": "Areas",
                 "hasPendingChanges": "Pending updates",
                 "areaIsDeactive": "Area is not active",
                 "showDeactive": "Display deactivated"
             },
             "proposal": {
-                "listTitle": "Yhteislupa-alueet"
+                "listTitle": "Lupa-alueet",
+                "partnerList": "Partners",
+                "externalIdDescription": "Tätä tunnusta käytetään luvat.riista.fi sähköisessä lupahaussa.",
+                "notDisplayedWhenIncomplete": "Lupa-alueen tunnus, kartta ja pinta-alat näytetään, kun lupa-alue on merkitty valmiiksi",
+                "state": {
+                    "INCOMPLETE": "Incomplete",
+                    "PENDING": "Pending for computation",
+                    "PROCESSING": "Computing",
+                    "PROCESSING_FAILED": "Computing failed",
+                    "READY": "Ready",
+                    "LOCKED": "Locked"
+                },
+                "button": {
+                    "add": "Add area proposal",
+                    "addClubArea": "Add area",
+                    "functionMenu": "Options",
+                    "editName": "Edit name",
+                    "ready": "Set ready",
+                    "incomplete": "Set incomplete",
+                    "updateGeometry": "Update geometry",
+                    "partnersExcel": "Export partners to Excel file"
+                },
+                "partnerTable": {
+                    "clubName": "Partner name",
+                    "clubOfficialCode": "Partner official code",
+                    "clubAreaName": "Club area name",
+                    "areaExternalId": "Club area external identifier",
+                    "totalAreaSize": "Total&nbsp;area&nbsp;size",
+                    "landAreaSize": "Land&nbsp;area&nbsp;size",
+                    "waterAreaSize": "Water&nbsp;area&nbsp;size",
+                    "clubAreaChanged": "Club area has changed since its copy was added to area proposal",
+                    "rhy": "Lupa-alue sijaitsee seuraavien riistanhoitoyhdistysten alueella",
+                    "hta": "Lupa-alue sijaitsee seuraavien hirvitalousalueiden alueella"
+                },
+                "addClubArea": {
+                    "title": "Add club area",
+                    "notFound": "Could not find area using given external identifier",
+                    "areaExternalId": "Club area externalId"
+                },
+                "pendingModal": {
+                    "title": "Please wait",
+                    "infoText": "Area processing can take 0 - 15 minutes",
+                    "waiting": "Processing is about to start ...",
+                    "processing": "Processing ..."
+                },
+                "form": {
+                    "titleAdd": "Add area proposal",
+                    "titleEdit": "Edit area proposal",
+                    "externalId": "Area proposal identifier"
+                }
             },
             "import": {
                 "confirmTitle": "Confirmation",
@@ -1607,12 +1655,8 @@
                 "titleAdd": "Add area",
                 "titleEdit": "Edit area",
                 "titleCopy": "Copy area",
-                "huntingYear": "Hunting year",
-                "nameFI": "Name in Finnish",
-                "nameSV": "Name in Swedish",
                 "externalId": "Area identifier",
-                "copyGroups": "Copy also groups linked to area",
-                "lastModified": "Last modified"
+                "copyGroups": "Copy also groups linked to area"
             },
             "print": {
                 "modalTitle": "Print area",
@@ -1652,15 +1696,12 @@
                 "selectedArea": {
                     "title": "Selected area details",
                     "propertyIdentifier": "Property identifier",
-                    "areaName": "Property patch name",
-                    "landAreaSize": "Land area size",
-                    "waterAreaSize": "Water area size",
+                    "areaCode": "Code",
+                    "areaName": "Name",
                     "calculatingAreaSize": "Counting...",
-                    "areaSize": "Total area size",
                     "changeTitle": "Changes",
                     "changeAmount": "Change",
-                    "fix": "Try to fix automatically",
-                    "lastModified": "Last modified"
+                    "fix": "Try to fix automatically"
                 },
                 "tab": {
                     "selectedAreas": {
@@ -1687,7 +1728,11 @@
                         "emptySelection": "Empty selection"
                     }
                 }
-            }
+            },
+            "landAreaSize": "Land area size",
+            "waterAreaSize": "Water area size",
+            "totalAreaSize": "Total area size",
+            "lastModified": "Last modified"
         },
         "hunting": {
             "tabHeaders": {
@@ -1721,7 +1766,7 @@
             "huntingDay": {
                 "createTitle": "Create hunting day",
                 "editTitle": "Edit hunting day",
-                "exportToExcel": "Export to Excel-file",
+                "exportToExcel": "Export to Excel file",
                 "duplicateDate": "Given date already exists",
                 "outsidePermitInterval": "Permit is not valid on given date",
                 "startDate": "Start date",
@@ -1760,7 +1805,8 @@
                 "effectiveHuntingArea": "Effective hunting area",
                 "huntingEndDate": "Hunting finished",
                 "saveUnfinished": "Save as unfinished",
-                "markUnfinished": "Mark unfinished"
+                "markUnfinished": "Mark unfinished",
+                "totalHuntingAreaInfoText": "Total hunting area cannot be larger than permit area size:"
             },
             "deerHuntingSummary": {
                 "huntingAreaAndEstimatedPopulationTitle": "Estimated population after hunting finished:",
@@ -1874,11 +1920,13 @@
                 "menuTitle": "Maksukuitin liittäminen ja luvalla metsästyksen päättäminen",
                 "title": "Maksukuitin liittäminen ja luvalla metsästyksen päättäminen",
                 "finishPermit": "Päätä lupa pudottamalla tähän kuitti tai klikkaa valitaksesi",
+                "fileTypeNotAccepted": "Tiedostotyyppiä ei tueta",
                 "permitFinished": "Luvalla metsästys on päätetty",
                 "unfinishPermit": "Peru päättyminen",
                 "finishedWithoutHarvests": "Metsästys päätetty ilman saaliita",
                 "finishWithoutHarvests": "Päätä metsästys ilman saaliita",
                 "downloadReceipt": "Download receipt",
+                "paymentRecipientName": "Recipient",
                 "iban": "IBAN",
                 "bic": "BIC",
                 "creditorReference": "Reference number",
@@ -1910,9 +1958,9 @@
             "button": {
                 "functionMenu": "Toiminnot",
                 "table": "Table",
-                "map": "Map",
                 "lukeReports": "Reports",
-                "listLeaders": "Hunting leaders"
+                "listLeaders": "Hunting leaders",
+                "rhyStatistics": "RHY tilasto"
             },
             "percentage": {
                 "allocated": "Planned<br>(allocated permits)",
@@ -2099,7 +2147,6 @@
             "animal": "Species",
             "amount": "Amount",
             "events": "Events",
-            "map": "Map",
             "notAllEventsInfo": "Accidents are shown from whole country, other events only from own GMA area.",
             "otherSpecies": "Other species",
             "rejectConfirmation": "Do you really want to reject SRVA event?",

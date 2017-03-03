@@ -1,67 +1,45 @@
 package fi.riista.feature.metrics;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.EntityPathBase;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.account.user.QSystemUser;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.gamediary.GameDiaryEntry;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.QGameDiaryEntry;
-import fi.riista.feature.gamediary.QGameSpecies;
-import fi.riista.feature.gamediary.harvest.QHarvest;
-import fi.riista.feature.gamediary.observation.QObservation;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
-import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.person.QPerson;
-import fi.riista.util.DateUtil;
-import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
-import java.sql.Types;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 @Component
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminMetricsFeature {
 
     private JdbcTemplate jdbcTemplate;
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Resource
     private JPQLQueryFactory queryFactory;
 
+    @Resource
+    private AdminMooselikeHuntingMetricsService adminMooselikeHuntingMetricsService;
+
     @Autowired
     public void setDataSource(final DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(this.jdbcTemplate);
     }
 
     @Transactional(readOnly = true)
@@ -76,7 +54,7 @@ public class AdminMetricsFeature {
         countHarvestReports(dto);
         countPdfDownloads(dto);
         countSrvaEvents(dto);
-        computeMooselikeHuntingMetrics(dto);
+        dto.setMooselikeHuntingMetrics(adminMooselikeHuntingMetricsService.computeMooselikeHuntingMetrics());
 
         return dto;
     }
@@ -283,128 +261,6 @@ public class AdminMetricsFeature {
                         + SrvaEventStateEnum.REJECTED + "'", Long.class));
     }
 
-    private void computeMooselikeHuntingMetrics(AdminMetricsDTO dto) {
-        final Interval yearInterval = DateUtil.huntingYearInterval(DateUtil.getFirstCalendarYearOfCurrentHuntingYear());
-
-        final QHarvest harvest = QHarvest.harvest;
-        final Map<Long, Integer> harvestCounts = count(harvest, harvest._super, harvest.amount.sum(), yearInterval);
-
-        final QObservation observation = QObservation.observation;
-        final Map<Long, Integer> observationCounts =
-                count(observation, observation._super, observation.amount.sum(), yearInterval);
-
-        final QGameSpecies species = QGameSpecies.gameSpecies;
-
-        final Map<Long, AdminMooselikeHuntingMetrics> speciesIdToMetrics = new HashMap<>();
-
-        queryFactory.select(species)
-                .from(species)
-                .where(species.officialCode.in(GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING))
-                .fetch()
-                .forEach(gameSpecies -> {
-                    final AdminMooselikeHuntingMetrics metrics =
-                            new AdminMooselikeHuntingMetrics(gameSpecies.getNameFinnish());
-
-                    final long speciesId = gameSpecies.getId();
-                    metrics.setHarvestCount(harvestCounts.getOrDefault(speciesId, 0));
-                    metrics.setObservationCount(observationCounts.getOrDefault(speciesId, 0));
-                    speciesIdToMetrics.put(speciesId, metrics);
-                });
-
-        countPermitsAndMooseDataCardGroups(yearInterval, speciesIdToMetrics);
-
-        dto.setMooselikeHuntingMetrics(speciesIdToMetrics
-                .values()
-                .stream()
-                .sorted(comparing(AdminMooselikeHuntingMetrics::getSpeciesName))
-                .collect(toList()));
-    }
-
-    private Map<Long, Integer> count(final EntityPathBase<? extends GameDiaryEntry> entity,
-                                     final QGameDiaryEntry gameDiaryEntry,
-                                     final NumberExpression<Integer> sumExpression,
-                                     final Interval interval) {
-
-        final Date begin = interval.getStart().toDate();
-        final Date end = interval.getEnd().toDate();
-
-        final QGameSpecies species = QGameSpecies.gameSpecies;
-        final JPQLQuery<GameSpecies> mooselikeSpecies = JPAExpressions.selectFrom(species)
-                .where(species.officialCode.in(GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING));
-
-        return queryFactory.select(gameDiaryEntry.species.id, sumExpression)
-                .from(entity)
-                .where(gameDiaryEntry.huntingDayOfGroup.isNotNull(),
-                        gameDiaryEntry.species.in(mooselikeSpecies),
-                        gameDiaryEntry.pointOfTime.between(begin, end))
-                .groupBy(gameDiaryEntry.species.id)
-                .fetch()
-                .stream()
-                .collect(toMap(t -> t.get(gameDiaryEntry.species.id), t -> t.get(sumExpression)));
-    }
-
-    private void countPermitsAndMooseDataCardGroups(final Interval interval,
-                                                    final Map<Long, AdminMooselikeHuntingMetrics> speciesIdToMetrics) {
-
-        final String mooselikeIds = Joiner.on(", ").join(GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING);
-
-        final String queryStr = "SELECT \n" +
-                "  gs.game_species_id                      AS species_id, \n" +
-                "  count(t.permitId) - sum(t.closedReport) AS open_permit_count, \n" +
-                "  sum(t.closedReport)                     AS closed_permit_count, \n" +
-                "  sum(t.moderatedReport)                  AS moderator_closed_permit_count, \n" +
-                "  sum(u.mooseDataCardGroupCount)          AS moose_data_card_group_count \n" +
-                "FROM game_species gs \n" +
-                "INNER JOIN ( \n" +
-                "  SELECT \n" +
-                "    hp.harvest_permit_id                                                AS permitId, \n" +
-                "    hpsa.game_species_id                                                AS speciesId, \n" +
-                "    CASE WHEN mhr.moose_harvest_report_id IS NOT NULL THEN 1 ELSE 0 END AS closedReport, \n" +
-                "    CASE WHEN mhr.moderator_override = true THEN 1 ELSE 0 END AS moderatedReport \n" +
-                "  FROM harvest_permit_species_amount hpsa \n" +
-                "  INNER JOIN harvest_permit hp ON hp.harvest_permit_id = hpsa.harvest_permit_id \n" +
-                "  LEFT OUTER JOIN moose_harvest_report mhr ON mhr.species_amount_id = hpsa.harvest_permit_species_amount_id \n" +
-                "  WHERE \n" +
-                "    hp.permit_type_code = '" + HarvestPermit.MOOSELIKE_PERMIT_TYPE + "' \n" +
-                "    AND ( \n" +
-                "      hpsa.begin_date >= :beginDate AND hpsa.end_date <= :endDate \n" +
-                "      OR hpsa.begin_date2 IS NOT NULL AND hpsa.begin_date2 >= :beginDate \n" +
-                "        AND hpsa.end_date2 IS NOT NULL AND hpsa.end_date2 <= :endDate \n" +
-                "    ) \n" +
-                ") t ON t.speciesId = gs.game_species_id \n" +
-                "LEFT OUTER JOIN ( \n" +
-                "  SELECT \n" +
-                "    harvest_permit_id      AS permitId, \n" +
-                "    game_species_id        AS speciesId, \n" +
-                "    count(organisation_id) AS mooseDataCardGroupCount \n" +
-                "  FROM organisation \n" +
-                "  WHERE \n" +
-                "    organisation_type = '" + OrganisationType.CLUBGROUP.name() + "' \n" +
-                "    AND from_moose_data_card = true \n" +
-                "    AND harvest_permit_id IS NOT NULL \n" +
-                "  GROUP BY harvest_permit_id, game_species_id \n" +
-                ") u ON u.speciesId = gs.game_species_id AND u.permitId = t.permitId \n" +
-                "WHERE gs.official_code IN (" + mooselikeIds + ") \n" +
-                "GROUP BY gs.game_species_id \n" +
-                "ORDER BY gs.game_species_id \n";
-
-        final MapSqlParameterSource queryParams = new MapSqlParameterSource();
-        queryParams.addValue("beginDate", interval.getStart().toDate(), Types.DATE);
-        queryParams.addValue("endDate", interval.getEnd().toDate(), Types.DATE);
-
-        namedParameterJdbcTemplate.query(queryStr, queryParams, (resultSet, i) -> {
-            final AdminMooselikeHuntingMetrics metrics = speciesIdToMetrics.get(resultSet.getLong("species_id"));
-            metrics.setOpenPermitCount(resultSet.getInt("open_permit_count"));
-            metrics.setClosedPermitCount(resultSet.getInt("closed_permit_count"));
-            metrics.setModeratorClosedPermitCount(resultSet.getInt("moderator_closed_permit_count"));
-
-            final int mooseDataCardGroupCount = resultSet.getInt("moose_data_card_group_count");
-            metrics.setMooseDataCardGroupCount(resultSet.wasNull() ? null : mooseDataCardGroupCount);
-
-            return metrics;
-        });
-    }
-
     @Transactional(readOnly = true)
     public List<AdminHarvestReportMetricsDTO> getHarvestReportMetrics(Date begin, Date end) {
         final String sql = "-- kiintiömetsästys ja muu ei-luvanvarainen: rka päätellään saaliskirjauksen RHY:stä\n" +
@@ -555,8 +411,7 @@ public class AdminMetricsFeature {
                 "ORDER BY parent.official_code, rhy.name_finnish";
 
         final Object[] args = {begin, end, begin, end, begin, end, begin, end};
-        final List<AdminRhyEditMetricsDTO> dtos = jdbcTemplate.query(sql, args, createRowMapper2());
-        return dtos;
+        return jdbcTemplate.query(sql, args, createRowMapper2());
     }
 
     private static RowMapper<AdminRhyEditMetricsDTO> createRowMapper2() {

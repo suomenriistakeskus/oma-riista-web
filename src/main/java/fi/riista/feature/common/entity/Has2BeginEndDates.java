@@ -1,7 +1,5 @@
 package fi.riista.feature.common.entity;
 
-import static java.util.stream.Collectors.toList;
-
 import fi.riista.util.DateUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -11,9 +9,9 @@ import org.joda.time.format.DateTimeFormatter;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.AssertTrue;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -133,21 +131,17 @@ public interface Has2BeginEndDates extends HasBeginAndEndDate {
                 .orElseThrow(() -> new IllegalStateException("Date ranges not within one hunting year"));
     }
 
-    default Optional<Integer> findUnambiguousHuntingYear() {
-        return isOpenEnded()
-                ? Optional.empty()
-                : Optional.of(collectClosedRangeHuntingYears().boxed().collect(toList()))
-                        .filter(list -> list.size() == 1)
-                        .map(list -> list.get(0));
+    default OptionalInt findUnambiguousHuntingYear() {
+        if (isOpenEnded()) {
+            return OptionalInt.empty();
+        }
+
+        final int[] years = collectClosedRangeHuntingYears().toArray();
+        return years.length == 1 ? OptionalInt.of(years[0]) : OptionalInt.empty();
     }
 
-    static List<Integer> collectUniqueHuntingYearsSorted(final Stream<? extends Has2BeginEndDates> stream) {
-        return stream
-                .flatMapToInt(Has2BeginEndDates::collectClosedRangeHuntingYears)
-                .distinct()
-                .sorted()
-                .boxed()
-                .collect(toList());
+    static IntStream streamUniqueHuntingYearsSorted(final Stream<? extends Has2BeginEndDates> stream) {
+        return stream.flatMapToInt(Has2BeginEndDates::collectClosedRangeHuntingYears).distinct().sorted();
     }
 
 }

@@ -135,7 +135,7 @@ public class MoosePermitTodoFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private void permitTodoTest(Conf conf) {
-        final HarvestPermit permit = createPermit();
+        final HarvestPermit permit = model().newMooselikePermit(this.rhy);
         final GameSpecies species = model().newGameSpecies();
         model().newHarvestPermitSpeciesAmount(permit, species);
 
@@ -161,14 +161,8 @@ public class MoosePermitTodoFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private HarvestPermit createPermit() {
-        final HarvestPermit p = model().newHarvestPermit(this.rhy);
-        p.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
-        return p;
-    }
-
     private void clubTodoTest(Conf conf) {
-        final HarvestPermit permit = createPermit();
+        final HarvestPermit permit = model().newMooselikePermit(this.rhy);
         final GameSpecies species = model().newGameSpecies();
         final HarvestPermitSpeciesAmount hpsa = model().newHarvestPermitSpeciesAmount(permit, species);
 

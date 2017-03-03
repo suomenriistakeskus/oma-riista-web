@@ -41,6 +41,7 @@
                 mapFunc: '&',
                 lukereportsFunc: '&',
                 leadersFunc: '&',
+                rhystatsFunc:'&',
                 selectedPermit: '='
             },
             templateUrl: 'harvestpermit/moosepermit/list-details.html',
@@ -62,6 +63,7 @@
         $ctrl.map = $scope.mapFunc();
         $ctrl.lukereports = $scope.lukereportsFunc();
         $ctrl.leaders = $scope.leadersFunc();
+        $ctrl.rhystats = $scope.rhystatsFunc();
 
         $ctrl.getPdfUrl = MoosePermitPdfUrl.get;
 
@@ -108,6 +110,7 @@
             };
 
             $ctrl.canEditAllocations = permit.canEditAllocations;
+            $ctrl.viewedClubIsPartner = permit.viewedClubIsPartner;
 
             $ctrl.originalPermitAmount = spa.amount;
             $ctrl.amendmentPermitAmount = _.sum(_.values(permit.amendmentPermits));

@@ -5,7 +5,6 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceAsyncClientBuilder;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.cache.HighConcurrencyTemplateCache;
-import com.github.jknack.handlebars.helper.DefaultHelperRegistry;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import com.github.jknack.handlebars.springmvc.SpringTemplateLoader;
 import fi.riista.config.profile.AmazonDatabase;
@@ -48,7 +47,6 @@ public class MailConfig {
     @Bean
     public Handlebars emailHandlebars(TemplateLoader templateLoader, MessageSource messageSource) {
         return new Handlebars(templateLoader)
-                .with(new DefaultHelperRegistry())
                 .with(new HighConcurrencyTemplateCache())
                 .registerHelpers(HandlebarsHelperSource.class)
                 .registerHelpers(new HandlebarsHelperSource(messageSource));

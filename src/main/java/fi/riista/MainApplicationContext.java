@@ -7,6 +7,7 @@ import fi.riista.config.BatchConfig;
 import fi.riista.config.CacheConfig;
 import fi.riista.config.Constants;
 import fi.riista.config.DataSourceConfig;
+import fi.riista.config.ExecutorConfig;
 import fi.riista.config.HttpClientConfig;
 import fi.riista.config.JPAConfig;
 import fi.riista.config.JaxbConfig;
@@ -15,6 +16,7 @@ import fi.riista.config.LocalizationConfig;
 import fi.riista.config.MailConfig;
 import fi.riista.config.PapertrailConfig;
 import fi.riista.config.QuartzConfig;
+import fi.riista.config.SchedulingConfig;
 import fi.riista.config.SecurityConfig;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.config.properties.EncryptedProperties;
@@ -43,7 +45,9 @@ import java.security.Security;
         CacheConfig.class,
         LocalizationConfig.class,
         HttpClientConfig.class,
+        ExecutorConfig.class,
         AsyncConfig.class,
+        SchedulingConfig.class,
         MailConfig.class,
         SecurityConfig.class,
         AopConfig.class,
@@ -83,8 +87,7 @@ public class MainApplicationContext {
             final StandardPBEStringEncryptor se = new StandardPBEStringEncryptor();
             se.setConfig(EncryptedProperties.createPBEConfig(password));
             return new EncryptedProperties.PlaceholderConfigurer(se);
-        } else {
-            return new PropertySourcesPlaceholderConfigurer();
         }
+        return new PropertySourcesPlaceholderConfigurer();
     }
 }

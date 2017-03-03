@@ -13,8 +13,6 @@ import java.util.List;
 public interface UserRepository extends BaseRepository<SystemUser, Long>, UserRepositoryCustom {
     SystemUser findByUsernameIgnoreCase(String username);
 
-    SystemUser findByUsernameIgnoreCaseAndActive(String username, boolean active);
-
     List<SystemUser> findByPerson(Person person);
 
     @Query("select s from SystemUser s where s.role in :roles")

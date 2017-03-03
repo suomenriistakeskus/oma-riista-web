@@ -15,7 +15,6 @@ import fi.riista.security.otp.OneTimePasswordFilterConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -56,9 +55,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // IP address restricted API for uploading moose data cards
     private static final String PATTERN_MOOSE_DATA_CARD_UPLOAD = "/api/v1/anon/moosedatacard/upload";
 
-    // Vetuma registration return callback
-    private static final String PATTERN_VETUMA = "/vetuma/**";
-
     // Login and logout
     private static final String URI_LOGIN = "/login";
     private static final String URI_LOGOUT = "/logout";
@@ -72,8 +68,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             AccountRegistrationApiResource.URI_SEND_EMAIL,
             AccountRegistrationApiResource.URI_FROM_EMAIL,
 
-            // Vetuma does not know how to include CSRF header, but is protected using TRID parameter
-            PATTERN_VETUMA,
+            // SAML attribute consumer service is protected using TRID parameter
+            "/saml/acs",
 
             // Login cannot be protected, because mobile client does not support CSRF currently
             URI_LOGIN,
@@ -121,13 +117,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public SecurityExpressionHandler<FilterInvocation> webSecurityExpressionHandler(
-            PermissionEvaluator permissionEvaluator, RoleHierarchy roleHierarchy) {
+    public SecurityExpressionHandler<FilterInvocation> webSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
         final DefaultWebSecurityExpressionHandler handler = new CustomWebSecurityExpressionHandler();
-
         handler.setRoleHierarchy(roleHierarchy);
-        handler.setPermissionEvaluator(permissionEvaluator);
-
         return handler;
     }
 
@@ -208,10 +200,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/v1/password/reset",
                         "/api/v1/password/verifytoken",
                         "/api/v1/register/**",
+                        "/saml/login",
+                        "/saml/acs",
 
                         HealthCheckController.URI_HEALTH_CHECK,
-                        PATTERN_ANONYMOUS_API,
-                        PATTERN_VETUMA
+                        PATTERN_ANONYMOUS_API
                 ).permitAll()
 
                 .antMatchers(PATTERN_MOOSE_DATA_CARD_UPLOAD)

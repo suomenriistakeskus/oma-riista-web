@@ -34,6 +34,7 @@
     <logger name="org.springframework.security.access.intercept" level="INFO" />
 
     <logger name="org.apache.http" level="INFO" />
+    <logger name="org.apache.xml.security" level="INFO"/>
     <logger name="org.hibernate" level="INFO" />
     <logger name="org.hibernate.cfg" level="WARN" />
     <logger name="org.hibernate.type" level="WARN" />

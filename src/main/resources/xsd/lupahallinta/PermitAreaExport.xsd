@@ -10,15 +10,16 @@
                 <xs:element name="nameFinnish" type="xs:token"/>
                 <xs:element name="nameSwedish" type="xs:token"/>
                 <xs:element name="state" type="state"/>
+                <xs:element name="lastModified" type="xs:dateTime"/>
 
                 <xs:element name="totalAreaSize" type="xs:long">
                     <xs:annotation>
-                        <xs:documentation>Total area size including land and water area in square metres</xs:documentation>
+                        <xs:documentation>Total area size including land and water area in hectares.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="waterAreaSize" type="xs:long">
                     <xs:annotation>
-                        <xs:documentation>Water area size in square metres</xs:documentation>
+                        <xs:documentation>Water area size in hectares.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="rhy" type="nameWithOfficialCode" minOccurs="1" maxOccurs="unbounded"/>
@@ -36,7 +37,7 @@
             <xs:element name="nameSwedish" type="xs:token"/>
             <xs:element name="areaSize" type="xs:long">
                 <xs:annotation>
-                    <xs:documentation>Intersection area size in square metres</xs:documentation>
+                    <xs:documentation>Intersection area size in hectares.</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
@@ -47,16 +48,28 @@
             <xs:element name="officialCode" type="xs:token"/>
             <xs:element name="nameFinnish" type="xs:token"/>
             <xs:element name="nameSwedish" type="xs:token"/>
+            <xs:element name="location" type="geoLocation" minOccurs="0"/>
+
             <xs:element name="totalAreaSize" type="xs:long">
                 <xs:annotation>
-                    <xs:documentation>Total area size including land and water area in square metres</xs:documentation>
+                    <xs:documentation>Total area size including land and water area in hectares.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="waterAreaSize" type="xs:long">
                 <xs:annotation>
-                    <xs:documentation>Water area size in square metres</xs:documentation>
+                    <xs:documentation>Water area size in hectares.</xs:documentation>
                 </xs:annotation>
             </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="geoLocation">
+        <xs:annotation>
+            <xs:documentation>Coordinates in ETRS-TM35FIN</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="latitude" type="xs:int"/>
+            <xs:element name="longitude" type="xs:int"/>
         </xs:sequence>
     </xs:complexType>
 

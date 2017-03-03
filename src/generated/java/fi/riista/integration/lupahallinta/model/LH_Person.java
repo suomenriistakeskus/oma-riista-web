@@ -490,6 +490,10 @@ public class LH_Person {
             return this.tehtava;
         }
 
+        public void setTehtava(List<LH_Position> value) {
+            this.tehtava = value;
+        }
+
     }
 
 }

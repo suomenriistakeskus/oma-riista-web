@@ -1,19 +1,14 @@
 package fi.riista.feature.pub.occupation;
 
 import fi.riista.feature.EmbeddedDatabaseTest;
-import fi.riista.feature.organization.address.AddressDTO;
+import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.pub.occupation.PublicOccupationSearchFeature;
-import fi.riista.feature.pub.occupation.PublicOccupationTypeDTO;
-import fi.riista.feature.pub.occupation.PublicOccupationsAndOrganisationsDTO;
-import fi.riista.feature.pub.occupation.PublicOrganisationDTO;
-import fi.riista.feature.pub.occupation.PublicOccupationSearchParameters;
 import fi.riista.util.DateUtil;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.junit.Test;
@@ -27,7 +22,9 @@ import java.util.Objects;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
@@ -240,5 +237,49 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         assertThat(result.getOccupations(), hasSize(1));
         assertThat(result.getOrganisations(), hasSize(1));
+    }
+
+    @Test
+    public void testMaxResults() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        final int maxResults = 3;
+
+        for (int i = 0; i < maxResults; i++) {
+            model().newOccupation(rhy, model().newPerson(), OccupationType.TOIMINNANOHJAAJA);
+        }
+
+        persistInNewTransaction();
+
+        final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature._findOccupationsAndOrganisations(
+                PublicOccupationSearchParameters.builder()
+                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOrganisationType(OrganisationType.RHY)
+                        .build(),
+                maxResults);
+
+        assertFalse(result.isTooManyResults());
+        assertThat(result.getOccupations(), hasSize(maxResults));
+    }
+
+    @Test
+    public void testMoreThanMaxResults() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        final int maxResults = 3;
+
+        for (int i = 0; i < maxResults + 1; i++) {
+            model().newOccupation(rhy, model().newPerson(), OccupationType.TOIMINNANOHJAAJA);
+        }
+
+        persistInNewTransaction();
+
+        final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature._findOccupationsAndOrganisations(
+                PublicOccupationSearchParameters.builder()
+                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOrganisationType(OrganisationType.RHY)
+                        .build(),
+                maxResults);
+
+        assertTrue(result.isTooManyResults());
+        assertThat(result.getOccupations(), hasSize(0));
     }
 }

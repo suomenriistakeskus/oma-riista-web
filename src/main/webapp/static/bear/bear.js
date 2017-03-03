@@ -27,7 +27,7 @@ window.RiistaWidget = (function() {
 
         initialize: function (options) {
             L.setOptions(this, options);
-            var url = "https://kartta.riista.fi/tms/1.0.0/maasto_kiint/EPSG_3067/{z}/{x}/{y}.png";
+            var url = "https://d3gayxdfvljt82.cloudfront.net/tms/1.0.0/maasto_kiint/EPSG_3067/{z}/{x}/{y}.png";
             L.TileLayer.prototype.initialize.call(this, url, options);
         }
     });

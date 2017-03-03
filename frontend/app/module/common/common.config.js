@@ -20,7 +20,7 @@ angular.module('app.common.config', ['ui.router', 'angular-growl'])
             $log.error("State change error: ", toState);
             $log.log(error);
 
-            if (toState.name === 'registration-from-vetuma' || toState.name === 'main') {
+            if (toState.name === 'registration-from-sso' || toState.name === 'main') {
                 $state.go('login');
             } else {
                 $state.go('main');

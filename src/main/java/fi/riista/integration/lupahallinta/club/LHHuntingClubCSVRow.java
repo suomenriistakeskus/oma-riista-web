@@ -28,7 +28,7 @@ public class LHHuntingClubCSVRow {
         row.setHirvitalousAlue(Optional.ofNullable(club.getMooseArea()).map(GISHirvitalousalue::getNumber).orElse(null));
         row.setpKoordinaatti(geoLocation.getLatitude());
         row.setiKoordinaatti(geoLocation.getLongitude());
-        row.setPintaAla(club.getHuntingAreaSize() != null ? club.getHuntingAreaSize().intValue() : 0);
+        row.setPintaAla(F.coalesceAsInt(club.getHuntingAreaSize(), 0));
         row.setYhteysHenkilo(contactPerson.getFullName());
         row.setValittuAlue2(personRka);
         row.setHetu(contactPerson.getSsn());

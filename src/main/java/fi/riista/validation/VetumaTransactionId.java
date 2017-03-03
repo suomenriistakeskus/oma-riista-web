@@ -1,5 +1,7 @@
 package fi.riista.validation;
 
+import fi.riista.feature.account.registration.VetumaTransaction;
+
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import javax.validation.ReportAsSingleViolation;
@@ -14,7 +16,7 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 
-@Pattern(regexp = "[0-9a-f]{19}")
+@Pattern(regexp = VetumaTransaction.TRID_PATTERN_STRING)
 @ReportAsSingleViolation
 @Retention(RetentionPolicy.RUNTIME)
 @Target({FIELD, METHOD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})

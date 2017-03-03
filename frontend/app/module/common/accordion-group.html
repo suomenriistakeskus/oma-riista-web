@@ -6,7 +6,7 @@
      style="cursor:pointer"
      ng-keypress="toggleOpen($event)"
      ng-click="toggleOpen()">
-    <span uib-accordion-header ng-class="{'text-muted': isDisabled}">{{heading}}</span>
+    <div uib-accordion-header ng-class="{'text-muted': isDisabled}">{{heading}}</div>
 </div>
 <div id="{{::panelId}}" aria-labelledby="{{::headingId}}" aria-hidden="{{!isOpen}}" role="tabpanel"
      class="panel-collapse collapse" uib-collapse="!isOpen">

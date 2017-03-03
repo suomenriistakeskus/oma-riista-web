@@ -18,11 +18,11 @@ import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.F;
-import fi.riista.util.ListTransformer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
@@ -70,8 +70,8 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
     }
 
     @Override
-    protected ListTransformer<HuntingClubGroup, HuntingClubGroupDTO> dtoTransformer() {
-        return huntingClubGroupDTOTransformer;
+    protected HuntingClubGroupDTO toDTO(@Nonnull final HuntingClubGroup entity) {
+        return huntingClubGroupDTOTransformer.apply(entity);
     }
 
     @Override
@@ -162,7 +162,7 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
     @Transactional(readOnly = true)
     public List<HuntingClubGroupDTO> listByClub(final long clubId) {
         final HuntingClub huntingClub = requireEntityService.requireHuntingClub(clubId, EntityPermission.READ);
-        return dtoTransformer().apply(huntingClubGroupRepository.findByParentOrganisation(huntingClub));
+        return huntingClubGroupDTOTransformer.apply(huntingClubGroupRepository.findByParentOrganisation(huntingClub));
     }
 
     @Transactional(readOnly = true)
@@ -173,6 +173,6 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
 
     @Transactional
     public HuntingClubGroupDTO copy(final Long originalGroupId, final HuntingClubGroupCopyDTO dto) {
-        return dtoTransformer().apply(copyClubGroupService.copy(originalGroupId, dto));
+        return toDTO(copyClubGroupService.copy(originalGroupId, dto));
     }
 }

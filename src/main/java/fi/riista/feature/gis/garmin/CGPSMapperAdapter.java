@@ -35,59 +35,66 @@ public class CGPSMapperAdapter {
                 .findAny();
     }
 
-    public byte[] exportToFile(final FeatureCollection featureCollection,
-                               final HuntingClubAreaDTO areaDTO) throws Exception {
+    public byte[] exportToFile(final FeatureCollection featureCollection, final HuntingClubAreaDTO areaDTO) {
         final Optional<Path> optionalBinary = getBinaryPath();
 
         if (!optionalBinary.isPresent()) {
             throw new IllegalStateException("Binary not found");
         }
 
-        final Path binaryPath = optionalBinary.get();
-        final File polish = File.createTempFile("garmin", ".mp");
-        final File output = File.createTempFile("garmin", ".img");
-        final File logFile = File.createTempFile("garmin", ".log");
-        final Path polishPath = polish.toPath();
-        final Path outputPath = output.toPath();
-
         try {
+            final File tempDir = com.google.common.io.Files.createTempDir();
+            final Path polishPath = new File(tempDir, "input.mp").toPath();
+            final Path outputPath = new File(tempDir, "output.img").toPath();
+            final File logFile = new File(tempDir, "output.log");
+            final Path binaryPath = optionalBinary.get();
+
             final String polishContent = new GarminPolishFormatConverter(featureCollection, areaDTO).export();
             Files.write(polishPath, polishContent.getBytes(StandardCharsets.ISO_8859_1));
 
             final List<String> cmdLine = Arrays.asList(
                     binaryPath.toString(),
                     "-o",
-                    outputPath.toString(),
-                    polishPath.toString());
+                    outputPath.getFileName().toString(),
+                    polishPath.getFileName().toString());
 
             LOG.info("cmdLine: {}", Joiner.on(' ').join(cmdLine));
 
-            final Process process = new ProcessBuilder()
-                    .command(cmdLine)
+            final Process process = new ProcessBuilder(cmdLine)
+                    // Segfaults unless running in same directory as input and output files
+                    .directory(tempDir)
                     .redirectOutput(logFile)
                     .redirectErrorStream(true)
                     .start();
 
-            try {
+            if (!process.waitFor(60, TimeUnit.SECONDS)) {
                 // timeout
-                if (process.waitFor(60, TimeUnit.SECONDS)) {
-                    return Files.readAllBytes(outputPath);
-                }
-            } finally {
-                if (process.isAlive()) {
-                    process.destroyForcibly();
-                }
+                process.destroyForcibly();
+                throw new IllegalStateException("Process timeout");
             }
 
-            throw new IllegalStateException("Garmin conversion has failed with exitCode=" + process.exitValue());
+            if (process.exitValue() != 0) {
+                throw new IllegalStateException("Conversion has failed with exitCode " + process.exitValue());
+            }
 
-        } finally {
+            final byte[] resultBytes = Files.readAllBytes(outputPath);
+
+            if (resultBytes.length == 0) {
+                throw new IllegalStateException("Output file is empty");
+            }
+
             try {
+                // Delete temporary files only if conversion is successful
                 Files.deleteIfExists(polishPath);
                 Files.deleteIfExists(outputPath);
             } catch (IOException ignore) {
                 LOG.error("Could not remove temporary files");
             }
+
+            return resultBytes;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

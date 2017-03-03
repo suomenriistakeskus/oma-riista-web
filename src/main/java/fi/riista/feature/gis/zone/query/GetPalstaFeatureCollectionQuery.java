@@ -20,7 +20,6 @@ public class GetPalstaFeatureCollectionQuery {
             " ST_AsGeoJSON(ST_Transform(b.geom, :crs)) AS geom," +
             " ST_Area(b.geom) AS area_size," +
             " b.palsta_tunnus AS tunnus," +
-            " a.nimi AS nimi," +
             " b.is_changed, " +
             " b.diff_area," +
             " b.new_palsta_id, " +
@@ -45,7 +44,6 @@ public class GetPalstaFeatureCollectionQuery {
         feature.setId(String.valueOf(rs.getLong("id")));
         feature.setGeometry(GISUtils.parseGeoJSONGeometry(objectMapper, rs.getString("geom")));
         feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER, PropertyIdentifier.formatPropertyIdentifier(rs.getLong("tunnus")));
-        feature.setProperty(GeoJSONConstants.PROPERTY_NAME, rs.getString("nimi"));
         feature.setProperty(GeoJSONConstants.PROPERTY_SIZE, rs.getDouble("area_size"));
 
         if (rs.getBoolean("is_changed")) {

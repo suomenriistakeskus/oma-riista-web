@@ -56,7 +56,7 @@ public class AuditService {
     }
 
     private Long getActiveUserId() {
-        if (activeUserService.isAuthenticatedUser()) {
+        if (activeUserService.isAuthenticated()) {
             return activeUserService.getActiveUserId();
         }
         return null;

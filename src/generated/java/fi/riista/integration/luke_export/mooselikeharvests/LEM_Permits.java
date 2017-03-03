@@ -68,4 +68,8 @@ public class LEM_Permits {
         return this.permits;
     }
 
+    public void setPermits(List<LEM_Permit> value) {
+        this.permits = value;
+    }
+
 }

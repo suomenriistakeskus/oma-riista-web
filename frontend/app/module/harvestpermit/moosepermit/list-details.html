@@ -8,19 +8,28 @@
                     <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu" uib-dropdown-menu>
+                    <li>
+                        <a ng-click="$ctrl.rhystats({'permit': $ctrl.selectedPermit})">
+                            <span class="fa fa-line-chart"></span>
+                            <span translate="club.permit.button.rhyStatistics"></span>
+                        </a>
+                    </li>
                     <li ng-if="$ctrl.listLeadersButtonVisible">
                         <a ng-click="$ctrl.leaders()">
                             <span class="fa fa-trophy"></span>
                             <span translate="club.permit.button.listLeaders"></span>
                         </a>
                     </li>
+
+                    <li class="divider"></li>
+
                     <li ng-if="$ctrl.canEditAllocations">
                         <a ng-click="$ctrl.edit({'permit': $ctrl.selectedPermit})">
                             <span class="fa fa-legal"></span>
                             <span translate="club.permit.allocation.menuText"></span>
                         </a>
                     </li>
-                    <li>
+                    <li ng-if="$ctrl.viewedClubIsPartner">
                         <a ng-click="$ctrl.editHuntingSummary()">
                             <span class="fa fa-key"></span>
                             <span translate="club.hunting.huntingSummary.menuTitle"></span>
@@ -66,7 +75,7 @@
                 <button type="button" class="btn btn-default"
                         ng-class="{'active': $ctrl.isActive('map')}"
                         ng-click="$ctrl.map({'permit': $ctrl.selectedPermit})"
-                        translate="club.permit.button.map"></button>
+                        translate="global.map.map"></button>
             </div>
             <div class="btn-group" role="group">
                 <button type="button" class="btn btn-default"

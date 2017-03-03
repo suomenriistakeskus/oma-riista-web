@@ -6,7 +6,6 @@ import fi.riista.util.MediaTypeExtras;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,7 +22,6 @@ public class ExternalHuntingClubAreaExportController {
     @Resource
     private HuntingClubAreaExportFeature huntingClubAreaExportFeature;
 
-    @PreAuthorize("hasPrivilege('EXPORT_HUNTINGCLUB_AREA')")
     @RequestMapping(value = "/api/v1/export/hunting-area-by-id/{externalId}",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,

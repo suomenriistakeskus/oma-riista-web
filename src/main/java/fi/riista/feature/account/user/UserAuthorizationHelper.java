@@ -5,16 +5,14 @@ import fi.riista.feature.harvestpermit.HarvestPermit_;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.Organisation_;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.QOrganisation;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
-import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.occupation.Occupation_;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.security.UserInfo;
 import fi.riista.util.F;
 import fi.riista.util.jpa.JpaGroupingUtils;
@@ -40,7 +38,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static fi.riista.util.jpa.JpaSpecs.conjunction;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.notSoftDeleted;
 import static fi.riista.util.jpa.JpaSpecs.overlapsInterval;
@@ -54,9 +51,6 @@ public class UserAuthorizationHelper {
 
     @Resource
     private UserRepository userRepository;
-
-    @Resource
-    private OrganisationRepository organisationRepository;
 
     @Resource
     private OccupationRepository occupationRepository;
@@ -88,7 +82,10 @@ public class UserAuthorizationHelper {
         if (activeUserService.isModeratorOrAdmin()) {
             return;
         }
-        if (!isClubContact(club, getPerson(activeUserService.getActiveUserInfo()))) {
+
+        final Optional<Person> maybePerson = getPerson(activeUserService.getActiveUserInfo());
+
+        if (!maybePerson.isPresent() || !isClubContact(club, maybePerson.get())) {
             throw new AccessDeniedException(String.format("User id:%s is not contact for clubId:%s",
                     activeUserService.getActiveUserId(), club.getId()));
         }
@@ -106,8 +103,7 @@ public class UserAuthorizationHelper {
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public boolean isCoordinator(final Organisation rhy, final UserInfo userInfo) {
-        return rhy != null && Optional
-                .ofNullable(getPerson(userInfo))
+        return rhy != null && getPerson(userInfo)
                 .map(person -> isCoordinator(rhy, person))
                 .orElse(false);
     }
@@ -118,8 +114,9 @@ public class UserAuthorizationHelper {
     }
 
     private boolean isCoordinator(final Collection<Long> rhyIds, final UserInfo userInfo) {
-        final Person person = getPerson(userInfo);
-        return person != null && isCoordinator(rhyIds, person);
+        return getPerson(userInfo)
+                .map(person -> isCoordinator(rhyIds, person))
+                .orElse(false);
     }
 
     private boolean isCoordinator(final Collection<Long> rhyIds, final Person person) {
@@ -133,15 +130,18 @@ public class UserAuthorizationHelper {
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public boolean isSrvaContactPerson(final long rhyId) {
-        final Person person = getPerson(activeUserService.getActiveUserInfo());
-        return hasAnyOfRolesInOrganisationIds(
-                Collections.singleton(rhyId), person, EnumSet.of(OccupationType.SRVA_YHTEYSHENKILO));
+        return getPerson(activeUserService.getActiveUserInfo())
+                .map(person -> isSrvaContactPerson(Collections.singleton(rhyId), person))
+                .orElse(false);
+    }
+
+    private boolean isSrvaContactPerson(final Collection<Long> rhyIds, final Person person) {
+        return hasAnyOfRolesInOrganisationIds(rhyIds, person, EnumSet.of(OccupationType.SRVA_YHTEYSHENKILO));
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public boolean isSrvaContactPerson(final Organisation rhy, final UserInfo userInfo) {
-        return rhy != null && Optional
-                .ofNullable(getPerson(userInfo))
+        return rhy != null && getPerson(userInfo)
                 .map(person -> hasRoleInOrganisation(rhy, person, OccupationType.SRVA_YHTEYSHENKILO))
                 .orElse(false);
     }
@@ -190,7 +190,7 @@ public class UserAuthorizationHelper {
 
             if (!applicable) {
                 LOG.warn("Incorrect usage of hasAnyOfRolesInOrganisations: inapplicable roles requested " +
-                        "for {} organisation with ID={}: {}",
+                                "for {} organisation with ID={}: {}",
                         org.getOrganisationType().name(), org.getId(), roles);
             }
 
@@ -212,7 +212,7 @@ public class UserAuthorizationHelper {
 
                     if (!applicable) {
                         LOG.warn("Incorrect usage of hasAnyOfRolesInOrganisations: inapplicable role requested " +
-                                "for organisations of types [{}]: {}",
+                                        "for organisations of types [{}]: {}",
                                 F.join(filteredOrgTypes, Enum::name, ", "), occType.name());
                     }
 
@@ -258,7 +258,7 @@ public class UserAuthorizationHelper {
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public boolean isCoordinatorAnywhere(final UserInfo userInfo) {
-        return Optional.ofNullable(getPerson(userInfo)).map(this::isCoordinatorAnywhere).orElse(false);
+        return getPerson(userInfo).map(this::isCoordinatorAnywhere).orElse(false);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
@@ -268,8 +268,9 @@ public class UserAuthorizationHelper {
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public boolean isSrvaContactPersonAnywhere(final UserInfo userInfo) {
-        final Person person = getPerson(userInfo);
-        return person != null && hasRoleAnywhere(person, OccupationType.SRVA_YHTEYSHENKILO);
+        return getPerson(userInfo)
+                .map(person -> hasRoleAnywhere(person, OccupationType.SRVA_YHTEYSHENKILO))
+                .orElse(false);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
@@ -303,33 +304,10 @@ public class UserAuthorizationHelper {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public boolean isLeaderOfSomeHuntingClubGroup(final Person person, final HuntingClub huntingClub) {
-        final Iterable<Organisation> groups = organisationRepository.findAll(
-                QOrganisation.organisation.parentOrganisation.eq(huntingClub));
-
-        return hasAnyOfRolesInOrganisationIds(F.getUniqueIds(groups), person,
-                EnumSet.of(OccupationType.RYHMAN_METSASTYKSENJOHTAJA));
-    }
-
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public boolean isLeaderOfSomePermitHuntingGroup(final Person person, final HarvestPermit permit) {
-        return isLeaderOfSomePermitHuntingGroup(person, permit, Optional.empty());
-    }
-
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public boolean isLeaderOfSomePermitHuntingGroup(
             final Person person, final HarvestPermit permit, final HuntingClub club) {
 
-        return isLeaderOfSomePermitHuntingGroup(person, permit, Optional.of(club));
-    }
-
-    private boolean isLeaderOfSomePermitHuntingGroup(
-            final Person person, final HarvestPermit permit, final Optional<HuntingClub> clubRestrictionOption) {
-
-        final Specification<HuntingClubGroup> clubCriteria = clubRestrictionOption.isPresent()
-                ? equal(Organisation_.parentOrganisation, clubRestrictionOption.get())
-                : conjunction();
-
+        final Specification<HuntingClubGroup> clubCriteria = equal(Organisation_.parentOrganisation, club);
         final Specification<HuntingClubGroup> compoundGroupCriteria = Specifications
                 .where(JpaSubQuery.inverseOf(HarvestPermit_.permitGroups).exists((root, cb) -> cb.equal(root, permit)))
                 .and(clubCriteria);
@@ -341,12 +319,10 @@ public class UserAuthorizationHelper {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Person getPerson(final UserInfo userInfo) {
-        return findSystemUser(userInfo).map(SystemUser::getPerson).orElse(null);
+    public Optional<Person> getPerson(final UserInfo userInfo) {
+        return Optional.ofNullable(userInfo)
+                .map(UserInfo::getUserId)
+                .map(userRepository::findOne)
+                .map(SystemUser::getPerson);
     }
-
-    private Optional<SystemUser> findSystemUser(final UserInfo userInfo) {
-        return Optional.ofNullable(userInfo.getUserId()).map(userRepository::findOne);
-    }
-
 }

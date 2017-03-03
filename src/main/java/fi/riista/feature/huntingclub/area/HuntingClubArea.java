@@ -1,6 +1,6 @@
 package fi.riista.feature.huntingclub.area;
 
-import fi.riista.feature.common.entity.LifecycleEntity;
+import fi.riista.feature.gis.zone.AreaEntity;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.util.LocalisedString;
@@ -9,6 +9,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
@@ -24,10 +25,11 @@ import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.security.SecureRandom;
+import java.util.Objects;
 
 @Entity
 @Access(value = AccessType.FIELD)
-public class HuntingClubArea extends LifecycleEntity<Long> {
+public class HuntingClubArea extends AreaEntity<Long> {
 
     public static final String ID_COLUMN_NAME = "hunting_club_area_id";
 
@@ -67,6 +69,7 @@ public class HuntingClubArea extends LifecycleEntity<Long> {
     @JoinColumn(unique = true)
     private GISZone zone;
 
+    @Override
     @Nonnull
     public LocalisedString getNameLocalisation() {
         return LocalisedString.of(nameFinnish, nameSwedish);
@@ -75,16 +78,17 @@ public class HuntingClubArea extends LifecycleEntity<Long> {
     public HuntingClubArea() {
     }
 
-    public HuntingClubArea(final HuntingClub club,
-                           final String nameFinnish,
-                           final String nameSwedish,
+    public HuntingClubArea(@Nonnull final HuntingClub club,
+                           @Nonnull final String nameFinnish,
+                           @Nonnull final String nameSwedish,
                            final int huntingYear,
                            final int metsahallitusYear,
-                           final String externalId) {
-        this.club = club;
+                           @Nullable final String externalId) {
+
+        this.club = Objects.requireNonNull(club, "club is null");
         this.active = true;
-        this.nameFinnish = nameFinnish;
-        this.nameSwedish = nameSwedish;
+        this.nameFinnish = Objects.requireNonNull(nameFinnish, "nameFinnish is null");
+        this.nameSwedish = Objects.requireNonNull(nameSwedish, "nameSwedish is null");
         this.huntingYear = huntingYear;
         this.metsahallitusYear = metsahallitusYear;
         this.externalId = externalId;
@@ -156,10 +160,12 @@ public class HuntingClubArea extends LifecycleEntity<Long> {
         return externalId;
     }
 
+    @Override
     public GISZone getZone() {
         return this.zone;
     }
 
+    @Override
     public void setZone(GISZone zone) {
         this.zone = zone;
     }

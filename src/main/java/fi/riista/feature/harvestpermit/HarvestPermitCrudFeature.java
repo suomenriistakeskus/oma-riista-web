@@ -2,24 +2,28 @@ package fi.riista.feature.harvestpermit;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import fi.riista.feature.account.user.UserCrudFeature;
-import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.SimpleAbstractCrudFeature;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.account.user.UserCrudFeature;
+import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
-import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.GameSpeciesRepository;
+import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
 import fi.riista.feature.harvestpermit.search.HarvestPermitExistsDTO;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTO;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitFeature;
 import fi.riista.feature.huntingclub.permit.MooselikeHuntingYearDTO;
 import fi.riista.feature.huntingclub.permit.MooselikePermitListingDTO;
+import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsDTO;
+import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsFeature;
+import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsService;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
@@ -35,20 +39,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.OptionalInt;
 
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static java.util.Comparator.comparingLong;
@@ -56,9 +59,12 @@ import static java.util.stream.Collectors.toList;
 import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Component
-public class HarvestPermitCrudFeature extends SimpleAbstractCrudFeature<Long, HarvestPermit, HarvestPermitDTO> {
+public class HarvestPermitCrudFeature extends AbstractCrudFeature<Long, HarvestPermit, HarvestPermitDTO> {
 
     private static final Logger LOG = LoggerFactory.getLogger(HarvestPermitCrudFeature.class);
+
+    @Resource
+    private RequireEntityService requireEntityService;
 
     @Resource
     private HarvestPermitRepository harvestPermitRepository;
@@ -73,20 +79,31 @@ public class HarvestPermitCrudFeature extends SimpleAbstractCrudFeature<Long, Ha
     private GameSpeciesRepository gameSpeciesRepository;
 
     @Resource
-    private RequireEntityService requireEntityService;
-
-    @Resource
     private UserCrudFeature userCrudFeature;
 
     @Resource
     private HuntingClubPermitFeature huntingClubPermitFeature;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @Resource
+    private MoosePermitStatisticsService moosePermitStatisticsService;
 
     @Override
     protected JpaRepository<HarvestPermit, Long> getRepository() {
         return harvestPermitRepository;
+    }
+
+    @Override
+    protected HarvestPermitDTO toDTO(@Nonnull final HarvestPermit entity) {
+        final SystemUser currentUser = activeUserService.getActiveUser();
+        final HarvestPermitDTO dto = HarvestPermitDTO.create(Objects.requireNonNull(entity), currentUser,
+                EnumSet.of(HarvestPermitDTO.Inclusion.HARVEST_LIST,
+                        HarvestPermitDTO.Inclusion.REPORT_LIST,
+                        HarvestPermitDTO.Inclusion.END_OF_HUNTING_REPORT_REQUIRED));
+
+        if (dto.getHarvests() != null && !dto.getHarvests().isEmpty()) {
+            resolveHarvestCreators(entity, dto);
+        }
+        return dto;
     }
 
     @Override
@@ -108,22 +125,6 @@ public class HarvestPermitCrudFeature extends SimpleAbstractCrudFeature<Long, Ha
                 });
             }
         }
-    }
-
-    @Override
-    protected Function<HarvestPermit, HarvestPermitDTO> entityToDTOFunction() {
-        final SystemUser currentUser = activeUserService.getActiveUser();
-        return input -> {
-            HarvestPermitDTO dto = HarvestPermitDTO.create(Objects.requireNonNull(input), currentUser,
-                    EnumSet.of(HarvestPermitDTO.Inclusion.HARVEST_LIST,
-                            HarvestPermitDTO.Inclusion.REPORT_LIST,
-                            HarvestPermitDTO.Inclusion.END_OF_HUNTING_REPORT_REQUIRED));
-
-            if (dto.getHarvests() != null && !dto.getHarvests().isEmpty()) {
-                resolveHarvestCreators(input, dto);
-            }
-            return dto;
-        };
     }
 
     private void resolveHarvestCreators(HarvestPermit permit, HarvestPermitDTO dto) {
@@ -282,6 +283,23 @@ public class HarvestPermitCrudFeature extends SimpleAbstractCrudFeature<Long, Ha
     }
 
     @Transactional(readOnly = true)
+    public List<MoosePermitStatisticsDTO> getRhyStatistics(final long permitId, int speciesCode, Locale locale) {
+
+        final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
+
+        final int year = permit.getSpeciesAmounts().stream()
+                .filter(spa -> spa.getGameSpecies().getOfficialCode() == speciesCode)
+                .findAny()
+                .map(Has2BeginEndDates::findUnambiguousHuntingYear)
+                .orElseGet(OptionalInt::empty)
+                .orElseThrow(IllegalStateException::new);
+
+        final Riistanhoitoyhdistys rhy = permit.getRhy();
+        return moosePermitStatisticsService.calculateByHolder(locale, speciesCode, year,
+                MoosePermitStatisticsFeature.OrgType.RHY, rhy.getOfficialCode());
+    }
+
+    @Transactional(readOnly = true)
     public List<MooselikeHuntingYearDTO> listHuntingYears(Long personId) {
         final Specification<HarvestPermit> spec =
                 where(equal(HarvestPermit_.originalContactPerson, findPerson(personId)))
@@ -292,7 +310,7 @@ public class HarvestPermitCrudFeature extends SimpleAbstractCrudFeature<Long, Ha
                 .flatMap(Collection::stream));
     }
 
-    @Transactional(readOnly = true, rollbackFor = IOException.class)
+    @Transactional(readOnly = true, rollbackFor = MalformedURLException.class)
     public URL getPdf(final String permitNumber) throws MalformedURLException {
         final HarvestPermit permit = harvestPermitRepository.findByPermitNumber(permitNumber);
         activeUserService.assertHasPermission(permit, EntityPermission.READ);

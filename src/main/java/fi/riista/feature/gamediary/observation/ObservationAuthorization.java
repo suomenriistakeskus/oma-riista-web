@@ -2,10 +2,10 @@ package fi.riista.feature.gamediary.observation;
 
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameDiaryEntryAuthorization;
-import fi.riista.feature.gamediary.mobile.MobileObservationDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
+import fi.riista.security.EntityPermission;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import fi.riista.util.F;
 import org.springframework.stereotype.Component;
 
@@ -24,14 +24,12 @@ public class ObservationAuthorization extends GameDiaryEntryAuthorization<Observ
     }
 
     public ObservationAuthorization() {
-        super(Observation.class);
-
-        allow(CREATE,
+        allow(EntityPermission.CREATE,
                 SystemUser.Role.ROLE_USER,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR);
 
-        allow(READ,
+        allow(EntityPermission.READ,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR,
                 Role.AUTHOR,
@@ -41,7 +39,7 @@ public class ObservationAuthorization extends GameDiaryEntryAuthorization<Observ
                 OccupationType.RYHMAN_JASEN,
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-        allow(UPDATE,
+        allow(EntityPermission.UPDATE,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR,
                 Role.AUTHOR,
@@ -49,7 +47,7 @@ public class ObservationAuthorization extends GameDiaryEntryAuthorization<Observ
                 OccupationType.SEURAN_YHDYSHENKILO,
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-        allow(DELETE,
+        allow(EntityPermission.DELETE,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR,
                 Role.AUTHOR,
@@ -60,11 +58,6 @@ public class ObservationAuthorization extends GameDiaryEntryAuthorization<Observ
                 SystemUser.Role.ROLE_MODERATOR,
                 OccupationType.SEURAN_YHDYSHENKILO,
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
-    }
-
-    @Override
-    public Class<?>[] getSupportedTypes() {
-        return new Class[]{Observation.class, ObservationDTO.class, MobileObservationDTO.class};
     }
 
     @Override

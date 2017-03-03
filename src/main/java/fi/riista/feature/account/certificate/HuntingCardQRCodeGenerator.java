@@ -78,7 +78,7 @@ public class HuntingCardQRCodeGenerator {
         return this;
     }
 
-    public String buildWithoutSignature(String language) {
+    public String buildWithoutSignature(final String language) {
         Objects.requireNonNull(lastName);
         Objects.requireNonNull(firstNames);
         Objects.requireNonNull(homeMunicipalityName);
@@ -87,12 +87,6 @@ public class HuntingCardQRCodeGenerator {
         Objects.requireNonNull(huntingCardEnd);
         Objects.requireNonNull(rhyOfficialCode);
 
-        final String translatedMunicipalityName = homeMunicipalityName.getTranslation(language);
-
-        if (translatedMunicipalityName == null) {
-            throw new IllegalStateException("Empty municipality.name");
-        }
-
         // Max 98 characters
         final String[] parts = {
                 // 25 characters
@@ -100,7 +94,7 @@ public class HuntingCardQRCodeGenerator {
                 // 27 characters
                 limitLength(27, firstNames),
                 // 18 characters
-                limitLength(18, translatedMunicipalityName),
+                limitLength(18, homeMunicipalityName.getAnyTranslation(language)),
                 // 8 characters
                 DATE_FORMAT.print(dateOfBirth),
                 // 8 characters

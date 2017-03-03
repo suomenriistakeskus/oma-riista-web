@@ -174,6 +174,12 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
             $scope.viewState[fieldName] = $scope.huntingSummary[fieldName];
         });
 
+        $scope.showPermitAreaSize = function () {
+            var summary = $scope.huntingSummary;
+            var totalHuntingArea = summary.totalHuntingArea;
+            return !_.isFinite(totalHuntingArea) || totalHuntingArea > summary.permitAreaSize;
+        };
+
         $scope.getTotalNumberOfDeadMooses = function () {
             return _(deadMooseCountFields)
                 .map(function (fieldName) {

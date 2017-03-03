@@ -3,6 +3,8 @@ package fi.riista.common;
 import static fi.riista.util.Asserts.assertEmpty;
 import static java.util.stream.Collectors.toSet;
 
+import com.google.common.collect.Sets;
+
 import fi.riista.ClassInventory;
 import fi.riista.util.F;
 import fi.riista.util.ReflectionTestUtils;
@@ -37,7 +39,8 @@ public class TransactionAnnotationTest {
      */
     @Test
     public void testTransactionalPublicMethodsRollbackOnCheckedExceptionIfNoMandatoryPropagation() {
-        final Set<Method> methodsToTest = streamPublicTransactionalFeatureMethods()
+        final Set<Method> methodsToTest = streamPublicMethodsFromFeatureAndIntegrationPackage()
+                .filter(method -> method.isAnnotationPresent(Transactional.class))
                 .filter(MANDATORY_TRANSACTIONAL_PROPAGATION.negate())
                 .collect(toSet());
 
@@ -69,12 +72,12 @@ public class TransactionAnnotationTest {
      */
     @Test
     public void testTransactionalPublicMethodsWithMandatoryPropagationDoNotRollbackOnRuntimeException() {
-        final Stream<Method> failingMethods = streamPublicTransactionalFeatureMethods()
+        final Stream<Method> failingMethods = streamPublicMethodsFromFeatureAndIntegrationPackage()
+                .filter(method -> method.isAnnotationPresent(Transactional.class))
                 .filter(MANDATORY_TRANSACTIONAL_PROPAGATION)
                 .map(method -> Tuple.of(method, method.getAnnotation(Transactional.class).noRollbackFor()))
-                .filter(pair -> Stream.of(pair._2()).noneMatch(
-                        cls -> RuntimeException.class.isAssignableFrom(cls) ||
-                                cls.isAssignableFrom(Exception.class)))
+                .filter(pair -> Stream.of(pair._2).noneMatch(
+                        cls -> RuntimeException.class.isAssignableFrom(cls) || cls.isAssignableFrom(Exception.class)))
                 .map(Tuple2::_1);
 
         assertEmpty(
@@ -83,12 +86,62 @@ public class TransactionAnnotationTest {
                         + "@Transactional annotation: ");
     }
 
-    private static Stream<Method> streamPublicTransactionalFeatureMethods() {
+    @Test
+    public void testMethodsOfRepositoryImplClassesMustBeAnnotatedWithTransactional() {
+        final Stream<Method> failingMethods = streamPublicMethodsFromFeatureAndIntegrationPackage()
+                .filter(method -> {
+                    final Class<?> declaringClass = method.getDeclaringClass();
+
+                    return declaringClass.getSimpleName().endsWith("RepositoryImpl") &&
+                            !method.getName().equals("setDataSource") &&
+                            !method.isAnnotationPresent(Transactional.class) &&
+                            !declaringClass.isAnnotationPresent(Transactional.class);
+                });
+
+        assertEmpty(failingMethods, "The following methods should be annotated with @Transactional: ");
+    }
+
+    @Test
+    public void testQueryMethodsMustBeReadOnlyTransactional() {
+        final Set<String> queryMethodPrefixes = Sets.newHashSet("count", "fetch", "find", "get", "list", "query");
+
+        final Stream<Method> failingMethods = streamPublicMethodsFromFeatureAndIntegrationPackage()
+                .filter(method -> {
+
+                    final Class<?> clazz = method.getDeclaringClass();
+
+                    final boolean methodAnnotated = method.isAnnotationPresent(Transactional.class);
+                    final boolean classAnnotated = clazz.isAnnotationPresent(Transactional.class);
+
+                    if (!methodAnnotated && !classAnnotated) {
+                        return false;
+                    }
+
+                    final String methodName = method.getName().toLowerCase();
+
+                    if (queryMethodPrefixes.stream().noneMatch(methodName::startsWith) ||
+                            methodName.contains("orcreate")) {
+
+                        return false;
+                    }
+
+                    if (methodAnnotated) {
+                        final Transactional mTx = method.getAnnotation(Transactional.class);
+                        return mTx.propagation() != Propagation.MANDATORY && !mTx.readOnly();
+                    }
+
+                    final Transactional cTx = clazz.getAnnotation(Transactional.class);
+                    return cTx.propagation() != Propagation.MANDATORY && !cTx.readOnly();
+                });
+
+        assertEmpty(failingMethods, "The following transactional methods should be marked read-only: ");
+    }
+
+    private static Stream<Method> streamPublicMethodsFromFeatureAndIntegrationPackage() {
         return ClassInventory.getClassesFromFeatureAndIntegrationPackage().stream()
                 .filter(ReflectionTestUtils.ABSTRACT_OR_CONCRETE_CLASS)
                 .flatMap(ReflectionTestUtils.methodsOfClass(true))
-                .filter(method -> Modifier.isPublic(method.getModifiers()))
-                .filter(method -> method.isAnnotationPresent(Transactional.class));
+                .filter(method -> Modifier.isPublic(method.getModifiers()));
     }
 
     private static Stream<Class<? extends Exception>> streamCheckedExceptions(final Class<?>[] classArray) {
@@ -97,9 +150,8 @@ public class TransactionAnnotationTest {
                 .map(cls -> cls.asSubclass(Exception.class));
     }
 
-    private static <T> Optional<Class<?>> findClassOrItsAncestor(
-            final Class<T> clazz, final Iterable<? extends Class<?>> candidates) {
-
+    private static <T> Optional<Class<?>> findClassOrItsAncestor(final Class<T> clazz,
+                                                                 final Iterable<? extends Class<?>> candidates) {
         return F.stream(candidates)
                 .filter(candidate -> candidate.isAssignableFrom(clazz))
                 .<Class<?>> map(cls -> cls)

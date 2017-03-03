@@ -26,9 +26,7 @@ public class HuntingClubAreaChangedExcelView extends AbstractXlsView {
     private static final String COLUMN_HEADER_PREFIX = "ClubAreaChangesExportExcel.";
     private static final String[] COLUMN_HEADERS = new String[]{
             "propertyIdentifier",
-            "propertyName",
             "propertyIdentifierNew",
-            "propertyNameNew",
             "propertySize",
             "propertySizeNew"
     };
@@ -83,12 +81,10 @@ public class HuntingClubAreaChangedExcelView extends AbstractXlsView {
             helper.appendRow();
 
             helper.appendTextCell(f.getPropertyIdentifier().getDelimitedValue());
-            helper.appendTextCell(f.getPropertyName());
 
             if (f.getPropertyIdentifierNew() != null &&
                     !f.getPropertyIdentifierNew().equals(f.getPropertyIdentifier())) {
                 helper.appendTextCell(f.getPropertyIdentifierNew().getDelimitedValue());
-                helper.appendTextCell(f.getPropertyNameNew());
             } else {
                 helper.appendTextCell("-").appendTextCell("-");
             }
@@ -103,21 +99,15 @@ public class HuntingClubAreaChangedExcelView extends AbstractXlsView {
     public static class ExcelRow {
         private final PropertyIdentifier propertyIdentifier;
         private final PropertyIdentifier propertyIdentifierNew;
-        private final String propertyName;
-        private final String propertyNameNew;
         private final Double originalSize;
         private final Double areaSizeDifference;
 
         public ExcelRow(final Long propertyIdentifier,
                         final Long propertyIdentifierNew,
-                        final String propertyName,
-                        final String propertyNameNew,
                         final Double originalSize,
                         final Double areaSizeDifference) {
             this.propertyIdentifier = PropertyIdentifier.create(Objects.requireNonNull(propertyIdentifier));
             this.propertyIdentifierNew = PropertyIdentifier.create(propertyIdentifierNew);
-            this.propertyName = propertyName;
-            this.propertyNameNew = propertyNameNew;
             this.originalSize = Objects.requireNonNull(originalSize);
             this.areaSizeDifference = areaSizeDifference;
         }
@@ -128,14 +118,6 @@ public class HuntingClubAreaChangedExcelView extends AbstractXlsView {
 
         public Double formatNewSize() {
             return areaSizeDifference != null ? (originalSize + areaSizeDifference) / 10_000 : null;
-        }
-
-        public String getPropertyName() {
-            return propertyName;
-        }
-
-        public String getPropertyNameNew() {
-            return propertyNameNew;
         }
 
         public PropertyIdentifier getPropertyIdentifier() {

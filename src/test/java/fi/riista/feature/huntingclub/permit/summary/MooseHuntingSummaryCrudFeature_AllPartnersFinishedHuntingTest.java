@@ -12,6 +12,7 @@ import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportDone
 import fi.riista.feature.huntingclub.permit.partner.AllPartnersFinishedHuntingMailFeature;
 import fi.riista.feature.huntingclub.permit.partner.AllPartnersFinishedHuntingMailService;
 import fi.riista.feature.huntingclub.permit.partner.AllPartnersFinishedHuntingMailService.MailData;
+import fi.riista.feature.organization.person.Person;
 import org.joda.time.LocalDate;
 import org.junit.After;
 import org.junit.Before;
@@ -74,7 +75,9 @@ public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest exten
                                   final boolean isOtherPartnerMooseHuntingFinished,
                                   final boolean otherPartnerHasMooseHuntingSummary) {
 
+        final Person otherPermitContactPerson = model().newPerson();
         withMooseHuntingGroupFixture(f -> withHuntingGroupFixture(f.speciesAmount, f2 -> {
+            model().newHarvestPermitContactPerson(f.permit, otherPermitContactPerson);
 
             createHarvest(f.permit, f.group, false);
             createHarvest(f.permit, f2.group, false);
@@ -98,7 +101,9 @@ public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest exten
                 crudFeature.create(dto);
 
                 if (expectedIsMailSent) {
-                    final Set<String> emails = Sets.newHashSet(f.clubContact.getEmail(), f.groupLeader.getEmail());
+                    final Set<String> emails = Sets.newHashSet(f.clubContact.getEmail(),
+                            f.permit.getOriginalContactPerson().getEmail(), otherPermitContactPerson.getEmail());
+
                     verify(mockMailService).sendEmailAsync(eq(emails), any());
                 } else {
                     verifyNoMoreInteractions(mockMailService);
@@ -118,7 +123,9 @@ public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest exten
     }
 
     private void doTestNotEdibles(final boolean hasNotEdibles) {
+        final Person otherPermitContactPerson = model().newPerson();
         withMooseHuntingGroupFixture(f -> {
+            model().newHarvestPermitContactPerson(f.permit, otherPermitContactPerson);
 
             final HarvestPermit amendmentPermit = model().newHarvestPermit(f.permit);
             model().newHarvestPermitSpeciesAmount(amendmentPermit, f.species);
@@ -138,7 +145,8 @@ public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest exten
 
                 crudFeature.create(dto);
 
-                final Set<String> emails = Sets.newHashSet(f.clubContact.getEmail(), f.groupLeader.getEmail());
+                final Set<String> emails = Sets.newHashSet(f.clubContact.getEmail(),
+                        f.permit.getOriginalContactPerson().getEmail(), otherPermitContactPerson.getEmail());
 
                 final ArgumentCaptor<MailData> c = ArgumentCaptor.forClass(MailData.class);
                 verify(mockMailService).sendEmailAsync(eq(emails), c.capture());

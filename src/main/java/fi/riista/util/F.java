@@ -6,8 +6,7 @@ import com.google.common.collect.Sets;
 import fi.riista.feature.common.entity.HasID;
 import javaslang.Tuple;
 import javaslang.Tuple2;
-import javaslang.Value;
-import javaslang.control.Validation;
+import javaslang.control.Either;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -24,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -112,23 +111,20 @@ public final class F {
 
     @Nonnull
     public static <T> ArrayList<T> newListWithCapacityOf(@Nonnull final Iterable<?> iterable) {
-        return sizeMaybe(iterable)
-                .<ArrayList<T>> map(ArrayList::new)
-                .orElseGet(ArrayList::new);
+        final OptionalInt sizeOpt = sizeMaybe(iterable);
+        return sizeOpt.isPresent() ? new ArrayList<>(sizeOpt.getAsInt()) : new ArrayList<>();
     }
 
     @Nonnull
     public static <T> HashSet<T> newSetWithExpectedSizeOf(@Nonnull final Iterable<?> iterable) {
-        return sizeMaybe(iterable)
-                .<HashSet<T>> map(Sets::newHashSetWithExpectedSize)
-                .orElseGet(HashSet::new);
+        final OptionalInt sizeOpt = sizeMaybe(iterable);
+        return sizeOpt.isPresent() ? Sets.newHashSetWithExpectedSize(sizeOpt.getAsInt()) : new HashSet<>();
     }
 
     @Nonnull
     public static <K, V> HashMap<K, V> newMapWithCapacityOf(@Nonnull final Iterable<?> iterable) {
-        return sizeMaybe(iterable)
-                .<HashMap<K, V>> map(Maps::newHashMapWithExpectedSize)
-                .orElseGet(HashMap::new);
+        final OptionalInt sizeOpt = sizeMaybe(iterable);
+        return sizeOpt.isPresent() ? Maps.newHashMapWithExpectedSize(sizeOpt.getAsInt()) : new HashMap<>();
     }
 
     @Nonnull
@@ -241,9 +237,9 @@ public final class F {
     public static <T> Tuple2<List<T>, List<T>> split(@Nonnull final Iterable<? extends T> iterable,
                                                      final int numberOfElementsToTakeIntoFirst) {
 
-        final Optional<Integer> sizeOpt = sizeMaybe(iterable);
+        final OptionalInt sizeOpt = sizeMaybe(iterable);
         if (sizeOpt.isPresent()) {
-            final int size = sizeOpt.get();
+            final int size = sizeOpt.getAsInt();
 
             if (numberOfElementsToTakeIntoFirst > size) {
                 throw new IllegalArgumentException(
@@ -311,7 +307,7 @@ public final class F {
     public static <T, ID> Set<ID> getUniqueIdsAfterTransform(@Nonnull final Iterable<? extends T> iterable,
                                                              @Nonnull final Function<? super T, ? extends HasID<ID>> mapper) {
 
-        return mapNonNullsToSet(iterable, t -> F.getId(mapper.apply(t)));
+        return mapNonNullsToSet(iterable, mapper.andThen(F::getId));
     }
 
     @Nonnull
@@ -393,24 +389,6 @@ public final class F {
         return F.nullSafeGroupBy(iterable, t -> F.getId(classifier.apply(t)));
     }
 
-    // Simpler fold API than the three parameter version of Java8 Stream.reduce.
-    @Nullable
-    public static <T, U> U foldLeft(@Nonnull final Iterable<? extends T> objects,
-                                    @Nonnull final BiFunction<U, ? super T, U> accumulator,
-                                    @Nullable final U initialValue) {
-
-        Objects.requireNonNull(objects, "objects is null");
-        Objects.requireNonNull(accumulator, "accumulator is null");
-
-        U accumulated = initialValue;
-
-        for (final T object : objects) {
-            accumulated = accumulator.apply(accumulated, object);
-        }
-
-        return accumulated;
-    }
-
     @SafeVarargs
     public static <T> boolean containsAny(@Nonnull final Iterable<? extends T> iterable, @Nullable final T... values) {
         Objects.requireNonNull(iterable, "iterable is null");
@@ -471,12 +449,12 @@ public final class F {
         return F.stream(iterable).map(mapper).collect(joining(delimiter));
     }
 
-    private static Optional<Integer> sizeMaybe(@Nonnull final Iterable<?> iterable) {
+    private static OptionalInt sizeMaybe(@Nonnull final Iterable<?> iterable) {
         Objects.requireNonNull(iterable);
 
         return Collection.class.isAssignableFrom(iterable.getClass())
-                ? Optional.of(Collection.class.cast(iterable).size())
-                : Iterables.isEmpty(iterable) ? Optional.of(0) : Optional.<Integer> empty();
+                ? OptionalInt.of(Collection.class.cast(iterable).size())
+                : Iterables.isEmpty(iterable) ? OptionalInt.of(0) : OptionalInt.empty();
     }
 
     @Nonnull
@@ -485,8 +463,9 @@ public final class F {
     }
 
     @Nonnull
-    public static <T> Stream<T> stream(@Nullable final T object, @Nonnull final Iterable<T> iterable) {
-        return object == null ? stream(iterable) : Stream.concat(Stream.of(object), stream(iterable));
+    public static <T> Stream<T> stream(@Nullable final T object, @Nonnull final Iterable<? extends T> iterable) {
+        final Stream<T> first = object != null ? Stream.of(object) : Stream.empty();
+        return Stream.concat(first, stream(iterable));
     }
 
     @Nonnull
@@ -499,9 +478,12 @@ public final class F {
         return collection.stream().collect(toMap(identity(), valueMapper));
     }
 
-    @Nonnull
-    public static <T> Integer sum(@Nonnull final Collection<? extends T> collection,
-                                  @Nonnull final ToIntFunction<? super T> mapper) {
+    public static int coalesceAsInt(@Nullable final Number n, final int defaultValue) {
+        return n != null ? n.intValue() : defaultValue;
+    }
+
+    public static <T> int sum(@Nonnull final Collection<? extends T> collection,
+                              @Nonnull final ToIntFunction<? super T> mapper) {
 
         Objects.requireNonNull(collection, "collection is null");
         Objects.requireNonNull(mapper, "mapper is null");
@@ -509,8 +491,7 @@ public final class F {
         return collection.stream().mapToInt(mapper).sum();
     }
 
-    @Nonnull
-    public static <T> Double sum(@Nonnull final Collection<? extends T> collection,
+    public static <T> double sum(@Nonnull final Collection<? extends T> collection,
                                  @Nonnull final ToDoubleFunction<? super T> mapper) {
 
         Objects.requireNonNull(collection, "collection is null");
@@ -556,27 +537,36 @@ public final class F {
     }
 
     @Nonnull
-    public static <T> Validation<List<String>, List<T>> combine(
-            @Nonnull final Validation<? extends Iterable<String>, T> first,
-            @Nonnull final Validation<? extends Iterable<String>, T> second) {
-
-        Objects.requireNonNull(first, "first is null");
-        Objects.requireNonNull(second, "second is null");
-
-        return combine(Stream.of(first, second));
+    public static <R> Optional<R> toOptional(@Nonnull final Either<?, R> either) {
+        Objects.requireNonNull(either);
+        return either.fold(left -> Optional.empty(), Optional::ofNullable);
     }
 
     @Nonnull
-    public static <T> Validation<List<String>, List<T>> combine(
-            @Nonnull final Stream<? extends Validation<? extends Iterable<String>, T>> stream) {
+    public static <L, R> Either<L, R> toEither(@Nonnull final Optional<R> optional,
+                                               @Nonnull final Supplier<L> leftSupplier) {
 
-        Objects.requireNonNull(stream);
+        Objects.requireNonNull(optional, "optional is null");
+        Objects.requireNonNull(leftSupplier, "leftSupplier is null");
 
-        return Validation.sequence(stream
-                .map(validation -> validation.leftMap(javaslang.collection.List::ofAll))
-                .collect(toList()))
-                .map(Value::toJavaList)
-                .leftMap(Value::toJavaList);
+        return optional.<Either<L, R>> map(Either::right).orElseGet(() -> Either.left(leftSupplier.get()));
+    }
+
+    @Nonnull
+    public static <T, U> Optional<Either<T, U>> optionallyEither(@Nonnull final Optional<T> first,
+                                                                 @Nonnull final Supplier<? extends Optional<U>> second) {
+        Objects.requireNonNull(first, "first is null");
+        Objects.requireNonNull(second, "second is null");
+
+        return first.isPresent()
+                ? first.map(Either::left)
+                : Objects.requireNonNull(second.get(), "Second Optional is null").map(Either::right);
+    }
+
+    @Nullable
+    public static <T, U extends T, V extends T> T reduceToCommonBase(@Nonnull final Either<U, V> either) {
+        Objects.requireNonNull(either);
+        return either.fold(identity(), identity());
     }
 
     private F() {

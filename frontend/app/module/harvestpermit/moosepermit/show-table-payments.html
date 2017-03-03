@@ -1,4 +1,4 @@
-<table class="table table-condensed table-striped moose-permit-infotable-payments">
+<table class="table table-condensed moose-permit-infotable-payments">
     <thead>
     <tr class="topheader">
         <th colspan="1"></th>
@@ -42,7 +42,8 @@
         <td>
             <div>
                 <moose-permit-todo todo="todos[a.huntingClubId]"></moose-permit-todo>
-                <span name-translated="a.huntingClubName"></span>
+                <a ng-if="canNavigateToClub()" name-translated="a.huntingClubName" ng-click="navigateToClub(a)"></a>
+                <span ng-if="!canNavigateToClub()" name-translated="a.huntingClubName"></span>
                 <span class="pull-right" ng-if="::(permit.summaryForPartnersTable[a.huntingClubId].fromMooseDataCard)"
                       uib-tooltip="{{ 'club.permit.allocation.fromMooseDataCard' | translate }}" tooltip-popup-delay="0" tooltip-placement="right">
                     <span class="fa fa-file-text"></span>

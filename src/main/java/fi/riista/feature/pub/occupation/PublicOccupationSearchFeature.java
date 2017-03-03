@@ -29,13 +29,12 @@ import java.util.Set;
 
 import static fi.riista.util.jpa.JpaSpecs.fetch;
 import static fi.riista.util.jpa.JpaSpecs.inCollection;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 @Component
 public class PublicOccupationSearchFeature {
-    private static final PublicOccupationsAndOrganisationsDTO EMPTY_RESULT =
-            new PublicOccupationsAndOrganisationsDTO(emptyList(), emptyList());
+
+    public static final int MAX_RESULTS = 500;
 
     @Resource
     private OccupationRepository occupationRepository;
@@ -78,15 +77,18 @@ public class PublicOccupationSearchFeature {
     public PublicOccupationsAndOrganisationsDTO findOccupationsAndOrganisations(
             final PublicOccupationSearchParameters parameters) {
 
-        if (parameters.canReturnTooManyResults()) {
-            // Avoid trying to list too many results
-            return EMPTY_RESULT;
-        }
+        return _findOccupationsAndOrganisations(parameters, MAX_RESULTS);
+    }
+
+    // For testing
+    @Transactional(readOnly = true)
+    public PublicOccupationsAndOrganisationsDTO _findOccupationsAndOrganisations(
+            final PublicOccupationSearchParameters parameters, final int maxResults) {
 
         final List<Occupation> resultOccupations = occupationRepository.findAll(parameters.toJpaSpecification());
 
         if (resultOccupations.isEmpty()) {
-            return EMPTY_RESULT;
+            return PublicOccupationsAndOrganisationsDTO.EMPTY_RESULT;
         }
 
         // Fetch persons, organisations and their addresses into 1st level cache of JPA entity manager.
@@ -101,8 +103,12 @@ public class PublicOccupationSearchFeature {
                 .where(inCollection(Organisation_.id, organisationIds))
                 .and(fetch(Organisation_.address, JoinType.LEFT)));
 
+        final List<PublicOccupationDTO> occupations = toOccupationDTOs(resultOccupations);
+        if (occupations.size() > maxResults) {
+            return PublicOccupationsAndOrganisationsDTO.TOO_MANY_RESULTS;
+        }
         return new PublicOccupationsAndOrganisationsDTO(
-                toOccupationDTOs(resultOccupations),
+                occupations,
                 toOrganisationDTOs(resultOrganisations));
     }
 

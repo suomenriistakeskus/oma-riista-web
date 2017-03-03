@@ -1,0 +1,29 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="club.area.import.modalTitle"></h3>
+</div>
+
+<div class="modal-body">
+    <p translate="club.area.import.instructions"></p>
+
+    <p class="text-danger"></p>
+
+    <div class="btn btn-primary btn-upload"
+         ng-show="$ctrl.uploadButtonVisible"
+         required
+         upload-button
+         url="{{$ctrl.url}}"
+         param="file"
+         on-upload="$ctrl.onUpload(files)"
+         on-success="$ctrl.onSuccess(response)"
+         on-error="$ctrl.onError(response)">
+        <span translate="club.area.import.selectFile"></span>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary"
+            ng-click="$ctrl.close()"
+            translate="global.button.close"
+            ng-disabled="$ctrl.uploadInProgress"></button>
+</div>

@@ -7,6 +7,7 @@ import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
@@ -78,19 +79,17 @@ public class MooselikeHarvestExportToLupahallintaFeatureTest extends EmbeddedDat
             final GameSpecies moose = f.species;
             final GameSpecies deer = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER);
 
-            model().newHarvestPermitSpeciesAmount(f.permit, deer);
-            model().newHarvestPermitSpeciesAmount(f2.permit, deer);
+            final HarvestPermitSpeciesAmount deerAmount1 = model().newHarvestPermitSpeciesAmount(f.permit, deer);
+            final HarvestPermitSpeciesAmount deerAmount2 = model().newHarvestPermitSpeciesAmount(f2.permit, deer);
 
             createHuntingDay(f.group, 1, 0, ADULT, MALE, moose);
 
-            final HuntingClubGroup deerGroup = model().newHuntingClubGroup(f.club, deer);
-            deerGroup.updateHarvestPermit(f.permit);
+            final HuntingClubGroup deerGroup = model().newHuntingClubGroup(f.club, deerAmount1);
             createHuntingDay(deerGroup, 1, 0, ADULT, FEMALE, deer);
 
             createHuntingDay(f2.group, 1, 0, YOUNG, MALE, moose);
 
-            final HuntingClubGroup deerGroup2 = model().newHuntingClubGroup(f2.club, deer);
-            deerGroup2.updateHarvestPermit(f2.permit);
+            final HuntingClubGroup deerGroup2 = model().newHuntingClubGroup(f2.club, deerAmount2);
             createHuntingDay(deerGroup2, 1, 0, YOUNG, FEMALE, deer);
 
             withPersistedAndAuthenticatedRestUser(() -> {

@@ -1,5 +1,6 @@
 package fi.riista.feature.gis.zone;
 
+import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.huntingclub.area.zone.HuntingClubAreaFeatureDTO;
 import fi.riista.util.GISUtils;
 import org.geojson.FeatureCollection;
@@ -32,5 +33,7 @@ public interface GISZoneRepositoryCustom {
 
     GISZone copyZone(GISZone from, GISZone to);
 
-    GISZone mergeZones(List<GISZone> fromList, GISZone to);
+    List<Geometry> loadSplicedGeometries(final Collection<Long> zoneIds);
+
+    void removeZonePalstaAndFeatures(GISZone zone);
 }

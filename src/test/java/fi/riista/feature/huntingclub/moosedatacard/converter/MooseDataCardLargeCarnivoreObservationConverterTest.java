@@ -68,9 +68,8 @@ public class MooseDataCardLargeCarnivoreObservationConverterTest
     public void testConversionOfCarnivoreSpecificFields() {
         final MooseDataCardLargeCarnivoreObservation source = newSourceObject();
 
-        final ObservationType expectedObservationType = HasMooseDataCardEncoding
-                .enumOf(ObservationType.class, source.getObservationType())
-                .getOrElseGet(invalid -> null);
+        final ObservationType expectedObservationType =
+                HasMooseDataCardEncoding.getEnumOrNull(ObservationType.class, source.getObservationType());
 
         final List<Tuple2<GameSpecies, Integer>> expectedSpeciesAmountTuples = asList(
                 Tuple.of(wolf, source.getNumberOfWolves()),

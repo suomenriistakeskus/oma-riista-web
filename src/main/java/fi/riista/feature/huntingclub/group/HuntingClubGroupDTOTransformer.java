@@ -1,21 +1,22 @@
 package fi.riista.feature.huntingclub.group;
 
 import com.querydsl.core.group.GroupBy;
-import com.querydsl.jpa.impl.JPAQuery;
-import fi.riista.feature.account.user.SystemUser;
+import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesRepository;
+import fi.riista.feature.gamediary.QGameSpecies;
+import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay_;
+import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.organization.occupation.QOccupation;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.util.F;
 import fi.riista.util.ListTransformer;
 import fi.riista.util.jpa.CriteriaUtils;
@@ -23,13 +24,12 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
@@ -40,8 +40,8 @@ import static java.util.stream.Collectors.toList;
 @Component
 public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubGroup, HuntingClubGroupDTO> {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Resource
+    private JPQLQueryFactory queryFactory;
 
     @Resource
     private OccupationRepository occupationRepository;
@@ -71,8 +71,7 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
         final Function<HuntingClubGroup, GameSpecies> groupToSpeciesMapping = getGroupToSpeciesMapping(list);
         final Function<HuntingClubGroup, HarvestPermit> groupToPermitMapping = getGroupToPermitMapping(list);
 
-        final Function<HuntingClubGroup, Long> huntingDayCountFn =
-                CriteriaUtils.createAssociationCountFunction(list, GroupHuntingDay.class, GroupHuntingDay_.group, em);
+        final List<Long> idsOfGroupsHavingHuntingDays = getGroupIdsHavingHuntingDays(list);
 
         final Function<HuntingClubGroup, Long> memberCountFn = getGroupMemberCountMapping(list);
 
@@ -85,7 +84,7 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
 
             final HuntingClubGroupDTO dto = HuntingClubGroupDTO.create(group, gameSpecies, permit);
 
-            dto.setHuntingDaysExist(huntingDayCountFn.apply(group) > 0);
+            dto.setHuntingDaysExist(idsOfGroupsHavingHuntingDays.contains(group.getId()));
             dto.setMemberCount(memberCountFn.apply(group));
 
             dto.setHuntingFinished(clubPermitService.hasClubHuntingFinished(group));
@@ -95,11 +94,41 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
         }).collect(toList());
     }
 
+    private List<Long> getGroupIdsHavingHuntingDays(@Nonnull List<HuntingClubGroup> list) {
+        final Set<Long> groupIds = F.getUniqueIds(list);
+
+        final QHarvest harvest = QHarvest.harvest;
+        final QGroupHuntingDay huntingDay = QGroupHuntingDay.groupHuntingDay;
+        final QHuntingClubGroup group = QHuntingClubGroup.huntingClubGroup;
+        final QGameSpecies species = QGameSpecies.gameSpecies;
+
+        final List<Long> groupsHavingDeerHarvests = queryFactory.select(group.id)
+                .from(group)
+                .join(group.species, species)
+                .join(group.huntingDays, huntingDay)
+                .join(huntingDay.harvests, harvest)
+                .where(group.id.in(groupIds),
+                        species.officialCode.in(GameSpecies.DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING)
+                )
+                .distinct()
+                .fetch();
+
+        final List<Long> groupsHavingMooseHuntingDays = queryFactory.select(group.id)
+                .from(group)
+                .join(group.species, species)
+                .join(group.huntingDays, huntingDay)
+                .where(group.id.in(groupIds),
+                        species.officialCode.eq(GameSpecies.OFFICIAL_CODE_MOOSE)
+                )
+                .distinct()
+                .fetch();
+        return F.concat(groupsHavingDeerHarvests, groupsHavingMooseHuntingDays);
+    }
+
     private Function<HuntingClubGroup, Long> getGroupMemberCountMapping(final Collection<HuntingClubGroup> groups) {
         final QOccupation occupation = QOccupation.occupation;
 
-        final Map<Long, Long> countFn = new JPAQuery<>(em)
-                .from(occupation)
+        final Map<Long, Long> countFn = queryFactory.from(occupation)
                 .select(occupation.person.countDistinct())
                 .where(occupation.organisation.in(groups).and(occupation.validAndNotDeleted()))
                 .groupBy(occupation.organisation)

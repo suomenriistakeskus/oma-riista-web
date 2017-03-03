@@ -1,10 +1,11 @@
 package fi.riista.api.pub;
 
-import fi.riista.feature.account.registration.RegisterAccountFeature;
 import fi.riista.feature.account.registration.CompleteRegistrationDTO;
 import fi.riista.feature.account.registration.CompleteRegistrationRequestDTO;
 import fi.riista.feature.account.registration.EmailVerificationDTO;
+import fi.riista.feature.account.registration.EmailVerificationResponseDTO;
 import fi.riista.feature.account.registration.RegisterAccountDTO;
+import fi.riista.feature.account.registration.RegisterAccountFeature;
 import fi.riista.feature.mail.token.EmailTokenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,30 +40,30 @@ public class AccountRegistrationApiResource {
     }
 
     @RequestMapping(value = URI_FROM_EMAIL, method = RequestMethod.POST)
-    public Map<String, Object> checkTokenValidity(@RequestBody @Validated EmailVerificationDTO dto,
-                                                  HttpServletRequest request) {
+    public EmailVerificationResponseDTO checkTokenValidity(@RequestBody @Validated EmailVerificationDTO dto,
+                                                           HttpServletRequest request) {
         try {
             return registerAccountFeature.fromEmail(dto, request);
 
         } catch (final EmailTokenException ex) {
-            return Collections.singletonMap("status", "expired");
+            return EmailVerificationResponseDTO.error("expired");
 
         } catch (final Exception ex) {
             LOG.error("Could not verify token", ex);
 
-            return Collections.singletonMap("status", "error");
+            return EmailVerificationResponseDTO.error("error");
         }
     }
 
     @RequestMapping(value = "/api/v1/register/data", method = RequestMethod.POST)
     public CompleteRegistrationDTO getRegistrationConfirmation(
             @RequestBody @Validated CompleteRegistrationRequestDTO dto) {
-        return registerAccountFeature.complete(dto);
+        return registerAccountFeature.startCompleteRegistration(dto);
     }
 
     @RequestMapping(value = "/api/v1/register/confirm", method = RequestMethod.POST)
-    public Map<String, Object> confirmRegistration(@RequestBody @Validated CompleteRegistrationDTO dto,
-                                                   HttpServletRequest request) {
+    public Map<String, Object> completeAccountRegistration(@RequestBody @Validated CompleteRegistrationDTO dto,
+                                                           HttpServletRequest request) {
         registerAccountFeature.completeAccountRegistration(dto, request);
         return Collections.singletonMap("status", "ok");
     }

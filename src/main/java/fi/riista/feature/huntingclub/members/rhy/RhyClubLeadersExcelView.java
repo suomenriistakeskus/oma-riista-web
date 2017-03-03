@@ -62,7 +62,6 @@ public class RhyClubLeadersExcelView extends AbstractXlsView {
         setContentType(MediaTypeExtras.APPLICATION_EXCEL_VALUE);
         response.setCharacterEncoding(Constants.DEFAULT_ENCODING);
         response.setHeader(ContentDispositionUtil.HEADER_NAME, ContentDispositionUtil.encodeAttachmentFilename(createFilename()));
-        response.setCharacterEncoding(Constants.DEFAULT_ENCODING);
 
         createSheet(workbook, OccupationType.SEURAN_YHDYSHENKILO, contacts, HEADERS_CONTACTS);
         createSheet(workbook, OccupationType.RYHMAN_METSASTYKSENJOHTAJA, leaders, HEADERS_LEADERS);

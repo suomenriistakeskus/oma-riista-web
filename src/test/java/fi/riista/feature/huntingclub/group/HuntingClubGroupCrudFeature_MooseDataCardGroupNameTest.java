@@ -3,6 +3,7 @@ package fi.riista.feature.huntingclub.group;
 import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.LocalisedString;
@@ -56,9 +57,8 @@ public class HuntingClubGroupCrudFeature_MooseDataCardGroupNameTest extends Embe
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final GameSpecies species = model().newGameSpeciesMoose();
         final HarvestPermit permit = model().newHarvestPermit(rhy);
-        model().newHarvestPermitSpeciesAmount(permit, species);
-        final HuntingClub club = model().newHuntingClub(rhy);
-        final HuntingClubGroup group = model().newHuntingClubGroup(club, species);
+        final HarvestPermitSpeciesAmount speciesAmount = model().newHarvestPermitSpeciesAmount(permit, species);
+        final HuntingClubGroup group = model().newHuntingClubGroup(model().newHuntingClub(rhy), speciesAmount);
 
         final LocalisedString localisedMooseDataCardGroupName =
                 HuntingClubGroup.generateNameForMooseDataCardGroup(prefix -> prefix + permit.getPermitNumber());

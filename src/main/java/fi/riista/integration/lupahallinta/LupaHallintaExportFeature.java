@@ -214,7 +214,7 @@ public class LupaHallintaExportFeature {
         final List<Person> occupiedPersons = new ArrayList<>(personOccupations.keySet());
 
         exportData.setHenkilot(new LH_Export.LH_Persons());
-        exportData.getHenkilot().getHenkilo().addAll(occupiedPersons.stream().map(person -> {
+        exportData.getHenkilot().setHenkilo(occupiedPersons.stream().map(person -> {
 
             final LH_Person ret = new LH_Person();
 
@@ -232,7 +232,7 @@ public class LupaHallintaExportFeature {
             ret.setRhyJasenyys(orgMappings.get(person.getRhyMembership()));
 
             ret.setTehtavat(new LH_Person.LH_Positions());
-            ret.getTehtavat().getTehtava().addAll(personOccupations.get(person).stream().map(occ -> {
+            ret.getTehtavat().setTehtava(personOccupations.get(person).stream().map(occ -> {
 
                 final LH_Position ret1 = new LH_Position();
                 ret1.setId(occ.getId());

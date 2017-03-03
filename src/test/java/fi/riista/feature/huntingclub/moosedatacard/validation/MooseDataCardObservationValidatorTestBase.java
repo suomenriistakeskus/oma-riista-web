@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 public abstract class MooseDataCardObservationValidatorTestBase<T extends DateAndLocation> {
 
-    private static final GeoLocation DEFAULT_COORDINATES = new GeoLocation(1, 1);
+    protected static final GeoLocation DEFAULT_COORDINATES = new GeoLocation(3, 7);
 
     protected abstract MooseDataCardObservationValidator<T> getValidator(@Nonnull GeoLocation defaultCoordinates);
 

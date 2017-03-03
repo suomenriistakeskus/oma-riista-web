@@ -5,13 +5,13 @@ import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Address;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Amount;
@@ -108,8 +108,7 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private HarvestPermit createMoosePermit() {
-        final HarvestPermit permit = model().newHarvestPermit(model().newRiistanhoitoyhdistys(this.rka));
-        permit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+        final HarvestPermit permit = model().newMooselikePermit(model().newRiistanhoitoyhdistys(this.rka));
         createSpeciesAmount(permit, mooseSpecies, YEAR);
         return permit;
     }
@@ -149,9 +148,7 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
         }
     }
 
-    private static void assertMooseAmount(
-            final List<HarvestPermitSpeciesAmount> speciesAmounts, final LEM_Amount dto) {
-
+    private static void assertMooseAmount(final List<HarvestPermitSpeciesAmount> speciesAmounts, final LEM_Amount dto) {
         final HarvestPermitSpeciesAmount entity = speciesAmounts.stream()
                 .filter(s -> s.getGameSpecies().isMoose())
                 .findAny()

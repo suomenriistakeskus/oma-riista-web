@@ -4,6 +4,7 @@ import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.pub.occupation.PublicOccupationDTO;
 import org.springframework.context.MessageSource;
 
 import java.util.Locale;
@@ -19,7 +20,7 @@ public class OccupationContactSearchResultDTO {
         }
         dto.setOrganisationName(occupation.getOrganisation().getNameLocalisation().getAnyTranslation(userLocale));
         dto.setOccupationType(occupation.getOccupationType());
-        dto.setOccupationName(messageSource.getMessage("OccupationTypePublicDTO."
+        dto.setOccupationName(messageSource.getMessage(PublicOccupationDTO.class.getSimpleName() + "."
                 + occupation.getOrganisation().getOrganisationType().name()
                 + "."
                 + occupation.getOccupationType().name(), null, userLocale));

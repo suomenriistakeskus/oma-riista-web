@@ -2,7 +2,6 @@ package fi.riista.feature.common.entity;
 
 import fi.riista.security.UserInfo;
 import fi.riista.util.F;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.Access;
@@ -87,35 +86,25 @@ public abstract class LifecycleEntity<T extends Serializable> extends BaseEntity
         getLifecycleFields().setCreationTime(now);
         getLifecycleFields().setModificationTime(now);
 
-        getAuditFields().setCreatedByUserId(activeUserId);
-        getAuditFields().setModifiedByUserId(activeUserId);
+        if (activeUserId >= 0 || getAuditFields().getCreatedByUserId() == null) {
+            getAuditFields().setCreatedByUserId(activeUserId);
+            getAuditFields().setModifiedByUserId(activeUserId);
+        }
     }
 
     @PreUpdate
     void preUpdate() {
         setModificationTimeToCurrentTime();
-        getAuditFields().setModifiedByUserId(getActiveUserId());
+
+        final Long activeUserId = getActiveUserId();
+
+        if (activeUserId >= 0 || getAuditFields().getModifiedByUserId() == null) {
+            getAuditFields().setModifiedByUserId(activeUserId);
+        }
     }
 
     private static Long getActiveUserId() {
-        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication.getPrincipal() == null) {
-                return -2L;
-
-            } else if (authentication.getPrincipal() instanceof UserInfo) {
-                final Long userId = UserInfo.extractFrom(authentication).getUserId();
-
-                // This check is needed when database is empty and there exists no
-                // users at all initially.
-                return userId != null ? userId : -3L;
-            }
-
-            return -4L;
-        }
-
-        return -1L;
+        return UserInfo.extractUserIdForEntity(SecurityContextHolder.getContext().getAuthentication());
     }
 
     public static <T extends LifecycleEntity<?>> SortedSet<T> sortByCreationTime(Iterable<T> entries) {

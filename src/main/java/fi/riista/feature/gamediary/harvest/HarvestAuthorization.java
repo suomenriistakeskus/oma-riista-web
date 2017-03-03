@@ -2,10 +2,10 @@ package fi.riista.feature.gamediary.harvest;
 
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameDiaryEntryAuthorization;
-import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
+import fi.riista.security.EntityPermission;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import fi.riista.util.F;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ import java.util.Objects;
 @Component
 public class HarvestAuthorization extends GameDiaryEntryAuthorization<Harvest> {
 
-    public enum HarvestPermission {
+    public enum Permission {
         LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP
     }
 
@@ -26,14 +26,12 @@ public class HarvestAuthorization extends GameDiaryEntryAuthorization<Harvest> {
     }
 
     public HarvestAuthorization() {
-        super(Harvest.class);
-
-        allow(CREATE,
+        allow(EntityPermission.CREATE,
                 SystemUser.Role.ROLE_USER,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR);
 
-        allow(READ,
+        allow(EntityPermission.READ,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR,
                 Role.AUTHOR,
@@ -45,7 +43,7 @@ public class HarvestAuthorization extends GameDiaryEntryAuthorization<Harvest> {
                 OccupationType.RYHMAN_JASEN,
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-        allow(UPDATE,
+        allow(EntityPermission.UPDATE,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR,
                 Role.AUTHOR,
@@ -54,22 +52,17 @@ public class HarvestAuthorization extends GameDiaryEntryAuthorization<Harvest> {
                 OccupationType.SEURAN_YHDYSHENKILO,
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-        allow(DELETE,
+        allow(EntityPermission.DELETE,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR,
                 Role.AUTHOR,
                 Role.ACTOR);
 
-        allow(HarvestPermission.LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP,
+        allow(Permission.LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR,
                 OccupationType.SEURAN_YHDYSHENKILO,
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
-    }
-
-    @Override
-    public Class<?>[] getSupportedTypes() {
-        return new Class[]{Harvest.class, HarvestDTO.class, MobileHarvestDTO.class};
     }
 
     @Override

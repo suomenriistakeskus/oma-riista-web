@@ -1,12 +1,11 @@
 package fi.riista.feature.organization.person;
 
-import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.account.payment.HuntingPaymentInfo;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.common.entity.Municipality;
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.address.AddressSource;
 import fi.riista.feature.organization.occupation.Occupation;
@@ -56,6 +55,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import static fi.riista.util.DateUtil.today;
 
 @Entity
@@ -91,9 +91,6 @@ public class Person extends LifecycleEntity<Long> {
     @NotBlank
     @Column(nullable = false)
     private String byName;
-
-    @Column(name = "is_finnish_citizen", nullable = false)
-    private boolean finnishCitizen;
 
     // Native language
     @Size(max = 2)
@@ -241,7 +238,7 @@ public class Person extends LifecycleEntity<Long> {
     @Column
     private Boolean enableSrva;
 
-    public static String maskSsn(String ssn) {
+    public static String maskSsn(final String ssn) {
         return StringUtils.isEmpty(ssn) ? StringUtils.EMPTY : StringUtils.substring(ssn, 0, 6) + "*****";
     }
 
@@ -339,9 +336,8 @@ public class Person extends LifecycleEntity<Long> {
     // For unit-testing
     Optional<LocalDate> getHuntingPaymentDateForNextOrCurrentSeason(final int currentHuntingYear) {
         final Optional<LocalDate> next = this.getHuntingPaymentDateForHuntingYear(currentHuntingYear + 1);
-        final Optional<LocalDate> current = this.getHuntingPaymentDateForHuntingYear(currentHuntingYear);
 
-        return next.isPresent() ? next : current;
+        return next.isPresent() ? next : this.getHuntingPaymentDateForHuntingYear(currentHuntingYear);
     }
 
     private Optional<LocalDate> getHuntingPaymentDateForHuntingYear(final int huntingYear) {
@@ -386,13 +382,12 @@ public class Person extends LifecycleEntity<Long> {
 
     // For unit-testing
     Set<Integer> getHuntingPaymentPdfYears(final int currentHuntingYear) {
-        final int nextHuntingYear = currentHuntingYear + 1;
-
-        return ImmutableSet.of(currentHuntingYear, nextHuntingYear).stream()
+        return IntStream.of(currentHuntingYear, currentHuntingYear + 1)
                 // Payment info is available
                 .filter(huntingYear -> getPaymentInfo(huntingYear).isPresent())
                 // Payment is not done
                 .filter(huntingYear -> !getHuntingPaymentDateForHuntingYear(huntingYear).isPresent())
+                .boxed()
                 .collect(Collectors.toCollection(TreeSet::new));
     }
 
@@ -447,8 +442,29 @@ public class Person extends LifecycleEntity<Long> {
                 .collect(Collectors.toList());
     }
 
-    private static boolean isRoleUser(SystemUser systemUser) {
+    private static boolean isRoleUser(final SystemUser systemUser) {
         return SystemUser.Role.ROLE_USER == systemUser.getRole();
+    }
+
+    public boolean hasHomeMunicipality() {
+        return this.homeMunicipalityCode != null;
+    }
+
+    @Nonnull
+    public LocalisedString getHomeMunicipalityName() {
+        if (this.homeMunicipality != null) {
+            if (!Hibernate.isInitialized(this.homeMunicipality)) {
+                try {
+                    // Referenced row might not exist
+                    return this.homeMunicipality.getNameLocalisation();
+                } catch (UnresolvableObjectException | EntityNotFoundException o) {
+                    this.homeMunicipality = null;
+                }
+            } else {
+                return this.homeMunicipality.getNameLocalisation();
+            }
+        }
+        return LocalisedString.EMPTY;
     }
 
     // Accessors -->
@@ -503,23 +519,15 @@ public class Person extends LifecycleEntity<Long> {
         return byName;
     }
 
-    public void setByName(String byName) {
+    public void setByName(final String byName) {
         this.byName = byName;
-    }
-
-    public boolean isFinnishCitizen() {
-        return finnishCitizen;
-    }
-
-    public void setFinnishCitizen(boolean finnishCitizen) {
-        this.finnishCitizen = finnishCitizen;
     }
 
     public String getLanguageCode() {
         return languageCode;
     }
 
-    public void setLanguageCode(String languageCode) {
+    public void setLanguageCode(final String languageCode) {
         this.languageCode = languageCode;
     }
 
@@ -527,7 +535,7 @@ public class Person extends LifecycleEntity<Long> {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(final String email) {
         this.email = email != null ? email.trim().toLowerCase() : null;
     }
 
@@ -535,32 +543,11 @@ public class Person extends LifecycleEntity<Long> {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
+    public void setPhoneNumber(final String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
-    public boolean hasHomeMunicipality() {
-        return this.homeMunicipalityCode != null;
-    }
-
-    @Nonnull
-    public LocalisedString getHomeMunicipalityName() {
-        if (this.homeMunicipality != null) {
-            if (!Hibernate.isInitialized(this.homeMunicipality)) {
-                try {
-                    // Referenced row might not exist
-                    return this.homeMunicipality.getNameLocalisation();
-                } catch (UnresolvableObjectException | EntityNotFoundException o) {
-                    this.homeMunicipality = null;
-                }
-            } else {
-                return this.homeMunicipality.getNameLocalisation();
-            }
-        }
-        return LocalisedString.EMPTY;
-    }
-
-    public void setHomeMunicipality(Municipality municipality) {
+    public void setHomeMunicipality(final Municipality municipality) {
         this.homeMunicipality = municipality;
     }
 
@@ -568,7 +555,7 @@ public class Person extends LifecycleEntity<Long> {
         return homeMunicipalityCode;
     }
 
-    public void setHomeMunicipalityCode(String homeMunicipalityCode) {
+    public void setHomeMunicipalityCode(final String homeMunicipalityCode) {
         this.homeMunicipalityCode = homeMunicipalityCode;
     }
 
@@ -592,7 +579,7 @@ public class Person extends LifecycleEntity<Long> {
         return occupations;
     }
 
-    public void setOccupations(Set<Occupation> occupations) {
+    public void setOccupations(final Set<Occupation> occupations) {
         this.occupations = occupations;
     }
 
@@ -600,7 +587,7 @@ public class Person extends LifecycleEntity<Long> {
         return lhPersonId;
     }
 
-    public void setLhPersonId(String lhPersonId) {
+    public void setLhPersonId(final String lhPersonId) {
         this.lhPersonId = lhPersonId;
     }
 
@@ -608,7 +595,7 @@ public class Person extends LifecycleEntity<Long> {
         return mrSyncTime;
     }
 
-    public void setMrSyncTime(DateTime mrSyncTime) {
+    public void setMrSyncTime(final DateTime mrSyncTime) {
         this.mrSyncTime = mrSyncTime;
     }
 
@@ -616,7 +603,7 @@ public class Person extends LifecycleEntity<Long> {
         return hunterNumber;
     }
 
-    public void setHunterNumber(String hunterNumber) {
+    public void setHunterNumber(final String hunterNumber) {
         this.hunterNumber = hunterNumber;
     }
 
@@ -624,7 +611,7 @@ public class Person extends LifecycleEntity<Long> {
         return rhyMembership;
     }
 
-    public void setRhyMembership(Riistanhoitoyhdistys rhyMembership) {
+    public void setRhyMembership(final Riistanhoitoyhdistys rhyMembership) {
         this.rhyMembership = rhyMembership;
     }
 
@@ -632,7 +619,7 @@ public class Person extends LifecycleEntity<Long> {
         return huntingCardStart;
     }
 
-    public void setHuntingCardStart(LocalDate huntingCardStart) {
+    public void setHuntingCardStart(final LocalDate huntingCardStart) {
         this.huntingCardStart = huntingCardStart;
     }
 
@@ -640,7 +627,7 @@ public class Person extends LifecycleEntity<Long> {
         return huntingCardEnd;
     }
 
-    public void setHuntingCardEnd(LocalDate huntingCardEnd) {
+    public void setHuntingCardEnd(final LocalDate huntingCardEnd) {
         this.huntingCardEnd = huntingCardEnd;
     }
 
@@ -712,7 +699,7 @@ public class Person extends LifecycleEntity<Long> {
         return hunterExamDate;
     }
 
-    public void setHunterExamDate(LocalDate hunterExamDate) {
+    public void setHunterExamDate(final LocalDate hunterExamDate) {
         this.hunterExamDate = hunterExamDate;
     }
 
@@ -720,7 +707,7 @@ public class Person extends LifecycleEntity<Long> {
         return hunterExamExpirationDate;
     }
 
-    public void setHunterExamExpirationDate(LocalDate hunterExamExpirationDate) {
+    public void setHunterExamExpirationDate(final LocalDate hunterExamExpirationDate) {
         this.hunterExamExpirationDate = hunterExamExpirationDate;
     }
 
@@ -728,7 +715,7 @@ public class Person extends LifecycleEntity<Long> {
         return huntingBanStart;
     }
 
-    public void setHuntingBanStart(LocalDate huntingBanStart) {
+    public void setHuntingBanStart(final LocalDate huntingBanStart) {
         this.huntingBanStart = huntingBanStart;
     }
 
@@ -736,7 +723,7 @@ public class Person extends LifecycleEntity<Long> {
         return huntingBanEnd;
     }
 
-    public void setHuntingBanEnd(LocalDate huntingBanEnd) {
+    public void setHuntingBanEnd(final LocalDate huntingBanEnd) {
         this.huntingBanEnd = huntingBanEnd;
     }
 
@@ -744,7 +731,7 @@ public class Person extends LifecycleEntity<Long> {
         return magazineLanguageCode;
     }
 
-    public void setMagazineLanguageCode(String magazineLanguageCode) {
+    public void setMagazineLanguageCode(final String magazineLanguageCode) {
         this.magazineLanguageCode = magazineLanguageCode;
     }
 
@@ -752,7 +739,7 @@ public class Person extends LifecycleEntity<Long> {
         return denyPost;
     }
 
-    public void setDenyPost(boolean denyPost) {
+    public void setDenyPost(final boolean denyPost) {
         this.denyPost = denyPost;
     }
 
@@ -760,7 +747,7 @@ public class Person extends LifecycleEntity<Long> {
         return denyTransmit;
     }
 
-    public void setDenyTransmit(boolean denyTransmit) {
+    public void setDenyTransmit(final boolean denyTransmit) {
         this.denyTransmit = denyTransmit;
     }
 
@@ -768,8 +755,16 @@ public class Person extends LifecycleEntity<Long> {
         return denyMagazine;
     }
 
-    public void setDenyMagazine(boolean denyMagazine) {
+    public void setDenyMagazine(final boolean denyMagazine) {
         this.denyMagazine = denyMagazine;
+    }
+
+    public Boolean isEnableSrva() {
+        return enableSrva;
+    }
+
+    public void setEnableSrva(final Boolean enableSrva) {
+        this.enableSrva = enableSrva;
     }
 
     // Following collection getters exposed in package-private scope only for property introspection.
@@ -788,13 +783,5 @@ public class Person extends LifecycleEntity<Long> {
 
     Set<Observation> getActualObservations() {
         return actualObservations;
-    }
-
-    public Boolean isEnableSrva() {
-        return enableSrva;
-    }
-
-    public void setEnableSrva(Boolean enableSrva) {
-        this.enableSrva = enableSrva;
     }
 }

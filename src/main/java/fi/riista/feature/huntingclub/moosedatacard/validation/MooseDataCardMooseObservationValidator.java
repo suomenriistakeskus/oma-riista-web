@@ -4,6 +4,7 @@ import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMes
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardObservation;
+import fi.riista.util.F;
 
 import javaslang.control.Either;
 
@@ -33,7 +34,7 @@ public class MooseDataCardMooseObservationValidator
                     .filter(amount -> amount >= 0)
                     .collect(Collectors.summingInt(Integer::intValue));
 
-            return Optional.ofNullable(totalAmount)
+            final Optional<MooseDataCardObservation> observationOpt = Optional.ofNullable(totalAmount)
                     .filter(sum -> sum > 0)
                     .map(positiveSum -> new MooseDataCardObservation()
                             .withDate(date)
@@ -42,12 +43,10 @@ public class MooseDataCardMooseObservationValidator
                             .withN1(MooseDataCardDiaryEntryField.FEMALE_1CALF_AMOUNT.getValidOrNull(input))
                             .withN2(MooseDataCardDiaryEntryField.FEMALE_2CALF_AMOUNT.getValidOrNull(input))
                             .withN3(MooseDataCardDiaryEntryField.FEMALE_3CALF_AMOUNT.getValidOrNull(input))
-                            .withT(MooseDataCardDiaryEntryField.UNKNOWN_AMOUNT.getValidOrNull(input)))
-                    .<Either<String, MooseDataCardObservation>> map(obj -> {
-                        obj.setGeoLocation(getValidGeoLocation(input));
-                        return Either.right(obj);
-                    })
-                    .orElseGet(() -> Either.left(sumOfSeenMoosesOfObservationIsNotGreaterThanZero(input)));
+                            .withT(MooseDataCardDiaryEntryField.UNKNOWN_AMOUNT.getValidOrNull(input)));
+
+            return F.toEither(observationOpt, () -> sumOfSeenMoosesOfObservationIsNotGreaterThanZero(input))
+                    .peek(obj -> obj.setGeoLocation(getValidGeoLocation(input)));
         });
     }
 

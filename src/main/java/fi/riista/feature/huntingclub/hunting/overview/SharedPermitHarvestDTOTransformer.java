@@ -1,14 +1,13 @@
 package fi.riista.feature.huntingclub.hunting.overview;
 
-import fi.riista.feature.gamediary.harvest.HarvestDTOTransformerBase;
-import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.gamediary.harvest.HarvestDTOTransformerBase;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubDTO;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -21,7 +20,6 @@ import static java.util.stream.Collectors.toList;
 @Component
 public class SharedPermitHarvestDTOTransformer extends HarvestDTOTransformerBase<HarvestDTO> {
 
-    @Transactional(readOnly = true)
     @Nonnull
     @Override
     protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests) {

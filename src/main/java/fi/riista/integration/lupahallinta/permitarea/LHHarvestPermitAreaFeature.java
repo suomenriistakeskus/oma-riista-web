@@ -1,17 +1,21 @@
 package fi.riista.integration.lupahallinta.permitarea;
 
-import fi.riista.feature.common.entity.HasID;
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
+import fi.riista.feature.gis.zone.AreaEntity;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
 import fi.riista.feature.harvestpermit.area.HarvestPermitArea;
+import fi.riista.feature.harvestpermit.area.HarvestPermitAreaEventRepository;
 import fi.riista.feature.harvestpermit.area.HarvestPermitAreaHta;
 import fi.riista.feature.harvestpermit.area.HarvestPermitAreaPartner;
+import fi.riista.feature.harvestpermit.area.HarvestPermitAreaPartnerRepository;
 import fi.riista.feature.harvestpermit.area.HarvestPermitAreaRepository;
 import fi.riista.feature.harvestpermit.area.HarvestPermitAreaRhy;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.JaxbUtils;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -25,16 +29,26 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static fi.riista.util.NumberUtils.squareMetersToHectares;
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 @Component
 public class LHHarvestPermitAreaFeature {
 
     @Resource
     private HarvestPermitAreaRepository harvestPermitAreaRepository;
+
+    @Resource
+    private HarvestPermitAreaPartnerRepository harvestPermitAreaPartnerRepository;
+
+    @Resource
+    private HarvestPermitAreaEventRepository harvestPermitAreaEventRepository;
 
     @Resource
     private GISZoneRepository gisZoneRepository;
@@ -45,33 +59,30 @@ public class LHHarvestPermitAreaFeature {
     @Transactional
     @PreAuthorize("hasPrivilege('EXPORT_LUPAHALLINTA_PERMIT_AREA')")
     public void updateLockedStatus(final String externalId, final boolean isLocked) {
-        final Optional<HarvestPermitArea> maybeArea = harvestPermitAreaRepository.findByExternalId(externalId);
+        final HarvestPermitArea area = getByExternalIdInternal(externalId);
 
-        if (maybeArea.isPresent()) {
-            final HarvestPermitArea harvestPermitArea = maybeArea.get();
-
-            if (isLocked) {
-                harvestPermitArea.setStatusLocked();
-            } else {
-                harvestPermitArea.setStatusReady();
-            }
-        } else {
-            throw new NotFoundException("No such area: " + externalId);
-        }
+        (isLocked ? area.setStatusLocked() : area.setStatusUnlocked())
+                .ifPresent(harvestPermitAreaEventRepository::save);
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasPrivilege('EXPORT_LUPAHALLINTA_PERMIT_AREA')")
-    public String findByExternalId(final String externalId) {
-        return harvestPermitAreaRepository.findByExternalId(externalId)
-                .map(this::toXmlPermitArea)
-                .map(xml -> JaxbUtils.marshalToString(xml, jaxbMarshaller))
-                .orElseThrow(() -> new NotFoundException("No such area: " + externalId));
+    public LHPA_PermitArea getByExternalId(final String externalId) {
+        return toXmlPermitArea(getByExternalIdInternal(externalId));
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasPrivilege('EXPORT_LUPAHALLINTA_PERMIT_AREA')")
+    public String getByExternalIdXml(final String externalId) {
+        return JaxbUtils.marshalToString(getByExternalId(externalId), jaxbMarshaller);
     }
 
     @Nonnull
     private LHPA_PermitArea toXmlPermitArea(final HarvestPermitArea area) {
-        final Map<Long, GISZoneWithoutGeometryDTO> zoneSizeMapping = getZonesWithoutGeometry(area);
+        final List<HarvestPermitAreaPartner> partners =
+                harvestPermitAreaPartnerRepository.findByHarvestPermitArea(area);
+        final Function<AreaEntity<Long>, GISZoneWithoutGeometryDTO> zoneFn =
+                createZoneFunction(F.stream(area, partners));
 
         final LHPA_PermitArea xml = new LHPA_PermitArea();
 
@@ -79,77 +90,88 @@ public class LHHarvestPermitAreaFeature {
         xml.setNameSwedish(area.getNameSwedish());
         xml.setOfficialCode(area.getExternalId());
         xml.setState(toXmlState(area.getStatus()));
+        xml.setLastModified(DateUtil.toLocalDateTimeNullSafe(area.getLifecycleFields().getModificationTime()));
 
-        final GISZoneWithoutGeometryDTO zone = zoneSizeMapping.get(area.getZone().getId());
-        xml.setTotalAreaSize(Math.round(zone.getComputedAreaSize()));
-        xml.setWaterAreaSize(Math.round(zone.getWaterAreaSize()));
+        final GISZoneWithoutGeometryDTO zone = zoneFn.apply(area);
+        xml.setTotalAreaSize(squareMetersToHectares(zone.getComputedAreaSize()));
+        xml.setWaterAreaSize(squareMetersToHectares(zone.getWaterAreaSize()));
 
-        xml.getRhy().addAll(toXmlRhy(area.getRhy()));
-        xml.getHta().addAll(toXmlHta(area.getHta()));
-        xml.getPartners().addAll(toXmlPartner(area.getPartners(), zoneSizeMapping));
+        xml.setRhy(toXmlRhy(area.getRhy()));
+        xml.setHta(toXmlHta(area.getHta()));
+        xml.setPartners(toXmlPartner(partners, zoneFn));
 
         return xml;
     }
 
-    private Map<Long, GISZoneWithoutGeometryDTO> getZonesWithoutGeometry(final HarvestPermitArea area) {
-        final List<Long> zoneIds = area.getPartners().stream()
-                .map(HarvestPermitAreaPartner::getZone)
-                .map(HasID::getId)
-                .collect(Collectors.toList());
-        zoneIds.add(area.getZone().getId());
+    private Function<AreaEntity<Long>, GISZoneWithoutGeometryDTO> createZoneFunction(
+            final Stream<AreaEntity<Long>> areaEntities) {
 
-        return F.index(gisZoneRepository.fetchWithoutGeometry(zoneIds), GISZoneWithoutGeometryDTO::getId);
+        final Function<AreaEntity<Long>, Long> areaToZoneId = area -> area.getZone().getId();
+        final Map<Long, GISZoneWithoutGeometryDTO> zoneIndex =
+                F.indexById(gisZoneRepository.fetchWithoutGeometry(areaEntities.map(areaToZoneId).collect(toSet())));
+
+        return areaToZoneId.andThen(zoneIndex::get);
     }
 
     private static List<LHPA_NameWithOfficialCode> toXmlHta(final Collection<HarvestPermitAreaHta> input) {
         return input.stream()
+                .sorted(comparing(HarvestPermitAreaHta::getAreaSize).reversed())
                 .map(LHHarvestPermitAreaFeature::toXmlHta)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private static List<LHPA_NameWithOfficialCode> toXmlRhy(final Collection<HarvestPermitAreaRhy> input) {
         return input.stream()
-                .sorted(comparing(HarvestPermitAreaRhy::getAreaSize))
+                .sorted(comparing(HarvestPermitAreaRhy::getAreaSize).reversed())
                 .map(LHHarvestPermitAreaFeature::toXmlRhy)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
-    private List<LHPA_Partner> toXmlPartner(final Collection<HarvestPermitAreaPartner> partners,
-                                            final Map<Long, GISZoneWithoutGeometryDTO> zoneSizeMapping) {
+    private static List<LHPA_Partner> toXmlPartner(final Collection<HarvestPermitAreaPartner> partners,
+                                                   final Function<AreaEntity<Long>, GISZoneWithoutGeometryDTO> zoneFn) {
         return partners.stream()
                 .collect(Collectors.toMap(
                         // Combine areas with same club
                         p -> p.getSourceArea().getClub(),
-                        p -> toXmlPartner(p, zoneSizeMapping.get(p.getZone().getId())),
+                        p -> toXmlPartner(p.getSourceArea().getClub(), zoneFn.apply(p)),
                         (a, b) -> {
                             final LHPA_Partner c = new LHPA_Partner();
                             c.setNameFinnish(a.getNameFinnish());
                             c.setNameSwedish(a.getNameSwedish());
                             c.setOfficialCode(a.getOfficialCode());
+                            c.setLocation(a.getLocation());
                             c.setTotalAreaSize(a.getTotalAreaSize() + b.getTotalAreaSize());
                             c.setWaterAreaSize(a.getWaterAreaSize() + b.getWaterAreaSize());
                             return c;
                         }))
                 .values().stream()
                 .sorted(comparing(LHPA_Partner::getTotalAreaSize))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @Nonnull
-    private LHPA_Partner toXmlPartner(final HarvestPermitAreaPartner partner,
-                                      final GISZoneWithoutGeometryDTO zone) {
+    private static LHPA_Partner toXmlPartner(final HuntingClub club, final GISZoneWithoutGeometryDTO zone) {
         final LHPA_Partner xml = new LHPA_Partner();
-
-        final HuntingClub club = partner.getHarvestPermitArea().getClub();
 
         xml.setOfficialCode(club.getOfficialCode());
         xml.setNameFinnish(club.getNameFinnish());
         xml.setNameSwedish(club.getNameSwedish());
+        xml.setLocation(toXmlGeoLocation(club.getGeoLocation()));
 
-        xml.setTotalAreaSize(Math.round(zone.getComputedAreaSize()));
-        xml.setWaterAreaSize(Math.round(zone.getWaterAreaSize()));
+        xml.setTotalAreaSize(squareMetersToHectares(zone.getComputedAreaSize()));
+        xml.setWaterAreaSize(squareMetersToHectares(zone.getWaterAreaSize()));
 
         return xml;
+    }
+
+    private static LHPA_GeoLocation toXmlGeoLocation(final GeoLocation geoLocation) {
+        if (geoLocation != null) {
+            final LHPA_GeoLocation xmlLocation = new LHPA_GeoLocation();
+            xmlLocation.setLatitude(geoLocation.getLatitude());
+            xmlLocation.setLongitude(geoLocation.getLongitude());
+            return xmlLocation;
+        }
+        return null;
     }
 
     @Nonnull
@@ -160,7 +182,7 @@ public class LHHarvestPermitAreaFeature {
         xml.setOfficialCode(rhy.getOfficialCode());
         xml.setNameFinnish(rhy.getNameFinnish());
         xml.setNameSwedish(rhy.getNameSwedish());
-        xml.setAreaSize(Math.round(permitRhy.getAreaSize()));
+        xml.setAreaSize(squareMetersToHectares(permitRhy.getAreaSize()));
 
         return xml;
     }
@@ -173,15 +195,18 @@ public class LHHarvestPermitAreaFeature {
         xml.setOfficialCode(hta.getNumber());
         xml.setNameFinnish(hta.getNameFinnish());
         xml.setNameSwedish(hta.getNameSwedish());
-        xml.setAreaSize(Math.round(permitHta.getAreaSize()));
+        xml.setAreaSize(squareMetersToHectares(permitHta.getAreaSize()));
 
         return xml;
     }
 
     private static LHPA_State toXmlState(final HarvestPermitArea.StatusCode state) {
-        Objects.requireNonNull(state, "state is null");
+        Objects.requireNonNull(state);
 
         switch (state) {
+            case PENDING:
+            case PROCESSING:
+            case PROCESSING_FAILED:
             case INCOMPLETE:
                 return LHPA_State.INCOMPLETE;
             case LOCKED:
@@ -192,4 +217,12 @@ public class LHHarvestPermitAreaFeature {
                 throw new IllegalArgumentException("Unknown state: " + state);
         }
     }
+
+    private HarvestPermitArea getByExternalIdInternal(final String externalId) {
+        return harvestPermitAreaRepository.findByExternalId(externalId)
+                .orElseThrow(() -> {
+                    return new NotFoundException("No harvest permit area found with external ID: " + externalId);
+                });
+    }
+
 }

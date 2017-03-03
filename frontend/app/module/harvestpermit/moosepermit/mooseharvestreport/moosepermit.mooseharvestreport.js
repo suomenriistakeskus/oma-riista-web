@@ -22,20 +22,6 @@
     }
 
     function MooseHarvestReportFormController($scope, NotificationService, ClubPermits, permit, species) {
-
-        function isIE11() {
-            var ua = window.navigator.userAgent;
-            var trident = ua.indexOf('Trident/');
-            return trident > 0;
-        }
-
-        function getAcceptedFiles() {
-            // https://github.com/enyo/dropzone/issues/1363
-            // Because of a bug in dropzone with IE11, do not limit file types with IE11.
-            // File type should be checked on server anyway.
-            return isIE11() ? null : 'image/jpeg, image/png, image/gif, image/tiff, text/plain, text/html, text/csv, application/pdf';
-        }
-
         $scope.permit = permit;
         $scope.mooseHarvestReport = permit.mooseHarvestReport;
         $scope.hasHarvests = permit.totalPayment.totalPayment > 0;
@@ -49,6 +35,7 @@
             permit.mooseHarvestReport && !permit.mooseHarvestReport.moderatorOverride;
 
         $scope.dropzone = null;
+        $scope.dropzoneIncompatibleFileType = false;
 
         var url = '/api/v1/harvestpermit/moosepermit/' + permit.id + '/species/' + species.code + '/harvestreport';
         $scope.dropzoneConfig = {
@@ -56,19 +43,21 @@
             maxFiles: 1,
             maxFilesize: 10, // MiB
             uploadMultiple: false,
-            url: url,
-            acceptedFiles: getAcceptedFiles()
-        };
-        $scope.dropzoneEventHandlers = {
-            success: success,
-            error: NotificationService.showDefaultFailure
+            url: url
         };
 
-        function success(file) {
-            $scope.dropzone.removeFile(file);
-            $scope.$close();
-            NotificationService.showDefaultSuccess();
-        }
+        $scope.dropzoneEventHandlers = {
+            success: function (file) {
+                $scope.dropzone.removeFile(file);
+                $scope.dropzoneIncompatibleFileType = false;
+                $scope.$close();
+                NotificationService.showDefaultSuccess();
+            },
+            error: function (file, response, xhr) {
+                $scope.dropzone.removeFile(file);
+                $scope.dropzoneIncompatibleFileType = true;
+            }
+        };
 
         $scope.getReceiptUrl = function () {
             return url + '/receipt';

@@ -55,13 +55,12 @@ public class VtjSearchService {
         Preconditions.checkArgument(SSN_VALIDATOR.isValid(ssn, null), "Invalid Finnish SSN");
 
         final Authentication authentication = activeUserService.getAuthentication();
-        final Long activeUserId = activeUserService.getActiveUserId();
-        final SystemUser activeUser = userRepository.findOne(activeUserId);
+        final SystemUser activeUser = activeUserService.getActiveUser();
 
         try {
-            LOG.info("User id:{} executing VTJ query", activeUserId);
+            LOG.info("User id:{} executing VTJ query", activeUser.getId());
 
-            final String endUser = "activeUserId:" + activeUserId;
+            final String endUser = "activeUserId:" + activeUser.getId();
             final VTJHenkiloVastaussanoma.Henkilo henkilo = vtjRemoteService.search(endUser, ssn);
 
             if (henkilo == null) {
@@ -73,7 +72,7 @@ public class VtjSearchService {
 
             final Person person = createPerson(henkilo);
 
-            LOG.info("User id:{} executed VTJ query, person id:{} created", activeUserId, person.getId());
+            LOG.info("User id:{} executed VTJ query, person id:{} created", activeUser.getId(), person.getId());
 
             accountAuditService.auditUserEvent(activeUser, authentication,
                     AccountActivityMessage.ActivityType.VTJ, "Person created id:" + person.getId());
@@ -96,7 +95,6 @@ public class VtjSearchService {
         final Person person = new Person();
 
         person.setSsn(henkilo.getHenkilotunnus().getValue());
-        person.setFinnishCitizen("1".equals(henkilo.getSuomenKansalaisuusTietokoodi()));
         person.setLastName(henkilo.getNykyinenSukunimi().getSukunimi());
         person.setLanguageCode(henkilo.getAidinkieli().getKielikoodi());
 

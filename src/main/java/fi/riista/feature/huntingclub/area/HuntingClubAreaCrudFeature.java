@@ -8,13 +8,12 @@ import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneRepository;
+import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.copy.CopyClubGroupService;
 import fi.riista.feature.huntingclub.copy.HuntingClubAreaCopyDTO;
-import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
-import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.security.EntityPermission;
-import fi.riista.util.ListTransformer;
 import fi.riista.util.Locales;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -22,6 +21,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class HuntingClubAreaCrudFeature extends AbstractCrudFeature<Long, HuntingClubArea, HuntingClubAreaDTO> {
@@ -47,7 +48,7 @@ public class HuntingClubAreaCrudFeature extends AbstractCrudFeature<Long, Huntin
     private HuntingClubGroupRepository huntingClubGroupRepository;
 
     @Resource
-    private HuntingClubAreaDTOTransformer transformer;
+    private HuntingClubAreaDTOTransformer huntingClubAreaDTOTransformer;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -70,6 +71,11 @@ public class HuntingClubAreaCrudFeature extends AbstractCrudFeature<Long, Huntin
     @Override
     protected JpaRepository<HuntingClubArea, Long> getRepository() {
         return huntingClubAreaRepository;
+    }
+
+    @Override
+    protected HuntingClubAreaDTO toDTO(@Nonnull final HuntingClubArea entity) {
+        return huntingClubAreaDTOTransformer.apply(entity);
     }
 
     @Override
@@ -97,11 +103,6 @@ public class HuntingClubAreaCrudFeature extends AbstractCrudFeature<Long, Huntin
         }
     }
 
-    @Override
-    protected ListTransformer<HuntingClubArea, HuntingClubAreaDTO> dtoTransformer() {
-        return transformer;
-    }
-
     @Transactional(readOnly = true)
     public List<HuntingClubAreaDTO> listByClubAndYear(final long clubId,
                                                       final Integer year,
@@ -110,7 +111,7 @@ public class HuntingClubAreaCrudFeature extends AbstractCrudFeature<Long, Huntin
 
         final Predicate[] predicates = createPredicate(club, year, activeOnly);
 
-        return transformer.apply(new JPAQuery<>(entityManager).from(QHuntingClubArea.huntingClubArea)
+        return huntingClubAreaDTOTransformer.apply(new JPAQuery<>(entityManager).from(QHuntingClubArea.huntingClubArea)
                 .where(predicates)
                 .select(QHuntingClubArea.huntingClubArea)
                 .fetch());
@@ -142,31 +143,28 @@ public class HuntingClubAreaCrudFeature extends AbstractCrudFeature<Long, Huntin
 
     @Transactional
     public HuntingClubAreaDTO copy(final HuntingClubAreaCopyDTO dto) {
-        final HuntingClubArea area = copyWithoutTransform(dto);
-        return transformer.apply(area);
+        return toDTO(copyWithoutTransform(dto));
     }
 
     @Transactional
     public HuntingClubArea copyWithoutTransform(final HuntingClubAreaCopyDTO dto) {
         final HuntingClubArea originalArea = requireEntity(dto.getId(), EntityPermission.CREATE);
+        final boolean useSuffix = originalArea.getHuntingYear() == dto.getHuntingYear();
 
-        final GISZone originalZone = originalArea.getZone();
-        GISZone zone = null;
-        if (originalZone != null) {
-            zone = gisZoneRepository.copyZone(originalZone, new GISZone());
-        }
+        final HuntingClubArea area = new HuntingClubArea(
+                originalArea.getClub(),
+                originalArea.getNameFinnish() + (useSuffix ? suffix(Locales.FI) : ""),
+                originalArea.getNameSwedish() + (useSuffix ? suffix(Locales.SV) : ""),
+                dto.getHuntingYear(),
+                originalArea.getMetsahallitusYear(),
+                null);
 
-        final HuntingClubArea area = new HuntingClubArea();
-        area.setClub(originalArea.getClub());
-        area.setActive(true);
-        area.setHuntingYear(dto.getHuntingYear());
-        area.setMetsahallitusYear(originalArea.getMetsahallitusYear());
-        area.setZone(zone);
         area.generateAndStoreExternalId(secureRandom);
 
-        final boolean useSuffix = originalArea.getHuntingYear() == dto.getHuntingYear();
-        area.setNameFinnish(originalArea.getNameFinnish() + (useSuffix ? suffix(Locales.FI) : ""));
-        area.setNameSwedish(originalArea.getNameSwedish() + (useSuffix ? suffix(Locales.SV) : ""));
+        Optional.ofNullable(originalArea.getZone())
+                .map(originalZone -> gisZoneRepository.copyZone(originalZone, new GISZone()))
+                .ifPresent(area::setZone);
+
         getRepository().saveAndFlush(area);
 
         if (dto.isCopyGroups()) {

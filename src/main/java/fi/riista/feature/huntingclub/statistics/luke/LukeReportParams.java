@@ -3,55 +3,17 @@ package fi.riista.feature.huntingclub.statistics.luke;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toMap;
-
-@Component
 public class LukeReportParams {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LukeReportParams.class);
-
-    @Value("${luke.moose.reports.url.prefix}")
-    private String urlPrefix;
-
-    private final LoadingCache<String, Boolean> urlExistsCache;
-
-    public LukeReportParams() {
-        this.urlExistsCache = CacheBuilder.newBuilder()
-                .maximumSize(1000)
-                .expireAfterWrite(1, TimeUnit.HOURS)
-                .build(new CacheLoader<String, Boolean>() {
-                    @Override
-                    public Boolean load(String key) {
-                        return loadUrl(key);
-                    }
-                });
-    }
-
     public enum Presentation {
         FIGURE("figure", ".png", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"),
         MAP("map", ".png",
@@ -60,7 +22,6 @@ public class LukeReportParams {
                 "r1", "r2", "r3", "r4", "r5", "r6"),
         TABLE_FULL("table", ".html", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8"),
         TABLE_COMPARISON("table", ".html", "1", "2", "3", "4", "5", "6", "7", "8");
-
 
         private final String lukeValue;
         private final String prefix;
@@ -124,91 +85,73 @@ public class LukeReportParams {
         }
     }
 
-    public String composeUrl(final HuntingClub club,
-                             final HarvestPermit permit,
-                             final String htaNumber,
-                             final Organisation org,
-                             final Presentation presentation,
-                             final String fileName) {
+    public static String getCheckExistsPath(final HuntingClub club,
+                                            final HarvestPermit permit) {
+        if (club == null || permit == null || permit.getMooseArea() == null) {
+            return null;
+        }
 
+        return getReportPath(
+                club,
+                permit,
+                permit.getMooseArea().getNumber(),
+                Organisation.CLUB,
+                Presentation.FIGURE,
+                Presentation.FIGURE.getFileNames().get(0));
+    }
+
+    public static String getReportPath(final HuntingClub club,
+                                       final HarvestPermit permit,
+                                       final String htaNumber,
+                                       final Organisation org,
+                                       final Presentation presentation,
+                                       final String fileName) {
         final int huntingYear = findHuntingYear(permit);
-        String orgId = null;
 
+        return Joiner.on('/').join(
+                huntingYear,
+                org.getLukeValue(),
+                // we want to strip leading zeros, but '000' should map to '0'
+                Long.parseLong(getOrganisationId(club, permit, htaNumber, org)),
+                presentation.getLukeValue(),
+                presentation.composeFileName(fileName));
+    }
+
+    @Nonnull
+    private static String getOrganisationId(final HuntingClub club,
+                                            final HarvestPermit permit,
+                                            final String htaNumber,
+                                            final Organisation org) {
         switch (org) {
             case CLUB:
-                orgId = club.getOfficialCode();
-                break;
+                return club.getOfficialCode();
             case RHY:
-                orgId = permit.getRhy().getOfficialCode();
-                break;
+                return permit.getRhy().getOfficialCode();
             case HTA:
-                orgId = htaNumber;
-                break;
+                return htaNumber;
             case AREA:
-                orgId = permit.getRhy().getParentOrganisation().getOfficialCode();
-                break;
+                return permit.getRhy().getParentOrganisation().getOfficialCode();
             case COUNTRY:
-                orgId = "850";
-                break;
-        }
-        final long orgIdNumber = Long.parseLong(orgId);// we want to strip leading zeros, but '000' should map to '0'
-        return Joiner.on("/").join(urlPrefix, huntingYear, org.getLukeValue(), orgIdNumber,
-                presentation.getLukeValue(), presentation.composeFileName(fileName));
-    }
-
-    private static int findHuntingYear(HarvestPermit permit) {
-        List<Integer> years = Has2BeginEndDates.collectUniqueHuntingYearsSorted(permit.getSpeciesAmounts().stream());
-        if (years.size() != 1) {
-            throw new IllegalStateException("Can not resolve unique hunting year for permit id:" + permit.getId() + " permitNumber:" + permit.getPermitNumber());
-        }
-        return years.get(0);
-    }
-
-    public Map<String, Map<String, Boolean>> checkReportsAvailability(HuntingClub club, HarvestPermit permit) {
-        return Stream.of(Organisation.values())
-                .collect(toMap(Enum::name, o -> checkAvailabilities(o, club, permit)));
-    }
-
-    private Map<String, Boolean> checkAvailabilities(Organisation o, HuntingClub club, HarvestPermit permit) {
-        if (o == Organisation.CLUB && club == null) {
-            return Collections.emptyMap();
-        }
-        return o.getPresentations().stream()
-                .collect(toMap(Enum::name, p -> {
-                    final String htaNumber = permit.getMooseArea().getNumber();
-                    final String url = composeUrl(club, permit, htaNumber, o, p, p.getFileNames().get(0));
-                    try {
-                        return urlExistsCache.get(url);
-                    } catch (ExecutionException e) {
-                        return false;
-                    }
-                }));
-    }
-
-    private static boolean loadUrl(String url) {
-        try {
-            return doTestUrlExists(url);
-        } catch (Exception e) {
-            LOG.warn("Unexpected exception", e);
-            return false;
+                return "850";
+            default:
+                return "";
         }
     }
 
-    private static boolean doTestUrlExists(String url) {
-        try {
-            final URLConnection c = new URL(url).openConnection();
+    private static int findHuntingYear(final HarvestPermit permit) {
+        final int[] years =
+                Has2BeginEndDates.streamUniqueHuntingYearsSorted(permit.getSpeciesAmounts().stream()).toArray();
 
-            if (c instanceof HttpURLConnection) {
-                final HttpURLConnection connection = (HttpURLConnection) c;
-                connection.setRequestMethod("HEAD");
-                final int code = connection.getResponseCode();
-                return code == HttpStatus.OK.value();
-            }
-
-            LOG.error("error - not a http request!");
-        } catch (final IOException e) {
-            LOG.error("Exception, message: " + e.getMessage());
+        if (years.length != 1) {
+            throw new IllegalStateException(String.format(
+                    "Cannot resolve unique hunting year for permit id:%d permitNumber:%s",
+                    permit.getId(), permit.getPermitNumber()));
         }
-        return false;
+
+        return years[0];
+    }
+
+    private LukeReportParams() {
+        throw new AssertionError();
     }
 }

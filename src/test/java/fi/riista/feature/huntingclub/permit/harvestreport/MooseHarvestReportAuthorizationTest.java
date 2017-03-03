@@ -15,16 +15,14 @@ import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.security.EntityPermission;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.EnumSet;
+import java.util.stream.Stream;
 
-import static fi.riista.security.authorization.spi.EntityAuthorizationStrategy.CREATE;
-import static fi.riista.security.authorization.spi.EntityAuthorizationStrategy.DELETE;
-import static fi.riista.security.authorization.spi.EntityAuthorizationStrategy.READ;
-import static fi.riista.security.authorization.spi.EntityAuthorizationStrategy.UPDATE;
-import static org.junit.Assert.assertEquals;
+import static fi.riista.security.EntityPermission.CREATE;
+import static fi.riista.security.EntityPermission.DELETE;
+import static fi.riista.security.EntityPermission.READ;
+import static fi.riista.security.EntityPermission.UPDATE;
 
 public class MooseHarvestReportAuthorizationTest extends EmbeddedDatabaseTest {
 
@@ -53,16 +51,12 @@ public class MooseHarvestReportAuthorizationTest extends EmbeddedDatabaseTest {
 
         permitHolder = model().newHuntingClub(rhy);
         permit.setPermitHolder(permitHolder);
-        permit.getPermitPartners().add(permitHolder);
-
-        permitHolderGroup = model().newHuntingClubGroup(permitHolder);
-        permitHolderGroup.updateHarvestPermit(permit);
 
         permitPartner = model().newHuntingClub(rhy);
-        permit.getPermitPartners().add(permitPartner);
+        Stream.of(permitHolder, permitPartner).forEach(permit.getPermitPartners()::add);
 
-        permitPartnerGroup = model().newHuntingClubGroup(permitPartner);
-        permitPartnerGroup.updateHarvestPermit(permit);
+        permitHolderGroup = model().newHuntingClubGroup(permitHolder, hpsa);
+        permitPartnerGroup = model().newHuntingClubGroup(permitPartner, hpsa);
     }
 
     // permit contact person
@@ -155,9 +149,6 @@ public class MooseHarvestReportAuthorizationTest extends EmbeddedDatabaseTest {
 
     private void doAsserts(boolean expected, EnumSet<EntityPermission> permissions) {
         assertHasPermissions(expected, mooseHarvestReport, permissions);
-
-        final MultipartFile f = new MockMultipartFile("receipt", new byte[]{1, 2, 3});
-        permissions.forEach(p -> assertEquals(expected, activeUserService().checkHasPermission(MooseHarvestReportDTO.withReceipt(permit.getId(), 0, f), p)));
     }
 
     private Occupation newOccupation(OccupationType type, Organisation org) {

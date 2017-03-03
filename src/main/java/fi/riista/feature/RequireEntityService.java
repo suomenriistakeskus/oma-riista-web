@@ -7,6 +7,7 @@ import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.area.HarvestPermitArea;
 import fi.riista.feature.harvestpermit.report.HarvestReport;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
@@ -90,6 +91,10 @@ public class RequireEntityService {
 
     public HuntingClubArea requireHuntingClubArea(final Long id, final Enum<?> permission) {
         return require(id, HuntingClubArea.class, permission);
+    }
+
+    public HarvestPermitArea requireHarvestPermitArea(final Long id, final Enum<?> permission) {
+        return require(id, HarvestPermitArea.class, permission);
     }
 
     public MooseDataCardImport requireMooseDataCardImport(final Long id, final Enum<?> permission) {

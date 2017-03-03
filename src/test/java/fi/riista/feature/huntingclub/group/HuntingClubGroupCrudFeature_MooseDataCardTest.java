@@ -3,6 +3,7 @@ package fi.riista.feature.huntingclub.group;
 import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
@@ -25,11 +26,10 @@ public class HuntingClubGroupCrudFeature_MooseDataCardTest extends EmbeddedDatab
         final GameSpecies species = model().newGameSpeciesMoose();
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final HarvestPermit permit = model().newHarvestPermit(rhy);
-        model().newHarvestPermitSpeciesAmount(permit, species);
+        final HarvestPermitSpeciesAmount speciesAmount = model().newHarvestPermitSpeciesAmount(permit, species);
 
         final HuntingClub club = model().newHuntingClub(rhy);
-        final HuntingClubGroup group = model().newHuntingClubGroup(club, species);
-        group.updateHarvestPermit(permit);
+        final HuntingClubGroup group = model().newHuntingClubGroup(club, speciesAmount);
         group.setFromMooseDataCard(true);
 
         consumer.accept(club, group);

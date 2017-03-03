@@ -6,26 +6,20 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.nonEdibleYoungHarvestCountMismatch;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.youngFemaleHarvestCountMismatch;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.youngMaleHarvestCountMismatch;
-import static javaslang.control.Validation.invalid;
-import static javaslang.control.Validation.valid;
 
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
-
+import fi.riista.util.ValidationUtils;
 import javaslang.Tuple;
 import javaslang.Tuple6;
-import javaslang.Value;
 import javaslang.control.Validation;
 
 import javax.annotation.Nonnull;
-
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class MooseDataCardCalculatedHarvestAmounts {
-
-    private static final Supplier<Validation<String, Optional<Integer>>> VALID_EMPTY = () -> valid(Optional.empty());
 
     public final int numberOfAdultMales;
     public final int numberOfAdultFemales;
@@ -34,13 +28,12 @@ public class MooseDataCardCalculatedHarvestAmounts {
     public final int totalNumberOfNonEdibleAdults;
     public final int totalNumberOfNonEdibleYoungs;
 
-    public MooseDataCardCalculatedHarvestAmounts(
-            final int numberOfAdultMales,
-            final int numberOfAdultFemales,
-            final int numberOfYoungMales,
-            final int numberOfYoungFemales,
-            final int totalNumberOfNonEdibleAdults,
-            final int totalNumberOfNonEdibleYoungs) {
+    public MooseDataCardCalculatedHarvestAmounts(final int numberOfAdultMales,
+                                                 final int numberOfAdultFemales,
+                                                 final int numberOfYoungMales,
+                                                 final int numberOfYoungFemales,
+                                                 final int totalNumberOfNonEdibleAdults,
+                                                 final int totalNumberOfNonEdibleYoungs) {
 
         this.numberOfAdultMales = numberOfAdultMales;
         this.numberOfAdultFemales = numberOfAdultFemales;
@@ -60,91 +53,49 @@ public class MooseDataCardCalculatedHarvestAmounts {
                 totalNumberOfNonEdibleAdults, totalNumberOfNonEdibleYoungs);
     }
 
-    public Validation<List<String>, MooseDataCardSection_8_2> validate(
-            @Nonnull final MooseDataCardSection_8_2 section) {
-
+    public Validation<List<String>, MooseDataCardSection_8_2> validate(@Nonnull final MooseDataCardSection_8_2 section) {
         Objects.requireNonNull(section);
 
-        return validateAdultMaleAmount(section)
-                .combine(validateAdultFemaleAmount(section))
-                .combine(validateYoungMaleAmount(section))
-                .combine(validateYoungFemaleAmount(section))
-                .combine(validateNonEdibleAdultAmount(section))
-                .combine(validateNonEdibleYoungAmount(section))
-                .ap((_1, _2, _3, _4, _5, _6) -> section)
-                .leftMap(Value::toJavaList);
+        return ValidationUtils.validate(section, Arrays.asList(
+                this::validateAdultMaleAmount,
+                this::validateAdultFemaleAmount,
+                this::validateYoungMaleAmount,
+                this::validateYoungFemaleAmount,
+                this::validateNonEdibleAdultAmount,
+                this::validateNonEdibleYoungAmount));
     }
 
     private Validation<String, Optional<Integer>> validateAdultMaleAmount(final MooseDataCardSection_8_2 section) {
-        return MooseDataCardSummaryField.ADULT_MALE_AMOUNT.validate(section).flatMap(amountOpt -> {
-            return amountOpt
-                    .<Validation<String, Optional<Integer>>> map(amount -> {
-                        return amount == numberOfAdultMales
-                                ? valid(amountOpt)
-                                : invalid(adultMaleHarvestCountMismatch(amount, numberOfAdultMales));
-                    })
-                    .orElseGet(VALID_EMPTY);
-        });
+        return MooseDataCardSummaryField.ADULT_MALE_AMOUNT.validateRangeAndEquality(
+                section, numberOfAdultMales, amount -> adultMaleHarvestCountMismatch(amount, numberOfAdultMales));
     }
 
     private Validation<String, Optional<Integer>> validateAdultFemaleAmount(final MooseDataCardSection_8_2 section) {
-        return MooseDataCardSummaryField.ADULT_FEMALE_AMOUNT.validate(section).flatMap(amountOpt -> {
-            return amountOpt
-                    .<Validation<String, Optional<Integer>>> map(amount -> {
-                        return amount == numberOfAdultFemales
-                                ? valid(amountOpt)
-                                : invalid(adultFemaleHarvestCountMismatch(amount, numberOfAdultFemales));
-                    })
-                    .orElseGet(VALID_EMPTY);
-        });
+        return MooseDataCardSummaryField.ADULT_FEMALE_AMOUNT.validateRangeAndEquality(
+                section, numberOfAdultFemales, amount -> adultFemaleHarvestCountMismatch(amount, numberOfAdultFemales));
     }
 
     private Validation<String, Optional<Integer>> validateYoungMaleAmount(final MooseDataCardSection_8_2 section) {
-        return MooseDataCardSummaryField.YOUNG_MALE_AMOUNT.validate(section).flatMap(amountOpt -> {
-            return amountOpt
-                    .<Validation<String, Optional<Integer>>> map(amount -> {
-                        return amount == numberOfYoungMales
-                                ? valid(amountOpt)
-                                : invalid(youngMaleHarvestCountMismatch(amount, numberOfYoungMales));
-                    })
-                    .orElseGet(VALID_EMPTY);
-        });
+        return MooseDataCardSummaryField.YOUNG_MALE_AMOUNT.validateRangeAndEquality(
+                section, numberOfYoungMales, amount -> youngMaleHarvestCountMismatch(amount, numberOfYoungMales));
     }
 
     private Validation<String, Optional<Integer>> validateYoungFemaleAmount(final MooseDataCardSection_8_2 section) {
-        return MooseDataCardSummaryField.YOUNG_FEMALE_AMOUNT.validate(section).flatMap(amountOpt -> {
-            return amountOpt
-                    .<Validation<String, Optional<Integer>>> map(amount -> {
-                        return amount == numberOfYoungFemales
-                                ? valid(amountOpt)
-                                : invalid(youngFemaleHarvestCountMismatch(amount, numberOfYoungFemales));
-                    })
-                    .orElseGet(VALID_EMPTY);
-        });
+        return MooseDataCardSummaryField.YOUNG_FEMALE_AMOUNT.validateRangeAndEquality(
+                section, numberOfYoungFemales, amount -> youngFemaleHarvestCountMismatch(amount, numberOfYoungFemales));
     }
 
     private Validation<String, Optional<Integer>> validateNonEdibleAdultAmount(final MooseDataCardSection_8_2 section) {
-        return MooseDataCardSummaryField.NON_EDIBLE_ADULT_AMOUNT.validate(section).flatMap(amountOpt -> {
-            return amountOpt
-                    .<Validation<String, Optional<Integer>>> map(amount -> {
-                        return amount == totalNumberOfNonEdibleAdults
-                                ? valid(amountOpt)
-                                : invalid(nonEdibleAdultHarvestCountMismatch(amount, totalNumberOfNonEdibleAdults));
-                    })
-                    .orElseGet(VALID_EMPTY);
-        });
+        return MooseDataCardSummaryField.NON_EDIBLE_ADULT_AMOUNT.validateRangeAndEquality(
+                section,
+                totalNumberOfNonEdibleAdults,
+                amount -> nonEdibleAdultHarvestCountMismatch(amount, totalNumberOfNonEdibleAdults));
     }
 
     private Validation<String, Optional<Integer>> validateNonEdibleYoungAmount(final MooseDataCardSection_8_2 section) {
-        return MooseDataCardSummaryField.NON_EDIBLE_YOUNG_AMOUNT.validate(section).flatMap(amountOpt -> {
-            return amountOpt
-                    .<Validation<String, Optional<Integer>>> map(amount -> {
-                        return amount == totalNumberOfNonEdibleYoungs
-                                ? valid(amountOpt)
-                                : invalid(nonEdibleYoungHarvestCountMismatch(amount, totalNumberOfNonEdibleYoungs));
-                    })
-                    .orElseGet(VALID_EMPTY);
-        });
+        return MooseDataCardSummaryField.NON_EDIBLE_YOUNG_AMOUNT.validateRangeAndEquality(
+                section,
+                totalNumberOfNonEdibleYoungs,
+                amount -> nonEdibleYoungHarvestCountMismatch(amount, totalNumberOfNonEdibleYoungs));
     }
-
 }

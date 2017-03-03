@@ -1,14 +1,92 @@
-<div class="r-club-areas-layout">
-    <div class="left-column">
-        <r-club-area-category-selection active-tab-index="1"></r-club-area-category-selection>
+<uib-accordion close-others="true">
+    <div uib-accordion-group class="panel-default"
+         is-open="area.isOpen"
+         template-url="common/accordion-group.html"
+         ng-click="$ctrl.selectArea(area)"
+         ng-repeat="area in $ctrl.areas | orderBy: ['nameFI'] track by area.id">
 
-        <h3>
-            <span translate="club.area.proposal.listTitle"></span>
-        </h3>
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-7">
+                    <span ng-class="$ctrl.getAreaToggleClasses(area)"></span>&nbsp;
+                    <span ng-bind="area | rI18nNameFilter"></span>
+                </div>
+                <div class="col-xs-5 text-right" ng-class="$ctrl.getStatusClasses(area.status)">
+                    <span ng-bind="area.status | translateWithPrefix:'club.area.proposal.state.'"></span>
+                    <span class="fa fa-wrench" ng-show="area.status === 'INCOMPLETE'"></span>
+                    <span class="fa fa-check" ng-show="area.status === 'READY'"></span>
+                    <span class="glyphicon glyphicon-wrench" ng-show="area.status === 'PROCESSING'"></span>
+                    <span class="glyphicon glyphicon-lock" ng-show="area.status === 'LOCKED'"></span>
+                </div>
+            </div>
+        </uib-accordion-heading>
 
+        <div class="row">
+            <div class="col-xs-8">
+                <div class="btn-group btn-group-justified" role="group">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-default"
+                                ng-class="{'active': !$ctrl.mapViewActive}"
+                                ng-click="$ctrl.showPartnerList()"
+                                translate="club.area.proposal.partnerList"></button>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-default"
+                                ng-class="{'active': $ctrl.mapViewActive}"
+                                ng-click="$ctrl.showMap()"
+                                translate="global.map.map"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-4">
+                <div class="btn-group" role="group">
+                    <div class="btn-group" role="group" uib-dropdown dropdown-append-to-body>
+                        <button type="button"
+                                class="btn btn-default"
+                                uib-dropdown-toggle>
+                            <span translate="club.area.proposal.button.functionMenu"></span>
+                            &nbsp;
+                            <span class="caret"></span>
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+                            <li ng-show="$ctrl.isIncompleteButtonActivated(area)">
+                                <a ng-click="$ctrl.setIncomplete(area)">
+                                    <span class="fa fa-wrench"></span> &nbsp;
+                                    <span translate="club.area.proposal.button.incomplete"></span>
+                                </a>
+                            </li>
+                            <li ng-show="$ctrl.isReadyButtonActivated(area)">
+                                <a ng-click="$ctrl.setReady(area)">
+                                    <span class="fa fa-check"></span> &nbsp;
+                                    <span translate="club.area.proposal.button.ready"></span>
+                                </a>
+                            </li>
+                            <li ng-show="$ctrl.isEditAreaButtonActivated(area)">
+                                <a ng-click="$ctrl.editAreaProposal(area)">
+                                    <span class="fa fa-edit"></span> &nbsp;
+                                    <span translate="club.area.proposal.button.editName"></span>
+                                </a>
+                            </li>
+                            <li ng-show="$ctrl.isPrintAreaButtonActivated(area)">
+                                <a ng-click="$ctrl.printArea(area)">
+                                    <span class="glyphicon glyphicon-print"></span> &nbsp;
+                                    <span translate="club.area.button.printArea"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a ng-click="$ctrl.exportPartnersToExcel(area)">
+                                    <span class="fa fa-file-excel-o"></span> &nbsp;
+                                    <span translate="club.area.proposal.button.partnersExcel"></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <area-proposal-list-details area="area"></area-proposal-list-details>
     </div>
-
-    <div class="main-column">
-        <r-geojson-map initial-view-bounds="$ctrl.rhyBounds" feature-collection="$ctrl.featureCollection"></r-geojson-map>
-    </div>
-</div>
+</uib-accordion>

@@ -6,6 +6,7 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -36,6 +37,7 @@ public class SharedPermitMapZoneTest extends EmbeddedDatabaseTest {
         final HuntingClubGroup huntingClubGroup;
         final HuntingClubArea huntingClubArea;
         final HarvestPermit harvestPermit;
+        final HarvestPermitSpeciesAmount speciesAmount;
         final GISZone zone;
 
         public SimpleFixture(final EntitySupplier model) {
@@ -45,14 +47,13 @@ public class SharedPermitMapZoneTest extends EmbeddedDatabaseTest {
             this.gameSpecies = model.newGameSpecies();
 
             // Permit with club as partner
-            this.harvestPermit = model.newHarvestPermit(rhy);
-            this.harvestPermit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+            this.harvestPermit = model.newMooselikePermit(rhy);
+            this.speciesAmount = model.newHarvestPermitSpeciesAmount(harvestPermit, gameSpecies, huntingYear);
 
             this.huntingClub = model.newHuntingClub(rhy);
             this.harvestPermit.getPermitPartners().add(huntingClub);
 
-            this.huntingClubGroup = model.newHuntingClubGroup(huntingClub, gameSpecies, huntingYear);
-            this.huntingClubGroup.updateHarvestPermit(this.harvestPermit);
+            this.huntingClubGroup = model.newHuntingClubGroup(huntingClub, speciesAmount);
 
             this.huntingClubArea = model.newHuntingClubArea(this.huntingClub, "fi", "sv", this.huntingClubGroup.getHuntingYear());
             this.zone = model.newGISZone();

@@ -1,12 +1,12 @@
 package fi.riista.feature.pub.occupation;
 
 import com.google.common.base.Preconditions;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.Organisation_;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.JpaPreds;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,16 +34,6 @@ public final class PublicOccupationSearchParameters {
         this.rhyId = rhyId;
         this.organisationType = organisationType;
         this.occupationType = occupationType;
-    }
-
-    public boolean canReturnTooManyResults() {
-        if (areaId != null && occupationType == null) {
-            return true;
-        }
-
-        return areaId == null && rhyId == null
-                && (organisationType == null || organisationType == OrganisationType.RHY)
-                && occupationType != OccupationType.TOIMINNANOHJAAJA && occupationType != OccupationType.SRVA_YHTEYSHENKILO;
     }
 
     @Nonnull

@@ -1,0 +1,78 @@
+<div class="container-fluid">
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th translate="club.area.proposal.partnerTable.clubName"></th>
+            <th translate="club.area.proposal.partnerTable.clubAreaName"></th>
+            <th translate="club.area.proposal.partnerTable.areaExternalId"></th>
+            <th class="text-right">
+                <span class="text-nowrap" translate="club.area.proposal.partnerTable.landAreaSize"></span>
+                <br/>
+                <span class="text-nowrap" translate="club.area.proposal.partnerTable.waterAreaSize"></span>
+                <br/>
+                <span class="text-nowrap" translate="club.area.proposal.partnerTable.totalAreaSize"></span>
+            </th>
+            <th ng-if="$ctrl.isContactPerson" class="vcenter text-right">
+                <button type="button" class="btn btn-primary"
+                        ng-disabled="!$ctrl.isAreaIncomplete()"
+                        ng-click="$ctrl.showAddPartner()">
+                    <span class="glyphicon glyphicon-plus"></span>&nbsp;
+                    <span translate="club.area.proposal.button.addClubArea"></span>
+                </button>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="p in $ctrl.partners track by p.id">
+            <td>
+                <span name-translated="p.club"></span>
+                <span class="pull-right" ng-if="p.sourceArea.hasChanged"
+                      uib-tooltip="{{ 'club.area.proposal.partnerTable.clubAreaChanged' | translate }}" tooltip-popup-delay="0" tooltip-placement="right">
+                    <span class="fa fa-refresh"></span>
+                </span>
+            </td>
+            <td name-translated="p.sourceArea.name"></td>
+            <td ng-bind="p.sourceArea.externalId"></td>
+            <td class="text-right">
+                <span class="text-nowrap" ng-show="p.totalAreaSize >= 0"
+                      ng-bind="(p.totalAreaSize - p.waterAreaSize) | prettyAreaSize"></span>
+                <br/>
+                <span class="text-nowrap" ng-show="p.totalAreaSize >= 0" ng-bind="p.waterAreaSize | prettyAreaSize"></span>
+                <br/>
+                <span class="text-nowrap" ng-show="p.totalAreaSize >= 0" ng-bind="p.totalAreaSize | prettyAreaSize"></span>
+            </td>
+            <td ng-if="$ctrl.isContactPerson" class="vcenter text-right">
+                <div class="btn-group" uib-dropdown dropdown-append-to-body>
+                    <button type="button"
+                            class="btn btn-default"
+                            ng-disabled="!$ctrl.isAreaIncomplete()"
+                            uib-dropdown-toggle>
+                        <span translate="club.area.proposal.button.functionMenu"></span>
+                        &nbsp;
+                        <span class="caret"></span>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+                        <li>
+                            <a ng-show="$ctrl.isAreaIncomplete() && p.sourceArea.hasChanged"
+                               ng-click="$ctrl.updateGeometry(p.id)">
+                                <span class="fa fa-refresh"></span>&nbsp;
+                                <span translate="club.area.proposal.button.updateGeometry"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a ng-show="$ctrl.isAreaIncomplete()"
+                               ng-click="$ctrl.deletePartner(p.id)">
+                                <span class="text-left">
+                                    <span class="glyphicon glyphicon-remove"></span>&nbsp;
+                                    <span translate="global.button.delete"></span>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

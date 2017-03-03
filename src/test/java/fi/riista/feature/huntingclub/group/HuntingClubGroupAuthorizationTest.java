@@ -7,7 +7,7 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import org.junit.Test;
 
-import static fi.riista.feature.huntingclub.group.HuntingClubGroupAuthorization.HuntingGroupPermission.LINK_DIARY_ENTRY_TO_HUNTING_DAY;
+import static fi.riista.feature.huntingclub.group.HuntingClubGroupAuthorization.Permission.LINK_DIARY_ENTRY_TO_HUNTING_DAY;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.DELETE;
 import static fi.riista.security.EntityPermission.READ;

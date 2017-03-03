@@ -1,7 +1,7 @@
 package fi.riista.feature.gamediary.srva;
 
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.SimpleAbstractCrudFeature;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.gamediary.GameDiaryService;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 public abstract class AbstractSrvaCrudFeature<DTO extends SrvaEventDTOBase>
-        extends SimpleAbstractCrudFeature<Long, SrvaEvent, DTO> {
+        extends AbstractCrudFeature<Long, SrvaEvent, DTO> {
 
     @Resource
     private PersonRepository personRepository;
@@ -132,13 +132,13 @@ public abstract class AbstractSrvaCrudFeature<DTO extends SrvaEventDTOBase>
     }
 
     protected SrvaEvent createSrvaEvent(@Nonnull final DTO dto, final boolean associateImages) {
-        activeUserService.assertHasPermission(dto, EntityPermission.CREATE);
-
-        SrvaEvent entity = new SrvaEvent();
+        final SrvaEvent entity = new SrvaEvent();
         updateEntity(entity, dto);
 
         //Always UNFINISHED for new event
         entity.setState(SrvaEventStateEnum.UNFINISHED);
+
+        activeUserService.assertHasPermission(entity, EntityPermission.CREATE);
 
         srvaEventRepository.saveAndFlush(entity);
 

@@ -1,16 +1,16 @@
 package fi.riista.feature.organization.occupation;
 
-import fi.riista.feature.account.audit.AuditService;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.SimpleAbstractCrudFeature;
-import fi.riista.feature.organization.address.AddressDTO;
-import fi.riista.feature.organization.person.PersonDTO;
-import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.account.audit.AuditService;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.person.PersonIsDeceasedException;
 import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.organization.address.AddressDTO;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonDTO;
+import fi.riista.feature.organization.person.PersonIsDeceasedException;
 import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.security.EntityPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,13 +25,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 @Component
-public class OccupationCrudFeature extends SimpleAbstractCrudFeature<Long, Occupation, OccupationDTO> {
+public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation, OccupationDTO> {
 
     private static final Comparator<Occupation> OCCUPATION_SORT = OccupationSort.BY_TYPE
             .thenComparing(OccupationSort.BY_CALL_ORDER_ONLY_FOR_APPLICABLE_TYPES)
@@ -59,6 +58,11 @@ public class OccupationCrudFeature extends SimpleAbstractCrudFeature<Long, Occup
     @Override
     protected JpaRepository<Occupation, Long> getRepository() {
         return occupationRepository;
+    }
+
+    @Override
+    protected OccupationDTO toDTO(@Nonnull final Occupation entity) {
+        return OccupationDTO.createWithPerson(entity);
     }
 
     @Transactional(readOnly = true)
@@ -202,11 +206,6 @@ public class OccupationCrudFeature extends SimpleAbstractCrudFeature<Long, Occup
             throw new AccessDeniedException("Cannot list occupations for organisationType "
                     + organisation.getOrganisationType());
         }
-    }
-
-    @Override
-    protected Function<Occupation, OccupationDTO> entityToDTOFunction() {
-        return OccupationDTO::createWithPerson;
     }
 
     @Transactional(readOnly = true)

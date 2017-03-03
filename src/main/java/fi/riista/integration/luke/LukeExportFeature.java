@@ -53,11 +53,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -132,9 +134,8 @@ public class LukeExportFeature {
     @Transactional(readOnly = true)
     @PreAuthorize("hasPrivilege('EXPORT_LUKE_MOOSE')")
     public LEM_Permits exportMoose(final int huntingYear) {
-        final GameSpecies moose = gameSpeciesRepository.findByOfficialCode(GameSpecies.OFFICIAL_CODE_MOOSE).get();
-
-        final LEM_Permits permits = new LEM_Permits();
+        final GameSpecies moose = gameSpeciesRepository.findByOfficialCode(GameSpecies.OFFICIAL_CODE_MOOSE)
+                .orElseThrow(() -> new IllegalStateException("Could not found moose species in db"));
 
         final List<HarvestPermit> allPermits = findPermits(huntingYear, moose, HarvestPermit.MOOSELIKE_PERMIT_TYPE);
 
@@ -147,11 +148,13 @@ public class LukeExportFeature {
         final Map<HarvestPermit, Map<HuntingClub, MooseHuntingSummary>> permitToClubToSummary = findSummaries(allPermits);
         final List<HarvestPermit> amendmentPermits = findPermits(huntingYear, moose, HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE);
         final Map<Long, List<HarvestPermitSpeciesAmount>> amendmentPermitSpas = amendmentPermits.stream()
-                .map(hp -> findAnyMooseSpeciesAmount(hp.getSpeciesAmounts()))
+                .map(hp -> findAnyMooseSpeciesAmount(hp.getSpeciesAmounts()).orElseThrow(
+                        () -> new IllegalStateException("Could not find moose speciesAmount for harvestPermitId=" + hp.getId())))
                 .collect(groupingBy(hpsa -> hpsa.getHarvestPermit().getOriginalPermit().getId()));
 
         // To prevent too many parameters to SQL IN clause, process permits one by one
         // One by one processing is too slow (because of many queries), process in bigger batches
+        final List<LEM_Permit> resultList = new LinkedList<>();
         Lists.partition(F.getNonNullIds(allPermits), 50).forEach(moosePermitIds -> {
 
             final List<HarvestPermit> moosePermits = permitRepository.findAll(inCollection(HarvestPermit_.id, moosePermitIds));
@@ -175,26 +178,34 @@ public class LukeExportFeature {
             final Map<Long, List<ObservationSpecimen>> observationSpecimens =
                     observationSpecimenRepository.findAll(inCollection(ObservationSpecimen_.observation, observations))
                             .stream().collect(groupingBy(o -> o.getObservation().getId()));
-            moosePermits.forEach(moosePermit -> {
+
+            resultList.addAll(moosePermits.stream().map(moosePermit -> {
                 final Set<HuntingClub> clubs = moosePermit.getPermitPartners();
                 final Map<Long, Occupation> clubContacts = findClubContacts(clubs); // N+1
-                final String permitNumber = moosePermit.getPermitNumber();
-                final String officialCode = moosePermit.getRhy().getOfficialCode();
-                final Person originalContactPerson = moosePermit.getOriginalContactPerson();
                 final HarvestPermitSpeciesAmount spa = allPermitsSpeciesAmounts.get(moosePermit.getId());
                 final List<HarvestPermitSpeciesAmount> amendmentSpas = amendmentPermitSpas.get(moosePermit.getId());
                 final Map<Long, BasicClubHuntingSummary> clubOverrides = F.index(
                         basicSummaryRepo.findModeratorOverriddenHuntingSummaries(spa),
                         s -> s.getClub().getId());
 
-                final LEM_Permit res = MooselikeHarvestsObjectFactory.createPermit(permitNumber, officialCode, originalContactPerson, spa, amendmentSpas,
-                        generateClubData(moosePermit, clubs, clubGroups, groupDays, clubContacts, dayHarvests, dayObservations, harvestSpecimens, observationSpecimens, permitToClubToSummary.get(moosePermit), clubOverrides));
+                final List<LEM_Club> clubPermitData = clubs.stream()
+                        .sorted(Comparator.comparing(Organisation::getId))
+                        .map(club -> MooselikeHarvestsObjectFactory.createClub(club, moosePermit, clubContacts,
+                                clubGroups, groupDays, dayHarvests, dayObservations, harvestSpecimens,
+                                observationSpecimens, permitToClubToSummary, clubOverrides))
+                        .filter(Objects::nonNull)
+                        .collect(toList());
 
-                permits.getPermits().add(res);
+                return MooselikeHarvestsObjectFactory.createPermit(
+                        moosePermit.getPermitNumber(), moosePermit.getRhy().getOfficialCode(),
+                        moosePermit.getOriginalContactPerson(), spa, amendmentSpas, clubPermitData);
+            }).collect(toList()));
 
-            });
             entityManager.clear(); //hopefully less memory used
         });
+
+        final LEM_Permits permits = new LEM_Permits();
+        permits.setPermits(resultList);
         return permits;
     }
 
@@ -203,11 +214,12 @@ public class LukeExportFeature {
                 where(inCollection(MooseHuntingSummary_.harvestPermit, moosePermits))
                         .and(equal(MooseHuntingSummary_.huntingFinished, true)));
 
-        return summaries.stream().collect(groupingBy(s -> s.getHarvestPermit(), toMap(s -> s.getClub(), identity())));
+        return summaries.stream().collect(groupingBy(MooseHuntingSummary::getHarvestPermit,
+                toMap(MooseHuntingSummary::getClub, identity())));
     }
 
-    private static HarvestPermitSpeciesAmount findAnyMooseSpeciesAmount(final List<HarvestPermitSpeciesAmount> spas) {
-        return spas.stream().filter(s -> s.getGameSpecies().isMoose()).findAny().get();
+    private static Optional<HarvestPermitSpeciesAmount> findAnyMooseSpeciesAmount(final List<HarvestPermitSpeciesAmount> spas) {
+        return spas.stream().filter(s -> s.getGameSpecies().isMoose()).findAny();
     }
 
     private List<HarvestPermit> findPermits(final int huntingYear, final GameSpecies moose, final String permitTypeCode) {
@@ -225,6 +237,7 @@ public class LukeExportFeature {
         return groupingBy(h -> h.getHuntingDayOfGroup().getId());
     }
 
+    @Nonnull
     private Map<Long, Occupation> findClubContacts(final Set<HuntingClub> clubs) {
         final List<Occupation> activeContactPersons = occupationRepository.findActiveByOrganisationsAndTypes(
                 F.getNonNullIds(clubs), EnumSet.of(OccupationType.SEURAN_YHDYSHENKILO));
@@ -236,41 +249,5 @@ public class LukeExportFeature {
                         collectingAndThen(
                                 minBy(comparingInt(Occupation::getCallOrder)),
                                 o -> o.orElse(null))));
-    }
-
-    private static List<LEM_Club> generateClubData(final HarvestPermit permit,
-                                                   final Set<HuntingClub> clubs,
-                                                   final Map<Long, List<HuntingClubGroup>> clubGroups,
-                                                   final Map<Long, List<GroupHuntingDay>> groupDays,
-                                                   final Map<Long, Occupation> clubContacts,
-                                                   final Map<Long, List<Harvest>> dayHarvests,
-                                                   final Map<Long, List<Observation>> dayObservations,
-                                                   final Map<Long, List<HarvestSpecimen>> harvestSpecimens,
-                                                   final Map<Long, List<ObservationSpecimen>> observationSpecimens,
-                                                   final Map<HuntingClub, MooseHuntingSummary> summaries,
-                                                   final Map<Long, BasicClubHuntingSummary> clubOverrides) {
-        return clubs.stream()
-                .sorted(Comparator.comparing(Organisation::getId))
-                .map(club -> {
-                    final Person contact = Optional.ofNullable(clubContacts.get(club.getId()))
-                            .map(Occupation::getPerson)
-                            .orElse(null);
-
-                    final List<HuntingClubGroup> groups = clubGroups.getOrDefault(club.getId(), emptyList());
-
-                    final List<HuntingClubGroup> groupsWithHuntingDays = groups.stream()
-                            .filter(g -> g.getHarvestPermit().equals(permit))
-                            .filter(g -> CollectionUtils.isNotEmpty(groupDays.getOrDefault(g.getId(), emptyList())))
-                            .collect(toList());
-
-                    if (groupsWithHuntingDays.isEmpty()) {
-                        return MooselikeHarvestsObjectFactory.createClub(club, contact);
-                    }
-
-
-                    final MooseHuntingSummary summary = summaries != null ? summaries.get(club) : null;
-
-                    return MooselikeHarvestsObjectFactory.createClub(club, contact, groupsWithHuntingDays, groupDays, dayHarvests, dayObservations, harvestSpecimens, observationSpecimens, summary, clubOverrides);
-                }).filter(Objects::nonNull).collect(toList());
     }
 }

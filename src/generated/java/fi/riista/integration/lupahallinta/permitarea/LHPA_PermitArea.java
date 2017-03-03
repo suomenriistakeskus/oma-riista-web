@@ -11,6 +11,8 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import fi.riista.integration.support.LocalDateTimeAdapter;
+import org.joda.time.LocalDateTime;
 
 
 /**
@@ -27,6 +29,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *         &lt;element name="nameFinnish" type="{http://www.w3.org/2001/XMLSchema}token"/&gt;
  *         &lt;element name="nameSwedish" type="{http://www.w3.org/2001/XMLSchema}token"/&gt;
  *         &lt;element name="state" type="{http://riista.fi/integration/lupahallinta/export/permitarea}state"/&gt;
+ *         &lt;element name="lastModified" type="{http://www.w3.org/2001/XMLSchema}dateTime"/&gt;
  *         &lt;element name="totalAreaSize" type="{http://www.w3.org/2001/XMLSchema}long"/&gt;
  *         &lt;element name="waterAreaSize" type="{http://www.w3.org/2001/XMLSchema}long"/&gt;
  *         &lt;element name="rhy" type="{http://riista.fi/integration/lupahallinta/export/permitarea}nameWithOfficialCode" maxOccurs="unbounded"/&gt;
@@ -46,6 +49,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
     "nameFinnish",
     "nameSwedish",
     "state",
+    "lastModified",
     "totalAreaSize",
     "waterAreaSize",
     "rhy",
@@ -70,6 +74,10 @@ public class LHPA_PermitArea {
     @XmlElement(required = true)
     @XmlSchemaType(name = "token")
     protected LHPA_State state;
+    @XmlElement(required = true, type = String.class)
+    @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
+    @XmlSchemaType(name = "dateTime")
+    protected LocalDateTime lastModified;
     protected long totalAreaSize;
     protected long waterAreaSize;
     @XmlElement(required = true)
@@ -173,6 +181,30 @@ public class LHPA_PermitArea {
      */
     public void setState(LHPA_State value) {
         this.state = value;
+    }
+
+    /**
+     * Gets the value of the lastModified property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public LocalDateTime getLastModified() {
+        return lastModified;
+    }
+
+    /**
+     * Sets the value of the lastModified property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLastModified(LocalDateTime value) {
+        this.lastModified = value;
     }
 
     /**
@@ -292,6 +324,18 @@ public class LHPA_PermitArea {
             partners = new ArrayList<LHPA_Partner>();
         }
         return this.partners;
+    }
+
+    public void setRhy(List<LHPA_NameWithOfficialCode> value) {
+        this.rhy = value;
+    }
+
+    public void setHta(List<LHPA_NameWithOfficialCode> value) {
+        this.hta = value;
+    }
+
+    public void setPartners(List<LHPA_Partner> value) {
+        this.partners = value;
     }
 
 }

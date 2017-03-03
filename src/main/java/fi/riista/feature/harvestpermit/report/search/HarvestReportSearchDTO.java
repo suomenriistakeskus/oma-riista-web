@@ -2,7 +2,6 @@ package fi.riista.feature.harvestpermit.report.search;
 
 import fi.riista.feature.common.dto.XssSafe;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
-
 import fi.riista.feature.harvestpermit.report.HarvestReport;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
@@ -10,7 +9,7 @@ import org.joda.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HarvestReportSearchDTO implements Cloneable, HasBeginAndEndDate {
+public class HarvestReportSearchDTO implements HasBeginAndEndDate {
 
     private LocalDate beginDate;
     private LocalDate endDate;
@@ -28,30 +27,29 @@ public class HarvestReportSearchDTO implements Cloneable, HasBeginAndEndDate {
     @XssSafe
     private String text;
 
-    public static HarvestReportSearchDTO cloneWithRhyRelevantFields(final HarvestReportSearchDTO that) {
-        try {
-            final HarvestReportSearchDTO dto = HarvestReportSearchDTO.class.cast(that.clone());
-
-            // Explicitly null irrelevant fields
-            dto.setSeasonId(null);
-            dto.setHarvestAreaId(null);
-            dto.setAreaId(null);
-            dto.setText(null);
-            return dto;
-        } catch (final CloneNotSupportedException e) {
-            // Should never end up here
-            throw new RuntimeException(e);
-        }
+    public HarvestReportSearchDTO() {
     }
 
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        final HarvestReportSearchDTO clone = (HarvestReportSearchDTO) super.clone();
+    public HarvestReportSearchDTO(final HarvestReportSearchDTO that) {
+        setBeginDate(that.getBeginDate());
+        setEndDate(that.getEndDate());
+        setSeasonId(that.getSeasonId());
+        setFieldsId(that.getFieldsId());
+        setHarvestAreaId(that.getHarvestAreaId());
+        setAreaId(that.getAreaId());
+        setRhyId(that.getRhyId());
+        setStates(new ArrayList<>(that.getStates()));
+    }
 
-        // Defensive copy of mutable fields
-        clone.setStates(new ArrayList<>(states));
+    public static HarvestReportSearchDTO cloneWithRhyRelevantFields(final HarvestReportSearchDTO that) {
+        final HarvestReportSearchDTO dto = new HarvestReportSearchDTO(that);
 
-        return clone;
+        // Explicitly null irrelevant fields
+        dto.setSeasonId(null);
+        dto.setHarvestAreaId(null);
+        dto.setAreaId(null);
+        dto.setText(null);
+        return dto;
     }
 
     @Override

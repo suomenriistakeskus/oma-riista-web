@@ -13,6 +13,7 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.missingPermitNumber;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.permitNumberMismatchBetweenNameAndContentOfXmlFile;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.reportingPeriodBeginDateIsAfterEndDate;
+import static fi.riista.util.DateUtil.today;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -24,11 +25,9 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.NumberSequence;
 import fi.riista.util.ValueGeneratorMixin;
-
 import javaslang.Tuple;
 import javaslang.Tuple2;
 import javaslang.control.Validation;
-
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
@@ -44,7 +43,7 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
     private static final String BLANK = "   ";
     private static final String INVALID = "invalid";
 
-    private static final MooseDataCardPage1Validator validator = new MooseDataCardPage1Validator();
+    private static final MooseDataCardPage1Validator INSTANCE = new MooseDataCardPage1Validator();
 
     @Override
     public NumberGenerator getNumberGenerator() {
@@ -165,7 +164,7 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
 
     @Test
     public void testInvalidReportingPeriod() {
-        final LocalDate beginDate = DateUtil.today();
+        final LocalDate beginDate = today();
         final LocalDate endDate = beginDate.minusDays(1);
 
         createInputAndAssertFailure(
@@ -201,7 +200,7 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
 
     @Test
     public void testMultipleErrorsUsingHunterNumber() {
-        final LocalDate beginDate = DateUtil.today();
+        final LocalDate beginDate = today();
         final LocalDate endDate = beginDate.minusDays(1);
 
         createInputAndAssertFailure(true, page -> {
@@ -217,7 +216,7 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
 
     @Test
     public void testMultipleErrorsUsingSsn() {
-        final LocalDate beginDate = DateUtil.today();
+        final LocalDate beginDate = today();
         final LocalDate endDate = beginDate.minusDays(1);
 
         createInputAndAssertFailure(false, page -> {
@@ -231,33 +230,30 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
                 invalidClubCoordinates(INVALID), reportingPeriodBeginDateIsAfterEndDate(beginDate, endDate)));
     }
 
-    private void createInputAndAssertFailure(
-            final Consumer<MooseDataCardPage1> consumer, final String expectedMessage) {
+    private void createInputAndAssertFailure(final Consumer<MooseDataCardPage1> consumer,
+                                             final String expectedMessage) {
 
         createInputAndAssertFailure(true, consumer, expectedMessage);
     }
 
-    private void createInputAndAssertFailure(
-            final boolean usingHunterNumber,
-            final Consumer<MooseDataCardPage1> consumer,
-            final String expectedMessage) {
+    private void createInputAndAssertFailure(final boolean usingHunterNumber,
+                                             final Consumer<MooseDataCardPage1> consumer,
+                                             final String expectedMessage) {
 
         createInputAndAssertFailure(usingHunterNumber, consumer, singletonList(expectedMessage));
     }
 
-    private void createInputAndAssertFailure(
-            final boolean usingHunterNumber,
-            final Consumer<MooseDataCardPage1> consumer,
-            final List<String> expectedMessages) {
+    private void createInputAndAssertFailure(final boolean usingHunterNumber,
+                                             final Consumer<MooseDataCardPage1> consumer,
+                                             final List<String> expectedMessages) {
 
         final Tuple2<MooseDataCardPage1, MooseDataCardFilenameValidation> tup = newPageAndValidation(usingHunterNumber);
         consumer.accept(tup._1);
         assertFailure(tup, expectedMessages);
     }
 
-    private static void assertFailure(
-            final Tuple2<MooseDataCardPage1, MooseDataCardFilenameValidation> input,
-            final List<String> expectedMessages) {
+    private static void assertFailure(final Tuple2<MooseDataCardPage1, MooseDataCardFilenameValidation> input,
+                                      final List<String> expectedMessages) {
 
         final Validation<List<String>, MooseDataCardPage1Validation> validation = validate(input);
         assertTrue(validation.isInvalid());
@@ -267,7 +263,7 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
     private static Validation<List<String>, MooseDataCardPage1Validation> validate(
             final Tuple2<MooseDataCardPage1, MooseDataCardFilenameValidation> tuple) {
 
-        return tuple.transform((page, validation) -> validator.validate(page, validation));
+        return tuple.transform(INSTANCE::validate);
     }
 
     private Tuple2<MooseDataCardPage1, MooseDataCardFilenameValidation> newPageAndValidation(
@@ -280,14 +276,13 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
     }
 
     private MooseDataCardPage1 newPage1(final boolean usingHunterNumber) {
-        final LocalDate today = DateUtil.today();
+        final LocalDate today = today();
 
         final MooseDataCardPage1 page = new MooseDataCardPage1()
                 .withContactPerson(new MooseDataCardContactPerson())
                 .withPermitNumber(permitNumber())
                 .withHuntingClubCode(CLUB_CODE)
-                .withClubInfo(new MooseDataCardClubInfo()
-                        .withHuntingClubCoordinate("6822384;310088"))
+                .withClubInfo(new MooseDataCardClubInfo().withHuntingClubCoordinate("6822384;310088"))
                 .withReportingPeriodBeginDate(today.minusMonths(3))
                 .withReportingPeriodEndDate(today);
 

@@ -1,22 +1,22 @@
 package fi.riista.feature.organization.calendar;
 
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.SimpleAbstractCrudFeature;
-import fi.riista.feature.organization.address.AddressDTO;
-import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.address.AddressRepository;
 import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.organization.address.AddressDTO;
+import fi.riista.feature.organization.address.AddressRepository;
 import fi.riista.security.EntityPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.function.Function;
 
 @Component
-public class VenueCrudFeature extends SimpleAbstractCrudFeature<Long, Venue, VenueDTO> {
+public class VenueCrudFeature extends AbstractCrudFeature<Long, Venue, VenueDTO> {
 
     @Resource
     private VenueRepository venueRepository;
@@ -33,6 +33,11 @@ public class VenueCrudFeature extends SimpleAbstractCrudFeature<Long, Venue, Ven
     @Override
     protected JpaRepository<Venue, Long> getRepository() {
         return venueRepository;
+    }
+
+    @Override
+    protected VenueDTO toDTO(@Nonnull final Venue entity) {
+        return VenueDTO.create(entity);
     }
 
     @Override
@@ -58,11 +63,6 @@ public class VenueCrudFeature extends SimpleAbstractCrudFeature<Long, Venue, Ven
         to.setPostalCode(from.getPostalCode());
         to.setCity(from.getCity());
         to.setCountry(from.getCountry());
-    }
-
-    @Override
-    protected Function<Venue, VenueDTO> entityToDTOFunction() {
-        return VenueDTO::create;
     }
 
     @Transactional

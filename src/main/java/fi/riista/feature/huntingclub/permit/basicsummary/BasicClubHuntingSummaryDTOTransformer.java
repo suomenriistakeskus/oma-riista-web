@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.permit.basicsummary;
 
+import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount_;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
@@ -15,6 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -48,11 +50,13 @@ public class BasicClubHuntingSummaryDTOTransformer
             DtoUtil.copyBaseFields(summary, dto);
 
             final HarvestPermitSpeciesAmount speciesAmount = summaryToSpeciesAmountMapping.apply(summary);
-            dto.setHarvestPermitId(speciesAmount.getHarvestPermit().getId());
+            // HarvestPermit is already fetched within species-amount query.
+            final HarvestPermit harvestPermit = speciesAmount.getHarvestPermit();
+            dto.setHarvestPermitId(harvestPermit.getId());
+            dto.setPermitAreaSize(Objects.requireNonNull(harvestPermit.getPermitAreaSize(), "permitAreaSize is null"));
+
             // GameSpecies is already fetched within species-amount query.
             dto.setGameSpeciesCode(speciesAmount.getGameSpecies().getOfficialCode());
-            // HarvestPermit is already fetched within species-amount query.
-            dto.setPermitAreaSize(speciesAmount.getHarvestPermit().getPermitAreaSize());
 
             final HuntingClub club = summaryToClubMapping.apply(summary);
             dto.setClubId(club.getId());

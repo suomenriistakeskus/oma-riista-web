@@ -2,7 +2,7 @@ package fi.riista.feature.gamediary.srva;
 
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.PersonRelationshipToGameDiaryEntryDTO;
-import fi.riista.feature.organization.OrganisationAuthorization.OrganisationPermission;
+import fi.riista.feature.organization.RiistanhoitoyhdistysAuthorization;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
@@ -25,7 +25,6 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,9 +45,8 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
     }
 
     @Override
-    protected Function<SrvaEvent, SrvaEventDTO> entityToDTOFunction() {
-        return srvaEventDTOTransformer.asSingletonFunction();
-
+    protected SrvaEventDTO toDTO(@Nonnull final SrvaEvent entity) {
+        return srvaEventDTOTransformer.apply(entity);
     }
 
     @Transactional(readOnly = true)
@@ -114,7 +112,7 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
         }
 
         final Riistanhoitoyhdistys rhy = requireEntityService.requireRiistanhoitoyhdistys(rhyId,
-                OrganisationPermission.LIST_SRVA);
+                RiistanhoitoyhdistysAuthorization.Permission.LIST_SRVA);
 
         return getRepository().count(JpaSpecs.and(
                 SrvaSpecs.equalRhy(rhy),
@@ -129,7 +127,7 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
 
         final Page<SrvaEvent> page = getRepository().findAll(getSpecs(dto), pageRequest);
 
-        return DtoUtil.toDTO(page, pageRequest, entityToDTOFunction());
+        return srvaEventDTOTransformer.apply(page, pageRequest);
     }
 
     @Transactional(readOnly = true)
@@ -154,7 +152,7 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
 
     private Specifications<SrvaEvent> getSpecs(final SrvaEventSearchDTO dto) {
         final Riistanhoitoyhdistys currentRhy = requireEntityService.requireRiistanhoitoyhdistys(dto.getCurrentRhyId(),
-                OrganisationPermission.LIST_SRVA);
+                RiistanhoitoyhdistysAuthorization.Permission.LIST_SRVA);
 
         Specifications<SrvaEvent> specs = Specifications
                 .where(SrvaSpecs.anyOfEventNames(dto.getEventNames())).and(SrvaSpecs.equalRhy(currentRhy))

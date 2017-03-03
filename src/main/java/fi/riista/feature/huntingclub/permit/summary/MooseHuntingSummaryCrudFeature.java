@@ -17,10 +17,7 @@ import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryRepository;
 import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.permit.partner.AllPartnersFinishedHuntingMailFeature;
-import fi.riista.feature.huntingclub.permit.partner.MooseHuntingPermitPartner;
 import fi.riista.security.EntityPermission;
-import fi.riista.security.authorization.api.AuthorizationTargetFactory;
-import fi.riista.util.ListTransformer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -69,29 +66,18 @@ public class MooseHuntingSummaryCrudFeature
     private MooseHuntingSummaryDTOTransformer mooseHuntingSummaryDTOTransformer;
 
     @Resource
-    private MooseHuntingSummaryAuthorization authorization;
-
-    @Resource
-    private AuthorizationTargetFactory authzTargetFactory;
-
-    @Resource
     private HuntingClubGroupRepository huntingClubGroupRepository;
 
     @Override
-    protected void assertHasCreatePermission(final MooseHuntingSummaryDTO dto) {
-        Objects.requireNonNull(dto);
-
-        final HarvestPermit permit =
-                requireEntityService.requireHarvestPermit(dto.getHarvestPermitId(), EntityPermission.NONE);
-        final HuntingClub club = requireEntityService.requireHuntingClub(dto.getClubId(), EntityPermission.NONE);
-
-        activeUserService.assertHasPermission(new MooseHuntingPermitPartner(permit, club), getCreatePermission(dto));
+    protected MooseHuntingSummaryDTO toDTO(@Nonnull final MooseHuntingSummary entity) {
+        return mooseHuntingSummaryDTOTransformer.apply(entity);
     }
 
     @Override
-    protected Enum<?> getCreatePermission(final MooseHuntingSummaryDTO dto) {
-        final HarvestPermit harvestPermit = harvestPermitRepository.getOne(dto.getHarvestPermitId());
-        final HuntingClub club = huntingClubRepository.getOne(dto.getClubId());
+    protected Enum<?> getCreatePermission(final MooseHuntingSummary entity,
+                                          final MooseHuntingSummaryDTO dto) {
+        final HarvestPermit harvestPermit = entity.getHarvestPermit();
+        final HuntingClub club = entity.getClub();
         return isFromMooseDataCard(harvestPermit, club)
                 ? MooseHuntingSummaryAuthorization.Permission.CREATE_WITHIN_MOOSE_DATA_CARD_IMPORT
                 : EntityPermission.CREATE;
@@ -124,8 +110,8 @@ public class MooseHuntingSummaryCrudFeature
     }
 
     private boolean hasPermissionToCreate(final HarvestPermit permit, final HuntingClub club) {
-        final MooseHuntingPermitPartner partner = new MooseHuntingPermitPartner(permit, club);
-        return authorization.hasPermission(authzTargetFactory.create(partner), EntityPermission.CREATE);
+        final MooseHuntingSummary summary = new MooseHuntingSummary(club, permit);
+        return activeUserService.checkHasPermission(summary, EntityPermission.CREATE);
     }
 
     private boolean isMooseHarvestReportDone(final HarvestPermit permit) {
@@ -163,7 +149,7 @@ public class MooseHuntingSummaryCrudFeature
         dto.setClubId(clubId);
         dto.setHarvestPermitId(permitId);
         dto.setLocked(isLockedForCreate(harvestPermit, club));
-        dto.setPermitAreaSize(harvestPermit.getPermitAreaSize());
+        dto.setPermitAreaSize(Objects.requireNonNull(harvestPermit.getPermitAreaSize(), "permitAreaSize is null"));
 
         huntingClubAreaSizeService.getHuntingPermitAreaSize(harvestPermit, club).ifPresent(areaSize -> {
             dto.setTotalHuntingArea(areaSize.intValue() / 10_000);
@@ -201,12 +187,7 @@ public class MooseHuntingSummaryCrudFeature
     public MooseHuntingSummaryDTO markUnfinished(final long summaryId) {
         final MooseHuntingSummary summary =
                 requireEntityService.requireMooseHuntingSummary(summaryId, EntityPermission.UPDATE);
-        return dtoTransformer().apply(huntingSummaryService.markUnfinished(summary));
-    }
-
-    @Override
-    protected ListTransformer<MooseHuntingSummary, MooseHuntingSummaryDTO> dtoTransformer() {
-        return mooseHuntingSummaryDTOTransformer;
+        return toDTO(huntingSummaryService.markUnfinished(summary));
     }
 
     @Override

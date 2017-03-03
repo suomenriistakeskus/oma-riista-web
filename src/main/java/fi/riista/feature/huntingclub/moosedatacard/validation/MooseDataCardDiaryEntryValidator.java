@@ -28,8 +28,8 @@ public abstract class MooseDataCardDiaryEntryValidator<T extends DateAndLocation
     }
 
     protected GeoLocation getValidGeoLocation(@Nonnull final T entry) {
-        return MooseDataCardDiaryEntryField.LATITUDE.getValidOrEmpty(entry)
-                .flatMap(latitude -> MooseDataCardDiaryEntryField.LONGITUDE.getValidOrEmpty(entry)
+        return MooseDataCardDiaryEntryField.LATITUDE.findValid(entry)
+                .flatMap(latitude -> MooseDataCardDiaryEntryField.LONGITUDE.findValid(entry)
                         .map(longitude -> new GeoLocation(latitude.intValue(), longitude.intValue())))
                 .orElse(defaultCoordinates);
     }

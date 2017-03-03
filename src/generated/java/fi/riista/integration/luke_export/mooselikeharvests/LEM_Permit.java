@@ -211,4 +211,12 @@ public class LEM_Permit {
         return this.huntingClubs;
     }
 
+    public void setAmendmentPermits(List<LEM_Amount> value) {
+        this.amendmentPermits = value;
+    }
+
+    public void setHuntingClubs(List<LEM_Club> value) {
+        this.huntingClubs = value;
+    }
+
 }

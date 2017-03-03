@@ -2,14 +2,14 @@ package fi.riista.feature.account.todo;
 
 import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.harvestpermit.report.HarvestReportRequirementsService;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.report.HarvestReport;
+import fi.riista.feature.harvestpermit.report.HarvestReportRequirementsService;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
-import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.DateUtil;
@@ -92,6 +92,7 @@ public class AccountTodoFeatureTest extends EmbeddedDatabaseTest {
 
             // because both permits are to mooselike, neither of them are counted
             p1.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+            p1.setPermitAreaSize(123);
             p2.setPermitTypeCode(HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE);
 
             onSavedAndAuthenticated(createUser(person), () -> assertCount(0, 0, accountTodoFeature.todoCount()));

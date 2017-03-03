@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public class MooseDataCardPage7MooselikeValidator {
 
@@ -81,15 +80,9 @@ public class MooseDataCardPage7MooselikeValidator {
 
     @Nullable
     private static String getValidTrendOfPopulationGrowth(@Nullable final String value) {
-        return convertTrendOfPopulationGrowth(value)
+        return HasMooseDataCardEncoding.findEnum(TrendOfPopulationGrowth.class, value)
                 .map(TrendOfPopulationGrowth::getMooseDataCardEncoding)
                 .orElse(null);
-    }
-
-    @Nonnull
-    private static Optional<TrendOfPopulationGrowth> convertTrendOfPopulationGrowth(@Nullable final String value) {
-        return HasMooseDataCardEncoding.enumOf(TrendOfPopulationGrowth.class, value)
-                .fold(invalid -> Optional.empty(), Optional::of);
     }
 
 }

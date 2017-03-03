@@ -1,34 +1,34 @@
 package fi.riista.feature.organization.rhy;
 
-import fi.riista.feature.SimpleAbstractCrudFeature;
+import fi.riista.feature.AbstractCrudFeature;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitFeature;
 import fi.riista.feature.huntingclub.permit.MooselikeHuntingYearDTO;
 import fi.riista.feature.huntingclub.permit.MooselikePermitListingDTO;
-import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.organization.address.AddressDTO;
+import fi.riista.feature.organization.address.AddressRepository;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.address.AddressRepository;
-import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.security.EntityPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Function;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 @Component
 public class RiistanhoitoyhdistysCrudFeature
-        extends SimpleAbstractCrudFeature<Long, Riistanhoitoyhdistys, RiistanhoitoyhdistysDTO> {
+        extends AbstractCrudFeature<Long, Riistanhoitoyhdistys, RiistanhoitoyhdistysDTO> {
 
     @Resource
     private RiistanhoitoyhdistysRepository riistanhoitoyhdistysRepository;
@@ -51,6 +51,28 @@ public class RiistanhoitoyhdistysCrudFeature
     @Override
     protected JpaRepository<Riistanhoitoyhdistys, Long> getRepository() {
         return riistanhoitoyhdistysRepository;
+    }
+
+    @Override
+    protected RiistanhoitoyhdistysDTO toDTO(@Nonnull final Riistanhoitoyhdistys rhy) {
+        final RiistanhoitoyhdistysDTO dto = RiistanhoitoyhdistysDTO.create(rhy);
+        final boolean editable = activeUserService.checkHasPermission(rhy, EntityPermission.UPDATE);
+        dto.setEditable(editable);
+
+        final Person coordinator = findCoordinator(rhy);
+        if (coordinator != null) {
+            if (!dto.isHasOwnAddress()) {
+                Address publicAddress = coordinator.getAddress();
+                dto.setAddress(AddressDTO.from(publicAddress));
+            }
+            if (!dto.isHasOwnEmail()) {
+                dto.setEmail(coordinator.getEmail());
+            }
+            if (!dto.isHasOwnPhoneNumber()) {
+                dto.setPhoneNumber(coordinator.getPhoneNumber());
+            }
+        }
+        return dto;
     }
 
     @Override
@@ -96,30 +118,6 @@ public class RiistanhoitoyhdistysCrudFeature
         entity.setCity(dto.getCity());
         entity.setPostalCode(dto.getPostalCode());
         entity.setStreetAddress(dto.getStreetAddress());
-    }
-
-    @Override
-    protected Function<Riistanhoitoyhdistys, RiistanhoitoyhdistysDTO> entityToDTOFunction() {
-        return rhy -> {
-            final RiistanhoitoyhdistysDTO dto = RiistanhoitoyhdistysDTO.create(rhy);
-            final boolean editable = activeUserService.checkHasPermission(rhy, EntityPermission.UPDATE);
-            dto.setEditable(editable);
-
-            final Person coordinator = findCoordinator(rhy);
-            if (coordinator != null) {
-                if (!dto.isHasOwnAddress()) {
-                    Address publicAddress = coordinator.getAddress();
-                    dto.setAddress(AddressDTO.from(publicAddress));
-                }
-                if (!dto.isHasOwnEmail()) {
-                    dto.setEmail(coordinator.getEmail());
-                }
-                if (!dto.isHasOwnPhoneNumber()) {
-                    dto.setPhoneNumber(coordinator.getPhoneNumber());
-                }
-            }
-            return dto;
-        };
     }
 
     private Person findCoordinator(Riistanhoitoyhdistys rhy) {

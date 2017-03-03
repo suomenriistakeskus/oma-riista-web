@@ -1,68 +1,52 @@
 package fi.riista.feature.harvestpermit.area;
 
 import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
 import fi.riista.security.authorization.AbstractEntityAuthorization;
-import fi.riista.security.authorization.api.EntityAuthorizationTarget;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.Optional;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
-import static fi.riista.feature.account.user.SystemUser.Role.ROLE_USER;
-import static fi.riista.feature.huntingclub.members.ClubRole.SEURAN_JASEN;
-import static fi.riista.feature.huntingclub.members.ClubRole.SEURAN_YHDYSHENKILO;
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
 
 @Component
-public class HarvestPermitAreaAuthorization extends AbstractEntityAuthorization {
+public class HarvestPermitAreaAuthorization extends AbstractEntityAuthorization<HarvestPermitArea> {
 
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
-    @Resource
-    private HarvestPermitAreaRepository harvestPermitAreaRepository;
-
     public HarvestPermitAreaAuthorization() {
-        super("harvestPermitArea");
+        allowCRUD(ROLE_ADMIN, ROLE_MODERATOR);
 
-        allow(CREATE, ROLE_USER);
-        allow(READ, ROLE_ADMIN, ROLE_MODERATOR, SEURAN_YHDYSHENKILO, SEURAN_JASEN);
-        allow(UPDATE, ROLE_ADMIN, ROLE_MODERATOR, SEURAN_YHDYSHENKILO);
-        allow(DELETE, ROLE_ADMIN, ROLE_MODERATOR, SEURAN_YHDYSHENKILO);
+        allow(EntityPermission.CREATE, SEURAN_YHDYSHENKILO);
+        allow(EntityPermission.READ, SEURAN_YHDYSHENKILO, SEURAN_JASEN);
+        allow(EntityPermission.UPDATE, SEURAN_YHDYSHENKILO);
+        allow(EntityPermission.DELETE, SEURAN_YHDYSHENKILO);
     }
 
     @Override
-    protected void authorizeTarget(final AuthorizationTokenCollector collector,
-                                   final EntityAuthorizationTarget target,
-                                   final UserInfo userInfo) {
+    protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,
+                                   @Nonnull final HarvestPermitArea harvestPermitArea,
+                                   @Nonnull final UserInfo userInfo) {
+        final HuntingClub club = harvestPermitArea.getClub();
 
-        final Person person = userAuthorizationHelper.getPerson(userInfo);
-
-        if (person == null) {
+        if (club == null) {
             return;
         }
 
-        getArea(target).ifPresent(area -> {
-            collector.addAuthorizationRole(SEURAN_YHDYSHENKILO,
-                    () -> userAuthorizationHelper.isClubContact(area.getClub(), person));
+        userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
+            collector.addAuthorizationRole(SEURAN_YHDYSHENKILO, () ->
+                    userAuthorizationHelper.isClubContact(club, activePerson));
 
-            collector.addAuthorizationRole(SEURAN_JASEN,
-                    () -> userAuthorizationHelper.isClubMember(area.getClub(), person));
+            collector.addAuthorizationRole(SEURAN_JASEN, () ->
+                    userAuthorizationHelper.isClubMember(club, activePerson));
         });
-    }
-
-    private Optional<HarvestPermitArea> getArea(final EntityAuthorizationTarget target) {
-        return target.getAuthorizationTargetId() != null
-                ? Optional.of(harvestPermitAreaRepository.getOne((Long) target.getAuthorizationTargetId()))
-                : Optional.ofNullable(target.getAuthorizationTarget(HarvestPermitArea.class));
-    }
-
-    @Override
-    public Class<?>[] getSupportedTypes() {
-        return new Class<?>[]{HarvestPermitArea.class, HarvestPermitAreaDTO.class};
     }
 }

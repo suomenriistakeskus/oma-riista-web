@@ -16,4 +16,10 @@
         </jaxb:nameXmlTransform>
 
     </jaxb:schemaBindings>
+
+    <jaxb:globalBindings>
+        <xjc:javaType adapter="fi.riista.integration.support.LocalDateTimeAdapter"
+                      name="org.joda.time.LocalDateTime"
+                      xmlType="xsd:dateTime"/>
+    </jaxb:globalBindings>
 </jaxb:bindings>

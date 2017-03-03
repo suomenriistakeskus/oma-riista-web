@@ -219,14 +219,15 @@ angular.module('app.clubmap.directives', ['app.map.services'])
                         style: function (feature) {
                             var isChanged = _.get(feature, 'properties.changed', false);
                             var mhArea = _.startsWith(feature.id, 'mh-');
-                            var fillColor = isChanged ? 'orange' : 'green';
+                            var fillColor = isChanged ? 'orange' :
+                                mhArea ? 'magenta' : 'green';
 
                             return {
                                 fillColor: fillColor,
                                 color: "black",
                                 weight: 1,
                                 opacity: 1,
-                                fillOpacity: mhArea || isChanged ? 0.6 : 0.3
+                                fillOpacity: isChanged ? 0.6 : 0.3
                             };
                         }
                     });

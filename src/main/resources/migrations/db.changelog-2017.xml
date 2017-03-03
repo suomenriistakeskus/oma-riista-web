@@ -216,4 +216,128 @@
             <column name="external_id"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="2017-01-17-drop-person-finnish-citizen" author="vincit-kyostihe">
+        <dropColumn tableName="person" columnName="is_finnish_citizen"/>
+    </changeSet>
+
+    <changeSet id="2017-01-19-add-harvest-permit-area-event" author="vincit-kyostihe">
+        <addColumn tableName="harvest_permit_area">
+            <column name="status_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <createTable tableName="harvest_permit_area_event">
+            <column autoIncrement="true" name="harvest_permit_area_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_area_event_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="harvest_permit_area_status(name)"
+                             foreignKeyName="fk_harvest_permit_area_event_status"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2017-01-20-add-harvest-permit-area-event-add-fk-to-area" author="vincit-terova">
+        <addColumn tableName="harvest_permit_area_event">
+            <column name="harvest_permit_area_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_area(harvest_permit_area_id)"
+                             foreignKeyName="fk_harvest_permit_area_event_permit_area"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-01-24-add-two-factor-authentication-mode" author="vincit-kyostihe">
+        <createTable tableName="two_factor_authentication_mode">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="two_factor_authentication_mode">
+            <column name="name" value="SMS"/>
+        </insert>
+        <insert tableName="two_factor_authentication_mode">
+            <column name="name" value="OFFLINE"/>
+        </insert>
+
+        <addColumn tableName="system_user">
+            <column name="two_factor_authentication" type="VARCHAR(255)">
+                <constraints references="two_factor_authentication_mode(name)" foreignKeyName="fk_system_user_two_factor"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-02-03-club-name-unique-trigger-fix" author="vincit-terova" dbms="postgresql">
+        <sql splitStatements="false">
+            <![CDATA[
+            CREATE OR REPLACE FUNCTION club_name_uniq_check()
+              RETURNS TRIGGER AS $club_name_uniq_check$
+            DECLARE
+              same_name_exists boolean;
+            BEGIN
+              SELECT true
+              INTO same_name_exists
+              FROM (
+                SELECT 1
+                FROM organisation club
+                WHERE
+                  club.organisation_type = 'CLUB'
+                  AND NEW.organisation_type = 'CLUB'
+                  AND club.organisation_id <> NEW.organisation_id
+                  AND
+                  (
+                    regexp_replace(lower(club.name_finnish), '\W', '', 'g') = regexp_replace(lower(NEW.name_finnish), '\W', '', 'g')
+                    OR regexp_replace(lower(club.name_swedish), '\W', '', 'g') = regexp_replace(lower(NEW.name_finnish), '\W', '', 'g')
+                    OR regexp_replace(lower(club.name_finnish), '\W', '', 'g') = regexp_replace(lower(NEW.name_swedish), '\W', '', 'g')
+                    OR regexp_replace(lower(club.name_swedish), '\W', '', 'g') = regexp_replace(lower(NEW.name_swedish), '\W', '', 'g')
+                  )
+                ) as x;
+              IF same_name_exists
+              THEN
+                RAISE EXCEPTION 'Club exists already for name fi:% sv:%', NEW.name_finnish, NEW.name_swedish;
+              END IF;
+              RETURN NULL;
+            END;
+            $club_name_uniq_check$ LANGUAGE 'plpgsql' STABLE;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-02-09-check-permit-type-100-has-area-size" author="vincit-terova">
+        <sql><![CDATA[
+            ALTER TABLE harvest_permit ADD CONSTRAINT harvest_permit_area_check
+            CHECK (permit_type_code <> '100' OR permit_area_size IS NOT NULL);
+        ]]>
+        </sql>
+
+    </changeSet>
+
+    <changeSet id="2017-01-26-add-pending-harvest-permit-area-status" author="vincit-kyostihe">
+        <insert tableName="harvest_permit_area_status">
+            <column name="name" value="PENDING"/>
+        </insert>
+        <insert tableName="harvest_permit_area_status">
+            <column name="name" value="PROCESSING"/>
+        </insert>
+        <insert tableName="harvest_permit_area_status">
+            <column name="name" value="PROCESSING_FAILED"/>
+        </insert>
+
+        <createIndex tableName="harvest_permit_area" indexName="ndx_harvest_permit_area_status">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

@@ -20,3 +20,8 @@ ${PSQL} -f ./sql/person.sql
 ${PSQL} -f ./sql/system_user.sql
 ${PSQL} -f ./sql/club.sql
 ${PSQL} -f ./sql/occupation.sql
+${PSQL} -f ./sql/harvest_permit.sql
+${PSQL} -f ./sql/harvest_permit_partner.sql
+${PSQL} -f ./sql/harvest_permit_species_amount.sql
+${PSQL} -f ./sql/hunting_club_area.sql
+${PSQL} -f ./sql/hunting_group.sql

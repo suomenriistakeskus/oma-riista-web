@@ -3,15 +3,16 @@ package fi.riista.feature.gamediary.excel;
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
+import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
-import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
 import fi.riista.feature.gamediary.observation.ObservationDTO;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenDTO;
 import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
+import fi.riista.util.F;
 import fi.riista.util.MediaTypeExtras;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.joda.time.format.DateTimeFormat;
@@ -65,7 +66,6 @@ public class GameDiaryExcelView extends AbstractXlsView {
         response.setCharacterEncoding(Constants.DEFAULT_ENCODING);
         response.setHeader(ContentDispositionUtil.HEADER_NAME,
                 ContentDispositionUtil.encodeAttachmentFilename(createFilename()));
-        response.setCharacterEncoding(Constants.DEFAULT_ENCODING);
 
         createHarvestsSheet(workbook);
         createObservationsSheet(workbook);
@@ -121,7 +121,7 @@ public class GameDiaryExcelView extends AbstractXlsView {
         for (ObservationDTO observation : observations) {
             final List<ObservationSpecimenDTO> specimens = observation.getSpecimens();
             final int specimensSize = ofNullable(specimens).map(List::size).orElse(0);
-            final int amount = observation.getAmount() == null ? 0 : observation.getAmount();
+            final int amount = F.coalesceAsInt(observation.getAmount(), 0);
 
             if (specimensSize != amount && amount != 1 || specimensSize == 0) {
                 helper.appendRow();

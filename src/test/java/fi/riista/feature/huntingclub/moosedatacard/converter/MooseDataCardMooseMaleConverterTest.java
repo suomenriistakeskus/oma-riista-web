@@ -6,11 +6,11 @@ import static org.junit.Assert.assertNull;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.gamediary.GameAge;
-import fi.riista.feature.gamediary.harvest.specimen.GameAntlersType;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.gamediary.harvest.specimen.GameAntlersType;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseMale;
 
 import org.junit.Test;
@@ -25,10 +25,9 @@ public class MooseDataCardMooseMaleConverterTest extends MooseDataCardHarvestCon
     }
 
     @Override
-    protected MooseDataCardMooseMaleConverter newConverter(
-            @Nonnull final GameSpecies mooseSpecies,
-            @Nonnull final Person person,
-            @Nonnull final GeoLocation defaultCoordinates) {
+    protected MooseDataCardMooseMaleConverter newConverter(@Nonnull final GameSpecies mooseSpecies,
+                                                           @Nonnull final Person person,
+                                                           @Nonnull final GeoLocation defaultCoordinates) {
 
         return new MooseDataCardMooseMaleConverter(mooseSpecies, person, defaultCoordinates);
     }
@@ -41,8 +40,7 @@ public class MooseDataCardMooseMaleConverterTest extends MooseDataCardHarvestCon
             assertEquals(GameAge.ADULT, specimen.getAge());
             assertEquals(GameGender.MALE, specimen.getGender());
             assertEquals(
-                    HasMooseDataCardEncoding.enumOf(GameAntlersType.class, male.getAntlersType())
-                            .getOrElseThrow(invalid -> new IllegalStateException("Could not convert antlers type")),
+                    HasMooseDataCardEncoding.getEnum(GameAntlersType.class, male.getAntlersType()),
                     specimen.getAntlersType());
             assertEquals(male.getAntlersWidth(), specimen.getAntlersWidth());
             assertEquals(male.getAntlerPointsLeft(), specimen.getAntlerPointsLeft());

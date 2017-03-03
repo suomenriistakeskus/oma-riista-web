@@ -1,9 +1,9 @@
 package fi.riista.feature.huntingclub.permit.harvestreport;
 
-import fi.riista.feature.SimpleAbstractCrudFeature;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
 import fi.riista.feature.storage.FileStorageService;
@@ -19,15 +19,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 
 @Component
 public class MooseHarvestReportCrudFeature
-        extends SimpleAbstractCrudFeature<Long, MooseHarvestReport, MooseHarvestReportDTO> {
+        extends AbstractCrudFeature<Long, MooseHarvestReport, MooseHarvestReportDTO> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MooseHarvestReportCrudFeature.class);
 
@@ -47,13 +47,13 @@ public class MooseHarvestReportCrudFeature
     private HuntingClubPermitService huntingPermitService;
 
     @Override
-    protected Function<MooseHarvestReport, MooseHarvestReportDTO> entityToDTOFunction() {
-        return MooseHarvestReportDTO::create;
+    protected JpaRepository<MooseHarvestReport, Long> getRepository() {
+        return mooseHarvestReportRepository;
     }
 
     @Override
-    protected JpaRepository<MooseHarvestReport, Long> getRepository() {
-        return mooseHarvestReportRepository;
+    protected MooseHarvestReportDTO toDTO(@Nonnull final MooseHarvestReport entity) {
+        return MooseHarvestReportDTO.create(entity);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class MooseHarvestReportCrudFeature
                 .anyMatch(c -> c.countAdults() + c.countYoung() > 0);
     }
 
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional(readOnly = true, rollbackFor = IOException.class)
     public ResponseEntity<byte[]> getReceiptFile(long permitId, int speciesCode) throws IOException {
         final MooseHarvestReport mooseHarvestReport = findMooseHarvestReport(permitId, speciesCode);
         final PersistentFileMetadata metadata = mooseHarvestReport.getReceiptFileMetadata();

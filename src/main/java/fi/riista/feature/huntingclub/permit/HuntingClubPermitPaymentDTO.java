@@ -4,10 +4,14 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import fi.riista.feature.harvestpermit.season.MooselikePrice;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class HuntingClubPermitPaymentDTO {
 
     public static HuntingClubPermitPaymentDTO create(HuntingClubPermitCountDTO count, MooselikePrice prices) {
+        Objects.requireNonNull(count, "huntingClubPermitCount is null");
+        Objects.requireNonNull(prices, "mooseLikePrice is null");
+
         final HuntingClubPermitPaymentDTO dto = new HuntingClubPermitPaymentDTO();
         dto.setHuntingClubId(count.getHuntingClubId());
 

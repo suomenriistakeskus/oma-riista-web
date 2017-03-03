@@ -6,17 +6,15 @@ import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.F;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 public class RiistanhoitoyhdistysClubFeatureTest extends EmbeddedDatabaseTest {
 
@@ -73,34 +71,33 @@ public class RiistanhoitoyhdistysClubFeatureTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testContactsAreFetchedByClubRHY_LeadersAreFetchedByPermit() {
-        final int huntingYear = 2016;
+        withRhy(rhy1 -> withRhy(rhy2 -> {
+            final int huntingYear = 2016;
 
-        final Riistanhoitoyhdistys rhy1 = model().newRiistanhoitoyhdistys();
-        final Riistanhoitoyhdistys rhy2 = model().newRiistanhoitoyhdistys();
+            final HarvestPermit permit1 = model().newHarvestPermit(rhy1);
+            final HarvestPermit permit2 = model().newHarvestPermit(rhy2);
 
-        final HarvestPermit permit1 = model().newHarvestPermit(rhy1);
-        final HarvestPermit permit2 = model().newHarvestPermit(rhy2);
+            final HuntingClub club1 = model().newHuntingClub(rhy1);
+            final HuntingClub club2 = model().newHuntingClub(rhy2);
 
-        final HuntingClub club1 = model().newHuntingClub(rhy1);
-        final HuntingClub club2 = model().newHuntingClub(rhy2);
+            final Occupation contact1 = model().newHuntingClubMember(club1, OccupationType.SEURAN_YHDYSHENKILO);
+            final Occupation leader1 = createGroupAndLeader(huntingYear, permit1, club1);
 
-        final Occupation contact1 = model().newHuntingClubMember(club1, OccupationType.SEURAN_YHDYSHENKILO);
-        final Occupation leader1 = createGroupAndLeader(huntingYear, permit1, club1);
+            final Occupation contact2 = model().newHuntingClubMember(club2, OccupationType.SEURAN_YHDYSHENKILO);
+            // This group's permit points to rhy1
+            final Occupation leader2 = createGroupAndLeader(huntingYear, permit1, club2);
+            // These two groups permits point to rhy2. There are two groups to make sure contacts are not duplicated
+            final Occupation leader2_2 = createGroupAndLeader(huntingYear, permit2, club2);
+            final Occupation leader2_3 = createGroupAndLeader(huntingYear, permit2, club2);
 
-        final Occupation contact2 = model().newHuntingClubMember(club2, OccupationType.SEURAN_YHDYSHENKILO);
-        // This group's permit points to rhy1
-        final Occupation leader2 = createGroupAndLeader(huntingYear, permit1, club2);
-        // These two groups permits point to rhy2. There are two groups to make sure contacts are not duplicated
-        final Occupation leader2_2 = createGroupAndLeader(huntingYear, permit2, club2);
-        final Occupation leader2_3 = createGroupAndLeader(huntingYear, permit2, club2);
+            onSavedAndAuthenticated(createNewModerator(), () -> {
+                assertOccupations(feature.listLeaders(rhy1.getId(), huntingYear), leader1, leader2);
+                assertOccupations(feature.listLeaders(rhy2.getId(), huntingYear), leader2_2, leader2_3);
 
-        onSavedAndAuthenticated(createNewModerator(), () -> {
-            assertOccupations(feature.listLeaders(rhy1.getId(), huntingYear), leader1, leader2);
-            assertOccupations(feature.listLeaders(rhy2.getId(), huntingYear), leader2_2, leader2_3);
-
-            assertOccupations(feature.listContacts(rhy1.getId()), contact1);
-            assertOccupations(feature.listContacts(rhy2.getId()), contact2);
-        });
+                assertOccupations(feature.listContacts(rhy1.getId()), contact1);
+                assertOccupations(feature.listContacts(rhy2.getId()), contact2);
+            });
+        }));
     }
 
     private Occupation createGroupAndLeader(int huntingYear, HarvestPermit permit, HuntingClub club) {
@@ -111,8 +108,6 @@ public class RiistanhoitoyhdistysClubFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private static void assertOccupations(List<RhyClubOccupationDTO> occupations, Occupation... expected) {
-        final Set<Long> expectedIds = F.getUniqueIds(expected);
-        final Set<Long> actualIds = F.getUniqueIds(occupations);
-        assertTrue(expectedIds.equals(actualIds));
+        assertEquals(F.getUniqueIds(expected), F.getUniqueIds(occupations));
     }
 }

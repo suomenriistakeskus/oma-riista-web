@@ -2,6 +2,7 @@ package fi.riista.feature.huntingclub.permit.stats;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryDTO;
+import fi.riista.util.F;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -38,7 +39,7 @@ public class MoosePermitStatisticsCount {
 
         return collection.stream()
                 .map(transform)
-                .mapToInt(i -> i != null ? i : 0)
+                .mapToInt(i -> F.coalesceAsInt(i, 0))
                 .sum();
     }
 
@@ -151,10 +152,10 @@ public class MoosePermitStatisticsCount {
     }
 
     private static double percentRatio(double a, double b) {
-        return b == 0 ? 0 : 100.0 * a / b;
+        return Math.round(b) == 0 ? 0 : 100.0 * a / b;
     }
 
     private static double ratio(double a, double b) {
-        return b == 0 ? 0 : a / b;
+        return Math.round(b) == 0 ? 0 : a / b;
     }
 }

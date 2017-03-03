@@ -12,6 +12,7 @@ angular.module('app.clubmap.services', [])
         function Service(featureCollection, huntingClubArea) {
             this.featureCollection = featureCollection;
             this.areaList = [];
+            this.selectedAreaList = [];
             this.huntingClubArea = huntingClubArea;
         }
 
@@ -20,32 +21,52 @@ angular.module('app.clubmap.services', [])
         proto.init = function () {
             var self = this;
 
-            var selectedAreaNumbers = _(this.featureCollection.features)
+            self.selectedAreaList = _(this.featureCollection.features)
                 .filter(function (feature) {
                     return _.startsWith(feature.id, PREFIX_MOOSE);
                 }).map(function (feature) {
-                    return feature.properties.number;
+                    return {
+                        id: feature.id,
+                        number: feature.properties.number,
+                        name: feature.properties.name,
+                        size: feature.properties.size,
+                        year: feature.properties.year
+                    };
                 }).value();
 
             var year = self.huntingClubArea.metsahallitusYear;
 
             return GIS.listMetsahallitusHirviByYear(year).then(function (response) {
                 self.areaList = response.data || [];
-
-                _.each(self.areaList, function (area) {
-                    area.selected = _.contains(selectedAreaNumbers, area.number);
-                });
-
                 return self;
             });
         };
 
         proto.getSelectedAreaList = function () {
-            return _.filter(this.areaList, 'selected', true);
+            return this.selectedAreaList;
+        };
+
+        proto.addSelectedArea = function (a) {
+            this.removeSelectedArea(a);
+            var area = {
+                id: PREFIX_MOOSE + a.gid,
+                number: a.number,
+                name: a.name,
+                size: a.size,
+                year: a.year
+            };
+            this.selectedAreaList.unshift(area);
+            return area;
+        };
+
+        proto.removeSelectedArea = function (area) {
+            _.remove(this.selectedAreaList, function (a) {
+                return area.number === a.number;
+            });
         };
 
         proto.isEmptySelection = function () {
-            return this.getSelectedAreaList().length === 0;
+            return !this.selectedAreaList;
         };
 
         proto.filterMooseAreaList = function (searchQuery) {
@@ -66,10 +87,6 @@ angular.module('app.clubmap.services', [])
         return {
             create: function (featureCollection, huntingClubArea) {
                 return new Service(featureCollection, huntingClubArea).init();
-            },
-
-            getMooseFeatureId: function (area) {
-                return PREFIX_MOOSE + area.id;
             },
 
             isMooseFeature: isMooseFeature
@@ -375,7 +392,7 @@ angular.module('app.clubmap.services', [])
             this.highlightedFeature = feature;
             var layers = this.findLayersWithSamePropertyNumber(feature);
             layers = _.difference(layers, this.selectedLayers);
-            this.setLayerStyles(layers, {fillColor: "blue", fillOpacity: 0.3});
+            this.setLayerStyles(layers, {fillOpacity: 0.5});
         };
 
         proto.removeHighlight = function (feature) {

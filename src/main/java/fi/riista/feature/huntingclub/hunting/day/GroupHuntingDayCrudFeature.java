@@ -1,13 +1,12 @@
 package fi.riista.feature.huntingclub.hunting.day;
 
 import com.google.common.base.Preconditions;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.SimpleAbstractCrudFeature;
 import fi.riista.feature.gamediary.GameDiaryEntry;
-import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
 import fi.riista.security.EntityPermission;
@@ -19,15 +18,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 import static fi.riista.util.jpa.JpaSpecs.equal;
 
 @Component
-public class GroupHuntingDayCrudFeature extends SimpleAbstractCrudFeature<Long, GroupHuntingDay, GroupHuntingDayDTO> {
+public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupHuntingDay, GroupHuntingDayDTO> {
 
     @Resource
     private GroupHuntingDayService service;
@@ -36,10 +35,7 @@ public class GroupHuntingDayCrudFeature extends SimpleAbstractCrudFeature<Long, 
     private GroupHuntingDayRepository huntingDayRepository;
 
     @Resource
-    private HuntingClubGroupRepository groupRepository;
-
-    @Resource
-    private GroupHuntingDayTransformer huntingDayTransformer;
+    private GroupHuntingDayDTOTransformer dtoTransformer;
 
     @Resource
     private HarvestRepository harvestRepository;
@@ -59,9 +55,14 @@ public class GroupHuntingDayCrudFeature extends SimpleAbstractCrudFeature<Long, 
     }
 
     @Override
-    protected Enum<?> getCreatePermission(final GroupHuntingDayDTO dto) {
-        final HuntingClubGroup group = groupRepository.getOne(dto.getHuntingGroupId());
-        return group.isFromMooseDataCard()
+    protected GroupHuntingDayDTO toDTO(@Nonnull final GroupHuntingDay entity) {
+        return dtoTransformer.apply(entity);
+    }
+
+    @Override
+    protected Enum<?> getCreatePermission(final GroupHuntingDay entity,
+                                          final GroupHuntingDayDTO dto) {
+        return entity.getGroup().isFromMooseDataCard()
                 ? GroupHuntingDayAuthorization.Permission.CREATE_WITHIN_MOOSE_DATA_CARD_IMPORT
                 : EntityPermission.CREATE;
     }
@@ -143,11 +144,6 @@ public class GroupHuntingDayCrudFeature extends SimpleAbstractCrudFeature<Long, 
         super.delete(groupHuntingDay);
     }
 
-    @Override
-    protected Function<GroupHuntingDay, GroupHuntingDayDTO> entityToDTOFunction() {
-        return huntingDayTransformer.asSingletonFunction();
-    }
-
     @Transactional(readOnly = true)
     public List<GroupHuntingDayDTO> findByClubGroup(final long huntingClubGroupId) {
         final HuntingClubGroup group = requireEntityService.requireHuntingGroup(huntingClubGroupId, EntityPermission.READ);
@@ -166,7 +162,7 @@ public class GroupHuntingDayCrudFeature extends SimpleAbstractCrudFeature<Long, 
                 equal(GroupHuntingDay_.startDate, date)
         ));
         if (day != null) {
-            return entityToDTOFunction().apply(day);
+            return toDTO(day);
         }
         final GroupHuntingDayDTO dto = new GroupHuntingDayDTO();
         dto.setHuntingGroupId(huntingClubGroupId);

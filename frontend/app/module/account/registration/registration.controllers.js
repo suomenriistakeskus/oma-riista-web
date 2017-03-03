@@ -28,10 +28,10 @@ angular.module('app.account.registration.controllers', [
                 controllerAs: '$ctrl',
                 authenticate: false
             })
-            .state('registration-from-vetuma', {
-                url: '/register/from-vetuma/success/{trid:[0-9a-f]{19}}',
-                templateUrl: 'account/registration/from_vetuma.html',
-                controller: 'AccountRegistrationFromVetumaController',
+            .state('registration-from-sso', {
+                url: '/register/from-sso/success/{trid:[0-9a-f]{19}}',
+                templateUrl: 'account/registration/from_sso.html',
+                controller: 'AccountRegistrationFromSsoController',
                 controllerAs: '$ctrl',
                 authenticate: false,
                 resolve: {
@@ -40,13 +40,10 @@ angular.module('app.account.registration.controllers', [
                     }
                 }
             })
-            .state('registration-from-vetuma-error', {
-                url: '/register/from-vetuma/{vetumaResponseStatus}',
-                templateUrl: 'account/registration/from_vetuma_error.html',
-                authenticate: false,
-                controller: function ($scope, $state, $stateParams) {
-                    $scope.vetumaResponseStatus = $stateParams.vetumaResponseStatus;
-                }
+            .state('registration-from-sso-error', {
+                url: '/register/from-sso/error',
+                templateUrl: 'account/registration/from_sso_error.html',
+                authenticate: false
             });
     }])
     .controller('AccountRegistrationSendEmailController',
@@ -62,7 +59,7 @@ angular.module('app.account.registration.controllers', [
 
                 AccountRegistrationService.requestAccountRegistrationEmail({
                     email: $ctrl.email,
-                    languageCode: $translate.use() || 'fi'
+                    lang: $translate.use() || 'fi'
                 }).then(function () {
                     $ctrl.error = false;
                     NotificationService.flashMessage("registration.email.success", "success");
@@ -81,14 +78,11 @@ angular.module('app.account.registration.controllers', [
         $ctrl.showTermsAndConditions = false;
         $ctrl.termsAndConditionsAccepted = false;
         $ctrl.checkStatus = 'waiting';
+        $ctrl.lang = $stateParams.lang || $translate.use() || 'fi';
 
         $ctrl.toggleTermsVisibility = function () {
             $ctrl.showTermsAndConditions = !$ctrl.showTermsAndConditions;
         };
-
-        // NOTE: Must specify initial value to circumvent Angular bug
-        $ctrl.vetumaLoginUrl = '/';
-        $ctrl.vetumaConnection = {};
 
         if ($stateParams.lang) {
             $translate.use($stateParams.lang);
@@ -96,24 +90,27 @@ angular.module('app.account.registration.controllers', [
 
         AccountRegistrationService.processTokenFromEmail({
             token: $stateParams.token,
-            lang: $stateParams.lang || $translate.use() || 'fi'
-        }).then(function (data) {
-            $ctrl.checkStatus = data.status;
-            $ctrl.vetumaConnection = data.vetumaConnection;
-            $ctrl.vetumaLoginUrl = data.vetumaLoginUrl;
+            lang: $ctrl.lang
+        }).then(function (response) {
+            $ctrl.checkStatus = response.data.status;
+            $ctrl.trid = response.data.trid;
         }, function () {
             $ctrl.checkStatus = "error";
         });
     })
-    .controller('AccountRegistrationFromVetumaController', function ($state, $stateParams,
-                                                                     AccountRegistrationService, NotificationService,
-                                                                     registrationData) {
+    .controller('AccountRegistrationFromSsoController', function ($state, $stateParams, $translate,
+                                                                  AccountRegistrationService, NotificationService,
+                                                                  registrationData) {
         var $ctrl = this;
 
         $ctrl.registrationData = registrationData.data;
         $ctrl.password = '';
         $ctrl.confirmPassword = '';
         $ctrl.doNotMatch = null;
+
+        if (!$ctrl.registrationData.lang) {
+            $ctrl.registrationData.lang = $translate.use() || 'fi';
+        }
 
         $ctrl.completeRegistration = function () {
             if ($ctrl.password !== $ctrl.confirmPassword) {

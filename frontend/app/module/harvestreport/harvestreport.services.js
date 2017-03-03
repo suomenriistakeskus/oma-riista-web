@@ -42,15 +42,19 @@ angular.module('app.harvestreport.services', ['ngResource'])
         };
         return {findHarvestArea: findHarvestArea};
     })
-    .factory('ActiveHarvestSeasons', function ($resource, ActiveRoleService, Helpers) {
-        // For normal users request active seasons, which limits seasons to only those
-        // where today is between begin-date and end-of-reporting-date
-        // For admins request all, even expired seasons
-        var params = ActiveRoleService.isModerator() ? {} : {date: Helpers.dateToString(new Date())};
-
+    .factory('ActiveHarvestSeasons', function ($resource) {
         return $resource('api/v1/harvestreport/activeseasons', {}, {
-            query: {method: 'GET', isArray: true, params: params}
+            query: {method: 'GET', isArray: true}
         });
+    })
+    .service('ActiveHarvestSeasonsService', function (ActiveHarvestSeasons, ActiveRoleService, Helpers) {
+        this.query = function () {
+            // For normal users request active seasons, which limits seasons to only those
+            // where today is between begin-date and end-of-reporting-date.
+            // For moderators and coordinators request all, even expired seasons.
+            var params = ActiveRoleService.isModerator() || ActiveRoleService.isCoordinator() ? {} : {date: Helpers.dateToString(new Date())};
+            return ActiveHarvestSeasons.query(params);
+        }
     })
     .factory('ActivePermitsFields', function ($resource) {
         return $resource('api/v1/harvestreport/activepermits', {}, {
@@ -58,7 +62,7 @@ angular.module('app.harvestreport.services', ['ngResource'])
         });
     })
     .factory('HarvestReportFieldsAndSeasons',
-        function ($q, ActiveHarvestSeasons, ActivePermitsFields, $filter, $translate, Helpers, HarvestPermits) {
+        function ($q, ActiveHarvestSeasonsService, ActivePermitsFields, $filter, $translate, Helpers, HarvestPermits) {
             var i18nNameFilter = $filter('rI18nNameFilter');
             var typeQuota = $translate.instant('harvestreport.reportType.OTHERS');
             var typePermit = $translate.instant('harvestreport.reportType.PERMIT');
@@ -75,7 +79,7 @@ angular.module('app.harvestreport.services', ['ngResource'])
             };
 
             var _resolveSelectableFields = function () {
-                var seasonsPromise = ActiveHarvestSeasons.query().$promise;
+                var seasonsPromise = ActiveHarvestSeasonsService.query().$promise;
                 var permitFieldsPromise = ActivePermitsFields.query().$promise;
                 var promises = $q.all([seasonsPromise, permitFieldsPromise]);
                 return promises.then(function (r) {

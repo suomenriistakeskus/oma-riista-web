@@ -1,18 +1,16 @@
 package fi.riista.feature.account;
 
-import com.google.common.base.Preconditions;
-import fi.riista.feature.account.password.ChangePasswordDTO;
-import fi.riista.feature.account.audit.AccountActivityMessage;
-import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.account.audit.AccountAuditService;
-import fi.riista.feature.account.user.ActiveUserService;
-import fi.riista.feature.account.password.ChangePasswordService;
-import fi.riista.feature.account.audit.AuditService;
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.organization.person.PersonAuthorization;
+import fi.riista.feature.account.audit.AccountActivityMessage;
+import fi.riista.feature.account.audit.AccountAuditService;
+import fi.riista.feature.account.audit.AuditService;
+import fi.riista.feature.account.password.ChangePasswordDTO;
+import fi.riista.feature.account.password.ChangePasswordService;
+import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.feature.organization.person.PersonAuthorization;
 import fi.riista.security.EntityPermission;
 import fi.riista.security.authentication.CustomSpringSessionRememberMeServices;
 import org.apache.commons.lang.StringUtils;
@@ -46,9 +44,6 @@ public class AccountEditFeature {
     private AccountAuditService accountAuditService;
 
     @Resource
-    private PersonRepository personRepository;
-
-    @Resource
     private AccountRoleService roleService;
 
     @Resource
@@ -62,8 +57,6 @@ public class AccountEditFeature {
         final SystemUser activeUser = activeUserService.getActiveUser();
         final boolean isRememberMe = CustomSpringSessionRememberMeServices.isRememberMeActive(request);
 
-        activeUserService.assertHasPermission(activeUser, EntityPermission.READ);
-
         return AccountDTOBuilder.create()
                 .withRememberMe(isRememberMe)
                 .withUser(activeUser)
@@ -73,7 +66,6 @@ public class AccountEditFeature {
     @Transactional
     public void updateActiveAccount(AccountDTO dto) {
         final SystemUser activeUser = activeUserService.getActiveUser();
-        activeUserService.assertHasPermission(activeUser, EntityPermission.UPDATE);
 
         if (dto.getLocale() != null) {
             activeUser.setLocale(dto.getLocale());
@@ -82,19 +74,22 @@ public class AccountEditFeature {
         if (dto.getTimeZone() != null) {
             activeUser.setTimeZone(dto.getTimeZone());
         }
-        updatePerson(dto, activeUser.getPerson());
+
+        if (activeUser.getRole().isNormalUser()) {
+            updatePerson(dto, activeUser.getPerson());
+        }
+
         auditService.log("updateActiveAccount", activeUser.getPerson());
     }
 
     @Transactional
-    public void updateOtherUserAccount(AccountDTO dto) {
-        Person person = personRepository.findOne(dto.getPersonId());
-        activeUserService.assertHasPermission(person, EntityPermission.UPDATE);
+    public void updateOtherUserAccount(final AccountDTO dto) {
+        final Person person = requireEntityService.requirePerson(dto.getPersonId(), EntityPermission.UPDATE);
         updatePerson(dto, person);
         auditService.log("updateOtherUserAccount", person);
     }
 
-    private static void updatePerson(AccountDTO dto, Person person) {
+    private static void updatePerson(final AccountDTO dto, final Person person) {
         if (person == null) {
             return;
         }
@@ -122,14 +117,12 @@ public class AccountEditFeature {
     }
 
     @Transactional
-    public void changeActiveUserPassword(ChangePasswordDTO dto) {
-        Preconditions.checkArgument(StringUtils.isNotEmpty(dto.getPassword()), "No password given");
-
+    public void changeActiveUserPassword(final ChangePasswordDTO dto) {
         final SystemUser user = activeUserService.getActiveUser();
 
-        activeUserService.assertHasPermission(user, EntityPermission.UPDATE);
-
-        changePasswordService.setUserPassword(user, dto.getPassword());
+        if (user.getRole().isNormalUser() || user.getRole().isModeratorOrAdmin()) {
+            changePasswordService.setUserPassword(user, dto.getPassword());
+        }
 
         // Log account activity
         accountAuditService.auditUserEvent(user, activeUserService.getAuthentication(),
@@ -158,10 +151,7 @@ public class AccountEditFeature {
 
     @Transactional
     public void updateSrvaEnabled(boolean enableSrva) {
-        final SystemUser activeUser = activeUserService.getActiveUser();
-        activeUserService.assertHasPermission(activeUser, EntityPermission.UPDATE);
-
-        final Person person = activeUser.getPerson();
+        final Person person = activeUserService.requireActivePerson();
         person.setEnableSrva(enableSrva);
         if (enableSrva) {
             auditService.log("SRVA activated", person);

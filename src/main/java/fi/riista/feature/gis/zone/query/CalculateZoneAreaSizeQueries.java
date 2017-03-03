@@ -32,7 +32,7 @@ public class CalculateZoneAreaSizeQueries {
                 " FROM zone" +
                 " WHERE zone_id = :zoneId" +
                 ") SELECT" +
-                " SUM(ST_Area(ST_Intersection(va.geom, z.geom)))" +
+                " SUM(ST_Area(ST_Intersection(va.geom, ST_Buffer(z.geom, 0))))" +
                 " FROM z JOIN vesialue va ON ST_Intersects(va.geom, z.geom)");
     }
 
@@ -43,7 +43,7 @@ public class CalculateZoneAreaSizeQueries {
                 " WHERE zone_id = :zoneId" +
                 ") SELECT" +
                 " rhy.id as rhy_official_code," +
-                " SUM(ST_Area(ST_Intersection(rhy.geom, z.geom))) AS area_size" +
+                " SUM(ST_Area(ST_Intersection(rhy.geom, ST_Buffer(z.geom, 0)))) AS area_size" +
                 " FROM z JOIN rhy ON ST_Intersects(rhy.geom, z.geom)" +
                 " GROUP BY rhy.id", zoneParam(zoneId), (resultSet, i) -> {
             final String rhyOfficialCode = resultSet.getString("rhy_official_code");
@@ -59,7 +59,7 @@ public class CalculateZoneAreaSizeQueries {
                 " WHERE zone_id = :zoneId" +
                 ") SELECT" +
                 " hta.numero as hta_code," +
-                " SUM(ST_Area(ST_Intersection(hta.geom, z.geom))) AS area_size" +
+                " SUM(ST_Area(ST_Intersection(hta.geom, ST_Buffer(z.geom, 0)))) AS area_size" +
                 " FROM z JOIN hta ON ST_Intersects(hta.geom, z.geom)" +
                 " GROUP BY hta.numero", zoneParam(zoneId), (resultSet, i) -> {
             final String rhyOfficialCode = resultSet.getString("hta_code");

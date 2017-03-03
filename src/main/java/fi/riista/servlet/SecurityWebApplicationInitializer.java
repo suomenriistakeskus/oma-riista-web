@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 
 @Order(3)
 public class SecurityWebApplicationInitializer extends AbstractSecurityWebApplicationInitializer {
-    private static final String VETUMA_CHARACTER_ENCODING = StandardCharsets.ISO_8859_1.name();
     private static final String NORMAL_CHARACTER_ENCODING = StandardCharsets.UTF_8.name();
 
     @Override
@@ -31,12 +30,7 @@ public class SecurityWebApplicationInitializer extends AbstractSecurityWebApplic
         final CharacterEncodingFilter normalCharacterEncodingFilter = new CharacterEncodingFilter();
         normalCharacterEncodingFilter.setEncoding(NORMAL_CHARACTER_ENCODING);
 
-        final CharacterEncodingFilter vetumaCharacterEncodingFilter = new CharacterEncodingFilter();
-        vetumaCharacterEncodingFilter.setEncoding(VETUMA_CHARACTER_ENCODING);
-        vetumaCharacterEncodingFilter.setForceEncoding(true);
-
         registerFilter(servletContext, "normalCharacterEncodingFilter", normalCharacterEncodingFilter, "/*");
-        registerFilter(servletContext, "vetumaCharacterEncodingFilter", vetumaCharacterEncodingFilter, "/vetuma/*");
     }
 
     private void registerFilter(ServletContext servletContext, String name, Filter filter, String pattern) {

@@ -1,10 +1,11 @@
 package fi.riista.integration.luke;
 
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
+import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
+import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -15,6 +16,7 @@ import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
 import fi.riista.feature.huntingclub.permit.summary.SpeciesEstimatedAppearance;
 import fi.riista.feature.huntingclub.permit.summary.SpeciesEstimatedAppearanceWithPiglets;
 import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Address;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Amount;
@@ -52,6 +54,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -61,17 +64,18 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.toList;
 
 public class MooselikeHarvestsObjectFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(MooselikeHarvestsObjectFactory.class);
 
-    public static LEM_Permit createPermit(final String permitNumber,
-                                          final String rhyOfficialCode,
+    public static LEM_Permit createPermit(final @Nonnull String permitNumber,
+                                          final @Nonnull String rhyOfficialCode,
                                           final Person contactPerson,
-                                          final HarvestPermitSpeciesAmount spa,
+                                          final @Nonnull HarvestPermitSpeciesAmount spa,
                                           final List<HarvestPermitSpeciesAmount> amendmentSpas,
-                                          final List<LEM_Club> huntingClubs) {
+                                          final @Nonnull List<LEM_Club> huntingClubs) {
 
         LEM_Permit dto = new LEM_Permit();
         dto.setPermitNumber(permitNumber);
@@ -82,7 +86,7 @@ public class MooselikeHarvestsObjectFactory {
         if (amendmentSpas != null && amendmentSpas.size() > 0) {
             createAmounts(amendmentSpas).forEach(dto.getAmendmentPermits()::add);
         }
-        dto.getHuntingClubs().addAll(huntingClubs);
+        dto.setHuntingClubs(huntingClubs);
         return dto;
     }
 
@@ -126,30 +130,37 @@ public class MooselikeHarvestsObjectFactory {
         return dto;
     }
 
-    public static LEM_Club createClub(HuntingClub club, Person contact) {
+    public static LEM_Club createClub(final @Nonnull HuntingClub club,
+                                      final @Nonnull HarvestPermit moosePermit,
+                                      final @Nonnull Map<Long, Occupation> clubContacts,
+                                      final @Nonnull Map<Long, List<HuntingClubGroup>> groups,
+                                      final @Nonnull Map<Long, List<GroupHuntingDay>> groupDays,
+                                      final @Nonnull Map<Long, List<Harvest>> dayHarvests,
+                                      final @Nonnull Map<Long, List<Observation>> dayObservations,
+                                      final @Nonnull Map<Long, List<HarvestSpecimen>> harvestSpecimens,
+                                      final @Nonnull Map<Long, List<ObservationSpecimen>> observationSpecimens,
+                                      final @Nonnull Map<HarvestPermit, Map<HuntingClub, MooseHuntingSummary>> permitToClubToSummary,
+                                      final @Nonnull Map<Long, BasicClubHuntingSummary> clubOverrides) {
         final LEM_Club dto = new LEM_Club();
 
         dto.setClubOfficialCode(club.getOfficialCode());
         dto.setNameFinnish(club.getNameFinnish());
         dto.setRhyOfficialCode(club.getParentOrganisation().getOfficialCode());
-        dto.setContactPerson(createPerson(contact));
-        return dto;
-    }
-
-    public static LEM_Club createClub(final HuntingClub club,
-                                      final Person contact,
-                                      final List<HuntingClubGroup> groups,
-                                      final Map<Long, List<GroupHuntingDay>> groupDays,
-                                      final Map<Long, List<Harvest>> dayHarvests, Map<Long, List<Observation>> dayObservations,
-                                      final Map<Long, List<HarvestSpecimen>> harvestSpecimens,
-                                      final Map<Long, List<ObservationSpecimen>> observationSpecimens,
-                                      final MooseHuntingSummary summary,
-                                      final Map<Long, BasicClubHuntingSummary> clubOverrides) {
-        final LEM_Club dto = createClub(club, contact);
+        dto.setContactPerson(Optional.of(club.getId())
+                .map(clubContacts::get)
+                .map(Occupation::getPerson)
+                .map(MooselikeHarvestsObjectFactory::createPerson)
+                .orElse(null));
 
         final boolean hasOverride = clubOverrides.containsKey(club.getId());
 
-        groups.stream()
+        final List<HuntingClubGroup> clubGroups = groups.getOrDefault(club.getId(), emptyList());
+        final List<HuntingClubGroup> groupsWithHuntingDays = clubGroups.stream()
+                .filter(g -> g.getHarvestPermit().equals(moosePermit))
+                .filter(g -> CollectionUtils.isNotEmpty(groupDays.getOrDefault(g.getId(), emptyList())))
+                .collect(toList());
+
+        dto.setGroups(groupsWithHuntingDays.stream()
                 .map(g -> {
                     if (hasOverride) {
                         return createGroup(g, emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap());
@@ -157,12 +168,17 @@ public class MooselikeHarvestsObjectFactory {
                     final List<GroupHuntingDay> days = groupDays.get(g.getId());
                     return createGroup(g, days, dayHarvests, dayObservations, harvestSpecimens, observationSpecimens);
                 })
-                .forEach(dto.getGroups()::add);
+                .collect(toList()));
 
         if (hasOverride) {
             dto.setOverrides(createOverrides(club, clubOverrides));
-        } else {
-            dto.setHuntingSummary(createSummary(summary));
+
+        } else if (!groupsWithHuntingDays.isEmpty()) {
+            dto.setHuntingSummary(Optional.of(moosePermit)
+                    .map(permitToClubToSummary::get)
+                    .map(summaries -> summaries.get(club))
+                    .map(MooselikeHarvestsObjectFactory::createSummary)
+                    .orElse(null));
         }
         return dto;
     }
@@ -185,7 +201,6 @@ public class MooselikeHarvestsObjectFactory {
         o.setRemainingPopulationInEffectiveArea(a.getRemainingPopulationInEffectiveArea());
         return o;
     }
-
 
     private static LEM_Group createGroup(final HuntingClubGroup group,
                                          final List<GroupHuntingDay> days,
@@ -219,7 +234,7 @@ public class MooselikeHarvestsObjectFactory {
         dto.setStartTime(day.getStartTime());
         dto.setEndDate(day.getEndDate());
         dto.setEndTime(day.getEndTime());
-        dto.setBreakDurationInMinutes(Optional.ofNullable(day.getBreakDurationInMinutes()).orElse(0));
+        dto.setBreakDurationInMinutes(F.coalesceAsInt(day.getBreakDurationInMinutes(), 0));
 
         dto.setDurationInMinutes(day.calculateHuntingDayDurationInMinutes());
 

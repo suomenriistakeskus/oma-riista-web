@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.permit.summary;
 
+import fi.riista.util.F;
 import javaslang.Tuple;
 import javaslang.Tuple4;
 
@@ -8,7 +9,6 @@ import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Min;
-
 import java.io.Serializable;
 
 @Embeddable
@@ -39,6 +39,25 @@ public class AreaSizeAndRemainingPopulation implements Serializable {
                 .withEffectiveHuntingArea(0)
                 .withRemainingPopulationInTotalArea(0)
                 .withRemainingPopulationInEffectiveArea(0);
+    }
+
+    public AreaSizeAndRemainingPopulation calculateMissingValues(final Float effectiveHuntingAreaPercentage,
+                                                                 final int permitArea) {
+
+        final int total = F.firstNonNull(totalHuntingArea, permitArea);
+        final float percentage = F.firstNonNull(effectiveHuntingAreaPercentage, 100F);
+        final int effective = F.firstNonNull(effectiveHuntingArea, Math.round(total * percentage / 100.0F));
+        return createCopy(this)
+                .withTotalHuntingArea(total)
+                .withEffectiveHuntingArea(effective);
+    }
+
+    private static AreaSizeAndRemainingPopulation createCopy(final AreaSizeAndRemainingPopulation a) {
+        return new AreaSizeAndRemainingPopulation()
+                .withTotalHuntingArea(a.totalHuntingArea)
+                .withEffectiveHuntingArea(a.effectiveHuntingArea)
+                .withRemainingPopulationInTotalArea(a.remainingPopulationInTotalArea)
+                .withRemainingPopulationInEffectiveArea(a.remainingPopulationInEffectiveArea);
     }
 
     public boolean isHuntingAreaAndRemainingPopulationPresent() {

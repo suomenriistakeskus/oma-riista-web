@@ -4,6 +4,7 @@ import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
@@ -34,14 +35,14 @@ public class HuntingClubGroupCrudFeature_WithHuntingDataTest extends EmbeddedDat
         final Fixture f = new Fixture();
         f.rhy = model().newRiistanhoitoyhdistys();
         f.club = model().newHuntingClub(f.rhy);
-        f.gameSpecies = model().newGameSpeciesMoose();
-        f.group = model().newHuntingClubGroup(f.club, f.gameSpecies);
-        model().newGroupHuntingDay(f.group, today());
 
+        f.gameSpecies = model().newGameSpeciesMoose();
         f.permit = model().newHarvestPermit(f.rhy);
         f.permit.getPermitPartners().add(f.club);
-        f.group.updateHarvestPermit(f.permit);
-        model().newHarvestPermitSpeciesAmount(f.permit, f.group.getSpecies());
+        f.speciesAmount = model().newHarvestPermitSpeciesAmount(f.permit, f.gameSpecies);
+
+        f.group = model().newHuntingClubGroup(f.club, f.speciesAmount);
+        model().newGroupHuntingDay(f.group, today());
 
         consumer.accept(f);
     }
@@ -52,6 +53,7 @@ public class HuntingClubGroupCrudFeature_WithHuntingDataTest extends EmbeddedDat
         GameSpecies gameSpecies;
         HuntingClubGroup group;
         HarvestPermit permit;
+        HarvestPermitSpeciesAmount speciesAmount;
     }
 
     private void callUpdateWithChanges(final HuntingClubGroup group, final Consumer<HuntingClubGroupDTO> consumer) {
@@ -167,8 +169,7 @@ public class HuntingClubGroupCrudFeature_WithHuntingDataTest extends EmbeddedDat
     @Test
     public void testDelete_whenHuntingFinishedButNoHuntingDataOnGroup() {
         withMooseGroupWithHuntingData(f -> {
-            final HuntingClubGroup group2 = model().newHuntingClubGroup(f.club, f.gameSpecies);
-            group2.updateHarvestPermit(f.permit);
+            final HuntingClubGroup group2 = model().newHuntingClubGroup(f.club, f.speciesAmount);
 
             // Intermediary flush needed before persisting MooseHuntingSummary in order to have
             // harvest_permit_partners table populated required for foreign key constraint.

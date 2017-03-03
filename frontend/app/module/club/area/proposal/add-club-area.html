@@ -1,0 +1,32 @@
+<form name="proposalAddClubAreaForm" role="form"
+      class="form form-horizontal" autocomplete="off"
+      ng-submit="proposalAddClubAreaForm.$valid && $ctrl.ok()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="club.area.proposal.addClubArea.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="areaExternalId" class="col-xs-4 control-label">
+                <span translate="club.area.proposal.addClubArea.areaExternalId"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input name="areaExternalId" id="areaExternalId"
+                       class="form-control"
+                       autofocus focus-me="true"
+                       ng-model="$ctrl.areaExternalId">
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary" translate="global.button.ok"></button>
+    </div>
+</form>

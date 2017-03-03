@@ -76,6 +76,7 @@ angular.module('app', [
     'app.account.services', 'app.account.controllers', 'app.account.directives',
     'app.account.profile',
     'app.account.announcements',
+    'app.account.twofactor',
     'app.account.recover.services', 'app.account.recover.controllers',
     'app.account.registration.services', 'app.account.registration.controllers',
 
@@ -101,7 +102,7 @@ angular.module('app', [
     'app.club.members', 'app.clubgroup.members',
     'app.clubgroup.datacard',
     'app.clubgroup.controllers', 'app.clubgroup.services', 'app.clubgroup.directives',
-    'app.clubarea.controllers', 'app.clubarea.services', 'app.clubarea.components', 'app.clubarea.print',
+    'app.clubarea.list',
     'app.clubmap.controllers', 'app.clubmap.services', 'app.clubmap.directives', 'app.clubmap.filters',
 
     // Yhteislupa-alueet

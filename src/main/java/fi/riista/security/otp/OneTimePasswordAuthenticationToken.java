@@ -2,11 +2,15 @@ package fi.riista.security.otp;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import java.io.Serializable;
+
 public class OneTimePasswordAuthenticationToken extends UsernamePasswordAuthenticationToken {
-    private final Object oneTimePassword;
+    private final Serializable oneTimePassword;
     private boolean enforceOneTimePassword;
 
-    public OneTimePasswordAuthenticationToken(Object principal, Object credentials, Object oneTimePassword) {
+    public OneTimePasswordAuthenticationToken(final Serializable principal,
+                                              final Serializable credentials,
+                                              final Serializable oneTimePassword) {
         super(principal, credentials);
         this.oneTimePassword = oneTimePassword;
         this.enforceOneTimePassword = false;

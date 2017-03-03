@@ -202,8 +202,8 @@ public class OneTimePasswordAuthenticationProviderTest {
     }
 
     private static String getCorrectCode(User user, int offsetInterval) {
-        final SecurityConfigurationProperties mockProperties = createMockProperties();
-        final String otpSecret = OneTimePasswordCodeService.getOtpSecret(user, mockProperties.getOtpGlobalSalt());
+        final OneTimePasswordCodeService codeService = new OneTimePasswordCodeService(createMockProperties());
+        final String otpSecret = codeService.getOtpSecret(user);
         return new Totp(otpSecret, new TestOtpClock(offsetInterval)).now();
     }
 

@@ -113,7 +113,7 @@ public class SrvaExportFeature {
         rvrEvents.setTimeStamp(DateTime.now());
         rvrEvents.setVersion(version);
 
-        rvrEvents.getSrvaEvent().addAll(events.stream().map(event -> {
+        rvrEvents.setSrvaEvent(events.stream().map(event -> {
             RVR_SrvaEvent rvrEvent = new RVR_SrvaEvent();
             rvrEvent.setEventName(createRvrEnum(RVR_SrvaEventNameEnum.class, event.getEventName()));
             rvrEvent.setEventType(createRvrEnum(RVR_SrvaEventTypeEnum.class, event.getEventType()));
@@ -152,7 +152,7 @@ public class SrvaExportFeature {
         }
 
         final RVR_SrvaEvent.RVR_Specimens rvrSpecimens = new RVR_SrvaEvent.RVR_Specimens();
-        rvrSpecimens.getSpecimen().addAll(srvaSpecimens.stream().map(srvaSpecimen -> {
+        rvrSpecimens.setSpecimen(srvaSpecimens.stream().map(srvaSpecimen -> {
             RVR_SrvaSpecimen specimen = new RVR_SrvaSpecimen();
             specimen.setGender(createRvrEnum(RVR_GameGenderEnum.class, srvaSpecimen.getGender()));
             specimen.setAge(createRvrEnum(RVR_GameAgeEnum.class, srvaSpecimen.getAge()));
@@ -169,7 +169,7 @@ public class SrvaExportFeature {
         }
 
         final RVR_SrvaEvent.RVR_Methods rvrMethods = new RVR_SrvaEvent.RVR_Methods();
-        rvrMethods.getMethod().addAll(srvaMethods.stream()
+        rvrMethods.setMethod(srvaMethods.stream()
                 .filter(SrvaMethod::isChecked)
                 .map(srvaMethodDTO -> createRvrEnum(RVR_SrvaMethodEnum.class, srvaMethodDTO.getName()))
                 .collect(Collectors.toList()));

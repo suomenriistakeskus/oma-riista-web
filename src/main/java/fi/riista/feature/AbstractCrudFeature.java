@@ -6,26 +6,16 @@ import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DtoUtil;
-import fi.riista.util.ListTransformer;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-/**
- * @param <ID> Entity's id class, often Long.class
- * @param <E>  Entity's class
- * @param <D>  DTO class corresponding to the entity
- */
 public abstract class AbstractCrudFeature<ID extends Serializable, E extends BaseEntity<ID>, D extends BaseEntityDTO<ID>> {
 
     @Resource
@@ -33,45 +23,45 @@ public abstract class AbstractCrudFeature<ID extends Serializable, E extends Bas
 
     private Class<? extends E> entityClass;
 
-    protected AbstractCrudFeature(Class<? extends E> entityClass) {
-        this.entityClass = entityClass;
-    }
-
     @SuppressWarnings("unchecked")
     protected AbstractCrudFeature() {
         this.entityClass =
                 (Class<? extends E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
     }
 
+    protected AbstractCrudFeature(final Class<? extends E> entityClass) {
+        this.entityClass = Objects.requireNonNull(entityClass);
+    }
+
     protected abstract JpaRepository<E, ID> getRepository();
 
     protected abstract void updateEntity(E entity, D dto);
 
-    protected abstract ListTransformer<E, D> dtoTransformer();
+    protected abstract D toDTO(@Nonnull E entity);
 
     @Transactional(readOnly = true)
     public D read(ID id) {
-        return dtoTransformer().apply(requireEntity(id, EntityPermission.READ));
+        return toDTO(requireEntity(id, EntityPermission.READ));
     }
 
     @Transactional
     public D create(D dto) {
-        // Permission check
-        assertHasCreatePermission(dto);
-
         final E entity = createEntity();
 
         updateEntity(entity, dto);
 
-        return dtoTransformer().apply(getRepository().saveAndFlush(entity));
+        // Permission check
+        activeUserService.assertHasPermission(entity, getCreatePermission(entity, dto));
+
+        final E persisted = getRepository().saveAndFlush(entity);
+        afterCreate(persisted);
+        return toDTO(persisted);
     }
 
-    // Subclasses can override this to use some other instance type in create permission check.
-    protected void assertHasCreatePermission(final D dto) {
-        activeUserService.assertHasPermission(dto, getCreatePermission(dto));
+    protected void afterCreate(E entity) {
     }
 
-    protected Enum<?> getCreatePermission(@SuppressWarnings("unused") D dto) {
+    protected Enum<?> getCreatePermission(@SuppressWarnings("unused") E entity, @SuppressWarnings("unused") D dto) {
         return EntityPermission.CREATE;
     }
 
@@ -96,7 +86,7 @@ public abstract class AbstractCrudFeature<ID extends Serializable, E extends Bas
         updateEntity(entity, dto);
 
         // Must use saveAndFlush() to update returned consistencyVersion == dto.revision
-        return dtoTransformer().apply(getRepository().saveAndFlush(entity));
+        return toDTO(getRepository().saveAndFlush(entity));
     }
 
     protected Enum<?> getUpdatePermission(@SuppressWarnings("unused") E entity, @SuppressWarnings("unused") D dto) {
@@ -136,16 +126,5 @@ public abstract class AbstractCrudFeature<ID extends Serializable, E extends Bas
 
     protected void checkForUpdateConflict(D dto, E entity) {
         DtoUtil.assertNoVersionConflict(entity, dto);
-    }
-
-    // Page of entities
-    protected Page<D> toDTO(final Page<E> resultPage, final Pageable pageRequest) {
-        Objects.requireNonNull(resultPage, "resultPage must not be null");
-        Objects.requireNonNull(pageRequest, "pageRequest must not be null");
-
-        final List<D> transformedList = dtoTransformer().apply(resultPage.getContent());
-        final List<D> resultList = transformedList != null ? transformedList : Collections.emptyList();
-
-        return new PageImpl<>(resultList, pageRequest, resultPage.getTotalElements());
     }
 }

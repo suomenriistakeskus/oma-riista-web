@@ -2,9 +2,9 @@ package fi.riista.feature.huntingclub.permit;
 
 import fi.riista.feature.common.dto.DoNotValidate;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountDTO;
 import fi.riista.feature.huntingclub.permit.allocation.HuntingClubPermitAllocationDTO;
 import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReport;
 import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportDTO;
@@ -28,6 +28,7 @@ public class MooselikePermitListingDTO {
                               @Nonnull final GameSpecies species,
                               @Nonnull final Map<String, Float> amendmentPermits,
                               @Nullable final Long viewedClubId,
+                              final boolean viewedClubIsPartner,
                               final boolean canEditAllocations,
                               final boolean hasPermissionToCreateOrRemove,
                               final boolean allPartnersFinishedHunting,
@@ -55,6 +56,7 @@ public class MooselikePermitListingDTO {
         this.amendmentPermits = amendmentPermits;
 
         this.viewedClubId = viewedClubId;
+        this.viewedClubIsPartner = viewedClubIsPartner;
 
         this.canEditAllocations = canEditAllocations;
         this.hasPermissionToCreateOrRemove = hasPermissionToCreateOrRemove;
@@ -97,6 +99,7 @@ public class MooselikePermitListingDTO {
     private Map<String, Float> amendmentPermits;
 
     private Long viewedClubId;
+    private boolean viewedClubIsPartner;
 
     private boolean canEditAllocations;
     private boolean hasPermissionToCreateOrRemove;
@@ -160,6 +163,14 @@ public class MooselikePermitListingDTO {
 
     public void setViewedClubId(Long viewedClubId) {
         this.viewedClubId = viewedClubId;
+    }
+
+    public boolean isViewedClubIsPartner() {
+        return viewedClubIsPartner;
+    }
+
+    public void setViewedClubIsPartner(boolean viewedClubIsPartner) {
+        this.viewedClubIsPartner = viewedClubIsPartner;
     }
 
     public boolean isCanEditAllocations() {

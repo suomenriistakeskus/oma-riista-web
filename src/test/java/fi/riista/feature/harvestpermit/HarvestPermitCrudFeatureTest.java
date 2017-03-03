@@ -116,6 +116,7 @@ public class HarvestPermitCrudFeatureTest extends EmbeddedDatabaseTest {
 
         final HarvestPermit permit = model().newHarvestPermit(user.getPerson(), true);
         permit.setPermitTypeCode(permitTypeCde);
+        permit.setPermitAreaSize(123);
         final Harvest harvest = createProposedHarvestForPermit(user, permit, from);
         if (createHarvestReport) {
             createHarvestReport(permit, harvest);

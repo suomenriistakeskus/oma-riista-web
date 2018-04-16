@@ -84,11 +84,9 @@ public class HuntingClubGroupCrudFeature_UpdatePermitTest extends EmbeddedDataba
 
         final GameSpecies species = speciesAmount != null
                 ? speciesAmount.getGameSpecies()
-                : speciesAmount2 != null
-                ? speciesAmount2.getGameSpecies() : model().newGameSpecies();
+                : speciesAmount2 != null ? speciesAmount2.getGameSpecies() : model().newGameSpecies();
 
-        withPerson(person -> {
-            final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        withRhy(rhy -> withPerson(person -> {
             final HuntingClub club = model().newHuntingClub(rhy);
             final HuntingClubArea area = model().newHuntingClubArea(club);
             final HuntingClubGroup group = model().newHuntingClubGroup(club, species);
@@ -112,6 +110,6 @@ public class HuntingClubGroupCrudFeature_UpdatePermitTest extends EmbeddedDataba
                     }
                 });
             });
-        });
+        }));
     }
 }

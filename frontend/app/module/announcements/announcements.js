@@ -71,7 +71,7 @@
                         officialCode: $ctrl.organisation.officialCode,
                         direction: $ctrl.filter || 'RECEIVED',
                         page: page || 0,
-                        size: 5,
+                        size: 10,
                         sort: 'id,DESC'
                     }).$promise.then(function (result) {
                         $ctrl.currentPage = result;
@@ -111,12 +111,13 @@
                 announcement: '<',
                 organisation: '<',
                 showActions: '<',
-                onlySummary: '<',
+                initiallyHidden: '<',
                 refresh: '&'
             },
             controller: function (dialogs, $translate, $filter,
-                                  Announcements, AnnouncementShowModal, AnnouncementFormModal) {
+                                  Announcements, AnnouncementFormModal) {
                 var $ctrl = this;
+                $ctrl.showContent = !$ctrl.initiallyHidden;
 
                 $ctrl.canEdit = function (announcement) {
                     var from = announcement.fromOrganisation;
@@ -131,10 +132,6 @@
                     }
 
                     return false;
-                };
-
-                $ctrl.show = function (announcement) {
-                    AnnouncementShowModal.openAnnouncement(announcement);
                 };
 
                 $ctrl.edit = function (announcement) {
@@ -160,32 +157,6 @@
                         $ctrl.refresh();
                     });
                 }
-            }
-        })
-
-        .service('AnnouncementShowModal', function ($uibModal) {
-            this.openAnnouncement = function (announcement) {
-                var modalInstance = $uibModal.open({
-                    templateUrl: 'announcements/show.html',
-                    controllerAs: '$ctrl',
-                    size: 'lg',
-                    resolve: {
-                        announcement: _.constant(announcement)
-                    },
-                    controller: ModalController
-                });
-
-                return modalInstance.result;
-            };
-
-            function ModalController($uibModalInstance, announcement) {
-                var $modalCtrl = this;
-
-                $modalCtrl.announcement = announcement;
-
-                $modalCtrl.close = function () {
-                    $uibModalInstance.dismiss('ignore');
-                };
             }
         })
 

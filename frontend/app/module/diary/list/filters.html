@@ -8,6 +8,7 @@
                 <input id="beginDate" type="text" name="beginDate"
                        class="form-control"
                        uib-datepicker-popup is-open="isDatePickerOpen"
+                       datepicker-append-to-body="true"
                        ng-model="state.beginDate"
                        required
                        max-date="state.endDate"/>
@@ -28,6 +29,7 @@
                 <input id="endDate" type="text" name="endDate"
                        class="form-control"
                        uib-datepicker-popup is-open="isDatePickerOpen"
+                       datepicker-append-to-body="true"
                        ng-model="state.endDate"
                        required
                        min-date="state.beginDate"/>

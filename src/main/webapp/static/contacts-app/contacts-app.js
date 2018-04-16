@@ -164,7 +164,7 @@
                 var allOccupations = data.occupations;
                 var organisations = data.organisations;
 
-                if (allOccupations.length > self.options.searchLimit) {
+                if (data.tooManyResults) {
                     self.$searchResults.html(self.options.translations.tooManyResults);
                     return;
                 }

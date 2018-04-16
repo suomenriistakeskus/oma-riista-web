@@ -14,7 +14,6 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.Person_;
 import fi.riista.util.F;
 import fi.riista.util.jpa.CriteriaUtils;
-import javaslang.Tuple;
 import org.hibernate.validator.constraints.Range;
 import org.joda.time.LocalDateTime;
 
@@ -37,7 +36,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
+
+import static fi.riista.util.F.coalesceAsInt;
 
 @Entity
 @Table(name = "game_observation")
@@ -218,18 +218,15 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
                 mooselikeFemale2CalfsAmount, mooselikeFemale3CalfsAmount, mooselikeUnknownSpecimenAmount);
     }
 
-    private int getTotalAmountOfMooselikeAmountFields() {
-        return Stream.of(
-                Tuple.of(1, mooselikeMaleAmount),
-                Tuple.of(1, mooselikeFemaleAmount),
-                Tuple.of(2, mooselikeFemale1CalfAmount),
-                Tuple.of(3, mooselikeFemale2CalfsAmount),
-                Tuple.of(4, mooselikeFemale3CalfsAmount),
-                Tuple.of(5, mooselikeFemale4CalfsAmount),
-                Tuple.of(1, mooselikeUnknownSpecimenAmount))
-                .filter(pair -> pair._2() != null)
-                .mapToInt(pair -> pair._1() * pair._2())
-                .sum();
+    // Exposed as package-private to allow isolated testing.
+    int getTotalAmountOfMooselikeAmountFields() {
+        return coalesceAsInt(mooselikeMaleAmount, 0)
+                + coalesceAsInt(mooselikeFemaleAmount, 0)
+                + 2 * coalesceAsInt(mooselikeFemale1CalfAmount, 0)
+                + 3 * coalesceAsInt(mooselikeFemale2CalfsAmount, 0)
+                + 4 * coalesceAsInt(mooselikeFemale3CalfsAmount, 0)
+                + 5 * coalesceAsInt(mooselikeFemale4CalfsAmount, 0)
+                + coalesceAsInt(mooselikeUnknownSpecimenAmount, 0);
     }
 
     // Accessors -->

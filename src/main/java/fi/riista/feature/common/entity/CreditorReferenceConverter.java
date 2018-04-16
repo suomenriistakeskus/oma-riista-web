@@ -24,7 +24,7 @@ public class CreditorReferenceConverter implements AttributeConverter<String, St
 
     private static String getDelimitedValue(String str) {
         final char delimiter = ' ';
-        final StringBuffer buffer = new StringBuffer();
+        final StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < str.length(); i++) {
             if (i != 0 && i % 5 == 0) {
                 buffer.append(delimiter);

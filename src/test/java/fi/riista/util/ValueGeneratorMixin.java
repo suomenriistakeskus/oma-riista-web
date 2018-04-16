@@ -96,6 +96,10 @@ public interface ValueGeneratorMixin {
         return ValueGenerator.weight(getNumberGenerator());
     }
 
+    default String externalAreaId() {
+        return ValueGenerator.externalAreaId(getNumberGenerator());
+    }
+
     default String zeroPaddedNumber(final int maxDigits) {
         return ValueGenerator.zeroPaddedNumber(maxDigits, getNumberGenerator());
     }

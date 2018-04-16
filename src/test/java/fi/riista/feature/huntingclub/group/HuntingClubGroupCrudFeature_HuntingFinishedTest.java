@@ -29,15 +29,14 @@ public class HuntingClubGroupCrudFeature_HuntingFinishedTest extends EmbeddedDat
 
     private void withGroupWithFinishedHunting(final Consumer<HuntingClubGroup> consumer) {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
-        final HuntingClub club = model().newHuntingClub(rhy);
-        final HuntingClubGroup group = model().newHuntingClubGroup(club);
 
         final HarvestPermit permit = model().newHarvestPermit(rhy);
         final HarvestPermitSpeciesAmount speciesAmount =
-                model().newHarvestPermitSpeciesAmount(permit, group.getSpecies());
+                model().newHarvestPermitSpeciesAmount(permit, model().newGameSpecies());
 
+        final HuntingClub club = model().newHuntingClub(rhy);
         permit.getPermitPartners().add(club);
-        group.updateHarvestPermit(permit);
+        final HuntingClubGroup group = model().newHuntingClubGroup(club, speciesAmount);
 
         model().newBasicHuntingSummary(speciesAmount, club, true);
 

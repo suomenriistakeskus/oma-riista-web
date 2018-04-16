@@ -17,8 +17,8 @@ import javax.annotation.Nonnull;
 public class MooseDataCardMooseCalfValidatorTest extends MooseDataCardHarvestValidatorTest<MooseDataCardMooseCalf> {
 
     @Override
-    protected MooseDataCardMooseCalfValidator getValidator(
-            @Nonnull final Has2BeginEndDates permitSeason, @Nonnull final GeoLocation defaultCoordinates) {
+    protected MooseDataCardMooseCalfValidator getValidator(@Nonnull final Has2BeginEndDates permitSeason,
+                                                           @Nonnull final GeoLocation defaultCoordinates) {
 
         return new MooseDataCardMooseCalfValidator(permitSeason, defaultCoordinates);
     }
@@ -44,7 +44,7 @@ public class MooseDataCardMooseCalfValidatorTest extends MooseDataCardHarvestVal
     }
 
     @Test
-    public void testIllegalGender() {
+    public void testInvalidGender() {
         final MooseDataCardMooseCalf input = newHarvest().withGender("invalid");
         Asserts.assertValidationErrors(validate(input, newSeason()), genderOfMooseCalfContainsIllegalCharacters(input));
     }

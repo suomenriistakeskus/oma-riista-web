@@ -5,10 +5,11 @@ import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.huntingclub.support.HuntingClubTestDataHelper;
-import fi.riista.feature.huntingclub.permit.HasHarvestCountsForPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.permit.HasHarvestCountsForPermit;
+import fi.riista.feature.huntingclub.support.HuntingClubTestDataHelper;
 import fi.riista.util.DateUtil;
 import fi.riista.util.MediaTypeExtras;
 import org.junit.Test;
@@ -78,13 +79,12 @@ public class MooseHarvestReportCrudFeatureTest extends EmbeddedDatabaseTest {
 
         final GameSpecies species = model().newGameSpeciesMoose();
         final int year = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
-        model().newHarvestPermitSpeciesAmount(permit, species, year);
+        final HarvestPermitSpeciesAmount speciesAmount = model().newHarvestPermitSpeciesAmount(permit, species, year);
         model().newMooselikePrice(year, species);
 
         final HuntingClub club = model().newHuntingClub(permit.getRhy());
         permit.getPermitPartners().add(club);
-        final HuntingClubGroup group = model().newHuntingClubGroup(club, species);
-        group.updateHarvestPermit(permit);
+        final HuntingClubGroup group = model().newHuntingClubGroup(club, speciesAmount);
         if (createHarvest) {
             HasHarvestCountsForPermit counts = HasHarvestCountsForPermit.of(6, 5, 4, 3, 2, 1);
             helper.createHarvestsForHuntingGroup(group, model().newPerson(), counts);

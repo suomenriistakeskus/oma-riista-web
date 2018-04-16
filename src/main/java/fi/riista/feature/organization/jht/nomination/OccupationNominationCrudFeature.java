@@ -12,7 +12,6 @@ import fi.riista.feature.organization.person.Person_;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.security.EntityPermission;
-import fi.riista.util.ListTransformer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -50,13 +49,13 @@ public class OccupationNominationCrudFeature extends AbstractCrudFeature<Long, O
     private PersonLookupService personLookupService;
 
     @Override
-    protected ListTransformer<OccupationNomination, OccupationNominationDTO> dtoTransformer() {
-        return occupationNominationDTOTransformer;
+    protected JpaRepository<OccupationNomination, Long> getRepository() {
+        return occupationNominationRepository;
     }
 
     @Override
-    protected JpaRepository<OccupationNomination, Long> getRepository() {
-        return occupationNominationRepository;
+    protected OccupationNominationDTO toDTO(@Nonnull final OccupationNomination entity) {
+        return occupationNominationDTOTransformer.apply(entity);
     }
 
     @Override
@@ -82,7 +81,7 @@ public class OccupationNominationCrudFeature extends AbstractCrudFeature<Long, O
                 new JpaSort(Sort.Direction.ASC, JpaSort.path(OccupationNomination_.person).dot(Person_.lastName))
                         .and(Sort.Direction.ASC, JpaSort.path(OccupationNomination_.person).dot(Person_.firstName));
         final PageRequest pageRequest = new PageRequest(dto.getPage(), dto.getPageSize(), sortSpec);
-        return toDTO(find(dto, pageRequest), pageRequest);
+        return occupationNominationDTOTransformer.apply(find(dto, pageRequest), pageRequest);
     }
 
     private Page<OccupationNomination> find(final OccupationNominationSearchDTO dto, final Pageable pageRequest) {

@@ -2,6 +2,7 @@ package fi.riista.feature.organization.occupation;
 
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.pub.occupation.PublicOccupationDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.Locales;
@@ -91,7 +92,7 @@ public class OccupationExcelView extends AbstractXlsView {
     }
 
     private String[] createRow(OccupationDTO result) {
-        final String occupationType = messageSource.getMessage("OccupationTypePublicDTO."
+        final String occupationType = messageSource.getMessage(PublicOccupationDTO.class.getSimpleName() + "."
                 + organisationType.name()
                 + "."
                 + result.getOccupationType().name(), null, locale);

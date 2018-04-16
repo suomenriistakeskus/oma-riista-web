@@ -3,17 +3,17 @@ package fi.riista.api.pub;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.pub.season.PublicHarvestSeasonFeature;
-import fi.riista.feature.pub.calendar.PublicCalendarEventSearchFeature;
-import fi.riista.feature.pub.calendar.PublicCalendarEventDTO;
 import fi.riista.feature.pub.calendar.PublicCalendarEventSearchDTO;
+import fi.riista.feature.pub.calendar.PublicCalendarEventSearchFeature;
+import fi.riista.feature.pub.calendar.PublicCalendarEventSearchResultDTO;
 import fi.riista.feature.pub.calendar.PublicCalendarEventTypeDTO;
-import fi.riista.feature.pub.occupation.PublicOccupationSearchParameters;
-import fi.riista.feature.pub.season.PublicHarvestSeasonDTO;
 import fi.riista.feature.pub.occupation.PublicOccupationSearchFeature;
+import fi.riista.feature.pub.occupation.PublicOccupationSearchParameters;
 import fi.riista.feature.pub.occupation.PublicOccupationTypeDTO;
 import fi.riista.feature.pub.occupation.PublicOccupationsAndOrganisationsDTO;
 import fi.riista.feature.pub.occupation.PublicOrganisationDTO;
+import fi.riista.feature.pub.season.PublicHarvestSeasonDTO;
+import fi.riista.feature.pub.season.PublicHarvestSeasonFeature;
 import fi.riista.feature.pub.statistics.PublicBearReportFeature;
 import fi.riista.feature.pub.statistics.PublicHarvestPivotTableFeature;
 import fi.riista.feature.pub.statistics.PublicMetsahallitusHarvestSummaryFeature;
@@ -125,7 +125,7 @@ public class PublicApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/tapahtumat", method = RequestMethod.GET)
-    public List<PublicCalendarEventDTO> listCalendarEvents(
+    public PublicCalendarEventSearchResultDTO listCalendarEvents(
             @ModelAttribute @Valid PublicCalendarEventSearchDTO params, @RequestParam(required = false) String lang) {
 
         setLocale(lang);

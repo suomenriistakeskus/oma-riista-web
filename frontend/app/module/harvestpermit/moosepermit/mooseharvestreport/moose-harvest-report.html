@@ -37,6 +37,10 @@
                 <div class="dz-message" translate="club.permit.mooseHarvestReport.finishPermit"></div>
             </form>
 
+            <div ng-if="dropzoneIncompatibleFileType"
+                 class="alert alert-danger"
+                 translate="club.permit.mooseHarvestReport.fileTypeNotAccepted"></div>
+
             <div ng-include="'harvestpermit/moosepermit/mooseharvestreport/show-price-breakdown.html'"></div>
         </div>
 

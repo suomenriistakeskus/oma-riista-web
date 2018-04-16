@@ -1,8 +1,8 @@
 package fi.riista.feature.harvestpermit;
 
 import fi.riista.feature.common.entity.Has2BeginEndDates;
-import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.common.repository.BaseRepository;
+import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gamediary.GameSpecies_;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 
@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.hasRelationWithId;
+import static java.util.stream.Collectors.joining;
 import static org.springframework.data.jpa.domain.Specifications.where;
 
 public interface HarvestPermitSpeciesAmountRepository extends BaseRepository<HarvestPermitSpeciesAmount, Long> {
@@ -39,8 +40,9 @@ public interface HarvestPermitSpeciesAmountRepository extends BaseRepository<Har
                 findByHarvestPermitIdAndSpeciesCode(harvestPermitId, speciesCode);
 
         if (speciesAmounts.size() > 1) {
-            final List<Integer> huntingYears =
-                    Has2BeginEndDates.collectUniqueHuntingYearsSorted(speciesAmounts.stream());
+            final String huntingYears = Has2BeginEndDates.streamUniqueHuntingYearsSorted(speciesAmounts.stream())
+                    .mapToObj(String::valueOf)
+                    .collect(joining(","));
 
             throw new IllegalStateException(String.format(
                     "Cannot resolve HarvestPermitSpeciesAmount unambiguously because multiple instances found for " +

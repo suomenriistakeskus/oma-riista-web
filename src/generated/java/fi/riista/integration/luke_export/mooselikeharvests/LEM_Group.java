@@ -124,4 +124,8 @@ public class LEM_Group {
         return this.huntingDays;
     }
 
+    public void setHuntingDays(List<LEM_HuntingDay> value) {
+        this.huntingDays = value;
+    }
+
 }

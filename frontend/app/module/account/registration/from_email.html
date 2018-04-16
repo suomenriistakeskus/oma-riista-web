@@ -47,23 +47,10 @@
 
         <hr/>
 
-        <form class="form" method="post" action="{{ $ctrl.vetumaLoginUrl }}" target="_self">
-            <input type="hidden" name="RCVID" ng-value="$ctrl.vetumaConnection.RCVID"/>
-            <input type="hidden" name="APPID" ng-value="$ctrl.vetumaConnection.APPID"/>
-            <input type="hidden" name="TIMESTMP" ng-value="$ctrl.vetumaConnection.TIMESTMP"/>
-            <input type="hidden" name="SO" ng-value="$ctrl.vetumaConnection.SO"/>
-            <input type="hidden" name="SOLIST" ng-value="$ctrl.vetumaConnection.SOLIST"/>
-            <input type="hidden" name="TYPE" ng-value="$ctrl.vetumaConnection.TYPE"/>
-            <input type="hidden" name="AU" ng-value="$ctrl.vetumaConnection.AU"/>
-            <input type="hidden" name="LG" ng-value="$ctrl.vetumaConnection.LG"/>
-            <input type="hidden" name="RETURL" ng-value="$ctrl.vetumaConnection.RETURL"/>
-            <input type="hidden" name="CANURL" ng-value="$ctrl.vetumaConnection.CANURL"/>
-            <input type="hidden" name="ERRURL" ng-value="$ctrl.vetumaConnection.ERRURL"/>
-            <input type="hidden" name="AP" ng-value="$ctrl.vetumaConnection.AP"/>
-            <input type="hidden" name="MAC" ng-value="$ctrl.vetumaConnection.MAC"/>
-            <input type="hidden" name="EXTRADATA" ng-value="$ctrl.vetumaConnection.EXTRADATA"/>
-            <input type="hidden" name="APPNAME" ng-value="$ctrl.vetumaConnection.APPNAME"/>
-            <input type="hidden" name="TRID" ng-value="$ctrl.vetumaConnection.TRID"/>
+        <form class="form" method="post" action="/saml/login">
+            <input type="hidden" spring-csrf-cookie/>
+            <input type="hidden" name="trid" ng-value="$ctrl.trid"/>
+            <input type="hidden" name="lang" ng-value="$ctrl.lang"/>
 
             <div class="checkbox text-right">
                 <label class="input-lg">

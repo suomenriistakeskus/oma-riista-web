@@ -9,7 +9,6 @@ import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.DigestUtils;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.support.ServletContextResource;
 
-import javax.inject.Inject;
+import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class FrontendController {
 
     private static final String JSP_CLIENT_LOADER = "frontend/client";
 
-    private static final Map<String, String> ASSETS = ImmutableMap.<String, String>builder()
+    private static final Map<String, String> ASSETS = ImmutableMap.<String, String> builder()
             .put("appVersion", "/frontend/js/app.min.js")
             .put("styleVersion", "/frontend/css/app.css")
             .put("templatesVersion", "/frontend/js/templates.js")
@@ -37,17 +36,17 @@ public class FrontendController {
             .put("vendorOtherVersion", "/frontend/js/vendor.other.min.js")
             .build();
 
-    @Inject
+    @Resource
     private ServletContext servletContext;
 
-    @Inject
+    @Resource
     private RuntimeEnvironmentUtil runtimeEnvironmentUtil;
 
     private final LoadingCache<String, String> VERSION_CACHE = CacheBuilder.newBuilder()
             .build(new CacheLoader<String, String>() {
                 @Override
                 public String load(final String path) throws Exception {
-                    final Resource resource = new ServletContextResource(servletContext, path);
+                    final org.springframework.core.io.Resource resource = new ServletContextResource(servletContext, path);
                     try {
                         byte[] content = FileCopyUtils.copyToByteArray(resource.getInputStream());
                         return DigestUtils.md5DigestAsHex(content);

@@ -2,16 +2,19 @@ package fi.riista.feature.account.user;
 
 import com.google.common.base.Preconditions;
 import fi.riista.config.properties.SecurityConfigurationProperties;
-import fi.riista.feature.common.entity.HasID;
+import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.UserInfo;
+import fi.riista.security.audit.AuthorizationAuditListener;
+import fi.riista.security.authorization.EntityPermissionEvaluator;
 import fi.riista.security.jwt.JwtAuthenticationProvider;
 import fi.riista.util.DateUtil;
 import io.jsonwebtoken.Jwts;
 import org.joda.time.DateTime;
 import org.joda.time.ReadableDuration;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.PermissionEvaluator;
+import org.springframework.security.authentication.AuthenticationTrustResolver;
+import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.util.Optional;
 
 @Service
@@ -30,24 +34,66 @@ public class ActiveUserService {
     private UserRepository userRepository;
 
     @Resource
-    private PermissionEvaluator permissionEvaluator;
+    private EntityPermissionEvaluator permissionEvaluator;
+
+    @Resource
+    private AuthorizationAuditListener authorizationAuditListener;
 
     @Resource
     private SecurityConfigurationProperties securityConfigurationProperties;
 
-    public boolean isAuthenticatedUser() {
-        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    private static final AuthenticationTrustResolver authTrustResolver = new AuthenticationTrustResolverImpl();
 
-        return authentication != null && authentication.isAuthenticated()
-                && authentication.getPrincipal() instanceof UserInfo;
+    private static boolean isAuthenticated(final Authentication authentication) {
+        return authentication != null && authentication.getPrincipal() != null
+                && !authTrustResolver.isAnonymous(authentication) && authentication.isAuthenticated();
     }
 
-    public boolean isModeratorOrAdmin() {
-        return isAuthenticatedUser() && getActiveUserInfo().isAdminOrModerator();
+    public boolean isAuthenticated() {
+        return Optional.of(SecurityContextHolder.getContext())
+                .map(SecurityContext::getAuthentication)
+                .map(ActiveUserService::isAuthenticated)
+                .orElse(false);
     }
 
     public Authentication getAuthentication() {
-        return SecurityContextHolder.getContext().getAuthentication();
+        return Optional.of(SecurityContextHolder.getContext())
+                .map(SecurityContext::getAuthentication)
+                .orElse(null);
+    }
+
+    private static Authentication getAuthenticationAuthenticated() {
+        return Optional.of(SecurityContextHolder.getContext())
+                .map(SecurityContext::getAuthentication)
+                .filter(ActiveUserService::isAuthenticated)
+                .orElse(null);
+    }
+
+    public boolean isModeratorOrAdmin() {
+        return Optional.ofNullable(getAuthenticationAuthenticated())
+                .map(UserInfo::extractFrom)
+                .map(UserInfo::isAdminOrModerator)
+                .orElse(false);
+    }
+
+    public UserInfo getActiveUserInfo() {
+        return Optional.ofNullable(getAuthenticationAuthenticated())
+                .map(UserInfo::extractFrom)
+                .orElse(null);
+    }
+
+    public Long getActiveUserId() {
+        return Optional.ofNullable(getAuthenticationAuthenticated())
+                .map(UserInfo::extractFrom)
+                .map(UserInfo::getUserId)
+                .orElseThrow(() -> new RuntimeException("User id not available in security context"));
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public SystemUser getActiveUser() {
+        return Optional.ofNullable(getActiveUserId())
+                .map(userRepository::findOne)
+                .orElseThrow(() -> new IllegalStateException("User for authenticated principal does not exist in repository"));
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
@@ -60,67 +106,40 @@ public class ActiveUserService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public SystemUser getActiveUser() {
-        return Optional.ofNullable(userRepository.findOne(getActiveUserId())).orElseThrow(() -> {
-            return new IllegalStateException("User for authenticated principal does not exist in repository");
-        });
+    public boolean checkHasPermission(final BaseEntity<?> entity, final Enum<?> permission) {
+        return permissionEvaluator.hasPermission(getAuthenticationAuthenticated(), entity, permission);
     }
 
-    public Long getActiveUserId() {
-        return Optional.ofNullable(getActiveUserInfo())
-                .map(UserInfo::getUserId)
-                .orElseThrow(() -> new RuntimeException("User id not available in security context"));
-    }
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public void assertHasPermission(final BaseEntity<?> entity, final Enum<?> permission) {
+        final Authentication authentication = getAuthenticationAuthenticated();
+        final boolean hasPermission = permissionEvaluator.hasPermission(authentication, entity, permission);
 
-    public UserInfo getActiveUserInfo() {
-        return Optional.ofNullable(SecurityContextHolder.getContext())
-                .map(SecurityContext::getAuthentication)
-                .filter(ActiveUserService::isAuthenticated)
-                .map(UserInfo::extractFrom)
-                .orElse(null);
-    }
+        // Audit event
+        authorizationAuditListener.onAccessDecision(hasPermission, permission, entity, authentication);
 
-    private static boolean isAuthenticated(Authentication authentication) {
-        return authentication != null && authentication.getPrincipal() != null && authentication.isAuthenticated();
-    }
-
-    public void assertHasPermission(final Object targetObject, final Object permission) {
-        if (!checkHasPermission(targetObject, permission)) {
+        if (!hasPermission) {
             final StringBuilder msgBuf = new StringBuilder(String.format(
-                    "Denied '%s' %s", permission, formatTargetObject(targetObject)));
+                    "Denied '%s' %s", permission, formatTargetObject(entity)));
 
-            Optional.ofNullable(getActiveUserInfo()).ifPresent(userInfo -> msgBuf.append(" for " + userInfo));
+            Optional.ofNullable(getActiveUserInfo()).ifPresent(userInfo -> msgBuf.append(" for ").append(userInfo));
 
             throw new AccessDeniedException(msgBuf.toString());
         }
     }
 
-    private static String formatTargetObject(final Object targetObject) {
+    private static String formatTargetObject(final BaseEntity<?> targetObject) {
         if (targetObject == null) {
             return "<null>";
         }
         try {
-            if (targetObject instanceof HasID) {
-                final String className = targetObject.getClass().getSimpleName();
-                final Object id = HasID.class.cast(targetObject).getId();
-                return id == null ? className : String.format("%s[id=%s]", className, id);
-            }
+            final String className = targetObject.getClass().getSimpleName();
+            final Serializable id = targetObject.getId();
+            return id == null ? className : String.format("%s[id=%s]", className, id);
         } catch (final RuntimeException e) {
             // for extra safety
         }
         return targetObject.toString();
-    }
-
-    public boolean checkHasPermission(final Object targetObject, final Object permission) {
-        final SecurityContext securityContext = SecurityContextHolder.getContext();
-
-        if (securityContext == null) {
-            throw new IllegalStateException("SecurityContext is not available");
-        }
-
-        final Authentication authentication = securityContext.getAuthentication();
-
-        return permissionEvaluator.hasPermission(authentication, targetObject, permission);
     }
 
     public void loginWithoutCheck(final SystemUser systemUser) {

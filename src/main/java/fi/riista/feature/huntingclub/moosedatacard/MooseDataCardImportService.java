@@ -104,7 +104,7 @@ public class MooseDataCardImportService {
     private final MooseDataCardPage1Validator page1Validator = new MooseDataCardPage1Validator();
 
     @Nonnull
-    @Transactional(readOnly = true, rollbackFor = MooseDataCardImportException.class)
+    @Transactional(readOnly = true, rollbackFor = MooseDataCardValidationException.class)
     public MooseDataCardValidationResult parseAndValidateMooseDataCard(
             @Nonnull final MultipartFile xmlFile, @Nonnull final MultipartFile pdfFile)
             throws MooseDataCardValidationException {
@@ -132,16 +132,14 @@ public class MooseDataCardImportService {
 
                         return new MooseDataCardValidator(speciesAmount, page1Validation.clubCoordinates)
                                 .validate(mooseDataCard)
-                                .map(tuple -> {
-                                    final MooseDataCard validatedCard = tuple._1;
-                                    final List<String> validationMessages = tuple._2;
+                                .map(tuple -> tuple.transform((validatedCard, validationMessages) -> {
 
                                     return new MooseDataCardValidationResult(
                                             validatedCard, resolvedEntities.getClubOfficialCode(),
                                             page1Validation.clubCoordinates, speciesAmount.getHarvestPermit(),
                                             resolvedEntities.huntingYear, resolvedEntities.contactPersonId,
                                             filenameValidation.timestamp, validationMessages);
-                                });
+                                }));
                     }));
                 });
             });

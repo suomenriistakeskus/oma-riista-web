@@ -37,7 +37,7 @@ public class HuntingClubContactFeature {
                                                          final int gameSpeciesCode) {
         final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(gameSpeciesCode);
         final HarvestPermit p = requireEntityService.requireHarvestPermit(harvestPermitId,
-                HarvestPermitAuthorization.HarvestPermitPermission.LIST_LEADERS);
+                HarvestPermitAuthorization.Permission.LIST_LEADERS);
 
         final QOccupation occupation = QOccupation.occupation;
         final QPerson person = QPerson.person;

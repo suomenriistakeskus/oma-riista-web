@@ -1,21 +1,21 @@
 package fi.riista.feature.organization;
 
-import fi.riista.feature.SimpleAbstractCrudFeature;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.organization.calendar.CalendarEventDTO;
-import fi.riista.feature.organization.calendar.VenueDTO;
 import fi.riista.feature.organization.calendar.CalendarEventRepository;
+import fi.riista.feature.organization.calendar.VenueDTO;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.F;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.function.Function;
 
 @Component
-public class OrganisationCrudFeature extends SimpleAbstractCrudFeature<Long, Organisation, OrganisationDTO> {
+public class OrganisationCrudFeature extends AbstractCrudFeature<Long, Organisation, OrganisationDTO> {
 
     @Resource
     private OrganisationRepository organisationRepository;
@@ -26,6 +26,11 @@ public class OrganisationCrudFeature extends SimpleAbstractCrudFeature<Long, Org
     @Override
     protected JpaRepository<Organisation, Long> getRepository() {
         return organisationRepository;
+    }
+
+    @Override
+    protected OrganisationDTO toDTO(@Nonnull final Organisation entity) {
+        return OrganisationDTO.create(entity);
     }
 
     @Override
@@ -43,10 +48,5 @@ public class OrganisationCrudFeature extends SimpleAbstractCrudFeature<Long, Org
         final Organisation org = organisationRepository.getOneFetchingVenues(id);
         activeUserService.assertHasPermission(org, EntityPermission.READ);
         return F.mapNonNullsToList(org.getVenues(), VenueDTO::create);
-    }
-
-    @Override
-    protected Function<Organisation, OrganisationDTO> entityToDTOFunction() {
-        return OrganisationDTO::create;
     }
 }

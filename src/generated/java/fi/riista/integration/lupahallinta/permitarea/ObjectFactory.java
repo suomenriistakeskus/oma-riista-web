@@ -53,4 +53,12 @@ public class ObjectFactory {
         return new LHPA_Partner();
     }
 
+    /**
+     * Create an instance of {@link LHPA_GeoLocation }
+     * 
+     */
+    public LHPA_GeoLocation createLHPA_GeoLocation() {
+        return new LHPA_GeoLocation();
+    }
+
 }

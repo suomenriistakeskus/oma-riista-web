@@ -23,10 +23,10 @@
 <ul class="list-group">
     <li class="list-group-item"
         ng-click="focusMooseArea(area)"
-        ng-repeat="area in mh.getSelectedAreaList() | orderBy:['number'] track by area.number">
+        ng-repeat="area in mh.getSelectedAreaList() | orderBy:['number', 'year'] track by area.id">
 
         <span class="list-group-item-heading">
-            {{ ::area.number  }} {{ ::area.name  }}
+            {{ ::area.number  }} {{ ::area.name  }} ({{ ::area.year }})
         </span>
 
         <div class="pull-right">
@@ -39,7 +39,7 @@
         </div>
 
         <div class="list-group-item-text">
-            <strong>{{ area.size | number:2 }} ha</strong>
+            <strong>{{ area.size | prettyAreaSize }}</strong>
         </div>
     </li>
 </ul>

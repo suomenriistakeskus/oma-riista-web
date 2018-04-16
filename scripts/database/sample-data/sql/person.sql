@@ -14,15 +14,13 @@ INSERT INTO person (
   hunter_number,
   first_name,
   by_name,
-  last_name,
-  is_finnish_citizen
+  last_name
 ) SELECT
     ssn,
     hunter_number,
     first_name,
     first_name,
-    last_name,
-    TRUE
+    last_name
   FROM import_person;
 
 UPDATE person

@@ -8,7 +8,7 @@ import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsCount;
 import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsDTO;
-import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsFeature;
+import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsService;
 import fi.riista.integration.lupahallinta.club.LHMooselikeHarvestsCSVRow;
 import fi.riista.util.Locales;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,7 +28,7 @@ public class MooselikeHarvestExportToLupahallintaFeature {
     private JPQLQueryFactory queryFactory;
 
     @Resource
-    private MoosePermitStatisticsFeature moosePermitStatisticsFeature;
+    private MoosePermitStatisticsService moosePermitStatisticsService;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasPrivilege('EXPORT_LUPAHALLINTA_MOOSELIKE_HARVESTS')")
@@ -40,7 +40,7 @@ public class MooselikeHarvestExportToLupahallintaFeature {
 
     private Stream<LHMooselikeHarvestsCSVRow> findCsvRowsForSpecies(final int huntingYear, final Integer speciesCode) {
         final List<HarvestPermit> permits = findPermits(huntingYear, speciesCode);
-        return moosePermitStatisticsFeature.calculateByPartner(Locales.FI, speciesCode, huntingYear, permits)
+        return moosePermitStatisticsService.calculateByPartner(Locales.FI, speciesCode, huntingYear, permits)
                 .stream()
                 .map(dto -> createCsvRow(speciesCode, dto));
     }

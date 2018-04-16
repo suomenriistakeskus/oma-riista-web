@@ -1,8 +1,8 @@
 package fi.riista.feature.gis.metsahallitus;
 
 import com.google.common.collect.Iterables;
-import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.util.GISUtils;
 import org.geojson.Feature;
@@ -21,7 +21,6 @@ import javax.sql.DataSource;
 import java.util.List;
 
 @Repository
-@Transactional
 public class GISMetsahallitusRepositoryImpl implements GISMetsahallitusRepositoryCustom {
     private static final Logger LOG = LoggerFactory.getLogger(GISMetsahallitusRepository.class);
 
@@ -40,12 +39,14 @@ public class GISMetsahallitusRepositoryImpl implements GISMetsahallitusRepositor
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Integer findHirviAlueId(GeoLocation geoLocation, int year) {
         return internalQueryKohdeId(geoLocation, year, "SELECT gid FROM mh_hirvi" +
                 " WHERE ST_Intersects(geom, ST_SetSRID(ST_MakePoint(?, ?), 3067)) AND vuosi = ?");
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Integer findPienriistaAlueId(GeoLocation geoLocation, int year) {
         return internalQueryKohdeId(geoLocation, year, "SELECT kohde_id FROM mh_pienriista" +
                 " WHERE ST_Intersects(geom, ST_SetSRID(ST_MakePoint(?, ?), 3067)) AND vuosi = ?");
@@ -74,12 +75,12 @@ public class GISMetsahallitusRepositoryImpl implements GISMetsahallitusRepositor
         final String sql = "SELECT gid, koodi, nimi, pinta_ala FROM mh_hirvi WHERE vuosi = :year";
 
         return namedParameterJdbcTemplate.query(sql, params, (resultSet, i) -> {
-            final int id = resultSet.getInt(1);
-            final int code = resultSet.getInt(2);
-            final String name = resultSet.getString(3);
-            final long areaSize = resultSet.getLong(4);
+            final int id = resultSet.getInt("gid");
+            final int code = resultSet.getInt("koodi");
+            final String name = resultSet.getString("nimi");
+            final long areaSize = resultSet.getLong("pinta_ala") * 10_000;
 
-            return new GISMetsahallitusHirviDTO(id, code, name, areaSize);
+            return new GISMetsahallitusHirviDTO(id, year, code, name, areaSize);
         });
     }
 
@@ -112,17 +113,18 @@ public class GISMetsahallitusRepositoryImpl implements GISMetsahallitusRepositor
         return namedParameterJdbcTemplate.query(sql, params, ROW_MAPPER_HIRVI);
     }
 
-    private static final String SELECT_MH_HIRVI = "SELECT mh.gid, mh.koodi, mh.nimi, mh.pinta_ala," +
+    private static final String SELECT_MH_HIRVI = "SELECT mh.gid, mh.vuosi, mh.koodi, mh.nimi, mh.pinta_ala," +
             " ST_AsGeoJSON(ST_Transform(ST_Simplify(mh.geom, :simplify), :srid)) AS geom";
 
     private final RowMapper<Feature> ROW_MAPPER_HIRVI = (resultSet, i) -> {
         final Feature feature = new Feature();
 
-        feature.setId(GeoJSONConstants.ID_PREFIX_MH_HIRVI + resultSet.getInt(1));
-        feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER, resultSet.getInt(2));
-        feature.setProperty(GeoJSONConstants.PROPERTY_NAME, resultSet.getString(3));
-        feature.setProperty(GeoJSONConstants.PROPERTY_SIZE, resultSet.getLong(4) * 10_000);
-        feature.setGeometry(GISUtils.parseGeoJSONGeometry(objectMapper, resultSet.getString(5)));
+        feature.setId(GeoJSONConstants.ID_PREFIX_MH_HIRVI + resultSet.getInt("gid"));
+        feature.setProperty(GeoJSONConstants.PROPERTY_YEAR, resultSet.getString("vuosi"));
+        feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER, resultSet.getInt("koodi"));
+        feature.setProperty(GeoJSONConstants.PROPERTY_NAME, resultSet.getString("nimi"));
+        feature.setProperty(GeoJSONConstants.PROPERTY_SIZE, resultSet.getLong("pinta_ala") * 10_000);
+        feature.setGeometry(GISUtils.parseGeoJSONGeometry(objectMapper, resultSet.getString("geom")));
 
         return feature;
     };

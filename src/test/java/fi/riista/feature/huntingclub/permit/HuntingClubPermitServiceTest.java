@@ -171,13 +171,11 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private void createGroupAndHarvestsForClub(
-            final HuntingClub club,
-            final HarvestPermitSpeciesAmount speciesAmount,
-            final HasHarvestCountsForPermit harvestCounts) {
+    private void createGroupAndHarvestsForClub(final HuntingClub club,
+                                               final HarvestPermitSpeciesAmount speciesAmount,
+                                               final HasHarvestCountsForPermit harvestCounts) {
 
-        final HuntingClubGroup group = model().newHuntingClubGroup(club, speciesAmount.getGameSpecies());
-        group.updateHarvestPermit(speciesAmount.getHarvestPermit());
+        final HuntingClubGroup group = model().newHuntingClubGroup(club, speciesAmount);
 
         final Person author = model().newPerson();
         model().newOccupation(club, author, OccupationType.SEURAN_JASEN);
@@ -223,10 +221,8 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
         testAllPartnersFinishedHunting(null, pair(SummaryType.BASIC, true));
     }
 
-    private void testAllPartnersFinishedHunting(
-            @Nullable final Tuple2<SummaryType, Boolean> summaryTupleForClub1,
-            @Nullable final Tuple2<SummaryType, Boolean> summaryTupleForClub2) {
-
+    private void testAllPartnersFinishedHunting(@Nullable final Tuple2<SummaryType, Boolean> summaryTupleForClub1,
+                                                @Nullable final Tuple2<SummaryType, Boolean> summaryTupleForClub2) {
         withRhy(rhy -> {
             final GameSpecies species = model().newGameSpecies();
 

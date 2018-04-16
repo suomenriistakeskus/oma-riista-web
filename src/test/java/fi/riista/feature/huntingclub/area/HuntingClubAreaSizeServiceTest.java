@@ -38,12 +38,6 @@ public class HuntingClubAreaSizeServiceTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private HarvestPermit createMoosePermit(final Riistanhoitoyhdistys rhy) {
-        final HarvestPermit permit = model().newHarvestPermit(rhy);
-        permit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
-        return permit;
-    }
-
     private HuntingClubArea createArea(final HuntingClub huntingClub, final double computedAreaSize) {
         return model().newHuntingClubArea(huntingClub, model().newGISZone(computedAreaSize));
     }
@@ -62,7 +56,7 @@ public class HuntingClubAreaSizeServiceTest extends EmbeddedDatabaseTest {
     public void testGetHuntingPermitAreaSize() {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final GameSpecies species = model().newGameSpecies();
-        final HarvestPermit permit = createMoosePermit(rhy);
+        final HarvestPermit permit = model().newMooselikePermit(rhy);
 
         final HuntingClub club = model().newHuntingClub(rhy);
         permit.getPermitPartners().add(club);
@@ -78,7 +72,7 @@ public class HuntingClubAreaSizeServiceTest extends EmbeddedDatabaseTest {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final GameSpecies species = model().newGameSpecies();
 
-        final HarvestPermit permit = createMoosePermit(rhy);
+        final HarvestPermit permit = model().newMooselikePermit(rhy);
 
         final HuntingClub club = model().newHuntingClub(rhy);
         permit.getPermitPartners().add(club);
@@ -97,7 +91,7 @@ public class HuntingClubAreaSizeServiceTest extends EmbeddedDatabaseTest {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final GameSpecies species = model().newGameSpecies();
 
-        final HarvestPermit permit = createMoosePermit(rhy);
+        final HarvestPermit permit = model().newMooselikePermit(rhy);
 
         final HuntingClub club = model().newHuntingClub(rhy);
         permit.getPermitPartners().add(club);
@@ -114,7 +108,7 @@ public class HuntingClubAreaSizeServiceTest extends EmbeddedDatabaseTest {
     public void testGetHuntingPermitAreaSize_MultipleClubs() {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final GameSpecies species = model().newGameSpecies();
-        final HarvestPermit permit = createMoosePermit(rhy);
+        final HarvestPermit permit = model().newMooselikePermit(rhy);
 
         final HuntingClub club1 = model().newHuntingClub(rhy);
         final HuntingClub club2 = model().newHuntingClub(rhy);
@@ -132,8 +126,8 @@ public class HuntingClubAreaSizeServiceTest extends EmbeddedDatabaseTest {
     public void testGetHuntingPermitAreaSize_MultipleGroupsWithDifferentPermit() {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final GameSpecies species = model().newGameSpecies();
-        final HarvestPermit permit1 = createMoosePermit(rhy);
-        final HarvestPermit permit2 = createMoosePermit(rhy);
+        final HarvestPermit permit1 = model().newMooselikePermit(rhy);
+        final HarvestPermit permit2 = model().newMooselikePermit(rhy);
 
         final HuntingClub club = model().newHuntingClub(rhy);
         permit1.getPermitPartners().add(club);

@@ -115,7 +115,7 @@ public abstract class MooseDataCardHarvestValidatorTest<T extends MooseDataCardH
     }
 
     protected static Has2BeginEndDates newSeason(final LocalDate startDate, final LocalDate endDate) {
-        return new Has2BeginEndDatesDTO(startDate, endDate, null, null);
+        return new Has2BeginEndDatesDTO(startDate, endDate);
     }
 
     protected Validation<List<String>, T> validate(final T input, final Has2BeginEndDates permitSeason) {

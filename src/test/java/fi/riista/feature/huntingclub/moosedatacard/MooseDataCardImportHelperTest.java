@@ -6,26 +6,26 @@ import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameDiaryEntry;
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
-import fi.riista.feature.organization.lupahallinta.LHOrganisation;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportException;
 import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardPage1Validation;
+import fi.riista.feature.organization.lupahallinta.LHOrganisation;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.Asserts;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
@@ -52,21 +52,21 @@ import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMes
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.harvestsIgnoredBecauseOfAlreadyExistingHuntingDays;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.missingHuntingDaysCreated;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.observationsIgnoredBecauseOfAlreadyExistingHuntingDays;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingFinishedForPermit;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.clubHuntingFinishedByModeratorOverride;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.contactPersonCouldNotBeFoundByHunterNumberOrSsn;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.harvestPermitSpeciesAmountForMooseNotFound;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingClubNotFoundByCustomerNumber;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingFinishedForPermit;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingYearForHarvestPermitCouldNotBeUnambiguouslyResolved;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.multipleHarvestPermitMooseAmountsFound;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.permitNotFoundByPermitNumber;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.permitNotOfCorrectType;
+import static fi.riista.util.Asserts.assertEmpty;
 import static fi.riista.util.Asserts.assertSuccess;
 import static fi.riista.util.DateUtil.today;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
@@ -120,8 +120,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
             this.speciesBear = model.newGameSpecies(GameSpecies.OFFICIAL_CODE_BEAR);
             this.speciesLynx = model.newGameSpecies(GameSpecies.OFFICIAL_CODE_LYNX);
 
-            this.permit = model.newHarvestPermit(rhy);
-            this.permit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+            this.permit = model.newMooselikePermit(rhy);
 
             this.huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
             this.speciesAmount = model.newHarvestPermitSpeciesAmount(this.permit, this.speciesMoose, this.huntingYear);
@@ -175,18 +174,15 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
     private void testResolveEntities(final boolean createClubInsteadOfLhOrganisation) {
         final EntityResolveFixture f = new EntityResolveFixture(model(), createClubInsteadOfLhOrganisation);
 
-        final Validation<List<String>, MooseDataCardEntitySearchResult> validation =
-                helper.resolveEntities(f.getValidationInput());
-
-        if (validation.isInvalid()) {
-            fail(validation.getError().stream().collect(joining("\n")));
-        }
-
-        final MooseDataCardEntitySearchResult result = validation.get();
-        assertEquals(f.lhOrgOrClub, result.lhOrganisationOrClub);
-        assertEquals(f.speciesAmount, result.speciesAmount);
-        assertEquals(f.huntingYear, result.huntingYear);
-        assertEquals(f.person.getId(), Long.valueOf(result.contactPersonId));
+        helper.resolveEntities(f.getValidationInput())
+                .toEither()
+                .peek(result -> {
+                    assertEquals(f.lhOrgOrClub, result.lhOrganisationOrClub);
+                    assertEquals(f.speciesAmount, result.speciesAmount);
+                    assertEquals(f.huntingYear, result.huntingYear);
+                    assertEquals(f.person.getId(), Long.valueOf(result.contactPersonId));
+                })
+                .orElseRun(err -> assertEmpty(err, "Unexpected validation errors: "));
     }
 
     @Test
@@ -238,8 +234,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
         model().newMooseHarvestReport(f.speciesAmount);
         persistInCurrentlyOpenTransaction();
 
-        assertValidationFailure(
-                f.getValidationInput(), huntingFinishedForPermit(f.permit.getPermitNumber()));
+        assertValidationFailure(f.getValidationInput(), huntingFinishedForPermit(f.permit.getPermitNumber()));
     }
 
     @Test
@@ -335,8 +330,8 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
         assertValidationFailure(input, singletonList(expectedMessage));
     }
 
-    private void assertValidationFailure(
-            final MooseDataCardPage1Validation input, final List<String> expectedMessages) {
+    private void assertValidationFailure(final MooseDataCardPage1Validation input,
+                                         final List<String> expectedMessages) {
 
         final Validation<List<String>, MooseDataCardEntitySearchResult> validation = helper.resolveEntities(input);
         assertTrue("Validation should have failed", validation.isInvalid());
@@ -646,47 +641,44 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
     @Test
     @Transactional
     public void testFindOrCreateGroupForMooseDataCardImport_whenNonImportOriginatedGroupExists() {
-        withSpeciesAmountAndClub((hpsa, club) -> {
+        withSpeciesAmountAndClub((hpsa, club) -> withPerson(contactPerson -> {
 
-            final Person contactPerson = model().newPerson();
-            model().newHuntingClubGroup(club, hpsa.getGameSpecies());
+            model().newHuntingClubGroup(club, hpsa);
 
             persistInCurrentlyOpenTransaction();
 
             assertFailure(invokeFindGroupService(club, hpsa, contactPerson),
                     MooseDataCardImportFailureReasons.huntingClubAlreadyHasGroupNotCreatedWithinMooseDataCardImport());
-        });
+        }));
     }
 
     @Test
     @Transactional
     public void testFindOrCreateGroupForMooseDataCardImport_whenPersonAlreadyMemberOfOneGroup() {
-        withSpeciesAmountAndClub((hpsa, club) -> {
+        withSpeciesAmountAndClub((hpsa, club) -> withPerson(contactPerson -> {
 
-            final HuntingClubGroup group = model().newHuntingClubGroup(club, hpsa.getGameSpecies());
+            final HuntingClubGroup group = model().newHuntingClubGroup(club, hpsa);
             group.setFromMooseDataCard(true);
 
-            final Person contactPerson = model().newPerson();
             model().newOccupation(group, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
             persistInCurrentlyOpenTransaction();
 
             assertSuccess(group, invokeFindGroupService(club, hpsa, contactPerson));
-        });
+        }));
     }
 
     @Test
     @Transactional
     public void testFindOrCreateGroupForMooseDataCardImport_whenPersonIsMemberInMultipeGroups_butNoActiveOccupations() {
-        withSpeciesAmountAndClub((hpsa, club) -> {
+        withSpeciesAmountAndClub((hpsa, club) -> withPerson(contactPerson -> {
 
-            final Person contactPerson = model().newPerson();
-            final int huntingYear = hpsa.resolveHuntingYear();
-
-            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa);
+            group1.setFromMooseDataCard(true);
             model().newDeletedOccupation(group1, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa);
+            group2.setFromMooseDataCard(true);
             model().newDeletedOccupation(group2, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
             persistInCurrentlyOpenTransaction();
@@ -694,97 +686,104 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
             assertFailure(invokeFindGroupService(club, hpsa, contactPerson),
                     MooseDataCardImportFailureReasons
                             .contactPersonMemberOfMultipleMooseDataCardGroupsButWithNoActiveOccupations());
-        });
+        }));
     }
 
     @Test
     @Transactional
     public void testFindOrCreateGroupForMooseDataCardImport_whenPersonIsMemberInMultipeGroups_butActiveInOnlyOne() {
-        withSpeciesAmountAndClub((hpsa, club) -> {
+        withSpeciesAmountAndClub((hpsa, club) -> withPerson(contactPerson -> {
 
-            final Person contactPerson = model().newPerson();
-            final int huntingYear = hpsa.resolveHuntingYear();
-
-            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa);
+            group1.setFromMooseDataCard(true);
             model().newDeletedOccupation(group1, contactPerson, OccupationType.RYHMAN_JASEN);
 
-            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa);
+            group2.setFromMooseDataCard(true);
             model().newOccupation(group2, contactPerson, OccupationType.RYHMAN_JASEN);
 
             persistInCurrentlyOpenTransaction();
 
             assertSuccess(group2, invokeFindGroupService(club, hpsa, contactPerson));
-        });
+        }));
     }
 
     @Test
     @Transactional
     public void testFindOrCreateGroupForMooseDataCardImport_whenPersonIsActiveMemberInMultipeGroups_butNotAsLeader() {
-        withSpeciesAmountAndClub((hpsa, club) -> {
+        withSpeciesAmountAndClub((hpsa, club) -> withPerson(contactPerson -> {
 
-            final Person contactPerson = model().newPerson();
-            final int huntingYear = hpsa.resolveHuntingYear();
-
-            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa);
+            group1.setFromMooseDataCard(true);
             model().newOccupation(group1, contactPerson, OccupationType.RYHMAN_JASEN);
 
-            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa);
+            group2.setFromMooseDataCard(true);
             model().newOccupation(group2, contactPerson, OccupationType.RYHMAN_JASEN);
 
             persistInCurrentlyOpenTransaction();
 
             assertFailure(invokeFindGroupService(club, hpsa, contactPerson),
                     MooseDataCardImportFailureReasons.contactPersonMemberOfMultipleMooseDataCardGroupsButNotAsLeader());
-        });
+        }));
     }
 
     @Test
     @Transactional
     public void testFindOrCreateGroupForMooseDataCardImport_whenPersonIsActiveMemberInMultipeGroups_asLeaderInMany() {
-        withSpeciesAmountAndClub((hpsa, club) -> {
+        withSpeciesAmountAndClub((hpsa, club) -> withPerson(contactPerson -> {
 
-            final Person contactPerson = model().newPerson();
-            final int huntingYear = hpsa.resolveHuntingYear();
-
-            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa);
+            group1.setFromMooseDataCard(true);
             model().newOccupation(group1, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa);
+            group2.setFromMooseDataCard(true);
             model().newOccupation(group2, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
             persistInCurrentlyOpenTransaction();
 
             assertFailure(invokeFindGroupService(club, hpsa, contactPerson),
                     MooseDataCardImportFailureReasons.contactPersonIsLeaderInMultipleMooseDataCardGroups());
-        });
+        }));
     }
 
     @Test
     @Transactional
     public void testFindOrCreateGroupForMooseDataCardImport_whenPersonIsActiveMemberInMultipeGroups_asLeaderInOne() {
-        withSpeciesAmountAndClub((hpsa, club) -> {
+        withSpeciesAmountAndClub((hpsa, club) -> withPerson(contactPerson -> {
 
-            final Person contactPerson = model().newPerson();
-            final int huntingYear = hpsa.resolveHuntingYear();
-
-            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group1 = model().newHuntingClubGroup(club, hpsa);
+            group1.setFromMooseDataCard(true);
             model().newOccupation(group1, contactPerson, OccupationType.RYHMAN_JASEN);
 
-            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa.getGameSpecies(), huntingYear, true);
+            final HuntingClubGroup group2 = model().newHuntingClubGroup(club, hpsa);
+            group2.setFromMooseDataCard(true);
             model().newOccupation(group2, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
             persistInCurrentlyOpenTransaction();
 
             assertSuccess(group2, invokeFindGroupService(club, hpsa, contactPerson));
-        });
+        }));
     }
 
     @Test
     @Transactional
-    public void testFindOrCreateGroupForMooseDataCardImport_whenNoExistingMooseDataGroups() {
-        withSpeciesAmountAndClub((hpsa, club) -> {
+    public void testFindOrCreateGroupForMooseDataCardImport_whenNoMooseDataGroupExistsForClubAndPermit() {
+        withSpeciesAmountAndClub((hpsa, club) -> withPerson(contactPerson -> {
 
-            final Person contactPerson = model().newPerson();
+            final HarvestPermit anotherMoosePermit = model().newHarvestPermit(hpsa.getHarvestPermit().getRhy());
+            final HarvestPermitSpeciesAmount anotherMooseAmount =
+                    model().newHarvestPermitSpeciesAmount(anotherMoosePermit, hpsa.getGameSpecies());
+
+            final HuntingClubGroup anotherMooseDataCardGroup = model().newHuntingClubGroup(club, anotherMooseAmount);
+            anotherMooseDataCardGroup.setFromMooseDataCard(true);
+            model().newOccupation(anotherMooseDataCardGroup, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
+
+            final HarvestPermitSpeciesAmount deerAmount =
+                    model().newHarvestPermitSpeciesAmount(hpsa.getHarvestPermit(), model().newGameSpecies());
+            final HuntingClubGroup deerGroup = model().newHuntingClubGroup(club, deerAmount);
+            model().newOccupation(deerGroup, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
             persistInCurrentlyOpenTransaction();
 
@@ -797,7 +796,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
                 assertTrue(group.getNameLocalisation().asStream()
                         .allMatch(HuntingClubGroup::isNameReservedForMooseDataCardGroups));
 
-                final List<Occupation> allOccupations = occupationRepo.findAll();
+                final List<Occupation> allOccupations = occupationRepo.findByOrganisation(group);
                 assertEquals(1, allOccupations.size());
 
                 final Occupation occupation = allOccupations.iterator().next();
@@ -809,7 +808,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
                 assertFalse(occupation.hasBeginAndEndDate());
                 assertNull(occupation.getLifecycleFields().getDeletionTime());
             });
-        });
+        }));
     }
 
     private Try<HuntingClubGroup> invokeFindGroupService(
@@ -872,9 +871,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
             final HarvestPermit permit = model().newHarvestPermit(rhy);
             final HarvestPermitSpeciesAmount hpsa = model().newHarvestPermitSpeciesAmount(permit, mooseSpecies);
 
-            final HuntingClub club = model().newHuntingClub(rhy);
-
-            testBody.accept(hpsa, club);
+            testBody.accept(hpsa, model().newHuntingClub(rhy));
         });
     }
 

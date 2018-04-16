@@ -16,4 +16,14 @@
         <from>^/privacy_policy$</from>
         <to type="redirect">/#/privacy_policy</to>
     </rule>
+
+    <rule match-type="regex">
+        <from>^/privacy_policy/sv$</from>
+        <to type="redirect">/#/privacy_policy?lang=sv</to>
+    </rule>
+
+    <rule match-type="regex">
+        <from>^/privacy_policy/en$</from>
+        <to type="redirect">/#/privacy_policy?lang=en</to>
+    </rule>
 </urlrewrite>

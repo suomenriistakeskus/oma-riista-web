@@ -4,14 +4,14 @@ import com.kscs.util.jaxb.Copyable;
 
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.gamediary.GameAge;
-import fi.riista.feature.gamediary.harvest.specimen.GameFitnessClass;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.specimen.GameFitnessClass;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardHarvestValidator;
+import fi.riista.feature.organization.person.Person;
 
 import javaslang.Tuple;
 import javaslang.Tuple2;
@@ -32,10 +32,9 @@ public abstract class MooseDataCardHarvestConverter<T extends MooseDataCardHarve
     protected final GameSpecies mooseSpecies;
     protected final Person contactPerson;
 
-    public MooseDataCardHarvestConverter(
-            @Nonnull final MooseDataCardHarvestValidator<T> validator,
-            @Nonnull final GameSpecies mooseSpecies,
-            @Nonnull final Person contactPerson) {
+    public MooseDataCardHarvestConverter(@Nonnull final MooseDataCardHarvestValidator<T> validator,
+                                         @Nonnull final GameSpecies mooseSpecies,
+                                         @Nonnull final Person contactPerson) {
 
         this.validator = Objects.requireNonNull(validator, "validator is null");
         this.mooseSpecies = Objects.requireNonNull(mooseSpecies, "mooseSpecies is null");
@@ -83,9 +82,8 @@ public abstract class MooseDataCardHarvestConverter<T extends MooseDataCardHarve
         specimen.setAdditionalInfo(source.getAdditionalInfo());
         specimen.setNotEdible(source.isNotEdible());
 
-        specimen.setFitnessClass(HasMooseDataCardEncoding
-                .enumOf(GameFitnessClass.class, source.getFitnessClass())
-                .getOrElseGet(invalid -> null));
+        specimen.setFitnessClass(
+                HasMooseDataCardEncoding.getEnumOrNull(GameFitnessClass.class, source.getFitnessClass()));
     }
 
 }

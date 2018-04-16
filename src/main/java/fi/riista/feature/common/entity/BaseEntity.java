@@ -9,7 +9,6 @@ import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 import javax.persistence.Version;
-
 import java.io.Serializable;
 
 /**
@@ -19,7 +18,7 @@ import java.io.Serializable;
  */
 @MappedSuperclass
 @Access(AccessType.FIELD)
-public abstract class BaseEntity<PK extends Serializable> implements Authorizable, HasID<PK>, Persistable<PK> {
+public abstract class BaseEntity<PK extends Serializable> implements HasID<PK>, Persistable<PK> {
 
     @Column(nullable = false)
     @Version
@@ -68,7 +67,7 @@ public abstract class BaseEntity<PK extends Serializable> implements Authorizabl
 
     @Override
     public String toString() {
-        return getEntityClassName() + 
+        return getEntityClassName() +
                 (this.getId() == null
                         ? ":<transient object>"
                         : ":<" + getId() + ">");

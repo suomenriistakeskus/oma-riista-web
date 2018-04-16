@@ -1,17 +1,17 @@
 package fi.riista.feature.organization.calendar;
 
-import fi.riista.feature.SimpleAbstractCrudFeature;
+import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.util.DateUtil;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.function.Function;
 
 @Component
-public class CalendarEventCrudFeature extends SimpleAbstractCrudFeature<Long, CalendarEvent, CalendarEventDTO> {
+public class CalendarEventCrudFeature extends AbstractCrudFeature<Long, CalendarEvent, CalendarEventDTO> {
 
     @Resource
     private CalendarEventRepository calendarEventRepository;
@@ -42,7 +42,7 @@ public class CalendarEventCrudFeature extends SimpleAbstractCrudFeature<Long, Ca
     }
 
     @Override
-    protected Function<CalendarEvent, CalendarEventDTO> entityToDTOFunction() {
-        return CalendarEventDTO::create;
+    protected CalendarEventDTO toDTO(@Nonnull final CalendarEvent entity) {
+        return CalendarEventDTO.create(entity);
     }
 }

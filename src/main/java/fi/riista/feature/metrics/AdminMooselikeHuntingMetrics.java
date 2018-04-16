@@ -2,7 +2,8 @@ package fi.riista.feature.metrics;
 
 public class AdminMooselikeHuntingMetrics {
 
-    private final String speciesName;
+    private Long speciesId;
+    private String speciesName;
     private int harvestCount;
     private int observationCount;
     private int openPermitCount;
@@ -10,12 +11,20 @@ public class AdminMooselikeHuntingMetrics {
     private int moderatorClosedPermitCount;
     private Integer mooseDataCardGroupCount;
 
-    public AdminMooselikeHuntingMetrics(final String speciesName) {
-        this.speciesName = speciesName;
+    public Long getSpeciesId() {
+        return speciesId;
+    }
+
+    public void setSpeciesId(final Long speciesId) {
+        this.speciesId = speciesId;
     }
 
     public String getSpeciesName() {
         return speciesName;
+    }
+
+    public void setSpeciesName(final String speciesName) {
+        this.speciesName = speciesName;
     }
 
     public int getHarvestCount() {

@@ -3,24 +3,22 @@ package fi.riista.feature.huntingclub.permit;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameCategory;
 import fi.riista.feature.gamediary.GameGender;
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
+import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.allocation.HarvestPermitAllocation;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.allocation.HarvestPermitAllocation;
 import fi.riista.feature.harvestpermit.season.MooselikePrice;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.permit.allocation.HuntingClubPermitAllocationDTO;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
-import fi.riista.feature.huntingclub.support.HuntingClubTestDataHelper;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
@@ -70,17 +68,9 @@ public class HuntingClubPermitFeatureTest extends EmbeddedDatabaseTest {
     private HuntingClubGroup nextYearPartnerGroup;
     private HuntingClubGroup nextYearPartnerGroup2;
     private HarvestPermitSpeciesAmount nextYearSpeciesAmount;
-    private MooselikePrice nextYearMooselikePrice;
 
     private HuntingClubGroup otherSpeciesPartnerGroup;
     private HarvestPermitSpeciesAmount otherSpeciesAmount;
-
-    private final HuntingClubTestDataHelper testDataHelper = new HuntingClubTestDataHelper() {
-        @Override
-        protected EntitySupplier model() {
-            return HuntingClubPermitFeatureTest.this.model();
-        }
-    };
 
     @Before
     public void before() {
@@ -97,32 +87,32 @@ public class HuntingClubPermitFeatureTest extends EmbeddedDatabaseTest {
             permitPartner = model().newHuntingClub(rhy);
 
             permit = createPermit(rhy);
-            holderGroup = createGroup(permitHolder, permit);
-            partnerGroup = createGroup(permitPartner, permit);
-            partnerGroup2 = createGroup(permitPartner, permit);
             speciesAmount = createSpeciesAmount(permit, currentHuntingYear);
+            holderGroup = model().newHuntingClubGroup(permitHolder, speciesAmount);
+            partnerGroup = model().newHuntingClubGroup(permitPartner, speciesAmount);
+            partnerGroup2 = model().newHuntingClubGroup(permitPartner, speciesAmount);
+
             mooselikePrice = model().newMooselikePrice(speciesAmount.resolveHuntingYear(), species,
                     BigDecimal.valueOf(120), BigDecimal.valueOf(50));
 
             nextYearPermit = createPermit(rhy);
-            nextYearHolderGroup = createGroup(permitHolder, nextYearPermit);
-            nextYearPartnerGroup = createGroup(permitPartner, nextYearPermit);
-            nextYearPartnerGroup2 = createGroup(permitPartner, nextYearPermit);
             nextYearSpeciesAmount = createSpeciesAmount(nextYearPermit, currentHuntingYear + 1);
-            nextYearMooselikePrice = model().newMooselikePrice(nextYearSpeciesAmount.resolveHuntingYear(), species,
+            nextYearHolderGroup = model().newHuntingClubGroup(permitHolder, nextYearSpeciesAmount);
+            nextYearPartnerGroup = model().newHuntingClubGroup(permitPartner, nextYearSpeciesAmount);
+            nextYearPartnerGroup2 = model().newHuntingClubGroup(permitPartner, nextYearSpeciesAmount);
+            model().newMooselikePrice(nextYearSpeciesAmount.resolveHuntingYear(), species,
                     BigDecimal.valueOf(220), BigDecimal.valueOf(250));
 
             model().newOccupation(permitPartner, person, OccupationType.SEURAN_JASEN);
             model().newHuntingClubGroupMember(person, partnerGroup);
 
-            otherSpeciesPartnerGroup = createGroup(permitPartner, permit, otherSpecies);
             otherSpeciesAmount = createSpeciesAmount(permit, currentHuntingYear, otherSpecies);
+            otherSpeciesPartnerGroup = model().newHuntingClubGroup(permitPartner, otherSpeciesAmount);
         });
     }
 
     private HarvestPermit createPermit(final Riistanhoitoyhdistys rhy) {
-        final HarvestPermit p = model().newHarvestPermit(rhy);
-        p.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+        final HarvestPermit p = model().newMooselikePermit(rhy);
         p.setPermitHolder(permitHolder);
         Stream.of(permitHolder, permitPartner).forEach(p.getPermitPartners()::add);
         return p;
@@ -138,16 +128,6 @@ public class HuntingClubPermitFeatureTest extends EmbeddedDatabaseTest {
         s.setBeginDate(DateUtil.huntingYearBeginDate(huntingYear));
         s.setEndDate(new LocalDate(huntingYear, 12, 31));
         return s;
-    }
-
-    private HuntingClubGroup createGroup(final HuntingClub permitHolder, final HarvestPermit permit) {
-        return createGroup(permitHolder, permit, this.species);
-    }
-
-    private HuntingClubGroup createGroup(final HuntingClub permitHolder, final HarvestPermit permit, final GameSpecies gameSpecies) {
-        final HuntingClubGroup g = model().newHuntingClubGroup(permitHolder, gameSpecies);
-        g.updateHarvestPermit(permit);
-        return g;
     }
 
     @Test

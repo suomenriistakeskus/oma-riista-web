@@ -1,3 +1,5 @@
+@announcement-item-width: 200px;
+
 .announcement-modal {
   .badge {
     padding: 5px 5px 5px 10px;
@@ -50,32 +52,31 @@
 
   > .announcement-title {
     position: relative;
-    overflow: auto;
+    overflow: hidden;
     background-color: #f7f7f7;
     padding: 10px;
     font-family: @font-family-open-sans;
+    cursor: pointer;
+
+    .row > .right {
+      text-align: right;
+      padding-right: 20px;
+    }
 
     .subject {
       font-size: 20px;
       line-height: 1.5em;
-      margin-left: 105px;
     }
 
     .sender, .receiver {
       color: #777;
-      margin-left: 105px;
     }
 
     .date {
-      position: absolute;
-      left: 10px;
-      top: 10px;
-      height: 50px;
-      width: 100px;
       font-size: 18px;
+      font-family: "Helvetica Neue Light", "Lucida Grande", "Calibri", "Arial", sans-serif;
       line-height: 32px;
-      text-align: left;
-      color: #999;
+      color: #555;
     }
   }
 
@@ -89,11 +90,22 @@
 
     .body {
       display: table-cell;
+
+      .content {
+        position: relative;
+        text-align: justify;
+        line-height: 1.4em;
+        min-height: 75px;
+
+        p {
+          margin: 10px;
+        }
+      }
     }
 
     .actions {
       display: table-cell;
-      width: 130px;
+      width: @announcement-item-width;
       background-color: #f7f7f7;
       border-left: 1px solid #ccc;
       padding: 10px;
@@ -113,33 +125,6 @@
           margin-top: 10px;
         }
       }
-    }
-
-    .content, .summary {
-      position: relative;
-      text-align: justify;
-      line-height: 1.4em;
-      min-height: 75px;
-
-      p {
-        margin: 10px;
-      }
-    }
-
-    .summary {
-      height: 130px;
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-
-    .summary:after {
-      content: '';
-      position: absolute;
-      top: 80px;
-      left: 0;
-      height: 60px;
-      width: 100%;
-      background: linear-gradient(rgba(255, 255, 255, 0), #fff);
     }
   }
 }

@@ -43,6 +43,10 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitContactPerson;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.allocation.HarvestPermitAllocation;
+import fi.riista.feature.harvestpermit.area.HarvestPermitArea;
+import fi.riista.feature.harvestpermit.area.HarvestPermitAreaHta;
+import fi.riista.feature.harvestpermit.area.HarvestPermitAreaPartner;
+import fi.riista.feature.harvestpermit.area.HarvestPermitAreaRhy;
 import fi.riista.feature.harvestpermit.report.HarvestReport;
 import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
 import fi.riista.feature.harvestpermit.report.state.HarvestReportStateHistory;
@@ -123,14 +127,14 @@ import static java.util.Optional.ofNullable;
 public class EntitySupplier implements ValueGeneratorMixin {
 
     private static final int DEFAULT_PERMIT_AREA_SIZE = 34567;
+
     private final NumberGenerator numberGenerator;
     private final List<Persistable<?>> transientEntityList;
     private final Supplier<Riistakeskus> riistakeskusSupplier;
 
-    public EntitySupplier(
-            final NumberGenerator numberGenerator,
-            final List<Persistable<?>> transientEntityList,
-            final Supplier<Riistakeskus> riistakeskusSupplier) {
+    public EntitySupplier(@Nonnull final NumberGenerator numberGenerator,
+                          @Nonnull final List<Persistable<?>> transientEntityList,
+                          @Nonnull final Supplier<Riistakeskus> riistakeskusSupplier) {
 
         this.numberGenerator = Objects.requireNonNull(numberGenerator, "numberGenerator is null");
         this.transientEntityList = Objects.requireNonNull(transientEntityList, "transientEntityList is null");
@@ -186,7 +190,6 @@ public class EntitySupplier implements ValueGeneratorMixin {
         person.setFirstName(firstName);
         person.setByName(firstName);
         person.setLastName(lastName);
-        person.setFinnishCitizen(true);
         person.setLanguageCode(Locales.FI_LANG);
         person.setEmail(ValueGenerator.email(numberGenerator, person.getByName(), person.getLastName()));
         person.setPhoneNumber(phoneNumber());
@@ -334,13 +337,6 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return newHarvestPermit(newRiistanhoitoyhdistys());
     }
 
-    public HarvestPermit newHarvestPermitWithPermitAreaSize(final Riistanhoitoyhdistys rhy) {
-        final HarvestPermit permit = newHarvestPermit(rhy);
-        permit.setPermitAreaSize(DEFAULT_PERMIT_AREA_SIZE);
-        permit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
-        return permit;
-    }
-
     public HarvestPermit newHarvestPermit(String permitNumber) {
         return newHarvestPermit(newRiistanhoitoyhdistys(), permitNumber);
     }
@@ -409,6 +405,13 @@ public class EntitySupplier implements ValueGeneratorMixin {
         permit.setOriginalPermit(originalPermit);
         permit.setPermitTypeCode(HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE);
         permit.setHarvestsAsList(harvestsAsList);
+        return permit;
+    }
+
+    public HarvestPermit newMooselikePermit(final Riistanhoitoyhdistys rhy) {
+        final HarvestPermit permit = newHarvestPermit(rhy);
+        permit.setPermitAreaSize(DEFAULT_PERMIT_AREA_SIZE);
+        permit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
         return permit;
     }
 
@@ -579,6 +582,44 @@ public class EntitySupplier implements ValueGeneratorMixin {
         e.setSpeciesAmount(speciesAmount);
         e.setModeratorOverride(true);
         return add(e);
+    }
+
+    public HarvestPermitArea newHarvestPermitArea() {
+        return newHarvestPermitArea(newHuntingClub());
+    }
+
+    public HarvestPermitArea newHarvestPermitArea(HuntingClub club) {
+        return newHarvestPermitArea(club, DateUtil.getFirstCalendarYearOfCurrentHuntingYear(), add(new GISZone()));
+    }
+
+    public HarvestPermitArea newHarvestPermitArea(HuntingClub club, int huntingYear, GISZone zone) {
+        final String numberRepr = zeroPaddedNumber(6);
+
+        final HarvestPermitArea area = new HarvestPermitArea();
+        area.setClub(club);
+        area.setNameFinnish("HarvestPermitArea-" + numberRepr);
+        area.setNameSwedish("HarvestPermitAreaSV-" + numberRepr);
+        area.setHuntingYear(huntingYear);
+        area.setZone(zone);
+        area.setExternalId(externalAreaId());
+
+        return add(area);
+    }
+
+    public HarvestPermitAreaPartner newHarvestPermitAreaPartner(HarvestPermitArea area, final HuntingClubArea source) {
+        return add(new HarvestPermitAreaPartner(area, source, source.getZone()));
+    }
+
+    public HarvestPermitAreaRhy newHarvestPermitAreaRhy(
+            HarvestPermitArea area, Riistanhoitoyhdistys rhy, double areaSize) {
+
+        return add(new HarvestPermitAreaRhy(area, rhy, areaSize));
+    }
+
+    public HarvestPermitAreaHta newHarvestPermitAreaHta(
+            HarvestPermitArea area, GISHirvitalousalue hta, double areaSize) {
+
+        return add(new HarvestPermitAreaHta(area, hta, areaSize));
     }
 
     public Harvest newHarvest() {
@@ -1064,9 +1105,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public HuntingClub newHuntingClub(Riistanhoitoyhdistys rhy) {
-        return newHuntingClub(rhy,
-                "Club" + zeroPaddedNumber(6),
-                "ClubSV" + zeroPaddedNumber(6));
+        final String numberRepr = zeroPaddedNumber(6);
+        return newHuntingClub(rhy, "Club-" + numberRepr, "ClubSV-" + numberRepr);
     }
 
     public HuntingClub newHuntingClub(Riistanhoitoyhdistys rhy, String nameFi, String nameSv) {
@@ -1093,21 +1133,20 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return newHuntingClubGroup(club, species, DateUtil.getFirstCalendarYearOfCurrentHuntingYear());
     }
 
-    public HuntingClubGroup newHuntingClubGroup(
-            HuntingClub club, GameSpecies species, int firstCalendarYearOfHuntingYear) {
-
-        return newHuntingClubGroup(club, species, firstCalendarYearOfHuntingYear, false);
+    public HuntingClubGroup newHuntingClubGroup(HuntingClub club, HarvestPermitSpeciesAmount speciesAmount) {
+        HuntingClubGroup group =
+                newHuntingClubGroup(club, speciesAmount.getGameSpecies(), speciesAmount.resolveHuntingYear());
+        group.updateHarvestPermit(speciesAmount.getHarvestPermit());
+        return group;
     }
 
     public HuntingClubGroup newHuntingClubGroup(
-            HuntingClub club, GameSpecies species, int firstCalendarYearOfHuntingYear, boolean fromMooseDataCard) {
+            HuntingClub club, GameSpecies species, int firstCalendarYearOfHuntingYear) {
 
-        HuntingClubGroup group = newHuntingClubGroup(club,
-                "Group" + zeroPaddedNumber(6),
-                "GroupSV" + zeroPaddedNumber(6),
-                species, firstCalendarYearOfHuntingYear);
-        group.setFromMooseDataCard(fromMooseDataCard);
-        return group;
+        final String suffix = zeroPaddedNumber(6);
+
+        return add(newHuntingClubGroup(
+                club, "Group" + suffix, "GroupSV" + suffix, species, firstCalendarYearOfHuntingYear));
     }
 
     public HuntingClubGroup newHuntingClubGroup(

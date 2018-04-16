@@ -1,11 +1,10 @@
 package fi.riista.feature.common.entity;
 
 import javax.annotation.Nonnull;
-
 import java.io.Serializable;
 import java.util.Objects;
 
-public abstract class BaseEntityDTO<PK extends Serializable> implements Authorizable, HasID<PK> {
+public abstract class BaseEntityDTO<PK extends Serializable> implements HasID<PK> {
 
     public BaseEntityDTO() {
     }

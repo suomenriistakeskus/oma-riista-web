@@ -56,9 +56,6 @@ public class HarvestReportNotificationFeature {
         final HarvestPermit harvestPermit = harvestReport.getHarvestPermit();
         final Organisation rka = harvestPermit != null ? findRka(harvestPermit) : null;
 
-        Harvest harvest = null;
-        HarvestQuota harvestQuota = null;
-
         if (harvestReport.getHarvestPermit() != null && harvestReport.getHarvestPermit().isHarvestsAsList()) {
             final HarvestReportListNotification message = new HarvestReportListNotification(handlebars, messageSource)
                     .withReport(harvestReport)
@@ -77,10 +74,9 @@ public class HarvestReportNotificationFeature {
             for (String email : getTargetEmails(harvestReport, harvestPermit)) {
                 mailService.send(message.withEmail(email).build());
             }
-        }
-        else {
-            harvest = harvestReport.getHarvests().iterator().next();
-            harvestQuota = harvest.getHarvestQuota();
+        } else {
+            final Harvest harvest = harvestReport.getHarvests().iterator().next();
+            final HarvestQuota harvestQuota = harvest.getHarvestQuota();
 
             final HarvestReportNotification message = new HarvestReportNotification(handlebars, messageSource)
                     .withReport(harvestReport, harvest)

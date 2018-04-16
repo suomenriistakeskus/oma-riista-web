@@ -24,13 +24,6 @@
                     <td ng-bind="::$ctrl.profile.homeMunicipality"></td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.person.finnishCitizen"></td>
-                    <td>
-                        <span ng-show="::$ctrl.profile.finnishCitizen" translate="global.yes"></span>
-                        <span ng-hide="::$ctrl.profile.finnishCitizen" translate="global.no"></span>
-                    </td>
-                </tr>
-                <tr>
                     <td class="r-legend col-xs-6" translate="global.person.nativeLanguage"></td>
                     <td ng-bind="::($ctrl.profile.languageCode | languageCodeName | lowercase)"></td>
                 </tr>

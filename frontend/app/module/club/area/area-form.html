@@ -1,0 +1,100 @@
+<div class="content r-club-sidebar-content">
+    <form name="form" role="form" class="form form-horizontal" autocomplete="off">
+        <h3 ng-show="!area.id" class="modal-title" translate="club.area.form.titleAdd"></h3>
+        <h3 ng-show="area.id" class="modal-title" translate="club.area.form.titleEdit"></h3>
+
+        <div class="form-group" show-errors>
+            <label for="huntingYear" class="col-xs-3 control-label">
+                <span translate="global.huntingYear"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select name="huntingYear" id="huntingYear" class="form-control"
+                        ng-model="area.huntingYear"
+                        ng-options="y.year as y.name for y in huntingYears"
+                        ng-disabled="area.attachedToGroup"
+                        required>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="nameFI" class="col-xs-3 control-label">
+                <span translate="global.nameFI"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input name="nameFI" id="nameFI" class="form-control"
+                       ng-model="area.nameFI"
+                       ng-maxlength="255"
+                       r-copy-on-blur-to-empty-input="nameSV"
+                       required>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="nameSV" class="col-xs-3 control-label">
+                <span translate="global.nameSV"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input name="nameSV" id="nameSV" class="form-control"
+                       ng-model="area.nameSV"
+                       ng-maxlength="255"
+                       r-copy-on-blur-to-empty-input="nameFI"
+                       required>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="area.externalId">
+            <label class="col-xs-3 control-label">
+                <span translate="club.area.form.externalId"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <p class="form-control-static" ng-bind="area.externalId"></p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-xs-3 control-label">
+                <span translate="club.area.lastModified"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <p class="form-control-static">
+                    <span ng-show="area.lastModifierRiistakeskus">
+                        <span translate="global.organisationType.RK"></span>
+                        <br>
+                    </span>
+                    <span ng-show="area.lastModifierName">
+                        <span ng-bind="area.lastModifierName"></span>
+                        <br>
+                    </span>
+
+                    <span ng-bind="area.lastModifiedDate | date:'d.M.yyyy HH:mm'"></span>
+                </p>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button" class="btn btn-default pull-left"
+            ng-click="cancel()"
+            translate="global.button.cancel"></button>
+
+    <button type="button" class="btn btn-danger"
+            ng-show="area.id && area.active && !area.attachedToGroup"
+            ng-click="deactivate()"
+            translate="club.area.button.deactivate"></button>
+
+    <button type="button" class="btn btn-danger"
+            ng-show="area.id && !area.active"
+            ng-click="activate()"
+            translate="club.area.button.activate"></button>
+
+    <button type="button" class="btn btn-primary"
+            ng-click="save()"
+            ng-disabled="form.$invalid"
+            translate="global.button.ok"></button>
+</div>

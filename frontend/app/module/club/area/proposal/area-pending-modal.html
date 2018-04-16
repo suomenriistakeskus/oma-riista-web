@@ -1,0 +1,24 @@
+<div class="modal-header">
+    <h3 class="modal-title" translate="club.area.proposal.pendingModal.title"></h3>
+</div>
+
+<div class="modal-body">
+    <div class="alert alert-info" translate="club.area.proposal.pendingModal.infoText"></div>
+
+    <div class="progress">
+        <div class="progress-bar progress-bar-info progress-bar-striped"
+             ng-if="$ctrl.status === 'PROCESSING'"
+             ng-style="{'width': $ctrl.progressBarWidth + '%'}"
+             role="progressbar">
+            {{ $ctrl.progressBarWidth }} %
+        </div>
+    </div>
+
+    <div class="alert alert-warning" ng-if="$ctrl.status === 'PENDING'">
+        <span translate="club.area.proposal.pendingModal.waiting"></span>
+    </div>
+
+    <div class="alert alert-info" ng-if="$ctrl.status === 'PROCESSING'">
+        <span translate="club.area.proposal.pendingModal.processing"></span>
+    </div>
+</div>

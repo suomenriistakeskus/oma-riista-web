@@ -112,7 +112,7 @@ public class ClubHuntingSummaryService {
 
             dto.setHarvestPermitId(permit.getId());
             dto.setGameSpeciesCode(speciesCode);
-            dto.setPermitAreaSize(permit.getPermitAreaSize());
+            dto.setPermitAreaSize(Objects.requireNonNull(permit.getPermitAreaSize(), "permitAreaSize is null"));
 
             dto.setClubId(club.getId());
             dto.setNameFI(club.getNameFinnish());
@@ -129,8 +129,12 @@ public class ClubHuntingSummaryService {
 
             // Transform moose hunting summaries to result DTOs.
             mooseHuntingSummaryRepository.findAll(mooseSummarySpec).forEach(mooseSummary -> {
+                final Integer permitArea = mooseSummary.getHarvestPermit().getPermitAreaSize();
+                Objects.requireNonNull(permitArea, "Permit area is null, permit id:" + permit.getId());
+                final AreaSizeAndRemainingPopulation fixedAreaSizeAndPopulation = mooseSummary.getAreaSizeAndPopulation()
+                        .calculateMissingValues(mooseSummary.getEffectiveHuntingAreaPercentage(), permitArea);
                 final BasicClubHuntingSummaryDTO dto = clubToDto.apply(mooseSummary.getClub())
-                        .withAreaSizeAndRemainingPopulation(mooseSummary.getAreaSizeAndPopulation());
+                        .withAreaSizeAndRemainingPopulation(fixedAreaSizeAndPopulation);
                 dto.setHuntingFinished(mooseSummary.isHuntingFinished());
                 dto.setHuntingEndDate(mooseSummary.getHuntingEndDate());
 

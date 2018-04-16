@@ -164,25 +164,26 @@
             };
 
             self.getJSONP("/tapahtumat.jsonp", requestData, function(data) {
-                if (data.length > self.options.searchLimit) {
+                var events = data.events || [];
+                if (data.tooManyResults) {
                     self.$searchResults.html(self.options.translations.tooManyResults);
                     return;
                 }
-                if (data.length === 0) {
+                if (events.length === 0) {
                     self.$searchResults.html(self.options.translations.noResults);
                     return;
                 }
                 var tableRowDataString = "";
                 var oddColor = self.options.oddColor;
                 var evenColor = self.options.evenColor;
-                for (var i = 0; i < data.length; i++) {
+                for (var i = 0; i < events.length; i++) {
                     var bgColor = i % 2 == 0 ? evenColor : oddColor;
-                    tableRowDataString += "<tr><td rowspan='6' style='vertical-align: top; background-color: "+bgColor+";'>" + moment(data[i].date, self.dateBEFormat).format(self.dateUIFormat) + "</td></tr>";
-                    tableRowDataString = self.addTimeRow(data[i], tableRowDataString, bgColor);
-                    tableRowDataString = self.addTableRow(data[i].organisation.name, tableRowDataString, bgColor);
-                    tableRowDataString = self.addEventTypeAndNameRow(data[i], tableRowDataString, bgColor);
-                    tableRowDataString = self.addVenueRow(data[i].venue, tableRowDataString, bgColor);
-                    var description = data[i].description ? data[i].description.replace(/(?:\r\n|\r|\n)/g, '<br />') : '';
+                    tableRowDataString += "<tr><td rowspan='6' style='vertical-align: top; background-color: "+bgColor+";'>" + moment(events[i].date, self.dateBEFormat).format(self.dateUIFormat) + "</td></tr>";
+                    tableRowDataString = self.addTimeRow(events[i], tableRowDataString, bgColor);
+                    tableRowDataString = self.addTableRow(events[i].organisation.name, tableRowDataString, bgColor);
+                    tableRowDataString = self.addEventTypeAndNameRow(events[i], tableRowDataString, bgColor);
+                    tableRowDataString = self.addVenueRow(events[i].venue, tableRowDataString, bgColor);
+                    var description = events[i].description ? events[i].description.replace(/(?:\r\n|\r|\n)/g, '<br />') : '';
                     tableRowDataString = self.addTableRow(description, tableRowDataString, bgColor);
                 }
                 self.$searchResults.html("<table style='border-spacing: 0; width: 100%;'>" + tableRowDataString + "</table>");

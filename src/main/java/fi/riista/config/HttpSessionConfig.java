@@ -9,7 +9,6 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.serializer.support.DeserializingConverter;
 import org.springframework.core.serializer.support.SerializationFailedException;
 import org.springframework.core.serializer.support.SerializingConverter;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.session.MapSession;
 import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
 import org.springframework.session.jdbc.JdbcOperationsSessionRepository;
@@ -20,7 +19,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableScheduling
 public class HttpSessionConfig extends SpringHttpSessionConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(HttpSessionConfig.class);
 

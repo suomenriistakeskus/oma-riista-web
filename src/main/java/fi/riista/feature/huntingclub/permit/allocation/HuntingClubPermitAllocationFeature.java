@@ -41,7 +41,7 @@ public class HuntingClubPermitAllocationFeature {
                                  final List<HuntingClubPermitAllocationDTO> allocations) {
         final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(speciesCode);
         final HarvestPermit permit = entityService.requireHarvestPermit(harvestPermitId,
-                HarvestPermitAuthorization.HarvestPermitPermission.UPDATE_ALLOCATIONS);
+                HarvestPermitAuthorization.Permission.UPDATE_ALLOCATIONS);
         assertValidGameSpeciesForPermit(speciesCode, permit);
 
         // Remove existing allocation for same gameSpecies

@@ -120,8 +120,6 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
     public HarvestDTO createHarvest(@Nonnull final HarvestDTO dto) {
         Objects.requireNonNull(dto);
 
-        activeUserService.assertHasPermission(dto, EntityPermission.CREATE);
-
         final Harvest harvest = new Harvest();
         harvest.setFromMobile(false);
 
@@ -134,6 +132,8 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
         if (harvest.getGeoLocation().getSource() == null) {
             harvest.getGeoLocation().setSource(GeoLocation.Source.MANUAL);
         }
+
+        activeUserService.assertHasPermission(harvest, EntityPermission.CREATE);
 
         harvestRepository.saveAndFlush(harvest);
 
@@ -230,8 +230,6 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
     public ObservationDTO createObservation(@Nonnull final ObservationDTO dto) {
         Objects.requireNonNull(dto);
 
-        activeUserService.assertHasPermission(dto, EntityPermission.CREATE);
-
         final SystemUser activeUser = activeUserService.getActiveUser();
         final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(dto.getGameSpeciesCode());
 
@@ -242,6 +240,8 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
         observation.setFromMobile(false);
 
         updateMutableFields(observation, species, activeUser, dto, true, true);
+
+        activeUserService.assertHasPermission(observation, EntityPermission.CREATE);
 
         observationRepository.saveAndFlush(observation);
 

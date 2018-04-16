@@ -29,6 +29,8 @@ import static org.springframework.data.jpa.domain.Specifications.where;
 @Component
 public class PublicCalendarEventSearchFeature {
 
+    private static final int MAX_RESULTS = 200;
+
     @Resource
     private CalendarEventRepository calendarEventRepository;
 
@@ -36,7 +38,7 @@ public class PublicCalendarEventSearchFeature {
     private PublicDTOFactory dtoFactory;
 
     @Transactional(readOnly = true)
-    public List<PublicCalendarEventDTO> findCalendarEvents(PublicCalendarEventSearchDTO params) {
+    public PublicCalendarEventSearchResultDTO findCalendarEvents(PublicCalendarEventSearchDTO params) {
         final Specification<CalendarEvent> filter = where(betweenDates(params.getBegin(), params.getEnd()))
                 .and(byArea(params.getAreaId()))
                 .and(byRhy(params.getRhyId()))
@@ -84,10 +86,13 @@ public class PublicCalendarEventSearchFeature {
                 : JpaSpecs.equal(CalendarEvent_.calendarEventType, calendarEventType);
     }
 
-    private List<PublicCalendarEventDTO> toCalendarEventDTOs(final List<CalendarEvent> calendarEvents) {
-        return F.mapNonNullsToList(calendarEvents, calendarEvent -> {
-            return dtoFactory.create(calendarEvent, dtoFactory.create(calendarEvent.getCalendarEventType()));
-        });
+    private PublicCalendarEventSearchResultDTO toCalendarEventDTOs(final List<CalendarEvent> calendarEvents) {
+        if (calendarEvents.size() > MAX_RESULTS) {
+            return PublicCalendarEventSearchResultDTO.TOO_MANY_RESULTS;
+        }
+        final List<PublicCalendarEventDTO> events = F.mapNonNullsToList(calendarEvents, calendarEvent ->
+                dtoFactory.create(calendarEvent, dtoFactory.create(calendarEvent.getCalendarEventType())));
+        return new PublicCalendarEventSearchResultDTO(events);
     }
 
     public List<PublicCalendarEventTypeDTO> getCalendarEventTypes() {

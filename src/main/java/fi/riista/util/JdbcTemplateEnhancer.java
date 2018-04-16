@@ -36,9 +36,10 @@ public class JdbcTemplateEnhancer {
                     }
 
                     return result;
-                } else {
-                    return method.invoke(jdbcOperations, args);
                 }
+
+                return method.invoke(jdbcOperations, args);
+
             } catch (InvocationTargetException e) {
                 throw e.getTargetException();
             }

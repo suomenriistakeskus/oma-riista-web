@@ -4,13 +4,10 @@ import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMes
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.huntingclub.moosedatacard.DateAndLocation;
-
 import javaslang.control.Either;
-
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
-
 import java.util.Objects;
 
 public abstract class MooseDataCardObservationValidator<T extends DateAndLocation>
@@ -27,8 +24,8 @@ public abstract class MooseDataCardObservationValidator<T extends DateAndLocatio
 
     protected Either<String, LocalDate> resolveDate(@Nonnull final T object) {
         return validateDate(Objects.requireNonNull(object))
-                .<Either<String, LocalDate>> fold(
-                        invalid -> Either.left(observationAbandonedBecauseOfMissingDate(object)), Either::right);
+                .toEither()
+                .mapLeft(invalidMsg -> observationAbandonedBecauseOfMissingDate(object));
     }
 
 }

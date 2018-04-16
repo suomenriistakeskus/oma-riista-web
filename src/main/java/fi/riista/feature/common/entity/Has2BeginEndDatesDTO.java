@@ -15,11 +15,14 @@ public class Has2BeginEndDatesDTO implements Has2BeginEndDates {
     public Has2BeginEndDatesDTO() {
     }
 
-    public Has2BeginEndDatesDTO(
-            @Nullable final LocalDate beginDate,
-            @Nullable final LocalDate endDate,
-            @Nullable final LocalDate beginDate2,
-            @Nullable final LocalDate endDate2) {
+    public Has2BeginEndDatesDTO(@Nullable final LocalDate beginDate, @Nullable final LocalDate endDate) {
+        this(beginDate, endDate, null, null);
+    }
+
+    public Has2BeginEndDatesDTO(@Nullable final LocalDate beginDate,
+                                @Nullable final LocalDate endDate,
+                                @Nullable final LocalDate beginDate2,
+                                @Nullable final LocalDate endDate2) {
 
         setDates(beginDate, endDate, beginDate2, endDate2);
     }

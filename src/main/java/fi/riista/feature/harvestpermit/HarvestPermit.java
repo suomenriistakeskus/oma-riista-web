@@ -178,6 +178,7 @@ public class HarvestPermit extends LifecycleEntity<Long> {
     )
     private Set<Riistanhoitoyhdistys> relatedRhys = new HashSet<>();
 
+    // Area size in full hectares.
     @Column
     private Integer permitAreaSize;
 

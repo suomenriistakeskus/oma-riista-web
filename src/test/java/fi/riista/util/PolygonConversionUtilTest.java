@@ -14,7 +14,7 @@ public class PolygonConversionUtilTest {
     public void testJsonMultiPolygon_SingleRing_WithThreePointsNotConnected() {
         final Polygon originalPolygon = new Polygon(new LngLatAlt(1,1), new LngLatAlt(1,2), new LngLatAlt(1,3));
         final MultiPolygon originalMultiPolygon = new MultiPolygon(originalPolygon);
-        final Geometry geometry = PolygonConversionUtil.geoJsonToJava(originalMultiPolygon, GISUtils.SRID.WGS84);
+        final Geometry geometry = PolygonConversionUtil.geoJsonToJavaPossiblyInvalid(originalMultiPolygon, GISUtils.SRID.WGS84);
 
         final Polygon expectedPolygon = new Polygon(new LngLatAlt(1,1), new LngLatAlt(1,2), new LngLatAlt(1,3), new LngLatAlt(1,1));
         final MultiPolygon expectedMultiPolygon = new MultiPolygon(expectedPolygon);
@@ -26,7 +26,7 @@ public class PolygonConversionUtilTest {
     public void testJsonMultiPolygon_SingleRing_WithThreePointsConnected() {
         final Polygon originalPolygon = new Polygon(new LngLatAlt(1,1), new LngLatAlt(1,2), new LngLatAlt(1,3), new LngLatAlt(1,1));
         final MultiPolygon originalMultiPolygon = new MultiPolygon(originalPolygon);
-        final Geometry geometry = PolygonConversionUtil.geoJsonToJava(originalMultiPolygon, GISUtils.SRID.WGS84);
+        final Geometry geometry = PolygonConversionUtil.geoJsonToJavaPossiblyInvalid(originalMultiPolygon, GISUtils.SRID.WGS84);
 
         assertEquals(originalMultiPolygon, PolygonConversionUtil.javaToGeoJSON(geometry));
     }
@@ -37,7 +37,7 @@ public class PolygonConversionUtilTest {
         final Polygon originalPolygon2 = new Polygon(new LngLatAlt(2,1), new LngLatAlt(2,2), new LngLatAlt(2,3));
         final MultiPolygon originalMultiPolygon = new MultiPolygon(originalPolygon1);
         originalMultiPolygon.add(originalPolygon2);
-        final Geometry geometry = PolygonConversionUtil.geoJsonToJava(originalMultiPolygon, GISUtils.SRID.WGS84);
+        final Geometry geometry = PolygonConversionUtil.geoJsonToJavaPossiblyInvalid(originalMultiPolygon, GISUtils.SRID.WGS84);
 
         final Polygon expectedPolygon1 = new Polygon(new LngLatAlt(1,1), new LngLatAlt(1,2), new LngLatAlt(1,3), new LngLatAlt(1,1));
         final Polygon expectedPolygon2 = new Polygon(new LngLatAlt(2,1), new LngLatAlt(2,2), new LngLatAlt(2,3), new LngLatAlt(2,1));
@@ -53,7 +53,7 @@ public class PolygonConversionUtilTest {
         final Polygon originalPolygon2 = new Polygon(new LngLatAlt(2,1), new LngLatAlt(2,2), new LngLatAlt(2,3), new LngLatAlt(2,1));
         final MultiPolygon originalMultiPolygon = new MultiPolygon(originalPolygon1);
         originalMultiPolygon.add(originalPolygon2);
-        final Geometry geometry = PolygonConversionUtil.geoJsonToJava(originalMultiPolygon, GISUtils.SRID.WGS84);
+        final Geometry geometry = PolygonConversionUtil.geoJsonToJavaPossiblyInvalid(originalMultiPolygon, GISUtils.SRID.WGS84);
 
         assertEquals(originalMultiPolygon, PolygonConversionUtil.javaToGeoJSON(geometry));
     }

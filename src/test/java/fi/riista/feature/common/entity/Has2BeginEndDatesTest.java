@@ -10,7 +10,7 @@ public class Has2BeginEndDatesTest {
 
     @Test
     public void testContainsDate_whenFirstDatesDefined() {
-        final Has2BeginEndDates object = new Has2BeginEndDatesDTO(today(), today(), null, null);
+        final Has2BeginEndDates object = new Has2BeginEndDatesDTO(today(), today());
 
         testContainsDate(object, today(), true);
         testContainsDate(object, today().minusDays(1), false);
@@ -43,7 +43,7 @@ public class Has2BeginEndDatesTest {
 
     @Test
     public void testContainsDate_whenAllDatesNull() {
-        testContainsDate(new Has2BeginEndDatesDTO(null, null, null, null), today(), false);
+        testContainsDate(new Has2BeginEndDatesDTO(), today(), false);
     }
 
     private static void testContainsDate(

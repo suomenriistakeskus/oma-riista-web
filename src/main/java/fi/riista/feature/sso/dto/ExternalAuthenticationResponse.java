@@ -145,10 +145,6 @@ public class ExternalAuthenticationResponse {
             this.address = null;
             this.homeMunicipality = null;
         }
-
-        // TODO: Enabled fields when required privileges are known.
-//        this.finnishCitizen = person.isFinnishCitizen();
-//        this.ssnMasked = person.getSsnMasked();
     }
 
     private final Long personId;
@@ -161,8 +157,6 @@ public class ExternalAuthenticationResponse {
     private final Address address;
     private final String hunterNumber;
     private final String ssn;
-    private final String ssnMasked = null;
-    private final Boolean finnishCitizen = null;
     private final String homeMunicipality;
     private final List<ActiveOccupation> occupations;
 
@@ -202,20 +196,12 @@ public class ExternalAuthenticationResponse {
         return ssn;
     }
 
-    public String getSsnMasked() {
-        return ssnMasked;
-    }
-
     public String getHomeMunicipality() {
         return homeMunicipality;
     }
 
     public String getLanguageCode() {
         return languageCode;
-    }
-
-    public Boolean isFinnishCitizen() {
-        return finnishCitizen;
     }
 
     public List<ActiveOccupation> getOccupations() {

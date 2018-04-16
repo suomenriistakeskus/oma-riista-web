@@ -243,6 +243,10 @@ public class LH_Export {
             return this.organisaatio;
         }
 
+        public void setOrganisaatio(List<LH_Organisation> value) {
+            this.organisaatio = value;
+        }
+
     }
 
 
@@ -301,6 +305,10 @@ public class LH_Export {
                 henkilo = new ArrayList<LH_Person>();
             }
             return this.henkilo;
+        }
+
+        public void setHenkilo(List<LH_Person> value) {
+            this.henkilo = value;
         }
 
     }

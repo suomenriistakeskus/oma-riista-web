@@ -1,19 +1,13 @@
-<div class="panel panel-default announcement-panel">
-    <div class="panel-heading">
-        <h3 class="panel-title" translate="account.announcements.title"></h3>
-    </div>
+<div class="announcement-list">
+    <slice-pager slice="$ctrl.announcements" load-page="$ctrl.loadPage(page)"></slice-pager>
 
-    <div class="panel-body">
-        <div class="announcement-list">
-            <slice-pager slice="$ctrl.announcements" load-page="$ctrl.loadPage(page)"></slice-pager>
+    <announcement-list-item
+            ng-repeat="a in $ctrl.announcements.content track by a.id"
+            announcement="a"
+            show-actions="false"
+            initially-hidden="$index > 0"
+            organisation="$ctrl.organisation">
+    </announcement-list-item>
 
-            <announcement-list-item
-                    ng-repeat="a in $ctrl.announcements.content track by a.id"
-                    announcement="a"
-                    show-actions="false"
-                    only-summary="false"
-                    organisation="$ctrl.organisation">
-            </announcement-list-item>
-        </div>
-    </div>
+    <slice-pager slice="$ctrl.announcements" load-page="$ctrl.loadPage(page)"></slice-pager>
 </div>

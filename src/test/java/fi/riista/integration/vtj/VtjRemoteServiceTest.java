@@ -1,7 +1,8 @@
 package fi.riista.integration.vtj;
 
-import fi.riista.config.VtjRemoteServiceTestContext;
+import fi.riista.util.JCEUtil;
 import fi.vrk.xml.schema.vtjkysely.VTJHenkiloVastaussanoma;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +12,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.tempuri.SoSoSoap;
 
 import javax.annotation.Resource;
+import java.security.Security;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -20,9 +22,14 @@ import static org.junit.Assert.fail;
 
 @Ignore("If you want to run these, remove ignore and add correct username and password in your properties")
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = VtjRemoteServiceTestContext.class)
+@ContextConfiguration
 public class VtjRemoteServiceTest {
     private static final String END_USER = "omariista_integration_test";
+
+    static {
+        JCEUtil.removeJavaCryptographyAPIRestrictions();
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     @Resource
     private VtjRemoteService vtjApi;

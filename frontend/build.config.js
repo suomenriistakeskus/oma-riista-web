@@ -52,6 +52,7 @@ module.exports = {
             '../node_modules/proj4/dist/proj4.js',
             '../node_modules/proj4leaflet/src/proj4leaflet.js',
             '../node_modules/greiner-hormann/dist/greiner-hormann.min.js',
+            '../node_modules/qrcodejs/qrcode.min.js',
             '../node_modules/rangy/lib/rangy-core.js',
             '../node_modules/rangy/lib/rangy-selectionsaverestore.js'
         ],

@@ -27,7 +27,7 @@
                     AccountAnnouncements.query({
                         sort: 'id,desc',
                         page: page,
-                        size: 5
+                        size: 10
                     }).$promise.then(function (result) {
                         $ctrl.announcements = result;
                     });

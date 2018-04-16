@@ -2,14 +2,14 @@ package fi.riista.feature.huntingclub.hunting.overview;
 
 import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.support.EntitySupplier;
-import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
@@ -38,8 +38,8 @@ public class SharedPermitMapHarvestTest extends EmbeddedDatabaseTest {
         final HuntingClubGroup huntingClubGroup;
         final GroupHuntingDay groupHuntingDay;
         final HarvestPermit harvestPermit;
+        final HarvestPermitSpeciesAmount speciesAmount;
         final Person person;
-        final Occupation occupation;
         final Harvest harvest;
 
         public SimpleFixture(final EntitySupplier model) {
@@ -52,27 +52,25 @@ public class SharedPermitMapHarvestTest extends EmbeddedDatabaseTest {
             this.huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
             this.gameSpecies = model.newGameSpecies();
             this.huntingClub = model.newHuntingClub(rhy);
-            this.huntingClubGroup = model.newHuntingClubGroup(huntingClub, this.gameSpecies, this.huntingYear);
-            this.groupHuntingDay = model.newGroupHuntingDay(huntingClubGroup, DateUtil.today());
 
             // Person with club membership
             this.person = model.newPerson();
 
             if (createOccupation) {
-                this.occupation = model.newOccupation(huntingClub, person, OccupationType.SEURAN_JASEN);
-            } else {
-                this.occupation = null;
+                model.newOccupation(huntingClub, person, OccupationType.SEURAN_JASEN);
             }
+
+            // Permit with club as partner
+            this.harvestPermit = model.newMooselikePermit(rhy);
+            this.harvestPermit.getPermitPartners().add(huntingClub);
+            this.speciesAmount = model.newHarvestPermitSpeciesAmount(harvestPermit, gameSpecies, huntingYear);
+
+            this.huntingClubGroup = model.newHuntingClubGroup(huntingClub, speciesAmount);
+            this.groupHuntingDay = model.newGroupHuntingDay(huntingClubGroup, DateUtil.today());
 
             // Harvest linked to hunting club day
             this.harvest = model.newHarvest(person, person);
             this.harvest.updateHuntingDayOfGroup(groupHuntingDay, null);
-
-            // Permit with club as partner
-            this.harvestPermit = model.newHarvestPermit(rhy);
-            this.harvestPermit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
-            this.harvestPermit.getPermitPartners().add(huntingClub);
-            this.huntingClubGroup.updateHarvestPermit(this.harvestPermit);
         }
 
         public List<HarvestDTO> listHarvest() {

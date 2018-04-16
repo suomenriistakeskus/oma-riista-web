@@ -3,6 +3,7 @@ package fi.riista.util;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.common.entity.HasID;
+import javaslang.Function2;
 import javaslang.Tuple;
 import javaslang.Tuple2;
 import org.springframework.util.StringUtils;
@@ -63,6 +64,11 @@ public final class Functions {
     public static <K, V> Function<K, V> forMap(@Nonnull final Map<K, V> map, @Nullable final V defaultValue) {
         Objects.requireNonNull(map, "map is null");
         return key -> map.getOrDefault(key, defaultValue);
+    }
+
+    @Nonnull
+    public static <T, U> Function2<T, U, T> firstOf2() {
+        return (first, second) -> first;
     }
 
     @Nonnull

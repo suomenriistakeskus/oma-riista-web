@@ -5,23 +5,23 @@ import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.error.MessageExposableValidationException;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gamediary.AbstractGameDiaryFeature;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.observation.Observation;
-import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
-import fi.riista.feature.gamediary.observation.metadata.ObservationMetadataDTO;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFieldsSpecs;
+import fi.riista.feature.gamediary.observation.metadata.ObservationMetadataDTO;
+import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermit_;
 import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
+import fi.riista.feature.harvestpermit.report.fields.HarvestReportFieldsSpecs;
 import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields_;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
@@ -38,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
@@ -52,16 +51,16 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
-import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
-import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
-import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
-import static fi.riista.feature.gamediary.observation.ObservationType.PESA_PENKKA;
-import static fi.riista.feature.gamediary.observation.ObservationType.PESA_SEKA;
 import static fi.riista.feature.gamediary.GameDiarySpecs.harvestsByHuntingYear;
 import static fi.riista.feature.gamediary.GameDiarySpecs.observationsByHuntingYear;
 import static fi.riista.feature.gamediary.GameDiarySpecs.observer;
 import static fi.riista.feature.gamediary.GameDiarySpecs.shooter;
 import static fi.riista.feature.gamediary.GameDiarySpecs.temporalSort;
+import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
+import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
+import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
+import static fi.riista.feature.gamediary.observation.ObservationType.PESA_PENKKA;
+import static fi.riista.feature.gamediary.observation.ObservationType.PESA_SEKA;
 import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.IS_NOT_ANY_MOOSELIKE_PERMIT;
 import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.harvestReportNotDone;
 import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.isPermitContactPerson;
@@ -237,13 +236,13 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
 
             // Null-checking of geolocation source done for backwards-compatibility.
             final boolean geoLocationSourceMissingFromDto = dto.getGeoLocation().getSource() == null;
-            GeoLocation location = null;
+            final GeoLocation location;
 
             if (!dto.getHarvestSpecVersion().requiresGeolocationSource()) {
-                location = harvest.getGeoLocation();
-
                 // Keep original location within updates if source is missing from DTO.
-                if (!geoLocationSourceMissingFromDto) {
+                if (geoLocationSourceMissingFromDto) {
+                    location = harvest.getGeoLocation();
+                } else {
                     location = dto.getGeoLocation();
                 }
             } else {
@@ -406,7 +405,7 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
         observation.setDescription(dto.getDescription());
     }
 
-    @Transactional(rollbackFor = IOException.class)
+    @Transactional
     public void deleteGameDiaryImage(final UUID imageUuid) {
         try {
             gameDiaryImageService.deleteGameDiaryImage(imageUuid, activeUserService.requireActivePerson());

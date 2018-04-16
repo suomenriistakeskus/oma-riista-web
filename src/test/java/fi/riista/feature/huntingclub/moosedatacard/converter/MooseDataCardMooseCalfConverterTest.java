@@ -7,8 +7,8 @@ import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseCalf;
 
 import org.junit.Test;
@@ -23,10 +23,9 @@ public class MooseDataCardMooseCalfConverterTest extends MooseDataCardHarvestCon
     }
 
     @Override
-    protected MooseDataCardMooseCalfConverter newConverter(
-            @Nonnull final GameSpecies mooseSpecies,
-            @Nonnull final Person person,
-            @Nonnull final GeoLocation defaultCoordinates) {
+    protected MooseDataCardMooseCalfConverter newConverter(@Nonnull final GameSpecies mooseSpecies,
+                                                           @Nonnull final Person person,
+                                                           @Nonnull final GeoLocation defaultCoordinates) {
 
         return new MooseDataCardMooseCalfConverter(mooseSpecies, person, defaultCoordinates);
     }
@@ -37,10 +36,7 @@ public class MooseDataCardMooseCalfConverterTest extends MooseDataCardHarvestCon
 
         testConversion(calf, harvest -> {}, specimen -> {
             assertEquals(GameAge.YOUNG, specimen.getAge());
-            assertEquals(
-                    HasMooseDataCardEncoding.enumOf(GameGender.class, calf.getGender())
-                            .getOrElseThrow(invalid -> new IllegalStateException("Could not convert gender")),
-                    specimen.getGender());
+            assertEquals(HasMooseDataCardEncoding.getEnum(GameGender.class, calf.getGender()), specimen.getGender());
         });
     }
 

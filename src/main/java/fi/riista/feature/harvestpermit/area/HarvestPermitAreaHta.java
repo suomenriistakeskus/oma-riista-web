@@ -3,6 +3,7 @@ package fi.riista.feature.harvestpermit.area;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -14,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -32,6 +34,20 @@ public class HarvestPermitAreaHta extends BaseEntity<Long> {
     @JoinColumn(nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private GISHirvitalousalue hta;
+
+    protected HarvestPermitAreaHta() {
+    }
+
+    public HarvestPermitAreaHta(@Nonnull final HarvestPermitArea harvestPermitArea,
+                                @Nonnull final GISHirvitalousalue hta,
+                                final double areaSize) {
+
+        this.harvestPermitArea = Objects.requireNonNull(harvestPermitArea, "harvestPermitArea is null");
+        this.hta = Objects.requireNonNull(hta, "hta is null");
+        this.areaSize = areaSize;
+    }
+
+    // Accessors -->
 
     @Override
     @Id

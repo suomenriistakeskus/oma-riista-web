@@ -14,7 +14,6 @@ import fi.riista.feature.organization.person.Person_;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.security.EntityPermission;
-import fi.riista.util.ListTransformer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -65,6 +64,11 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
     }
 
     @Override
+    protected JHTTrainingDTO toDTO(@Nonnull final JHTTraining entity) {
+        return jhtTrainingDTOTransformer.apply(entity);
+    }
+
+    @Override
     protected void updateEntity(final JHTTraining entity, final JHTTrainingDTO dto) {
         if (entity.isNew()) {
             entity.setOccupationType(dto.getOccupationType());
@@ -83,11 +87,6 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
         Preconditions.checkState(entity.getTrainingType() == JHTTraining.TrainingType.LAHI,
                 "cannot delete when trainingType != LAHI");
         super.delete(entity);
-    }
-
-    @Override
-    protected ListTransformer<JHTTraining, JHTTrainingDTO> dtoTransformer() {
-        return jhtTrainingDTOTransformer;
     }
 
     @Transactional(readOnly = true)
@@ -110,7 +109,7 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
                 rhy.orElse(null), person.orElse(null),
                 dto.getBeginDate(), dto.getEndDate());
 
-        final Page<JHTTrainingDTO> dtoList = toDTO(trainingList, pageRequest);
+        final Page<JHTTrainingDTO> dtoList = jhtTrainingDTOTransformer.apply(trainingList, pageRequest);
 
         final List<Long> selectedPersonIds = occupationNominationRepository.findPersonIdByOccupationTypeAndNominationStatusIn(
                 dto.getOccupationType(), EnumSet.of(EHDOLLA, ESITETTY));
@@ -191,7 +190,7 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
         if (activeUser.getRole() == SystemUser.Role.ROLE_USER && activeUser.getPerson() != null) {
             final List<JHTTraining> byPerson = jhtTrainingRepository.findByPerson(activeUser.getPerson());
 
-            return dtoTransformer().apply(byPerson.stream()
+            return jhtTrainingDTOTransformer.apply(byPerson.stream()
                     .filter(training -> !training.isArtificialTraining())
                     .collect(toList()));
         }
@@ -203,6 +202,6 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
     public List<JHTTrainingDTO> listForPerson(final long personId) {
         final Person person = requireEntityService.requirePerson(personId, EntityPermission.READ);
 
-        return dtoTransformer().apply(jhtTrainingRepository.findByPerson(person));
+        return jhtTrainingDTOTransformer.apply(jhtTrainingRepository.findByPerson(person));
     }
 }

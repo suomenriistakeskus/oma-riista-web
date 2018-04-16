@@ -13,17 +13,15 @@ import fi.riista.feature.huntingclub.area.HuntingClubAreaSizeService;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryAuthorization.Permission;
 import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.permit.partner.AllPartnersFinishedHuntingMailFeature;
-import fi.riista.feature.huntingclub.permit.partner.DeerHuntingPermitPartner;
 import fi.riista.feature.huntingclub.permit.summary.AreaSizeAssertionHelper;
 import fi.riista.feature.huntingclub.permit.summary.ClubHuntingSummaryService;
 import fi.riista.feature.huntingclub.permit.summary.InvalidHuntingEndDateException;
 import fi.riista.security.EntityPermission;
-import fi.riista.security.authorization.api.AuthorizationTargetFactory;
-import fi.riista.util.ListTransformer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,7 +31,10 @@ public class BasicClubHuntingSummaryCrudFeature
         extends AbstractCrudFeature<Long, BasicClubHuntingSummary, BasicClubHuntingSummaryDTO> {
 
     @Resource
-    private BasicClubHuntingSummaryRepository summaryRepo;
+    private RequireEntityService requireEntityService;
+
+    @Resource
+    private BasicClubHuntingSummaryRepository basicClubHuntingSummaryRepository;
 
     @Resource
     private HuntingClubRepository clubRepo;
@@ -48,9 +49,6 @@ public class BasicClubHuntingSummaryCrudFeature
     private MooseHarvestReportRepository mooseHarvestReportRepo;
 
     @Resource
-    private RequireEntityService requireEntityService;
-
-    @Resource
     private ClubHuntingSummaryService huntingSummaryService;
 
     @Resource
@@ -60,13 +58,7 @@ public class BasicClubHuntingSummaryCrudFeature
     private AllPartnersFinishedHuntingMailFeature huntingFinishedMailFeature;
 
     @Resource
-    private BasicClubHuntingSummaryDTOTransformer dtoTransformer;
-
-    @Resource
-    private BasicClubHuntingSummaryAuthorization authorization;
-
-    @Resource
-    private AuthorizationTargetFactory authzTargetFactory;
+    private BasicClubHuntingSummaryDTOTransformer basicClubHuntingSummaryDTOTransformer;
 
     @Transactional(readOnly = true)
     public BasicClubHuntingSummaryDTO getDeerSummary(final long clubId, final long speciesAmountId) {
@@ -74,11 +66,11 @@ public class BasicClubHuntingSummaryCrudFeature
         final HarvestPermitSpeciesAmount speciesAmount = speciesAmountRepo.getOne(speciesAmountId);
 
         final BasicClubHuntingSummary summary =
-                summaryRepo.findByClubAndSpeciesAmount(club, speciesAmount).orElse(null);
+                basicClubHuntingSummaryRepository.findByClubAndSpeciesAmount(club, speciesAmount).orElse(null);
 
         if (summary != null) {
             activeUserService.assertHasPermission(summary, EntityPermission.READ);
-            return dtoTransformer.apply(summary);
+            return toDTO(summary);
         }
 
         // no summary, create blank
@@ -88,7 +80,7 @@ public class BasicClubHuntingSummaryCrudFeature
         final HarvestPermit permit = speciesAmount.getHarvestPermit();
         dto.setHarvestPermitId(permit.getId());
         dto.setGameSpeciesCode(speciesAmount.getGameSpecies().getOfficialCode());
-        dto.setPermitAreaSize(permit.getPermitAreaSize());
+        dto.setPermitAreaSize(Objects.requireNonNull(permit.getPermitAreaSize(), "permitAreaSize is null"));
 
         huntingClubAreaSizeService.getHuntingPermitAreaSize(permit, club).ifPresent(areaSize -> {
             dto.setTotalHuntingArea(areaSize.intValue() / 10_000);
@@ -107,25 +99,19 @@ public class BasicClubHuntingSummaryCrudFeature
 
         final HuntingClub club = clubRepo.getOne(clubId);
 
-        return Optional.ofNullable(summaryRepo.findByClubAndSpeciesAmount(club, speciesAmount).orElse(null))
-                .map(summary -> !hasPermissionToEdit(summary))
-                .orElseGet(() -> !hasPermissionToCreate(speciesAmount.getHarvestPermit(), club));
-    }
-
-    private boolean hasPermissionToCreate(final HarvestPermit permit, final HuntingClub club) {
-        final DeerHuntingPermitPartner partner = new DeerHuntingPermitPartner(permit, club);
-        return authorization.hasPermission(authzTargetFactory.create(partner), EntityPermission.CREATE);
-    }
-
-    private boolean hasPermissionToEdit(final BasicClubHuntingSummary summary) {
-        return authorization.hasPermission(authzTargetFactory.create(summary), EntityPermission.UPDATE);
+        return Optional.ofNullable(basicClubHuntingSummaryRepository.findByClubAndSpeciesAmount(club, speciesAmount).orElse(null))
+                .map(summary -> !activeUserService.checkHasPermission(summary, EntityPermission.UPDATE))
+                .orElseGet(() -> {
+                    final BasicClubHuntingSummary summary = new BasicClubHuntingSummary(club, speciesAmount);
+                    return !activeUserService.checkHasPermission(summary, EntityPermission.CREATE);
+                });
     }
 
     @Transactional
     public BasicClubHuntingSummaryDTO markUnfinished(final long summaryId) {
         final BasicClubHuntingSummary summary =
                 requireEntityService.requireBasicClubHuntingSummary(summaryId, EntityPermission.UPDATE);
-        return dtoTransformer().apply(huntingSummaryService.markUnfinished(summary));
+        return toDTO(huntingSummaryService.markUnfinished(summary));
     }
 
     @Override
@@ -169,28 +155,18 @@ public class BasicClubHuntingSummaryCrudFeature
     }
 
     @Override
+    protected BasicClubHuntingSummaryDTO toDTO(@Nonnull final BasicClubHuntingSummary entity) {
+        return basicClubHuntingSummaryDTOTransformer.apply(entity);
+    }
+
+    @Override
     protected JpaRepository<BasicClubHuntingSummary, Long> getRepository() {
-        return summaryRepo;
+        return basicClubHuntingSummaryRepository;
     }
 
     @Override
-    protected ListTransformer<BasicClubHuntingSummary, BasicClubHuntingSummaryDTO> dtoTransformer() {
-        return dtoTransformer;
-    }
-
-    @Override
-    protected void assertHasCreatePermission(final BasicClubHuntingSummaryDTO dto) {
-        Objects.requireNonNull(dto);
-
-        final HarvestPermit permit =
-                requireEntityService.requireHarvestPermit(dto.getHarvestPermitId(), EntityPermission.NONE);
-        final HuntingClub club = requireEntityService.requireHuntingClub(dto.getClubId(), EntityPermission.NONE);
-
-        activeUserService.assertHasPermission(new DeerHuntingPermitPartner(permit, club), getCreatePermission(dto));
-    }
-
-    @Override
-    protected Enum<?> getCreatePermission(final BasicClubHuntingSummaryDTO dto) {
+    protected Enum<?> getCreatePermission(final BasicClubHuntingSummary entity,
+                                          final BasicClubHuntingSummaryDTO dto) {
         return dto.isModeratorOverridden() ? Permission.CREATE_MODERATOR_OVERRIDDEN_SUMMARY : EntityPermission.CREATE;
     }
 

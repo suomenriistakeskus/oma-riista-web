@@ -1,12 +1,12 @@
 package fi.riista.feature.account;
 
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.organization.address.AddressDTO;
-import fi.riista.feature.organization.OrganisationNameDTO;
-import fi.riista.feature.organization.address.Address;
-import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.organization.address.AddressDTO;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
@@ -76,7 +76,6 @@ public class AccountDTOBuilder {
         dto.setLastName(person.getLastName());
         dto.setHomeMunicipality(person.getHomeMunicipalityName().getAnyTranslation(person.getLanguageCode()));
         dto.setLanguageCode(person.getLanguageCode());
-        dto.setFinnishCitizen(person.isFinnishCitizen());
         dto.setPhoneNumber(person.getPhoneNumber());
         dto.setRegistered(person.isRegistered());
         dto.setActive(person.isActive());

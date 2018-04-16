@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.findFirstNonEmptyPage8;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.streamHuntingDays;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.streamLargeCarnivoreObservations;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.streamMooseCalfHarvests;
@@ -14,9 +15,8 @@ import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.gamediary.GameGender;
-import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor;
-import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest;
+import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardHuntingDay;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseCalf;
@@ -24,17 +24,15 @@ import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseFemale;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseMale;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage8;
 import fi.riista.util.F;
-
+import fi.riista.util.ValidationUtils;
 import javaslang.Tuple;
 import javaslang.Tuple2;
-import javaslang.Value;
 import javaslang.collection.Seq;
 import javaslang.collection.Traversable;
 import javaslang.control.Either;
 import javaslang.control.Validation;
 
 import javax.annotation.Nonnull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -50,8 +48,8 @@ public class MooseDataCardValidator {
     private final MooseDataCardMooseCalfValidator mooseCalfValidator;
     private final MooseDataCardLargeCarnivoreObservationValidator carnivoreValidator;
 
-    public MooseDataCardValidator(
-            @Nonnull final Has2BeginEndDates permitSeason, @Nonnull final GeoLocation defaultCoordinates) {
+    public MooseDataCardValidator(@Nonnull final Has2BeginEndDates permitSeason,
+                                  @Nonnull final GeoLocation defaultCoordinates) {
 
         this.permitSeason = permitSeason;
         this.huntingDayValidator = new MooseDataCardHuntingDayValidator(permitSeason);
@@ -63,15 +61,53 @@ public class MooseDataCardValidator {
     }
 
     @Nonnull
-    public Validation<List<String>, Tuple2<MooseDataCard, List<String>>> validate(
-            @Nonnull final MooseDataCard mooseDataCard) {
+    public Validation<List<String>, Tuple2<MooseDataCard, List<String>>> validate(@Nonnull final MooseDataCard card) {
+        Objects.requireNonNull(card);
 
-        Objects.requireNonNull(mooseDataCard);
+        return extractHuntingDayData(card).transform((validHuntingDays, huntingDayAbandonReasons) -> {
 
-        final Tuple2<List<MooseDataCardHuntingDay>, List<String>> huntingDayTuple =
-                extractHuntingDayData(mooseDataCard);
+            final Validation<List<String>, MooseDataCardCalculatedHarvestAmounts> harvestValidation =
+                    validateHarvests(card);
 
-        final List<String> duplicateHuntingDayErrors = javaslang.collection.List.ofAll(huntingDayTuple._1)
+            // Summary validation requires the result of harvest validations as input.
+            final Validation<List<String>, MooseDataCardCalculatedHarvestAmounts> compoundHarvestValidation =
+                    ValidationUtils.toValidation(
+                            findFirstNonEmptyPage8(card).map(MooseDataCardPage8::getSection_8_2),
+                            section82 -> harvestValidation.flatMap(computedAmounts -> {
+                                return MooseDataCardSection82Validator
+                                        .validate(section82, computedAmounts)
+                                        .map(validSection -> computedAmounts);
+                            }),
+                            () -> harvestValidation);
+
+            final Validation<List<String>, List<Object>> combinedValidation = ValidationUtils.combine(Stream.of(
+                    validateHuntingDays(validHuntingDays),
+                    compoundHarvestValidation,
+                    MooseDataCardSummaryValidator.validate(card, permitSeason)).map(Validation::narrow));
+
+            return combinedValidation.map(objectList -> {
+                return Tuple.of(card, F.concat(huntingDayAbandonReasons, collectObservationAbandonReasons(card)));
+            });
+        });
+    }
+
+    private Tuple2<List<MooseDataCardHuntingDay>, List<String>> extractHuntingDayData(final MooseDataCard card) {
+
+        final List<Either<String, MooseDataCardHuntingDay>> huntingDayValidations =
+                streamHuntingDays(card).map(huntingDayValidator::validate).collect(toList());
+
+        final List<MooseDataCardHuntingDay> validHuntingDays = new ArrayList<>(huntingDayValidations.size());
+        final List<String> abandonReasons = new ArrayList<>(huntingDayValidations.size());
+
+        huntingDayValidations.forEach(either -> either.peek(validHuntingDays::add).orElseRun(abandonReasons::add));
+
+        return Tuple.of(validHuntingDays, abandonReasons);
+    }
+
+    private static Validation<List<String>, List<MooseDataCardHuntingDay>> validateHuntingDays(
+            final List<MooseDataCardHuntingDay> huntingDays) {
+
+        final List<String> duplicateHuntingDayErrors = javaslang.collection.List.ofAll(huntingDays)
                 .groupBy(MooseDataCardHuntingDay::getStartDate)
                 .toStream()
                 .filter(tuple2 -> tuple2._2.size() > 1)
@@ -79,41 +115,14 @@ public class MooseDataCardValidator {
                 .map(MooseDataCardImportFailureReasons::huntingDayAppearsMoreThanOnce)
                 .toJavaList();
 
-        final Validation<List<String>, List<MooseDataCardHuntingDay>> huntingDayValidation =
-                duplicateHuntingDayErrors.isEmpty() ? valid(huntingDayTuple._1) : invalid(duplicateHuntingDayErrors);
-
-        final Validation<List<String>, MooseDataCardCalculatedHarvestAmounts> harvestValidation =
-                createHarvestValidation(mooseDataCard);
-
-        // Summary validation requires the result of harvest validations as input.
-        final Validation<List<String>, MooseDataCardCalculatedHarvestAmounts> harvestContentAndAmountValidation =
-                harvestValidation.flatMap(calculatedAmounts -> {
-                    return MooseDataCardExtractor.findFirstNonEmptyPage8(mooseDataCard)
-                            .map(MooseDataCardPage8::getSection_8_2)
-                            .map(section82 -> MooseDataCardSection82Validator.validate(section82, calculatedAmounts))
-                            .map(validation -> validation.map(section82 -> calculatedAmounts))
-                            .orElse(harvestValidation);
-                });
-
-        final Stream<Validation<List<String>, Object>> validationStream = Stream
-                .concat(Stream.of(huntingDayValidation),
-                        Stream.concat(Stream.of(harvestContentAndAmountValidation),
-                                Stream.of(MooseDataCardSummaryValidator.validate(mooseDataCard, permitSeason))))
-                .map(Validation::narrow);
-
-        return combine(validationStream).map(t -> {
-            final List<String> observationMessages = collectObservationAbandonReasons(mooseDataCard);
-            return Tuple.of(mooseDataCard, F.concat(huntingDayTuple._2, observationMessages));
-        });
+        return duplicateHuntingDayErrors.isEmpty() ? valid(huntingDays) : invalid(duplicateHuntingDayErrors);
     }
 
-    private Validation<List<String>, MooseDataCardCalculatedHarvestAmounts> createHarvestValidation(
-            final MooseDataCard mooseDataCard) {
-
+    private Validation<List<String>, MooseDataCardCalculatedHarvestAmounts> validateHarvests(final MooseDataCard card) {
         return Validation.combine(
-                combine(streamMooseMaleHarvests(mooseDataCard).map(mooseMaleValidator::validate)),
-                combine(streamMooseFemaleHarvests(mooseDataCard).map(mooseFemaleValidator::validate)),
-                combine(streamMooseCalfHarvests(mooseDataCard).map(mooseCalfValidator::validate)))
+                combine(streamMooseMaleHarvests(card).map(mooseMaleValidator::validate)),
+                combine(streamMooseFemaleHarvests(card).map(mooseFemaleValidator::validate)),
+                combine(streamMooseCalfHarvests(card).map(mooseCalfValidator::validate)))
                 .ap(MooseDataCardValidator::calculateHarvestAmounts)
                 // conversion from Javaslang to vanilla Java list type
                 .<List<String>> leftMap(
@@ -141,7 +150,7 @@ public class MooseDataCardValidator {
         final int nonEdibleCalfs = calfs.count(MooseDataCardHarvest::isNotEdible);
 
         final javaslang.collection.List<GameGender> calfGenders = calfs.toStream()
-                .map(calf -> HasMooseDataCardEncoding.enumOf(GameGender.class, calf.getGender()))
+                .map(calf -> HasMooseDataCardEncoding.eitherInvalidOrValid(GameGender.class, calf.getGender()))
                 .filter(Either::isRight)
                 .map(Either::get)
                 .toList();
@@ -154,46 +163,16 @@ public class MooseDataCardValidator {
     }
 
     private static <T> Validation<List<String>, Seq<T>> combine(final Stream<Validation<List<String>, T>> stream) {
-        return Validation
-                .sequence(stream.map(v -> v.leftMap(javaslang.collection.List::ofAll)).collect(toList()))
-                .leftMap(Value::toJavaList);
+        return ValidationUtils.combine(stream).map(javaslang.collection.List::ofAll);
     }
 
-    private Tuple2<List<MooseDataCardHuntingDay>, List<String>> extractHuntingDayData(
-            final MooseDataCard mooseDataCard) {
-
-        final Stream<Either<String, MooseDataCardHuntingDay>> huntingDayValidations =
-                streamHuntingDays(mooseDataCard).map(huntingDayValidator::validate);
-
-        final List<MooseDataCardHuntingDay> huntingDays = new ArrayList<>();
-        final List<String> messages = new ArrayList<>();
-
-        huntingDayValidations.forEach(either -> {
-            if (either.isRight()) {
-                huntingDays.add(either.get());
-            } else {
-                messages.add(either.getLeft());
-            }
-        });
-
-        return Tuple.of(huntingDays, messages);
-    }
-
-    private List<String> collectObservationAbandonReasons(final MooseDataCard mooseDataCard) {
-        final List<String> messages = new ArrayList<>();
-
-        streamMooseObservations(mooseDataCard)
-                .map(mooseObservationValidator::validate)
+    private List<String> collectObservationAbandonReasons(final MooseDataCard card) {
+        return Stream.concat(
+                streamMooseObservations(card).map(mooseObservationValidator::validate),
+                streamLargeCarnivoreObservations(card).map(carnivoreValidator::validate))
                 .filter(Either::isLeft)
                 .map(Either::getLeft)
-                .forEach(messages::add);
-
-        streamLargeCarnivoreObservations(mooseDataCard).map(carnivoreValidator::validate)
-                .filter(Either::isLeft)
-                .map(Either::getLeft)
-                .forEach(messages::add);
-
-        return messages;
+                .collect(toList());
     }
 
 }

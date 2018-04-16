@@ -5,7 +5,6 @@ import fi.riista.config.properties.SecurityConfigurationProperties;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.security.aop.CustomMethodSecurityExpressionHandler;
 import fi.riista.security.authentication.CustomUserDetailsService;
-import fi.riista.security.authorization.EntityPermissionEvaluator;
 import fi.riista.security.jwt.JwtAuthenticationProvider;
 import fi.riista.security.otp.OneTimePasswordAuthenticationProvider;
 import org.springframework.context.ApplicationEventPublisher;
@@ -13,7 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -63,13 +61,7 @@ public class SecurityConfig {
         protected MethodSecurityExpressionHandler createExpressionHandler() {
             DefaultMethodSecurityExpressionHandler expressionHandler = new CustomMethodSecurityExpressionHandler();
             expressionHandler.setRoleHierarchy(roleHierarchy);
-            expressionHandler.setPermissionEvaluator(permissionEvaluator());
             return expressionHandler;
-        }
-
-        @Bean
-        public PermissionEvaluator permissionEvaluator() {
-            return new EntityPermissionEvaluator();
         }
 
         @Bean

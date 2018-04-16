@@ -12,7 +12,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 @Repository
-@Transactional
 public class GISHirvitalousalueRepositoryImpl implements GISHirvitalousalueRepositoryCustom {
 
     @PersistenceContext
@@ -21,6 +20,7 @@ public class GISHirvitalousalueRepositoryImpl implements GISHirvitalousalueRepos
     @Resource
     private SQLTemplates sqlTemplates;
 
+    @Transactional(readOnly = true)
     @Override
     public GISHirvitalousalue findByPoint(final GeoLocation geoLocation) {
         final QGISHirvitalousalue hta = QGISHirvitalousalue.gISHirvitalousalue;

@@ -1,78 +1,54 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
+import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
-import fi.riista.security.authorization.SimpleEntityDTOAuthorization;
-import fi.riista.security.authorization.api.EntityAuthorizationTarget;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
-import org.springframework.data.jpa.repository.JpaRepository;
+import fi.riista.security.authorization.AbstractEntityAuthorization;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.Optional;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
-import static fi.riista.feature.huntingclub.members.ClubRole.RYHMAN_JASEN;
-import static fi.riista.feature.huntingclub.members.ClubRole.RYHMAN_METSASTYKSENJOHTAJA;
-import static fi.riista.feature.huntingclub.members.ClubRole.SEURAN_YHDYSHENKILO;
+import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_JASEN;
+import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
 
 @Component
-public class MooseDataCardImportAuthorization
-        extends SimpleEntityDTOAuthorization<MooseDataCardImport, MooseDataCardImportDTO, Long> {
-
-    @Resource
-    private MooseDataCardImportRepository importRepo;
-
-    @Resource
-    private HuntingClubGroupRepository groupRepo;
+public class MooseDataCardImportAuthorization extends AbstractEntityAuthorization<MooseDataCardImport> {
 
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
     public MooseDataCardImportAuthorization() {
-        super("moosedatacardimport");
-
-        allow(CREATE, ROLE_ADMIN, ROLE_MODERATOR);
-        allow(READ,   ROLE_ADMIN, ROLE_MODERATOR, SEURAN_YHDYSHENKILO, RYHMAN_METSASTYKSENJOHTAJA, RYHMAN_JASEN);
-        allow(DELETE, ROLE_ADMIN, ROLE_MODERATOR);
-    }
-
-    @Override
-    protected JpaRepository<MooseDataCardImport, Long> getRepository() {
-        return importRepo;
+        allow(EntityPermission.CREATE, ROLE_ADMIN, ROLE_MODERATOR);
+        allow(EntityPermission.READ, ROLE_ADMIN, ROLE_MODERATOR, SEURAN_YHDYSHENKILO, RYHMAN_METSASTYKSENJOHTAJA, RYHMAN_JASEN);
+        allow(EntityPermission.DELETE, ROLE_ADMIN, ROLE_MODERATOR);
     }
 
     @Override
     protected void authorizeTarget(
-            final AuthorizationTokenCollector collector,
-            final EntityAuthorizationTarget target,
-            final UserInfo userInfo) {
+            @Nonnull final AuthorizationTokenCollector collector,
+            @Nonnull final MooseDataCardImport mooseDataCardImport,
+            @Nonnull final UserInfo userInfo) {
+        final HuntingClubGroup group = mooseDataCardImport.getGroup();
 
-        Optional.ofNullable(userAuthorizationHelper.getPerson(userInfo))
-                .ifPresent(person -> findHuntingGroup(target).ifPresent(group -> {
+        if (group == null) {
+            return;
+        }
 
-                    collector.addAuthorizationRole(
-                            SEURAN_YHDYSHENKILO,
-                            () -> userAuthorizationHelper.isClubContact(group.getParentOrganisation(), person));
+        userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
+            collector.addAuthorizationRole(SEURAN_YHDYSHENKILO, () ->
+                    userAuthorizationHelper.isClubContact(group.getParentOrganisation(), activePerson));
 
-                    collector.addAuthorizationRole(
-                            RYHMAN_METSASTYKSENJOHTAJA, () -> userAuthorizationHelper.isGroupLeader(group, person));
+            collector.addAuthorizationRole(RYHMAN_METSASTYKSENJOHTAJA, () ->
+                    userAuthorizationHelper.isGroupLeader(group, activePerson));
 
-                    collector.addAuthorizationRole(
-                            RYHMAN_JASEN, () -> userAuthorizationHelper.isGroupMember(group, person));
-
-                }));
+            collector.addAuthorizationRole(RYHMAN_JASEN, () ->
+                    userAuthorizationHelper.isGroupMember(group, activePerson));
+        });
     }
-
-    private Optional<HuntingClubGroup> findHuntingGroup(final EntityAuthorizationTarget target) {
-        final Optional<MooseDataCardImportDTO> dtoOpt = findDto(target);
-
-        return dtoOpt.isPresent()
-                ? dtoOpt.map(MooseDataCardImportDTO::getHuntingGroupId).map(groupRepo::findOne)
-                : findEntity(target).map(MooseDataCardImport::getGroup);
-    }
-
 }

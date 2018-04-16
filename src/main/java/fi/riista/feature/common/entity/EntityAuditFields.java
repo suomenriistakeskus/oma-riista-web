@@ -4,10 +4,11 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 
 @Embeddable
 @Access(AccessType.FIELD)
-public class EntityAuditFields {
+public class EntityAuditFields implements Serializable {
     @Column(updatable = false)
     private Long createdByUserId;
 

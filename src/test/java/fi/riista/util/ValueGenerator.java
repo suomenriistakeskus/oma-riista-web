@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
@@ -20,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -44,7 +46,9 @@ public final class ValueGenerator {
 
     @Nonnull
     public static String email(@Nonnull final NumberGenerator numberGenerator,
-                               @Nullable final String firstName, @Nullable final String lastName) {
+                               @Nullable final String firstName,
+                               @Nullable final String lastName) {
+
         return String.format("%s.%s.%d@example.invalid", firstName, lastName, numberGenerator.nextPositiveInt());
     }
 
@@ -78,9 +82,7 @@ public final class ValueGenerator {
     }
 
     @Nonnull
-    public static String zeroPaddedNumber(
-            final int maxDigits, @Nonnull final NumberGenerator numberGenerator) {
-
+    public static String zeroPaddedNumber(final int maxDigits, @Nonnull final NumberGenerator numberGenerator) {
         Objects.requireNonNull(numberGenerator);
         final int modulo = Double.valueOf(Math.pow(10.0, maxDigits)).intValue();
         return String.format("%0" + maxDigits + "d", numberGenerator.nextInt() % modulo);
@@ -97,8 +99,8 @@ public final class ValueGenerator {
     }
 
     @Nonnull
-    public static <E extends Enum<E>> E some(
-            @Nonnull final Class<E> clazz, @Nonnull final NumberGenerator numberGenerator) {
+    public static <E extends Enum<E>> E some(@Nonnull final Class<E> clazz,
+                                             @Nonnull final NumberGenerator numberGenerator) {
 
         Objects.requireNonNull(clazz, "clazz must not be null");
 
@@ -106,16 +108,15 @@ public final class ValueGenerator {
     }
 
     @Nonnull
-    public static <E extends Enum<E>> E some(
-            @Nonnull final EnumSet<E> enumSet, @Nonnull final NumberGenerator numberGenerator) {
+    public static <E extends Enum<E>> E some(@Nonnull final EnumSet<E> enumSet,
+                                             @Nonnull final NumberGenerator numberGenerator) {
 
         return pickEnumValue(enumSet, numberGenerator);
     }
 
-    public static <E extends Enum<E>> E someOtherThan(
-            @Nullable final E enumValue,
-            @Nonnull final Class<E> clazz,
-            @Nonnull final NumberGenerator numberGenerator) {
+    public static <E extends Enum<E>> E someOtherThan(@Nullable final E enumValue,
+                                                      @Nonnull final Class<E> clazz,
+                                                      @Nonnull final NumberGenerator numberGenerator) {
 
         Objects.requireNonNull(clazz, "clazz must not be null");
         Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
@@ -131,10 +132,9 @@ public final class ValueGenerator {
         return pickEnumValue(enumSet, numberGenerator);
     }
 
-    public static <E extends Enum<E>> E someOtherThan(
-            @Nullable final E enumValue,
-            @Nonnull final EnumSet<E> enumSet,
-            @Nonnull final NumberGenerator numberGenerator) {
+    public static <E extends Enum<E>> E someOtherThan(@Nullable final E enumValue,
+                                                      @Nonnull final EnumSet<E> enumSet,
+                                                      @Nonnull final NumberGenerator numberGenerator) {
 
         Objects.requireNonNull(enumSet, "enumSet must not be null");
         Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
@@ -143,8 +143,8 @@ public final class ValueGenerator {
         return pickEnumValue(filteredEnumSet, numberGenerator);
     }
 
-    private static <E extends Enum<E>> E pickEnumValue(
-            @Nonnull final Set<E> enumSet, @Nonnull final NumberGenerator numberGenerator) {
+    private static <E extends Enum<E>> E pickEnumValue(@Nonnull final Set<E> enumSet,
+                                                       @Nonnull final NumberGenerator numberGenerator) {
 
         Objects.requireNonNull(enumSet, "enumSet must not be null");
         Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
@@ -160,9 +160,8 @@ public final class ValueGenerator {
     }
 
     @Nonnull
-    public static GeoLocation geoLocation(
-            @Nonnull final GeoLocation.Source geoLocationSource,
-            @Nonnull final NumberGenerator numberGenerator) {
+    public static GeoLocation geoLocation(@Nonnull final GeoLocation.Source geoLocationSource,
+                                          @Nonnull final NumberGenerator numberGenerator) {
 
         Objects.requireNonNull(geoLocationSource, "geoLocationSource must not be null");
         Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
@@ -192,9 +191,7 @@ public final class ValueGenerator {
     }
 
     @Nonnull
-    public static String permitNumber(
-            @Nonnull final String rka, @Nonnull final NumberGenerator numberGenerator) {
-
+    public static String permitNumber(@Nonnull final String rka, @Nonnull final NumberGenerator numberGenerator) {
         Objects.requireNonNull(rka, "rka must not be null");
         Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
 
@@ -210,6 +207,21 @@ public final class ValueGenerator {
     public static CreditorReference creditorReference(@Nonnull final NumberGenerator numberGenerator) {
         final String c = String.valueOf(numberGenerator.nextInt());
         return CreditorReference.fromNullable(c + FinnishCreditorReferenceValidator.calculateChecksum(c));
+    }
+
+    // Returns a base36 representation of a number generated from monotonically increasing
+    // sequence during test execution.
+    public static String externalAreaId(@Nonnull final NumberGenerator numberGenerator) {
+        Objects.requireNonNull(numberGenerator);
+
+        final LongStream ls = LongStream.concat(
+                LongStream.of(System.currentTimeMillis()),
+                LongStream.generate(numberGenerator::nextLong));
+
+        final BigInteger bigInt = ls.mapToObj(BigInteger::valueOf).limit(6).reduce(BigInteger::multiply).get();
+
+        // Zero padding likely not needed because integer values are probably large enough.
+        return zeroPad(bigInt.toString(36).toUpperCase(), 10);
     }
 
     @Nonnull

@@ -1,18 +1,17 @@
 package fi.riista.feature;
 
 import fi.riista.config.IntegrationTestApplicationContext;
+import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
-import fi.riista.feature.account.user.ActiveUserService;
-import fi.riista.feature.common.entity.Authorizable;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.feature.common.fixture.FixtureMixins;
 import fi.riista.feature.common.entity.EntityPersister;
+import fi.riista.feature.common.fixture.FixtureMixins;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.huntingclub.support.ClubGroupUserFunctionsBuilder;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.Riistakeskus;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.security.UserInfo;
 import fi.riista.test.TransactionalTaskExecutor;
 import fi.riista.util.DateUtil;
@@ -240,11 +239,6 @@ public abstract class SpringContextIntegrationTest implements ValueGeneratorMixi
         return txExecutor.execute(callable);
     }
 
-    protected void assertStatisticsNowAndClear() {
-        statsVerifier.verifyAndClear();
-        entityManager.clear();
-    }
-
     protected void clearHibernateStatistics() {
         getHibernateStatistics().clear();
     }
@@ -253,50 +247,50 @@ public abstract class SpringContextIntegrationTest implements ValueGeneratorMixi
         return Optional.ofNullable(activeUserService.getActiveUserInfo()).map(UserInfo::getUsername).orElse(null);
     }
 
-    protected boolean hasPermission(final Authorizable object, final Enum<?> permission) {
-        return activeUserService.checkHasPermission(object, permission);
+    protected boolean hasPermission(final BaseEntity<?> entity, final Enum<?> permission) {
+        return activeUserService.checkHasPermission(entity, permission);
     }
 
-    protected void assertHasPermission(final boolean shouldHave, final Authorizable object, final Enum<?> permission) {
+    protected void assertHasPermission(final boolean shouldHave, final BaseEntity<?> entity, final Enum<?> permission) {
         if (shouldHave) {
-            assertHasPermission(object, permission);
+            assertHasPermission(entity, permission);
         } else {
-            assertNoPermission(object, permission);
+            assertNoPermission(entity, permission);
         }
     }
 
-    protected void assertHasPermission(final Authorizable object, final Enum<?> permission) {
-        Objects.requireNonNull(object, "object is null");
+    protected void assertHasPermission(final BaseEntity<?> entity, final Enum<?> permission) {
+        Objects.requireNonNull(entity, "object is null");
         Objects.requireNonNull(permission, "permission is null");
 
         assertTrue(
                 String.format("User %s should have %s permission on %s instance",
-                        getActiveUserName(), permission.name(), object.getClass().getSimpleName()),
-                hasPermission(object, permission));
+                        getActiveUserName(), permission.name(), entity.getClass().getSimpleName()),
+                hasPermission(entity, permission));
     }
 
-    protected void assertNoPermission(final Authorizable object, final Enum<?> permission) {
-        Objects.requireNonNull(object, "object is null");
+    protected void assertNoPermission(final BaseEntity<?> entity, final Enum<?> permission) {
+        Objects.requireNonNull(entity, "object is null");
         Objects.requireNonNull(permission, "permission is null");
 
         assertFalse(
                 String.format("User %s should not have %s permission on %s instance",
-                        getActiveUserName(), permission.name(), object.getClass().getSimpleName()),
-                hasPermission(object, permission));
+                        getActiveUserName(), permission.name(), entity.getClass().getSimpleName()),
+                hasPermission(entity, permission));
     }
 
-    protected void assertHasPermissions(final Authorizable object, final Collection<? extends Enum<?>> permissions) {
-        assertHasPermissions(true, object, permissions);
+    protected void assertHasPermissions(final BaseEntity<?> entity, final Collection<? extends Enum<?>> permissions) {
+        assertHasPermissions(true, entity, permissions);
     }
 
-    protected void assertNoPermissions(final Authorizable object, final Collection<? extends Enum<?>> permissions) {
-        assertHasPermissions(false, object, permissions);
+    protected void assertNoPermissions(final BaseEntity<?> entity, final Collection<? extends Enum<?>> permissions) {
+        assertHasPermissions(false, entity, permissions);
     }
 
     protected void assertHasPermissions(
-            final boolean shouldHave, final Authorizable object, final Collection<? extends Enum<?>> permissions) {
+            final boolean shouldHave, final BaseEntity<?> entity, final Collection<? extends Enum<?>> permissions) {
 
-        permissions.forEach(perm -> assertHasPermission(shouldHave, object, perm));
+        permissions.forEach(perm -> assertHasPermission(shouldHave, entity, perm));
     }
 
     protected void assertVersion(final BaseEntity<? extends Serializable> entity, final int version) {

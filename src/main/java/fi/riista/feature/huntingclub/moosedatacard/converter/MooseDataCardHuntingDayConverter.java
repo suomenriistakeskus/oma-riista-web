@@ -52,7 +52,7 @@ public class MooseDataCardHuntingDayConverter {
 
                     result.setSnowDepth(MooseDataCardHuntingDayField.SNOW_DEPTH.getValidOrNull(validHuntingDay));
                     result.setHuntingMethod(MooseDataCardHuntingDayField.HUNTING_DAY_METHOD
-                            .getValidOrEmpty(validHuntingDay)
+                            .findValid(validHuntingDay)
                             .map(GroupHuntingMethod::valueOf)
                             .orElse(null));
                     result.setNumberOfHunters(

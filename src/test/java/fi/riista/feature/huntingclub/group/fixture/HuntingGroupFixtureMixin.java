@@ -69,8 +69,7 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
                                    final GameSpecies species,
                                    final boolean createMooselikePrice) {
 
-            this(es, es.newHarvestPermitSpeciesAmount(es.newHarvestPermitWithPermitAreaSize(rhy), species),
-                    createMooselikePrice, true);
+            this(es, es.newHarvestPermitSpeciesAmount(es.newMooselikePermit(rhy), species), createMooselikePrice, true);
         }
 
         public HuntingGroupFixture(final EntitySupplier es,
@@ -91,8 +90,7 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
                 permit.setPermitHolder(club);
             }
 
-            group = es.newHuntingClubGroup(club, species);
-            group.updateHarvestPermit(permit);
+            group = es.newHuntingClubGroup(club, speciesAmount);
 
             if (createMooselikePrice) {
                 es.newMooselikePrice(group.getHuntingYear(), species);

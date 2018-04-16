@@ -18,7 +18,7 @@ public class MooseHuntingSummaryDTOTransformerTest extends EmbeddedDatabaseTest 
     private MooseHuntingSummaryRepository repository;
 
     @Test
-    @HibernateStatisticsAssertions(queryCount = 4)
+    @HibernateStatisticsAssertions(queryCount = 5)
     public void testQueryCountWithOneSummary() {
         withMooseHuntingGroupFixture(fixture -> {
             persistInNewTransaction();
@@ -33,7 +33,7 @@ public class MooseHuntingSummaryDTOTransformerTest extends EmbeddedDatabaseTest 
     }
 
     @Test
-    @HibernateStatisticsAssertions(queryCount = 5)
+    @HibernateStatisticsAssertions(queryCount = 6)
     public void testQueryCountWithMultipleSummaries() {
         withMooseHuntingGroupFixture(fixture -> {
             persistInNewTransaction();

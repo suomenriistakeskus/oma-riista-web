@@ -15,7 +15,7 @@ public class HttpClientConfig {
     private static final int MAX_CONNECTIONS_PER_ROUTE = 50;
 
     private static final int READ_TIMEOUT = 5 * 60_000;
-    private static final int CONNECT_TIMEOUT = 30_000;
+    private static final int CONNECT_TIMEOUT = 5000;
 
     @Bean
     public RestTemplate defaultRestTemplate() {

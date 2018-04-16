@@ -1,23 +1,18 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static fi.riista.security.EntityPermission.CREATE;
-import static fi.riista.security.EntityPermission.DELETE;
-import static fi.riista.security.EntityPermission.READ;
-import static fi.riista.security.EntityPermission.UPDATE;
-import static org.junit.Assert.assertEquals;
-
 import com.google.common.collect.ImmutableMap;
-
 import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser.Role;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.security.EntityPermission;
 import fi.riista.util.jpa.HibernateStatisticsAssertions;
-
 import org.junit.Test;
 
+import static fi.riista.security.EntityPermission.CREATE;
+import static fi.riista.security.EntityPermission.DELETE;
+import static fi.riista.security.EntityPermission.READ;
+import static fi.riista.security.EntityPermission.UPDATE;
 
 public class MooseDataCardImportAuthorizationTest extends EmbeddedDatabaseTest {
 
@@ -37,9 +32,7 @@ public class MooseDataCardImportAuthorizationTest extends EmbeddedDatabaseTest {
         final MooseDataCardImport imp = model().newMooseDataCardImport(model().newHuntingClubGroup());
 
         ImmutableMap.of(CREATE, true, READ, true, UPDATE, false, DELETE, true).forEach((permission, shouldPass) -> {
-            onSavedAndAuthenticated(createNewUser(role), () -> {
-                assertEquals(shouldPass, doPermissionCheckAndVerifyStatistics(imp, permission));
-            });
+            onSavedAndAuthenticated(createNewUser(role), tx(() -> assertHasPermission(shouldPass, imp, permission)));
         });
     }
 
@@ -66,9 +59,7 @@ public class MooseDataCardImportAuthorizationTest extends EmbeddedDatabaseTest {
                 model().newOccupation(club, person, OccupationType.SEURAN_JASEN);
                 model().newOccupation(group, person, occupationType);
 
-                onSavedAndAuthenticated(createUser(person), () -> {
-                    assertEquals(shouldPass, doPermissionCheckAndVerifyStatistics(imp, permission));
-                });
+                onSavedAndAuthenticated(createUser(person), tx(() -> assertHasPermission(shouldPass, imp, permission)));
             });
         });
     }
@@ -95,18 +86,10 @@ public class MooseDataCardImportAuthorizationTest extends EmbeddedDatabaseTest {
 
                     model().newOccupation(club, person, role);
 
-                    onSavedAndAuthenticated(createUser(person), () -> {
-                        assertEquals(shouldPass, doPermissionCheckAndVerifyStatistics(imp, permission));
-                    });
+                    onSavedAndAuthenticated(createUser(person), tx(() -> {
+                        assertHasPermission(shouldPass, imp, permission);
+                    }));
                 }));
-    }
-
-    private boolean doPermissionCheckAndVerifyStatistics(final MooseDataCardImport imp, final EntityPermission perm) {
-        return callInTransaction(() -> {
-            final boolean result = hasPermission(imp, perm);
-            assertStatisticsNowAndClear();
-            return result;
-        });
     }
 
 }

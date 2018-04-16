@@ -166,25 +166,29 @@ public class GroupHuntingDayCrudFeatureTest extends EmbeddedDatabaseTest {
                         }
 
                         Optional.ofNullable(user.getPerson()).ifPresent(p -> {
-                            if (!userAuthHelper.isClubContact(f.club, p) && !userAuthHelper.isGroupLeader(f.group, p)) {
-                                fail(String.format(
-                                        "%s by %s should have failed because user is not club contact nor group leader.",
-                                        testName, user.getUsername()));
-                            }
+                            runInTransaction(() -> {
+                                if (!userAuthHelper.isClubContact(f.club, p) && !userAuthHelper.isGroupLeader(f.group, p)) {
+                                    fail(String.format(
+                                            "%s by %s should have failed because user is not club contact nor group leader.",
+                                            testName, user.getUsername()));
+                                }
+                            });
                         });
                     } catch (final AccessDeniedException e) {
                         if (!groupScheme.huntingFinished) {
                             if (user.isModeratorOrAdmin()) {
                                 fail(String.format(
-                                        "%s should have succeeded for moderator when hunting is not finished.",
+                                        "%s should have succeeded for %s when hunting is not finished.",
                                         testName, user.getUsername()));
                             } else if (!groupScheme.fromMooseDataCard) {
                                 Optional.ofNullable(user.getPerson()).ifPresent(p -> {
-                                    if (userAuthHelper.isClubContact(f.club, p) || userAuthHelper.isGroupLeader(f.group, p)) {
-                                        fail(String.format(
-                                                "%s by %s should have succeeded for user who is club contact or group leader when group not created from moose data card.",
-                                                testName, user.getUsername()));
-                                    }
+                                    runInTransaction(() -> {
+                                        if (userAuthHelper.isClubContact(f.club, p) || userAuthHelper.isGroupLeader(f.group, p)) {
+                                            fail(String.format(
+                                                    "%s by %s should have succeeded for user who is club contact or group leader when group not created from moose data card.",
+                                                    testName, user.getUsername()));
+                                        }
+                                    });
                                 });
                             }
                         }

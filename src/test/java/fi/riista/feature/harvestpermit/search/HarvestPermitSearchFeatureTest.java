@@ -32,15 +32,15 @@ public class HarvestPermitSearchFeatureTest extends EmbeddedDatabaseTest {
 
     @Test(expected = NotFoundException.class)
     public void testFindPermitNumber_forMooselikePermit() {
-        withPerson(person -> {
+        withRhy(rhy -> withPerson(person -> {
 
-            final HarvestPermit moosePermit = model().newHarvestPermit(person);
-            moosePermit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+            final HarvestPermit moosePermit = model().newMooselikePermit(rhy);
+            model().newHarvestPermitContactPerson(moosePermit, person);
 
             persistInNewTransaction();
 
             harvestPermitSearchFeature.findPermitNumber(moosePermit.getPermitNumber());
-        });
+        }));
     }
 
     @Test(expected = NotFoundException.class)

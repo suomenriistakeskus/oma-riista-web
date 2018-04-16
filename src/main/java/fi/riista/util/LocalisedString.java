@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class LocalisedString implements Cloneable {
+public class LocalisedString {
     public static final LocalisedString EMPTY = new LocalisedString("", "", "");
 
     private final String finnish;
@@ -170,15 +170,6 @@ public class LocalisedString implements Cloneable {
         String trimmedSv = Strings.isNullOrEmpty(this.swedish) ? "-" : this.swedish;
         String trimmedEn = Strings.isNullOrEmpty(this.english) ? "-" : this.english;
         return String.format("%s / %s / %s", trimmedFi, trimmedSv, trimmedEn);
-    }
-
-    @Override
-    public LocalisedString clone() {
-        try {
-            return LocalisedString.class.cast(super.clone());
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public Stream<String> asStream() {

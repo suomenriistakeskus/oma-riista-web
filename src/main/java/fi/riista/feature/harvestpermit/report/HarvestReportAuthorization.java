@@ -5,12 +5,13 @@ import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
 import fi.riista.security.authorization.AbstractEntityAuthorization;
-import fi.riista.security.authorization.api.EntityAuthorizationTarget;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Objects;
 
@@ -19,7 +20,7 @@ import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_USER;
 
 @Component
-public class HarvestReportAuthorization extends AbstractEntityAuthorization {
+public class HarvestReportAuthorization extends AbstractEntityAuthorization<HarvestReport> {
 
     private enum Role {
         CAN_READ,
@@ -33,49 +34,42 @@ public class HarvestReportAuthorization extends AbstractEntityAuthorization {
     private UserRepository userRepository;
 
     @Resource
-    private HarvestReportRepository harvestReportRepository;
-
-    @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
     public HarvestReportAuthorization() {
-        super("HarvestReport");
+        allow(EntityPermission.READ, ROLE_ADMIN, ROLE_MODERATOR, Role.CAN_READ, Role.PERMIT_RHY_COORDINATOR, Role.REPORT_RHY_COORDINATOR);
 
-        allow(READ, ROLE_ADMIN, ROLE_MODERATOR, Role.CAN_READ, Role.PERMIT_RHY_COORDINATOR, Role.REPORT_RHY_COORDINATOR);
-
-        allow(CREATE, ROLE_ADMIN, ROLE_MODERATOR, ROLE_USER);
-        allow(UPDATE, Role.CAN_EDIT);
-        allow(DELETE, Role.CAN_DELETE);
+        allow(EntityPermission.CREATE, ROLE_ADMIN, ROLE_MODERATOR, ROLE_USER);
+        allow(EntityPermission.UPDATE, Role.CAN_EDIT);
+        allow(EntityPermission.DELETE, Role.CAN_DELETE);
     }
 
     @Override
-    protected void authorizeTarget(final AuthorizationTokenCollector collector,
-                                   final EntityAuthorizationTarget target,
-                                   final UserInfo userInfo) {
+    protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,
+                                   @Nonnull final HarvestReport report,
+                                   @Nonnull final UserInfo userInfo) {
         final SystemUser user = getSystemUser(userInfo);
-        final HarvestReport report = getHarvestReport(target);
-        final boolean isNew = report == null;// should never be null, because it would mean it is a new entity and that is allowed in constructor
 
-        if (user == null) {
+        if (user == null || report.isNew()) {
             return;
         }
 
         if (user.isModeratorOrAdmin()) {
             collector.addAuthorizationRole(Role.CAN_EDIT,
-                    () -> isNew || report.canModeratorEdit() || !report.getTransitions(user).isEmpty());
+                    () -> report.canModeratorEdit() || !report.getTransitions(user).isEmpty());
 
             collector.addAuthorizationRole(Role.CAN_DELETE,
-                    () -> isNew || report.canModeratorDelete() || !report.getTransitions(user).isEmpty());
+                    () -> report.canModeratorDelete() || !report.getTransitions(user).isEmpty());
 
         } else {
             if (isAuthorOrShooter(user.getPerson(), report) || isContactPerson(report, user.getPerson())) {
                 collector.addAuthorizationRole(Role.CAN_READ);
 
-                if (isNew || report.canEdit(user)) {
+                if (report.canEdit(user)) {
                     collector.addAuthorizationRole(Role.CAN_EDIT);
                 }
 
-                if (isNew || report.canDelete(user)) {
+                if (report.canDelete(user)) {
                     collector.addAuthorizationRole(Role.CAN_DELETE);
                 }
             }
@@ -111,29 +105,10 @@ public class HarvestReportAuthorization extends AbstractEntityAuthorization {
         return Objects.equals(person, report.getAuthor());
     }
 
-    private HarvestReport getHarvestReport(EntityAuthorizationTarget target) {
-        Long reportId = (Long) target.getAuthorizationTargetId();
-        if (reportId != null) {
-            return harvestReportRepository.getOne(reportId);
-        }
-        return null;
-    }
-
     private SystemUser getSystemUser(UserInfo userInfo) {
         if (userInfo.getUserId() == null) {
             return null;
         }
         return userRepository.findOne(userInfo.getUserId());
-    }
-
-
-    @Override
-    public Class<?>[] getSupportedTypes() {
-        return new Class<?>[]{
-                HarvestReport.class,
-                HarvestReportDTOBase.class,
-                HarvestReportForListPermitDTO.class,
-                HarvestReportSingleHarvestDTO.class
-        };
     }
 }

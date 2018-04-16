@@ -1,8 +1,8 @@
 package fi.riista.feature.announcement.email;
 
 import fi.riista.feature.announcement.Announcement;
-import fi.riista.feature.mail.MailService;
 import fi.riista.feature.mail.MailMessageDTO;
+import fi.riista.feature.mail.MailService;
 import fi.riista.util.Locales;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,13 +52,13 @@ public class AnnouncementEmailService {
                     "<p>Svara inte på det här meddelandet.</p>" +
                     "<p>----------- Meddelandet som förmedlats börjar ----------------</p>";
 
-        } else {
-            return "<p>Tämä on Oma.riista.fi -palvelun avulla välitetty viesti.</p>" +
-                    "<p>Viestin on lähettänyt \"" + announcement.getFromUser().getPerson().getFullName() + " - " +
-                    announcement.getFromOrganisation().getNameLocalisation().getAnyTranslation() + "\".</p>" +
-                    "<p>Älä vastaa tähän viestiin.</p>" +
-                    "<p>----------- Välitetty viesti alkaa ----------------</p>";
         }
+
+        return "<p>Tämä on Oma.riista.fi -palvelun avulla välitetty viesti.</p>" +
+                "<p>Viestin on lähettänyt \"" + announcement.getFromUser().getPerson().getFullName() + " - " +
+                announcement.getFromOrganisation().getNameLocalisation().getAnyTranslation() + "\".</p>" +
+                "<p>Älä vastaa tähän viestiin.</p>" +
+                "<p>----------- Välitetty viesti alkaa ----------------</p>";
     }
 
     private static String formatMessageBody(final String body) {

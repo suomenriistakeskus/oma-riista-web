@@ -4,14 +4,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import fi.riista.feature.gamediary.GameDiaryEntryAuthorizationTest;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.HarvestAuthorization.HarvestPermission;
+import fi.riista.feature.gamediary.harvest.HarvestAuthorization.Permission;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.person.Person;
 import org.junit.Test;
 
 import java.util.EnumSet;
 
-import static fi.riista.feature.gamediary.harvest.HarvestAuthorization.HarvestPermission.LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP;
+import static fi.riista.feature.gamediary.harvest.HarvestAuthorization.Permission.LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.DELETE;
 import static fi.riista.security.EntityPermission.READ;
@@ -20,7 +20,7 @@ import static fi.riista.security.EntityPermission.UPDATE;
 public class HarvestAuthorizationTest extends GameDiaryEntryAuthorizationTest<Harvest> {
 
     private static final ImmutableSet<Enum<?>> ALL_PERMS = Sets.union(
-            EnumSet.allOf(HarvestPermission.class), ImmutableSet.of(CREATE, READ, UPDATE, DELETE))
+            EnumSet.allOf(Permission.class), ImmutableSet.of(CREATE, READ, UPDATE, DELETE))
             .immutableCopy();
 
     @Test

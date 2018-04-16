@@ -1,20 +1,25 @@
 package fi.riista.feature.huntingclub.area.transfer;
 
 import com.google.common.collect.ImmutableMap;
-import fi.riista.feature.account.audit.AuditService;
-import fi.riista.feature.RequireEntityService;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
+import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.audit.AuditService;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
+import fi.riista.feature.gis.zone.AreaEntity;
 import fi.riista.feature.gis.zone.GISZoneRepository;
+import fi.riista.feature.harvestpermit.area.HarvestPermitArea;
+import fi.riista.feature.harvestpermit.area.HarvestPermitAreaRepository;
+import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.area.HuntingClubAreaRepository;
 import fi.riista.feature.huntingclub.area.MissingHuntingClubAreaGeometryException;
 import fi.riista.integration.gis.ExternalHuntingClubAreaExportRequest;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
-import fi.riista.util.GISUtils;
+import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.MediaTypeExtras;
+import javaslang.control.Either;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
@@ -28,6 +33,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.WebRequest;
@@ -39,15 +45,14 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static java.util.Collections.singleton;
-
-@Transactional
 @Component
 public class HuntingClubAreaExportFeature {
+
     private static final DateTimeFormatter DTF = DateTimeFormat.forPattern("d.M.yyyy HH:mm");
     private static final String FILENAME_GEOJSON = "area.json";
     private static final String FILENAME_METADATA = "README.txt";
@@ -59,6 +64,9 @@ public class HuntingClubAreaExportFeature {
     private HuntingClubAreaRepository huntingClubAreaRepository;
 
     @Resource
+    private HarvestPermitAreaRepository harvestPermitAreaRepository;
+
+    @Resource
     private GISZoneRepository zoneRepository;
 
     @Resource
@@ -67,18 +75,21 @@ public class HuntingClubAreaExportFeature {
     @Resource
     private AuditService auditService;
 
+    @PreAuthorize("hasPrivilege('EXPORT_HUNTINGCLUB_AREA')")
     @Transactional(readOnly = true)
     public ResponseEntity<?> exportCombinedGeoJson(final ExternalHuntingClubAreaExportRequest body,
                                                    final WebRequest request) {
-        final HuntingClubArea huntingClubArea =
-                huntingClubAreaRepository.findByExternalId(body.getExternalId().toUpperCase());
 
-        if (huntingClubArea == null || huntingClubArea.getZone() == null) {
+        final String externalId = body.getExternalId().toUpperCase();
+        final Optional<Either<HuntingClubArea, HarvestPermitArea>> areaOpt = resolveArea(externalId);
+        final AreaEntity<Long> baseEntity = areaOpt.map(F::reduceToCommonBase).orElse(null);
+
+        if (baseEntity == null || baseEntity.getZone() == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        final String etag = Integer.toHexString(huntingClubArea.getConsistencyVersion());
-        final Date saveDate = getSaveDate(huntingClubArea);
+        final String etag = Integer.toHexString(baseEntity.getConsistencyVersion());
+        final Date saveDate = baseEntity.getLatestCombinedModificationTime();
 
         if (request.checkNotModified(saveDate.getTime())) {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(etag).build();
@@ -89,14 +100,14 @@ public class HuntingClubAreaExportFeature {
         }
 
         // Audit (only if content is actually returned to ignore refresh attempts)
-        auditService.log("exportClubMap", huntingClubArea, ImmutableMap.<String, Object>builder()
+        auditService.log("exportClubMap", baseEntity, ImmutableMap.<String, Object> builder()
                 .put("remoteUser", body.getRemoteUser())
                 .put("remoteAddress", body.getRemoteAddress())
                 .build());
 
-        final FeatureCollection featureCollection = toFeatureCollection(huntingClubArea);
-
-        exportMetadata(huntingClubArea, featureCollection);
+        final FeatureCollection featureCollection = areaOpt.get().fold(
+                area -> toFeatureCollectionWithMetadata(area, area.getClub(), area.getHuntingYear()),
+                area -> toFeatureCollectionWithMetadata(area, area.getClub(), area.getHuntingYear()));
 
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePrivate().mustRevalidate())
@@ -106,14 +117,18 @@ public class HuntingClubAreaExportFeature {
                 .body(featureCollection);
     }
 
+    private Optional<Either<HuntingClubArea, HarvestPermitArea>> resolveArea(final String externalId) {
+        return F.optionallyEither(
+                huntingClubAreaRepository.findByExternalId(externalId),
+                () -> harvestPermitAreaRepository.findByExternalId(externalId));
+    }
+
     @Transactional(readOnly = true)
     public byte[] exportCombinedGeoJsonAsArchive(final long clubAreaId, final Locale locale) {
-        final HuntingClubArea huntingClubArea = requireEntityService
-                .requireHuntingClubArea(clubAreaId, EntityPermission.READ);
+        final HuntingClubArea clubArea = requireEntityService.requireHuntingClubArea(clubAreaId, EntityPermission.READ);
 
-        final FeatureCollection featureCollection = toFeatureCollection(huntingClubArea);
-
-        exportMetadata(huntingClubArea, featureCollection);
+        final FeatureCollection featureCollection =
+                toFeatureCollectionWithMetadata(clubArea, clubArea.getClub(), clubArea.getHuntingYear());
 
         try (final ByteArrayOutputStream bos = new ByteArrayOutputStream();
              final ZipOutputStream zip = new ZipOutputStream(bos, StandardCharsets.UTF_8)) {
@@ -129,7 +144,7 @@ public class HuntingClubAreaExportFeature {
             // Metadata
             final OutputStreamWriter mos = new OutputStreamWriter(zip, StandardCharsets.UTF_8);
             zip.putNextEntry(new ZipEntry(FILENAME_METADATA));
-            mos.write(exportMetadataString(huntingClubArea, locale));
+            mos.write(exportMetadataString(clubArea, locale));
             mos.flush();
             zip.closeEntry();
 
@@ -143,29 +158,10 @@ public class HuntingClubAreaExportFeature {
         }
     }
 
-    private static void exportMetadata(final HuntingClubArea huntingClubArea,
-                                       final FeatureCollection featureCollection) {
+    private static String exportMetadataString(final HuntingClubArea huntingClubArea, final Locale locale) {
         final LocalisedString clubName = huntingClubArea.getClub().getNameLocalisation();
         final LocalisedString areaName = huntingClubArea.getNameLocalisation();
-        final Date saveDate = getSaveDate(huntingClubArea);
-        final DateTime saveDateTime = new DateTime(saveDate).withZone(DateTimeZone.UTC);
-
-        for (final Feature feature : featureCollection.getFeatures()) {
-            feature.setId(null);
-            feature.setProperty(GeoJSONConstants.PROPERTY_CLUB_NAME, clubName);
-            feature.setProperty(GeoJSONConstants.PROPERTY_AREA_NAME, areaName);
-            feature.setProperty(GeoJSONConstants.PROPERTY_AREA_SIZE, Math.round(huntingClubArea.getZone().getComputedAreaSize()));
-            feature.setProperty(GeoJSONConstants.PROPERTY_WATER_AREA_SIZE, Math.round(huntingClubArea.getZone().getWaterAreaSize()));
-            feature.setProperty(GeoJSONConstants.PROPERTY_SAVE_DATE, ISODateTimeFormat.basicDateTimeNoMillis().print(saveDateTime));
-            feature.setProperty(GeoJSONConstants.PROPERTY_HUNTING_YEAR, huntingClubArea.getHuntingYear());
-        }
-    }
-
-    private static String exportMetadataString(final HuntingClubArea huntingClubArea,
-                                               final Locale locale) {
-        final LocalisedString clubName = huntingClubArea.getClub().getNameLocalisation();
-        final LocalisedString areaName = huntingClubArea.getNameLocalisation();
-        final Date saveDate = getSaveDate(huntingClubArea);
+        final Date saveDate = huntingClubArea.getLatestCombinedModificationTime();
         final LocalDateTime saveDateTime = DateUtil.toLocalDateTimeNullSafe(saveDate);
 
         return new StringBuilder()
@@ -180,33 +176,37 @@ public class HuntingClubAreaExportFeature {
                 .toString();
     }
 
-    private static Date getSaveDate(final HuntingClubArea huntingClubArea) {
-        final Date areaModificationTime = huntingClubArea.getModificationTime();
-
-        if (huntingClubArea.getZone() == null) {
-            return areaModificationTime;
-        }
-
-        final Date zoneModificationTime = huntingClubArea.getZone().getModificationTime();
-
-        return zoneModificationTime.after(areaModificationTime) ? zoneModificationTime : areaModificationTime;
-    }
-
     @Transactional(readOnly = true)
     public FeatureCollection exportCombinedGeoJsonForGarmin(final long clubAreaId) {
-        return toFeatureCollection(requireEntityService
-                .requireHuntingClubArea(clubAreaId, EntityPermission.READ));
+        return toFeatureCollection(requireEntityService.requireHuntingClubArea(clubAreaId, EntityPermission.READ));
     }
 
-    private FeatureCollection toFeatureCollection(final HuntingClubArea huntingClubArea) {
-        if (huntingClubArea.getZone() == null) {
-            throw new MissingHuntingClubAreaGeometryException();
-        }
+    private FeatureCollection toFeatureCollection(final AreaEntity<?> area) {
+        return area.computeCombinedFeatures(zoneRepository, 1)
+                .orElseThrow(MissingHuntingClubAreaGeometryException::new);
+    }
 
-        final FeatureCollection featureCollection = zoneRepository.getCombinedFeatures(
-                singleton(huntingClubArea.getZone().getId()), GISUtils.SRID.WGS84, 1);
-        featureCollection.setCrs(GISUtils.SRID.WGS84.getGeoJsonCrs());
+    private FeatureCollection toFeatureCollectionWithMetadata(final AreaEntity<?> area,
+                                                              final HuntingClub club,
+                                                              final int huntingYear) {
 
-        return featureCollection;
+        return area.computeCombinedFeatures(zoneRepository, 1)
+                .map(featureCollection -> {
+                    final Date saveDate = area.getLatestCombinedModificationTime();
+                    final DateTime saveDateTime = new DateTime(saveDate).withZone(DateTimeZone.UTC);
+
+                    for (final Feature feature : featureCollection) {
+                        feature.setId(null);
+                        feature.setProperty(GeoJSONConstants.PROPERTY_CLUB_NAME, club.getNameLocalisation());
+                        feature.setProperty(GeoJSONConstants.PROPERTY_AREA_NAME, area.getNameLocalisation());
+                        feature.setProperty(GeoJSONConstants.PROPERTY_AREA_SIZE, Math.round(area.getZone().getComputedAreaSize()));
+                        feature.setProperty(GeoJSONConstants.PROPERTY_WATER_AREA_SIZE, Math.round(area.getZone().getWaterAreaSize()));
+                        feature.setProperty(GeoJSONConstants.PROPERTY_SAVE_DATE, ISODateTimeFormat.basicDateTimeNoMillis().print(saveDateTime));
+                        feature.setProperty(GeoJSONConstants.PROPERTY_HUNTING_YEAR, huntingYear);
+                    }
+
+                    return featureCollection;
+                })
+                .orElseThrow(MissingHuntingClubAreaGeometryException::new);
     }
 }

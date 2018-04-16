@@ -1,9 +1,7 @@
 package fi.riista.feature.gamediary;
 
 import com.google.common.collect.Ordering;
-import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -15,9 +13,7 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.UserInfo;
 import fi.riista.security.authorization.AbstractEntityAuthorization;
-import fi.riista.security.authorization.api.EntityAuthorizationTarget;
-import fi.riista.security.authorization.support.AuthorizationTokenCollector;
-import fi.riista.util.BiOptional;
+import fi.riista.security.authorization.AuthorizationTokenCollector;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
 
@@ -29,7 +25,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,7 +33,8 @@ import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry> extends AbstractEntityAuthorization {
+public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry>
+        extends AbstractEntityAuthorization<T> {
 
     private static final List<OccupationType> CLUB_OCCUPATION_TYPE_PRIORITY = Arrays.asList(
             OccupationType.SEURAN_YHDYSHENKILO,
@@ -50,9 +46,6 @@ public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry> exte
     protected UserAuthorizationHelper userAuthorizationHelper;
 
     @Resource
-    private UserRepository userRepository;
-
-    @Resource
     private OccupationRepository occupationRepository;
 
     @Resource
@@ -61,30 +54,26 @@ public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry> exte
     @Resource
     private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
 
-    private final Class<T> entityClass;
-
-    protected GameDiaryEntryAuthorization(final Class<T> entityClass) {
-        super(entityClass.getSimpleName());
-
-        this.entityClass = entityClass;
+    protected GameDiaryEntryAuthorization() {
+        super();
     }
 
     @Override
     protected final void authorizeTarget(
-            final AuthorizationTokenCollector collector,
-            final EntityAuthorizationTarget target,
-            final UserInfo userInfo) {
-        resolveActivePersonAndGameDiaryEntry(userInfo, target).consumeBoth((person, diaryEntry) -> {
-            collectNonClubRoles(person, collector, diaryEntry);
+            @Nonnull final AuthorizationTokenCollector collector,
+            @Nonnull final T diaryEntry,
+            @Nonnull final UserInfo userInfo) {
+        userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
+            collectNonClubRoles(activePerson, collector, diaryEntry);
 
             if (diaryEntry.getHuntingDayOfGroup() != null) {
                 final HuntingClubGroup group = diaryEntry.getHuntingDayOfGroup().getGroup();
 
-                getClubAndGroupAndOccupationTypes(person, Collections.singleton(group))
+                getClubAndGroupAndOccupationTypes(activePerson, Collections.singleton(group))
                         .forEach(collector::addAuthorizationRole);
 
             } else {// diaryEntry.getHuntingDayOfGroup() == null
-                getClubAndGroupAndOccupationTypes(person, findCandidateGroups(diaryEntry)).stream()
+                getClubAndGroupAndOccupationTypes(activePerson, findCandidateGroups(diaryEntry)).stream()
                         .filter(CLUB_OCCUPATION_TYPE_PRIORITY::contains)
                         .min(Ordering.explicit(CLUB_OCCUPATION_TYPE_PRIORITY))
                         .ifPresent(collector::addAuthorizationRole);
@@ -94,15 +83,6 @@ public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry> exte
 
     protected abstract void collectNonClubRoles(
             Person person, AuthorizationTokenCollector collector, T entity);
-
-    private BiOptional<Person, T> resolveActivePersonAndGameDiaryEntry(
-            final UserInfo userInfo, final EntityAuthorizationTarget target) {
-        return BiOptional.create()
-                .left(Optional.ofNullable(userInfo.getUserId())
-                        .map(userRepository::getOne)
-                        .map(SystemUser::getPerson))
-                .right(Optional.ofNullable(target.getAuthorizationTarget(entityClass)));
-    }
 
     private Set<OccupationType> getClubAndGroupAndOccupationTypes(final Person person,
                                                                   final Collection<HuntingClubGroup> groups) {

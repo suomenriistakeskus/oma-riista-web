@@ -1,11 +1,9 @@
 package fi.riista.config;
 
 import fi.riista.config.profile.AmazonDatabase;
-import fi.riista.config.profile.EmbeddedDatabase;
 import fi.riista.config.profile.StandardDatabase;
 import fi.riista.config.quartz.QuartzScheduledJobRegistrar;
 import fi.riista.config.quartz.QuartzSpringBeanJobFactory;
-
 import org.quartz.Scheduler;
 import org.quartz.spi.JobFactory;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
@@ -18,18 +16,20 @@ import org.springframework.context.annotation.ConfigurationCondition;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
-
 import java.io.IOException;
 import java.util.Properties;
 
+@AmazonDatabase
+@StandardDatabase
+@Configuration
 @PropertySource("classpath:configuration/scheduled.properties")
 @PropertySource("classpath:configuration/quartz.properties")
-@Configuration
 @Conditional(value = QuartzConfig.QuartzEnabledCondition.class)
 public class QuartzConfig {
 
@@ -37,6 +37,9 @@ public class QuartzConfig {
 
     @Resource(name = "quartzProperties")
     private Properties quartzProperties;
+
+    @Resource
+    private ThreadPoolTaskScheduler commonTaskScheduler;
 
     static class QuartzEnabledCondition implements ConfigurationCondition {
         @Override
@@ -56,6 +59,7 @@ public class QuartzConfig {
 
         final SchedulerFactoryBean factory = new SchedulerFactoryBean();
         factory.setOverwriteExistingJobs(true);
+        factory.setTaskExecutor(commonTaskScheduler.getScheduledExecutor());
         factory.setDataSource(dataSource);
         factory.setTransactionManager(transactionManager);
         factory.setJobFactory(jobFactory);
@@ -65,7 +69,7 @@ public class QuartzConfig {
         factory.setWaitForJobsToCompleteOnShutdown(true);
 
         // Delay added to avoid errors caused by updating registered tasks and reduce load on startup
-        factory.setStartupDelay(60);
+        factory.setStartupDelay(30);
 
         return factory;
     }
@@ -85,33 +89,11 @@ public class QuartzConfig {
         return jobFactory;
     }
 
-    @AmazonDatabase
-    @StandardDatabase
-    @Configuration
-    static class QuartzEnviroment {
-        @Bean
-        public Properties quartzProperties() throws IOException {
-            return createQuartzProperties();
-        }
-    }
-
-    @EmbeddedDatabase
-    @Configuration
-    static class EmbeddedDatabaseQuartzEnviroment {
-        @Bean
-        public Properties quartzProperties() throws IOException {
-            final Properties props = createQuartzProperties();
-            props.setProperty(
-                    "org.quartz.jobStore.driverDelegateClass", "org.quartz.impl.jdbcjobstore.StdJDBCDelegate");
-            return props;
-        }
-    }
-
-    private static Properties createQuartzProperties() throws IOException {
+    @Bean
+    public Properties quartzProperties() throws IOException {
         final PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
         propertiesFactoryBean.setLocation(new ClassPathResource("/configuration/quartz.properties"));
         propertiesFactoryBean.afterPropertiesSet();
         return propertiesFactoryBean.getObject();
     }
-
 }

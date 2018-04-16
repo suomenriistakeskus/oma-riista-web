@@ -5,13 +5,11 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.querydsl.jpa.impl.JPAQuery;
 import fi.riista.feature.account.user.ActiveUserService;
-import fi.riista.feature.account.user.QSystemUser;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gis.GISQueryService;
-import fi.riista.feature.gis.zone.GISZone;
-import fi.riista.feature.gis.zone.GISZoneRepository;
+import fi.riista.feature.gis.zone.AbstractAreaDTOTransformer;
 import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
@@ -24,7 +22,6 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import fi.riista.util.ListTransformer;
 import fi.riista.util.jpa.CriteriaUtils;
 import javaslang.Tuple;
 import javaslang.Tuple2;
@@ -39,26 +36,21 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 @Component
-public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubArea, HuntingClubAreaDTO> {
+public class HuntingClubAreaDTOTransformer extends AbstractAreaDTOTransformer<HuntingClubArea, HuntingClubAreaDTO> {
 
     @Resource
     private ActiveUserService activeUserService;
 
     @Resource
     private HuntingClubRepository huntingClubRepository;
-
-    @Resource
-    private GISZoneRepository gisZoneRepository;
 
     @Resource
     private OccupationRepository occupationRepository;
@@ -91,7 +83,7 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
         final Map<Long, List<Occupation>> occupationByOrganisationId = findValidActiveUserOccupations(activeUser);
 
         final Function<HuntingClubArea, HuntingClub> areaToClubMapping = getAreaToClubMapping(list);
-        final Function<HuntingClubArea, GISZoneWithoutGeometryDTO> areaToZoneMapping = getAreaToZoneMapping(list);
+        final Function<HuntingClubArea, GISZoneWithoutGeometryDTO> areaToZoneMapping = createZoneDTOFunction(list);
         final Set<Long> zonesWithChanges = findChangedZonesForAreas(list);
         final List<Long> attachedAreas = listAreaWithAttachedGroup(list);
 
@@ -110,10 +102,7 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
             dto.setLastModifierName(modifier._1);
             dto.setLastModifierRiistakeskus(modifier._2);
 
-            if (zonesWithChanges.contains(F.getId(area.getZone()))) {
-                dto.setHasPendingZoneChanges(true);
-            }
-
+            dto.setHasPendingZoneChanges(zonesWithChanges.contains(F.getId(zone)));
             dto.setAttachedToGroup(attachedAreas.contains(area.getId()));
 
             if (activeUser.isModeratorOrAdmin()) {
@@ -158,17 +147,6 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
         return CriteriaUtils.singleQueryFunction(areas, HuntingClubArea::getClub, huntingClubRepository, false);
     }
 
-    private Function<HuntingClubArea, GISZoneWithoutGeometryDTO> getAreaToZoneMapping(final Iterable<HuntingClubArea> areas) {
-        final Set<Long> zoneIds = F.getUniqueIdsAfterTransform(areas, HuntingClubArea::getZone);
-        final List<GISZoneWithoutGeometryDTO> zoneList = gisZoneRepository.fetchWithoutGeometry(zoneIds);
-        final Map<Long, GISZoneWithoutGeometryDTO> map = F.indexById(zoneList);
-
-        return area -> {
-            final Long zoneId = F.getId(area.getZone());
-            return zoneId != null ? map.get(zoneId) : null;
-        };
-    }
-
     private Map<Long, List<Occupation>> findValidActiveUserOccupations(final SystemUser activeUser) {
         final Person person = activeUser.getPerson();
 
@@ -201,11 +179,7 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
     }
 
     private Set<Long> findChangedZonesForAreas(final Collection<HuntingClubArea> areas) {
-        final Set<Long> zoneIds = areas.stream()
-                .map(HuntingClubArea::getZone)
-                .filter(Objects::nonNull)
-                .map(GISZone::getId)
-                .collect(toSet());
+        final Set<Long> zoneIds = getUniqueZoneIds(areas);
 
         return changedZoneCache.get().stream()
                 .filter(zoneIds::contains)
@@ -213,9 +187,9 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
     }
 
     private Map<Long, SystemUser> findModifierUsers(List<HuntingClubArea> list) {
-        final QSystemUser user = QSystemUser.systemUser;
-        return userRepository.findAllAsStream(user.id.in(F.mapNonNullsToSet(list, LifecycleEntity::getModifiedByUserId)))
-                .collect(toMap(SystemUser::getId, Function.identity()));
+        final Set<Long> modifierIds = F.mapNonNullsToSet(list, LifecycleEntity::getModifiedByUserId);
+
+        return F.indexById(userRepository.findAll(modifierIds));
     }
 
     private Function<SystemUser, Person> findUserToPerson(Collection<SystemUser> users) {

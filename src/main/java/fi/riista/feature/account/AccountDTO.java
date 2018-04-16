@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.dto.DoNotValidate;
 import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
+import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.address.AddressSource;
 import fi.riista.util.Patterns;
 import fi.riista.validation.FinnishHunterNumber;
@@ -71,8 +71,6 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String languageCode;
-
-    private boolean finnishCitizen;
 
     //@PhoneNumber
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
@@ -247,14 +245,6 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     public String getLanguageCode() {
         return languageCode;
-    }
-
-    public void setFinnishCitizen(boolean finnishCitizen) {
-        this.finnishCitizen = finnishCitizen;
-    }
-
-    public boolean isFinnishCitizen() {
-        return finnishCitizen;
     }
 
     public String getPhoneNumber() {

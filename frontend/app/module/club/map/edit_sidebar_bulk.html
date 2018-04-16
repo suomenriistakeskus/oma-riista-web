@@ -4,7 +4,7 @@
 <div ng-if="invalidPropertyList && invalidPropertyList.length" class="alert alert-danger">
     <span translate="club.area.map.tab.massInsert.propertyIdentifiersNotFound"></span>
 
-    <div ng-repeat="p in invalidPropertyList">
+    <div ng-repeat="p in invalidPropertyList track by $index">
         {{p | formatPropertyIdentifier}}
     </div>
 </div>

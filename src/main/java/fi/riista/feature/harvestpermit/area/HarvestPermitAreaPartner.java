@@ -1,9 +1,12 @@
 package fi.riista.feature.harvestpermit.area;
 
-import fi.riista.feature.common.entity.BaseEntity;
+import fi.riista.feature.gis.zone.AreaEntity;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
+import fi.riista.util.LocalisedString;
+import fi.riista.util.jpa.CriteriaUtils;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -17,9 +20,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
+import java.util.Objects;
+import java.util.Optional;
+
 @Entity
 @Access(AccessType.FIELD)
-public class HarvestPermitAreaPartner extends BaseEntity<Long> {
+public class HarvestPermitAreaPartner extends AreaEntity<Long> {
 
     private Long id;
 
@@ -39,6 +45,25 @@ public class HarvestPermitAreaPartner extends BaseEntity<Long> {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     private GISZone zone;
 
+    protected HarvestPermitAreaPartner() {
+    }
+
+    public HarvestPermitAreaPartner(@Nonnull final HarvestPermitArea harvestPermitArea,
+                                    @Nonnull final HuntingClubArea sourceArea,
+                                    @Nonnull final GISZone zone) {
+
+        setHarvestPermitArea(Objects.requireNonNull(harvestPermitArea, "harvestPermitArea is null"));
+        this.sourceArea = Objects.requireNonNull(sourceArea, "sourceArea is null");
+        this.zone = Objects.requireNonNull(zone, "zone is null");
+    }
+
+    @Override
+    public LocalisedString getNameLocalisation() {
+        return Optional.ofNullable(sourceArea).map(HuntingClubArea::getNameLocalisation).orElse(null);
+    }
+
+    // Accessors -->
+
     @Override
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,23 +78,13 @@ public class HarvestPermitAreaPartner extends BaseEntity<Long> {
         this.id = id;
     }
 
-    protected HarvestPermitAreaPartner() {
-    }
-
-    public HarvestPermitAreaPartner(final HarvestPermitArea harvestPermitArea,
-                                    final HuntingClubArea sourceArea,
-                                    final GISZone zone) {
-        this.harvestPermitArea = harvestPermitArea;
-        this.sourceArea = sourceArea;
-        this.zone = zone;
-    }
-
     public HarvestPermitArea getHarvestPermitArea() {
         return harvestPermitArea;
     }
 
-    public void setHarvestPermitArea(final HarvestPermitArea harvestPermitArea) {
-        this.harvestPermitArea = harvestPermitArea;
+    public void setHarvestPermitArea(final HarvestPermitArea area) {
+        CriteriaUtils.updateInverseCollection(HarvestPermitArea_.partners, this, this.harvestPermitArea, area);
+        this.harvestPermitArea = area;
     }
 
     public HuntingClubArea getSourceArea() {
@@ -80,10 +95,12 @@ public class HarvestPermitAreaPartner extends BaseEntity<Long> {
         this.sourceArea = sourceArea;
     }
 
+    @Override
     public GISZone getZone() {
         return zone;
     }
 
+    @Override
     public void setZone(final GISZone zone) {
         this.zone = zone;
     }

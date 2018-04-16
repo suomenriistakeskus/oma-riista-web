@@ -34,7 +34,7 @@
                 <table class="table table-condensed">
                     <tbody>
                     <tr>
-                        <td translate="club.area.map.selectedArea.propertyIdentifier"></td>
+                        <td translate="club.area.map.selectedArea.areaCode"></td>
                         <td>
                             <span ng-show="getActiveFeature().properties.number"
                                   ng-bind="getActiveFeature().properties.number | formatPropertyIdentifier"></span>
@@ -48,7 +48,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td translate="club.area.map.selectedArea.areaSize"></td>
+                        <td translate="club.area.totalAreaSize"></td>
                         <td><span ng-show="getActiveFeature().properties.size"
                                   ng-bind="(getActiveFeature() | featureAreaSize)"></span>
                             <span class="text-danger" ng-if="getActiveFeature().properties.changed">

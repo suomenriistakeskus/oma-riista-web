@@ -98,7 +98,6 @@ public class HuntingClubAreaExcelFeature {
                 ") SELECT" +
                 " zp.palsta_id AS id," +
                 " zp.palsta_tunnus AS tunnus," +
-                " pa.nimi AS nimi," +
                 " ST_Area(zp.geom) AS area_size," +
                 " COALESCE(ex.excluded_size, 0) AS excluded_size," +
                 " zp.is_changed" +
@@ -113,7 +112,6 @@ public class HuntingClubAreaExcelFeature {
         return namedParameterJdbcTemplate.query(sql, params, (rs, i) -> new HuntingClubAreaExcelView.ExcelRow(
                 rs.getInt("id"),
                 PropertyIdentifier.create(rs.getLong("tunnus")),
-                rs.getString("nimi"),
                 rs.getDouble("area_size"),
                 rs.getDouble("excluded_size"),
                 rs.getBoolean("is_changed")
@@ -131,9 +129,6 @@ public class HuntingClubAreaExcelFeature {
         final NumberPath<Long> pathPalstaTunnus = zonePalsta.palstaTunnus;
         final NumberPath<Long> pathPalstaTunnusNew = zonePalsta.newPalstaTunnus;
 
-        final StringPath pathPalstaName = pa1.nimi;
-        final StringPath pathPalstaNameNew = pa2.nimi;
-
         final NumberPath<Double> pathAreaDiff = zonePalsta.diffArea;
         final NumberExpression<Double> pathAreaSize = zonePalsta.geom.asMultiPolygon().area();
 
@@ -145,7 +140,6 @@ public class HuntingClubAreaExcelFeature {
                         .and(zonePalsta.isChanged.isTrue()))
                 .select(Projections.constructor(HuntingClubAreaChangedExcelView.ExcelRow.class,
                         pathPalstaTunnus, pathPalstaTunnusNew,
-                        pathPalstaName, pathPalstaNameNew,
                         pathAreaSize, pathAreaDiff))
                 .orderBy(pathPalstaTunnus.asc(), pathPalstaId.asc())
                 .fetch();

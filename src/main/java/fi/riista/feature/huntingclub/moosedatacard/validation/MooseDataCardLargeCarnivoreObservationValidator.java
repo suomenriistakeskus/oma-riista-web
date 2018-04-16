@@ -8,6 +8,7 @@ import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardLargeCarnivoreObservation;
+import fi.riista.util.F;
 
 import javaslang.control.Either;
 
@@ -30,7 +31,7 @@ public class MooseDataCardLargeCarnivoreObservationValidator
             @Nonnull final MooseDataCardLargeCarnivoreObservation input) {
 
         return resolveDate(input).flatMap(date -> HasMooseDataCardEncoding
-                .enumOf(ObservationType.class, input.getObservationType())
+                .eitherInvalidOrValid(ObservationType.class, input.getObservationType())
                 .mapLeft(invalidOpt -> invalidOpt
                         .map(invalid -> observationTypeOfLargeCarnivoreContainsIllegalCharacters(input))
                         .orElseGet(() -> largeCarnivoreMissingObservationType(input)))
@@ -45,7 +46,7 @@ public class MooseDataCardLargeCarnivoreObservationValidator
                             .filter(amount -> amount >= 0)
                             .collect(Collectors.summingInt(Integer::intValue));
 
-                    return Optional.ofNullable(totalAmount)
+                    final Optional<MooseDataCardLargeCarnivoreObservation> opt = Optional.ofNullable(totalAmount)
                             .filter(sum -> sum > 0)
                             .map(positiveSum -> new MooseDataCardLargeCarnivoreObservation()
                                     .withDate(date)
@@ -55,13 +56,11 @@ public class MooseDataCardLargeCarnivoreObservationValidator
                                     .withNumberOfBears(MooseDataCardDiaryEntryField.BEAR_AMOUNT.getValidOrNull(input))
                                     .withNumberOfLynxes(MooseDataCardDiaryEntryField.LYNX_AMOUNT.getValidOrNull(input))
                                     .withNumberOfWolverines(
-                                            MooseDataCardDiaryEntryField.WOLVERINE_AMOUNT.getValidOrNull(input)))
-                            .<Either<String, MooseDataCardLargeCarnivoreObservation>> map(obj -> {
-                                obj.setGeoLocation(getValidGeoLocation(input));
-                                return Either.right(obj);
-                            })
-                            .orElseGet(() -> Either
-                                    .left(sumOfSpecimenAmountsOfLargeCarnivoreObservationIsNotGreaterThanZero(input)));
+                                            MooseDataCardDiaryEntryField.WOLVERINE_AMOUNT.getValidOrNull(input)));
+
+                    return F.toEither(
+                            opt, () -> sumOfSpecimenAmountsOfLargeCarnivoreObservationIsNotGreaterThanZero(input))
+                            .peek(obj -> obj.setGeoLocation(getValidGeoLocation(input)));
                 }));
     }
 

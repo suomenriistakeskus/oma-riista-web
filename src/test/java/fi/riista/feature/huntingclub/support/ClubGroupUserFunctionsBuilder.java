@@ -23,8 +23,8 @@ public class ClubGroupUserFunctionsBuilder {
     private boolean includeGroupLeader = true;
     private boolean includeGroupMember = true;
 
-    private boolean includeOriginalPermitConcatPerson = false;
-    private boolean includePermitConcatPerson = false;
+    private boolean includeOriginalPermitContactPerson = false;
+    private boolean includePermitContactPerson = false;
 
     private boolean includeRhyCoordinator = false;
     private boolean includeAdmin = false;
@@ -41,8 +41,8 @@ public class ClubGroupUserFunctionsBuilder {
                 .withGroupLeader(true)
                 .withGroupMember(true)
 
-                .withOriginalPermitConcatPerson(true)
-                .withPermitConcatPerson(true)
+                .withOriginalPermitContactPerson(true)
+                .withPermitContactPerson(true)
                 .withRhyCoordinator(true)
 
                 .withAdminAndModerator(true);
@@ -72,15 +72,15 @@ public class ClubGroupUserFunctionsBuilder {
         return this;
     }
 
-    public ClubGroupUserFunctionsBuilder withOriginalPermitConcatPerson(
-            final boolean includeOriginalPermitConcatPerson) {
+    public ClubGroupUserFunctionsBuilder withOriginalPermitContactPerson(
+            final boolean includeOriginalPermitContactPerson) {
 
-        this.includeOriginalPermitConcatPerson = includeOriginalPermitConcatPerson;
+        this.includeOriginalPermitContactPerson = includeOriginalPermitContactPerson;
         return this;
     }
 
-    public ClubGroupUserFunctionsBuilder withPermitConcatPerson(final boolean includePermitConcatPerson) {
-        this.includePermitConcatPerson = includePermitConcatPerson;
+    public ClubGroupUserFunctionsBuilder withPermitContactPerson(final boolean includePermitContactPerson) {
+        this.includePermitContactPerson = includePermitContactPerson;
         return this;
     }
 
@@ -137,7 +137,7 @@ public class ClubGroupUserFunctionsBuilder {
         };
     }
 
-    public BiFunction<HuntingClub, HuntingClubGroup, SystemUser> createOriginalPermitConcatPerson() {
+    public BiFunction<HuntingClub, HuntingClubGroup, SystemUser> createOriginalPermitContactPerson() {
         return (club, group) -> {
             final Person person = es.newPerson();
             group.getHarvestPermit().setOriginalContactPerson(person);
@@ -145,7 +145,7 @@ public class ClubGroupUserFunctionsBuilder {
         };
     }
 
-    public BiFunction<HuntingClub, HuntingClubGroup, SystemUser> createPermitConcatPerson() {
+    public BiFunction<HuntingClub, HuntingClubGroup, SystemUser> createPermitContactPerson() {
         return (club, group) -> {
             final Person person = es.newPerson();
             es.newHarvestPermitContactPerson(group.getHarvestPermit(), person);
@@ -188,12 +188,12 @@ public class ClubGroupUserFunctionsBuilder {
             ret.add(createGroupLeader());
         }
 
-        if (includeOriginalPermitConcatPerson) {
-            ret.add(createOriginalPermitConcatPerson());
+        if (includeOriginalPermitContactPerson) {
+            ret.add(createOriginalPermitContactPerson());
         }
 
-        if (includePermitConcatPerson) {
-            ret.add(createPermitConcatPerson());
+        if (includePermitContactPerson) {
+            ret.add(createPermitContactPerson());
         }
 
         if (includeGroupMember) {

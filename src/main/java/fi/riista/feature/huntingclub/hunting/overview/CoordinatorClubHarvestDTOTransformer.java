@@ -2,10 +2,10 @@ package fi.riista.feature.huntingclub.hunting.overview;
 
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.jpa.impl.JPAQuery;
-import fi.riista.feature.gamediary.harvest.HarvestDTOTransformerBase;
-import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.gamediary.harvest.HarvestDTOTransformerBase;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubDTO;
@@ -14,7 +14,6 @@ import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
 import fi.riista.util.F;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
@@ -33,7 +32,6 @@ public class CoordinatorClubHarvestDTOTransformer extends HarvestDTOTransformerB
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Transactional(readOnly = true)
     @Nonnull
     @Override
     protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests) {

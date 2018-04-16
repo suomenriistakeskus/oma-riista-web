@@ -147,7 +147,7 @@ angular.module('app.map.services', [])
             northEast: WGS84.fromETRS(8388608, 1548576)
         };
 
-        var mmlUrlTemplate = _.template('https://kartta.riista.fi/tms/1.0.0/<%= layer %>/EPSG_3067/{z}/{x}/{y}.png');
+        var mmlUrlTemplate = _.template('https://d3gayxdfvljt82.cloudfront.net/tms/1.0.0/<%= layer %>/EPSG_3067/{z}/{x}/{y}.png');
         var mmlUrls = {
             terrain: mmlUrlTemplate({layer: 'maasto_kiint'}),
             background: mmlUrlTemplate({layer: 'tausta_kiint'}),
@@ -172,7 +172,7 @@ angular.module('app.map.services', [])
 
         var createLayer = function (type) {
             return {
-                name: $translate.instant('global.mapLayer.' + type),
+                name: $translate.instant('global.map.layer.' + type),
                 url: mmlUrls[type],
                 type: 'xyz',
                 layerOptions: angular.copy(mmlOptions)

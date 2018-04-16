@@ -364,4 +364,31 @@ angular.module('app.common.directives', ['dialogs.main'])
             '</div>'
         };
     })
+    .directive('rCopyOnBlurToEmptyInput', function() {
+        return {
+            restrict: 'A',
+            scope: false,
+            require: ['^^form', '^ngModel'],
+            link: function (scope, element, attrs, controllers) {
+                var formController = controllers[0];
+                var modelController = controllers[1];
+
+                var input = attrs.rCopyOnBlurToEmptyInput;
+
+                if (input) {
+                    element.on('blur', function (event) {
+                        var inputViewValue = modelController.$viewValue;
+                        var otherInputModelController = formController[input];
+
+                        if (angular.isObject(otherInputModelController)) {
+                            if (inputViewValue && _.isEmpty(otherInputModelController.$viewValue)) {
+                                otherInputModelController.$setViewValue(inputViewValue);
+                                otherInputModelController.$render();
+                            }
+                        }
+                    });
+                }
+            }
+        };
+    })
 ;

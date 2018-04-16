@@ -63,14 +63,13 @@ public class MooseDataCardObjectFactory {
     }
 
     public static MooseDataCardHuntingDay newHuntingDay(final LocalDate date) {
-        final MooseDataCardHuntingDay day = new MooseDataCardHuntingDay();
-        day.setStartDate(date);
-        day.setHuntingTime(10.0f);
-        day.setSnowDepth(20);
-        day.setHuntingMethod(1);
-        day.setNumberOfHunters(10);
-        day.setNumberOfHounds(1);
-        return day;
+        return new MooseDataCardHuntingDay()
+                .withStartDate(date)
+                .withHuntingTime(10.0f)
+                .withSnowDepth(20)
+                .withHuntingMethod(1)
+                .withNumberOfHunters(10)
+                .withNumberOfHounds(1);
     }
 
     public static MooseDataCardObservation newMooseObservation() {

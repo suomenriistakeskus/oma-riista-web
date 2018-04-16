@@ -138,4 +138,8 @@ public class RVR_SrvaEvents {
         return this.srvaEvent;
     }
 
+    public void setSrvaEvent(List<RVR_SrvaEvent> value) {
+        this.srvaEvent = value;
+    }
+
 }

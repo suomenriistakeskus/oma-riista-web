@@ -92,6 +92,12 @@ angular.module('app.moosepermit.deerhuntingsummary', [])
             return getGameSpeciesName($scope.summary.gameSpeciesCode);
         };
 
+        $scope.showPermitAreaSize = function () {
+            var summary = $scope.summary;
+            var totalHuntingArea = summary.totalHuntingArea;
+            return !_.isFinite(totalHuntingArea) || totalHuntingArea > summary.permitAreaSize;
+        };
+
         $scope.isTotalHuntingAreaRequired = function () {
             return !_.isFinite($scope.summary.effectiveHuntingArea);
         };

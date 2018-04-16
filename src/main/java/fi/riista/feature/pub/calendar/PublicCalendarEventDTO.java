@@ -11,6 +11,7 @@ import org.joda.time.LocalTime;
 public class PublicCalendarEventDTO {
 
     private PublicCalendarEventTypeDTO calendarEventType;
+    private Long id;
     private String name;
     private String description;
     private LocalDate date;
@@ -29,6 +30,14 @@ public class PublicCalendarEventDTO {
 
     public void setCalendarEventType(PublicCalendarEventTypeDTO calendarEventType) {
         this.calendarEventType = calendarEventType;
+    }
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     public String getName() {

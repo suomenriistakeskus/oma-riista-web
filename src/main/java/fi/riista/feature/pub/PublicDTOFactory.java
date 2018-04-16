@@ -117,6 +117,7 @@ public class PublicDTOFactory {
     public PublicCalendarEventDTO create(CalendarEvent calendarEvent, PublicCalendarEventTypeDTO type) {
         PublicCalendarEventDTO dto = new PublicCalendarEventDTO();
         dto.setCalendarEventType(type);
+        dto.setId(calendarEvent.getId());
         dto.setName(calendarEvent.getName());
         dto.setDescription(calendarEvent.getDescription());
         dto.setDate(DateUtil.toLocalDateNullSafe(calendarEvent.getDate()));

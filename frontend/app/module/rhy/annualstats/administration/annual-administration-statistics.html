@@ -1,0 +1,30 @@
+<div class="r-annual-statistics-content row">
+    <div class="col-sm-6">
+        <show-hunter-exam-statistics hunter-exams="$ctrl.statistics.hunterExams"
+                                     editable="$ctrl.editable"
+                                     open-edit-dialog="$ctrl.editHunterExams()">
+        </show-hunter-exam-statistics>
+
+        <show-game-damage-statistics game-damage="$ctrl.statistics.gameDamage"
+                                     editable="$ctrl.editable"
+                                     open-edit-dialog="$ctrl.editGameDamage()">
+        </show-game-damage-statistics>
+
+        <show-other-admin-statistics other-public-admin="$ctrl.statistics.otherPublicAdmin"
+                                     editable="$ctrl.editable"
+                                     open-edit-dialog="$ctrl.editOtherPublicAdminData()">
+        </show-other-admin-statistics>
+    </div>
+
+    <div class="col-sm-6">
+        <show-shooting-test-statistics shooting-tests="$ctrl.statistics.shootingTests"
+                                       editable="$ctrl.editable"
+                                       open-edit-dialog="$ctrl.editShootingTests()">
+        </show-shooting-test-statistics>
+
+        <show-hunting-control-statistics hunting-control="$ctrl.statistics.huntingControl"
+                                         editable="$ctrl.editable"
+                                         open-edit-dialog="$ctrl.editHuntingControl()">
+        </show-hunting-control-statistics>
+    </div>
+</div>

@@ -30,7 +30,7 @@
     }
 
     table {
-      margin-bottom: 0;
+      margin: 10px 0 0;
     }
 
     .panel {
@@ -80,6 +80,9 @@
       div.right {
         padding-left: 5px;
       }
+    }
+    .permit-download {
+      display: inline-block;
     }
   }
 
@@ -153,18 +156,6 @@
       background-color: #e0f0eb;
     }
     td {
-      // Hide spinner on number input fields
-      input[type="number"]::-webkit-outer-spin-button,
-      input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      input[type="number"] {
-        -moz-appearance: textfield;
-        .text-right;
-        width: 51px;
-      }
-
       padding: 1px !important;
 
       .fa {
@@ -181,6 +172,40 @@
   @i: extract(@cols, @index);
   &:nth-of-type(@{i}) {
     border-left: @moose-permit-infotable-header-border-style;
+  }
+}
+
+.moose-permit-infotable-allocation {
+  .moose-permit-infotable;
+
+  padding-top: 10px;
+
+  @moose-permit-infotable-hunting-border-indexes: 2 3 6 7 13;
+
+  .lowheader > th {
+    .loop-moose-permit-border-left(@moose-permit-infotable-hunting-border-indexes);
+  }
+
+  tbody > tr > td {
+    .loop-moose-permit-border-left(@moose-permit-infotable-hunting-border-indexes);
+
+    line-height: 30px;
+    max-width: 30px;
+
+    // Hide spinner on number input fields
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+      .text-center;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 0;
   }
 }
 
@@ -232,6 +257,10 @@
 
   .luke-data {
     margin-right: 10px;
+
+    h1 {
+      .hidden;
+    }
 
     .caption {
       .help-block;

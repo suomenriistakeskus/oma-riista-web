@@ -57,6 +57,11 @@ public class SQAccountActivityMessage extends RelationalPathSpatial<SQAccountAct
         addMetadata();
     }
 
+    public SQAccountActivityMessage(String variable, String schema) {
+        super(SQAccountActivityMessage.class, forVariable(variable), schema, "account_activity_message");
+        addMetadata();
+    }
+
     public SQAccountActivityMessage(Path<? extends SQAccountActivityMessage> path) {
         super(path.getType(), path.getMetadata(), "public", "account_activity_message");
         addMetadata();

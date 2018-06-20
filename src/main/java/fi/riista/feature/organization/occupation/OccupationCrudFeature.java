@@ -9,7 +9,7 @@ import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.person.PersonDTO;
+import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.person.PersonIsDeceasedException;
 import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.security.EntityPermission;
@@ -21,6 +21,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -68,7 +69,7 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
     @Transactional(readOnly = true)
     public List<OccupationType> getApplicableOccupationTypes(final long organisationId) {
         final Organisation org = getOrganisation(organisationId);
-        return OccupationType.getListOfApplicableTypes(org.getOrganisationType());
+        return new ArrayList<>(OccupationType.getApplicableTypes(org.getOrganisationType()));
     }
 
     @Override
@@ -109,7 +110,7 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         }
     }
 
-    private void updatePersonInformation(final Person person, final PersonDTO dto) {
+    private void updatePersonInformation(final Person person, final PersonContactInfoDTO dto) {
         if (!person.isRegistered() && !byNameAndPhoneAndEmailSame(dto, person)) {
             if (StringUtils.hasText(dto.getPhoneNumber())) {
                 person.setPhoneNumber(dto.getPhoneNumber());
@@ -147,7 +148,7 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         }
     }
 
-    private static boolean byNameAndPhoneAndEmailSame(final PersonDTO dto, final Person person) {
+    private static boolean byNameAndPhoneAndEmailSame(final PersonContactInfoDTO dto, final Person person) {
         return Objects.equals(dto.getEmail(), person.getEmail())
                 && Objects.equals(dto.getPhoneNumber(), person.getPhoneNumber())
                 && Objects.equals(dto.getByName(), person.getByName());
@@ -221,7 +222,7 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
     }
 
     @Transactional(readOnly = true)
-    public List<PersonDTO> listCandidateForNewOccupation(final long organisationId) {
+    public List<PersonContactInfoDTO> listCandidatesForNewOccupation(final long organisationId) {
         final Organisation organisation =
                 requireEntityService.requireOrganisation(organisationId, EntityPermission.READ);
         assertCanListOccupations(organisation);
@@ -231,7 +232,7 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
                 .distinct()
                 .sorted(CANDIDATE_PERSON_SORT)
                 .filter(p -> !p.isDeceased())
-                .map(PersonDTO::create)
+                .map(PersonContactInfoDTO::create)
                 .collect(toList());
     }
 

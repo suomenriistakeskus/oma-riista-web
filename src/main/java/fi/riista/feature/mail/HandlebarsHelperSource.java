@@ -9,9 +9,11 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Date;
 
+import static fi.riista.util.NumberUtils.squareMetersToHectares;
+
 /**
  * This class containts different helpers that extend the functionality of Handlebars templates.
- *
+ * <p>
  * Usage in a template: "{{<function name> <parameter1> <parameter2>... [optionA=<parameter>] ...}}"
  */
 
@@ -51,5 +53,9 @@ public class HandlebarsHelperSource {
 
     public static CharSequence boolName(Boolean input) {
         return input ? "Boolean.true" : "Boolean.false";
+    }
+
+    public static CharSequence hectaresRounded(double squareMeters) {
+        return Long.toString(squareMetersToHectares(squareMeters)) + " ha";
     }
 }

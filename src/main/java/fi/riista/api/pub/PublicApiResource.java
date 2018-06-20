@@ -3,6 +3,8 @@ package fi.riista.api.pub;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionDownloadFeature;
+import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionFeature;
 import fi.riista.feature.pub.calendar.PublicCalendarEventSearchDTO;
 import fi.riista.feature.pub.calendar.PublicCalendarEventSearchFeature;
 import fi.riista.feature.pub.calendar.PublicCalendarEventSearchResultDTO;
@@ -19,6 +21,7 @@ import fi.riista.feature.pub.statistics.PublicHarvestPivotTableFeature;
 import fi.riista.feature.pub.statistics.PublicMetsahallitusHarvestSummaryFeature;
 import fi.riista.feature.pub.statistics.PublicWolfReportFeature;
 import fi.riista.util.DateUtil;
+import fi.riista.util.Patterns;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.geojson.FeatureCollection;
@@ -28,6 +31,7 @@ import org.joda.time.LocalDate;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,11 +40,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -71,6 +78,12 @@ public class PublicApiResource {
 
     @Resource
     private PublicBearReportFeature bearReportFeature;
+
+    @Resource
+    private PermitDecisionRevisionFeature permitDecisionRevisionFeature;
+
+    @Resource
+    private PermitDecisionRevisionDownloadFeature permitDecisionRevisionDownloadFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/rk", method = RequestMethod.GET)
@@ -172,7 +185,7 @@ public class PublicApiResource {
     public Object harvestMetsahallitusHirvi(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        return metsahallitusHarvestSummaryFeature.hirviSummary(start, end);
+        return metsahallitusHarvestSummaryFeature.getHirviSummary(start, end);
     }
 
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
@@ -180,7 +193,7 @@ public class PublicApiResource {
     public Object harvestMetsahallitusPienriista(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        return metsahallitusHarvestSummaryFeature.pienriistaSummary(start, end);
+        return metsahallitusHarvestSummaryFeature.getPienriistaSummary(start, end);
     }
 
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
@@ -208,7 +221,16 @@ public class PublicApiResource {
         return Optional.ofNullable(year).map(bearReportFeature::report).orElse(null);
     }
 
-    private static List<Map<String, Object>> generateYearRange(int beginYear) {
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/decision/receiver/pdf/download/{uuid:" + Patterns.UUID + "}")
+    public void getAttachment(@PathVariable final UUID uuid,
+                              HttpServletResponse response) throws IOException {
+
+        final long revisionId = permitDecisionRevisionFeature.updateViewCountAndResolveRevisionIdByReceiverUuid(uuid);
+        permitDecisionRevisionDownloadFeature.downloadPdfNoAuthorization(revisionId, response);
+    }
+
+    private static List<Map<String, Object>> generateYearRange(final int beginYear) {
         final DateTime now = DateTime.now();
         final LocalDate begin = DateUtil.huntingYearInterval(beginYear).getStart().toLocalDate();
         final LocalDate end = now.toLocalDate();
@@ -217,7 +239,7 @@ public class PublicApiResource {
     }
 
     private static List<Map<String, Object>> generateYearRange(DateTime now, IntStream years) {
-        return years.<Map<String, Object>>mapToObj(year -> {
+        return years.<Map<String, Object>> mapToObj(year -> {
             final Interval interval = DateUtil.huntingYearInterval(year);
 
             return ImmutableMap.of("year", year,

@@ -11,7 +11,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface UserRepository extends BaseRepository<SystemUser, Long>, UserRepositoryCustom {
-    SystemUser findByUsernameIgnoreCase(String username);
+    @Query("select s from SystemUser s where lower(s.username) = lower(:username)")
+    SystemUser findByUsernameIgnoreCase(@Param("username") String username);
 
     List<SystemUser> findByPerson(Person person);
 

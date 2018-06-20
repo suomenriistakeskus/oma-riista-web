@@ -1,0 +1,64 @@
+<div class="row">
+    <div class="col-xs-4">
+        <a class="btn btn-default"
+           ui-sref="permitmanagement.dashboard">
+            <span class="fa fa-chevron-left"></span>
+            &nbsp;
+            <span translate="global.button.back"></span>
+        </a>
+    </div>
+
+    <div class="col-xs-8 text-right">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.exportHarvestReports()">
+            <span class="fa fa-file-excel-o"></span>
+            &nbsp;
+            <span translate="reporting.common.toExcel"></span>
+        </button>
+
+        <button type="button" class="btn btn-primary"
+                ng-if="$ctrl.permit.canAddHarvest"
+                ng-click="$ctrl.createHarvestForPermit()">
+            <span class="glyphicon glyphicon-plus"></span>
+            &nbsp;
+            <span translate="harvestreport.button.createReport"></span>
+        </button>
+    </div>
+</div>
+
+<hr>
+
+<h4 translate="harvestpermit.management.usage.speciesAmounts"></h4>
+
+<permit-species-amount-usage species-amounts="$ctrl.speciesAmounts"></permit-species-amount-usage>
+
+<hr>
+
+<ul class="nav nav-pills nav-justified">
+    <li ng-class="{'active': $ctrl.activeTabIndex === 0}">
+        <a ng-click="$ctrl.activeTabIndex = 0" translate="harvestpermit.management.usage.harvests"></a>
+    </li>
+
+    <li ng-class="{'active': $ctrl.activeTabIndex === 1}">
+        <a ng-click="$ctrl.activeTabIndex = 1" translate="global.map.map"></a>
+    </li>
+</ul>
+
+<div ng-if="$ctrl.activeTabIndex == 0">
+    <harvest-permit-harvest-list
+            permit="$ctrl.permit"
+            harvest-list="$ctrl.harvestList"></harvest-permit-harvest-list>
+</div>
+
+<div ng-if="$ctrl.activeTabIndex === 1">
+    <leaflet class="r-cursor-pointer"
+             id="moderatorHarvestReportMap"
+             defaults="$ctrl.mapDefaults"
+             layers="$ctrl.mapDefaults.mmlLayers"
+             controls="$ctrl.mapDefaults.controls"
+             bounds="$ctrl.mapBounds"
+             event-broadcast="$ctrl.mapEvents"
+             height="550px">
+        <marker-cluster id="moderatorHarvestReportMarkers" leaflet-markers="$ctrl.markers"></marker-cluster>
+    </leaflet>
+</div>

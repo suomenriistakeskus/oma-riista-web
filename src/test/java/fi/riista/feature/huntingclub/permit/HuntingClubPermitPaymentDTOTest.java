@@ -12,7 +12,12 @@ public class HuntingClubPermitPaymentDTOTest {
     @Test
     public void test() {
         final long artificialClubId = 1L;
-        final HuntingClubPermitCountDTO count = new HuntingClubPermitCountDTO(artificialClubId, 10, 9, 5, 4, 8, 3);
+        final HuntingClubPermitCountDTO count = new HuntingClubPermitCountDTO(artificialClubId,
+                10, 9,
+                5, 4,
+                7 + 1, 2 + 1,
+                7, 1,
+                2, 1);
         final MooselikePrice prices = createPrices(120, 50);
         final HuntingClubPermitPaymentDTO dto = HuntingClubPermitPaymentDTO.create(count, prices);
 

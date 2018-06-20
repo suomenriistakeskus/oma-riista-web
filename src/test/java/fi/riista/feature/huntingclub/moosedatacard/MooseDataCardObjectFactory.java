@@ -1,12 +1,11 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static fi.riista.util.DateUtil.today;
-
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.harvest.specimen.GameAntlersType;
 import fi.riista.feature.gamediary.harvest.specimen.GameFitnessClass;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.observation.ObservationType;
+import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardCalculatedHarvestAmounts;
 import fi.riista.feature.huntingclub.permit.summary.TrendOfPopulationGrowth;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
@@ -25,9 +24,11 @@ import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_3;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_4;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardTrendOfPopulationGrowth;
-import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardCalculatedHarvestAmounts;
-
 import org.joda.time.LocalDate;
+
+import javax.annotation.Nullable;
+
+import static fi.riista.util.DateUtil.today;
 
 public class MooseDataCardObjectFactory {
 
@@ -56,13 +57,10 @@ public class MooseDataCardObjectFactory {
     }
 
     private static MooseDataCard newMooseDataCardInternal() {
-        return new MooseDataCard()
-                .withPage1(new MooseDataCardPage1()
-                        .withReportingPeriodBeginDate(today())
-                        .withReportingPeriodEndDate(today().plusMonths(2)));
+        return new MooseDataCard().withPage1(new MooseDataCardPage1());
     }
 
-    public static MooseDataCardHuntingDay newHuntingDay(final LocalDate date) {
+    public static MooseDataCardHuntingDay newHuntingDay(@Nullable final LocalDate date) {
         return new MooseDataCardHuntingDay()
                 .withStartDate(date)
                 .withHuntingTime(10.0f)
@@ -72,18 +70,22 @@ public class MooseDataCardObjectFactory {
                 .withNumberOfHounds(1);
     }
 
-    public static MooseDataCardObservation newMooseObservation() {
-        return withDateAndLocationSet(new MooseDataCardObservation()
-                .withAU(6)
-                .withN0(5)
-                .withN1(4)
-                .withN2(3)
-                .withN3(2)
+    public static MooseDataCardObservation newMooseObservation(@Nullable final LocalDate date) {
+        return populateLocation(new MooseDataCardObservation()
+                .withDate(date)
+                .withAU(7)
+                .withN0(6)
+                .withN1(5)
+                .withN2(4)
+                .withN3(3)
+                .withY(2)
                 .withT(1));
     }
 
-    public static MooseDataCardMooseMale newMooseMale() {
-        return withDateAndLocationSet(new MooseDataCardMooseMale()
+    public static MooseDataCardMooseMale newMooseMale(@Nullable final LocalDate date) {
+        return populateLocation(new MooseDataCardMooseMale()
+                .withDate(date)
+
                 .withWeightEstimated(250.0)
                 .withWeightMeasured(234.0)
 
@@ -97,8 +99,9 @@ public class MooseDataCardObjectFactory {
                 .withNotEdible(false));
     }
 
-    public static MooseDataCardMooseFemale newMooseFemale() {
-        return withDateAndLocationSet(new MooseDataCardMooseFemale()
+    public static MooseDataCardMooseFemale newMooseFemale(@Nullable final LocalDate date) {
+        return populateLocation(new MooseDataCardMooseFemale()
+                .withDate(date)
                 .withWeightEstimated(250.0)
                 .withWeightMeasured(234.0)
                 .withFitnessClass(GameFitnessClass.ERINOMAINEN.getMooseDataCardEncoding())
@@ -106,19 +109,21 @@ public class MooseDataCardObjectFactory {
                 .withNotEdible(false));
     }
 
-    public static MooseDataCardMooseCalf newMooseCalf() {
-        return withDateAndLocationSet(new MooseDataCardMooseCalf()
+    public static MooseDataCardMooseCalf newMooseCalf(@Nullable final LocalDate date) {
+        return populateLocation(new MooseDataCardMooseCalf()
+                .withDate(date)
                 .withGender(GameGender.MALE.getMooseDataCardEncoding())
                 .withWeightEstimated(250.0)
                 .withWeightMeasured(234.0)
                 .withFitnessClass(GameFitnessClass.ERINOMAINEN.getMooseDataCardEncoding())
                 .withAdditionalInfo("text")
-                .withNotEdible(false));
+                .withNotEdible(false)
+                .withAlone(true));
     }
 
-    public static MooseDataCardLargeCarnivoreObservation newLargeCarnivoreObservation() {
+    public static MooseDataCardLargeCarnivoreObservation newLargeCarnivoreObservation(@Nullable final LocalDate date) {
         return new MooseDataCardLargeCarnivoreObservation()
-                .withDate(today())
+                .withDate(date)
 
                 .withLatitude(String.valueOf(DEFAULT_LOCATION.getLatitude()))
                 .withLongitude(String.valueOf(DEFAULT_LOCATION.getLongitude()))
@@ -131,8 +136,7 @@ public class MooseDataCardObjectFactory {
                 .withAdditionalInfo("text");
     }
 
-    private static <T extends DateAndLocation> T withDateAndLocationSet(final T object) {
-        object.setDate(today());
+    private static <T extends DateAndLocation> T populateLocation(final T object) {
         object.setLatitude(String.valueOf(DEFAULT_LOCATION.getLatitude()));
         object.setLongitude(String.valueOf(DEFAULT_LOCATION.getLongitude()));
         return object;
@@ -156,7 +160,12 @@ public class MooseDataCardObjectFactory {
 
                 .withFallowDeerAppeared(MooseDataCardGameSpeciesAppearance.YES)
                 .withEstimatedSpecimenAmountOfFallowDeer(40)
-                .withTrendOfFallowDeerPopulationGrowth(TrendOfPopulationGrowth.INCREASED.getMooseDataCardEncoding());
+                .withTrendOfFallowDeerPopulationGrowth(TrendOfPopulationGrowth.INCREASED.getMooseDataCardEncoding())
+
+                .withWildBoarAppeared(MooseDataCardGameSpeciesAppearance.YES)
+                .withEstimatedSpecimenAmountOfWildBoar(50)
+                .withTrendOfWildBoarPopulationGrowth(TrendOfPopulationGrowth.DECREASED.getMooseDataCardEncoding())
+                .withEstimatedAmountOfSowsWithPiglets(45);
     }
 
     public static MooseDataCardPage8 newPage8() {

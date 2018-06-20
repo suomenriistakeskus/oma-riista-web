@@ -1,14 +1,13 @@
 package fi.riista.feature.gamediary.srva;
 
 import com.google.common.base.Joiner;
-import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.srva.method.SrvaMethod;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
-import fi.riista.util.Localiser;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
@@ -25,23 +24,24 @@ public class SrvaEventExportExcelDTO {
 
     private String otherSpeciesDescription;
 
-    public static SrvaEventExportExcelDTO create(SrvaEvent srvaEvent, final EnumLocaliser enumLocaliser) {
+    public static SrvaEventExportExcelDTO create(SrvaEvent srvaEvent, final EnumLocaliser i18n) {
         final SrvaEventExportExcelDTO dto = new SrvaEventExportExcelDTO();
 
         dto.setSrvaEventId(srvaEvent.getId());
-        dto.setState(enumLocaliser.getTranslation(srvaEvent.getState()));
-        dto.setEventName(enumLocaliser.getTranslation(srvaEvent.getEventName()));
-        dto.setEventType(enumLocaliser.getTranslation(srvaEvent.getEventType()));
+        dto.setState(i18n.getTranslation(srvaEvent.getState()));
+        dto.setEventName(i18n.getTranslation(srvaEvent.getEventName()));
+        dto.setEventType(i18n.getTranslation(srvaEvent.getEventType()));
         dto.setOtherTypeDescription(srvaEvent.getOtherTypeDescription());
         dto.setDescription(srvaEvent.getDescription());
-        dto.setAnimalSpecies(srvaEvent.getSpecies() == null ? null : Localiser.select(srvaEvent.getSpecies().getNameLocalisation()));
+        dto.setAnimalSpecies(srvaEvent.getSpecies() != null
+                ? i18n.getTranslation(srvaEvent.getSpecies().getNameLocalisation()) : null);
         dto.setOtherSpeciesDescription(srvaEvent.getOtherSpeciesDescription());
         dto.setSpecimenAmount(srvaEvent.getTotalSpecimenAmount());
-        dto.setEventResult(enumLocaliser.getTranslation(srvaEvent.getEventResult()));
+        dto.setEventResult(i18n.getTranslation(srvaEvent.getEventResult()));
         dto.setOtherMethodDescription(srvaEvent.getOtherMethodDescription());
         dto.setPersonCount(srvaEvent.getPersonCount());
         dto.setTimeSpent(srvaEvent.getTimeSpent());
-        dto.setRhyName(Localiser.select(srvaEvent.getRhy().getNameLocalisation()));
+        dto.setRhyName(i18n.getTranslation(srvaEvent.getRhy().getNameLocalisation()));
         dto.setCoordinatesCollectionMethod(srvaEvent.getGeoLocation().getSource());
         dto.setCoordinatesLatitude(srvaEvent.getGeoLocation().getLatitude());
         dto.setCoordinatesLongitude(srvaEvent.getGeoLocation().getLongitude());
@@ -53,12 +53,12 @@ public class SrvaEventExportExcelDTO {
         dto.setTime(timestamp.toLocalTime());
 
         final List<SrvaSpecimen> sortedSpecimens = srvaEvent.getSortedSpecimens();
-        final Function<Enum<?>, String> lf = enumLocaliser::getTranslation;
 
-        dto.setSpecimenGenders(commaList(sortedSpecimens.stream(), SrvaSpecimen::getGender, lf));
-        dto.setSpecimenAges(commaList(sortedSpecimens.stream(), SrvaSpecimen::getAge, lf));
+        dto.setSpecimenGenders(commaList(sortedSpecimens.stream(), SrvaSpecimen::getGender, i18n::getTranslation));
+        dto.setSpecimenAges(commaList(sortedSpecimens.stream(), SrvaSpecimen::getAge, i18n::getTranslation));
         dto.setEventMethods(commaList(
-                srvaEvent.getSortedMethods().stream().filter(SrvaMethod::isChecked), SrvaMethod::getName, lf));
+                srvaEvent.getSortedMethods().stream().filter(SrvaMethod::isChecked), SrvaMethod::getName,
+                i18n::getTranslation));
 
         final Person author = srvaEvent.getAuthor();
         dto.setSubmitterFirstName(author.getByName());

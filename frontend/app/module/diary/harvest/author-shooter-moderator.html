@@ -1,0 +1,40 @@
+<div class="form-group">
+    <label class="col-xs-3 control-label">
+        <span translate="gamediary.form.author"></span>
+        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-6">
+        <p class="form-control-static">
+            <span ng-bind="$ctrl.harvest.authorInfo.byName"></span>
+            <span ng-bind="$ctrl.harvest.authorInfo.lastName"></span>
+        </p>
+    </div>
+    <div class="col-xs-3">
+        <a ng-click="$ctrl.findAuthor()" class="form-control btn btn-primary">
+            <span class="glyphicon glyphicon-search"></span> &nbsp;
+            <span translate="gamediary.button.searchPerson"></span>
+        </a>
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="col-xs-3 control-label">
+        <span translate="gamediary.form.hunter"></span>
+        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-6">
+        <p class="form-control-static">
+            <span ng-bind="$ctrl.harvest.actorInfo.byName"></span>
+            <span ng-bind="$ctrl.harvest.actorInfo.lastName"></span>
+        </p>
+    </div>
+
+    <div class="col-xs-3">
+        <a ng-click="$ctrl.findHunter()" class="form-control btn btn-primary">
+            <span class="glyphicon glyphicon-search"></span> &nbsp;
+            <span translate="gamediary.button.searchPerson"></span>
+        </a>
+    </div>
+</div>

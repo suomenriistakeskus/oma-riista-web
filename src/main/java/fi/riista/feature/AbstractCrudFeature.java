@@ -54,11 +54,14 @@ public abstract class AbstractCrudFeature<ID extends Serializable, E extends Bas
         activeUserService.assertHasPermission(entity, getCreatePermission(entity, dto));
 
         final E persisted = getRepository().saveAndFlush(entity);
-        afterCreate(persisted);
+        afterCreate(persisted, dto);
         return toDTO(persisted);
     }
 
-    protected void afterCreate(E entity) {
+    protected void afterCreate(E entity, D dto) {
+    }
+
+    protected void afterUpdate(E entity, D dto) {
     }
 
     protected Enum<?> getCreatePermission(@SuppressWarnings("unused") E entity, @SuppressWarnings("unused") D dto) {
@@ -86,7 +89,9 @@ public abstract class AbstractCrudFeature<ID extends Serializable, E extends Bas
         updateEntity(entity, dto);
 
         // Must use saveAndFlush() to update returned consistencyVersion == dto.revision
-        return toDTO(getRepository().saveAndFlush(entity));
+        final E persisted = getRepository().saveAndFlush(entity);
+        afterUpdate(persisted, dto);
+        return toDTO(persisted);
     }
 
     protected Enum<?> getUpdatePermission(@SuppressWarnings("unused") E entity, @SuppressWarnings("unused") D dto) {

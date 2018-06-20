@@ -1,6 +1,15 @@
 <ul class="nav nav-pills">
     <li ui-sref-active="active"><a ui-sref="rhy.club.contacts" translate="rhy.club.contacts.menuTitle"></a></li>
     <li ui-sref-active="active"><a ui-sref="rhy.club.huntingLeaders" translate="rhy.club.huntingLeaders.menuTitle"></a></li>
+    <li>
+        <select name="yearSelect" id="yearSelect"
+                class="form-control"
+                ng-model="$ctrl.selectedYear"
+                ng-options="year as year.name for year in $ctrl.years | orderBy:'year'"
+                ng-change="$ctrl.loadLeaders()">
+            <option disabled value="">{{'club.hunting.selectHuntingYear' | translate}}</option>
+        </select>
+    </li>
     <li class="pull-right">
         <button type="button" ng-click="$ctrl.exportToExcel()" class="btn btn-primary">
             <span class="glyphicon glyphicon-search"></span> &nbsp;

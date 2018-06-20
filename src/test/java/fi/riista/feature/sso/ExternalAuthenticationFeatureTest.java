@@ -1,7 +1,6 @@
 package fi.riista.feature.sso;
 
 import fi.riista.config.properties.SecurityConfigurationProperties;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
 import fi.riista.feature.organization.occupation.Occupation;
@@ -16,6 +15,7 @@ import fi.riista.feature.sso.dto.ExternalAuthenticationResponse;
 import fi.riista.feature.sso.dto.ExternalAuthenticationStatusCode;
 import fi.riista.security.otp.OneTimePasswordRequiredException;
 import fi.riista.security.otp.OneTimePasswordSMSService;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

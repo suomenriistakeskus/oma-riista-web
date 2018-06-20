@@ -2,19 +2,19 @@ package fi.riista.feature.gamediary.srva;
 
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesRepository;
+import fi.riista.feature.gamediary.image.GameDiaryImage;
+import fi.riista.feature.gamediary.image.GameDiaryImageRepository;
 import fi.riista.feature.gamediary.srva.method.SrvaMethod;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodRepository;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenRepository;
-import fi.riista.feature.organization.person.PersonWithNameDTO;
-import fi.riista.feature.gamediary.image.GameDiaryImage;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.image.GameDiaryImageRepository;
-import fi.riista.feature.gamediary.GameSpeciesRepository;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.feature.organization.person.PersonWithNameDTO;
 import fi.riista.util.F;
 import fi.riista.util.Functions;
 import fi.riista.util.ListTransformer;
@@ -91,7 +91,9 @@ public abstract class SrvaEventDTOTransformerBase<DTO extends SrvaEventDTOBase>
                                    final SystemUser approverAsUser,
                                    final Person approverAsPerson) {
 
-        dto.setAuthorInfo(PersonWithNameDTO.create(author));
+        if (author != null) {
+            dto.setAuthorInfo(PersonWithNameDTO.create(author));
+        }
 
         if (species != null) {
             dto.setGameSpeciesCode(species.getOfficialCode());

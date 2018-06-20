@@ -59,6 +59,11 @@ public class SQMooselikePrice extends RelationalPathSpatial<SQMooselikePrice> {
         addMetadata();
     }
 
+    public SQMooselikePrice(String variable, String schema) {
+        super(SQMooselikePrice.class, forVariable(variable), schema, "mooselike_price");
+        addMetadata();
+    }
+
     public SQMooselikePrice(Path<? extends SQMooselikePrice> path) {
         super(path.getType(), path.getMetadata(), "public", "mooselike_price");
         addMetadata();

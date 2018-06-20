@@ -23,7 +23,8 @@ angular.module('app.club.controllers', [])
             .state('club.main', {
                 url: '/',
                 templateUrl: 'club/show.html',
-                controller: 'ClubShowController'
+                controller: 'ClubShowController',
+                controllerAs: '$ctrl'
             })
 
             .state('club.announcements', {
@@ -45,24 +46,25 @@ angular.module('app.club.controllers', [])
                 templateUrl: 'club/harvestsummary.html',
                 controller: 'ClubHarvestSummaryController',
                 resolve: {
-                    huntingYear: function ($stateParams, HuntingYearService) {
-                        return $stateParams.year ? _.parseInt($stateParams.year) : HuntingYearService.getCurrent();
+                    year: function ($stateParams) {
+                        return $stateParams.year ? _.parseInt($stateParams.year) : new Date().getFullYear();
                     },
-                    summary: function (club, huntingYear, Clubs) {
-                        return Clubs.harvestSummary({id: club.id, huntingYear: huntingYear}).$promise;
+                    summary: function (club, year, Clubs) {
+                        return Clubs.harvestSummary({id: club.id, calendarYear: year}).$promise;
                     }
                 }
             });
     })
 
-    .controller('ClubShowController', function ($scope, $state, MapDefaults, NotificationService, ActiveRoleService,
-                                                ClubMemberService, ClubService, Clubs,
+    .controller('ClubShowController', function ($state, MapDefaults, NotificationService, ActiveRoleService,
+                                                ClubMemberService, ChangeClubNameModal, ChangeClubTypeModal, Clubs,
                                                 club) {
-        $scope.club = club;
-        $scope.mapEvents = MapDefaults.getMapBroadcastEvents(['click']);
-        $scope.mapDefaults = MapDefaults.create();
+        var $ctrl = this;
+        $ctrl.club = club;
 
-        $scope.setPrimaryContact = function (member) {
+        $ctrl.moderatorView = ActiveRoleService.isModerator();
+
+        $ctrl.setPrimaryContact = function (member) {
             ClubMemberService.setPrimaryContact(member)
                 .then(NotificationService.showDefaultSuccess, NotificationService.showDefaultFailure)
                 .finally(function () {
@@ -70,57 +72,83 @@ angular.module('app.club.controllers', [])
                 });
         };
 
-        $scope.canEdit = function () {
-            return club.canEdit;
-        };
-
-        $scope.edit = function () {
-            var modalPromise = ClubService.editClub($scope.club);
+        $ctrl.editName = function () {
+            var modalPromise = ChangeClubNameModal.editClubName($ctrl.club);
             NotificationService.handleModalPromise(modalPromise).then(function () {
                 $state.reload();
             });
         };
 
-        // Location edit
-        var originalLocation = club.geoLocation ? angular.copy(club.geoLocation) : {latitude: null, longitude: null};
-
-        $scope.locationChanged = function () {
-            return club.geoLocation && (club.geoLocation.latitude !== originalLocation.latitude || club.geoLocation.longitude !== originalLocation.longitude);
+        $ctrl.editType = function () {
+            var modalPromise = ChangeClubTypeModal.editClubType($ctrl.club);
+            NotificationService.handleModalPromise(modalPromise).then(function () {
+                $state.reload();
+            });
         };
 
-        $scope.editLocation = false;
-
-        $scope.editLocationStart = function () {
-            $scope.editLocation = true;
-        };
-
-        $scope.editLocationEnd = function () {
-            $scope.editLocation = false;
-            Clubs.updateLocation({id: club.id}, club.geoLocation).$promise
+        // Activation
+        $ctrl.setActive = function (active) {
+            Clubs.updateActive({id: club.id, active: active ? 1 : 0}).$promise
                 .then(NotificationService.showDefaultSuccess, NotificationService.showDefaultFailure)
                 .finally(function () {
                     $state.reload();
                 });
         };
-
-        $scope.editLocationCancel = function () {
-            $scope.editLocation = false;
-            $scope.club.geoLocation = originalLocation;
-        };
     })
 
-    .controller('ClubFormController', function ($scope, $uibModalInstance, club) {
-        $scope.club = club;
+    .component('clubLocationEdit', {
+        templateUrl: 'club/form_location.html',
+        bindings: {
+            club: '<'
+        },
+        controller: function ($state, MapDefaults, NotificationService, Clubs, MapUtil, MapState) {
+            var $ctrl = this;
 
-        $scope.save = function () {
-            $scope.club.rhy = {officialCode: $scope.club.rhy.officialCode};
-            $scope.club.mooseArea = {number: $scope.club.mooseArea.number};
-            $uibModalInstance.close($scope.club);
-        };
+            $ctrl.editLocation = false;
 
-        $scope.cancel = function () {
-            $uibModalInstance.dismiss('cancel');
-        };
+            $ctrl.$onInit = function () {
+                $ctrl.mapEvents = MapDefaults.getMapBroadcastEvents(['click']);
+
+                MapState.updateMapCenter($ctrl.club.geoLocation ? angular.copy($ctrl.club.geoLocation) : MapUtil.getDefaultGeoLocation());
+                MapState.get().center.zoom = 5;
+
+                $ctrl.mapState = MapState.get();
+                $ctrl.mapDefaults = MapDefaults.create();
+
+                $ctrl.originalLocation = $ctrl.club.geoLocation ? angular.copy($ctrl.club.geoLocation) : {
+                    latitude: null,
+                    longitude: null
+                };
+            };
+
+            $ctrl.editLocationStart = function () {
+                $ctrl.editLocation = true;
+            };
+
+            $ctrl.editLocationEnd = function () {
+                $ctrl.editLocation = false;
+                Clubs.updateLocation({id: $ctrl.club.id}, $ctrl.club.geoLocation).$promise
+                    .then(NotificationService.showDefaultSuccess, NotificationService.showDefaultFailure)
+                    .finally(function () {
+                        $state.reload();
+                    });
+            };
+
+            function locationsEqual(a, b) {
+                var lat = 'latitude';
+                var lng = 'longitude';
+                return _.get(a, lat) === _.get(b, lat) && _.get(a, lng) === _.get(b, lng);
+            }
+
+            $ctrl.locationChanged = function () {
+                return $ctrl.club.geoLocation && !locationsEqual($ctrl.club.geoLocation, $ctrl.originalLocation);
+            };
+
+            $ctrl.editLocationCancel = function () {
+                $ctrl.editLocation = false;
+                $ctrl.club.geoLocation = angular.copy($ctrl.originalLocation);
+            };
+        }
     })
 
     .controller('ContactShareController',
@@ -167,8 +195,7 @@ angular.module('app.club.controllers', [])
 
     .controller('ClubHarvestSummaryController',
         function ($scope, $state, $stateParams, $translate,
-                  HuntingYearService,
-                  summary, huntingYear, club) {
+                  summary, year) {
 
             $scope.summary = summary;
 
@@ -181,9 +208,9 @@ angular.module('app.club.controllers', [])
                 return '';
             };
             $scope.searchModel = {
-                huntingYear: huntingYear
+                year: year
             };
-            $scope.huntingYears = HuntingYearService.createHuntingYearChoices();
+            $scope.years = _.range(2014, new Date().getFullYear() + 1);
 
             if (angular.isArray($scope.summary.items)) {
                 var sortFields = ['species.categoryId', 'count', 'species.code'];
@@ -192,12 +219,10 @@ angular.module('app.club.controllers', [])
                 $scope.summary.items = _.sortByOrder($scope.summary.items, sortFields, sortOrders);
             }
 
-            $scope.$watch('searchModel.huntingYear', function (newHuntingYear, oldHuntingYear) {
-                if (newHuntingYear !== oldHuntingYear) {
-                    var params = angular.copy($stateParams);
-                    params.year = newHuntingYear;
+            $scope.yearChanged = function () {
+                var params = angular.copy($stateParams);
+                params.year = $scope.searchModel.year;
 
-                    $state.transitionTo($state.current, params, {reload: true, inherit: false, notify: true});
-                }
-            });
+                $state.transitionTo($state.current, params, {reload: true, inherit: false, notify: true});
+            };
         });

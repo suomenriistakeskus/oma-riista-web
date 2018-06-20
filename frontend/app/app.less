@@ -3,7 +3,7 @@
 
 @import (inline) "../../node_modules/leaflet/dist/leaflet.css";
 @import (inline) "../../node_modules/leaflet.markercluster/dist/MarkerCluster.css";
-@import (inline) "../../node_modules/angular-dialog-service/dist/dialogs.css";
+@import (inline) "../../node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css";
 @import (inline) "../../node_modules/angular-growl-v2/build/angular-growl.min.css";
 @import (inline) "../../node_modules/angular-block-ui/dist/angular-block-ui.css";
 @import (inline) "../../node_modules/angular-upload/src/directives/btnUpload.min.css";
@@ -13,24 +13,29 @@
 
 @import "module/common/variables.less";
 @import "module/common/common.less";
-@import "module/common/map.less";
+@import "module/common/map/map.less";
+@import "module/common/dropzone.less";
 @import "module/common/select2.less";
-@import "module/common/awesome-markers.less";
-@import "module/common/leaflet-marker-cluster.less";
+@import "module/common/map/awesome-markers.less";
+@import "module/common/map/leaflet-marker-cluster.less";
 @import "module/layout/ocs/off-canvas-stack.less";
 @import "module/layout/layout.less";
 @import "module/layout/nav.less";
 @import "module/layout/footer.less";
 @import "module/layout/search/search.less";
 @import "module/layout/role/role.less";
-@import "module/main/main.less";
 @import "module/login/login.less";
+@import "module/login/roleselection.less";
 @import "module/reporting/club/reporting.club.less";
 @import "module/account/account.less";
 @import "module/diary/diary.less";
+@import "module/diary/list/species/species-selection.less";
 @import "module/harvestreport/harvestreport.less";
 @import "module/organisation/organisation.less";
 @import "module/harvestpermit/harvestpermit.less";
+@import "module/harvestpermit/management/harvestpermit.management.less";
+@import "module/harvestpermit/applications/wizard/wizard.less";
+@import "module/harvestpermit/decision/decision.less";
 @import "module/occupation/nomination/nomination.less";
 @import "module/club/club.less";
 @import "module/announcements/announcement.less";
@@ -42,3 +47,7 @@
 @import "module/harvestpermit/moosepermit/moosepermit.less";
 @import "module/rhy/rhy.less";
 @import "module/srva/srva.less";
+@import "module/shootingtest/shooting-test.less";
+@import "module/jht/annualstats/jht-annual-stats.less";
+@import "module/jht/payments/jht-payments.less";
+@import "module/rhy/annualstats/rhy-annual-stats.less";

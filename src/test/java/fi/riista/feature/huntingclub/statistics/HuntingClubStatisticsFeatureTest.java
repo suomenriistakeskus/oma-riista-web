@@ -1,6 +1,5 @@
 package fi.riista.feature.huntingclub.statistics;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -8,6 +7,7 @@ import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import javax.annotation.Resource;

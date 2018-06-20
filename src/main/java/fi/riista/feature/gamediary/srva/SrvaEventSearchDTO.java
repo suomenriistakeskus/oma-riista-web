@@ -1,6 +1,7 @@
 package fi.riista.feature.gamediary.srva;
 
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
+import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 
 import javax.validation.constraints.NotNull;
@@ -12,9 +13,14 @@ public class SrvaEventSearchDTO implements HasBeginAndEndDate {
 
     private LocalDate endDate;
 
-    private Long rhyId;
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String rkaCode;
 
-    private Long rkaId;
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String rhyCode;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String htaCode;
 
     @NotNull
     private List<SrvaEventStateEnum> states;
@@ -27,6 +33,9 @@ public class SrvaEventSearchDTO implements HasBeginAndEndDate {
     // RhyId based on selected role in UI. If selected role is for example SRVA-contact person of
     // 'Tampereen riistanhoitoyhdistys' currentRhyId is rhyId of 'Tampereen riistanhoitoyhdistys'.
     private Long currentRhyId;
+
+    // set to true from views only for moderator
+    private boolean moderatorView;
 
     @Override
     public LocalDate getBeginDate() {
@@ -46,20 +55,28 @@ public class SrvaEventSearchDTO implements HasBeginAndEndDate {
         this.endDate = endDate;
     }
 
-    public Long getRhyId() {
-        return rhyId;
+    public String getRkaCode() {
+        return rkaCode;
     }
 
-    public void setRhyId(Long rhyId) {
-        this.rhyId = rhyId;
+    public void setRkaCode(final String rkaCode) {
+        this.rkaCode = rkaCode;
     }
 
-    public Long getRkaId() {
-        return rkaId;
+    public String getRhyCode() {
+        return rhyCode;
     }
 
-    public void setRkaId(Long rkaId) {
-        this.rkaId = rkaId;
+    public void setRhyCode(final String rhyCode) {
+        this.rhyCode = rhyCode;
+    }
+
+    public String getHtaCode() {
+        return htaCode;
+    }
+
+    public void setHtaCode(final String htaCode) {
+        this.htaCode = htaCode;
     }
 
     public List<SrvaEventStateEnum> getStates() {
@@ -92,5 +109,13 @@ public class SrvaEventSearchDTO implements HasBeginAndEndDate {
 
     public void setCurrentRhyId(Long currentRhyId) {
         this.currentRhyId = currentRhyId;
+    }
+
+    public boolean isModeratorView() {
+        return moderatorView;
+    }
+
+    public void setModeratorView(boolean moderatorView) {
+        this.moderatorView = moderatorView;
     }
 }

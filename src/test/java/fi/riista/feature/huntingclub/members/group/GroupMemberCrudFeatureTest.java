@@ -1,16 +1,20 @@
 package fi.riista.feature.huntingclub.members.group;
 
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.members.AbstractClubSpecificOccupationCrudFeatureTest;
-import fi.riista.feature.organization.occupation.OccupationDTO;
-import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.occupation.OccupationDTO;
 import fi.riista.feature.organization.occupation.OccupationRepository;
-import fi.riista.test.OccupationMatchers;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.ContactInfoShare;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.test.matchers.OccupationMatchers;
 import fi.riista.util.F;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -18,24 +22,38 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.function.Function;
 
-import static fi.riista.feature.organization.person.ContactInfoShare.ALL_MEMBERS;
-import static fi.riista.feature.organization.person.ContactInfoShare.ONLY_OFFICIALS;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_JASEN;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
+import static fi.riista.feature.organization.person.ContactInfoShare.ALL_MEMBERS;
+import static fi.riista.feature.organization.person.ContactInfoShare.ONLY_OFFICIALS;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
-public class GroupMemberCrudFeatureTest extends AbstractClubSpecificOccupationCrudFeatureTest {
+public class GroupMemberCrudFeatureTest extends AbstractClubSpecificOccupationCrudFeatureTest
+        implements HuntingGroupFixtureMixin {
 
     @Resource
     private GroupMemberCrudFeature crudFeature;
 
     @Resource
     private OccupationRepository occupationRepository;
+
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
+
+    @Before
+    public void disablePermitLockByDate() {
+        harvestPermitLockedByDateService.disableLockingForTests();
+    }
+
+    @After
+    public void enablePermitLockByDate() {
+        harvestPermitLockedByDateService.normalLocking();
+    }
 
     @Test
     public void testContactInfoShare_groupMember() {
@@ -153,6 +171,16 @@ public class GroupMemberCrudFeatureTest extends AbstractClubSpecificOccupationCr
         }));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testContactCreateLeaderUnder18() {
+        withMooseHuntingGroupFixture(fixture -> {
+            fixture.clubMember.setSsn("010117A313X");
+            onSavedAndAuthenticated(createUser(fixture.clubContact), () -> {
+                doCreateGroupMember(fixture, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
+            });
+        });
+    }
+
     @Test(expected = AccessDeniedException.class)
     public void testLeaderCreateLeader() {
         withMooseHuntingGroupFixture(fixture -> onSavedAndAuthenticated(createUser(fixture.groupLeader), () -> {
@@ -175,6 +203,16 @@ public class GroupMemberCrudFeatureTest extends AbstractClubSpecificOccupationCr
         withMooseHuntingGroupFixture(fixture -> onSavedAndAuthenticated(createUser(fixture.clubContact), () -> {
             crudFeature.updateOccupationType(fixture.groupMemberOccupation.getId(), OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
         }));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testContactChangeMemberToLeaderUnder18() {
+        withMooseHuntingGroupFixture(fixture -> {
+            fixture.groupMemberOccupation.getPerson().setSsn("010117A313X");
+            onSavedAndAuthenticated(createUser(fixture.clubContact), () -> {
+                crudFeature.updateOccupationType(fixture.groupMemberOccupation.getId(), OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
+            });
+        });
     }
 
     @Test(expected = AccessDeniedException.class)

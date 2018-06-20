@@ -4,12 +4,12 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.Sets;
-
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.Person_;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.test.rules.HibernateStatisticsAssertions;
 import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.util.F;
 import fi.riista.util.Functions;

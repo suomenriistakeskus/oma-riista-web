@@ -4,28 +4,11 @@ import fi.riista.validation.FinnishHunterNumber;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 public class PersonWithHunterNumberDTO extends PersonWithNameDTO {
 
     public static @Nonnull PersonWithHunterNumberDTO create(@Nonnull final Person person) {
-        final PersonWithHunterNumberDTO dto = new PersonWithHunterNumberDTO();
-        dto.copyFieldsFrom(person);
-        return dto;
-    }
-
-    public static @Nonnull PersonWithHunterNumberDTO create(
-            @Nonnull final fi.riista.feature.organization.person.PersonDTO personDTO) {
-
-        final PersonWithHunterNumberDTO dto = new PersonWithHunterNumberDTO();
-        dto.copyFieldsFrom(personDTO);
-        return dto;
-    }
-
-    public static @Nonnull List<PersonWithHunterNumberDTO> create(@Nonnull final List<Person> contactPersons) {
-        return contactPersons.stream().map(PersonWithHunterNumberDTO::create).collect(toList());
+        return new PersonWithHunterNumberDTO(person);
     }
 
     @FinnishHunterNumber
@@ -43,16 +26,9 @@ public class PersonWithHunterNumberDTO extends PersonWithNameDTO {
         setExtendedName(other.getExtendedName());
     }
 
-    @Override
-    protected void copyFieldsFrom(@Nonnull final Person person) {
-        super.copyFieldsFrom(person);
+    public PersonWithHunterNumberDTO(@Nonnull final Person person) {
+        super(person);
         setHunterNumber(person.getHunterNumber());
-    }
-
-    @Override
-    protected void copyFieldsFrom(@Nonnull final fi.riista.feature.organization.person.PersonDTO dto) {
-        super.copyFieldsFrom(dto);
-        setHunterNumber(dto.getHunterNumber());
     }
 
     // Accessors -->
@@ -72,5 +48,4 @@ public class PersonWithHunterNumberDTO extends PersonWithNameDTO {
     public void setExtendedName(final String extendedName) {
         this.extendedName = extendedName;
     }
-
 }

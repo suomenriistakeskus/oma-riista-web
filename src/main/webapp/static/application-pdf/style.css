@@ -1,0 +1,230 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+
+body {
+    line-height: 1;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+blockquote, q {
+    quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* ----------------------------------------------- */
+
+body {
+    font-family: "Times New Roman", "Times", serif;
+    width: 180mm;/* 21cm - 3cm */
+    height: 277mm; /* 29.7cm - 2cm */
+    margin-left:auto;
+    margin-right:auto;
+    font-size: 12pt;
+    line-height: 1.2;
+}
+
+#main-container {
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+/*-------------- COMMON -------------------------- */
+
+li {
+    margin: 6pt 0;
+}
+
+h1 {
+    margin-top: 48pt;
+    margin-bottom: 12pt;
+    text-transform: uppercase;
+}
+
+h2 {
+    margin-bottom: 6pt;
+}
+
+strong {
+    font-weight: bold;
+}
+
+hr {
+    margin: 12pt 0;
+    border: 1px solid transparent;
+}
+
+/*-------------- HEADER -------------------------- */
+
+.header-container {
+    width: 100%;
+    overflow: visible;
+}
+
+.header-container > .extend {
+    width: 100% !important;
+}
+
+.header-container em {
+    font-style: italic;
+    font-size: 10pt;
+}
+
+.header-container > .col-1 {
+    float: left;
+    box-sizing: border-box;
+    width: 9cm;
+    min-height: 1px;
+    padding: 0 0 4pt;
+    overflow: visible;
+}
+
+.header-container > .col-2 {
+    overflow: visible;
+    box-sizing: border-box;
+    margin-left: 9cm;
+    min-height: 1px;
+    padding: 0 0 4pt;
+}
+
+.logo {
+    float: right;
+    background: url('/static/application-pdf/logo.png') no-repeat 0 0;
+    background-clip: border-box;
+    background-size: 48pt auto;
+    width: 48pt;
+    height: 48pt;
+    margin-right: 48pt;
+}
+
+#header-sub-table {
+    width: 100%;
+    margin-top: 24pt;
+}
+
+#header-sub-table > thead > tr > td {
+    font-style: italic;
+}
+
+#header-sub-table > tbody > tr > td {
+    padding: 3pt 0 0;
+}
+
+#header-sub-table > tbody > tr > td:nth-child(1) {
+    width: 35%;
+}
+#header-sub-table > tbody > tr > td:nth-child(2) {
+    width: 35%;
+}
+#header-sub-table > tbody > tr > td:nth-child(3) {
+    width: 30%;
+}
+
+/*-------------- BODY -------------------------- */
+
+.layout-container {
+    width: 100%;
+    overflow: visible;
+    clear: both;
+    min-height: 1px;
+}
+
+.layout-container > .col-1 {
+    float: left;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 4cm;
+    min-height: 1px;
+    padding: 6pt 0 0;
+}
+
+.layout-container > .col-2 {
+    position: relative;
+    width: 13.5cm;
+    overflow: hidden;
+    box-sizing: border-box;
+    margin-left: 4.5cm;
+    padding: 6pt 0 0;
+    min-height: 1px;
+}
+
+.layout-container p + p {
+     margin-bottom: 6pt;
+ }
+
+/*-------------- TABLE -------------------------- */
+
+.data-table {
+    width: 100%;
+    margin-bottom: 10pt;
+}
+
+.data-table > thead > tr {
+    page-break-inside: avoid !important;
+}
+
+.data-table > thead > tr > th {
+    padding: 6pt 0 6pt;
+    border-bottom: 1px solid #e7e7e7;
+    text-align: left;
+}
+
+.data-table > tbody > tr {
+    page-break-inside: avoid !important;
+}
+
+.data-table > tbody > tr > th {
+    padding: 3pt 3pt 3pt 0;
+    border-collapse: collapse;
+    border-top: 1px solid #e7e7e7;
+    border-bottom: 1px solid #e7e7e7;
+    text-align: left;
+}
+
+.data-table > tbody > tr > td {
+    padding: 3pt 3pt 3pt 0;
+    border-collapse: collapse;
+    min-width: 36pt;
+    border-top: 1px solid #e7e7e7;
+    border-bottom: 1px solid #e7e7e7;
+}
+

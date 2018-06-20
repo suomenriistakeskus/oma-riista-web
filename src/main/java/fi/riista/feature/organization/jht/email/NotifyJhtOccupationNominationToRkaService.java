@@ -2,13 +2,13 @@ package fi.riista.feature.organization.jht.email;
 
 import com.github.jknack.handlebars.Handlebars;
 import com.google.common.collect.ImmutableMap;
-import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.RuntimeEnvironmentUtil;
-import fi.riista.feature.mail.MailService;
+import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.mail.MailMessageDTO;
+import fi.riista.feature.mail.MailService;
+import fi.riista.feature.organization.EmailResolver;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.EmailResolver;
 import fi.riista.util.Locales;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -60,10 +60,12 @@ public class NotifyJhtOccupationNominationToRkaService {
             LOG.info("Sending notification for rhyCode={} occupationType={} to rkaEmail={}",
                     notification.getRhyOfficialCode(), notification.getOccupationType(), rkaEmail);
 
-            mailService.sendLater(new MailMessageDTO.Builder()
+            mailService.send(MailMessageDTO.builder()
+                    .withFrom(mailService.getDefaultFromAddress())
+                    .addRecipient(rkaEmail)
                     .withSubject(formatSubject(occupationName, rhyName))
-                    .withHandlebarsBody(handlebars, EMAIL_TEMPLATE, model.build())
-                    .withTo(rkaEmail), null);
+                    .appendHandlebarsBody(handlebars, EMAIL_TEMPLATE, model.build())
+                    .build());
         });
     }
 

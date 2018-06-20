@@ -58,22 +58,6 @@
     function OrganisationSelectionController($scope, Areas) {
         var $ctrl = this;
 
-        init();
-
-        Areas.query().$promise.then(function (areas) {
-            $ctrl.areas = areas;
-
-            updateView(areas);
-
-            $ctrl.ready = true;
-
-            $scope.$watch('$ctrl.rhyCode', function (newRhyCode, oldRhyCode) {
-                if (!angular.equals(newRhyCode, oldRhyCode)) {
-                    updateView(areas);
-                }
-            });
-        });
-
         $ctrl.updateModel = function () {
             if (!$ctrl.ready) {
                 return;
@@ -115,7 +99,7 @@
             }
         }
 
-        function init() {
+        $ctrl.$onInit = function () {
             $ctrl.organisationTypes = ['RHY'];
 
             if ($ctrl.showRka) {
@@ -128,9 +112,23 @@
 
             $ctrl.selectedOrganisationType = $ctrl.rhyCode ? 'RHY'
                 : $ctrl.showRka && $ctrl.areaCode ? 'RKA'
-                : $ctrl.showRk ? 'RK'
-                : 'RHY';
-        }
+                    : $ctrl.showRk ? 'RK'
+                        : 'RHY';
+
+            Areas.query().$promise.then(function (areas) {
+                $ctrl.areas = areas;
+
+                updateView(areas);
+
+                $ctrl.ready = true;
+
+                $scope.$watch('$ctrl.rhyCode', function (newRhyCode, oldRhyCode) {
+                    if (!angular.equals(newRhyCode, oldRhyCode)) {
+                        updateView(areas);
+                    }
+                });
+            });
+        };
     }
 
 })();

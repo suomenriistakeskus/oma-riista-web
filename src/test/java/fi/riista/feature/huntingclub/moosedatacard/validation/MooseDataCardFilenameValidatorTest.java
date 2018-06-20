@@ -1,7 +1,7 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
 import fi.riista.config.Constants;
-import javaslang.control.Validation;
+import io.vavr.control.Validation;
 import org.joda.time.DateTime;
 import org.junit.Test;
 

@@ -1,16 +1,17 @@
 package fi.riista.feature.gamediary.srva;
 
+import com.vividsolutions.jts.geom.Point;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
-import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.gamediary.srva.method.SrvaMethod;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
-import fi.riista.feature.gis.GISQueryService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Range;
 
 import javax.persistence.Access;
@@ -27,8 +28,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
@@ -81,9 +85,16 @@ public class SrvaEvent extends LifecycleEntity<Long> {
     @Column
     private SrvaResultEnum eventResult;
 
+    @Valid
     @NotNull
     @Embedded
     private GeoLocation geoLocation;
+
+    // Geometry for GIS index. Updated using JPA lifecycle hooks. No accessor on purpose to avoid confusion.
+    @NotNull
+    @Column(nullable = false)
+    @Type(type = "org.hibernate.spatial.GeometryType")
+    private Point geom;
 
     @NotNull
     @Temporal(TemporalType.TIMESTAMP)
@@ -131,6 +142,22 @@ public class SrvaEvent extends LifecycleEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY)
     private Person approverAsPerson;
 
+    @PrePersist
+    @PreUpdate
+    private void updatePointGeometry() {
+        if (this.geoLocation == null) {
+            this.geom = null;
+
+        } else {
+            final Point newGeom = this.geoLocation.toPointGeometry();
+
+            if (this.geom == null || !newGeom.equalsExact(this.geom)) {
+                // Skip update to prevent increasing consistency_version
+                this.geom = newGeom;
+            }
+        }
+    }
+
     @AssertTrue
     protected boolean isExclusiveSpeciesOrOtherSpeciesDescription() {
         return species != null && otherSpeciesDescription == null ||
@@ -148,9 +175,9 @@ public class SrvaEvent extends LifecycleEntity<Long> {
                 state != SrvaEventStateEnum.UNFINISHED && approverAsUser != null;
     }
 
-    public void updateGeoLocation(final GeoLocation geoLocation, final GISQueryService gisQueryService) {
-        setRhy(geoLocation == null ? null : gisQueryService.findRhyByLocation(geoLocation));
-        this.geoLocation = geoLocation;
+    @AssertTrue
+    public boolean isTypeMatchingName() {
+        return eventType.matchesEventName(eventName);
     }
 
     @Override

@@ -1,23 +1,21 @@
 package fi.riista.api;
 
-import net.rossillo.spring.web.mvc.CacheControl;
-import net.rossillo.spring.web.mvc.CachePolicy;
-import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
-import fi.riista.feature.gamediary.GameDiaryFeature;
-import fi.riista.feature.gamediary.PersonRelationshipToGameDiaryEntryDTO;
+import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.srva.SrvaCrudFeature;
 import fi.riista.feature.gamediary.srva.SrvaEventDTO;
 import fi.riista.feature.gamediary.srva.SrvaEventExportExcelDTO;
-import fi.riista.feature.gamediary.srva.SrvaEventSearchDTO;
-import fi.riista.feature.gamediary.srva.SrvaParametersDTO;
-import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventListExcelView;
+import fi.riista.feature.gamediary.srva.SrvaEventSearchDTO;
+import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
+import fi.riista.feature.gamediary.srva.SrvaParametersDTO;
+import net.rossillo.spring.web.mvc.CacheControl;
+import net.rossillo.spring.web.mvc.CachePolicy;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,9 +35,6 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/srva", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class SrvaApiResource {
-
-    @Resource
-    private GameDiaryFeature diaryFeature;
 
     @Resource
     private SrvaCrudFeature srvaCrudFeature;
@@ -78,12 +73,6 @@ public class SrvaApiResource {
         return srvaCrudFeature.getSrvaEvent(id);
     }
 
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/srvaevent/{id:\\d+}/relationship", method = RequestMethod.GET)
-    public PersonRelationshipToGameDiaryEntryDTO getRelationshipToSrvaEvent(@PathVariable final long id) {
-        return srvaCrudFeature.getRelationshipToSrvaEvent(id);
-    }
-
     @RequestMapping(value = "/changestate/{id:\\d+}", method = RequestMethod.PUT)
     public SrvaEventDTO changeState(@PathVariable final Long id,
                                     @RequestParam final SrvaEventStateEnum newState,
@@ -98,7 +87,8 @@ public class SrvaApiResource {
     }
 
     @RequestMapping(value = "/searchPage", method = RequestMethod.POST)
-    public Page<SrvaEventDTO> searchPage(@RequestBody @Valid final SrvaEventSearchDTO dto, final Pageable pageRequest) {
+    public Slice<SrvaEventDTO> searchPage(
+            @RequestBody @Valid final SrvaEventSearchDTO dto, final Pageable pageRequest) {
         return srvaCrudFeature.searchPage(dto, pageRequest);
     }
 

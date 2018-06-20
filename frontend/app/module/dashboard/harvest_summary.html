@@ -1,0 +1,88 @@
+<form>
+    <div class="row">
+        <div class="col-xs-6">
+        </div>
+        <div class="col-xs-3">
+            <div class="form-group">
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="filterSpecies" id="filterSpecies" ng-model="$ctrl.filterSpecies">
+                    Rajoita eläinlaji
+                </label>
+            </div>
+        </div>
+        <div class="col-xs-3">
+            <div class="form-group">
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="harvestReportOnly" id="harvestReportOnly"
+                           ng-model="$ctrl.harvestReportOnly">
+                    Vain saalisilmoitukset
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="row form-group">
+        <div class="col-xs-3">
+            <organisation-selection
+                    show-rk="true"
+                    show-rka="true"
+                    area-code="$ctrl.areaCode"
+                    rhy-code="$ctrl.rhyCode"></organisation-selection>
+        </div>
+        <div class="col-xs-3">
+            <div class="form-group">
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="beginDate" id="beginDate"
+                           class="form-control r-wider-date-input"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           datepicker-append-to-body="true"
+                           max-date="$ctrl.end"
+                           ng-model="$ctrl.begin"/>
+
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="endDate" id="endDate"
+                           class="form-control r-wider-date-input"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           datepicker-append-to-body="true"
+                           min-date="$ctrl.begin"
+                           ng-model="$ctrl.end"/>
+
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xs-3">
+            <fieldset ng-disabled="!$ctrl.filterSpecies">
+                <r-species-selection available-species="$ctrl.availableSpecies"
+                                     on-selected-species-changed="$ctrl.selectSpeciesCode(speciesCode)">
+                </r-species-selection>
+            </fieldset>
+        </div>
+
+        <div class="col-xs-3 text-center">
+            <div class="btn-group btn-group-justified">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary"
+                            ng-click="$ctrl.exportExcel()">
+                        Tee poiminta
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

@@ -9,8 +9,8 @@
                             UnsavedChangesConfirmationService) {
         var originalTitle = Title.value();
 
-        Title.idleMessage("******");
-        Title.timedOutMessage("!!!!!!!");
+        Title.idleMessage(originalTitle);
+        Title.timedOutMessage(originalTitle);
 
         function closeModals() {
             if ($scope.warning) {
@@ -53,9 +53,8 @@
                 // Prevent opening another warning dialog on navigation
                 UnsavedChangesConfirmationService.setChanges(false);
 
-                Title.value(originalTitle);
-
-                $rootScope.$broadcast('event:auth-loginRequired');
+                window.location = '#';
+                window.location.reload();
             });
         });
 
@@ -63,8 +62,10 @@
             if (account && !account.rememberMe) {
                 Idle.watch();
             } else {
-                Keepalive.start();
+                Idle.unwatch();
             }
+
+            Keepalive.start();
         });
 
         $scope.$on('event:auth-loginRequired', function () {

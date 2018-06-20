@@ -24,8 +24,8 @@
                        ng-model="$ctrl.registrationData.byName"
                        valid-person-name
                        required
-                       ng-maxlength="255"
-                       autofocus="true" focus-me="true">
+                       focus-me
+                       ng-maxlength="255">
 
                 <p class="help-block"
                    ng-show="form.byName.$dirty && form.byName.$invalid"

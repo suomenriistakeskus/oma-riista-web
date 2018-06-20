@@ -43,6 +43,11 @@ public class SQGameMarking extends RelationalPathSpatial<SQGameMarking> {
         addMetadata();
     }
 
+    public SQGameMarking(String variable, String schema) {
+        super(SQGameMarking.class, forVariable(variable), schema, "game_marking");
+        addMetadata();
+    }
+
     public SQGameMarking(Path<? extends SQGameMarking> path) {
         super(path.getType(), path.getMetadata(), "public", "game_marking");
         addMetadata();

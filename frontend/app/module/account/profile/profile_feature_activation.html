@@ -1,0 +1,56 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="account.profile.title.featureActivation"></h3>
+    </div>
+
+    <div class="panel-body">
+        <table class="table">
+            <tbody>
+            <tr>
+                <th>
+                    <div ng-show="$ctrl.srvaEnabled" translate="account.profile.srva.enabled"></div>
+                    <div ng-show="!$ctrl.srvaEnabled" translate="account.profile.srva.disabled"></div>
+                </th>
+                <td>
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-primary"
+                                ng-if="$ctrl.srvaEnabled"
+                                ng-confirm-click
+                                ng-confirm-click-action="$ctrl.disableSrva()">
+                            <span translate="account.profile.srva.deactivate"></span>
+                        </button>
+
+                        <button type="button" class="btn btn-primary"
+                                ng-if="!$ctrl.srvaEnabled"
+                                ng-click="$ctrl.enableSrva()">
+                            <span translate="account.profile.srva.activate"></span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+
+            <tr ng-if="$ctrl.shootingTestActivationVisible" show-in-development>
+                <th>
+                    <div ng-show="$ctrl.shootingTestsEnabled" translate="account.profile.shootingTests.enabled"></div>
+                    <div ng-show="!$ctrl.shootingTestsEnabled" translate="account.profile.shootingTests.disabled"></div>
+                </th>
+                <td>
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-primary"
+                                ng-if="$ctrl.shootingTestsEnabled"
+                                ng-confirm-click
+                                ng-confirm-click-action="$ctrl.disableShootingTests()">
+                            <span translate="account.profile.shootingTests.deactivate"></span>
+                        </button>
+
+                        <button type="button" class="btn btn-primary"
+                                ng-if="!$ctrl.shootingTestsEnabled"
+                                ng-click="$ctrl.enableShootingTests()">
+                            <span translate="account.profile.shootingTests.activate"></span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

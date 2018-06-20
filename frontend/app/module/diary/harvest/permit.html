@@ -1,0 +1,54 @@
+<h4 translate="gamediary.form.harvestPermit"></h4>
+
+<div class="form-group">
+    <div class="col-xs-8 col-xs-offset-4" ng-class="{'has-error': $ctrl.isPermitMissing() && !$ctrl.withPermit}">
+        <label class="checkbox">
+            <input type="checkbox" name="withPermit" id="withPermit"
+                   ng-model="$ctrl.withPermit"
+                   ng-disabled="$ctrl.withPermitReadOnly"
+                   ng-change="$ctrl.onWithPermitChange($ctrl.withPermit)">
+            <span translate="gamediary.form.withPermit"></span>
+        </label>
+    </div>
+</div>
+
+<div class="alert alert-danger col-xs-8 col-xs-offset-4"
+     ng-show="$ctrl.isPermitMissing() && !$ctrl.withPermit"
+     translate="gamediary.form.permitNumberMandatory"></div>
+
+<div class="form-group" ng-show="$ctrl.withPermit">
+    <label for="permitNumber" class="col-xs-4 control-label">
+        <span translate="gamediary.form.permitNumber"></span>
+        <small class="glyphicon glyphicon-asterisk text-danger"></small>
+    </label>
+
+    <div class="col-xs-8" ng-class="{ 'has-error': !$ctrl.searchPermitNumber || $ctrl.permitByNumberNotFound }">
+        <div class="alert alert-info" translate="gamediary.form.withPermitNote"></div>
+
+        <input type="text" name="permitNumber" id="permitNumber"
+               class="form-control"
+               maxlength="18"
+               valid-permit-number
+               ng-model="$ctrl.searchPermitNumber"
+               ng-disabled="$ctrl.searchPermitNumberReadOnly"
+               ng-change="$ctrl.onSearchPermitNumberChange($ctrl.searchPermitNumber)"
+               ng-required="$ctrl.withPermit"/>
+
+        <div class="form-control-static">
+            <span ng-show="$ctrl.searchPermitNumber"
+                  ng-bind="$ctrl.harvestPermit.permitType"></span>
+
+            <span class="text-warning"
+                  ng-show="$ctrl.permitByNumberNotFound && $ctrl.searchPermitNumber"
+                  translate="gamediary.form.permitNumberNotFound"></span>
+
+            <span class="text-danger"
+                  ng-show="!$ctrl.searchPermitNumber"
+                  translate="gamediary.form.permitNumberRequired"></span>
+        </div>
+
+        <div class="help-block" ng-show="$ctrl.permitUnusable">
+            <span class="text-danger" translate="gamediary.form.permitUnusable"></span>
+        </div>
+    </div>
+</div>

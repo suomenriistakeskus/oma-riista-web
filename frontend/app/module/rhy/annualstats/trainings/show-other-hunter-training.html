@@ -1,0 +1,28 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.trainings.otherHunterTraining.title'"
+                               last-modified="$ctrl.otherHunterTraining.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr ng-repeat-start="type in $ctrl.trainingTypes">
+                        <td class="col-xs-8" translate="{{::('rhy.annualStats.trainings.otherHunterTraining.' + type + 'TrainingEvents')}}"></td>
+                        <td num-pieces="::($ctrl.otherHunterTraining[type + 'TrainingEvents'])"></td>
+                    </tr>
+                    <tr ng-repeat-end>
+                        <td class="col-xs-8" translate="{{::('rhy.annualStats.trainings.otherHunterTraining.' + type + 'TrainingParticipants')}}"></td>
+                        <td num-persons="::($ctrl.otherHunterTraining[type + 'TrainingParticipants'])"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.editHunterTraining()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

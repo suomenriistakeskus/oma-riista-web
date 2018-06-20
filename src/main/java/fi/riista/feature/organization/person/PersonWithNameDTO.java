@@ -2,20 +2,15 @@ package fi.riista.feature.organization.person;
 
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.util.DtoUtil;
-
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
-
-import java.util.Objects;
 
 public class PersonWithNameDTO extends BaseEntityDTO<Long> {
 
     @Nonnull
     public static PersonWithNameDTO create(@Nonnull final Person person) {
-        final PersonWithNameDTO dto = new PersonWithNameDTO();
-        dto.copyFieldsFrom(person);
-        return dto;
+        return new PersonWithNameDTO(person);
     }
 
     private Long id;
@@ -37,21 +32,10 @@ public class PersonWithNameDTO extends BaseEntityDTO<Long> {
         setLastName(other.getLastName());
     }
 
-    protected void copyFieldsFrom(@Nonnull final Person person) {
-        Objects.requireNonNull(person);
-
+    public PersonWithNameDTO(@Nonnull final Person person) {
         DtoUtil.copyBaseFields(person, this);
         setByName(person.getByName());
         setLastName(person.getLastName());
-    }
-
-    protected void copyFieldsFrom(@Nonnull final fi.riista.feature.organization.person.PersonDTO dto) {
-        Objects.requireNonNull(dto);
-
-        setId(dto.getId());
-        setRev(dto.getRev());
-        setByName(dto.getByName());
-        setLastName(dto.getLastName());
     }
 
     // Accessors -->
@@ -91,5 +75,4 @@ public class PersonWithNameDTO extends BaseEntityDTO<Long> {
     public void setLastName(final String lastName) {
         this.lastName = lastName;
     }
-
 }

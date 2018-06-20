@@ -2,19 +2,17 @@ package fi.riista.feature.huntingclub.moosedatacard.converter;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
-import fi.riista.feature.gamediary.GameDiaryService;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardLargeCarnivoreObservationValidator;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardLargeCarnivoreObservation;
-
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 
 import javax.annotation.Nonnull;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,14 +24,15 @@ import java.util.stream.Stream;
 public class MooseDataCardLargeCarnivoreObservationConverter
         extends MooseDataCardObservationConverter<MooseDataCardLargeCarnivoreObservation> {
 
-    private final GameDiaryService diaryService;
+    private final GameSpeciesService gameSpeciesService;
 
-    public MooseDataCardLargeCarnivoreObservationConverter(@Nonnull final GameDiaryService diaryService,
+    public MooseDataCardLargeCarnivoreObservationConverter(@Nonnull final GameSpeciesService gameSpeciesService,
                                                            @Nonnull final Person contactPerson,
+                                                           final int huntingYear,
                                                            @Nonnull final GeoLocation defaultCoordinates) {
 
-        super(new MooseDataCardLargeCarnivoreObservationValidator(defaultCoordinates), contactPerson);
-        this.diaryService = Objects.requireNonNull(diaryService);
+        super(new MooseDataCardLargeCarnivoreObservationValidator(huntingYear, defaultCoordinates), contactPerson);
+        this.gameSpeciesService = Objects.requireNonNull(gameSpeciesService, "gameSpeciesService is null");
     }
 
     @Override
@@ -45,7 +44,7 @@ public class MooseDataCardLargeCarnivoreObservationConverter
         final ConcurrentMap<Integer, GameSpecies> speciesMap = new ConcurrentHashMap<>();
 
         final IntFunction<Supplier<GameSpecies>> speciesSupplierFn = speciesCode -> () -> speciesMap.computeIfAbsent(
-                speciesCode, diaryService::getGameSpeciesByOfficialCode);
+                speciesCode, gameSpeciesService::requireByOfficialCode);
 
         final Supplier<GameSpecies> wolfSupplier = speciesSupplierFn.apply(GameSpecies.OFFICIAL_CODE_WOLF);
         final Supplier<GameSpecies> bearSupplier = speciesSupplierFn.apply(GameSpecies.OFFICIAL_CODE_BEAR);
@@ -60,7 +59,7 @@ public class MooseDataCardLargeCarnivoreObservationConverter
                         optionalSpeciesAmountTuple(wolverineSupplier, validInput.getNumberOfWolverines()))
                         .filter(Optional::isPresent)
                         .map(Optional::get)
-                        .map(speciesAmountTuple -> speciesAmountTuple.transform((species, amount) -> {
+                        .map(speciesAmountTuple -> speciesAmountTuple.apply((species, amount) -> {
                             final Observation observation = createObservation(validInput);
                             observation.setSpecies(species);
                             observation.setAmount(amount);
@@ -83,5 +82,4 @@ public class MooseDataCardLargeCarnivoreObservationConverter
                 .filter(amount -> amount > 0)
                 .map(amount -> Tuple.of(speciesSupplier.get(), amount));
     }
-
 }

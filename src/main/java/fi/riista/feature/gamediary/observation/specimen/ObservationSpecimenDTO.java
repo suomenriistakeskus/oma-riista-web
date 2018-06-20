@@ -1,63 +1,28 @@
 package fi.riista.feature.gamediary.observation.specimen;
 
-import static java.util.stream.Collectors.toList;
-
-import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.GameDiaryEntrySpecimenDTO;
 import fi.riista.feature.gamediary.GameGender;
-import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.AssertTrue;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import static fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps.MAX_PAW_LENGTH_OF_LARGE_CARNIVORES;
+import static fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps.MAX_PAW_WIDTH_OF_BEAR;
+import static fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps.MIN_PAW_LENGTH_OF_LARGE_CARNIVORES;
+import static fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps.MIN_PAW_WIDTH_OF_LARGE_CARNIVORES;
+import static fi.riista.util.NumberUtils.isInRange;
 
 public class ObservationSpecimenDTO extends GameDiaryEntrySpecimenDTO {
-
-    public static final BiFunction<ObservationSpecimen, ObservationSpecimenDTO, Boolean> EQUAL_TO_ENTITY =
-            equalToEntity(ObservationSpecVersion.MOST_RECENT);
-
-    public static final BiFunction<ObservationSpecimen, ObservationSpecimenDTO, Boolean> equalToEntity(
-            @Nonnull final ObservationSpecVersion specVersion) {
-
-        return (entity, dto) -> dto.isEqualTo(entity, specVersion);
-    }
-
-    @Nonnull
-    public static ObservationSpecimenDTO from(@Nonnull final ObservationSpecimen entity) {
-        Objects.requireNonNull(entity);
-
-        final ObservationSpecimenDTO dto = new ObservationSpecimenDTO();
-        DtoUtil.copyBaseFields(entity, dto);
-        dto.setAge(entity.getAge());
-        dto.setGender(entity.getGender());
-        dto.setState(entity.getState());
-        dto.setMarking(entity.getMarking());
-        return dto;
-    }
-
-    @Nonnull
-    public static List<ObservationSpecimenDTO> transformList(
-            final Collection<? extends ObservationSpecimen> specimens) {
-
-        Objects.requireNonNull(specimens);
-        return specimens.stream().map(asFunction()).collect(toList());
-    }
-
-    @Nonnull
-    public static Function<ObservationSpecimen, ObservationSpecimenDTO> asFunction() {
-        return specimen -> specimen == null ? null : from(specimen);
-    }
 
     private ObservedGameAge age;
 
     private ObservedGameState state;
 
     private GameMarking marking;
+
+    private Double widthOfPaw;
+
+    private Double lengthOfPaw;
 
     public ObservationSpecimenDTO() {
         super();
@@ -68,29 +33,28 @@ public class ObservationSpecimenDTO extends GameDiaryEntrySpecimenDTO {
         setAge(age);
     }
 
-    public boolean isEqualTo(
-            @Nonnull final ObservationSpecimen specimen, @Nonnull final ObservationSpecVersion version) {
-
-        Objects.requireNonNull(specimen, "specimen must not be null");
-        Objects.requireNonNull(version, "version must not be null");
-
-        return getGender() == specimen.getGender() &&
-                getAge() == specimen.getAge() &&
-                getState() == specimen.getState() &&
-                getMarking() == specimen.getMarking();
+    @AssertTrue
+    public boolean isWidthOfPawInValidRange() {
+        return widthOfPaw == null || isInRange(widthOfPaw, MIN_PAW_WIDTH_OF_LARGE_CARNIVORES, MAX_PAW_WIDTH_OF_BEAR);
     }
 
-    @Override
+    @AssertTrue
+    public boolean isLengthOfPawInValidRange() {
+        return lengthOfPaw == null
+                || isInRange(lengthOfPaw, MIN_PAW_LENGTH_OF_LARGE_CARNIVORES, MAX_PAW_LENGTH_OF_LARGE_CARNIVORES);
+    }
+
     public boolean allBusinessFieldsNull() {
-        return super.allBusinessFieldsNull() && F.allNull(getAge(), getState(), getMarking());
+        return F.allNull(getGender(), getAge(), getState(), getMarking(), getWidthOfPaw(), getLengthOfPaw());
     }
 
-    @Override
     public void clearBusinessFields() {
-        super.clearBusinessFields();
+        setGender(null);
         setAge(null);
         setState(null);
         setMarking(null);
+        setWidthOfPaw(null);
+        setLengthOfPaw(null);
     }
 
     // Accessors -->
@@ -119,4 +83,19 @@ public class ObservationSpecimenDTO extends GameDiaryEntrySpecimenDTO {
         this.marking = marking;
     }
 
+    public Double getWidthOfPaw() {
+        return widthOfPaw;
+    }
+
+    public void setWidthOfPaw(final Double widthOfPaw) {
+        this.widthOfPaw = widthOfPaw;
+    }
+
+    public Double getLengthOfPaw() {
+        return lengthOfPaw;
+    }
+
+    public void setLengthOfPaw(final Double lengthOfPaw) {
+        this.lengthOfPaw = lengthOfPaw;
+    }
 }

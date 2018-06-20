@@ -1,6 +1,5 @@
 package fi.riista.feature.pub.statistics;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Municipality;
 import fi.riista.feature.gamediary.GameAge;
@@ -9,13 +8,14 @@ import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gis.geojson.FeatureCollectionWithProperties;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
 import fi.riista.feature.harvestpermit.season.HarvestQuota;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.Point;
@@ -25,6 +25,7 @@ import org.junit.Test;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -49,9 +50,10 @@ public class PublicBearReportFeatureTest extends EmbeddedDatabaseTest {
         final HarvestArea area = model().newHarvestArea(rhy);
         final HarvestArea area2 = model().newHarvestArea(rhy);
 
-        final HarvestReportFields fields = model().newHarvestReportFields(bear, false);
-        final HarvestSeason season = model().newHarvestSeason(new LocalDate(2015, 8, 20), new LocalDate(2015, 10, 30), new LocalDate(2015, 11, 4));
-        season.setFields(fields);
+        final HarvestSeason season = model().newHarvestSeason(bear,
+                new LocalDate(2015, 8, 20),
+                new LocalDate(2015, 10, 30),
+                new LocalDate(2015, 11, 4));
         final HarvestQuota quota = model().newHarvestQuota(season, area, 10);
         model().newHarvestQuota(season, area2, 20);
 
@@ -60,14 +62,14 @@ public class PublicBearReportFeatureTest extends EmbeddedDatabaseTest {
         final Person author = model().newPerson();
 
         // only approved harvest report should be counted
-        createHarvestReport(bear, season, quota, municipality, author, HarvestReport.State.APPROVED);
+        createHarvestReport(bear, season, quota, municipality, author, HarvestReportState.APPROVED);
 
-        // should not be counted, even if harvest has relation to quota, it should not be counted
-        createHarvest(bear, season, quota, municipality, author);
+        // should not be counted
+        createHarvest(bear, municipality, author);
 
         // should not be counted, only approved should be counted
-        createHarvestReport(bear, season, quota, municipality, author, HarvestReport.State.SENT_FOR_APPROVAL);
-        createHarvestReport(bear, season, quota, municipality, author, HarvestReport.State.DELETED);
+        createHarvestReport(bear, season, quota, municipality, author, HarvestReportState.SENT_FOR_APPROVAL);
+        createHarvestReport(bear, season, quota, municipality, author, HarvestReportState.REJECTED);
 
         persistInNewTransaction();
 
@@ -105,18 +107,21 @@ public class PublicBearReportFeatureTest extends EmbeddedDatabaseTest {
         assertRemainingQuotas(area, area2, report, seasonOngoing);
     }
 
-    private void createHarvestReport(GameSpecies bear, HarvestSeason season, HarvestQuota quota, Municipality municipality, Person author, HarvestReport.State state) {
-        final Harvest harvest = createHarvest(bear, season, quota, municipality, author);
-        model().newHarvestReport(harvest, state);
+    private void createHarvestReport(GameSpecies bear, HarvestSeason season, HarvestQuota quota, Municipality municipality, Person author, HarvestReportState state) {
+        final Harvest harvest = createHarvest(bear, municipality, author);
+        harvest.setHarvestSeason(season);
+        harvest.setHarvestQuota(quota);
+        harvest.setHarvestReportState(Objects.requireNonNull(state));
+        harvest.setHarvestReportAuthor(Objects.requireNonNull(author));
+        harvest.setHarvestReportDate(DateUtil.now());
+        harvest.setHarvestReportMemo("asdf");
     }
 
-    private Harvest createHarvest(GameSpecies bear, HarvestSeason season, HarvestQuota quota, Municipality municipality, Person author) {
+    private Harvest createHarvest(GameSpecies bear, Municipality municipality, Person author) {
         final Harvest harvest = model().newHarvest(bear, author, author);
         harvest.setAmount(1);
         harvest.setPointOfTime(new LocalDate(2015, 8, 31).toDate());
         harvest.setGeoLocation(new GeoLocation(1312312, 2354123));
-        harvest.setHarvestSeason(season);
-        harvest.setHarvestQuota(quota);
         harvest.setMunicipalityCode(municipality.getOfficialCode());
 
         model().newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE);

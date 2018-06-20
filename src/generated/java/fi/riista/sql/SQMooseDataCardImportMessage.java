@@ -47,6 +47,11 @@ public class SQMooseDataCardImportMessage extends RelationalPathSpatial<SQMooseD
         addMetadata();
     }
 
+    public SQMooseDataCardImportMessage(String variable, String schema) {
+        super(SQMooseDataCardImportMessage.class, forVariable(variable), schema, "moose_data_card_import_message");
+        addMetadata();
+    }
+
     public SQMooseDataCardImportMessage(Path<? extends SQMooseDataCardImportMessage> path) {
         super(path.getType(), path.getMetadata(), "public", "moose_data_card_import_message");
         addMetadata();

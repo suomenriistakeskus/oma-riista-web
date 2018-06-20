@@ -31,20 +31,40 @@ angular.module('app.common.directives', ['dialogs.main'])
             }
         };
     })
-    .directive('springCsrfCookie', function($cookies) {
+    .directive('springCsrfCookie', function ($cookies) {
         return {
             replace: false,
             scope: false,
             restrict: 'A',
-            link: function(scope, element, attrs) {
+            link: function (scope, element, attrs) {
                 function readXSRFCookieValue() {
                     return $cookies.get('XSRF-TOKEN');
                 }
 
                 element.attr('name', '_csrf');
 
-                scope.$watch(readXSRFCookieValue, function(cookieValue) {
+                scope.$watch(readXSRFCookieValue, function (cookieValue) {
                     element.attr('value', cookieValue);
+                });
+            }
+        };
+    })
+
+    .directive('panelToggle', function () {
+        return {
+            replace: false,
+            scope: {
+                panelToggle: '<'
+            },
+            restrict: 'A',
+            link: function ($scope, element, attr) {
+                attr.$addClass('glyphicon');
+
+                var classArray = ['glyphicon-chevron-down','glyphicon-chevron-right'];
+
+                $scope.$watch('panelToggle', function (toggle) {
+                    attr.$addClass(toggle ? classArray[0] : classArray[1]);
+                    attr.$removeClass(toggle ? classArray[1] : classArray[0]);
                 });
             }
         };
@@ -77,7 +97,7 @@ angular.module('app.common.directives', ['dialogs.main'])
         return {
             replace: false,
             restrict: 'A',
-            scope: { model: '=checkPwStrength' },
+            scope: {model: '=checkPwStrength'},
             link: function (scope, element, attrs) {
                 var strength = {
                     colors: ['#F00', '#F90', '#FF0', '#9F0', '#0F0'],
@@ -113,20 +133,20 @@ angular.module('app.common.directives', ['dialogs.main'])
                     },
                     getColor: function (s) {
                         var idx = Math.min(s, 4);
-                        return { idx: idx + 1, col: this.colors[idx] };
+                        return {idx: idx + 1, col: this.colors[idx]};
                     }
                 };
                 scope.$watch('model', function (newValue, oldValue) {
                     if (!newValue || newValue === '') {
-                        element.css({ "display": "none"  });
+                        element.css({"display": "none"});
                     } else {
                         var s = strength.mesureStrength(newValue);
                         var c = strength.getColor(s);
-                        element.css({ "display": "block" });
+                        element.css({"display": "block"});
                         element.children('li')
-                            .css({ "background": "#DDD" })
+                            .css({"background": "#DDD"})
                             .slice(0, c.idx)
-                            .css({ "background": c.col });
+                            .css({"background": c.col});
                     }
                 });
             },
@@ -150,7 +170,7 @@ angular.module('app.common.directives', ['dialogs.main'])
                     });
                 };
             };
-            return { create: create };
+            return {create: create};
         })
 
     .directive('showInProduction', function (EnvironmentAwareShowDirectoryFactory) {
@@ -169,6 +189,9 @@ angular.module('app.common.directives', ['dialogs.main'])
         // we bind the fix to click, because when this is run the data (and optgroups) might not be there
         var link = function (scope, element, attr) {
             var fixOptGroup = function () {
+                if (!element || !element.context) {
+                    return;
+                }
                 _.each(element.context.children, function (e) {
                     if (e.tagName === 'OPTGROUP') {
                         angular.element(e).attr('value', '*');
@@ -192,7 +215,7 @@ angular.module('app.common.directives', ['dialogs.main'])
             link: function (scope, element, attrs, ngModelController) {
                 var i18NFilter = $filter('rI18nNameFilter');
 
-                ngModelController.$formatters.push(function(data) {
+                ngModelController.$formatters.push(function (data) {
                     return i18NFilter(data);
                 });
             }
@@ -202,7 +225,7 @@ angular.module('app.common.directives', ['dialogs.main'])
     .directive('nameTranslated', function ($filter) {
         return {
             restrict: 'A',
-            scope: { nameTranslated: '&' },
+            scope: {nameTranslated: '&'},
             link: function (scope, element, attrs) {
                 var i18NFilter = $filter('rI18nNameFilter');
                 var modelValue = scope.nameTranslated();
@@ -231,17 +254,6 @@ angular.module('app.common.directives', ['dialogs.main'])
             template: '<span class="r-gamediary-binoculars"><span class="fa fa-binoculars"></span></span>'
         };
     })
-    .directive('rHarvestReportSpecimenOrPermittedSpecies', function ($parse) {
-        return {
-            replace: false,
-            restrict: 'A',
-            scope: false,
-            link: function (scope, element, attrs) {
-                scope.report = $parse(attrs.rHarvestReportSpecimenOrPermittedSpecies)(scope);
-            },
-            templateUrl: 'common/r-harvest-report-specimen-or-permitted-species.html'
-        };
-    })
     .directive('rForceShowErrorsCheckValidity', function ($timeout) {
         return {
             replace: false,
@@ -263,74 +275,6 @@ angular.module('app.common.directives', ['dialogs.main'])
                 timer = $timeout(_forceCheck, 200);
                 scope.$on('$destroy', _stop);
             }
-        };
-    })
-    .component('rShowEntrySpecimens', {
-        templateUrl: 'common/r-show-entry-specimens.html',
-        bindings: {
-            entry: '<'
-        }
-    })
-    .component('rShowHarvestSpecimens', {
-        templateUrl: 'common/r-show-harvest-specimens.html',
-        bindings: {
-            entry: '<'
-        }
-    })
-    .component('rShowObservationSpecimens', {
-        templateUrl: 'common/r-show-observation-specimens.html',
-        bindings: {
-            entry: '<'
-        },
-        controller: function (ObservationFieldsMetadata) {
-            var $ctrl = this;
-            var e = $ctrl.entry;
-            if (e.isObservation()) {
-                ObservationFieldsMetadata
-                    .forSpecies({gameSpeciesCode: e.gameSpeciesCode}).$promise
-                    .then(function (metadata) {
-                        var fieldRequirements = metadata.getFieldRequirements(e.withinMooseHunting, e.observationType);
-
-                        $ctrl.isGenderVisible = fieldRequirements.isFieldLegal('gender');
-                        $ctrl.isAgeVisible = fieldRequirements.isFieldLegal('age');
-                        $ctrl.isStateVisible = fieldRequirements.isFieldLegal('state');
-                        $ctrl.isMarkingVisible = fieldRequirements.isFieldLegal('marking');
-                    });
-            }
-
-            $ctrl.showMooselikeObservationAmounts = function () {
-                return e.isObservation() && (e.isMoose() || e.isMooselike()) && e.withinMooseHunting;
-            };
-        }
-    })
-    .component('rShowSrvaSpecimens', {
-        templateUrl: 'common/r-show-srva-specimens.html',
-        bindings: {
-            entry: '<'
-        }
-    })
-    .directive('rDownloadPdf', function () {
-        return {
-            replace: false,
-            restrict: 'A',
-            scope: { pdfUrl: '=rDownloadPdf' },
-            templateUrl: 'common/r-download-pdf.html'
-        };
-    })
-    .directive('rDownloadXml', function () {
-        return {
-            replace: false,
-            restrict: 'A',
-            scope: { xmlUrl: '=rDownloadXml' },
-            templateUrl: 'common/r-download-xml.html'
-        };
-    })
-    .directive('rDownloadFile', function () {
-        return {
-            replace: false,
-            restrict: 'A',
-            scope: { fileUrl: '=rDownloadFile', translateKey: '=rDownloadFileTranslate'},
-            templateUrl: 'common/r-download-file.html'
         };
     })
     .directive('rWithTooltip', function ($translate) {
@@ -364,7 +308,7 @@ angular.module('app.common.directives', ['dialogs.main'])
             '</div>'
         };
     })
-    .directive('rCopyOnBlurToEmptyInput', function() {
+    .directive('rCopyOnBlurToEmptyInput', function () {
         return {
             restrict: 'A',
             scope: false,
@@ -389,6 +333,78 @@ angular.module('app.common.directives', ['dialogs.main'])
                     });
                 }
             }
+        };
+    })
+    .directive('numItems', function ($parse) {
+        // right-aligned number of items with unit
+        return {
+            restrict: 'A',
+            replace: false,
+            scope: true,
+            link: function (scope, element, attrs) {
+                scope.items = $parse(attrs.numItems)(scope);
+
+                if (_.isFinite(scope.items)) {
+                    if (_.isString(attrs.unitKey)) {
+                        scope.unitKey = attrs.unitKey;
+                    } else {
+                        scope.unit = attrs.unit;
+                    }
+                } else {
+                    scope.items = '-';
+                    scope.unit = '';
+                }
+            },
+            template: '' +
+            '<div class="text-right">' +
+            '  <span ng-bind="::items"></span>&nbsp;<span ng-switch="::!!unitKey" class="unit-suffix">' +
+            '    <span ng-switch-when="true">{{unitKey | translate}}</span>' +
+            '    <span ng-switch-when="false">{{::unit}}</span>' +
+            '  </span>' +
+            '</div>'
+        };
+    })
+    .directive('numPieces', function ($compile) {
+        // right-aligned number of pieces
+        return {
+            restrict: 'A',
+            priority: 10000,
+            terminal: true,
+            link: function (scope, element, attrs) {
+                attrs.$set('numItems', attrs.numPieces);
+                attrs.$set('numPieces', null);
+                attrs.$set('unitKey', 'global.pcs');
+                $compile(element)(scope);
+            }
+        };
+    })
+    .directive('numPersons', function ($compile) {
+        // right-aligned number of persons
+        return {
+            restrict: 'A',
+            priority: 10000,
+            terminal: true,
+            link: function (scope, element, attrs) {
+                attrs.$set('numItems', attrs.numPersons);
+                attrs.$set('numPersons', null);
+                attrs.$set('unitKey', 'global.personUnit');
+                $compile(element)(scope);
+            }
+        };
+    })
+    .directive('moneySum', function ($parse) {
+        // right-aligned sum of money
+        return {
+            restrict: 'A',
+            replace: false,
+            scope: true,
+            link: function (scope, element, attrs) {
+                scope.sum = $parse(attrs.moneySum)(scope);
+                scope.isFinite = _.isFinite(scope.sum);
+            },
+            template: '' +
+            '<div ng-if="::isFinite" class="text-right"><span ng-bind="::(sum | number : 2)"></span>&nbsp;<span class="unit-suffix">&euro;</span></div>' +
+            '<div ng-if="::!isFinite" class="text-right"><span>-</span>&nbsp;<span class="unit-suffix"></span></div>'
         };
     })
 ;

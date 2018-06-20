@@ -2,18 +2,23 @@ package fi.riista.feature.storage.metadata;
 
 import fi.riista.config.properties.AWSConfigProperties;
 
-import java.nio.file.Path;
-
 // File storage can be customized using file content type
 public enum FileType {
+
     TEST_FOLDER(StorageType.LOCAL_FOLDER),
     TEST_DB(StorageType.LOCAL_DATABASE),
     TEST_S3(StorageType.AWS_S3_BUCKET),
-    MAP_BACKUP(StorageType.AWS_S3_BUCKET),
     METSASTAJAREKISTERI(StorageType.AWS_S3_BUCKET),
     MOOSE_PERMIT_FINISHED_RECEIPT(StorageType.AWS_S3_BUCKET),
+    PERMIT_APPLICATION_ARCHIVE(StorageType.AWS_S3_BUCKET),
+    PERMIT_APPLICATION_ATTACHMENT(StorageType.AWS_S3_BUCKET),
+    DECISION_PDF(StorageType.AWS_S3_BUCKET),
+    DECISION_ATTACHMENT(StorageType.AWS_S3_BUCKET),
+    INVOICE_PDF(StorageType.AWS_S3_BUCKET),
+    FIVALDI_INVOICE_BATCH(StorageType.AWS_S3_BUCKET),
     IMAGE_UPLOAD(StorageType.AWS_S3_BUCKET),
-    MOOSE_DATA_CARD(StorageType.AWS_S3_BUCKET);
+    MOOSE_DATA_CARD(StorageType.AWS_S3_BUCKET),
+    SHOOTING_TEST_EXPORT(StorageType.AWS_S3_BUCKET);
 
     private final StorageType storageType;
 
@@ -26,20 +31,18 @@ public enum FileType {
     }
 
     public String formatFilename(final PersistentFileMetadata metadata) {
-        if (this == MOOSE_DATA_CARD) {
-            return metadata.getOriginalFilename() + "_" + metadata.getCreationTime().getTime();
+        switch (this) {
+            case MOOSE_DATA_CARD:
+                return metadata.getOriginalFilename() + "_" + metadata.getCreationTime().getTime();
+
+            default:
+                // If there are concurrent transactions saving same file, then first transactions will commit, and all
+                // other transactions will rollback and delete the file they saved.
+                // If all transactions save their file with same filename,
+                // then the successful transaction will refer to a deleted file.
+                // To create separate file for each transaction append timestamp to filename.
+                return metadata.getId().toString() + "_" + System.currentTimeMillis();
         }
-
-        // If there are concurrent transactions saving same file, then first transactions will commit, and all
-        // other transactions will rollback and delete the file they saved.
-        // If all transactions save their file with same filename,
-        // then the successful transaction will refer to a deleted file.
-        // To create separate file for each transaction append timestamp to filename.
-        return metadata.getId().toString() + "_" + System.currentTimeMillis();
-    }
-
-    public Path resolveLocalStorageFolder(final Path storageFolder) {
-        return this == FileType.MAP_BACKUP ? storageFolder.resolve(this.name()) : storageFolder;
     }
 
     public String resolveAwsBucketName(final AWSConfigProperties awsConfigProperties) {
@@ -49,22 +52,39 @@ public enum FileType {
     }
 
     public String resolveAwsBucketKey(final PersistentFileMetadata metadata) {
-        if (this == METSASTAJAREKISTERI) {
-            return "metsastajarekisteri/" + metadata.getOriginalFilename();
-        }
+        switch (this) {
+            case METSASTAJAREKISTERI:
+                return "metsastajarekisteri/" + metadata.getOriginalFilename();
 
-        if (this == MAP_BACKUP) {
-            return "map/backup/" + metadata.getOriginalFilename();
-        }
+            case SHOOTING_TEST_EXPORT:
+                return "shootingtestexport/" + metadata.getOriginalFilename();
 
-        if (this == MOOSE_PERMIT_FINISHED_RECEIPT) {
-            return "moosepermitreceipt/" + formatFilename(metadata);
-        }
+            case MOOSE_PERMIT_FINISHED_RECEIPT:
+                return "moosepermitreceipt/" + formatFilename(metadata);
 
-        if (this == MOOSE_DATA_CARD) {
-            return "moosedatacard/" + formatFilename(metadata);
-        }
+            case MOOSE_DATA_CARD:
+                return "moosedatacard/" + formatFilename(metadata);
 
-        return formatFilename(metadata);
+            case PERMIT_APPLICATION_ARCHIVE:
+                return "permitapplication/" + formatFilename(metadata);
+
+            case PERMIT_APPLICATION_ATTACHMENT:
+                return "permitapplicationattachment/" + formatFilename(metadata);
+
+            case DECISION_PDF:
+                return "permitdecision/" + formatFilename(metadata);
+
+            case DECISION_ATTACHMENT:
+                return "permitdecisionattachment/" + formatFilename(metadata);
+
+            case INVOICE_PDF:
+                return "invoice/" + formatFilename(metadata);
+
+            case FIVALDI_INVOICE_BATCH:
+                return "fivaldibatch/" + formatFilename(metadata);
+
+            default:
+                return formatFilename(metadata);
+        }
     }
 }

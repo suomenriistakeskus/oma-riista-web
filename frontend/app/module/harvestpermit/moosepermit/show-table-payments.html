@@ -25,45 +25,45 @@
     <tr class="summary">
         <td translate="club.permit.sumTitle"></td>
 
-        <td><r-with-tooltip content-val="{{countHarvestsBy('adult')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.aCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{countHarvestsBy('young')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.counter.harvestsBy('adult')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.aCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.counter.harvestsBy('young')}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vCellTooltip"/></td>
 
-        <td><r-with-tooltip content-val="{{countHarvestsBy('adultsNotEdible')}}" tooltip-key="club.permit.allocation.notEdible.aCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{countHarvestsBy('youngsNotEdible')}}" tooltip-key="club.permit.allocation.notEdible.vCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.counter.harvestsBy('adultsNotEdible')}}" tooltip-key="club.permit.allocation.notEdible.aCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.counter.harvestsBy('youngsNotEdible')}}" tooltip-key="club.permit.allocation.notEdible.vCellTooltip"/></td>
 
-        <td><r-with-tooltip content-val="{{permit.totalPayment.adultsPayment}}&euro;" tooltip-key="club.permit.allocation.payment.adultsCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{permit.totalPayment.youngPayment}}&euro;" tooltip-key="club.permit.allocation.payment.youngCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.totalPayment.adultsPayment}}&euro;" tooltip-key="club.permit.allocation.payment.adultsCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.totalPayment.youngPayment}}&euro;" tooltip-key="club.permit.allocation.payment.youngCellTooltip"/></td>
         <td>
-            <r-with-tooltip ng-if="permit.amendmentPermitsMatchHarvests" content-val="{{permit.totalPayment.totalPayment}}&euro;" tooltip-key="club.permit.allocation.payment.totalCellTooltip"></r-with-tooltip>
-            <span ng-if="!permit.amendmentPermitsMatchHarvests" class="text-danger fa fa-exclamation-triangle"></span>
+            <r-with-tooltip ng-if="$ctrl.amendmentPermitsMatchHarvests" content-val="{{$ctrl.totalPayment.totalPayment}}&euro;" tooltip-key="club.permit.allocation.payment.totalCellTooltip"></r-with-tooltip>
+            <span ng-if="!$ctrl.amendmentPermitsMatchHarvests" class="text-danger fa fa-exclamation-triangle"></span>
         </td>
     </tr>
-    <tr ng-repeat="a in allocations" ng-class="{'current-club': isCurrentClub(a)}">
+    <tr ng-repeat="a in $ctrl.allocations" ng-class="{'current-club': $ctrl.isCurrentClub(a)}">
         <td>
             <div>
-                <moose-permit-todo todo="todos[a.huntingClubId]"></moose-permit-todo>
-                <a ng-if="canNavigateToClub()" name-translated="a.huntingClubName" ng-click="navigateToClub(a)"></a>
-                <span ng-if="!canNavigateToClub()" name-translated="a.huntingClubName"></span>
-                <span class="pull-right" ng-if="::(permit.summaryForPartnersTable[a.huntingClubId].fromMooseDataCard)"
+                <moose-permit-todo todo="$ctrl.todos[a.huntingClubId]"></moose-permit-todo>
+                <a ng-if="$ctrl.canNavigateToClub" name-translated="a.huntingClubName" ng-click="$ctrl.navigateToClub(a)"></a>
+                <span ng-if="!$ctrl.canNavigateToClub" name-translated="a.huntingClubName"></span>
+                <span class="pull-right" ng-if="::($ctrl.fromMooseDataCard[a.huntingClubId])"
                       uib-tooltip="{{ 'club.permit.allocation.fromMooseDataCard' | translate }}" tooltip-popup-delay="0" tooltip-placement="right">
                     <span class="fa fa-file-text"></span>
                 </span>
             </div>
         </td>
 
-        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].adultMales + permit.harvestCounts[a.huntingClubId].adultFemales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.aCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].youngMales + permit.harvestCounts[a.huntingClubId].youngFemales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.harvestCounts[a.huntingClubId].adultMales + $ctrl.harvestCounts[a.huntingClubId].adultFemales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.aCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.harvestCounts[a.huntingClubId].youngMales + $ctrl.harvestCounts[a.huntingClubId].youngFemales}}" tooltip-key="club.permit.allocation.harvestedSpecimens.vCellTooltip"/></td>
 
-        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].adultsNotEdible}}" tooltip-key="club.permit.allocation.notEdible.aCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{permit.harvestCounts[a.huntingClubId].youngsNotEdible}}" tooltip-key="club.permit.allocation.notEdible.vCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.harvestCounts[a.huntingClubId].adultsNotEdible}}" tooltip-key="club.permit.allocation.notEdible.aCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.harvestCounts[a.huntingClubId].youngsNotEdible}}" tooltip-key="club.permit.allocation.notEdible.vCellTooltip"/></td>
 
-        <td><r-with-tooltip content-val="{{permit.payments[a.huntingClubId].adultsPayment}}&euro;" tooltip-key="club.permit.allocation.payment.adultsCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{permit.payments[a.huntingClubId].youngPayment}}&euro;" tooltip-key="club.permit.allocation.payment.youngCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.payments[a.huntingClubId].adultsPayment}}&euro;" tooltip-key="club.permit.allocation.payment.adultsCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.payments[a.huntingClubId].youngPayment}}&euro;" tooltip-key="club.permit.allocation.payment.youngCellTooltip"/></td>
         <td>
-            <r-with-tooltip ng-if="permit.amendmentPermitsMatchHarvests || permit.harvestCounts[a.huntingClubId].adultsNotEdible===0 && permit.harvestCounts[a.huntingClubId].youngsNotEdible===0"
-                            content-val="{{permit.payments[a.huntingClubId].totalPayment}}&euro;" tooltip-key="club.permit.allocation.payment.totalCellTooltip"></r-with-tooltip>
+            <r-with-tooltip ng-if="$ctrl.amendmentPermitsMatchHarvests || $ctrl.harvestCounts[a.huntingClubId].adultsNotEdible===0 && $ctrl.harvestCounts[a.huntingClubId].youngsNotEdible===0"
+                            content-val="{{$ctrl.payments[a.huntingClubId].totalPayment}}&euro;" tooltip-key="club.permit.allocation.payment.totalCellTooltip"></r-with-tooltip>
 
-            <span ng-if="!permit.amendmentPermitsMatchHarvests && (permit.harvestCounts[a.huntingClubId].adultsNotEdible > 0 || permit.harvestCounts[a.huntingClubId].youngsNotEdible > 0)" class="text-danger fa fa-exclamation-triangle"></span>
+            <span ng-if="!$ctrl.amendmentPermitsMatchHarvests && ($ctrl.harvestCounts[a.huntingClubId].adultsNotEdible > 0 || $ctrl.harvestCounts[a.huntingClubId].youngsNotEdible > 0)" class="text-danger fa fa-exclamation-triangle"></span>
         </td>
 
     </tr>

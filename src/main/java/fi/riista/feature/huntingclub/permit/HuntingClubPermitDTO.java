@@ -3,73 +3,17 @@ package fi.riista.feature.huntingclub.permit;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountDTO;
-import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
-import fi.riista.feature.huntingclub.permit.allocation.HuntingClubPermitAllocationDTO;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportDTO;
+import fi.riista.feature.harvestpermit.allocation.MoosePermitAllocationDTO;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportDTO;
 import fi.riista.feature.huntingclub.permit.summary.ClubHuntingSummaryBasicInfoDTO;
-import fi.riista.util.DtoUtil;
 import fi.riista.validation.FinnishHuntingPermitNumber;
 import org.hibernate.validator.constraints.SafeHtml;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class HuntingClubPermitDTO extends BaseEntityDTO<Long> {
-
-    @Nonnull
-    public static HuntingClubPermitDTO create(@Nonnull final HarvestPermit permit,
-                                              @Nonnull final GameSpecies species,
-                                              @Nonnull final HarvestPermitSpeciesAmount speciesAmount,
-                                              @Nonnull final Map<String, Float> amendmentPermits,
-                                              @Nullable final Long viewedClubId,
-                                              @Nonnull final List<HuntingClubPermitAllocationDTO> allocations,
-                                              final boolean canEditAllocations,
-                                              @Nonnull final Map<Long, HuntingClubPermitCountDTO> harvestCounts,
-                                              @Nonnull final HuntingClubPermitHuntingDayStatisticsDTO totalStats,
-                                              @Nonnull final Map<Long, HuntingClubPermitHuntingDayStatisticsDTO> stats,
-                                              @Nonnull
-                                              final Map<Long, ClubHuntingSummaryBasicInfoDTO> summaryForPartnersTable,
-                                              @Nonnull final HuntingClubPermitTotalPaymentDTO totalPayment,
-                                              @Nonnull final Map<Long, HuntingClubPermitPaymentDTO> payments,
-                                              final boolean amendmentPermitsMatchHarvests,
-                                              @Nullable final MooseHarvestReportDTO finishedDto) {
-
-        Objects.requireNonNull(permit, "permit must not be null");
-        Objects.requireNonNull(speciesAmount, "speciesAmount must not be null");
-        Objects.requireNonNull(amendmentPermits, "amendmentPermits must not be null");
-        Objects.requireNonNull(allocations, "allocations must not be null");
-        Objects.requireNonNull(harvestCounts, "harvestCounts must not be null");
-        Objects.requireNonNull(stats, "stats must not be null");
-        Objects.requireNonNull(summaryForPartnersTable, "summaryForPartnersTable must not be null");
-
-        final HuntingClubPermitDTO dto = new HuntingClubPermitDTO();
-        DtoUtil.copyBaseFields(permit, dto);
-
-        dto.setPermitNumber(permit.getPermitNumber());
-        dto.setPermitType(permit.getPermitType());
-        dto.setSpeciesAmount(HarvestPermitSpeciesAmountDTO.create(speciesAmount, species));
-        dto.setAmendmentPermits(amendmentPermits);
-        dto.setViewedClubId(viewedClubId);
-        dto.setAllocations(allocations);
-        dto.setCanEditAllocations(canEditAllocations);
-        dto.setHarvestCounts(harvestCounts);
-        dto.setTotalStatistics(totalStats);
-        dto.setStatistics(stats);
-        dto.setSummaryForPartnersTable(summaryForPartnersTable);
-
-        dto.setAmendmentPermitsMatchHarvests(amendmentPermitsMatchHarvests);
-        dto.setTotalPayment(totalPayment);
-        dto.setPayments(payments);
-
-        dto.setMooseHarvestReport(finishedDto);
-        return dto;
-    }
 
     private Long id;
     private Integer rev;
@@ -86,9 +30,7 @@ public class HuntingClubPermitDTO extends BaseEntityDTO<Long> {
 
     private Long viewedClubId;
 
-    private List<HuntingClubPermitAllocationDTO> allocations;
-
-    private boolean canEditAllocations;
+    private List<MoosePermitAllocationDTO> allocations;
 
     private Map<Long, HuntingClubPermitCountDTO> harvestCounts;
 
@@ -98,6 +40,8 @@ public class HuntingClubPermitDTO extends BaseEntityDTO<Long> {
     @JsonInclude(Include.ALWAYS)
     private Map<Long, ClubHuntingSummaryBasicInfoDTO> summaryForPartnersTable;
 
+    private boolean allPartnersFinishedHunting;
+    private boolean canModifyEndOfHunting;
     private boolean amendmentPermitsMatchHarvests;
     private HuntingClubPermitTotalPaymentDTO totalPayment;
     private Map<Long, HuntingClubPermitPaymentDTO> payments;
@@ -164,20 +108,12 @@ public class HuntingClubPermitDTO extends BaseEntityDTO<Long> {
         this.viewedClubId = viewedClubId;
     }
 
-    public List<HuntingClubPermitAllocationDTO> getAllocations() {
+    public List<MoosePermitAllocationDTO> getAllocations() {
         return allocations;
     }
 
-    public void setAllocations(List<HuntingClubPermitAllocationDTO> allocations) {
+    public void setAllocations(List<MoosePermitAllocationDTO> allocations) {
         this.allocations = allocations;
-    }
-
-    public boolean isCanEditAllocations() {
-        return canEditAllocations;
-    }
-
-    public void setCanEditAllocations(boolean canEditAllocations) {
-        this.canEditAllocations = canEditAllocations;
     }
 
     public Map<Long, HuntingClubPermitCountDTO> getHarvestCounts() {
@@ -226,6 +162,22 @@ public class HuntingClubPermitDTO extends BaseEntityDTO<Long> {
 
     public void setPayments(Map<Long, HuntingClubPermitPaymentDTO> payments) {
         this.payments = payments;
+    }
+
+    public boolean isAllPartnersFinishedHunting() {
+        return allPartnersFinishedHunting;
+    }
+
+    public void setAllPartnersFinishedHunting(final boolean allPartnersFinishedHunting) {
+        this.allPartnersFinishedHunting = allPartnersFinishedHunting;
+    }
+
+    public boolean isCanModifyEndOfHunting() {
+        return canModifyEndOfHunting;
+    }
+
+    public void setCanModifyEndOfHunting(final boolean canModifyEndOfHunting) {
+        this.canModifyEndOfHunting = canModifyEndOfHunting;
     }
 
     public boolean isAmendmentPermitsMatchHarvests() {

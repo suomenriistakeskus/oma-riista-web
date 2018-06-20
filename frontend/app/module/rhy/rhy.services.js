@@ -3,41 +3,45 @@
 angular.module('app.rhy.services', [])
     .factory('Rhys', function ($resource) {
         return $resource('api/v1/riistanhoitoyhdistys/:id', {id: '@id'}, {
-            'query': {method: 'GET', params: {type: 'page'}},
-            'get': {method: 'GET'},
-            'update': {method: 'PUT'},
-            'clubContacts': {
+            query: {method: 'GET', params: {type: 'page'}},
+            get: {method: 'GET'},
+            getPublicInfo: {
+                method: 'GET',
+                url: 'api/v1/riistanhoitoyhdistys/:id/public'
+            },
+            update: {method: 'PUT'},
+            clubContacts: {
                 method: 'GET',
                 url: 'api/v1/riistanhoitoyhdistys/:id/contacts',
                 isArray: true
             },
-            'clubLeaders': {
+            clubLeaders: {
                 method: 'GET',
                 url: 'api/v1/riistanhoitoyhdistys/:id/leaders/:year',
                 params: {year: '@year'},
                 isArray: true
             },
-            'moosePermitHuntingYears': {
+            moosePermitHuntingYears: {
                 method: 'GET',
                 url: 'api/v1/riistanhoitoyhdistys/:id/moosepermit/huntingyears',
                 isArray: true
             },
-            'listMoosePermits': {
+            listMoosePermits: {
                 method: 'GET',
                 url: 'api/v1/riistanhoitoyhdistys/:id/moosepermit',
                 params: {year: '@year', species: '@species'},
                 isArray: true
             },
-            'moosepermitStatisticsOrganisations': {
+            searchParamOrganisations: {
                 method: 'GET',
-                url: 'api/v1/riistanhoitoyhdistys/:id/moosepermit/statistics/orgs',
+                url: 'api/v1/riistanhoitoyhdistys/searchparams/orgs',
+                params: {id: '@id'},
                 isArray: true
             },
-            'moosepermitStatistics': {
+            moosepermitStatistics: {
                 method: 'GET',
                 url: 'api/v1/riistanhoitoyhdistys/:id/moosepermit/statistics',
                 isArray: true
             }
+        });
     });
-    })
-;

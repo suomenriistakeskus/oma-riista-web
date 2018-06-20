@@ -1,12 +1,12 @@
 package fi.riista.feature.organization.person;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;

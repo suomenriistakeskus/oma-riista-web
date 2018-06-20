@@ -1,0 +1,60 @@
+<div class="content r-club-sidebar-content">
+    <button type="button" class="close pull-right" ng-click="cancel()">
+        <span class="glyphicon glyphicon-remove"></span>
+    </button>
+
+    <h3 class="modal-title" translate="club.hunting.fixGeoLocationDialog.title"></h3>
+
+    <hr/>
+
+    <form id="geoLocationForm" name="geoLocationForm" role="form" class="form form-horizontal" r-force-show-errors-check-validity>
+        <div class="form-group">
+            <label for="latitude" class="control-label">
+                <span translate="global.geoLocation.lat"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="number" id="latitude" name="latitude"
+                       class="form-control"
+                       ng-model="diaryEntry.geoLocation.latitude"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="longitude" class="control-label">
+                <span translate="global.geoLocation.lon"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <input type="number" id="longitude" name="longitude"
+                       class="form-control"
+                       ng-model="diaryEntry.geoLocation.longitude"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="control-label"></div>
+
+            <div class="form-control-wrapper">
+                <a ng-click="updateGeolocationOnMap()" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-map-marker"></span> &nbsp;
+                    <span translate="club.hunting.fixGeoLocationDialog.setLocation"></span>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-default pull-left"
+            ng-click="cancel()"
+            translate="global.button.cancel"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-disabled="geoLocationForm.$invalid"
+            ng-click="save()">
+        <span translate="global.button.save"></span>
+    </button>
+</div>

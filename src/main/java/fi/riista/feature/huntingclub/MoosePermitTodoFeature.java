@@ -10,6 +10,7 @@ import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermitSpeciesAmount;
@@ -25,9 +26,8 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
-import java.util.function.Function;
 
-import static java.util.stream.Collectors.toMap;
+import static fi.riista.util.Collect.indexingBy;
 
 @Component
 public class MoosePermitTodoFeature {
@@ -41,8 +41,14 @@ public class MoosePermitTodoFeature {
     @Resource
     private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
 
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
+
     @Transactional(readOnly = true)
-    public TodoDto listTodosForClub(long clubId, int year) {
+    public TodoDto listTodosForClub(final long clubId, final int year) {
+        if (harvestPermitLockedByDateService.isDateLockedForHuntingYear(year)) {
+            return TodoDto.noTodo(clubId);
+        }
         final QHarvestPermit permit = QHarvestPermit.harvestPermit;
 
         final QHuntingClub club = QHuntingClub.huntingClub;
@@ -57,7 +63,7 @@ public class MoosePermitTodoFeature {
                 .fetchCount() > 0;
 
         if (!hasMoosePermits) {
-            return new TodoDto(clubId, false, false, false, false);
+            return TodoDto.noTodo(clubId);
         }
         // club has no active area
         final boolean noActiveArea = queryFactory.from(area)
@@ -143,17 +149,17 @@ public class MoosePermitTodoFeature {
                 .where(groupSpeciesAndYearMatches, group.id.in(groupIdsHavingLeader))
                 .fetch();
 
-        final List<Long> partners = baseQuery(permitId, speciesCode, permit, hpsa, species, club)
+        return baseQuery(permitId, speciesCode, permit, hpsa, species, club)
                 .distinct()
-                .fetch();
-        return partners.stream()
+                .fetch()
+                .stream()
                 .map(id -> new TodoDto(id,
                         !hasArea.contains(id),
                         !hasGroup.contains(id),
                         !hasGroupLinkedToPermit.contains(id),
                         !hasGroupHuntingLeader.contains(id)
                 ))
-                .collect(toMap(TodoDto::getClubId, Function.identity()));
+                .collect(indexingBy(TodoDto::getClubId));
     }
 
     private OptionalInt findHuntingYear(HarvestPermit p, int speciesCode) {
@@ -221,6 +227,10 @@ public class MoosePermitTodoFeature {
         @JsonGetter
         public boolean isTodo() {
             return areaMissing || groupMissing || groupPermitMissing || groupLeaderMissing;
+        }
+
+        public static TodoDto noTodo(final long clubId) {
+            return new TodoDto(clubId, false, false, false, false);
         }
     }
 

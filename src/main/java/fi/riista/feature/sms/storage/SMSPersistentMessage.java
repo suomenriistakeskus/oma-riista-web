@@ -8,7 +8,25 @@ import fi.riista.validation.PhoneNumber;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import javax.persistence.*;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
@@ -16,7 +34,7 @@ import java.util.Objects;
 
 @Entity
 @Access(value = AccessType.FIELD)
-@Table(name="sms_message")
+@Table(name = "sms_message")
 public class SMSPersistentMessage extends BaseEntity<Long> {
     public enum Direction {
         IN, OUT
@@ -61,6 +79,7 @@ public class SMSPersistentMessage extends BaseEntity<Long> {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private SystemUser systemUser;
 
+    @Valid
     @Embedded
     private EntityLifecycleFields lifecycleFields;
 
@@ -68,7 +87,7 @@ public class SMSPersistentMessage extends BaseEntity<Long> {
     @Id
     @Access(value = AccessType.PROPERTY)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="sms_message_id", nullable = false)
+    @Column(name = "sms_message_id", nullable = false)
     public Long getId() {
         return id;
     }

@@ -37,7 +37,7 @@ public class ChangePasswordDTOValidator implements Validator {
 
     private boolean isPreviousPasswordCorrect(final ChangePasswordDTO dto) {
         if (StringUtils.hasText(dto.getPasswordCurrent())) {
-            final SystemUser user = activeUserService.getActiveUser();
+            final SystemUser user = activeUserService.requireActiveUser();
             return changePasswordService.confirmPassword(user, dto.getPasswordCurrent());
         }
         return false;

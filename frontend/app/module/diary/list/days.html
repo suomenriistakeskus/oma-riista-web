@@ -1,7 +1,7 @@
 <div ng-show="!groupedEntries" class="well" translate="gamediary.search.noresults"></div>
 
 <div ng-show="groupedEntries">
-    <uib-accordion close-others="false">
+    <uib-accordion close-others="true">
         <!-- track by $index and one time binding :: do not work together if repeated list changes -->
         <div uib-accordion-group
              class="panel-default"
@@ -9,63 +9,73 @@
              ng-repeat="group in groupedEntries track by group.pointOfTime">
             <uib-accordion-heading>
                 <div class="row">
-                    <div class="col-xs-1">
-                        <i class="pull-left glyphicon r-hunting-day-header"
-                           ng-class="{'glyphicon-chevron-down': group.accordionOpen, 'glyphicon-chevron-right': !group.accordionOpen}"></i>
+                    <div class="col1">
+                        <span class="glyphicon"
+                              ng-class="{'glyphicon-chevron-down': group.accordionOpen, 'glyphicon-chevron-right': !group.accordionOpen}"></span>
                     </div>
 
-                    <div class="col-xs-5">
-                        <span class="r-hunting-day-header-date">{{ ::(group.pointOfTime|date:'d.M.yyyy') }}</span>
+                    <div class="col2">
+                        <span class="harvest-date" 
+                              ng-bind="::(group.pointOfTime|date:'d.M.yyyy')"></span>
                     </div>
 
-                    <div class="col-xs-5">
-                        <span ng-if="group.totalHarvestSpecimenCount > 0"
-                             class="r-hunting-day-harvest-counter">
-                            <span>{{ group.totalHarvestSpecimenCount }} <span translate="gamediary.search.pieces" ng-if="false"></span></span>
-                            <span class="fa fa-crosshairs"></span>
-                        </span>
-                        <span ng-if="group.totalObservationSpecimenCount > 0"
-                             class="r-hunting-day-harvest-counter">
-                            <span>{{ group.totalObservationSpecimenCount }} <span translate="gamediary.search.pieces" ng-if="false"></span></span>
-                            <r-binoculars-symbol/>
-                        </span>
-                        <span ng-if="group.totalSrvaSpecimenCount > 0"
-                              class="r-hunting-day-harvest-counter">
-                            <span>{{ group.totalSrvaSpecimenCount }} <span translate="gamediary.search.pieces" ng-if="false"></span></span>
-                            <span class="fa fa-exclamation-triangle"></span>
-                        </span>
+                    <div class="col3">
+                        <ul class="list-inline list-unstyled">
+                            <li ng-if="group.totalHarvestSpecimenCount > 0"
+                                class="entry-count">
+                                <span ng-bind="group.totalHarvestSpecimenCount"></span>
+                                <span class="fa fa-crosshairs"></span>
+                            </li>
+
+                            <li ng-if="group.totalObservationSpecimenCount > 0"
+                                class="entry-count">
+                                <span ng-bind="group.totalObservationSpecimenCount"></span>
+                                <span class="fa fa-binoculars r-gamediary-binoculars"></span>
+                            </li>
+
+                            <li ng-if="group.totalSrvaSpecimenCount > 0"
+                                class="entry-count">
+                                <span ng-bind="group.totalSrvaSpecimenCount"></span>
+                                <span class="fa fa-exclamation-triangle"></span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </uib-accordion-heading>
 
-            <div class="r-gamediary-hunting-day-content">
-                <!-- track by $index and one time binding :: do not work together if repeated list changes -->
-                <div class="r-gamediary-hunting-day-list" ng-repeat="entry in group.entries track by (entry.type + entry.id)" ng-click="::(showEntry(entry))">
-                    <div class="col1">
-                        <img ng-if="!entry.isOtherSpecies()" ng-src="/static/elainlajikuvat/96x96/{{ ::entry.gameSpeciesCode }}.jpg"
-                             class="r-gamediary-species-logo" width="24" height="24"/>
-                        <span ng-if="entry.isOtherSpecies()" class="fa fa-question fa-lg"></span>
-                    </div>
+            <!-- track by $index and one time binding :: do not work together if repeated list changes -->
+            <div class="row"
+                 ng-repeat="entry in group.entries track by (entry.type + entry.id)"
+                 ng-click="showEntry(entry)">
+                <div class="col1">
+                    <img ng-if="!entry.isOtherSpecies()"
+                         ng-src="/static/elainlajikuvat/96x96/{{ ::entry.gameSpeciesCode }}.jpg"
+                         width="36" height="36"/>
+                    <span ng-if="entry.isOtherSpecies()" class="fa fa-question fa-lg"></span>
+                </div>
 
-                    <div class="col2">
-                        <span class="r-hunting-day-harvest-species">{{ getGameName(entry.gameSpeciesCode) }}</span>
-                        <span class="glyphicon glyphicon-briefcase text-warning" ng-show="entry.moderatorOverride"
-                              uib-tooltip="{{ 'gamediary.moderatorOverride' | translate }}" tooltip-append-to-body></span>
-                    </div>
+                <div class="col2">
+                    <span class="species-name" ng-bind="getGameName(entry.gameSpeciesCode)"></span>
 
-                    <div class="col3">
-                        <span class="r-hunting-day-harvest-amount">{{ ::entry.totalSpecimenAmount || 1 }} {{ 'gamediary.search.pieces' | translate }}</span>
-                    </div>
+                    <span class="fa fa-lock text-danger" ng-if="!entry.canEdit"></span>
+                    <span class="fa fa-institution text-warning" ng-if="entry.moderatorOverride"
+                          uib-tooltip="{{ 'gamediary.moderatorOverride' | translate }}"
+                          tooltip-append-to-body></span>
+                </div>
 
-                    <div class="col4">
-                        <span class="r-hunting-day-harvest-point-of-time">{{ ::entry.pointOfTime | date:'HH:mm' }}</span>
-                    </div>
+                <div class="col3">
+                    <span class="specimen-amount" ng-bind="::entry.totalSpecimenAmount || 1"></span>
+                    <span class="specimen-amount" translate="gamediary.search.pieces"></span>
+                </div>
 
-                    <div class="col5">
-                        <span class="fa fa-crosshairs" ng-if="::entry.isHarvest()"></span>
-                        <span class="fa fa-exclamation-triangle" ng-if="::entry.isSrva()"></span>
-                        <r-binoculars-symbol ng-if="::entry.isObservation()"/>
-                    </div>
+                <div class="col4">
+                    <span class="point-of-time" ng-bind="::entry.pointOfTime | date:'HH:mm'"></span>
+                </div>
+
+                <div class="col5">
+                    <span class="fa fa-crosshairs" ng-if="::entry.isHarvest()"></span>
+                    <span class="fa fa-exclamation-triangle" ng-if="::entry.isSrva()"></span>
+                    <span class="fa fa-binoculars r-gamediary-binoculars" ng-if="::entry.isObservation()"></span>
                 </div>
             </div>
         </div>

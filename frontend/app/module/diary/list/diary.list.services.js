@@ -2,14 +2,48 @@
 
 angular.module('app.diary.list.services', ['ngResource'])
 
+    .run(function ($rootScope, DiaryListViewState) {
+        // Reset on login and logout
+        _.forEach(['loginRequired', 'loginCancelled'], function (eventName) {
+            $rootScope.$on('event:auth-' + eventName, function () {
+                DiaryListViewState.selectedDiaryEntry = null;
+            });
+        });
+    })
+
+    .factory('DiaryEntries', function ($resource, $http,
+                                       DiaryEntryType, DiaryEntryRepositoryFactory, SrvaOtherSpeciesService) {
+        function appendTransform(defaults, transform) {
+            defaults = angular.isArray(defaults) ? defaults : [defaults];
+            return defaults.concat(transform);
+        }
+
+        var repository = $resource('api/v1/gamediary', {}, {
+            search: {
+                method: 'POST',
+                isArray: true,
+                transformResponse: appendTransform($http.defaults.transformResponse, function(data, headersGetter, status) {
+                    if (status === 200 && angular.isArray(data)) {
+                        return SrvaOtherSpeciesService.replaceNullsWithOtherSpeciesCodeInEntries(data);
+                    } else {
+                        return data || [];
+                    }
+                })
+            }
+        });
+
+        return DiaryEntryRepositoryFactory.decorateRepository(repository);
+    })
+
     .factory('DiaryListViewState', function (HuntingYearService) {
         return {
             showHarvest: true,
             showObservation: true,
             showSrvaEvent: true,
+            onlyReports: false,
+            onlyTodo: false,
             beginDate: HuntingYearService.getBeginDateStr(),
             endDate: HuntingYearService.getEndDateStr(),
-            lastSelectedSpeciesCode: null,
             allSpecies: [],
             selectedSpecies: [],
             unselectedSpecies: [],
@@ -17,13 +51,20 @@ angular.module('app.diary.list.services', ['ngResource'])
         };
     })
 
-    .service('DiaryListService', function (MapDefaults, MapState, GIS,
-                                           DiaryListViewState, DiaryEntryService) {
-        var maxBounds = MapDefaults.getBoundsOfFinland();
+    .service('DiaryListService', function (MapDefaults, MapState, MapBounds, WGS84,
+                                           DiaryListViewState, DiaryEntrySidebar) {
+        this.getEntryBounds = function (diaryEntryList, defaultBounds) {
+            var geoLocations = _.chain(diaryEntryList)
+                .map('geoLocation')
+                .filter()
+                .filter(MapBounds.isGeoLocationInsideFinland)
+                .value();
 
-        this.getEntryBounds = function (diaryEntryList) {
-            var geoLocations = _.map(diaryEntryList, 'geoLocation');
-            return GIS.getBoundsFromGeolocations(geoLocations, maxBounds);
+            var latLngFunc = function (geoLocation) {
+                return WGS84.fromETRS(geoLocation.latitude, geoLocation.longitude);
+            };
+
+            return MapBounds.getBounds(geoLocations, latLngFunc, defaultBounds || MapBounds.getBoundsOfFinland());
         };
 
         this.groupDiaryEntriesByHuntingDay = function (diaryEntryList) {
@@ -71,7 +112,7 @@ angular.module('app.diary.list.services', ['ngResource'])
 
                 state.selectedDiaryEntry = diaryEntry;
 
-                var modalInstance = DiaryEntryService.showSidebar(diaryEntry);
+                var modalInstance = DiaryEntrySidebar.showSidebar(diaryEntry);
 
                 modalInstance.opened.then(function () {
                     currentSidebar = modalInstance;
@@ -171,93 +212,5 @@ angular.module('app.diary.list.services', ['ngResource'])
             };
 
             return Markers.transformToLeafletMarkerData(diaryEntryList, markerDefaults, createMarkerData);
-        };
-    })
-
-    .service('DiaryListSpeciesService', function (DiaryListViewState) {
-        var self = this;
-
-        var isSpeciesSelected = function (gameSpeciesCode) {
-            return _.some(DiaryListViewState.selectedSpecies, function (selectedSpecies) {
-                return selectedSpecies.code === gameSpeciesCode;
-            });
-        };
-
-        var moveSpeciesBetweenArrays = function (gameSpeciesCode, fromArray, toArray) {
-            var arrayOfRemoved = _.remove(fromArray, function (species) {
-                return species.code === gameSpeciesCode;
-            });
-
-            if (arrayOfRemoved.length === 1) {
-                toArray.push(arrayOfRemoved[0]);
-            }
-        };
-
-        var sortSpeciesArray = function (parameters, speciesArray) {
-            return _.sortBy(speciesArray, function (species) {
-                return parameters.$getGameName(species.code);
-            });
-        };
-
-        var constructSpeciesArrayFromDiaryEntries = function (parameters, diaryEntries) {
-            var allSpecies = parameters.species;
-
-            if (!allSpecies || allSpecies.length < 1) {
-                return [];
-            }
-
-            var speciesCodeToEntryCount = _.countBy(_.map(diaryEntries, 'gameSpeciesCode'));
-
-            return sortSpeciesArray(parameters, _.filter(allSpecies, function (species) {
-                var count = speciesCodeToEntryCount[species.code];
-
-                if (count) {
-                    // Add 'count' field as a side-effect.
-                    species.count = count;
-                }
-
-                return count;
-            }));
-        };
-
-        this.updateAllSpecies = function (parameters, diaryEntries, selectAll) {
-            DiaryListViewState.allSpecies = constructSpeciesArrayFromDiaryEntries(parameters, diaryEntries);
-
-            if (selectAll) {
-                self.selectAllSpecies();
-            } else {
-                var speciesPartition = _.partition(DiaryListViewState.allSpecies, function (diaryEntrySpecies) {
-                    return isSpeciesSelected(diaryEntrySpecies.code);
-                });
-
-                DiaryListViewState.selectedSpecies = speciesPartition[0];
-                DiaryListViewState.unselectedSpecies = speciesPartition[1];
-            }
-        };
-
-        this.deselectAllSpecies = function () {
-            DiaryListViewState.unselectedSpecies = angular.copy(DiaryListViewState.allSpecies);
-            DiaryListViewState.selectedSpecies = [];
-        };
-
-        this.selectAllSpecies = function () {
-            DiaryListViewState.selectedSpecies = angular.copy(DiaryListViewState.allSpecies);
-            DiaryListViewState.unselectedSpecies = [];
-        };
-
-        this.speciesAddedToSelection = function (parameters, speciesCode) {
-            moveSpeciesBetweenArrays(speciesCode, DiaryListViewState.unselectedSpecies, DiaryListViewState.selectedSpecies);
-            DiaryListViewState.selectedSpecies = sortSpeciesArray(parameters, DiaryListViewState.selectedSpecies);
-        };
-
-        this.removeSpeciesFromSelection = function (parameters, gameSpeciesCode) {
-            moveSpeciesBetweenArrays(gameSpeciesCode, DiaryListViewState.selectedSpecies, DiaryListViewState.unselectedSpecies);
-            DiaryListViewState.unselectedSpecies = sortSpeciesArray(parameters, DiaryListViewState.unselectedSpecies);
-        };
-
-        this.filterDiaryEntriesBySpeciesSelection = function (allEntries) {
-            return _.filter(allEntries, function (entry) {
-                return isSpeciesSelected(entry.gameSpeciesCode);
-            });
         };
     });

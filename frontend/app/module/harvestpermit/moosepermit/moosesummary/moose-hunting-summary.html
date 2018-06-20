@@ -10,7 +10,7 @@
             <h4 translate="club.hunting.mooseHuntingSummary.huntingAreaAndEstimatedPopulationTitle"></h4>
 
             <div class="row r-two-column-number-fields">
-                <div ng-show="showPermitAreaSize()" class="col-xs-12">
+                <div ng-show="showPermitAreaSize(huntingSummaryForm)" class="col-xs-12">
                     <div class="alert alert-warning">
                         <span translate="club.hunting.huntingSummary.totalHuntingAreaInfoText"></span>
                         <span>{{huntingSummary.permitAreaSize}} ha</span>
@@ -28,7 +28,8 @@
                             <input type="number" name="totalHuntingArea" id="totalHuntingArea"
                                    min="0" ng-max="huntingSummary.permitAreaSize" step="1"
                                    class="form-control no-spinner"
-                                   ng-model="huntingSummary.totalHuntingArea"/>
+                                   ng-model="huntingSummary.totalHuntingArea"
+                                   ng-required="isTotalHuntingAreaRequired()"/>
 
                             <p class="help-block has-error"
                                ng-show="huntingSummaryForm.totalHuntingArea.$invalid"
@@ -51,7 +52,8 @@
                             <input type="number" name="remainingPopulationInTotalArea" id="remainingPopulationInTotalArea"
                                    min="0" max="99999" step="1"
                                    class="form-control no-spinner"
-                                   ng-model="huntingSummary.remainingPopulationInTotalArea"/>
+                                   ng-model="huntingSummary.remainingPopulationInTotalArea"
+                                   ng-required="isRemainingPopulationForTotalAreaRequired()"/>
 
                             <p class="help-block has-error"
                                ng-show="huntingSummaryForm.remainingPopulationInTotalArea.$invalid"
@@ -77,7 +79,8 @@
                                    min="0" ng-max="getMaxForEffectiveHuntingArea()" step="1"
                                    class="form-control no-spinner"
                                    ng-model="huntingSummary.effectiveHuntingArea"
-                                   ng-disabled="huntingSummary.effectiveHuntingAreaPercentage"/>
+                                   ng-disabled="huntingSummary.effectiveHuntingAreaPercentage"
+                                   ng-required="isEffectiveHuntingAreaRequired()"/>
 
                             <p class="help-block has-error"
                                ng-show="huntingSummaryForm.effectiveHuntingArea.$invalid"
@@ -100,7 +103,8 @@
                             <input type="number" name="remainingPopulationInEffectiveArea" id="remainingPopulationInEffectiveArea"
                                    min="0" ng-max="getMaxForRemainingPopulationInEffectiveArea()" step="1"
                                    class="form-control no-spinner"
-                                   ng-model="huntingSummary.remainingPopulationInEffectiveArea"/>
+                                   ng-model="huntingSummary.remainingPopulationInEffectiveArea"
+                                   ng-required="isRemainingPopulationForEffectiveAreaRequired()"/>
 
                             <p class="help-block has-error"
                                ng-show="huntingSummaryForm.remainingPopulationInEffectiveArea.$invalid"
@@ -144,18 +148,27 @@
                 </div>
             </div>
 
-            <div class="row r-moose-summary-hunting-area">
-                <div class="form-group">
+            <div class="r-moose-summary-hunting-area">
+                <div class="form-group" show-errors>
                     <label class="control-label">
                         <span class="text-right" translate="club.hunting.mooseHuntingSummary.huntingAreaType"></span>
                         <small class="glyphicon glyphicon-asterisk text-danger"></small>
                     </label>
 
                     <div class="form-control-wrapper">
-                        <label class="radio-inline" ng-repeat="areaType in areaTypes">
-                            <input type="radio" ng-model="huntingSummary.huntingAreaType" ng-value="areaType">
-                            {{ 'club.hunting.mooseHuntingSummary.huntingAreaTypes.' + areaType | translate }}
-                        </label>
+                        <select name="huntingAreaTypeSelect" id="huntingAreaTypeSelect"
+                                class="form-control"
+                                ng-model="huntingSummary.huntingAreaType"
+                                required
+                                ng-options="('club.hunting.mooseHuntingSummary.huntingAreaTypes.' + t | translate) for t in areaTypes">
+                            <option disabled value=""></option>
+                        </select>
+
+                        <p class="help-block has-error"
+                            ng-show="huntingSummaryForm.huntingAreaTypeSelect.$invalid"
+                            ng-messages="huntingSummaryForm.huntingAreaTypeSelect.$error">
+                            <span ng-messages-include="common/errorMessages.html"></span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -369,6 +382,37 @@
                 </div>
             </div>
 
+            <div ng-if="::show2017Fields">
+                <h4 translate="club.hunting.mooseHuntingSummary.mooseObservationsTitle"></h4>
+                <div class="well">
+                    <div class="row" ng-class="{ 'has-error': huntingSummaryForm.observationPolicyAdhered.$invalid }">
+                        <label class="col-xs-9 control-label">
+                            <span translate="club.hunting.mooseHuntingSummary.adherenceToObservationPolicyText"></span>
+                            <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                        </label>
+
+                        <div class="col-xs-3">
+                            <label class="radio-inline">
+                                <input type="radio"
+                                    name="observationPolicyAdhered"
+                                    ng-model="huntingSummary.observationPolicyAdhered"
+                                    ng-value="false"
+                                    required>
+                                {{ 'global.no' | translate }}
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio"
+                                    name="observationPolicyAdhered"
+                                    ng-model="huntingSummary.observationPolicyAdhered"
+                                    ng-value="true"
+                                    required>
+                                {{ 'global.yes' | translate }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <h4 translate="club.hunting.mooseHuntingSummary.otherMooselikeSpeciesTitle"></h4>
             <div class="well" ng-repeat="mooselike in mooselikeSpeciesAppearances track by $index">
                 <r-moose-summary-appearance appearance="mooselike"
@@ -382,8 +426,17 @@
                 <r-moose-summary-appearance appearance="wildBoarAppearance"
                                             species="wildBoar"
                                             population-growth-trends="populationGrowthTrends"
-                                            show-estimate-of-sow-with-piglets="true"
                                             index="mooselikeSpeciesAppearances.length"></r-moose-summary-appearance>
+            </div>
+
+            <div ng-if="::show2017Fields">
+                <h4 translate="club.hunting.mooseHuntingSummary.beaverTitle"></h4>
+                <div class="well">
+                    <r-moose-summary-appearance appearance="beaverAppearance"
+                                                species="beaver"
+                                                population-growth-trends="populationGrowthTrends"
+                                                index="mooselikeSpeciesAppearances.length + 1"></r-moose-summary-appearance>
+                </div>
             </div>
 
             <h4 translate="club.hunting.mooseHuntingSummary.otherObservationsTitle"></h4>
@@ -662,22 +715,20 @@
                     </div>
                 </div>
 
-                <div class="row r-moose-summary-deer-fly-population-growth" ng-show="huntingSummary.deerFliesAppeared">
+                <div class="r-moose-summary-deer-fly-population-growth" ng-show="huntingSummary.deerFliesAppeared">
                     <div class="form-group">
                         <label class="control-label">
                             <span class="text-right" translate="club.hunting.mooseHuntingSummary.trendOfDeerFlyPopulationGrowth"></span>
                         </label>
 
                         <div class="form-control-wrapper">
-                            <label class="radio-inline"
-                                   ng-repeat="growthTrend in populationGrowthTrends">
-
-                                <input type="radio"
-                                       ng-model="huntingSummary.trendOfDeerFlyPopulationGrowth"
-                                       ng-value="growthTrend"
-                                       ng-disabled="!huntingSummary.deerFliesAppeared">
-                                {{ 'club.hunting.mooseHuntingSummary.populationGrowthTrend.' + growthTrend | translate | lowercase }}
-                            </label>
+                            <select name="deerFlyGrowthTrendSelect" id="deerFlyGrowthTrendSelect"
+                                    class="form-control"
+                                    ng-model="huntingSummary.trendOfDeerFlyPopulationGrowth"
+                                    ng-options="('club.hunting.mooseHuntingSummary.populationGrowthTrend.' + t | translate) for t in populationGrowthTrends"
+                                    ng-disabled="!huntingSummary.deerFliesAppeared">
+                                <option disabled value="">{{'club.hunting.mooseHuntingSummary.selectPopulationGrowthTrend' | translate}}</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -701,6 +752,7 @@
                                        class="form-control"
                                        uib-datepicker-popup is-open="isDatePickerOpen"
                                        ng-model="viewState.huntingEndDate"
+                                       required
                                        date-between-min-max
                                        min-date="speciesAmount.beginDate"
                                        max-date="speciesAmount.endDate"
@@ -744,7 +796,7 @@
             class="btn btn-primary"
             ng-click="submit(huntingSummaryForm)"
             ng-if="!isHuntingFinishedOrLocked()"
-            ng-disabled="!isValid(huntingSummaryForm)"
+            ng-disabled="!isValidExceptMissingFields(huntingSummaryForm)"
             translate="club.hunting.huntingSummary.saveUnfinished"></button>
 
     <button type="button"

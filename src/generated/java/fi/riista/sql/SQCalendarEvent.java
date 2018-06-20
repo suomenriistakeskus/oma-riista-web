@@ -66,6 +66,7 @@ public class SQCalendarEvent extends RelationalPathSpatial<SQCalendarEvent> {
     public final com.querydsl.sql.ForeignKey<SQVenue> calendarEventVenueFk = createForeignKey(venueId, "venue_id");
 
     public final com.querydsl.sql.ForeignKey<SQCalendarEventType> calendarEventTypeFk = createForeignKey(calendarEventType, "name");
+    public final com.querydsl.sql.ForeignKey<SQShootingTestEvent> _shootingTestEventCalendarEventFk = createInvForeignKey(calendarEventId, "calendar_event_id");
 
     public SQCalendarEvent(String variable) {
         super(SQCalendarEvent.class, forVariable(variable), "public", "calendar_event");
@@ -74,6 +75,11 @@ public class SQCalendarEvent extends RelationalPathSpatial<SQCalendarEvent> {
 
     public SQCalendarEvent(String variable, String schema, String table) {
         super(SQCalendarEvent.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQCalendarEvent(String variable, String schema) {
+        super(SQCalendarEvent.class, forVariable(variable), schema, "calendar_event");
         addMetadata();
     }
 

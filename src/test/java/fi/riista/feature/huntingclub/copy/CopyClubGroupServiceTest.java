@@ -1,13 +1,14 @@
 package fi.riista.feature.huntingclub.copy;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.organization.person.ContactInfoShare;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.ContactInfoShare;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import javax.annotation.Resource;
@@ -17,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class CopyClubGroupServiceTest extends EmbeddedDatabaseTest {
+public class CopyClubGroupServiceTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     @Resource
     private CopyClubGroupService service;

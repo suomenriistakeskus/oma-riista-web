@@ -1,5 +1,7 @@
 package fi.riista.integration.metsastajarekisteri.innofactor;
 
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.Trace;
 import fi.riista.integration.metsastajarekisteri.common.MetsastajaRekisteriJobParameters;
 import fi.riista.integration.metsastajarekisteri.input.PendingImportFile;
 import fi.riista.integration.metsastajarekisteri.input.PendingImportFileFilter;
@@ -9,7 +11,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -71,11 +72,12 @@ public class InnofactorImportRunner {
         run(entry);
     }
 
+    @Trace(dispatcher = true, metricName = "Job execution")
     public void run(final PendingImportFile entry) throws Exception {
+        NewRelic.setTransactionName(null, InnofactorImportConfig.JOB_NAME);
+
         entry.removeMarkerFile();
 
-        final JobExecution jobExecution = jobLauncher.run(job, MetsastajaRekisteriJobParameters.createJobParameters(entry));
-
-        LOG.info("Job execution scheduled with id={}", jobExecution.getId());
+        jobLauncher.run(job, MetsastajaRekisteriJobParameters.createJobParameters(entry));
     }
 }

@@ -13,7 +13,7 @@
                    ng-show="::$ctrl.profile.huntingBanActive">
                 <tbody>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="account.profile.mr.huntingBan"></td>
+                    <th class="col-xs-6" translate="account.profile.mr.huntingBan"></th>
                     <td class="text-danger">
                         {{::($ctrl.profile.huntingBanStart | date:'d.M.yyyy')}}
                         &minus;
@@ -27,7 +27,7 @@
                    ng-hide="::$ctrl.profile.hunterExamValid">
                 <tbody>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="account.profile.mr.examDate"></td>
+                    <th class="col-xs-6" translate="account.profile.mr.examDate"></th>
                     <td class="text-danger">
                         <span>
                             <span translate="account.profile.mr.expired"></span>
@@ -42,13 +42,13 @@
                    ng-show="::($ctrl.profile.hunterExamValid && !$ctrl.profile.huntingBanActive)">
                 <tbody>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.person.hunterNumber"></td>
+                    <th class="col-xs-6" translate="global.person.hunterNumber"></th>
                     <td>{{::$ctrl.profile.hunterNumber}}</td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6">
+                    <th class="col-xs-6">
                         <span translate="account.profile.mr.paymentInfo"></span>
-                    </td>
+                    </th>
                     <td>
                         <span ng-hide="::$ctrl.profile.huntingPaymentPending">
                             <span translate="account.profile.mr.lastPayment"></span>
@@ -60,18 +60,23 @@
                         </span>
 
                         <span class="text-danger"
-                              ng-show="::$ctrl.profile.huntingPaymentPending">
+                              ng-show="::($ctrl.profile.huntingPaymentPending && $ctrl.profile.hunterExamExpirationDate)">
                             {{'account.profile.mr.expirationWarning' | translate}}
                             {{::($ctrl.profile.hunterExamExpirationDate | date:'d.M.yyyy')}}
+                        </span>
+
+                        <span class="text-danger"
+                              ng-show="::($ctrl.profile.huntingPaymentPending && !$ctrl.profile.hunterExamExpirationDate)"
+                              translate="account.profile.mr.paymentPending">
                         </span>
                     </td>
                 </tr>
                 <tr ng-show="::$ctrl.profile.hunterExamDate">
-                    <td class="r-legend col-xs-6" translate="account.profile.mr.examDate"></td>
+                    <th class="col-xs-6" translate="account.profile.mr.examDate"></th>
                     <td ng-bind="::($ctrl.profile.hunterExamDate | date:'d.M.yyyy')"></td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="account.profile.mr.rhyMembership"></td>
+                    <th class="col-xs-6" translate="account.profile.mr.rhyMembership"></th>
                     <td>
                         <span ng-hide="::$ctrl.profile.rhyMembership"
                               translate="account.profile.mr.noMembership"></span>
@@ -84,18 +89,18 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="account.profile.mr.denyMagazine"></td>
+                    <th class="col-xs-6" translate="account.profile.mr.denyMagazine"></th>
                     <td>{{::($ctrl.profile.denyMagazine
                         ? 'account.profile.mr.denyMagazineYes'
                         : 'account.profile.mr.denyMagazineNo') | translate}}
                     </td>
                 </tr>
                 <tr ng-show="::($ctrl.profile.magazineLanguageCode && !$ctrl.profile.denyMagazine)">
-                    <td class="r-legend col-xs-6" translate="account.profile.mr.magazineLanguage"></td>
+                    <th class="col-xs-6" translate="account.profile.mr.magazineLanguage"></th>
                     <td>{{::($ctrl.profile.magazineLanguageCode | languageCodeName | lowercase)}}</td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="account.profile.mr.denyMarketing"></td>
+                    <th class="col-xs-6" translate="account.profile.mr.denyMarketing"></th>
                     <td>{{::($ctrl.profile.denyPost ? 'global.yes' : 'global.no' | translate)}}</td>
                 </tr>
                 </tbody>
@@ -109,7 +114,7 @@
             </p>
         </div>
 
-        <div ang-show="::($ctrl.pdfOptions && $ctrl.pdfOptions.length)">
+        <div ng-show="::($ctrl.pdfOptions && $ctrl.pdfOptions.length)">
             <h4 translate="account.profile.pdf.download"></h4>
 
             <div class="input-group">

@@ -5,7 +5,6 @@ import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.address.Address;
-import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.address.AddressRepository;
 import fi.riista.security.EntityPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,7 +36,7 @@ public class VenueCrudFeature extends AbstractCrudFeature<Long, Venue, VenueDTO>
 
     @Override
     protected VenueDTO toDTO(@Nonnull final Venue entity) {
-        return VenueDTO.create(entity);
+        return VenueDTO.create(entity, entity.getAddress());
     }
 
     @Override
@@ -50,7 +49,7 @@ public class VenueCrudFeature extends AbstractCrudFeature<Long, Venue, VenueDTO>
         }
     }
 
-    private void createAddressIfNecessary(Venue entity) {
+    private void createAddressIfNecessary(final Venue entity) {
         if (entity.getAddress() == null) {
             Address address = new Address();
             addressRepository.save(address);
@@ -58,15 +57,14 @@ public class VenueCrudFeature extends AbstractCrudFeature<Long, Venue, VenueDTO>
         }
     }
 
-    private static void copyAddress(Address to, AddressDTO from) {
+    private static void copyAddress(final Address to, final VenueAddressDTO from) {
         to.setStreetAddress(from.getStreetAddress());
         to.setPostalCode(from.getPostalCode());
         to.setCity(from.getCity());
-        to.setCountry(from.getCountry());
     }
 
     @Transactional
-    public VenueDTO createForOrganisation(Long organisationId, VenueDTO dto) {
+    public VenueDTO createForOrganisation(final long organisationId, final VenueDTO dto) {
         final VenueDTO createdDto = create(dto);
 
         final Venue venue = requireEntityService.requireVenue(createdDto.getId(), EntityPermission.NONE);
@@ -79,7 +77,7 @@ public class VenueCrudFeature extends AbstractCrudFeature<Long, Venue, VenueDTO>
     }
 
     @Transactional
-    public void attachVenue(Long organisationId, Long venueId) {
+    public void attachVenue(final long organisationId, final long venueId) {
         final Venue venue = requireEntityService.requireVenue(venueId, EntityPermission.UPDATE);
         final Organisation organisation = requireEntityService.requireOrganisation(organisationId, EntityPermission.NONE);
 
@@ -88,7 +86,7 @@ public class VenueCrudFeature extends AbstractCrudFeature<Long, Venue, VenueDTO>
     }
 
     @Transactional
-    public void detachVenue(Long organisationId, Long venueId) {
+    public void detachVenue(final long organisationId, final long venueId) {
         final Venue venue = requireEntityService.requireVenue(venueId, EntityPermission.UPDATE);
         final Organisation organisation = requireEntityService.requireOrganisation(organisationId, EntityPermission.NONE);
 

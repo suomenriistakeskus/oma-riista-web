@@ -1,20 +1,17 @@
 package fi.riista.sql;
 
-import static com.querydsl.core.types.PathMetadataFactory.*;
-
-import com.querydsl.core.types.dsl.*;
-
-import com.querydsl.core.types.PathMetadata;
-import javax.annotation.Generated;
 import com.querydsl.core.types.Path;
-
+import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.spatial.GeometryPath;
 import com.querydsl.sql.ColumnMetadata;
-import java.sql.Types;
-
 import com.querydsl.sql.spatial.RelationalPathSpatial;
 
-import com.querydsl.spatial.*;
+import javax.annotation.Generated;
+import java.sql.Types;
 
+import static com.querydsl.core.types.PathMetadataFactory.forVariable;
 
 
 /**
@@ -31,21 +28,15 @@ public class SQMhPienriista extends RelationalPathSpatial<SQMhPienriista> {
 
     public final NumberPath<Integer> gid = createNumber("gid", Integer.class);
 
-    public final NumberPath<java.math.BigInteger> karttaAla = createNumber("karttaAla", java.math.BigInteger.class);
+    public final NumberPath<Integer> koodi = createNumber("koodi", Integer.class);
 
-    public final NumberPath<Integer> kohdeId = createNumber("kohdeId", Integer.class);
+    public final StringPath nimi = createString("nimi");
 
-    public final NumberPath<Integer> kohdeKoodi = createNumber("kohdeKoodi", Integer.class);
+    public final NumberPath<Long> pintaAla = createNumber("pintaAla", Long.class);
 
-    public final StringPath kohdeNimi = createString("kohdeNimi");
+    public final NumberPath<Integer> vuosi = createNumber("vuosi", Integer.class);
 
-    public final NumberPath<Integer> palstanro = createNumber("palstanro", Integer.class);
-
-    public final NumberPath<java.math.BigInteger> shapeArea = createNumber("shapeArea", java.math.BigInteger.class);
-
-    public final NumberPath<java.math.BigInteger> shapeLeng = createNumber("shapeLeng", java.math.BigInteger.class);
-
-    public final com.querydsl.sql.PrimaryKey<SQMhPienriista> mhPienriistaPkey = createPrimaryKey(gid);
+    public final com.querydsl.sql.PrimaryKey<SQMhPienriista> mhHirviPkey = createPrimaryKey(gid);
 
     public SQMhPienriista(String variable) {
         super(SQMhPienriista.class, forVariable(variable), "public", "mh_pienriista");
@@ -54,6 +45,11 @@ public class SQMhPienriista extends RelationalPathSpatial<SQMhPienriista> {
 
     public SQMhPienriista(String variable, String schema, String table) {
         super(SQMhPienriista.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQMhPienriista(String variable, String schema) {
+        super(SQMhPienriista.class, forVariable(variable), schema, "mh_pienriista");
         addMetadata();
     }
 
@@ -68,15 +64,12 @@ public class SQMhPienriista extends RelationalPathSpatial<SQMhPienriista> {
     }
 
     public void addMetadata() {
-        addMetadata(geom, ColumnMetadata.named("geom").withIndex(8).ofType(Types.OTHER).withSize(2147483647).notNull());
+        addMetadata(geom, ColumnMetadata.named("geom").withIndex(6).ofType(Types.OTHER).withSize(2147483647).notNull());
         addMetadata(gid, ColumnMetadata.named("gid").withIndex(1).ofType(Types.INTEGER).withSize(10).notNull());
-        addMetadata(karttaAla, ColumnMetadata.named("kartta_ala").withIndex(5).ofType(Types.NUMERIC).withSize(131089).notNull());
-        addMetadata(kohdeId, ColumnMetadata.named("kohde_id").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
-        addMetadata(kohdeKoodi, ColumnMetadata.named("kohde_koodi").withIndex(9).ofType(Types.INTEGER).withSize(10).notNull());
-        addMetadata(kohdeNimi, ColumnMetadata.named("kohde_nimi").withIndex(4).ofType(Types.VARCHAR).withSize(200).notNull());
-        addMetadata(palstanro, ColumnMetadata.named("palstanro").withIndex(3).ofType(Types.INTEGER).withSize(10).notNull());
-        addMetadata(shapeArea, ColumnMetadata.named("shape_area").withIndex(7).ofType(Types.NUMERIC).withSize(131089).notNull());
-        addMetadata(shapeLeng, ColumnMetadata.named("shape_leng").withIndex(6).ofType(Types.NUMERIC).withSize(131089).notNull());
+        addMetadata(koodi, ColumnMetadata.named("koodi").withIndex(3).ofType(Types.INTEGER).withSize(10).notNull());
+        addMetadata(nimi, ColumnMetadata.named("nimi").withIndex(4).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(pintaAla, ColumnMetadata.named("pinta_ala").withIndex(5).ofType(Types.BIGINT).withSize(19).notNull());
+        addMetadata(vuosi, ColumnMetadata.named("vuosi").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
     }
 
 }

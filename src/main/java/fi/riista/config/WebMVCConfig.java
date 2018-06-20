@@ -1,11 +1,14 @@
 package fi.riista.config;
 
 import com.google.common.base.Throwables;
+import com.newrelic.api.agent.NewRelic;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.config.web.ApplicationRevisionHandlerInterceptor;
 import fi.riista.config.web.CSVMessageConverter;
 import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.error.NotFoundException;
+import io.sentry.Sentry;
+import io.sentry.SentryClient;
 import net.rossillo.spring.web.mvc.CacheControlHandlerInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +30,8 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.multipart.support.MultipartFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.ViewResolver;
@@ -58,15 +62,30 @@ import java.util.concurrent.TimeUnit;
 public class WebMVCConfig extends WebMvcConfigurerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(WebMVCConfig.class);
 
+    // Limit multipart request size to 100 MiB
+    private static final long MAX_UPLOAD_SIZE = 100 * 1024 * 1024;
+
+    // Limit upload file size to 50 MiB
+    private static final long MAX_UPLOAD_SIZE_PER_FILE = 50 * 1024 * 1024;
+
+    // Write uploads to disks when larger than 1 MiB
+    private static final int MAX_UPLOAD_IN_MEMORY_SIZE = 1024 * 1024;
+
     @Resource
     private RuntimeEnvironmentUtil runtimeEnvironmentUtil;
 
     @Resource
     private CustomJacksonObjectMapper jsonObjectMapper;
 
-    @Bean(name = "multipartResolver")
+    @Bean(name = MultipartFilter.DEFAULT_MULTIPART_RESOLVER_BEAN_NAME)
     public MultipartResolver multipartResolver() {
-        return new StandardServletMultipartResolver();
+        //return new StandardServletMultipartResolver();
+        final CommonsMultipartResolver resolver = new CommonsMultipartResolver();
+        resolver.setMaxUploadSizePerFile(MAX_UPLOAD_SIZE_PER_FILE);
+        resolver.setMaxUploadSize(MAX_UPLOAD_SIZE);
+        resolver.setMaxInMemorySize(MAX_UPLOAD_IN_MEMORY_SIZE);
+        resolver.setDefaultEncoding(Constants.DEFAULT_ENCODING);
+        return resolver;
     }
 
     @Bean
@@ -97,9 +116,17 @@ public class WebMVCConfig extends WebMvcConfigurerAdapter {
                 .addResourceLocations("/favicon.ico")
                 .setCacheControl(oneYear);
 
+        registry.addResourceHandler("/static/elainlajikuvat/**")
+                .addResourceLocations("/static/elainlajikuvat/")
+                .setCacheControl(oneYear);
+
+        registry.addResourceHandler("/static/badges/**")
+                .addResourceLocations("/static/badges/")
+                .setCacheControl(oneYear);
+
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("/static/")
-                .setCacheControl(oneYear);
+                .setCacheControl(CacheControl.noStore());
 
         registry.addResourceHandler("/frontend/**")
                 .addResourceLocations("/frontend/")
@@ -174,6 +201,12 @@ public class WebMVCConfig extends WebMvcConfigurerAdapter {
                                              HttpServletResponse response,
                                              Object handler,
                                              Exception ex) {
+            final SentryClient sentry = Sentry.getStoredClient();
+
+            if (sentry != null) {
+                sentry.sendException(ex);
+            }
+
             if (ex instanceof NotFoundException) {
                 LOG.error("Requested resource was not found for URI={} method={} message={}",
                         request.getRequestURI(), request.getMethod(), ex.getMessage());
@@ -191,8 +224,11 @@ public class WebMVCConfig extends WebMvcConfigurerAdapter {
             if (responseStatus != null) {
                 LOG.error("Caught exception with @ResponseStatus {} with message {} for handler {}",
                         ex.getClass().getSimpleName(), ex.getMessage(), getHandlerName(handler));
+                NewRelic.noticeError(ex, true);
+
             } else {
                 LOG.error("Handler execution resulted in exception", Throwables.getRootCause(ex));
+                NewRelic.noticeError(ex, false);
             }
 
             return null;

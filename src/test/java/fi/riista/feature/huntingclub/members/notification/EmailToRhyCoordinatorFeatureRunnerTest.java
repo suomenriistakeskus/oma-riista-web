@@ -1,9 +1,9 @@
 package fi.riista.feature.huntingclub.members.notification;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.integration.common.entity.Integration;
 import fi.riista.integration.common.repository.IntegrationRepository;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
@@ -94,7 +94,7 @@ public class EmailToRhyCoordinatorFeatureRunnerTest extends EmbeddedDatabaseTest
         assertEquals(expectedBegin.toDate(), beginCaptor.getValue());
         assertEquals(expectedEnd.toDate(), endCaptor.getValue());
 
-        final int currentHuntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+        final int currentHuntingYear = DateUtil.huntingYear();
         assertEquals(Integer.valueOf(currentHuntingYear), huntingYearCaptor.getValue());
 
         runInTransaction(() -> assertEquals(DateTime.now(), getIntegration().getLastRun()));

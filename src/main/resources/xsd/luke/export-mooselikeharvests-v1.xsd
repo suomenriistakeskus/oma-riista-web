@@ -121,6 +121,7 @@
             <xs:element name="geoLocation" type="geoLocation"/>
             <xs:element name="pointOfTime" type="xs:dateTime"/>
             <xs:element name="gender" type="gameGender"/>
+            <xs:element name="alone" type="xs:boolean" minOccurs="0"/>
             <xs:element name="age" type="gameAge"/>
             <xs:element name="weightEstimated" type="xs:double" minOccurs="0"/>
             <xs:element name="weightMeasured" type="xs:double" minOccurs="0"/>
@@ -143,6 +144,7 @@
             <xs:element name="gameSpeciesNameFinnish" type="xs:string"/>
             <xs:element name="mooselikeMaleAmount" type="xs:int" minOccurs="0"/>
             <xs:element name="mooseLikeFemaleAndCalfs" type="FemaleAndCalfs" nillable="true" minOccurs="0"  maxOccurs="5"/>
+            <xs:element name="mooselikeSolitaryCalfAmount" type="xs:int" minOccurs="0"/>
             <xs:element name="mooselikeUnknownSpecimenAmount" type="xs:int" minOccurs="0"/>
             <xs:element name="specimens" type="ObservationSpecimen" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -191,6 +193,7 @@
             <xs:element name="wildForestReindeerAppearance" type="EstimatedAppearance" minOccurs="0"/>
             <xs:element name="fallowDeerAppearance" type="EstimatedAppearance" minOccurs="0"/>
             <xs:element name="wildBoarAppearance" type="WildBoarEstimatedAppearance" minOccurs="0"/>
+            <xs:element name="beaverAppearance" type="BeaverAppearance" minOccurs="0"/>
 
             <xs:element name="mooseHeatBeginDate" type="xs:date" minOccurs="0"/>
             <xs:element name="mooseHeatEndDate" type="xs:date" minOccurs="0"/>
@@ -203,6 +206,8 @@
             <xs:element name="numberOfYoungMoosesHavingFlies" type="xs:int" minOccurs="0"/>
             <xs:element name="deerFliesAppeared" type="xs:boolean" minOccurs="0"/>
             <xs:element name="trendOfDeerFlyPopulationGrowth" type="trendOfPopulationGrowth" minOccurs="0"/>
+
+            <xs:element name="observationPolicyAdhered" type="xs:boolean" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -221,6 +226,17 @@
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="BeaverAppearance">
+        <xs:sequence>
+            <xs:element name="trendOfPopulationGrowth" type="trendOfPopulationGrowth"/>
+            <xs:element name="amountOfInhabitedWinterNests" type="xs:int"/>
+            <xs:element name="harvestAmount" type="xs:int"/>
+            <xs:element name="areaOfDamage" type="xs:int"/>
+            <xs:element name="areaOccupiedByWater" type="xs:int"/>
+            <xs:element name="additionalInfo" type="xs:string"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:simpleType name="restrictionType">

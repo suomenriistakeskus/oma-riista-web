@@ -1,34 +1,37 @@
 package fi.riista.feature.gamediary.mobile;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.gamediary.GameAge;
+import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.fixture.MobileHarvestDTOBuilderFactory;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.Harvest.StateAcceptedToHarvestPermit;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.harvest.HarvestTestUtils.MooselikeFieldsPresence;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenAssertionBuilder;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenRepository;
 import fi.riista.feature.gis.MockGISQueryService;
 import fi.riista.feature.gis.RhyNotResolvableByGeoLocationException;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.harvestpermit.season.HarvestSeason;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.VersionedTestExecutionSupport;
+import org.joda.time.LocalDate;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -39,12 +42,12 @@ import java.util.function.Consumer;
 import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.LOWEST_VERSION_REQUIRING_AMOUNT;
 import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.LOWEST_VERSION_REQUIRING_LOCATION_SOURCE;
 import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_PERMIT_STATE;
-import static fi.riista.feature.gamediary.harvest.HarvestTestUtils.assertPresenceOfMooseFields;
-import static fi.riista.util.Asserts.assertEmpty;
+import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.test.TestUtils.createList;
+import static fi.riista.test.TestUtils.expectValidationException;
+import static fi.riista.test.TestUtils.wrapExceptionExpectation;
 import static fi.riista.util.EqualityHelper.equalNotNull;
-import static fi.riista.util.TestUtils.createList;
-import static fi.riista.util.TestUtils.expectValidationException;
-import static fi.riista.util.TestUtils.wrapExceptionExpectation;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,7 +56,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
-        implements MobileHarvestDTOBuilderFactory, VersionedTestExecutionSupport<HarvestSpecVersion> {
+        implements HuntingGroupFixtureMixin, MobileHarvestDTOBuilderFactory,
+        VersionedTestExecutionSupport<HarvestSpecVersion> {
+
+    @Resource
+    private MobileGameDiaryFeature mobileGameDiaryFeature;
 
     @Resource
     protected HarvestRepository harvestRepo;
@@ -67,12 +74,7 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    protected abstract MobileGameDiaryFeature feature();
-
-    @Override
-    public List<HarvestSpecVersion> getTestExecutionVersions() {
-        return new ArrayList<>(feature().getSupportedSpecVersions());
-    }
+    protected abstract int getApiVersion();
 
     @Override
     public void onAfterVersionedTestExecution() {
@@ -183,17 +185,59 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
     }
 
     @Test
-    public void testCreateHarvest_whenHarvestReportRequiredByPermit() {
-        forEachVersion(specVersion -> withRhy(rhy -> withPerson(person -> {
+    public void testCreateHarvest_withPointOfTimeInsideSeason() {
+        forEachVersion(specVersion -> {
+            model().newRiistanhoitoyhdistys();
+            final GameSpecies species = model().newGameSpecies();
+            final int huntingYear = DateUtil.huntingYear();
+            final LocalDate seasonBegin = DateUtil.huntingYearBeginDate(huntingYear);
+            final LocalDate seasonEnd = DateUtil.huntingYearEndDate(huntingYear);
+            model().newHarvestSeason(species, seasonBegin, seasonEnd, seasonEnd.plusDays(7));
 
-            final HarvestReportFields fields = model().newHarvestReportFields(model().newGameSpecies(), true);
+            onSavedAndAuthenticated(createUserWithPerson(), user -> {
+                final MobileHarvestDTO inputDto = create(specVersion, species)
+                        .withPointOfTime(seasonBegin.toDateTimeAtStartOfDay().toLocalDateTime())
+                        .build();
 
-            onSavedAndAuthenticated(createUser(person), () -> {
-
-                final MobileHarvestDTO inputDto = create(specVersion, fields.getSpecies()).build();
                 final MobileHarvestDTO outputDto = invokeCreateHarvest(inputDto);
 
-                doCreateAssertions(outputDto.getId(), inputDto, person, h -> assertTrue(h.isHarvestReportRequired()));
+                if (specVersion.supportsHarvestReport()) {
+                    inputDto.setHarvestReportRequired(true);
+                    inputDto.setHarvestReportDone(true);
+                    inputDto.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+                } else {
+                    inputDto.setHarvestReportRequired(true);
+                    inputDto.setHarvestReportDone(false);
+                    inputDto.setHarvestReportState(null);
+                }
+
+                doCreateAssertions(outputDto.getId(), inputDto, user.getPerson());
+            });
+        });
+    }
+
+    @Test
+    public void testCreateHarvest_whenHarvestReportAlwaysRequiredForSpecies() {
+        forEachVersion(specVersion -> withRhy(rhy -> withPerson(person -> {
+            final GameSpecies species = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_BEAR);
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final MobileHarvestDTO inputDto = create(specVersion, species, 1).build();
+                final HarvestSpecimenDTO specimenDto = inputDto.getSpecimens().get(0);
+                specimenDto.setGender(GameGender.MALE);
+                specimenDto.setAge(GameAge.ADULT);
+                specimenDto.setWeight(100.0);
+                final MobileHarvestDTO outputDto = invokeCreateHarvest(inputDto);
+
+                if (specVersion.supportsHarvestReport()) {
+                    inputDto.setHarvestReportRequired(false);
+                    inputDto.setHarvestReportDone(true);
+                    inputDto.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+                } else {
+                    inputDto.setHarvestReportRequired(true);
+                }
+
+                doCreateAssertions(outputDto.getId(), inputDto, person);
             });
         })));
     }
@@ -205,7 +249,6 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
             final GameSpecies species = model().newGameSpecies();
             final HarvestPermit permit = model().newHarvestPermit();
             model().newHarvestPermitSpeciesAmount(permit, species);
-            model().newHarvestReportFields(species, true);
 
             onSavedAndAuthenticated(createUserWithPerson(), user -> {
 
@@ -234,7 +277,6 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
                     final GameSpecies species = model().newGameSpecies();
                     final HarvestPermit permit = model().newHarvestPermit();
                     model().newHarvestPermitSpeciesAmount(permit, species);
-                    model().newHarvestReportFields(species, true);
 
                     persistAndAuthenticateWithNewUser(true);
 
@@ -279,15 +321,15 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
         forEachVersion(specVersion -> withPerson(person -> {
 
             final Harvest harvest = model().newMobileHarvest(model().newGameSpecies(true), person);
-            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5, specVersion);
+            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5);
             harvest.setAmount(specimens.size());
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest).populateSpecimensWith(specimens).build();
-                invokeUpdateHarvest(inputDto);
+                final MobileHarvestDTO dto = create(specVersion, harvest).populateSpecimensWith(specimens).build();
+                invokeUpdateHarvest(dto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 0);
+                doUpdateAssertions(dto, person, 0);
             });
         }));
     }
@@ -301,15 +343,15 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest, updatedSpecies)
+                final MobileHarvestDTO dto = create(specVersion, harvest, updatedSpecies)
                         .mutate()
                         .withSpecimens(5)
                         .withAmount(7) // Greater than number of specimens
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1);
+                doUpdateAssertions(dto, person, 1);
             });
         }));
     }
@@ -320,29 +362,30 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
             final GameSpecies species = model().newGameSpecies(true);
             final Harvest harvest = model().newMobileHarvest(species, person);
-            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5, specVersion);
-
-            model().newHarvestReport(harvest, HarvestReport.State.PROPOSED);
+            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5);
+            harvest.setHarvestReportState(HarvestReportState.APPROVED);
+            harvest.setHarvestReportAuthor(harvest.getAuthor());
+            harvest.setHarvestReportDate(DateUtil.now());
 
             final GameSpecies updatedSpecies = model().newGameSpecies();
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest, updatedSpecies)
+                final MobileHarvestDTO dto = create(specVersion, harvest, updatedSpecies)
                         .mutate()
                         .withSpecimens(Collections.emptyList())
                         .withAmount(1)
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
                 final MobileHarvestDTO expectedValues = create(specVersion, harvest, species)
                         .withHarvestReportDone(true)
                         .populateSpecimensWith(specimens)
-                        .withDescription(inputDto.getDescription())
+                        .withDescription(dto.getDescription())
                         .build();
 
-                doUpdateAssertions(harvest.getId(), expectedValues, person, 2);
+                doUpdateAssertions(expectedValues, person, 1);
             });
         }));
     }
@@ -357,16 +400,16 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
             onSavedAndAuthenticated(createUser(person), () -> {
 
                 final Long originalMobileClientRefId = harvest.getMobileClientRefId();
-                final MobileHarvestDTO inputDto = create(specVersion, harvest, updatedSpecies)
+                final MobileHarvestDTO dto = create(specVersion, harvest, updatedSpecies)
                         .mutate()
                         .withMobileClientRefId(originalMobileClientRefId + 1)
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                inputDto.setMobileClientRefId(originalMobileClientRefId);
+                dto.setMobileClientRefId(originalMobileClientRefId);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1);
+                doUpdateAssertions(dto, person, 1);
             });
         }));
     }
@@ -377,19 +420,19 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
             final Harvest harvest = model().newMobileHarvest(model().newGameSpecies(true), person);
             final GameSpecies updatedSpecies = model().newGameSpecies(true);
-            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5, specVersion);
+            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5);
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest, updatedSpecies)
+                final MobileHarvestDTO dto = create(specVersion, harvest, updatedSpecies)
                         .mutate()
                         .populateSpecimensWith(specimens)
                         .withAmount(specimens.size())
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1);
+                doUpdateAssertions(dto, person, 1);
             });
         }));
     }
@@ -399,19 +442,19 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
         forEachVersion(specVersion -> withPerson(person -> {
 
             final Harvest harvest = model().newMobileHarvest(model().newGameSpecies(true), person);
-            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5, specVersion);
+            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5);
             harvest.setAmount(specimens.size());
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest)
+                final MobileHarvestDTO dto = create(specVersion, harvest)
                         .populateSpecimensWith(specimens)
                         .mutateSpecimens()
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1);
+                doUpdateAssertions(dto, person, 1);
             });
         }));
     }
@@ -421,18 +464,18 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
         forEachVersion(specVersion -> withPerson(person -> {
 
             final Harvest harvest = model().newMobileHarvest(model().newGameSpecies(true), person);
-            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5, specVersion);
+            final List<HarvestSpecimen> specimens = createSpecimens(harvest, 5);
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest)
+                final MobileHarvestDTO dto = create(specVersion, harvest)
                         .populateSpecimensWith(specimens)
                         .withAmount(specimens.size() + 10)
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1);
+                doUpdateAssertions(dto, person, 1);
             });
         }));
     }
@@ -445,10 +488,51 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest).withAmount(10).build();
-                invokeUpdateHarvest(inputDto);
+                final MobileHarvestDTO dto = create(specVersion, harvest).withAmount(10).build();
+                invokeUpdateHarvest(dto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1);
+                doUpdateAssertions(dto, person, 1);
+            });
+        }));
+    }
+
+    @Test
+    public void testUpdateHarvest_withPointOfTimeInsideSeason_noReport() {
+        forEachVersion(specVersion -> withPerson(person -> {
+            model().newRiistanhoitoyhdistys();
+            final GameSpecies species = model().newGameSpecies();
+            final int huntingYear = DateUtil.huntingYear();
+            final LocalDate seasonBegin = DateUtil.huntingYearBeginDate(huntingYear);
+            final LocalDate seasonEnd = DateUtil.huntingYearEndDate(huntingYear);
+            final HarvestSeason season = model().newHarvestSeason(
+                    species, seasonBegin, seasonEnd, seasonEnd.plusDays(7));
+
+            final Harvest harvest = model().newMobileHarvest(species, person);
+
+            onSavedAndAuthenticated(createUser(person), user -> {
+                final MobileHarvestDTO inputDto = create(specVersion, harvest)
+                        .withPointOfTime(seasonBegin.toDateTimeAtStartOfDay().toLocalDateTime())
+                        .build();
+
+                final MobileHarvestDTO outputDto = invokeUpdateHarvest(inputDto);
+
+                if (specVersion.supportsHarvestReport()) {
+                    inputDto.setHarvestReportDone(true);
+                    inputDto.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+                    inputDto.setHarvestReportRequired(true);
+                } else {
+                    inputDto.setHarvestReportDone(false);
+                    inputDto.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+                    inputDto.setHarvestReportRequired(true);
+                }
+
+                doUpdateAssertions(outputDto, person, 1, h -> {
+                    if (specVersion.supportsHarvestReport()) {
+                        assertEquals(season, h.getHarvestSeason());
+                    } else {
+                        assertNull(h.getHarvestSeason());
+                    }
+                });
             });
         }));
     }
@@ -461,19 +545,18 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
             final HarvestPermit originalPermit = model().newHarvestPermit();
             model().newHarvestPermitSpeciesAmount(originalPermit, species);
-            model().newHarvestReportFields(species, true);
 
             final Harvest harvest = model().newMobileHarvest(species, person);
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest)
+                final MobileHarvestDTO dto = create(specVersion, harvest)
                         .withPermitNumber(originalPermit.getPermitNumber())
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1, h -> {
+                doUpdateAssertions(dto, person, 1, h -> {
                     final HarvestPermit permit = h.getHarvestPermit();
                     assertNotNull(permit);
                     assertEquals(originalPermit.getPermitNumber(), permit.getPermitNumber());
@@ -492,7 +575,6 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
                     final HarvestPermit permit = model().newHarvestPermit();
                     model().newHarvestPermitSpeciesAmount(permit, species);
-                    model().newHarvestReportFields(species, true);
 
                     final Harvest harvest = model().newMobileHarvest(species, person);
 
@@ -516,11 +598,12 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
             final Harvest harvest = model().newMobileHarvest(species, person);
             harvest.setHarvestPermit(permit);
+            harvest.setStateAcceptedToHarvestPermit(StateAcceptedToHarvestPermit.PROPOSED);
             harvest.setRhy(permit.getRhy());
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest)
+                final MobileHarvestDTO dto = create(specVersion, harvest)
                         .withPointOfTime(Optional
                                 .ofNullable(DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTime()))
                                 .map(ldt -> ldt.plusMinutes(1))
@@ -528,9 +611,9 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
                         .withPermitNumber(null)
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1, h -> assertNull(h.getHarvestPermit()));
+                doUpdateAssertions(dto, person, 1, h -> assertNull(h.getHarvestPermit()));
             });
         }));
     }
@@ -545,18 +628,18 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
             final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, DateUtil.today());
             final Harvest harvest = model().newMobileHarvest(f.species, f.groupMember, huntingDay);
 
-            final GameSpecies newSpecies = model().newGameSpecies();
+            final GameSpecies newSpecies = model().newDeerSubjectToClubHunting();
 
             onSavedAndAuthenticated(createUser(f.groupMember), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest, newSpecies).mutate().build();
-                invokeUpdateHarvest(inputDto);
+                final MobileHarvestDTO dto = create(specVersion, harvest, newSpecies).mutate().build();
+                invokeUpdateHarvest(dto);
 
                 final MobileHarvestDTO expectedValues = create(specVersion, harvest, f.species)
-                        .withDescription(inputDto.getDescription())
+                        .withDescription(dto.getDescription())
                         .build();
 
-                doUpdateAssertions(harvest.getId(), expectedValues, f.groupMember, 1);
+                doUpdateAssertions(expectedValues, f.groupMember, 1);
             });
         }));
     }
@@ -564,18 +647,28 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
     @Test
     public void testUpdateHarvest_whenHarvestChangedToRequired() {
         forEachVersion(specVersion -> withRhy(rhy -> withPerson(person -> {
-
-            final HarvestReportFields fields = model().newHarvestReportFields(model().newGameSpecies(), true);
+            final GameSpecies species = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_BEAR);
             final Harvest harvest = model().newMobileHarvest(person);
+            final HarvestSpecimen harvestSpecimen = model().newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE, 100.0);
 
             onSavedAndAuthenticated(createUser(person), () -> {
                 // Check invariant
                 assertFalse(harvest.isHarvestReportRequired());
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest, fields.getSpecies()).build();
+                final MobileHarvestDTO inputDto = create(specVersion, harvest, species)
+                        .populateSpecimensWith(singletonList(harvestSpecimen))
+                        .build();
                 invokeUpdateHarvest(inputDto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1, h -> assertTrue(h.isHarvestReportRequired()));
+                if (specVersion.supportsHarvestReport()) {
+                    inputDto.setHarvestReportRequired(false);
+                    inputDto.setHarvestReportDone(true);
+                    inputDto.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+                } else {
+                    inputDto.setHarvestReportRequired(true);
+                }
+
+                doUpdateAssertions(inputDto, person, 1);
             });
         })));
     }
@@ -583,7 +676,6 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
     @Test
     public void testUpdateHarvest_withHarvestAcceptedToPermit() {
         forEachVersionStartingFrom(LOWEST_VERSION_SUPPORTING_PERMIT_STATE, specVersion -> {
-
             doTestUpdateHarvestWithPermit(specVersion, false, false, StateAcceptedToHarvestPermit.ACCEPTED);
         });
     }
@@ -591,7 +683,6 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
     @Test
     public void testUpdateHarvest_withHarvestAcceptedToPermit_asContactPerson() {
         forEachVersionStartingFrom(LOWEST_VERSION_SUPPORTING_PERMIT_STATE, specVersion -> {
-
             doTestUpdateHarvestWithPermit(specVersion, true, true, StateAcceptedToHarvestPermit.ACCEPTED);
         });
     }
@@ -599,7 +690,6 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
     @Test
     public void testUpdateHarvest_withHarvestProposedToPermit() {
         forEachVersionStartingFrom(LOWEST_VERSION_SUPPORTING_PERMIT_STATE, specVersion -> {
-
             doTestUpdateHarvestWithPermit(specVersion, false, true, StateAcceptedToHarvestPermit.PROPOSED);
         });
     }
@@ -607,16 +697,14 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
     @Test
     public void testUpdateHarvest_withHarvestRejectedToPermit() {
         forEachVersionStartingFrom(LOWEST_VERSION_SUPPORTING_PERMIT_STATE, specVersion -> {
-
             doTestUpdateHarvestWithPermit(specVersion, false, true, StateAcceptedToHarvestPermit.REJECTED);
         });
     }
 
-    private void doTestUpdateHarvestWithPermit(
-            final HarvestSpecVersion specVersion,
-            final boolean setAsOriginalContactPerson,
-            final boolean businessFieldsUpdateable,
-            final StateAcceptedToHarvestPermit stateAcceptedToHarvestPermit) {
+    private void doTestUpdateHarvestWithPermit(final HarvestSpecVersion specVersion,
+                                               final boolean setAsOriginalContactPerson,
+                                               final boolean businessFieldsUpdateable,
+                                               final StateAcceptedToHarvestPermit stateAcceptedToHarvestPermit) {
 
         withHarvestHavingPermitState(stateAcceptedToHarvestPermit, harvest -> {
 
@@ -636,18 +724,24 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
                 invokeUpdateHarvest(inputDto);
 
+                final boolean expectReportDone = setAsOriginalContactPerson &&
+                        stateAcceptedToHarvestPermit == StateAcceptedToHarvestPermit.ACCEPTED;
+                final StateAcceptedToHarvestPermit expectedStateAfterUpdate =
+                        stateAcceptedToHarvestPermit == StateAcceptedToHarvestPermit.REJECTED
+                                ? StateAcceptedToHarvestPermit.PROPOSED
+                                : stateAcceptedToHarvestPermit;
+
+                inputDto.setHarvestReportDone(expectReportDone);
+                inputDto.setHarvestReportState(expectReportDone ? HarvestReportState.SENT_FOR_APPROVAL : null);
+                inputDto.setHarvestReportRequired(expectReportDone);
+
                 final MobileHarvestDTO expectedValues = businessFieldsUpdateable
                         ? inputDto
                         : create(specVersion, harvest, harvest.getSpecies())
-                                .withDescription(inputDto.getDescription())
-                                .build();
+                        .withDescription(inputDto.getDescription())
+                        .build();
 
-                final StateAcceptedToHarvestPermit expectedStateAfterUpdate =
-                        stateAcceptedToHarvestPermit == StateAcceptedToHarvestPermit.REJECTED
-                            ? StateAcceptedToHarvestPermit.PROPOSED
-                            : stateAcceptedToHarvestPermit;
-
-                doUpdateAssertions(harvest.getId(), expectedValues, harvest.getAuthor(), 1, h -> {
+                doUpdateAssertions(expectedValues, harvest.getAuthor(), 1, h -> {
                     assertEquals(permitNumber, h.getHarvestPermit().getPermitNumber());
                     assertEquals(expectedStateAfterUpdate, h.getStateAcceptedToHarvestPermit());
                 });
@@ -655,20 +749,18 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
         });
     }
 
-    private void withHarvestHavingPermitState(
-            final StateAcceptedToHarvestPermit state, final Consumer<Harvest> consumer) {
+    private void withHarvestHavingPermitState(final StateAcceptedToHarvestPermit state,
+                                              final Consumer<Harvest> consumer) {
 
         withRhy(rhy -> withPerson(author -> {
             final GameSpecies species = model().newGameSpecies(true);
             final HarvestPermit permit = model().newHarvestPermit(rhy, true);
+            model().newHarvestPermitSpeciesAmount(permit, species);
 
             final Harvest harvest = model().newMobileHarvest(species, author);
             harvest.setHarvestPermit(permit);
             harvest.setStateAcceptedToHarvestPermit(state);
             harvest.setRhy(rhy);
-
-            model().newHarvestPermitSpeciesAmount(permit, species);
-            model().newHarvestReportFields(species, true);
 
             consumer.accept(harvest);
         }));
@@ -682,53 +774,61 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest)
-                        .mutate()
-                        .withSpecimens(1)
-                        .build();
+                final MobileHarvestDTO dto = create(specVersion, harvest).mutate().withSpecimens(1).build();
+                invokeUpdateHarvest(dto);
 
-                invokeUpdateHarvest(inputDto);
+                doUpdateAssertions(dto, person, 1, h -> {
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1, h -> {
-                    final MooselikeFieldsPresence p = inputDto.specimenOps().supportsExtendedMooseFields()
-                            ? MooselikeFieldsPresence.ALL
-                            : MooselikeFieldsPresence.ESTIMATED_WEIGHT;
+                    final HarvestSpecimenDTO specimenDTO = dto.getSpecimens().get(0);
 
-                    assertPresenceOfMooseFields(specimenRepo.findByHarvest(h), p);
+                    final HarvestSpecimenAssertionBuilder assertionBuilder = HarvestSpecimenAssertionBuilder.builder()
+                            .withAgeAndGender(specimenDTO.getAge(), specimenDTO.getGender());
+
+                    if (dto.specimenOps().supportsExtendedMooseFields()) {
+                        assertionBuilder.allMooseFieldsPresent(specVersion);
+                    } else {
+                        assertionBuilder.mooseFieldsAbsentExceptEstimatedWeight();
+                    }
+
+                    assertionBuilder.verify(specimenRepo.findByHarvest(h).get(0));
                 });
             });
         }));
     }
 
     @Test
-    public void testDeleteHarvest_whenHarvestReportNotDone() {
+    public void testDeleteHarvest_whenHarvestReportRejected() {
         withPerson(author -> {
             final Harvest harvest = model().newMobileHarvest(author);
             model().newHarvestSpecimen(harvest);
 
-            // HarvestReport with DELETED state means harvest report is not done.
-            model().newHarvestReport(harvest, HarvestReport.State.DELETED);
-
-            onSavedAndAuthenticated(createUser(author), () -> {
-                feature().deleteHarvest(harvest.getId());
-                assertNull(harvestRepo.findOne(harvest.getId()));
-            });
-        });
-    }
-
-    @Test
-    public void testDeleteHarvest_whenHarvestReportDone() {
-        withPerson(author -> {
-            final Harvest harvest = model().newMobileHarvest(author);
-            model().newHarvestSpecimen(harvest);
-            model().newHarvestReport(harvest, HarvestReport.State.PROPOSED);
+            harvest.setHarvestReportState(HarvestReportState.REJECTED);
+            harvest.setHarvestReportAuthor(harvest.getAuthor());
+            harvest.setHarvestReportDate(DateUtil.now());
 
             thrown.expect(RuntimeException.class);
             thrown.expectMessage("Cannot delete harvest with an associated harvest report.");
 
             onSavedAndAuthenticated(createUser(author), () -> {
-                feature().deleteHarvest(harvest.getId());
-                assertNotNull(harvestRepo.findOne(harvest.getId()));
+                mobileGameDiaryFeature.deleteHarvest(harvest.getId());
+            });
+        });
+    }
+
+    @Test
+    public void testDeleteHarvest_whenHarvestReportApproved() {
+        withPerson(author -> {
+            final Harvest harvest = model().newMobileHarvest(author);
+            model().newHarvestSpecimen(harvest);
+            harvest.setHarvestReportState(HarvestReportState.APPROVED);
+            harvest.setHarvestReportAuthor(harvest.getAuthor());
+            harvest.setHarvestReportDate(DateUtil.now());
+
+            thrown.expect(RuntimeException.class);
+            thrown.expectMessage("Cannot delete harvest with an associated harvest report.");
+
+            onSavedAndAuthenticated(createUser(author), () -> {
+                mobileGameDiaryFeature.deleteHarvest(harvest.getId());
             });
         });
     }
@@ -741,7 +841,7 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
             onSavedAndAuthenticated(createUser(f.groupMember), () -> {
                 try {
-                    feature().deleteHarvest(harvest.getId());
+                    mobileGameDiaryFeature.deleteHarvest(harvest.getId());
                     fail("Deletion of harvest associated with a hunting day should fail");
                 } catch (final RuntimeException e) {
                     // Expected
@@ -790,7 +890,7 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
                 thrown.expect(RuntimeException.class);
                 thrown.expectMessage("Cannot delete harvest which is accepted to permit");
             }
-            feature().deleteHarvest(harvest.getId());
+            mobileGameDiaryFeature.deleteHarvest(harvest.getId());
         });
     }
 
@@ -815,23 +915,21 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
         return create(specVersion, harvest, newSpecies);
     }
 
-    protected List<HarvestSpecimen> createSpecimens(
-            final Harvest harvest, final int numSpecimens, final HarvestSpecVersion specVersion) {
-
-        return createList(numSpecimens, () -> model().newHarvestSpecimen(harvest, specVersion));
+    protected List<HarvestSpecimen> createSpecimens(final Harvest harvest, final int numSpecimens) {
+        return createList(numSpecimens, () -> model().newHarvestSpecimen(harvest));
     }
 
     protected void doCreateAssertions(
             final long harvestId, final MobileHarvestDTO expectedValues, final Person expectedAuthor) {
 
-        doCreateAssertions(harvestId, expectedValues, expectedAuthor, h -> {});
+        doCreateAssertions(harvestId, expectedValues, expectedAuthor, h -> {
+        });
     }
 
-    protected void doCreateAssertions(
-            final long harvestId,
-            final MobileHarvestDTO expectedValues,
-            final Person expectedAuthor,
-            final Consumer<Harvest> additionalAssertions) {
+    protected void doCreateAssertions(final long harvestId,
+                                      final MobileHarvestDTO expectedValues,
+                                      final Person expectedAuthor,
+                                      final Consumer<Harvest> additionalAssertions) {
 
         runInTransaction(() -> {
             final Harvest harvest = harvestRepo.findOne(harvestId);
@@ -841,36 +939,28 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
             final Person author = assertValidAuthor(harvest, expectedAuthor.getId());
             assertTrue(harvest.isActor(author));
 
-            assertNull(harvest.getHarvestReport());
-            assertFalse(harvest.isHarvestReportDone());
-
             additionalAssertions.accept(harvest);
         });
     }
 
-    protected void doUpdateAssertions(
-            final long harvestId,
-            final MobileHarvestDTO expectedValues,
-            final Person expectedAuthor,
-            final int expectedRevision) {
+    protected void doUpdateAssertions(final MobileHarvestDTO expectedValues,
+                                      final Person expectedAuthor,
+                                      final int expectedRevision) {
 
-        doUpdateAssertions(harvestId, expectedValues, expectedAuthor, expectedRevision, h -> {});
+        doUpdateAssertions(expectedValues, expectedAuthor, expectedRevision, h -> {
+        });
     }
 
-    protected void doUpdateAssertions(
-            final long harvestId,
-            final MobileHarvestDTO expectedValues,
-            final Person expectedAuthor,
-            final int expectedRevision,
-            final Consumer<Harvest> additionalAssertions) {
+    protected void doUpdateAssertions(final MobileHarvestDTO expectedValues,
+                                      final Person expectedAuthor,
+                                      final int expectedRevision,
+                                      final Consumer<Harvest> additionalAssertions) {
 
         runInTransaction(() -> {
-            final Harvest harvest = harvestRepo.findOne(harvestId);
-            assertCommonExpectations(harvest, expectedValues);
+            final Harvest harvest = harvestRepo.findOne(expectedValues.getId());
             assertVersion(harvest, expectedRevision);
-
+            assertCommonExpectations(harvest, expectedValues);
             assertValidAuthor(harvest, expectedAuthor.getId());
-            assertEquals(expectedValues.isHarvestReportDone(), harvest.isHarvestReportDone());
 
             additionalAssertions.accept(harvest);
         });
@@ -884,9 +974,12 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
         assertTrue(Objects.equals(expectedValues.getMobileClientRefId(), harvest.getMobileClientRefId()));
         assertEquals(expectedValues.getGameSpeciesCode(), harvest.getSpecies().getOfficialCode());
-        assertEquals(DateUtil.toDateNullSafe(expectedValues.getPointOfTime()), harvest.getPointOfTime());
+        assertEquals(expectedValues.getPointOfTime(), DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTime()));
         assertEquals(expectedValues.getGeoLocation(), harvest.getGeoLocation());
         assertEquals(expectedValues.getDescription(), harvest.getDescription());
+        assertEquals(expectedValues.getHarvestReportState(), harvest.getHarvestReportState());
+        assertEquals(expectedValues.isHarvestReportDone(), harvest.isHarvestReportDone());
+        assertEquals(expectedValues.isHarvestReportRequired(), harvest.isHarvestReportRequired());
 
         final int expectedAmount = Optional.ofNullable(expectedValues.getAmount()).orElse(1);
         assertEquals(expectedAmount, harvest.getAmount());
@@ -906,10 +999,9 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
         return author;
     }
 
-    protected void assertSpecimens(
-            final List<HarvestSpecimen> specimens,
-            final List<HarvestSpecimenDTO> expectedSpecimens,
-            final BiFunction<HarvestSpecimen, HarvestSpecimenDTO, Boolean> compareFn) {
+    protected void assertSpecimens(final List<HarvestSpecimen> specimens,
+                                   final List<HarvestSpecimenDTO> expectedSpecimens,
+                                   final BiFunction<HarvestSpecimen, HarvestSpecimenDTO, Boolean> compareFn) {
 
         final int numSpecimenDTOs = Optional.ofNullable(expectedSpecimens).map(List::size).orElse(0);
         assertEquals(numSpecimenDTOs, specimens.size());
@@ -920,15 +1012,14 @@ public abstract class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
     }
 
     protected MobileHarvestDTO invokeCreateHarvest(final MobileHarvestDTO input) {
-        return withVersionChecked(feature().createHarvest(input));
+        return withVersionChecked(mobileGameDiaryFeature.createHarvest(input, getApiVersion()));
     }
 
     protected MobileHarvestDTO invokeUpdateHarvest(final MobileHarvestDTO input) {
-        return withVersionChecked(feature().updateHarvest(input));
+        return withVersionChecked(mobileGameDiaryFeature.updateHarvest(input, getApiVersion()));
     }
 
     private MobileHarvestDTO withVersionChecked(final MobileHarvestDTO dto) {
         return checkDtoVersionAgainstEntity(dto, Harvest.class);
     }
-
 }

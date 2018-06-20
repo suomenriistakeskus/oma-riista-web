@@ -1,0 +1,57 @@
+<div ng-if="$ctrl.results.length === 0" class="alert alert-info" translate="global.noSearchResults"></div>
+
+<table ng-if="$ctrl.results.length > 0" class="table table-condensed table-striped invoice-search-results">
+    <thead>
+        <tr>
+            <th>
+                <div class="text-right" translate="invoice.invoiceNumber"></div>
+                <div class="text-right" translate="payment.creditorReference"></div>
+            </th>
+            <th>
+                <div translate="global.type"></div>
+                <div translate="invoice.deliveryType"></div>
+            </th>
+            <th translate="invoice.recipient" style="vertical-align: top;"></th>
+            <th translate="jht.payments.invoice.invoiceDate" style="vertical-align: top;"></th>
+            <th translate="payment.dueDate" style="vertical-align: top;"></th>
+            <th translate="global.sum" style="vertical-align: top;"></th>
+            <th translate="global.state" style="vertical-align: top;"></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="invoice in $ctrl.results track by invoice.id">
+            <td>
+                <div class="text-right" ng-bind="::invoice.invoiceNumber"></div>
+                <div class="text-right" ng-bind="::invoice.creditorReference"></div>
+            </td>
+            <td>
+                <div ng-bind="'invoice.invoiceTypes.' + invoice.type | translate"></div>
+                <div ng-bind="'invoice.deliveryTypes.' + invoice.deliveryType | translate"></div>
+            </td>
+            <td>
+                <div ng-bind="::invoice.invoiceRecipientName"></div>
+                <div>
+                    <span ng-bind="::invoice.invoiceRecipientAddress.streetAddress"></span>,
+                    <span ng-bind="::invoice.invoiceRecipientAddress.postalCode"></span>
+                    <span ng-bind="::invoice.invoiceRecipientAddress.city"></span>
+                </div>
+            </td>
+            <td ng-bind="::invoice.invoiceDate | date: 'd.M.yyyy'"></td>
+            <td ng-bind="::invoice.dueDate | date: 'd.M.yyyy'"></td>
+            <td ng-bind="::invoice.paymentAmount | currency: '&euro;': 2"></td>
+            <td>
+                <span class="invoice-list-state {{$ctrl.getStateClass(invoice.state)}}"
+                      uib-tooltip="{{'invoice.states.' + invoice.state | translate}}">
+                </span>
+            </td>
+            <td>
+                <button type="button"
+                        class="btn btn-primary btn-block"
+                        ng-click="$ctrl.openInvoice({invoiceId: invoice.id})">
+                    <span translate="global.button.open"></span>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>

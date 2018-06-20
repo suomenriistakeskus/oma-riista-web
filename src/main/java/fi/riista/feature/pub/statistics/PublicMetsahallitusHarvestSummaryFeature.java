@@ -50,12 +50,12 @@ public class PublicMetsahallitusHarvestSummaryFeature {
     }
 
     @Transactional(readOnly = true)
-    public String hirviSummary(final LocalDate startDate, final LocalDate endDate) {
+    public String getHirviSummary(final LocalDate startDate, final LocalDate endDate) {
         return queryToCSV(createSqlParameters(startDate, endDate), SQL_REPORT_HIRVI);
     }
 
     @Transactional(readOnly = true)
-    public Object pienriistaSummary(LocalDate startDate, LocalDate endDate) {
+    public Object getPienriistaSummary(LocalDate startDate, LocalDate endDate) {
         return queryToCSV(createSqlParameters(startDate, endDate), SQL_REPORT_PIENRIISTA);
     }
 

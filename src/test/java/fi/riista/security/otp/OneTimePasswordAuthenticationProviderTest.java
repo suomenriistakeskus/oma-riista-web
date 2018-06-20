@@ -19,8 +19,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.springframework.util.Assert.notNull;
 
 public class OneTimePasswordAuthenticationProviderTest {
 
@@ -163,7 +163,7 @@ public class OneTimePasswordAuthenticationProviderTest {
             provider.authenticate(new OneTimePasswordAuthenticationToken(ADMIN, ADMIN, null));
 
         } catch (OneTimePasswordRequiredException ex) {
-            notNull(ex.getUserDetails());
+            assertNotNull(ex.getUserDetails());
             assertEquals(ex.getUserDetails().getUsername(), ADMIN);
 
             final User user = new User(ADMIN, ADMIN, AuthorityUtils.createAuthorityList("ROLE_ADMIN"));

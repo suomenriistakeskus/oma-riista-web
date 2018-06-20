@@ -1,17 +1,12 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingEndDateNotGiven;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingEndDateNotWithinPermitSeason;
-import static javaslang.control.Validation.invalid;
-import static javaslang.control.Validation.valid;
-
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage8;
 import fi.riista.util.ValidationUtils;
-import javaslang.control.Validation;
+import io.vavr.control.Validation;
 import org.joda.time.LocalDate;
 import org.springframework.beans.BeanUtils;
 
@@ -23,10 +18,13 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingEndDateNotGiven;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingEndDateNotWithinPermitSeason;
+
 public class MooseDataCardSummaryValidator {
 
-    public static Validation<List<String>, MooseDataCard> validate(
-            @Nonnull final MooseDataCard mooseDataCard, @Nonnull final Has2BeginEndDates permitSeason) {
+    public static Validation<List<String>, MooseDataCard> validate(@Nonnull final MooseDataCard mooseDataCard,
+                                                                   @Nonnull final Has2BeginEndDates permitSeason) {
 
         Objects.requireNonNull(mooseDataCard, "mooseDataCard is null");
         Objects.requireNonNull(permitSeason, "permitSeason is null");
@@ -82,9 +80,8 @@ public class MooseDataCardSummaryValidator {
             }
         });
 
-        return errorMsgs.isEmpty()
-                ? ValidationUtils.toValidation(Optional.ofNullable(mutatedCardRef.get()), () -> valid(mooseDataCard))
-                : invalid(errorMsgs);
+        return ValidationUtils.toValidation(errorMsgs, () -> {
+            return Optional.ofNullable(mutatedCardRef.get()).orElse(mooseDataCard);
+        });
     }
-
 }

@@ -1,0 +1,8 @@
+<form name="downloadForm" action="{{$ctrl.url}}" method="POST" style="display: inline;">
+    <input type="hidden" spring-csrf-cookie/>
+    <button type="submit" class="btn btn-link btn-sm">
+        <span ng-if="$ctrl.iconVisible()" class="fa fa-lg fa-download"></span>
+        <span ng-if="$ctrl.filename" class="r-wordwrap-force">{{$ctrl.formatFilename()}}</span>
+        <span ng-if="$ctrl.translateKey">{{$ctrl.translateKey | translate}}</span>
+    </button>
+</form>

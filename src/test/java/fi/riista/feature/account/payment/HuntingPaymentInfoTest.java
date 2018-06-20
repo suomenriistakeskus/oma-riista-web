@@ -1,6 +1,5 @@
 package fi.riista.feature.account.payment;
 
-import fi.riista.feature.account.payment.HuntingPaymentInfo;
 import org.iban4j.Bic;
 import org.iban4j.BicFormatException;
 import org.iban4j.Iban;
@@ -10,8 +9,9 @@ import org.junit.Test;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class HuntingPaymentInfoTest {
 
@@ -19,12 +19,22 @@ public class HuntingPaymentInfoTest {
     private static final String BANK_NAME = "Bank Oy Ab";
 
     @Test
-    public void testSmoke() {
-        verify(HuntingPaymentInfo.create(2015, INVOICE_REFERENCE));
-        verify(HuntingPaymentInfo.create(2016, INVOICE_REFERENCE));
+    public void testNotAvailabeForInvalidYear() {
+        assertFalse(HuntingPaymentInfo.create(2014, INVOICE_REFERENCE).isPresent());
+        assertTrue(HuntingPaymentInfo.create(2015, INVOICE_REFERENCE).isPresent());
+        assertTrue(HuntingPaymentInfo.create(2016, INVOICE_REFERENCE).isPresent());
+        assertTrue(HuntingPaymentInfo.create(2017, INVOICE_REFERENCE).isPresent());
+        assertFalse(HuntingPaymentInfo.create(2018, INVOICE_REFERENCE).isPresent());
     }
 
-    private static void verify(final HuntingPaymentInfo paymentInfo) {
+    @Test
+    public void testSmoke() {
+        verifyPaymentInfo(HuntingPaymentInfo.create(2015, INVOICE_REFERENCE).get());
+        verifyPaymentInfo(HuntingPaymentInfo.create(2016, INVOICE_REFERENCE).get());
+        verifyPaymentInfo(HuntingPaymentInfo.create(2017, INVOICE_REFERENCE).get());
+    }
+
+    private static void verifyPaymentInfo(final HuntingPaymentInfo paymentInfo) {
         assertNotNull(paymentInfo);
         assertEquals("33.00", paymentInfo.getAmountText());
         assertEquals("" +
@@ -32,22 +42,14 @@ public class HuntingPaymentInfoTest {
                         "Nordea       FI12 1660 3000 1072 12\n" +
                         "Danske       FI84 8000 1300 0353 50",
                 paymentInfo.getPaymentReceiverIban());
-        assertEquals("7850000120378442", paymentInfo.getIbanForBarCode());
+        assertEquals("FI7850000120378442", paymentInfo.getIbanForBarCode().toString());
         assertEquals("OKOYFIHH\n" +
                         "NDEAFIHH\n" +
                         "DABAFIHH",
                 paymentInfo.getPaymentReceiverBic());
-        assertEquals("00000000014507700161", paymentInfo.getInvoiceReferenceForBarCode());
         assertEquals("1 45077 00161", paymentInfo.getInvoiceReferenceForHuman());
         assertEquals("478500001203784420000330000000000000014507700161000000",
                 paymentInfo.createBarCodeMessage(null));
-    }
-
-    @Test
-    public void testNotAvailabeForInvalidYear() {
-        assertNull(HuntingPaymentInfo.create(2014, INVOICE_REFERENCE));
-        assertNull(HuntingPaymentInfo.create(2017, INVOICE_REFERENCE));
-        assertNull(HuntingPaymentInfo.create(2018, INVOICE_REFERENCE));
     }
 
     @Test

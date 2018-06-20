@@ -1,6 +1,6 @@
 package fi.riista.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.feature.organization.jht.excel.JHTTrainingExcelView;
 import fi.riista.feature.organization.jht.training.JHTTrainingCrudFeature;
 import fi.riista.feature.organization.jht.training.JHTTrainingDTO;
@@ -36,7 +36,7 @@ public class JHTTrainingApiResource {
     private JHTTrainingCrudFeature jhtTrainingCrudFeature;
 
     @Resource
-    private ObjectMapper objectMapper;
+    private CustomJacksonObjectMapper objectMapper;
 
     @Resource
     private MessageSource messageSource;

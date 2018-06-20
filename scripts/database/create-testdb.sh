@@ -18,6 +18,5 @@ if ! [ ${TEMPLATE_EXISTS_ALREADY} ] ; then
     sh create-database.sh "${TEMPLATE_NAME}"
 fi
 
-
 psql -d postgres -c "DROP DATABASE IF EXISTS \"${DATABASE_NAME}\";"
 psql -d postgres -c "CREATE DATABASE \"${DATABASE_NAME}\" TEMPLATE \"${TEMPLATE_NAME}\";"

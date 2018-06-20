@@ -7,9 +7,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,36 +29,37 @@ public class ValidationApiResource {
     @Resource
     private HuntingClubNameValidationFeature huntingClubNameValitationFeature;
 
-    @RequestMapping(value = "/phonenumber", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> validatePhoneNumber(@ModelAttribute("phoneNumber") String phoneNumber) {
+    @GetMapping(value = "/phonenumber", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> validatePhoneNumber(@ModelAttribute("phoneNumber") final String phoneNumber) {
         final ValidationDTO dto = new ValidationDTO();
         dto.phoneNumber = phoneNumber;
         return validate(dto);
     }
 
-    @RequestMapping(value = "/email", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> validateEmail(@ModelAttribute("email") String email) {
+    @GetMapping(value = "/email", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> validateEmail(@ModelAttribute("email") final String email) {
         final ValidationDTO dto = new ValidationDTO();
         dto.email = email;
         return validate(dto);
     }
 
-    @RequestMapping(value = "/clubname", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> validateClubName(@RequestParam(required = false) Long clubId,
-                                                   @RequestParam String name) {
-        return ResponseEntity.ok(huntingClubNameValitationFeature.isClubNameDuplicate(clubId, name)
-                ? BODY_INVALID_VALUE
-                : BODY_VALID_VALUE);
+    @GetMapping(value = "/clubname", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> validateClubName(@RequestParam(required = false) final Long clubId,
+                                                   @RequestParam final String name) {
+
+        return createResponse(!huntingClubNameValitationFeature.isClubNameDuplicate(clubId, name));
     }
 
-    private ResponseEntity<String> validate(Object dto) {
+    private static ResponseEntity<String> createResponse(final boolean result) {
+        return ResponseEntity.ok(result ? BODY_VALID_VALUE : BODY_INVALID_VALUE);
+    }
+
+    private ResponseEntity<String> validate(final Object dto) {
         final DataBinder binder = new DataBinder(dto);
         binder.setValidator(mvcValidator);
         binder.validate();
 
-        return ResponseEntity.ok(binder.getBindingResult().hasErrors()
-                ? BODY_INVALID_VALUE
-                : BODY_VALID_VALUE);
+        return createResponse(!binder.getBindingResult().hasErrors());
     }
 
     private static class ValidationDTO {

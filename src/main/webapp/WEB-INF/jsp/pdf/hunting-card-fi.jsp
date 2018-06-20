@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" session="false" trimDirectiveWhitespaces="true" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" session="false" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -11,73 +11,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>Hunting Card</title>
-    <base href="/static/foreign-hunter-certificate/">
-
-    <link href="style.css" rel="stylesheet"/>
-
-    <style type="text/css">
-        h1 {
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 20pt;
-            line-height: 26pt;
-            padding: 5pt 0;
-        }
-
-        h1 small {
-            font-size: 16px;
-            line-height: 18px;
-            font-weight: normal;
-        }
-
-        h2 {
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 11pt;
-            padding-top: 0;
-            padding-bottom: 5pt;
-        }
-
-        address {
-            font-size: 10pt;
-            line-height: 13pt;
-        }
-
-        td.occupation-name {
-            padding: 5pt 0 0;
-            min-width: 350pt;
-        }
-
-        dl {
-            width:100%;
-            overflow:hidden;
-            font-size: 10pt;
-            line-height: 12pt;
-        }
-
-        dt {
-            float:left;
-            width:35%; /* adjust the width; make sure the total of both is 100% */
-            padding-top:7pt;
-        }
-
-        dd {
-            float:left;
-            width:65%; /* adjust the width; make sure the total of both is 100% */
-            padding-top:7pt;
-            font-weight: bold;
-        }
-
-        .small-print {
-            font-size: 9pt;
-            line-height: 11pt;
-        }
-
-        .small-print strong {
-            line-height: 11pt;
-        }
-
-    </style>
+    <base href="/static/hunter-certificate/">
+    <link href="certificate.css" rel="stylesheet"/>
+    <link href="hunting-card.css" rel="stylesheet"/>
 </head>
 <body>
 
@@ -94,8 +30,9 @@
         <joda:format value="${model.currentDate}" pattern="d.M.YYYY" />
     </div>
 
+    <p>TODISTUS RIISTANHOITOMAKSUN SUORITTAMISESTA</p>
+
     <h1>
-        <small>TODISTUS RIISTANHOITOMAKSUN SUORITTAMISESTA</small><br/>
         METSÄSTYSKORTTI<br/>
         <joda:format value="${model.huntingCardStart}" pattern="dd.MM.YYYY" />
         &dash;
@@ -242,13 +179,13 @@
         <address>
             Metsästäjärekisteri<br/>
             PL 22<br/>
-            00331 Helsinki</address>
+            00331 Helsinki<br/>
             puh 029 431 2002 (arkisin 8-18)<br/>
             e-mail: metsastajarekisteri@innofactor.com
         </address>
     </div>
 
-    <div class="footer" style="margin-top: 300pt">
+    <div class="footer" style="margin-top: 330pt">
         <%@include file="footer-fi.jsp"%>
     </div>
 </div>

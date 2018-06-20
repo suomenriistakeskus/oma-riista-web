@@ -3,29 +3,24 @@ package fi.riista.feature.gamediary;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.gamediary.GameDiaryEntry;
-import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.security.EntityPermission;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
-import fi.riista.util.F;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
-import javax.annotation.Resource;
-import java.util.EnumSet;
 import java.util.Set;
 
 import static fi.riista.security.EntityPermission.CREATE;
-import static fi.riista.security.EntityPermission.DELETE;
 import static fi.riista.security.EntityPermission.READ;
 import static fi.riista.security.EntityPermission.UPDATE;
 
@@ -33,12 +28,10 @@ import static fi.riista.security.EntityPermission.UPDATE;
  * Common base class for testing hunting club group related functions for game
  * diary entries.
  */
-public abstract class GameDiaryEntryAuthorizationTest<T extends GameDiaryEntry> extends EmbeddedDatabaseTest {
+public abstract class GameDiaryEntryAuthorizationTest<T extends GameDiaryEntry>
+        extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     protected static final ImmutableSet<Enum<?>> NO_PERMS = ImmutableSet.of(CREATE);
-
-    @Resource
-    private UserRepository userRepo;
 
     protected abstract ImmutableSet<Enum<?>> getAllPermissions();
 
@@ -51,20 +44,12 @@ public abstract class GameDiaryEntryAuthorizationTest<T extends GameDiaryEntry> 
     protected abstract void addGroupRejection(final HuntingClubGroup group, final T diaryEntry);
 
     @Test
-    public void testAdminPermissions() {
-        final T diaryEntry = create();
-        onSavedAndAuthenticated(createNewAdmin(), tx(() -> assertPermissions(diaryEntry, getAllPermissions())));
-    }
-
-    @Test
     public void testAuthorPermissions() {
         withPerson(author -> {
             final T diaryEntry = create();
             diaryEntry.setAuthor(author);
 
-            onSavedAndAuthenticated(
-                    createUser(author),
-                    tx(() -> assertPermissions(diaryEntry, EnumSet.of(CREATE, READ, UPDATE, DELETE))));
+            onSavedAndAuthenticated(createUser(author), () -> assertPermissions(diaryEntry, EntityPermission.crud()));
         });
     }
 
@@ -194,7 +179,9 @@ public abstract class GameDiaryEntryAuthorizationTest<T extends GameDiaryEntry> 
         }
     }
 
-    private void testNoPermissions(boolean createClubOCcupation, TriConsumer<Occupation, Occupation, LocalDate> modifyOccupations) {
+    private void testNoPermissions(final boolean createClubOCcupation,
+                                   final TriConsumer<Occupation, Occupation, LocalDate> modifyOccupations) {
+
         final GeoLocation location = geoLocation();
         final HuntingClub club = model().newHuntingClub();
         final HuntingClubGroup group = model().newHuntingClubGroupWithAreaContaining(club, location);
@@ -218,56 +205,46 @@ public abstract class GameDiaryEntryAuthorizationTest<T extends GameDiaryEntry> 
         assertNoPermissions(diaryEntry, Sets.difference(getAllPermissions(), allowedPermissions));
     }
 
-    private void assertPermissions(
-            final T persistentDiaryEntry, final SystemUser user, final Set<? extends Enum<?>> userPermissions) {
-
-        Preconditions.checkArgument(F.hasId(user), "SystemUser-ID must not be null");
-
-        // Firstly, refresh detached SystemUser from database.
-
-        final SystemUser persistentUser = userRepo.getOne(user.getId());
-
-        authenticate(persistentUser);
-        assertPermissions(persistentDiaryEntry, userPermissions);
-    }
-
-    protected void assertPermissions(
-            final T diaryEntry,
-            final HuntingClubGroup group,
-            final Set<? extends Enum<?>> groupLeaderPermissions,
-            final Set<? extends Enum<?>> groupMemberPermissions,
-            final Set<? extends Enum<?>> clubContactPermissions,
-            final Set<? extends Enum<?>> clubMemberPermissions) {
+    protected void assertPermissions(final T diaryEntry,
+                                     final HuntingClubGroup group,
+                                     final Set<? extends Enum<?>> groupLeaderPermissions,
+                                     final Set<? extends Enum<?>> groupMemberPermissions,
+                                     final Set<? extends Enum<?>> clubContactPermissions,
+                                     final Set<? extends Enum<?>> clubMemberPermissions) {
 
         Preconditions.checkArgument(diaryEntry.isNew(), "GameDiaryEntry must be transient entity (not yet persisted)");
         Preconditions.checkArgument(group.isNew(), "HuntingClubGroup must be transient entity (not yet persisted)");
 
-        runInTransaction(() -> {
-            final HuntingClub club = (HuntingClub) group.getParentOrganisation();
+        final HuntingClub club = (HuntingClub) group.getParentOrganisation();
 
-            final SystemUser clubContact = createNewUser(
-                    "clubContact",
-                    model().newHuntingClubMember(club, OccupationType.SEURAN_YHDYSHENKILO).getPerson());
+        final SystemUser clubContact = createNewUser(
+                "clubContact",
+                model().newHuntingClubMember(club, OccupationType.SEURAN_YHDYSHENKILO).getPerson());
 
-            final SystemUser clubMember = createNewUser(
-                    "clubMember", model().newHuntingClubMember(club, OccupationType.SEURAN_JASEN).getPerson());
+        final SystemUser clubMember = createNewUser(
+                "clubMember", model().newHuntingClubMember(club, OccupationType.SEURAN_JASEN).getPerson());
 
-            final SystemUser groupLeader = createNewUser(
-                    "groupLeader",
-                    model().newHuntingClubGroupMember(
-                            group, OccupationType.RYHMAN_METSASTYKSENJOHTAJA).getPerson());
+        final SystemUser groupLeader = createNewUser(
+                "groupLeader",
+                model().newHuntingClubGroupMember(group, OccupationType.RYHMAN_METSASTYKSENJOHTAJA).getPerson());
 
-            final SystemUser groupMember = createNewUser(
-                    "groupMember",
-                    model().newHuntingClubGroupMember(group, OccupationType.RYHMAN_JASEN).getPerson());
+        final SystemUser groupMember = createNewUser(
+                "groupMember",
+                model().newHuntingClubGroupMember(group, OccupationType.RYHMAN_JASEN).getPerson());
 
-            persistInCurrentlyOpenTransaction();
+        persistInNewTransaction();
 
-            assertPermissions(diaryEntry, groupLeader, groupLeaderPermissions);
-            assertPermissions(diaryEntry, groupMember, groupMemberPermissions);
-            assertPermissions(diaryEntry, clubContact, clubContactPermissions);
-            assertPermissions(diaryEntry, clubMember, clubMemberPermissions);
-        });
+        assertPermissions(diaryEntry, groupLeader, groupLeaderPermissions);
+        assertPermissions(diaryEntry, groupMember, groupMemberPermissions);
+        assertPermissions(diaryEntry, clubContact, clubContactPermissions);
+        assertPermissions(diaryEntry, clubMember, clubMemberPermissions);
     }
 
+    private void assertPermissions(final T persistentDiaryEntry,
+                                   final SystemUser user,
+                                   final Set<? extends Enum<?>> userPermissions) {
+
+        authenticate(user);
+        assertPermissions(persistentDiaryEntry, userPermissions);
+    }
 }

@@ -61,6 +61,11 @@ public class SQVetumaTransaction extends RelationalPathSpatial<SQVetumaTransacti
         addMetadata();
     }
 
+    public SQVetumaTransaction(String variable, String schema) {
+        super(SQVetumaTransaction.class, forVariable(variable), schema, "vetuma_transaction");
+        addMetadata();
+    }
+
     public SQVetumaTransaction(Path<? extends SQVetumaTransaction> path) {
         super(path.getType(), path.getMetadata(), "public", "vetuma_transaction");
         addMetadata();

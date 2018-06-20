@@ -1,0 +1,247 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+
+body {
+    line-height: 1;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+blockquote, q {
+    quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* ----------------------------------------------- */
+
+body {
+    font-family: "Times New Roman", "Times", serif;
+    width: 180mm; /* 21cm - 3cm */
+    height: 277mm; /* 29.7cm - 2cm */
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 12pt;
+    line-height: 1.2;
+}
+
+#main-container {
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+/*-------------- COMMON -------------------------- */
+
+li {
+    margin: 6pt 0;
+}
+
+h1 {
+    margin-top: 80pt;
+    margin-bottom: 8pt;
+}
+
+hr {
+    margin: 25px 0;
+    border: 1px solid transparent;
+}
+
+/*-------------- HEADER -------------------------- */
+
+.header-container {
+    width: 100%;
+    overflow: visible;
+}
+
+.header-container .extend {
+    width: 100% !important;
+}
+
+.header-container em {
+    font-style: italic;
+    font-size: 10pt;
+}
+
+.header-container > .col-1 {
+    float: left;
+    box-sizing: border-box;
+    width: 11.5cm;
+    min-height: 1px;
+    padding: 0 0 4pt;
+    overflow: visible;
+}
+
+.header-container > .col-2 {
+    overflow: visible;
+    box-sizing: border-box;
+    margin-left: 11.5cm;
+    min-height: 1px;
+    padding: 12pt 0 4pt;
+}
+
+.logo {
+    float: right;
+    background: url('/static/application-pdf/logo.png') no-repeat 0 0;
+    background-clip: border-box;
+    background-size: 48pt auto;
+    width: 48pt;
+    height: 48pt;
+    margin-right: 3.5cm;
+    margin-top: 16pt;
+}
+
+#header-sub-table {
+    width: 100%;
+    margin-top: 10pt;
+}
+
+#header-sub-table > thead > tr > td {
+    padding-bottom: 3pt;
+}
+
+#header-sub-table > tbody > tr > td:nth-child(1) {
+    width: 40%;
+}
+
+#header-sub-table > tbody > tr > td:nth-child(2) {
+    width: 60%;
+}
+
+/*-------------- BODY -------------------------- */
+
+.layout-container {
+    width: 100%;
+    overflow: visible;
+    clear: both;
+    min-height: 1px;
+}
+
+.layout-container > .col-1 {
+    float: left;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 4.5cm;
+    padding-top: 12pt;
+    min-height: 1px;
+}
+
+.layout-container > .col-2 {
+    position: relative;
+    width: 13cm;
+    overflow: hidden;
+    box-sizing: border-box;
+    margin-left: 5cm;
+    padding-top: 12pt;
+    min-height: 1px;
+}
+
+.layout-container p + p {
+    margin-top: 8pt;
+}
+
+/*-------------- TABLE -------------------------- */
+
+.layout-container table {
+    min-width: 8cm;
+    margin-bottom: 6pt;
+}
+
+.layout-container table > tbody > tr {
+    page-break-inside: avoid !important;
+}
+
+.layout-container table > tbody > tr > td {
+    border-collapse: collapse;
+    min-width: 1.5cm;
+}
+
+.layout-container table > tbody > tr > td:nth-child(1) {
+    min-width: 2.5cm;
+    padding-right: 6pt;
+}
+
+/*-------------- APPEAL AND CORRECTION-------------------------- */
+
+div.attachment {
+    page-break-before: always;
+    clear: both;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+div.attachment > h1 {
+    margin-top: 1cm;
+    margin-bottom: 0.32cm;
+    font-size: 12pt;
+    font-weight: bold;
+    line-height: 16pt;
+}
+
+div.attachment > h2 {
+    margin-top: 0.16cm;
+    margin-bottom: 0.16cm;
+    font-size: 11pt;
+    font-weight: bold;
+}
+
+div.attachment > p {
+    margin-left: 2.0cm;
+    margin-top: 0;
+    margin-bottom: 0.16cm;
+    font-size: 10pt;
+}
+
+div.attachment > ul {
+    list-style-type: none;
+    margin: 0.1cm 0 0.1cm 2.25cm;
+    font-size: 10pt;
+    padding-left: 0.7cm;
+}
+
+div.attachment > ul > li {
+    margin: 2pt 0 0 0;
+}
+
+div.attachment > ul > li:before {
+    content: "\2014";
+    position: absolute;
+    margin-left: -0.7cm;
+}

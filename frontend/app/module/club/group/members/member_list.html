@@ -12,9 +12,11 @@
     <tbody>
     <tr ng-repeat="member in $ctrl.members track by member.id">
         <td>
-            <div ng-class="member.person.registered ? 'is-registered':'not-registered'"
-                  class="pull-right r-person-symbol"
-                  uib-tooltip="{{member.person.registered ? ('occupation.registered'|translate) : ('occupation.unregistered'|translate) }}">
+            <div ng-if="$ctrl.canEdit"
+                 ng-class="member.person.registered ? 'is-registered':'not-registered'"
+                 class="pull-right r-person-symbol"
+                 uib-tooltip="{{member.person.registered ? ('occupation.registered'|translate) : ('occupation.unregistered'|translate) }}">
+
                 <span class="glyphicon glyphicon-user"></span>
             </div>
 
@@ -85,7 +87,7 @@
                             <span translate="occupation.type.RYHMAN_JASEN"></span>
                         </a>
                     </li>
-                    <li ng-show="$ctrl.isClubContact">
+                    <li ng-show="$ctrl.isClubContact && member.person.adult">
                         <a ng-click="$ctrl.setMemberType('RYHMAN_METSASTYKSENJOHTAJA',member)">
                             <span translate="occupation.type.RYHMAN_METSASTYKSENJOHTAJA"></span>
                         </a>
@@ -102,8 +104,8 @@
         </td>
         <td>
             <div ng-if="member.occupationType === 'RYHMAN_METSASTYKSENJOHTAJA'" class="text-center">
-                <span ng-bind="::member.creationTime | date:'d.M.yyyy'"></span><br>
-                <span ng-bind="::member.creationTime | date:'HH:mm'"></span>
+                <span ng-bind="::member.modificationTime | date:'d.M.yyyy'"></span><br>
+                <span ng-bind="::member.modificationTime | date:'HH:mm'"></span>
             </div>
         </td>
     </tr>

@@ -38,25 +38,48 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
 
     public static final int OFFICIAL_CODE_MOOSE = 47503;
 
-    /**
-     * kuusipeura
-     */
+    // Kuusipeura
     public static final int OFFICIAL_CODE_FALLOW_DEER = 47484;
 
-    /**
-     * metsäkauris
-     */
+    // Metsäkauris
     public static final int OFFICIAL_CODE_ROE_DEER = 47507;
 
-    /**
-     * valkohäntäpeura
-     */
+    // Valkohäntäpeura
     public static final int OFFICIAL_CODE_WHITE_TAILED_DEER = 47629;
 
-    /**
-     * metsäpeura
-     */
+    // Metsäpeura
     public static final int OFFICIAL_CODE_WILD_FOREST_REINDEER = 200556;
+
+    // Saksanhirvi
+    public static final int OFFICIAL_CODE_RED_DEER = 47476;
+
+    // Japaninhirvi
+    public static final int OFFICIAL_CODE_SIKA_DEER = 47479;
+
+    // Villisika
+    public static final int OFFICIAL_CODE_WILD_BOAR = 47926;
+
+    // Mufloni
+    public static final int OFFICIAL_CODE_MUFFLON = 47774;
+
+    // Metsähanhi
+    public static final int OFFICIAL_CODE_BEAN_GOOSE = 26287;
+    public static final int OFFICIAL_CODE_TAIGA_BEAN_GOOSE = 292022;
+    public static final int OFFICIAL_CODE_TUNDRA_BEAN_GOOSE = 292023;
+
+    // Hilleri
+    public static final int OFFICIAL_CODE_EUROPEAN_POLECAT = 47240;
+
+    // Halli
+    public static final int OFFICIAL_CODE_GREY_SEAL = 47282;
+
+    public static final int[] ALL_GAME_SPECIES_CODES = new int[] {
+            26366, 27152, 27381, 27649, 27911, 37178, 37166, 37122, 27750, 27759, 200535, 33117, 27048, 26921, 26922,
+            26931, 26926, 26928, 200555, 47305, 47282, 26298, 26291, 26373, 26360, 26382, 26388, 26394, 26407, 26415,
+            26419, 26427, 26435, 26440, 26442, 26287, 50106, 50386, 50336, 47476, 47479, 47774, 53004, 48089, 48251,
+            48250, 48537, 46542, 47503, 47629, 47507, 200556, 47484, 47329, 47230, 47240, 47169, 47223, 47243, 50114,
+            46587, 46564, 47180, 47926, 46615, 47348, 46549, 47212
+    };
 
     public static final ImmutableSet<Integer> DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING = ImmutableSet
             .of(OFFICIAL_CODE_FALLOW_DEER, OFFICIAL_CODE_WHITE_TAILED_DEER, OFFICIAL_CODE_WILD_FOREST_REINDEER);
@@ -66,6 +89,13 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
                     OFFICIAL_CODE_FALLOW_DEER,
                     OFFICIAL_CODE_WHITE_TAILED_DEER,
                     OFFICIAL_CODE_WILD_FOREST_REINDEER);
+
+    public static final ImmutableSet<Integer> PERMIT_REQUIRED_WITHOUT_SEASON = ImmutableSet.of(
+            OFFICIAL_CODE_ROE_DEER, OFFICIAL_CODE_BEAR, OFFICIAL_CODE_WOLVERINE, OFFICIAL_CODE_LYNX, OFFICIAL_CODE_WOLF,
+            OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_EUROPEAN_BEAVER, 47169, 200555);
+
+    public static final ImmutableSet<Integer> LARGE_CARNIVORES =
+            ImmutableSet.of(OFFICIAL_CODE_BEAR, OFFICIAL_CODE_LYNX, OFFICIAL_CODE_WOLF, OFFICIAL_CODE_WOLVERINE);
 
     private Long id;
 
@@ -87,6 +117,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
     @Column(nullable = false)
     private String nameEnglish;
 
+    @Size(max = 100)
     @Column(length = 100)
     private String scientificName;
 
@@ -107,15 +138,46 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
     @Column
     private Integer srvaOrdinal;
 
+    public static boolean isBear(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_BEAR;
+    }
+
+    public static boolean isBeaver(final int speciesCode) {
+        return OFFICIAL_CODE_CANADIAN_BEAVER == speciesCode || OFFICIAL_CODE_EUROPEAN_BEAVER == speciesCode;
+    }
+
+    public static boolean isDeerRequiringPermitForHunting(final int speciesCode) {
+        return DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.contains(speciesCode);
+    }
+
+    public static boolean isLargeCarnivore(final int speciesCode) {
+        return LARGE_CARNIVORES.contains(speciesCode);
+    }
+
+    public static boolean isMoose(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_MOOSE;
+    }
+
+    public static boolean isMooseOrDeerRequiringPermitForHunting(final int speciesCode) {
+        return MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.contains(speciesCode);
+    }
+
+    public static boolean isPermitRequiredWithoutSeason(final int gameSpeciesCode) {
+        return PERMIT_REQUIRED_WITHOUT_SEASON.contains(gameSpeciesCode);
+    }
+
+    public static boolean isWolf(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_WOLF;
+    }
+
     public GameSpecies() {
     }
 
-    public GameSpecies(
-            final int officialCode,
-            final GameCategory category,
-            final String nameFinnish,
-            final String nameSwedish,
-            final String nameEnglish) {
+    public GameSpecies(final int officialCode,
+                       final GameCategory category,
+                       final String nameFinnish,
+                       final String nameSwedish,
+                       final String nameEnglish) {
 
         this.officialCode = officialCode;
         this.category = category;
@@ -124,40 +186,36 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         this.nameEnglish = nameEnglish;
     }
 
-    public static boolean isMoose(final int speciesCode) {
-        return speciesCode == OFFICIAL_CODE_MOOSE;
-    }
-
-    public static boolean isDeerRequiringPermitForHunting(final int speciesCode) {
-        return DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.contains(speciesCode);
-    }
-
-    public static boolean isMooseOrDeerRequiringPermitForHunting(final int speciesCode) {
-        return MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.contains(speciesCode);
-    }
-
-    public static boolean isBeaver(final int speciesCode) {
-        return OFFICIAL_CODE_CANADIAN_BEAVER == speciesCode || OFFICIAL_CODE_EUROPEAN_BEAVER == speciesCode;
-    }
-
     public LocalisedString getNameLocalisation() {
         return LocalisedString.of(nameFinnish, nameSwedish, nameEnglish);
     }
 
-    public boolean isMoose() {
-        return isMoose(officialCode);
+    public boolean isBear() {
+        return isBear(officialCode);
+    }
+
+    public boolean isBeaver() {
+        return isBeaver(officialCode);
     }
 
     public boolean isDeerRequiringPermitForHunting() {
         return isDeerRequiringPermitForHunting(officialCode);
     }
 
+    public boolean isLargeCarnivore() {
+        return isLargeCarnivore(officialCode);
+    }
+
+    public boolean isMoose() {
+        return isMoose(officialCode);
+    }
+
     public boolean isMooseOrDeerRequiringPermitForHunting() {
         return isMooseOrDeerRequiringPermitForHunting(officialCode);
     }
 
-    public boolean isBeaver() {
-        return isBeaver(officialCode);
+    public boolean isWolf() {
+        return isWolf(officialCode);
     }
 
     // Accessors -->
@@ -181,7 +239,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return officialCode;
     }
 
-    public void setOfficialCode(int officialCode) {
+    public void setOfficialCode(final int officialCode) {
         this.officialCode = officialCode;
     }
 
@@ -189,7 +247,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return nameFinnish;
     }
 
-    public void setNameFinnish(String nameFinnish) {
+    public void setNameFinnish(final String nameFinnish) {
         this.nameFinnish = nameFinnish;
     }
 
@@ -197,7 +255,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return nameSwedish;
     }
 
-    public void setNameSwedish(String nameSwedish) {
+    public void setNameSwedish(final String nameSwedish) {
         this.nameSwedish = nameSwedish;
     }
 
@@ -205,7 +263,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return nameEnglish;
     }
 
-    public void setNameEnglish(String nameEnglish) {
+    public void setNameEnglish(final String nameEnglish) {
         this.nameEnglish = nameEnglish;
     }
 
@@ -213,7 +271,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return scientificName;
     }
 
-    public void setScientificName(String scientificName) {
+    public void setScientificName(final String scientificName) {
         this.scientificName = scientificName;
     }
 
@@ -221,7 +279,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return category;
     }
 
-    public void setCategory(GameCategory category) {
+    public void setCategory(final GameCategory category) {
         this.category = category;
     }
 
@@ -229,7 +287,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return multipleSpecimenAllowedOnHarvest;
     }
 
-    public void setMultipleSpecimenAllowedOnHarvest(boolean multipleSpecimenAllowedOnHarvest) {
+    public void setMultipleSpecimenAllowedOnHarvest(final boolean multipleSpecimenAllowedOnHarvest) {
         this.multipleSpecimenAllowedOnHarvest = multipleSpecimenAllowedOnHarvest;
     }
 
@@ -245,7 +303,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return srvaOrdinal;
     }
 
-    public void setSrvaOrdinal(Integer srvaOrdinal) {
+    public void setSrvaOrdinal(final Integer srvaOrdinal) {
         this.srvaOrdinal = srvaOrdinal;
     }
 }

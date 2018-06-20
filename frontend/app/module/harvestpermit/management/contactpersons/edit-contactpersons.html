@@ -1,0 +1,62 @@
+<form name="form" role="form" class="form form-horizontal r-harvest-permit-contact-person-form">
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="harvestpermit.management.contactPerson.modalTitle"></h3>
+    </div>
+
+    <div class="modal-body" style="min-height: 350px;">
+        <div class="row">
+            <div class="col-xs-12 text-right">
+                <button type="button" ng-click="$ctrl.addNewPerson()" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-plus"></span>
+                    &nbsp;
+                    <span translate="harvestpermit.management.contactPerson.addButton"></span>
+                </button>
+            </div>
+        </div>
+
+        <hr>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="col-xs-3" translate="global.person.name"></th>
+                <th class="col-xs-8" translate="global.person.hunterNumber"></th>
+                <th class="col-xs-1"></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr ng-repeat="person in $ctrl.contactPersons | orderBy:['lastName', 'byName']">
+                <td ng-class="{'person-is-new':(person.$isNew)}">
+                    <span ng-bind="person.byName"></span>
+                    <span ng-bind="person.lastName"></span>
+                </td>
+                <td>
+                    <span ng-bind="person.hunterNumber"></span>
+                </td>
+                <td>
+                    <a class="btn btn-danger"
+                       ng-click="$ctrl.removePerson(person)"
+                       ng-show="person.canBeDeleted">
+                        <span class="glyphicon glyphicon-remove" title="{{'global.button.delete' | translate}}"></span>
+                        <span translate="global.button.delete"></span>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid  || !$ctrl.changes"
+                translate="global.button.save"></button>
+    </div>
+</form>

@@ -1,0 +1,23 @@
+<span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span>
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <td>laji</td>
+        <td>saalis&shy;yksilöitä</td>
+        <td>havainto&shy;yksilöitä</td>
+        <td>lupa auki</td>
+        <td>lupa suljettu (massa&shy;tallennuksella)</td>
+        <td>HTK-ryhmien määrä</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="c in $ctrl.metrics.mooselikeHuntingMetrics">
+        <td>{{c.speciesName}}</td>
+        <td>{{c.harvestCount}}</td>
+        <td>{{c.observationCount}}</td>
+        <td>{{c.openPermitCount}}</td>
+        <td>{{c.closedPermitCount}}&nbsp;&nbsp;({{c.moderatorClosedPermitCount}})</td>
+        <td>{{c.mooseDataCardGroupCount}}</td>
+    </tr>
+    </tbody>
+</table>

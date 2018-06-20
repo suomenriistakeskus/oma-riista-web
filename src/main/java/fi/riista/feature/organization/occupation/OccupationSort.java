@@ -8,7 +8,7 @@ import static java.util.Comparator.nullsLast;
 
 public final class OccupationSort {
 
-    public static final Comparator<Occupation> BY_TYPE = comparing(o -> o.getOccupationType().getOrder());
+    public static final Comparator<Occupation> BY_TYPE = comparing(o -> o.getOccupationType().ordinal());
     public static final Comparator<Occupation> BY_CALL_ORDER = comparing(o -> o.getCallOrder(), nullsLast(naturalOrder()));
     public static final Comparator<Occupation> BY_LAST_NAME = comparing(o -> o.getPerson().getLastName());
     public static final Comparator<Occupation> BY_FIRST_NAME = comparing(o -> o.getPerson().getFirstName());
@@ -22,6 +22,8 @@ public final class OccupationSort {
         }
         return 0;
     };
+
+    public static final Comparator<Occupation> BY_FULL_NAME = BY_LAST_NAME.thenComparing(BY_FIRST_NAME);
 
     private OccupationSort() {
         throw new AssertionError();

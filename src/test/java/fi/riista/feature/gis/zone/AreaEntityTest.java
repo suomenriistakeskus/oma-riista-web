@@ -1,9 +1,8 @@
 package fi.riista.feature.gis.zone;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
-
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import java.util.Date;

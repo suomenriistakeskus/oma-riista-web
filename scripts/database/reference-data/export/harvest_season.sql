@@ -10,6 +10,5 @@ SELECT
   hs.end_date2,
   hs.end_of_reporting_date2
 FROM harvest_season hs
-  JOIN harvest_report_fields hr ON (hr.harvest_report_fields_id = hs.harvest_report_fields_id)
-  JOIN game_species g ON (hr.game_species_id = g.game_species_id)
+  JOIN game_species g ON (hs.game_species_id = g.game_species_id)
 ORDER BY 1, 2;

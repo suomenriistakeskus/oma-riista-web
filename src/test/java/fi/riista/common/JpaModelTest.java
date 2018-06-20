@@ -1,21 +1,19 @@
 package fi.riista.common;
 
-import static fi.riista.util.Asserts.assertEmpty;
-import static fi.riista.util.ReflectionTestUtils.fieldsOfClass;
-
 import com.google.common.base.Strings;
-
 import fi.riista.ClassInventory;
 import fi.riista.util.ClassUtils;
 import fi.riista.util.jpa.EagerFetch;
-
+import fi.riista.validation.HasLengthConstrainedByValidator;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.junit.Test;
+import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.FetchType;
@@ -30,8 +28,8 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -39,8 +37,12 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.util.ReflectionTestUtils.fieldsOfClass;
 
 public class JpaModelTest {
 
@@ -243,13 +245,43 @@ public class JpaModelTest {
                     !Modifier.isStatic(modifiers) &&
                     !Modifier.isTransient(modifiers) &&
                     !field.isAnnotationPresent(Transient.class) &&
-                    !field.isAnnotationPresent(Lob.class)) {
+                    !field.isAnnotationPresent(Lob.class) &&
+                    !field.isAnnotationPresent(Pattern.class)) {
 
                 final Column column = field.getAnnotation(Column.class);
-                final Size size = field.getAnnotation(Size.class);
 
-                return column == null && !hasIdGetter(field) ||
-                        column != null && size != null && column.length() != size.max();
+                if (column == null) {
+                    return !hasIdGetter(field);
+                }
+
+                if (!column.columnDefinition().equalsIgnoreCase("text")) {
+
+                    return Optional
+                            .ofNullable(field.getAnnotation(Size.class))
+                            .map(sizeAnnot -> {
+
+                                // Max size is allowed to differ from the DB column length only if
+                                // the field is annotated with @Convert implying that the value is
+                                // converted to correct length by a converter implementation.
+
+                                final boolean maxSizeAccepted =
+                                        sizeAnnot.max() == column.length() || field.isAnnotationPresent(Convert.class);
+
+                                return !maxSizeAccepted;
+                            })
+                            .orElseGet(() -> {
+
+                                // If @Size annotation is not present then a
+                                // @HasLengthConstrainedByValidator must be present for the field
+                                // implying that the length of the field is controlled by
+                                // a JSR-303 validator implementation.
+
+                                final boolean lengthConstrainedByValidator = AnnotationUtils
+                                        .findAnnotation(field, HasLengthConstrainedByValidator.class) != null;
+
+                                return !lengthConstrainedByValidator;
+                            });
+                }
             }
 
             return false;
@@ -339,5 +371,4 @@ public class JpaModelTest {
                 fields.map(field -> String.format("%s.%s", field.getDeclaringClass().getSimpleName(), field.getName())),
                 message);
     }
-
 }

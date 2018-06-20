@@ -12,19 +12,19 @@
             <table class="table table-condensed">
                 <tbody>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.address.streetAddress"></td>
+                    <th class="col-xs-6" translate="global.address.streetAddress"></th>
                     <td ng-bind="::$ctrl.address.streetAddress"></td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.address.postalCode"></td>
+                    <th class="col-xs-6" translate="global.address.postalCode"></th>
                     <td ng-bind="::$ctrl.address.postalCode"></td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.address.city"></td>
+                    <th class="col-xs-6" translate="global.address.city"></th>
                     <td ng-bind="::$ctrl.address.city"></td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.address.country"></td>
+                    <th class="col-xs-6" translate="global.address.country"></th>
                     <td ng-bind="::$ctrl.address.country"></td>
                 </tr>
                 </tbody>
@@ -36,10 +36,6 @@
                ng-click="$ctrl.editAddress()"
                ng-show="::$ctrl.address.editable"
                translate="account.profile.button.editAddress"></a>
-
-            <p class="info"
-               ng-show="::($ctrl.addressSource === 'VTJ')"
-               translate="account.profile.sourcePopulationInformationSystem"></p>
 
             <p class="info"
                ng-show="::($ctrl.addressSource === 'METSASTAJAREKISTERI')"

@@ -36,10 +36,10 @@ public class HuntingClubAuthorization extends AbstractEntityAuthorization<Huntin
                                    @Nonnull final UserInfo userInfo) {
         userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
             collector.addAuthorizationRole(SEURAN_YHDYSHENKILO, () ->
-                    userAuthorizationHelper.isClubContact(club, activePerson));
+                    club.isActive() && userAuthorizationHelper.isClubContact(club, activePerson));
 
             collector.addAuthorizationRole(SEURAN_JASEN, () ->
-                    userAuthorizationHelper.isClubMember(club, activePerson));
+                    club.isActive() && userAuthorizationHelper.isClubMember(club, activePerson));
         });
     }
 }

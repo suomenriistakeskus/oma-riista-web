@@ -1,7 +1,7 @@
 package fi.riista.feature.huntingclub.permit;
 
-import javaslang.Tuple;
-import javaslang.Tuple6;
+import io.vavr.Tuple;
+import io.vavr.Tuple6;
 
 import javax.validation.constraints.AssertTrue;
 
@@ -70,5 +70,4 @@ public interface HasHarvestCountsForPermit {
     static HasHarvestCountsForPermit zeros() {
         return of(0, 0, 0, 0, 0, 0);
     }
-
 }

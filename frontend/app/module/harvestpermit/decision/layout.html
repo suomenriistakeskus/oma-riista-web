@@ -1,0 +1,44 @@
+<ul class="nav nav-pills">
+    <li class="">
+        <a ui-sref="jht.applications">
+            <span class="fa fa-arrow-left"></span>
+            <span>Palaa takaisin</span>
+        </a>
+    </li>
+
+    <li active-if-state-includes="jht.decision.application">
+        <a ui-sref="jht.decision.application.summary">
+            <span class="fa fa-sticky-note"></span>
+            &nbsp;
+            Hakemus
+        </a>
+    </li>
+
+    <li active-if-state-includes="jht.decision.area">
+        <a ui-sref="jht.decision.area">
+            <span class="fa fa-map-marker"></span>
+            &nbsp;
+            Aluetarkastelu
+        </a>
+    </li>
+
+    <li active-if-state-includes="jht.decision.document">
+        <a ui-sref="jht.decision.document">
+            <span class="fa fa-legal"></span>
+            &nbsp;
+            Päätös
+        </a>
+    </li>
+
+    <li active-if-state-includes="jht.decision.revisions">
+        <a ui-sref="jht.decision.revisions">
+            <span class="fa fa-paper-plane"></span>
+            &nbsp;
+            Julkaisu
+        </a>
+    </li>
+</ul>
+
+<hr class="invisible" style="margin: 15px 0"/>
+
+<div ui-view autoscroll="false"></div>

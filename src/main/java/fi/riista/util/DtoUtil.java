@@ -3,16 +3,13 @@ package fi.riista.util;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.error.RevisionConflictException;
-
-import javaslang.Tuple2;
-
+import io.vavr.Tuple2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -43,8 +40,8 @@ public final class DtoUtil {
         return new PageImpl<>(list, pageRequest, resultPage.getTotalElements());
     }
 
-    public static <ID extends Serializable> void assertNoVersionConflict(
-            @Nonnull final BaseEntity<ID> entity, @Nonnull final BaseEntityDTO<ID> dto) {
+    public static <ID extends Serializable> void assertNoVersionConflict(@Nonnull final BaseEntity<ID> entity,
+                                                                         @Nonnull final BaseEntityDTO<ID> dto) {
 
         if (checkForVersionConflict(entity, dto)) {
             final String msg =
@@ -59,8 +56,8 @@ public final class DtoUtil {
         }
     }
 
-    public static <ID extends Serializable> boolean checkForVersionConflict(
-            @Nonnull final BaseEntity<ID> entity, @Nonnull final BaseEntityDTO<ID> dto) {
+    public static <ID extends Serializable> boolean checkForVersionConflict(@Nonnull final BaseEntity<ID> entity,
+                                                                            @Nonnull final BaseEntityDTO<ID> dto) {
 
         Objects.requireNonNull(entity, "entity must not be null");
         Objects.requireNonNull(dto, "dto must not be null");
@@ -68,8 +65,8 @@ public final class DtoUtil {
         return checkForVersionConflict(entity, dto.getRev());
     }
 
-    public static <ID extends Serializable> void assertNoVersionConflict(
-            @Nonnull final BaseEntity<ID> entity, @Nullable final Integer rev) {
+    public static <ID extends Serializable> void assertNoVersionConflict(@Nonnull final BaseEntity<ID> entity,
+                                                                         @Nullable final Integer rev) {
         if (checkForVersionConflict(entity, rev)) {
             final String msg =
                     String.format("Update is in conflict with current resource version. %s:%s:%s, ::%s",
@@ -81,8 +78,8 @@ public final class DtoUtil {
         }
     }
 
-    public static <ID extends Serializable> boolean checkForVersionConflict(
-            @Nonnull final BaseEntity<ID> entity, @Nullable final Integer rev) {
+    public static <ID extends Serializable> boolean checkForVersionConflict(@Nonnull final BaseEntity<ID> entity,
+                                                                            @Nullable final Integer rev) {
 
         Objects.requireNonNull(entity, "entity must not be null");
 
@@ -95,8 +92,8 @@ public final class DtoUtil {
         return entity.getConsistencyVersion() > rev;
     }
 
-    public static <ID extends Serializable> void copyBaseFields(
-            @Nonnull final BaseEntity<ID> entity, @Nonnull final BaseEntityDTO<ID> dto) {
+    public static <ID extends Serializable> void copyBaseFields(@Nonnull final BaseEntity<ID> entity,
+                                                                @Nonnull final BaseEntityDTO<ID> dto) {
 
         Objects.requireNonNull(entity, "entity must not be null");
         Objects.requireNonNull(dto, "dto must not be null");
@@ -120,5 +117,4 @@ public final class DtoUtil {
 
         return entityIdsAndVersions.equals(dtoIdsAndVersions);
     }
-
 }

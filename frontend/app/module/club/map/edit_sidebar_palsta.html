@@ -1,28 +1,90 @@
-<table class="table table-condensed property-list">
-    <thead>
-    <tr>
-        <th translate="club.area.map.tab.selectedAreas.propertyIdentifier"></th>
-        <th translate="club.area.map.tab.selectedAreas.areaSize"></th>
-        <th>&nbsp;</th>
-    </tr>
-    </thead>
-    <tbody vs-repeat vs-scroll-parent=".left-column">
-    <tr ng-repeat="f in palstaFeatureList() track by f.id"
-        ng-mouseenter="editor.api.features.setHighlight(f)"
-        ng-mouseleave="editor.api.features.removeHighlight(f)">
-        <td>
-            <span ng-show="::(f.properties.changed)" class="glyphicon glyphicon-warning-sign text-danger"></span>
-            <a ng-click="selectFeature(f)" ng-bind="::(f.properties.number | formatPropertyIdentifier)"></a>
-        </td>
-        <td>
-            <span ng-bind="::(f | featureAreaSize)"></span>
-        </td>
-        <td class="text-right">
-            <a class="btn btn-link btn-xs"
-               ng-click="editor.api.removeFeature(f.id)">
-                <span translate="global.button.delete"></span>
-            </a>
-        </td>
-    </tr>
-    </tbody>
-</table>
+<form>
+    <div class="form-group">
+        <label class="checkbox-inline">
+            <input type="checkbox" name="showOnlyChanged" id="showOnlyChanged" ng-model="$ctrl.showOnlyChanged">
+            <span translate="club.area.map.tab.realEstates.showOnlyChanged"></span>
+        </label>
+    </div>
+</form>
+
+<p class="well well-sm" ng-if="$ctrl.isEmptySelection()">
+    <span translate="club.area.map.tab.realEstates.emptySelection"></span>
+</p>
+
+<div ng-if="!$ctrl.showOnlyChanged">
+    <ul class="list-group" vs-repeat vs-scroll-parent=".left-column">
+        <li class="list-group-item"
+            ng-click="$ctrl.zoomFeature(f); $event.stopPropagation();"
+            ng-repeat="f in $ctrl.palstaFeatureList() track by f.id"
+            ng-mouseenter="$ctrl.setHighlight(f)"
+            ng-mouseleave="$ctrl.removeHighlight(f)">
+
+            <div class="row">
+                <div class="col-xs-5">
+                    <span ng-bind="f.properties.number | formatPropertyIdentifier"></span>
+                </div>
+                <div class="col-xs-4">
+                    <strong ng-bind="f | featureAreaSize"></strong>
+                    <span ng-show="f.properties.changed"
+                          class="glyphicon glyphicon-warning-sign text-danger"></span>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <button type="button" class="btn btn-default btn-xs"
+                            ng-click="$ctrl.removeFeature(f); $event.stopPropagation();">
+                        <span translate="global.button.delete"></span>
+                        <span class="glyphicon glyphicon-remove text-danger"></span>
+                    </button>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+
+<div class="alert alert-info"
+     ng-show="$ctrl.showOnlyChanged"
+     translate="club.area.map.tab.realEstates.changedHelpText">
+</div>
+
+<div ng-if="$ctrl.showOnlyChanged">
+    <ul class="list-group" vs-repeat vs-scroll-parent=".left-column">
+        <li class="list-group-item"
+            ng-click="$ctrl.zoomFeature(f); $event.stopPropagation();"
+            ng-repeat="f in $ctrl.palstaFeatureList() | propertyFeaturesChanged track by f.id"
+            ng-mouseenter="$ctrl.setHighlight(f)"
+            ng-mouseleave="$ctrl.removeHighlight(f)">
+
+            <div class="row">
+                <div class="col-xs-5"
+                     uib-tooltip="{{ ::('club.area.map.tab.realEstates.tooltipPropertyNumber' | translate) }}">
+                    <span ng-bind="f.properties.number | formatPropertyIdentifier"></span>
+                    <br/>
+                    <span ng-show="f.properties.number != f.properties.new_palsta_tunnus"
+                          class="text-danger"
+                          ng-bind="f.properties.new_palsta_tunnus | formatPropertyIdentifier"></span>
+                </div>
+                <div class="col-xs-4"
+                     uib-tooltip="{{ ::('club.area.map.tab.realEstates.tooltipAreaSize' | translate) }}">
+                    <strong ng-bind="f | featureAreaSize"></strong>
+                    <br/>
+
+                    <div class="text-primary" ng-if="f.properties.diff_area > 0">
+                        <span class="glyphicon glyphicon-chevron-up"></span>
+                        <strong ng-bind="f | featureAreaSizeDiff"></strong>
+                    </div>
+
+                    <div class="text-danger" ng-if="f.properties.diff_area < 0">
+                        <span class="glyphicon glyphicon-chevron-down"></span>
+                        <strong ng-bind="f | featureAreaSizeDiff"></strong>
+                    </div>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <button type="button" class="btn btn-default btn-xs"
+                            ng-click="$ctrl.updateChangedFeature(f); $event.stopPropagation();">
+                        <span translate="club.area.map.tab.realEstates.fix"></span>
+                        <span class="glyphicon glyphicon-wrench text-info"></span>
+                    </button>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>

@@ -4,7 +4,6 @@ import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -12,7 +11,7 @@ import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.Riistakeskus;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import javax.annotation.Resource;

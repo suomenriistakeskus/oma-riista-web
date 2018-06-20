@@ -1,7 +1,7 @@
 package fi.riista.feature.gis.kiinteisto;
 
+import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.GISPoint;
-import fi.riista.feature.gis.WGS84Bounds;
 import org.geojson.FeatureCollection;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,12 +30,7 @@ public class PropertyGeometryLookupFeature {
     }
 
     @Transactional(readOnly = true)
-    public FeatureCollection findDWithin(GISPoint centerPoint, int distance) {
-        return propertyGeometryRepository.findDWithin(centerPoint, distance);
-    }
-
-    @Transactional(readOnly = true)
-    public FeatureCollection findByBounds(WGS84Bounds bounds) {
+    public FeatureCollection findByBounds(GISBounds bounds) {
         return propertyGeometryRepository.findByBounds(bounds, 500);
     }
 }

@@ -6,20 +6,14 @@ import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.gamediary.harvest.specimen.GameAntlersType;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseMale;
 import fi.riista.util.F;
-
-import javaslang.control.Validation;
+import io.vavr.control.Validation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Collections;
 import java.util.List;
 
 public class MooseDataCardMooseMaleValidator extends MooseDataCardHarvestValidator<MooseDataCardMooseMale> {
-
-    public MooseDataCardMooseMaleValidator(@Nonnull final GeoLocation defaultCoordinates) {
-        super(defaultCoordinates);
-    }
 
     public MooseDataCardMooseMaleValidator(@Nonnull final Has2BeginEndDates permitSeason,
                                            @Nonnull final GeoLocation defaultCoordinates) {
@@ -40,7 +34,7 @@ public class MooseDataCardMooseMaleValidator extends MooseDataCardHarvestValidat
                             MooseDataCardDiaryEntryField.ANTLER_POINTS_RIGHT.getValidOrNull(input));
                     return inputWithValidCommonFields;
                 })
-                .leftMap(Collections::singletonList);
+                .mapError(Collections::singletonList);
     }
 
     @Nullable
@@ -61,5 +55,4 @@ public class MooseDataCardMooseMaleValidator extends MooseDataCardHarvestValidat
                 .map(HasMooseDataCardEncoding::getMooseDataCardEncoding)
                 .orElse(null);
     }
-
 }

@@ -3,9 +3,9 @@ package fi.riista.util;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.common.entity.HasID;
-import javaslang.Function2;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Function2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;

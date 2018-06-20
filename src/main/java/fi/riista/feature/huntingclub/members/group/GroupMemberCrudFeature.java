@@ -1,16 +1,18 @@
 package fi.riista.feature.huntingclub.members.group;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.common.entity.HasID;
-import fi.riista.feature.error.NotFoundException;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
+import fi.riista.feature.huntingclub.members.CannotModifyLockedClubOccupationException;
 import fi.riista.feature.huntingclub.members.HuntingClubOccupationDTOTransformer;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.occupation.Occupation;
@@ -22,6 +24,7 @@ import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonLookupService;
+import fi.riista.feature.organization.person.PersonNotFoundException;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
@@ -68,6 +71,9 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
+
     @Override
     protected JpaRepository<Occupation, Long> getRepository() {
         return occupationRepository;
@@ -98,6 +104,7 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
 
         if (!occupation.isDeleted()) {
             occupation.setEndDate(DateUtil.today());
+            occupation.setCallOrder(null);
             occupation.softDelete();
         }
 
@@ -109,10 +116,11 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
         if (entity.isNew()) {
             final HuntingClubGroup group = huntingClubGroupRepository.getOne(dto.getOrganisationId());
             final Person person = personLookupService.findById(dto.getPersonId())
-                    .orElseThrow(() -> new NotFoundException("Person not found by personId: " + dto.getId()));
+                    .orElseThrow(() -> new PersonNotFoundException(dto.getPersonId()));
 
             entity.setOrganisationAndOccupationType(group, dto.getOccupationType());
 
+            assertGroupLeaderIsAdult(person, dto.getOccupationType());
             assertGroupLeaderCanBeModified(group, dto.getOccupationType());
 
             entity.setPerson(person);
@@ -141,8 +149,9 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
     private Integer calculateLastCallOrderValue(final Organisation organisation,
                                                 final OccupationType occupationType) {
         // Always set order to leader roles
-        return occupationType != OccupationType.RYHMAN_METSASTYKSENJOHTAJA ? null :
-                occupationRepository.countNotDeletedOccupationByTypeAndOrganisation(organisation.getId(), occupationType);
+        return occupationType != OccupationType.RYHMAN_METSASTYKSENJOHTAJA
+                ? null
+                : occupationRepository.countNotDeletedByTypeAndOrganisation(organisation.getId(), occupationType);
     }
 
     @Transactional
@@ -156,11 +165,13 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
 
         huntingLeaderCanExitGroupService.assertHuntingLeaderNotLocked(existingOccupation);
 
+        assertGroupLeaderIsAdult(existingOccupation.getPerson(), occupationType);
         assertGroupLeaderCanBeModified(existingOccupation.getOrganisation(), existingOccupation.getOccupationType());
         assertGroupLeaderCanBeModified(existingOccupation.getOrganisation(), occupationType);
 
         if (!existingOccupation.isDeleted()) {
             existingOccupation.setEndDate(DateUtil.today());
+            existingOccupation.setCallOrder(null);
             existingOccupation.softDelete();
         }
 
@@ -202,6 +213,7 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
     @Transactional
     public void updateContactOrder(final long groupId, final List<Long> memberIds) {
         final HuntingClubGroup group = requireEntityService.requireHuntingGroup(groupId, EntityPermission.UPDATE);
+        assertPermitIsNotLocked(group);
         final HuntingClub club = huntingClubRepository.getOne(group.getParentOrganisation().getId());
         userAuthorizationHelper.assertClubContactOrModerator(club);
 
@@ -224,6 +236,25 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
         if (occType == OccupationType.RYHMAN_METSASTYKSENJOHTAJA) {
             final HuntingClub club = huntingClubRepository.getOne(group.getParentOrganisation().getId());
             userAuthorizationHelper.assertClubContactOrModerator(club);
+            final HuntingClubGroup g = huntingClubGroupRepository.getOne(group.getId());
+            assertPermitIsNotLocked(g);
+        }
+    }
+
+    private void assertPermitIsNotLocked(HuntingClubGroup group) {
+        if (!activeUserService.isModeratorOrAdmin()
+                && harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(group.getHarvestPermit(), group.getHuntingYear())) {
+
+            throw new CannotModifyLockedClubOccupationException(String.format(
+                    "Group attached to permit but permit %s locked for hunting year %d",
+                    group.getHarvestPermit().getPermitNumber(),
+                    group.getHuntingYear()));
+        }
+    }
+
+    private static void assertGroupLeaderIsAdult(final Person person, final OccupationType occupationType) {
+        if (occupationType == OccupationType.RYHMAN_METSASTYKSENJOHTAJA) {
+            Preconditions.checkState(person.isAdult(), "hunting leader must be adult");
         }
     }
 }

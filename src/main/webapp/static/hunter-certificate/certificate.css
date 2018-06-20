@@ -1,0 +1,180 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+
+body {
+    line-height: 1;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+blockquote, q {
+    quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* ----------------------------------------------- */
+
+body {
+    font-family: "Times New Roman", "Times", serif;
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 12pt;
+    line-height: 1.2;
+}
+
+img {
+    border: 0;
+    max-width: 100%;
+}
+
+p {
+    font-weight: normal;
+    text-decoration: none;
+    font-size: 12pt;
+    line-height: 14pt;
+    margin: 0;
+}
+
+p + p {
+    margin-bottom: 12pt;
+}
+
+hr {
+    border: none;
+    border-bottom: 1pt solid #999;
+    margin: 7pt 0 7pt;
+}
+
+sup {
+    font-size: 70%;
+    vertical-align: super;
+}
+
+h1 {
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 12pt;
+    margin-top: 14pt;
+    margin-bottom: 7pt;
+}
+
+h2 {
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 11pt;
+}
+
+ul {
+    padding-left: 0;
+    font-size: 12pt;
+    list-style: none;
+}
+
+ul > li:before {
+    content: "-";
+}
+
+ul > li {
+    display: block;
+    margin-top: 2pt;
+}
+
+ul > li span {
+    position: relative;
+    left: 15pt;
+}
+
+.container {
+    position: relative;
+    margin-left: 40pt;
+    margin-right: 20pt;
+}
+
+.header-text {
+    position: absolute;
+    right: 0;
+    top: 18pt;
+    color: #333;
+    font-weight: bolder;
+    /*line-height: 16pt;*/
+}
+
+.header-logo {
+    page-break-before: always;
+    padding-top: 20pt;
+}
+
+.footer {
+    position: relative;
+    z-index: -2000;
+    page-break-inside: avoid;
+    page-break-after: avoid;
+    margin-left: -20pt;
+    margin-right: -20pt;
+}
+
+.footer-table {
+    position: absolute;
+    left: 10pt;
+    bottom: 10pt;
+    font-size: 7pt;
+    line-height: 9pt;
+    font-family: Arial, Helvetica, "Bitstream Vera Sans", sans-serif;
+}
+
+.footer-table td {
+    padding-top: 2pt;
+    padding-right: 15pt;
+    border-top: 1px solid #999;
+    color: #999;
+}
+
+.footer-table td:last-child {
+    padding-right: 5pt;
+}
+
+.footer-logo {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    opacity: 0.5;
+}

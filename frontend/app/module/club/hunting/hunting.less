@@ -50,6 +50,11 @@
       margin-left: auto;
     }
 
+    .btn-group.buttons {
+      margin-top: 10px;
+      padding: 0 0 10px 0;
+    }
+
     .r-hunting-statistics {
       position: relative;
       width: 100%;
@@ -85,10 +90,6 @@
       }
     }
 
-    .btn-group.buttons {
-      padding: 0 0 10px 0;
-    }
-
     .panel-group {
       .panel + .panel {
         margin-top: 0;
@@ -96,16 +97,16 @@
 
       .panel.panel-open {
         .panel-heading {
-          background-color: #fefefe;
+          background-color: #f0f0f0;
         }
       }
 
       .panel {
         border: 0;
-        border-bottom: 1px solid #e6e6e6;
+        border-bottom: 1px solid @table-border-color;
 
         .panel-heading {
-          background-color: #F0F5F2;
+          background-color: #fefefe;
           border-radius: 0;
           cursor: pointer;
           font-weight: bold;
@@ -275,7 +276,7 @@
 
   @media (min-width: 768px) {
     .r-moose-summary-hunting-area {
-      .make-form-group(4.1, 7.9);
+      .make-form-group(4, 4.5);
     }
 
     .r-dead-moose-count-form-group {
@@ -291,19 +292,35 @@
     }
 
     .r-moose-summary-mooselike-population-growth {
-      .make-form-group(2.5, 9.5);
+      .make-form-group(5.5, 6.5);
     }
 
     .r-moose-summary-mooselike-estimated-amount {
       .make-form-group(7.5, 4.5);
     }
 
-    .r-moose-summary-mooselike-estimated-amount-piglets {
-      .make-form-group(10.1, 1.9);
+    .r-moose-summary-estimated-amount-of-sows-with-piglets {
+      .make-form-group(9.225, 2.525);
+    }
+
+    .r-moose-summary-beaver-harvest-amount {
+      .make-form-group(9.225, 2.525);
+    }
+
+    .r-moose-summary-area-of-damage {
+      .make-form-group(6.4, 5.6);
+    }
+
+    .r-moose-summary-area-occupied-by-water {
+      .make-form-group(7.25, 4.3);
+    }
+
+    .r-moose-summary-additional-beaver-info {
+      .make-form-group(2.65, 9.1);
     }
 
     .r-moose-summary-deer-fly-population-growth {
-      .make-form-group(3, 9);
+      .make-form-group(3.1, 5.2);
     }
   }
 
@@ -339,4 +356,16 @@
       font-weight: bold;
     }
   }
+}
+
+.geolocation-container {
+  display: flex;
+}
+
+.geolocation-edit-button {
+  .btn;
+  .btn-link;
+  font-size: 20px;
+  padding-top: 0px;
+  text-shadow: none;
 }

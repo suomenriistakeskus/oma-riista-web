@@ -43,6 +43,11 @@ public class SQHarvestAreaType extends RelationalPathSpatial<SQHarvestAreaType> 
         addMetadata();
     }
 
+    public SQHarvestAreaType(String variable, String schema) {
+        super(SQHarvestAreaType.class, forVariable(variable), schema, "harvest_area_type");
+        addMetadata();
+    }
+
     public SQHarvestAreaType(Path<? extends SQHarvestAreaType> path) {
         super(path.getType(), path.getMetadata(), "public", "harvest_area_type");
         addMetadata();

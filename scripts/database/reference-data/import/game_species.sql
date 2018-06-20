@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_game_species;
-
 CREATE TABLE import_game_species (
   official_code                        INTEGER PRIMARY KEY,
   name_finnish                         VARCHAR(255) NOT NULL,

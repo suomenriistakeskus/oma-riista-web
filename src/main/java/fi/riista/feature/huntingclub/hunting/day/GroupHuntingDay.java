@@ -1,8 +1,8 @@
 package fi.riista.feature.huntingclub.hunting.day;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup_;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
@@ -16,6 +16,7 @@ import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -31,6 +32,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -122,6 +124,19 @@ public class GroupHuntingDay extends LifecycleEntity<Long> {
         return duration.toStandardMinutes()
                 .minus(F.firstNonNull(breakDurationInMinutes, 0))
                 .getMinutes();
+    }
+
+    public boolean containsInstant(@Nonnull final DateTime instant) {
+        return containsInstant(instant.toLocalDateTime());
+    }
+
+    public boolean containsInstant(@Nonnull final LocalDateTime instant) {
+        Objects.requireNonNull(instant);
+
+        final LocalDateTime start = getStartAsLocalDateTime();
+        final LocalDateTime end = getEndAsLocalDateTime();
+
+        return (instant.isEqual(start) || instant.isAfter(start)) && (instant.isEqual(end) || instant.isBefore(end));
     }
 
     // Accessors -->

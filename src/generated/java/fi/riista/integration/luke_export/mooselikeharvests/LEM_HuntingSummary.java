@@ -43,6 +43,7 @@ import org.joda.time.LocalDate;
  *         &lt;element name="wildForestReindeerAppearance" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}EstimatedAppearance" minOccurs="0"/&gt;
  *         &lt;element name="fallowDeerAppearance" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}EstimatedAppearance" minOccurs="0"/&gt;
  *         &lt;element name="wildBoarAppearance" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}WildBoarEstimatedAppearance" minOccurs="0"/&gt;
+ *         &lt;element name="beaverAppearance" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}BeaverAppearance" minOccurs="0"/&gt;
  *         &lt;element name="mooseHeatBeginDate" type="{http://www.w3.org/2001/XMLSchema}date" minOccurs="0"/&gt;
  *         &lt;element name="mooseHeatEndDate" type="{http://www.w3.org/2001/XMLSchema}date" minOccurs="0"/&gt;
  *         &lt;element name="mooseFawnBeginDate" type="{http://www.w3.org/2001/XMLSchema}date" minOccurs="0"/&gt;
@@ -53,6 +54,7 @@ import org.joda.time.LocalDate;
  *         &lt;element name="numberOfYoungMoosesHavingFlies" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="deerFliesAppeared" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
  *         &lt;element name="trendOfDeerFlyPopulationGrowth" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}trendOfPopulationGrowth" minOccurs="0"/&gt;
+ *         &lt;element name="observationPolicyAdhered" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -85,6 +87,7 @@ import org.joda.time.LocalDate;
     "wildForestReindeerAppearance",
     "fallowDeerAppearance",
     "wildBoarAppearance",
+    "beaverAppearance",
     "mooseHeatBeginDate",
     "mooseHeatEndDate",
     "mooseFawnBeginDate",
@@ -94,7 +97,8 @@ import org.joda.time.LocalDate;
     "numberOfAdultMoosesHavingFlies",
     "numberOfYoungMoosesHavingFlies",
     "deerFliesAppeared",
-    "trendOfDeerFlyPopulationGrowth"
+    "trendOfDeerFlyPopulationGrowth",
+    "observationPolicyAdhered"
 })
 public class LEM_HuntingSummary {
 
@@ -145,6 +149,8 @@ public class LEM_HuntingSummary {
     protected LEM_EstimatedAppearance fallowDeerAppearance;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
     protected LEM_WildBoarEstimatedAppearance wildBoarAppearance;
+    @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
+    protected LEM_BeaverAppearance beaverAppearance;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07", type = String.class)
     @XmlJavaTypeAdapter(LocalDateAdapter.class)
     @XmlSchemaType(name = "date")
@@ -178,6 +184,8 @@ public class LEM_HuntingSummary {
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
     @XmlSchemaType(name = "token")
     protected LEM_TrendOfPopulationGrowth trendOfDeerFlyPopulationGrowth;
+    @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
+    protected Boolean observationPolicyAdhered;
 
     /**
      * Gets the value of the huntingEndDate property.
@@ -700,6 +708,30 @@ public class LEM_HuntingSummary {
     }
 
     /**
+     * Gets the value of the beaverAppearance property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link LEM_BeaverAppearance }
+     *     
+     */
+    public LEM_BeaverAppearance getBeaverAppearance() {
+        return beaverAppearance;
+    }
+
+    /**
+     * Sets the value of the beaverAppearance property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link LEM_BeaverAppearance }
+     *     
+     */
+    public void setBeaverAppearance(LEM_BeaverAppearance value) {
+        this.beaverAppearance = value;
+    }
+
+    /**
      * Gets the value of the mooseHeatBeginDate property.
      * 
      * @return
@@ -937,6 +969,30 @@ public class LEM_HuntingSummary {
      */
     public void setTrendOfDeerFlyPopulationGrowth(LEM_TrendOfPopulationGrowth value) {
         this.trendOfDeerFlyPopulationGrowth = value;
+    }
+
+    /**
+     * Gets the value of the observationPolicyAdhered property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isObservationPolicyAdhered() {
+        return observationPolicyAdhered;
+    }
+
+    /**
+     * Sets the value of the observationPolicyAdhered property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setObservationPolicyAdhered(Boolean value) {
+        this.observationPolicyAdhered = value;
     }
 
 }

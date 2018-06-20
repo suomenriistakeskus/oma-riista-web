@@ -1,8 +1,8 @@
 package fi.riista.feature.harvestpermit;
 
 import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
-import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -10,28 +10,32 @@ import java.util.Objects;
 public class HarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
 
     @Nonnull
-    public static HarvestPermitSpeciesAmountDTO create(
-            @Nonnull final HarvestPermitSpeciesAmount speciesAmount) {
-        return create(speciesAmount, speciesAmount.getGameSpecies());
+    public static HarvestPermitSpeciesAmountDTO create(@Nonnull final HarvestPermitSpeciesAmount speciesAmount) {
+        return new HarvestPermitSpeciesAmountDTO(speciesAmount, speciesAmount.getGameSpecies());
     }
 
     @Nonnull
-    public static HarvestPermitSpeciesAmountDTO create(
+    public static HarvestPermitSpeciesAmountDTO create(@Nonnull final HarvestPermitSpeciesAmount speciesAmount,
+                                                       @Nonnull final GameSpecies species) {
+        return new HarvestPermitSpeciesAmountDTO(speciesAmount, species);
+    }
+
+    public HarvestPermitSpeciesAmountDTO() {
+    }
+
+    public HarvestPermitSpeciesAmountDTO(
             @Nonnull final HarvestPermitSpeciesAmount speciesAmount,
             @Nonnull final GameSpecies species) {
         Objects.requireNonNull(speciesAmount, "speciesAmount must not be null");
         Objects.requireNonNull(species, "species must not be null");
+        super.copyDatesFrom(speciesAmount);
 
-        final HarvestPermitSpeciesAmountDTO dto = new HarvestPermitSpeciesAmountDTO();
-        dto.setId(speciesAmount.getId());
-        dto.setRev(speciesAmount.getConsistencyVersion());
-        dto.copyDatesFrom(speciesAmount);
-        dto.setGameSpecies(GameSpeciesDTO.create(species));
-        dto.setAmount(speciesAmount.getAmount());
-        dto.setRestrictionType(speciesAmount.getRestrictionType());
-        dto.setRestrictionAmount(speciesAmount.getRestrictionAmount());
-
-        return dto;
+        this.id = speciesAmount.getId();
+        this.rev = speciesAmount.getConsistencyVersion();
+        this.gameSpecies = GameSpeciesDTO.create(species);
+        this.amount = speciesAmount.getAmount();
+        this.restrictionType = speciesAmount.getRestrictionType();
+        this.restrictionAmount = speciesAmount.getRestrictionAmount();
     }
 
     private Long id;

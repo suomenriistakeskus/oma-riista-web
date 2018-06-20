@@ -1,17 +1,15 @@
 package fi.riista.feature.gamediary.harvest.specimen;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameDiaryEntrySpecimenDTO;
 import fi.riista.feature.gamediary.GameGender;
-import fi.riista.util.F;
+import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.AssertTrue;
-
 import java.util.stream.Stream;
 
-public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements HasMooseFields {
+public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements HarvestSpecimenBusinessFields {
 
     private GameAge age;
 
@@ -42,6 +40,10 @@ public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements Has
     private Boolean notEdible;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean alone;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String additionalInfo;
 
     public HarvestSpecimenDTO() {
@@ -53,21 +55,6 @@ public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements Has
         setWeight(weight);
     }
 
-    @Override
-    public boolean allBusinessFieldsNull() {
-        return super.allBusinessFieldsNull() && F.allNull(
-                getAge(), getWeight(), getWeightEstimated(), getWeightMeasured(), getFitnessClass(), getAntlersType(),
-                getAntlersWidth(), getAntlerPointsLeft(), getAntlerPointsRight(), getNotEdible(), getAdditionalInfo());
-    }
-
-    @Override
-    public void clearBusinessFields() {
-        super.clearBusinessFields();
-        setAge(null);
-        setWeight(null);
-        clearMooseFields();
-    }
-
     @AssertTrue(message = "{HarvestSpecimenDTO.weightOutOfAcceptableLimits}")
     public boolean isWeightWithinAcceptableLimits() {
         return Stream.of(weight, weightEstimated, weightMeasured).noneMatch(w -> w != null && (w < 0.0 || w > 999.99));
@@ -75,18 +62,22 @@ public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements Has
 
     // Accessors -->
 
+    @Override
     public GameAge getAge() {
         return age;
     }
 
+    @Override
     public void setAge(final GameAge age) {
         this.age = age;
     }
 
+    @Override
     public Double getWeight() {
         return weight;
     }
 
+    @Override
     public void setWeight(final Double weight) {
         this.weight = weight;
     }
@@ -172,6 +163,16 @@ public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements Has
     }
 
     @Override
+    public Boolean getAlone() {
+        return alone;
+    }
+
+    @Override
+    public void setAlone(final Boolean alone) {
+        this.alone = alone;
+    }
+
+    @Override
     public String getAdditionalInfo() {
         return additionalInfo;
     }
@@ -180,5 +181,4 @@ public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements Has
     public void setAdditionalInfo(final String additionalInfo) {
         this.additionalInfo = additionalInfo;
     }
-
 }

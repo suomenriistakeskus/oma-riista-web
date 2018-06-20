@@ -1,0 +1,46 @@
+<div class="row">
+    <div class="col-xs-9 col-sm-10 col-md-9">
+        <jht-annual-statistics-tab-selection tab-counts="::$ctrl.stateCounts"
+                                             active-tab-index="::$ctrl.activeTab"
+                                             year="::$ctrl.year">
+        </jht-annual-statistics-tab-selection>
+    </div>
+
+    <div class="col-xs-3 col-sm-2 col-md-3">
+        <div class="text-right">
+            <span class="hidden-xs hidden-sm">
+                <span translate="global.year"></span>
+                <span>&nbsp;&nbsp;</span>
+            </span>
+
+            <select name="yearSelection" id="yearSelection"
+                    class="form-control r-annual-statistics-year-select"
+                    ng-model="$ctrl.year"
+                    ng-options="year for year in ::$ctrl.availableYears"
+                    ng-change="$ctrl.onSelectedYearChanged()">
+                <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12 text-right">
+        <button type="button" class="btn btn-primary"
+                ng-controller="CopyEmailsController as $emailCtrl"
+                ng-click="$emailCtrl.copyEmails($ctrl.getEntriesNotCompletedByCoordinator(), 'rhyEmail')"
+                ng-disabled="::(!$ctrl.isCopyEmailsButtonActive)">
+
+            <span class="glyphicon glyphicon-envelope"></span> &nbsp;
+            <span translate="jht.annualStats.button.copyEmails"></span>
+        </button>
+    </div>
+</div>
+
+<!-- vertical spacing -->
+<div>&nbsp;</div>
+
+<jht-annual-statistics-table annual-stats="::$ctrl.filteredStats"
+                             year="::$ctrl.year"
+                             active-state="::$ctrl.activeState">
+</jht-annual-statistics-table>

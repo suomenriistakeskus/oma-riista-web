@@ -1,9 +1,11 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Streams;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.common.entity.EntityPersister;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
+import fi.riista.feature.common.entity.Municipality;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
@@ -14,6 +16,7 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -25,7 +28,6 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay_;
 import fi.riista.feature.huntingclub.moosedatacard.converter.MooseDataCardHuntingDayConverter;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardPage1Validation;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryRepository;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportRepository;
 import fi.riista.feature.organization.Organisation_;
 import fi.riista.feature.organization.lupahallinta.LHOrganisation;
 import fi.riista.feature.organization.lupahallinta.LHOrganisationRepository;
@@ -35,6 +37,7 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonLookupService;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.storage.FileStorageService;
 import fi.riista.feature.storage.metadata.FileType;
 import fi.riista.util.DateUtil;
@@ -44,13 +47,14 @@ import fi.riista.util.LocalisedString;
 import fi.riista.util.MediaTypeExtras;
 import fi.riista.util.ValidationUtils;
 import fi.riista.util.jpa.JpaSubQuery;
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import javaslang.Value;
-import javaslang.control.Either;
-import javaslang.control.Try;
-import javaslang.control.Validation;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.Value;
+import io.vavr.control.Either;
+import io.vavr.control.Try;
+import io.vavr.control.Validation;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,13 +102,13 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.multipleHarvestPermitMooseAmountsFound;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.permitNotFoundByPermitNumber;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.permitNotOfCorrectType;
+import static fi.riista.util.DateUtil.createDateInterval;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.notEqual;
+import static io.vavr.control.Validation.invalid;
+import static io.vavr.control.Validation.valid;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.concat;
-import static javaslang.control.Validation.invalid;
-import static javaslang.control.Validation.valid;
 
 @Component
 public class MooseDataCardImportHelper {
@@ -181,7 +185,7 @@ public class MooseDataCardImportHelper {
                 .combine(resolveContactPersonId(input))
                 .ap((clubEither, moosePermitAmount, personId) -> new MooseDataCardEntitySearchResult(
                         clubEither, moosePermitAmount, moosePermitAmount.resolveHuntingYear(), personId))
-                .leftMap(Value::toJavaList);
+                .mapError(Value::toJavaList);
     }
 
     private Validation<String, HarvestPermit> findHarvestPermit(final String permitNumber) {
@@ -335,7 +339,7 @@ public class MooseDataCardImportHelper {
 
                 return observationResult.mapTry(observationMessages -> Tuple.of(
                         newHuntingDays,
-                        concat(concat(messages.build(), harvestMessages), observationMessages).collect(toList())));
+                        Streams.concat(messages.build(), harvestMessages, observationMessages).collect(toList())));
             });
         });
     }
@@ -362,13 +366,18 @@ public class MooseDataCardImportHelper {
                 // Complete data/associations.
                 filteredTuples.stream().map(Tuple2::_1).forEach(harvest -> {
                     // TODO validate coordinates
-                    harvest.updateGeoLocation(harvest.getGeoLocation(), gisQueryService);
+                    final Riistanhoitoyhdistys rhyByLocation = gisQueryService.findRhyByLocation(harvest.getGeoLocation());
+                    final String municipalityCode = Optional.ofNullable(gisQueryService.findMunicipality(harvest.getGeoLocation()))
+                            .map(Municipality::getOfficialCode).orElse(null);
+
+                    harvest.setRhy(rhyByLocation);
+                    harvest.setMunicipalityCode(municipalityCode);
                     harvest.updateHuntingDayOfGroup(indexedNewHuntingDays.get(harvest.getPointOfTimeAsLocalDate()), null);
                 });
 
                 try {
                     persister.saveInCurrentlyOpenTransaction(filteredTuples.stream()
-                            .flatMap(tuple -> tuple.transform(Stream::of))
+                            .flatMap(tuple -> tuple.apply(Stream::of))
                             .collect(toList()));
                 } catch (final RuntimeException e) {
                     LOG.error("Persisting harvests and specimens within moose data card import failed: {}",
@@ -402,7 +411,8 @@ public class MooseDataCardImportHelper {
                 // Complete data/associations.
                 filteredObservations.forEach(observation -> {
                     // TODO validate coordinates
-                    observation.updateGeoLocation(observation.getGeoLocation(), gisQueryService);
+                    observation.setRhy(observation.getGeoLocation() != null
+                            ? gisQueryService.findRhyByLocation(observation.getGeoLocation()) : null);
                     observation
                             .updateHuntingDayOfGroup(indexedNewHuntingDays.get(observation.getPointOfTimeAsLocalDate()), null);
                 });
@@ -443,7 +453,7 @@ public class MooseDataCardImportHelper {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public Try<Occupation> assignClubMembershipToPerson(@Nonnull final Person person,
                                                         @Nonnull final HuntingClub club,
-                                                        @Nullable final LocalDate reportingPeriodBeginDate) {
+                                                        @Nullable final LocalDate huntingSeasonBeginDate) {
 
         final LocalDate today = DateUtil.today();
 
@@ -451,16 +461,16 @@ public class MooseDataCardImportHelper {
         final Optional<Occupation> firstOccupationActiveOnOrAfterGivenPeriod =
                 occupationRepo.findNotDeletedByOrganisationAndPerson(club, person)
                         .stream()
-                        .filter(occ -> occ.isActiveWithinPeriod(reportingPeriodBeginDate, null))
+                        .filter(occ -> occ.isActiveWithinPeriod(huntingSeasonBeginDate, null))
                         .sorted(HasBeginAndEndDate.DEFAULT_COMPARATOR)
                         .findFirst()
                         .map(occupation -> {
 
                             // Set Occupation's beginDate to minimum of (reportingPeriodBeginDate,
                             // current begin date, today).
-                            final LocalDate newLocalDate = F.getFirstByNaturalOrderNullsFirst(
-                                    occupation.getBeginDate(), reportingPeriodBeginDate, today);
-                            occupation.setBeginDate(newLocalDate);
+                            final LocalDate newBeginDate = F.getFirstByNaturalOrderNullsFirst(
+                                    occupation.getBeginDate(), huntingSeasonBeginDate, today);
+                            occupation.setBeginDate(newBeginDate);
 
                             return occupation;
                         });
@@ -469,7 +479,7 @@ public class MooseDataCardImportHelper {
                 .map(Try::success)
                 .orElseGet(() -> Try.of(() -> {
                     final Occupation occupation = new Occupation(person, club, OccupationType.SEURAN_JASEN);
-                    occupation.setBeginDate(F.getFirstByNaturalOrderNullsFirst(reportingPeriodBeginDate, today));
+                    occupation.setBeginDate(F.getFirstByNaturalOrderNullsFirst(huntingSeasonBeginDate, today));
                     return occupationRepo.save(occupation);
                 }));
     }
@@ -497,17 +507,14 @@ public class MooseDataCardImportHelper {
      * </pre>
      */
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Try<HuntingClubGroup> findOrCreateGroupForMooseDataCardImport(
-            @Nonnull final HuntingClub club,
-            @Nonnull final HarvestPermit permit,
-            @Nonnull final GameSpecies mooseSpecies,
-            final int huntingYear,
-            @Nonnull final Person contactPerson,
-            @Nullable final LocalDate reportPeriodBeginDate,
-            @Nullable final LocalDate reportPeriodEndDate) {
+    public Try<HuntingClubGroup> findOrCreateGroupForMooseDataCardImport(@Nonnull final HuntingClub club,
+                                                                         @Nonnull final HarvestPermit permit,
+                                                                         @Nonnull final GameSpecies mooseSpecies,
+                                                                         final int huntingYear,
+                                                                         @Nonnull final Person contactPerson) {
 
-        final Try<Optional<HuntingClubGroup>> groupSearchResult = findMooseDataCardGroup(
-                club, permit, mooseSpecies, huntingYear, contactPerson, reportPeriodBeginDate, reportPeriodEndDate);
+        final Try<Optional<HuntingClubGroup>> groupSearchResult =
+                findMooseDataCardGroup(club, permit, mooseSpecies, huntingYear, contactPerson);
 
         // Create group if not existing found.
         return groupSearchResult.flatMapTry(groupOpt -> groupOpt.map(Try::success).orElseGet(() -> {
@@ -540,7 +547,7 @@ public class MooseDataCardImportHelper {
 
                 } catch (final Exception e) {
                     LOG.info("Failure while creating hunting group with " +
-                                    "club-customer-number = \"{}\", permit-number = \"{}\":",
+                            "club-customer-number = \"{}\", permit-number = \"{}\":",
                             club.getOfficialCode(), permitNumber, e);
 
                     throw couldNotCreateHuntingClubGroup();
@@ -553,9 +560,7 @@ public class MooseDataCardImportHelper {
                                                                    final HarvestPermit permit,
                                                                    final GameSpecies mooseSpecies,
                                                                    final int huntingYear,
-                                                                   final Person contactPerson,
-                                                                   final LocalDate reportPeriodBeginDate,
-                                                                   final LocalDate reportPeriodEndDate) {
+                                                                   final Person contactPerson) {
 
         final Specifications<HuntingClubGroup> baseCriteria = Specifications
                 .where(equal(HuntingClubGroup_.huntingYear, huntingYear))
@@ -568,7 +573,7 @@ public class MooseDataCardImportHelper {
 
         if (groupRepo.count(searchNonMooseCardGroupCriteria) > 0) {
             LOG.info("Cannot import moose data card because hunting club with customer number "
-                            + "\"{}\" already has hunting groups not created within moose data card import",
+                    + "\"{}\" already has hunting groups not created within moose data card import",
                     club.getOfficialCode());
 
             return Try.failure(huntingClubAlreadyHasGroupNotCreatedWithinMooseDataCardImport());
@@ -602,13 +607,13 @@ public class MooseDataCardImportHelper {
                 // occupations (active during reported period and not soft-deleted).
 
                 final Map<Long, HuntingClubGroup> groupById = F.indexById(groups);
+                final HarvestPermitSpeciesAmount speciesAmount =
+                        speciesAmountRepo.getOneByHarvestPermitAndSpeciesCode(permit, mooseSpecies.getOfficialCode());
+                final Interval period = createDateInterval(speciesAmount.getFirstDate(), speciesAmount.getLastDate());
 
                 final Map<Long, List<Occupation>> groupIdToActiveOccupations =
                         userAuthorizationHelper.findActiveOccupationsInOrganisations(
-                                F.getUniqueIds(groups),
-                                contactPerson,
-                                DateUtil.toDateTimeNullSafe(reportPeriodBeginDate),
-                                DateUtil.toDateTimeNullSafe(reportPeriodEndDate));
+                                F.getUniqueIds(groups), contactPerson, period.getStart(), period.getEnd());
 
                 if (groupIdToActiveOccupations.isEmpty()) {
                     return Try.failure(contactPersonMemberOfMultipleMooseDataCardGroupsButWithNoActiveOccupations());
@@ -660,8 +665,6 @@ public class MooseDataCardImportHelper {
                                                    final HuntingClubGroup group,
                                                    final Collection<GroupHuntingDay> huntingDays,
                                                    final DateTime filenameTimestamp,
-                                                   final LocalDate reportingPeriodBeginDate,
-                                                   final LocalDate reportingPeriodEndDate,
                                                    final List<String> messages) {
 
         Objects.requireNonNull(xmlFile, "xmlFile is null");
@@ -673,8 +676,6 @@ public class MooseDataCardImportHelper {
         final MooseDataCardImport imp = new MooseDataCardImport();
         imp.setGroup(group);
         imp.setFilenameTimestamp(filenameTimestamp.toDate());
-        imp.setBeginDate(reportingPeriodBeginDate);
-        imp.setEndDate(reportingPeriodEndDate);
         imp.getMessages().addAll(messages);
 
         final UUID xmlUuid = UUID.randomUUID();

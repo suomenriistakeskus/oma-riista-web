@@ -2,7 +2,7 @@ package fi.riista.feature.harvestpermit.season;
 
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.LifecycleEntity;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.util.DateUtil;
 import fi.riista.util.LocalisedString;
 import org.hibernate.validator.constraints.NotBlank;
@@ -42,8 +42,8 @@ public class HarvestSeason extends LifecycleEntity<Long> implements Has2BeginEnd
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "harvest_report_fields_id", nullable = false)
-    private HarvestReportFields fields;
+    @JoinColumn(name = "game_species_id", nullable = false)
+    private GameSpecies species;
 
     @NotNull
     @Column(nullable = false)
@@ -65,18 +65,18 @@ public class HarvestSeason extends LifecycleEntity<Long> implements Has2BeginEnd
     @OneToMany(mappedBy = "harvestSeason")
     private Set<HarvestQuota> quotas = new HashSet<>();
 
-    protected HarvestSeason() {
+    public HarvestSeason() {
     }
 
     public HarvestSeason(String nameFinnish,
-            String nameSwedish,
-            HarvestReportFields fields,
-            LocalDate beginDate,
-            LocalDate endDate,
-            LocalDate endOfReportingDate) {
+                         String nameSwedish,
+                         GameSpecies species,
+                         LocalDate beginDate,
+                         LocalDate endDate,
+                         LocalDate endOfReportingDate) {
         this.nameFinnish = nameFinnish;
         this.nameSwedish = nameSwedish;
-        this.fields = fields;
+        this.species = species;
         this.beginDate = beginDate;
         this.endDate = endDate;
         this.endOfReportingDate = endOfReportingDate;
@@ -116,12 +116,12 @@ public class HarvestSeason extends LifecycleEntity<Long> implements Has2BeginEnd
         return LocalisedString.of(nameFinnish, nameSwedish);
     }
 
-    public HarvestReportFields getFields() {
-        return fields;
+    public GameSpecies getSpecies() {
+        return species;
     }
 
-    public void setFields(HarvestReportFields fields) {
-        this.fields = fields;
+    public void setSpecies(final GameSpecies species) {
+        this.species = species;
     }
 
     @Override
@@ -192,9 +192,13 @@ public class HarvestSeason extends LifecycleEntity<Long> implements Has2BeginEnd
         return !quotas.isEmpty();
     }
 
-    public boolean isHarvestReportRequired(LocalDate date, int gameSpeciesCode) {
-        return fields.getSpecies().getOfficialCode() == gameSpeciesCode
-                && DateUtil.overlapsInclusive(beginDate, endDate, date);
+    public boolean isValidOnHarvestDate(final LocalDate harvestDate) {
+        return DateUtil.overlapsInclusive(beginDate, endDate, harvestDate) ||
+                DateUtil.overlapsInclusive(beginDate2, endDate2, harvestDate);
     }
 
+    public boolean isValidOnReportingDate(final LocalDate reportingDate) {
+        return DateUtil.overlapsInclusive(beginDate, endOfReportingDate, reportingDate) ||
+                DateUtil.overlapsInclusive(beginDate2, endOfReportingDate2, reportingDate);
+    }
 }

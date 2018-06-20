@@ -9,10 +9,10 @@ import fi.riista.feature.gamediary.GameSpeciesRepository;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
-import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -32,8 +32,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import static fi.riista.feature.organization.OrganisationType.CLUB;
+import static fi.riista.feature.organization.OrganisationType.CLUBGROUP;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
+import static fi.riista.util.Collect.groupingByIdOf;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
@@ -58,6 +61,9 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
     @Resource
     private HuntingClubPermitService clubPermitService;
 
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
+
     @Nonnull
     @Override
     protected List<HuntingClubGroupDTO> transform(@Nonnull final List<HuntingClubGroup> list) {
@@ -65,7 +71,7 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
             return emptyList();
         }
 
-        final SystemUser activeUser = activeUserService.getActiveUser();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
         final Map<Long, List<Occupation>> occupationByOrganisationId = findValidActiveUserOccupations(activeUser);
 
         final Function<HuntingClubGroup, GameSpecies> groupToSpeciesMapping = getGroupToSpeciesMapping(list);
@@ -88,7 +94,10 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
             dto.setMemberCount(memberCountFn.apply(group));
 
             dto.setHuntingFinished(clubPermitService.hasClubHuntingFinished(group));
-            dto.setCanEdit(adminOrModerator || hasEditPermission(occupationByOrganisationId, group));
+            dto.setCanEdit(!group.isFromMooseDataCard() &&
+                    (adminOrModerator ||
+                            hasEditPermission(occupationByOrganisationId, group)
+                                    && !harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(group.getHarvestPermit(), group.getHuntingYear())));
 
             return dto;
         }).collect(toList());
@@ -148,10 +157,10 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
 
     private Map<Long, List<Occupation>> findValidActiveUserOccupations(final SystemUser activeUser) {
         if (activeUser.getRole() == SystemUser.Role.ROLE_USER && activeUser.getPerson() != null) {
-            final List<Occupation> occupations = occupationRepository.findActiveByPersonAndOrganisationTypes(
-                    activeUser.getPerson(), EnumSet.of(OrganisationType.CLUBGROUP, OrganisationType.CLUB));
-
-            return F.groupByIdAfterTransform(occupations, Occupation::getOrganisation);
+            return occupationRepository
+                    .findActiveByPersonAndOrganisationTypes(activeUser.getPerson(), EnumSet.of(CLUBGROUP, CLUB))
+                    .stream()
+                    .collect(groupingByIdOf(Occupation::getOrganisation));
         }
 
         return Collections.emptyMap();

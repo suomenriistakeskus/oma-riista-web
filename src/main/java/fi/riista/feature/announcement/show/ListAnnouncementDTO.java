@@ -76,6 +76,7 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
         dto.setBody(announcement.getBody());
         dto.setSubject(announcement.getSubject());
         dto.setSenderType(announcement.getSenderType());
+        dto.setVisibleToAll(announcement.isVisibleToAll());
 
         if (fromOrganisation != null) {
             dto.setFromOrganisation(OrganisationDTO.create(fromOrganisation));
@@ -109,6 +110,7 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
     private String from;
     private String subject;
     private String body;
+    private boolean visibleToAll;
     private Set<OccupationType> occupationTypes;
     private Set<OrganisationDTO> subscriberOrganisations;
 
@@ -179,6 +181,14 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
 
     public void setBody(final String body) {
         this.body = body;
+    }
+
+    public boolean isVisibleToAll() {
+        return visibleToAll;
+    }
+
+    public void setVisibleToAll(final boolean visibleToAll) {
+        this.visibleToAll = visibleToAll;
     }
 
     public Set<OccupationType> getOccupationTypes() {

@@ -43,6 +43,11 @@ public class SQHarvestStateAcceptedToHarvestPermit extends RelationalPathSpatial
         addMetadata();
     }
 
+    public SQHarvestStateAcceptedToHarvestPermit(String variable, String schema) {
+        super(SQHarvestStateAcceptedToHarvestPermit.class, forVariable(variable), schema, "harvest_state_accepted_to_harvest_permit");
+        addMetadata();
+    }
+
     public SQHarvestStateAcceptedToHarvestPermit(Path<? extends SQHarvestStateAcceptedToHarvestPermit> path) {
         super(path.getType(), path.getMetadata(), "public", "harvest_state_accepted_to_harvest_permit");
         addMetadata();

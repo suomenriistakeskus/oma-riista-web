@@ -1,9 +1,8 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static com.google.common.base.Strings.emptyToNull;
-
 import fi.riista.config.Constants;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
+import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardHuntingDayField;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingAreaType;
 import fi.riista.feature.huntingclub.permit.summary.TrendOfPopulationGrowth;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
@@ -27,12 +26,8 @@ import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_3;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_4;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardTrendOfPopulationGrowth;
-import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardHuntingDayField;
 import fi.riista.util.F;
-
-import javaslang.control.Try;
-
-import org.apache.commons.lang.StringUtils;
+import io.vavr.control.Try;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
@@ -40,11 +35,12 @@ import org.joda.time.LocalTime;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static org.apache.commons.lang.StringUtils.trimToNull;
 
 public final class MooseDataCardExtractor {
 
@@ -58,8 +54,8 @@ public final class MooseDataCardExtractor {
      * value out of acceptable range is provided.
      */
     @Nonnull
-    public static Interval getHuntingDayInterval(
-            @Nonnull final LocalDate date, @Nullable final Float huntingDurationInHours) {
+    public static Interval getHuntingDayInterval(@Nonnull final LocalDate date,
+                                                 @Nullable final Float huntingDurationInHours) {
 
         Objects.requireNonNull(date, "date is null");
 
@@ -138,7 +134,7 @@ public final class MooseDataCardExtractor {
         Objects.requireNonNull(mooseDataCard);
 
         return mooseDataCard.getPage7().stream()
-                .filter(MooseDataCardExtractor::hasHuntingSummaryData)
+                .filter(MooseDataCardExtractor::isSummaryDataPresent)
                 .findFirst();
     }
 
@@ -151,29 +147,39 @@ public final class MooseDataCardExtractor {
                 .findFirst();
     }
 
-    public static boolean hasAnySummaryData(@Nonnull final MooseDataCard mooseDataCard) {
+    public static boolean isSummaryDataPresent(@Nonnull final MooseDataCard mooseDataCard) {
         Objects.requireNonNull(mooseDataCard);
 
         return findFirstPage7ContainingHuntingSummaryData(mooseDataCard).isPresent() ||
                 findFirstNonEmptyPage8(mooseDataCard).isPresent();
     }
 
-    public static boolean hasHuntingSummaryData(@Nonnull final MooseDataCardPage7 page7) {
+    public static boolean isSummaryDataPresent(@Nonnull final MooseDataCardPage7 page7) {
         Objects.requireNonNull(page7);
 
         return isDefined(page7.getWhiteTailedDeerAppeared()) ||
                 isDefined(page7.getRoeDeerAppeared()) ||
                 isDefined(page7.getWildForestReindeerAppeared()) ||
                 isDefined(page7.getFallowDeerAppeared()) ||
+                isDefined(page7.getWildBoarAppeared()) ||
+
+                isNotNullAndValidTrend(page7.getTrendOfWhiteTailedDeerPopulationGrowth()) ||
+                isNotNullAndValidTrend(page7.getTrendOfRoeDeerPopulationGrowth()) ||
+                isNotNullAndValidTrend(page7.getTrendOfWildForestReindeerPopulationGrowth()) ||
+                isNotNullAndValidTrend(page7.getTrendOfFallowDeerPopulationGrowth()) ||
+                isNotNullAndValidTrend(page7.getTrendOfWildBoarPopulationGrowth()) ||
+
                 F.anyNonNull(
-                        emptyToNull(page7.getTrendOfWhiteTailedDeerPopulationGrowth()),
                         page7.getEstimatedSpecimenAmountOfWhiteTailedDeer(),
-                        emptyToNull(page7.getTrendOfRoeDeerPopulationGrowth()),
                         page7.getEstimatedSpecimenAmountOfRoeDeer(),
-                        emptyToNull(page7.getTrendOfWildForestReindeerPopulationGrowth()),
                         page7.getEstimatedSpecimenAmountOfWildForestReindeer(),
-                        emptyToNull(page7.getTrendOfFallowDeerPopulationGrowth()),
-                        page7.getEstimatedSpecimenAmountOfFallowDeer());
+                        page7.getEstimatedSpecimenAmountOfFallowDeer(),
+                        page7.getEstimatedSpecimenAmountOfWildBoar(),
+                        page7.getEstimatedAmountOfSowsWithPiglets());
+    }
+
+    private static boolean isNotNullAndValidTrend(final String trendOfPopulationGrowth) {
+        return HasMooseDataCardEncoding.findEnum(TrendOfPopulationGrowth.class, trendOfPopulationGrowth).isPresent();
     }
 
     public static boolean notEmpty(@Nonnull final MooseDataCardPage8 page8) {
@@ -220,7 +226,7 @@ public final class MooseDataCardExtractor {
                 section.getNumberOfMoosesKilledInRutFight(),
                 section.getNumberOfStarvedMooses(),
                 section.getNumberOfMoosesDeceasedByOtherReason(),
-                StringUtils.trimToNull(section.getExplanationForOtherReason()));
+                trimToNull(section.getExplanationForOtherReason()));
     }
 
     public static boolean notEmpty(final MooseDataCardSection_8_4 section) {
@@ -252,18 +258,16 @@ public final class MooseDataCardExtractor {
     }
 
     @Nullable
-    public static TrendOfPopulationGrowth convertTrendOfPopulationGrowthOfMooselikeSpecies(
-            @Nullable final String value) {
-
+    public static TrendOfPopulationGrowth convertTrendOfPopulationGrowth(@Nullable final String value) {
         return HasMooseDataCardEncoding.getEnumOrNull(TrendOfPopulationGrowth.class, value);
     }
 
     @Nullable
-    public static TrendOfPopulationGrowth convertTrendOfPopulationGrowth(
+    public static TrendOfPopulationGrowth convertTrendOfPopulationGrowthOfFlyDeer(
             @Nullable final MooseDataCardTrendOfPopulationGrowth populationGrowthTrend) {
 
-        return Optional.ofNullable(populationGrowthTrend).map(value -> {
-            switch (value) {
+        if (populationGrowthTrend != null) {
+            switch (populationGrowthTrend) {
                 case INCREASED:
                     return TrendOfPopulationGrowth.INCREASED;
                 case UNCHANGED:
@@ -271,32 +275,34 @@ public final class MooseDataCardExtractor {
                 case DECREASED:
                     return TrendOfPopulationGrowth.DECREASED;
                 default:
-                    return null;
+                    // Fall-through to return null
             }
-        }).orElse(null);
+        }
+        return null;
     }
 
     @Nullable
-    public static Boolean convertDeerFlyAppearance(@Nullable final MooseDataCardGameSpeciesAppearance flyAppearance) {
-        return Optional.ofNullable(flyAppearance).map(value -> {
-            switch (value) {
+    public static Boolean convertAppearance(@Nullable final MooseDataCardGameSpeciesAppearance appearance) {
+        if (appearance != null) {
+            switch (appearance) {
                 case YES:
                     return Boolean.TRUE;
                 case NO:
                     return Boolean.FALSE;
                 case UNDEFINED:
                 default:
-                    return null;
+                    // Fall-through to return null
             }
-        }).orElse(null);
+        }
+        return null;
     }
 
     @Nullable
     public static MooseHuntingAreaType convertMooseHuntingAreaType(
             @Nullable final MooseDataCardHarvestAreaType huntingAreaType) {
 
-        return Optional.ofNullable(huntingAreaType).map(value -> {
-            switch (value) {
+        if (huntingAreaType != null) {
+            switch (huntingAreaType) {
                 case SUMMER_PASTURE:
                     return MooseHuntingAreaType.SUMMER_PASTURE;
                 case WINTER_PASTURE:
@@ -305,14 +311,15 @@ public final class MooseDataCardExtractor {
                     return MooseHuntingAreaType.BOTH;
                 case UNDEFINED:
                 default:
-                    return null;
+                    // Fall-through to return null
             }
-        }).orElse(null);
+        }
+        return null;
     }
 
     @Nonnull
-    public static <N extends Number> Try<N> parseNumber(
-            @Nullable final String numberAsString, @Nonnull final Function<String, N> transformation) {
+    public static <N extends Number> Try<N> parseNumber(@Nullable final String numberAsString,
+                                                        @Nonnull final Function<String, N> transformation) {
 
         return Try.of(() -> F.trimToOptional(numberAsString).map(transformation).orElse(null));
     }
@@ -330,5 +337,4 @@ public final class MooseDataCardExtractor {
     private MooseDataCardExtractor() {
         throw new AssertionError();
     }
-
 }

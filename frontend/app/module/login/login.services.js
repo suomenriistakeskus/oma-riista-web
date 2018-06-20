@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('app.login.services', ['http-auth-interceptor', 'app.account.services'])
+angular.module('app.login.services', [])
     .run(function ($rootScope, $state, $stateParams, httpBuffer,
                    AuthenticationService, LoginRedirectService,
                    ActiveRoleService, SiteSearchService) {
@@ -127,15 +127,25 @@ angular.module('app.login.services', ['http-auth-interceptor', 'app.account.serv
 
         this.setAuthentication = function (value) {
             authentication = value;
+
+            if (Raven && _.isFunction(Raven.setUserContext)) {
+                Raven.setUserContext(_.pick(value, [
+                    'id', 'username', 'role', 'personId', 'firstName', 'lastName'
+                ]));
+            }
         };
 
         this.clearAuthentication = function () {
             authentication = null;
+
+            if (Raven && _.isFunction(Raven.setUserContext)) {
+                Raven.setUserContext();
+            }
         };
 
         this.reloadAuthentication = function () {
-            $http.get('/api/v1/account').success(function (a) {
-                authentication = a;
+            $http.get('/api/v1/account').then(function (response) {
+                authentication = response.data;
             });
         };
 
@@ -147,8 +157,8 @@ angular.module('app.login.services', ['http-auth-interceptor', 'app.account.serv
             // Check authentication, 200 = logged in and 401 = logged out
             return $http.get('/api/v1/account', {
                 ignoreAuthModule: 'ignoreAuthModule'
-            }).success(function (authentication) {
-                authService.loginConfirmed(authentication);
+            }).then(function (response) {
+                authService.loginConfirmed(response.data);
             });
         };
 
@@ -172,14 +182,14 @@ angular.module('app.login.services', ['http-auth-interceptor', 'app.account.serv
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded"
                 }
-            }).success(function (response) {
-                authService.loginConfirmed(response);
+            }).then(function (response) {
+                authService.loginConfirmed(response.data);
             });
         };
 
         this.logout = function () {
-            return $http.post('/logout', {}).success(function () {
-                authService.loginCancelled();
+            return $http.post('/logout', {}).then(function (response) {
+                authService.loginCancelled('logout', response);
                 MapState.reset();
             });
         };

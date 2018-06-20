@@ -8,7 +8,6 @@ import fi.riista.util.jpa.CriteriaUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
-
 import java.util.function.Function;
 
 public abstract class HuntingDiaryEntryDTOTransformer<T extends GameDiaryEntry, DTO extends HuntingDiaryEntryDTO>
@@ -22,7 +21,7 @@ public abstract class HuntingDiaryEntryDTOTransformer<T extends GameDiaryEntry, 
 
     @Nullable
     protected Person getAuthenticatedPerson() {
-        return activeUserService.getActiveUser().getPerson();
+        return activeUserService.requireActiveUser().getPerson();
     }
 
     @Nonnull

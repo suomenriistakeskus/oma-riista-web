@@ -1,0 +1,30 @@
+<div class="r-annual-statistics-content row">
+    <div class="col-sm-6">
+        <show-other-hunting-related-statistics other-hunting-related="$ctrl.statistics.otherHuntingRelated"
+                                               editable="$ctrl.moderatorEditable"
+                                               open-edit-dialog="$ctrl.editOtherHuntingRelated()">
+        </show-other-hunting-related-statistics>
+
+        <show-shooting-range-statistics shooting-ranges="$ctrl.statistics.shootingRanges"
+                                        editable="$ctrl.editable"
+                                        open-edit-dialog="$ctrl.editShootingRanges()">
+        </show-shooting-range-statistics>
+
+        <show-metsahallitus-statistics metsahallitus="$ctrl.statistics.metsahallitus"
+                                       editable="$ctrl.moderatorEditable"
+                                       open-edit-dialog="$ctrl.editMetsahallitusData()">
+        </show-metsahallitus-statistics>
+    </div>
+
+    <div class="col-sm-6">
+        <show-communication-statistics communication="$ctrl.statistics.communication"
+                                       editable="$ctrl.editable"
+                                       open-edit-dialog="$ctrl.editCommunication()">
+        </show-communication-statistics>
+
+        <show-game-calculation-statistics luke="$ctrl.statistics.luke"
+                                          editable="$ctrl.moderatorEditable"
+                                          open-edit-dialog="$ctrl.editGameCalculations()">
+        </show-game-calculation-statistics>
+    </div>
+</div>

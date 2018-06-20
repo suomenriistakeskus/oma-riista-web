@@ -4,15 +4,15 @@ import com.google.common.io.ByteStreams;
 import fi.riista.security.jwt.JwtAuthenticationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -21,47 +21,124 @@ import java.util.concurrent.TimeUnit;
 public class PdfExport {
     private static final Logger LOG = LoggerFactory.getLogger(PdfExport.class);
 
-    private final UriComponentsBuilder requestBuilder;
-    private final String jwtToken;
-    private String fileName;
-    private final boolean isProduction;
-
-    public PdfExport(final HttpServletRequest httpServletRequest,
-                     final String jwtToken,
-                     boolean isProduction) {
-        this.jwtToken = Objects.requireNonNull(jwtToken);
-        this.requestBuilder = ServletUriComponentsBuilder.fromRequestUri(httpServletRequest);
-        this.fileName = "" + System.currentTimeMillis() + ".pdf";
-        this.isProduction = isProduction;
+    private static class PdfParameters {
+        private int marginTop = 10;
+        private int marginBottom = 10;
+        private int marginLeft = 20;
+        private int marginRight = 10;
+        private int dpi = 72;
+        private int imageDpi = 72;
+        private String headerRight = "[page] / [toPage]";
     }
 
-    public PdfExport withFileName(final String name) {
-        Objects.requireNonNull(name);
-        this.fileName = name;
-        return this;
-    }
+    public static class Builder {
+        private final UriComponentsBuilder requestBuilder;
+        private final String binaryPath;
+        private final PdfParameters pdfParameters = new PdfParameters();
+        private String authenticationToken;
 
-    public PdfExport withHtmlPath(final String path) {
-        Objects.requireNonNull(path);
-        this.requestBuilder.replacePath(path);
-        return this;
-    }
-
-    public PdfExport withLanguage(String language) {
-        if (language != null) {
-            this.requestBuilder.replaceQueryParam("lang", language);
+        public Builder(final UriComponentsBuilder requestBuilder, final boolean isProduction) {
+            this.requestBuilder = requestBuilder;
+            this.binaryPath = isProduction ? "/usr/local/bin/wkhtmltopdf" : "wkhtmltopdf";
         }
-        return this;
+
+        public Builder withAuthenticationToken(final String token) {
+            this.authenticationToken = token;
+            return this;
+        }
+
+        public Builder withHtmlPath(final String path) {
+            Objects.requireNonNull(path);
+            this.requestBuilder.replacePath(path);
+            return this;
+        }
+
+        public Builder withMargin(final int top, final int right, final int bottom, final int left) {
+            this.pdfParameters.marginTop = top;
+            this.pdfParameters.marginRight = right;
+            this.pdfParameters.marginBottom = bottom;
+            this.pdfParameters.marginLeft = left;
+            return this;
+        }
+
+        public Builder withDpi(final int dpi) {
+            this.pdfParameters.dpi = dpi;
+            return this;
+        }
+
+        public Builder withImageDpi(final int imageDpi) {
+            this.pdfParameters.imageDpi = imageDpi;
+            return this;
+        }
+
+        public Builder withLanguage(String language) {
+            if (language != null) {
+                this.requestBuilder.replaceQueryParam("lang", language);
+            }
+            return this;
+        }
+
+        public Builder withHeaderRight(String headerRight) {
+            this.pdfParameters.headerRight = headerRight + "     [page] / [toPage]";
+            return this;
+        }
+
+        public PdfExport build() {
+            Objects.requireNonNull(this.authenticationToken);
+            return new PdfExport(requestBuilder.toUriString(), binaryPath, authenticationToken, pdfParameters);
+        }
+    }
+
+    private final String requestUri;
+    private final String binaryPath;
+    private final String authHeaderName;
+    private final String authHeaderValue;
+    private final PdfParameters pdfParameters;
+
+    private PdfExport(final String requestUri, final String binaryPath, final String authenticationToken,
+                      final PdfParameters pdfParameters) {
+        this.authHeaderName = JwtAuthenticationFilter.HEADER_AUTHORIZATION;
+        this.authHeaderValue = JwtAuthenticationFilter.AUTHORIZATION_PREFIX + authenticationToken;
+        this.requestUri = Objects.requireNonNull(requestUri);
+        this.binaryPath = Objects.requireNonNull(binaryPath);
+        this.pdfParameters = Objects.requireNonNull(pdfParameters);
+    }
+
+    private List<String> buildCommandLineWithArguments() {
+        return Arrays.asList(this.binaryPath,
+                "--custom-header", authHeaderName, authHeaderValue,
+                "--dpi", Integer.toString(pdfParameters.dpi),
+                "--image-quality", Integer.toString(pdfParameters.imageDpi),
+                "--page-size", "A4",
+                "--orientation", "Portrait",
+                "--no-outline",
+                "--disable-smart-shrinking",
+                "--margin-top", String.format("%dmm", pdfParameters.marginTop),
+                "--margin-right", String.format("%dmm", pdfParameters.marginRight),
+                "--margin-bottom", String.format("%dmm", pdfParameters.marginBottom),
+                "--margin-left", String.format("%dmm", pdfParameters.marginLeft),
+                "--header-right", pdfParameters.headerRight,
+                this.requestUri, "-");
+    }
+
+    public interface InputStreamConsumer {
+        void accept(InputStream is) throws IOException;
+    }
+
+    public void export(final Path outputFile) throws IOException {
+        export(inputStream -> Files.copy(inputStream, outputFile, StandardCopyOption.REPLACE_EXISTING));
+    }
+
+    public void export(final OutputStream outputStream) throws IOException {
+        export(inputStream -> ByteStreams.copy(inputStream, outputStream));
+        outputStream.flush();
     }
 
     // Convert HTML page to PDF using external utility
-    public void export(final HttpServletRequest request,
-                       final HttpServletResponse response) throws IOException {
-        final String pdfUrl = this.requestBuilder.toUriString();
+    private void export(final InputStreamConsumer consumer) throws IOException {
+        LOG.info("Using request url: {}", this.requestUri);
 
-        LOG.info("Using request url: {}", pdfUrl);
-
-        final List<String> cmdLine = buildCommandLineWithArguments(isProduction, jwtToken, pdfUrl);
+        final List<String> cmdLine = buildCommandLineWithArguments();
         final Process process = new ProcessBuilder(cmdLine).start();
 
         try {
@@ -74,12 +151,8 @@ public class PdfExport {
                 Thread.currentThread().interrupt();
             }
 
-            response.addHeader(ContentDispositionUtil.HEADER_NAME, ContentDispositionUtil.encodeAttachmentFilename(fileName));
-
-            try (final InputStream is = new BufferedInputStream(process.getInputStream());
-                 final OutputStream os = response.getOutputStream()) {
-                ByteStreams.copy(is, response.getOutputStream());
-                os.flush();
+            try (final InputStream bis = new BufferedInputStream(process.getInputStream())) {
+                consumer.accept(bis);
             }
 
             try {
@@ -95,23 +168,6 @@ public class PdfExport {
                 process.destroyForcibly();
             }
         }
-    }
-
-    private static List<String> buildCommandLineWithArguments(final boolean isProduction,
-                                                       final String jwtToken,
-                                                       final String pdfUrl) {
-        final String bin = isProduction ? "/usr/local/bin/wkhtmltopdf" : "wkhtmltopdf";
-
-        final String authHeaderName = JwtAuthenticationFilter.HEADER_AUTHORIZATION;
-        final String authHeaderValue = JwtAuthenticationFilter.AUTHORIZATION_PREFIX + jwtToken;
-
-        return Arrays.asList(
-                bin,
-                "--custom-header", authHeaderName, authHeaderValue,
-                "--header-right", "[page] / ( [toPage] )    ",
-                "--image-quality", "96",
-                "-B", "0", "-R", "0", "-T", "0", "-L", "0",
-                pdfUrl, "-");
     }
 
     private static void failOnError(final int exitValue) {

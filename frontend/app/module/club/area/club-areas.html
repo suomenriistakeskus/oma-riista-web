@@ -1,7 +1,5 @@
 <div class="r-club-areas-layout">
     <div class="left-column">
-        <r-club-area-category-selection active-tab-index="0"></r-club-area-category-selection>
-
         <div class="area-selection">
             <form class="row">
                 <div class="form-group col-xs-5">
@@ -34,14 +32,19 @@
                 </div>
             </form>
 
+            <div class="alert alert-warning" ng-if="$ctrl.showUpdateWarning()">
+                <span translate="club.area.list.updateWarning"></span>
+            </div>
+
             <club-area-list areas="$ctrl.areas"
                             on-area-select="$ctrl.onAreaSelect(area)"
-                            can-edit="$ctrl.club.canEdit"></club-area-list>
+                            can-edit="$ctrl.canEditArea"></club-area-list>
         </div>
     </div>
 
     <div class="main-column">
-        <r-geojson-map initial-view-bounds="$ctrl.rhyBounds"
-                       feature-collection="$ctrl.featureCollection"></r-geojson-map>
+        <club-area-list-map
+                initial-view-bounds="$ctrl.rhyBounds"
+                feature-collection="$ctrl.featureCollection"></club-area-list-map>
     </div>
 </div>

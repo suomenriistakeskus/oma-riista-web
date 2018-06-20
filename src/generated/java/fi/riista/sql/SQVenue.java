@@ -79,6 +79,11 @@ public class SQVenue extends RelationalPathSpatial<SQVenue> {
         addMetadata();
     }
 
+    public SQVenue(String variable, String schema) {
+        super(SQVenue.class, forVariable(variable), schema, "venue");
+        addMetadata();
+    }
+
     public SQVenue(Path<? extends SQVenue> path) {
         super(path.getType(), path.getMetadata(), "public", "venue");
         addMetadata();

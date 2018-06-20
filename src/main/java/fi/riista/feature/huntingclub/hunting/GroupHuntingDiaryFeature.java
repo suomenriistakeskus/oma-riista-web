@@ -1,20 +1,26 @@
 package fi.riista.feature.huntingclub.hunting;
 
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
+import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestAuthorization;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationAuthorization;
 import fi.riista.feature.gamediary.observation.ObservationDTO;
+import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneRepository;
+import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupAuthorization;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayService;
 import fi.riista.feature.huntingclub.hunting.rejection.RejectClubDiaryEntryDTO;
 import fi.riista.security.EntityPermission;
-import org.geojson.FeatureCollection;
+import fi.riista.util.F;
+import fi.riista.util.GISUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,13 +32,11 @@ import java.util.Optional;
 @Component
 public class GroupHuntingDiaryFeature {
 
-    private static final int SIMPLIFY_AMOUNT = 1;
-
     @Resource
     private GroupHuntingDiaryService groupHuntingDiaryService;
 
     @Resource
-    private GISZoneRepository zoneRepository;
+    private GISZoneRepository gisZoneRepository;
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -66,7 +70,8 @@ public class GroupHuntingDiaryFeature {
 
     @Transactional
     public void rejectDiaryEntryFromHuntingGroup(final RejectClubDiaryEntryDTO dto) {
-        final HuntingClubGroup group = requireGroup(dto.getGroupId(), HuntingClubGroupAuthorization.Permission.LINK_DIARY_ENTRY_TO_HUNTING_DAY);
+        final HuntingClubGroup group = requireGroup(dto.getGroupId(),
+                HuntingClubGroupAuthorization.Permission.LINK_DIARY_ENTRY_TO_HUNTING_DAY);
 
         groupHuntingDayService.rejectDiaryEntry(requireDiaryEntry(dto), group);
     }
@@ -80,12 +85,22 @@ public class GroupHuntingDiaryFeature {
     }
 
     @Transactional(readOnly = true)
-    public FeatureCollection huntingAreaGeoJSON(final long huntingClubGroupId) {
-        final HuntingClubGroup group = requireGroup(huntingClubGroupId, EntityPermission.READ);
+    public GroupHuntingAreaDTO groupHuntingArea(final Long groupId) {
+        final HuntingClubGroup group = requireGroup(groupId, EntityPermission.READ);
 
         return Optional.ofNullable(group.getHuntingArea())
-                .flatMap(area -> area.computeCombinedFeatures(zoneRepository, SIMPLIFY_AMOUNT))
-                .orElseGet(FeatureCollection::new);
+                .map(HuntingClubArea::getZone)
+                .map(GISZone::getId)
+                .map(zoneId -> gisZoneRepository.getBounds(zoneId, GISUtils.SRID.WGS84))
+                .map(bounds -> new GroupHuntingAreaDTO(F.getId(group.getHuntingArea()), bounds))
+                .orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public GroupHuntingStatusDTO getGroupHuntingStatus(final long groupId) {
+        final HuntingClubGroup group = requireGroup(groupId, EntityPermission.READ);
+
+        return clubHuntingStatusService.getGroupStatus(group);
     }
 
     @Transactional(readOnly = true)
@@ -95,11 +110,22 @@ public class GroupHuntingDiaryFeature {
         return groupHuntingDayService.listRejected(group);
     }
 
-    @Transactional(readOnly = true)
-    public GroupHuntingStatusDTO getGroupHuntingStatus(final long groupId) {
-        final HuntingClubGroup group = requireGroup(groupId, EntityPermission.READ);
+    @Transactional
+    public void editHarvestGeolocation(final long harvestId, final GeoLocation location) {
+        final Harvest harvest =
+                requireEntityService.requireHarvest(harvestId, HarvestAuthorization.Permission.FIX_GEOLOCATION);
+        fixGeolocation(harvest, location);
+    }
 
-        return clubHuntingStatusService.getGroupStatus(group);
+    @Transactional
+    public void editObservationLocation(final long observationId, final GeoLocation location) {
+        final Observation observation = requireEntityService.requireObservation(
+                observationId, ObservationAuthorization.Permission.FIX_GEOLOCATION);
+        fixGeolocation(observation, location);
+    }
+
+    private static void fixGeolocation(final GameDiaryEntry entry, final GeoLocation location) {
+        entry.setGeoLocation(location);
     }
 
     private HuntingClubGroup requireGroup(long huntingClubGroupId, Enum<?> permission) {

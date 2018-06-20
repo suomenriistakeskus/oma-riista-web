@@ -1,13 +1,13 @@
 package fi.riista.feature.huntingclub.members.notification;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
@@ -121,7 +121,7 @@ public class HuntingLeaderFinderServiceTest extends EmbeddedDatabaseTest {
 
         final Occupation occupation = createOccupationBackInTime(when, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-        final int previousHuntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear() - 1;
+        final int previousHuntingYear = DateUtil.huntingYear() - 1;
         final HuntingClubGroup huntingClubGroup = HuntingClubGroup.class.cast(occupation.getOrganisation());
         huntingClubGroup.setHuntingYear(previousHuntingYear);
 
@@ -258,7 +258,7 @@ public class HuntingLeaderFinderServiceTest extends EmbeddedDatabaseTest {
 
     private void findAndAssert(DateTime begin, DateTime end, Occupation... expecteds) {
         runInTransaction(() -> {
-            final int currentHuntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+            final int currentHuntingYear = DateUtil.huntingYear();
             assertLeaders(service.findChangedLeaders(begin.toDate(), end.toDate(), currentHuntingYear), expecteds);
         });
     }

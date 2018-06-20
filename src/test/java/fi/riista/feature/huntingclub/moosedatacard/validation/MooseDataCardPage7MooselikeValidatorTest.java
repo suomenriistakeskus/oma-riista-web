@@ -1,20 +1,18 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
+import io.vavr.control.Validation;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.stream.Stream;
+
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newPage7;
 import static fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardPage7MooselikeValidator.validate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
-
-import javaslang.control.Validation;
-
-import org.junit.Test;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 public class MooseDataCardPage7MooselikeValidatorTest {
 

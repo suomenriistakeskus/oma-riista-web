@@ -1,11 +1,11 @@
 package fi.riista.util;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import fi.riista.feature.EmbeddedDatabaseTest;
+import com.google.common.primitives.Ints;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
 import fi.riista.feature.account.user.UserRepository;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.hibernate.LazyInitializationException;
 import org.junit.Test;
 import org.springframework.stereotype.Component;
@@ -43,7 +43,6 @@ class LazyInitializationTestTransformer extends ListTransformer<SystemUser, Set<
         return F.mapNonNullsToList(userRepo.findAll(userIds),
                 user -> user == null ? null : ImmutableSet.copyOf(user.getPrivileges()));
     }
-
 }
 
 public class ListTransformerTest extends EmbeddedDatabaseTest {
@@ -59,7 +58,7 @@ public class ListTransformerTest extends EmbeddedDatabaseTest {
     private static final Integer NULL = null;
     private static final Integer NON_NULL = 1234567890;
 
-    private static final List<Integer> VALUE_LIST = Lists.newArrayList(1, 2, 3, 5, 8, 13, 21, 34, 55, 89);
+    private static final List<Integer> VALUE_LIST = Ints.asList(1, 2, 3, 5, 8, 13, 21, 34, 55, 89);
 
     @Resource
     private LazyInitializationTestTransformer proxyInstance;

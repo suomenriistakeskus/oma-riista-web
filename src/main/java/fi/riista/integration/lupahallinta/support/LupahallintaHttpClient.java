@@ -51,7 +51,7 @@ public class LupahallintaHttpClient {
         });
     }
 
-    public Reader getPermits(DateTime after) {
+    public Reader getPermits(final DateTime after) {
         final URI uri = getPermitUri(after);
 
         LOG.info("Going to fetch permits using uri:{}", uri);
@@ -60,7 +60,7 @@ public class LupahallintaHttpClient {
                 .execute(uri, HttpMethod.GET, null, r -> IOUtils.toString(r.getBody(), "ISO-8859-1")));
     }
 
-    private URI getPermitUri(DateTime after) {
+    private URI getPermitUri(final DateTime after) {
         return UriComponentsBuilder.fromUri(config.getPermitUri())
                 .queryParam("after", PATTERN.print(after))
                 .queryParam("permittypes", config.getPermitTypes())

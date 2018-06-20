@@ -1,7 +1,11 @@
 package fi.riista.api;
 
+import fi.riista.feature.account.AccountAddressDTO;
 import fi.riista.feature.account.AccountDTO;
 import fi.riista.feature.account.AccountEditFeature;
+import fi.riista.feature.account.AccountOtherInfoDTO;
+import fi.riista.feature.account.AccountShootingTestDTO;
+import fi.riista.feature.account.AccountShootingTestFeature;
 import fi.riista.feature.account.AccountViewFeature;
 import fi.riista.feature.account.ModifyTwoFactorAuthenticationDTO;
 import fi.riista.feature.account.ModifyTwoFactorAuthenticationFeature;
@@ -17,6 +21,7 @@ import fi.riista.feature.huntingclub.members.club.ContactInfoShareUpdateDTO;
 import fi.riista.feature.huntingclub.members.club.HuntingClubMemberCrudFeature;
 import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitationDTO;
 import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitationFeature;
+import fi.riista.feature.organization.address.AddressDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.data.domain.Pageable;
@@ -26,11 +31,13 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,104 +77,131 @@ public class AccountApiResource {
     @Resource
     private ListAnnouncementFeature listAnnouncementFeature;
 
+    @Resource
+    private AccountShootingTestFeature accountShootingTestFeature;
+
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public AccountDTO getAccount(HttpServletRequest request) {
-        return accountEditFeature.getActiveAccount(request);
+    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public AccountDTO getAccount(final HttpServletRequest request) {
+        return accountViewFeature.getActiveAccount(request);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{personId:\\d+}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public AccountDTO getAccountForPerson(@PathVariable Long personId) {
+    @GetMapping(value = "{personId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public AccountDTO getAccountForPerson(@PathVariable final long personId) {
         return accountViewFeature.getAccount(personId);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void saveAccount(@RequestBody @Valid AccountDTO dto) {
-        accountEditFeature.updateActiveAccount(dto);
-    }
-
-    @RequestMapping(value = "other", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void saveAccountForPerson(@RequestBody @Valid AccountDTO dto) {
-        accountEditFeature.updateOtherUserAccount(dto);
-    }
-
-    @RequestMapping(value = "password", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void changePassword(@RequestBody @Valid ChangePasswordDTO dto) {
+    @PutMapping(value = "me/address", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void updateAddress(@RequestBody @Valid final AccountAddressDTO dto) {
+        accountEditFeature.updateAddress(dto);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping(value = "me/other", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void updateOtherInfo(@RequestBody @Valid final AccountOtherInfoDTO dto) {
+        accountEditFeature.updateOtherInfo(dto);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping(value = "{personId:\\d+}/address", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void updateAddress(@PathVariable final long personId,
+                              @RequestBody @Valid final AccountAddressDTO dto) {
+        accountEditFeature.updateAddress(dto, personId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping(value = "{personId:\\d+}/other", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void updateOtherInfo(@PathVariable final long personId,
+                                @RequestBody @Valid final AccountOtherInfoDTO dto) {
+        accountEditFeature.updateOtherInfo(dto, personId);
+    }
+
+    @PostMapping(value = "password", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(@RequestBody @Valid final ChangePasswordDTO dto) {
         accountEditFeature.changeActiveUserPassword(dto);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "twofactor", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "twofactor", produces = MediaType.APPLICATION_JSON_VALUE)
     public ModifyTwoFactorAuthenticationDTO getTwoFactorAuthentication() {
         return modifyTwoFactorAuthenticationFeature.getTwoFactorAuthentication();
     }
 
-    @RequestMapping(value = "twofactor", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "twofactor", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ModifyTwoFactorAuthenticationDTO modifyTwoFactorAuthentication(
-            @RequestBody @Valid ModifyTwoFactorAuthenticationDTO dto) {
+            @RequestBody @Valid final ModifyTwoFactorAuthenticationDTO dto) {
+
         return modifyTwoFactorAuthenticationFeature.updateTwoFactorAuthentication(dto);
     }
 
-    @RequestMapping(value = "deactivate", method = RequestMethod.POST)
-    public void deactivate(@ModelAttribute("personId") Long personId) {
+    @PostMapping(value = "deactivate")
+    public void deactivate(@ModelAttribute("personId") final Long personId) {
         accountEditFeature.deactivate(personId);
     }
 
-    @RequestMapping(value = "srva/enable", method = RequestMethod.PUT)
-    public void srvaEnable() {
-        accountEditFeature.updateSrvaEnabled(true);
+    @PutMapping(value = "srva/enable")
+    public void enableSrvaFeature() {
+        accountEditFeature.toggleActivationOfSrvaFeature(true);
     }
 
-    @RequestMapping(value = "srva/disable", method = RequestMethod.PUT)
-    public void srvaDisable() {
-        accountEditFeature.updateSrvaEnabled(false);
+    @PutMapping(value = "srva/disable")
+    public void disableSrvaFeature() {
+        accountEditFeature.toggleActivationOfSrvaFeature(false);
+    }
+
+    @PutMapping(value = "shootingtests/enable")
+    public void enableShootingTestFeature() {
+        accountEditFeature.toggleActivationOfShootingTestFeature(true);
+    }
+
+    @PutMapping(value = "shootingtests/disable")
+    public void disableShootingTestFeature() {
+        accountEditFeature.toggleActivationOfShootingTestFeature(false);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/todocount", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/todocount", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public AccountTodoCountDTO todoCount() {
-        return accountTodoFeature.todoCount();
+        return accountTodoFeature.countTodos();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/srvatodocount", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/srvatodocount", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public AccountSrvaTodoCountDTO srvaTodoCount(@RequestParam final long rhyId) {
-        return accountTodoFeature.srvaTodoCount(rhyId);
+        return accountTodoFeature.countSrvaTodos(rhyId);
     }
 
     @RequestMapping(value = "/{personId:\\d+}/payment/{huntingYear:\\d+}")
-    public ResponseEntity<byte[]> paymentPdf(@PathVariable long personId,
-                                             @PathVariable int huntingYear) {
+    public ResponseEntity<byte[]> paymentPdf(@PathVariable final long personId, @PathVariable final int huntingYear) {
         return hunterPaymentPdfFeature.create(personId, huntingYear);
     }
 
-    @RequestMapping(
-            method = RequestMethod.GET,
-            value = "invitation",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "invitation", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    public List<HuntingClubMemberInvitationDTO> myInvitations(@RequestParam(required = false) Long personId) {
-        return huntingClubInvitationFeature.myInvitations(personId);
+    public List<HuntingClubMemberInvitationDTO> myInvitations(@RequestParam(required = false) final Long personId) {
+        return huntingClubInvitationFeature.listMyInvitations(personId);
     }
 
-    @RequestMapping(
-            method = RequestMethod.PUT,
-            value = "contactshare")
-    public void updateContactInfoSharing(@RequestBody @Valid List<ContactInfoShareUpdateDTO> updates) {
+    @PutMapping(value = "contactshare")
+    public void updateContactInfoSharing(@RequestBody @Valid final List<ContactInfoShareUpdateDTO> updates) {
         huntingClubMemberCrudFeature.updateContactInfoSharing(updates);
     }
 
-    @RequestMapping(
-            method = RequestMethod.GET,
-            value = "announcements")
+    @GetMapping(value = "announcements")
     public Slice<ListAnnouncementDTO> myAnnouncements(
-            @PageableDefault(size = 500, sort = "id", direction = Sort.Direction.ASC) Pageable pageRequest) {
+            @PageableDefault(size = 500, sort = "id", direction = Sort.Direction.ASC) final Pageable pageRequest) {
+
         final ListAnnouncementRequest request = new ListAnnouncementRequest();
         request.setDirection(ListAnnouncementRequest.Direction.RECEIVED);
         return listAnnouncementFeature.list(request, pageRequest);
+    }
+
+    @GetMapping(value = "shootingtests", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    public List<AccountShootingTestDTO> myShootingTests(@RequestParam(required = false) final Long personId) {
+        return accountShootingTestFeature.listMyShootingTests(personId);
     }
 }

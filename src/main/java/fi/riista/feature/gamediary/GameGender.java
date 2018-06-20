@@ -2,10 +2,11 @@ package fi.riista.feature.gamediary;
 
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.common.entity.HasOfficialCode;
+import fi.riista.util.LocalisedEnum;
 
 import javax.annotation.Nullable;
 
-public enum GameGender implements HasOfficialCode, HasMooseDataCardEncoding<GameGender> {
+public enum GameGender implements HasOfficialCode, HasMooseDataCardEncoding<GameGender>, LocalisedEnum {
 
     FEMALE(1, "N"),
     MALE(2, "U"),
@@ -28,5 +29,4 @@ public enum GameGender implements HasOfficialCode, HasMooseDataCardEncoding<Game
     public String getMooseDataCardEncoding() {
         return mooseDataCardEncoding;
     }
-
 }

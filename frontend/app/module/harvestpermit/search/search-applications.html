@@ -1,0 +1,26 @@
+<ul class="nav nav-pills">
+    <li ng-class="{'active': $ctrl.tab == 'filter'}">
+        <a ng-click="$ctrl.showFilters()">Suodatus</a>
+    </li>
+    <li ng-class="{'active': $ctrl.tab === 'myApplications'}">
+        <a ng-click="$ctrl.showMyApplications()">Omat hakemukset</a>
+    </li>
+    <li ng-class="{'active': $ctrl.tab === 'myDecisions'}">
+        <a ng-click="$ctrl.showMyDecisions()">Omat päätökset</a>
+    </li>
+    <li ng-class="{'active': $ctrl.tab === 'postalQueue'}">
+        <a ng-click="$ctrl.showPostalQueue()">Postitettavat</a>
+    </li>
+</ul>
+
+<moderator-application-search-filters
+        ng-if="$ctrl.tab === 'filter'"
+        filters="$ctrl.filters"
+        available-species="$ctrl.availableSpecies"
+        handlers="$ctrl.handlers"
+        search="$ctrl.search()">
+</moderator-application-search-filters>
+
+<hr>
+
+<moderator-application-results-list results="$ctrl.results"></moderator-application-results-list>

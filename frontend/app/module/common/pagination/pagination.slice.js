@@ -35,10 +35,6 @@
                 function loadPage(page) {
                     $ctrl.loadPage({page: page});
                 }
-
-                $ctrl.$onInit = function () {
-                    loadPage(0);
-                };
             }
         });
 })();

@@ -1,8 +1,8 @@
 package fi.riista.feature.announcement;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.occupation.OccupationType;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -36,7 +36,7 @@ public class AnnouncementSubscriber extends LifecycleEntity<Long> {
     private Long id;
 
     // For Hibernate
-    protected AnnouncementSubscriber() {
+    public AnnouncementSubscriber() {
     }
 
     public AnnouncementSubscriber(final Announcement announcement,

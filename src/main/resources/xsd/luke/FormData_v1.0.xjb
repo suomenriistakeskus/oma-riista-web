@@ -13,7 +13,7 @@
         <jaxb:package name="fi.riista.integration.luke_import.model.v1_0"/>
     </jaxb:schemaBindings>
 
-    <jaxb:globalBindings underscoreBinding="asCharInWord" >
+    <jaxb:globalBindings underscoreBinding="asCharInWord">
         <xjc:javaType adapter="fi.riista.integration.support.LocalDateAdapter"
                       name="org.joda.time.LocalDate"
                       xmlType="xsd:date"/>
@@ -47,6 +47,11 @@
             <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Koordinaatit_I']">
                 <jaxb:property name="longitude"/>
             </jaxb:bindings>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xsd:simpleType[@name='DayAndMonth']">
+            <xjc:javaType adapter="fi.riista.integration.support.DayAndMonthAdapter"
+                          name="org.joda.time.LocalDate"/>
         </jaxb:bindings>
 
         <jaxb:bindings node="//xsd:group[@name='DateAndLocationType']">
@@ -117,12 +122,6 @@
             </jaxb:bindings>
             <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Asiakasnumero']">
                 <jaxb:property name="huntingClubCode"/>
-            </jaxb:bindings>
-            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ilmoitus_on_ajalta_1']">
-                <jaxb:property name="reportingPeriodBeginDate"/>
-            </jaxb:bindings>
-            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Ilmoitus_on_ajalta_2']">
-                <jaxb:property name="reportingPeriodEndDate"/>
             </jaxb:bindings>
             <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Pyyntilupa']">
                 <jaxb:property name="permitNumber"/>
@@ -303,6 +302,19 @@
             <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Arvio_yksilömäärästä3']">
                 <jaxb:property name="estimatedSpecimenAmountOfFallowDeer"/>
             </jaxb:bindings>
+
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Esiintyminen4']">
+                <jaxb:property name="wildBoarAppeared"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_MuutoksetExport4']">
+                <jaxb:property name="trendOfWildBoarPopulationGrowth"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Arvio_yksilömäärästä4']">
+                <jaxb:property name="estimatedSpecimenAmountOfWildBoar"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Arvio_porsaallisten_emakoiden_määrästä']">
+                <jaxb:property name="estimatedAmountOfSowsWithPiglets"/>
+            </jaxb:bindings>
         </jaxb:bindings>
 
         <jaxb:bindings node="//xsd:complexType[@name='_7.1Type']">
@@ -342,10 +354,10 @@
             <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästysalueen_kokonaispinta-ala']">
                 <jaxb:property name="totalHuntingArea"/>
             </jaxb:bindings>
-            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästykseen_käytetyn_alueen_koko']">
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästykseen_käytetyn_alueen_pinta-ala']">
                 <jaxb:property name="effectiveHuntingArea"/>
             </jaxb:bindings>
-            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästykseen_käytetyn_alueen_koko_2']">
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Metsästykseen_käytetyn_alueen_pinta-ala_2']">
                 <jaxb:property name="effectiveHuntingAreaPercentage"/>
             </jaxb:bindings>
             <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Koko_metsästysalueelle_jäi_hirviä_yhteensä']">
@@ -508,6 +520,9 @@
             <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_T']">
                 <jaxb:property name="T"/>
             </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Y']">
+                <jaxb:property name="Y"/>
+            </jaxb:bindings>
         </jaxb:bindings>
 
         <jaxb:bindings node="//xsd:complexType[@name='_UroksetType']">
@@ -537,6 +552,9 @@
             <inheritance:implements>fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest</inheritance:implements>
             <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Sukupuoli']">
                 <jaxb:property name="gender"/>
+            </jaxb:bindings>
+            <jaxb:bindings node="./xsd:sequence/xsd:element[@name='_Yksinäinen_vasa']">
+                <jaxb:property name="alone"/>
             </jaxb:bindings>
         </jaxb:bindings>
 

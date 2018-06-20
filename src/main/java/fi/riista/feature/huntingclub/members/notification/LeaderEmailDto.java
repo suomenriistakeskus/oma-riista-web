@@ -13,9 +13,10 @@ public class LeaderEmailDto {
     private final String name;
     private final String hunterNumber;
     private final String date;
+    private final Date _dateForTests;
 
     public LeaderEmailDto(Occupation o) {
-        this(o.getCallOrder(), o.getPerson().getFullName(), o.getPerson().getHunterNumber(), o.getCreationTime());
+        this(o.getCallOrder(), o.getPerson().getFullName(), o.getPerson().getHunterNumber(), o.getModificationTime());
     }
 
     private LeaderEmailDto(Integer order, String name, String hunterNumber, Date date) {
@@ -23,6 +24,7 @@ public class LeaderEmailDto {
         this.name = name;
         this.hunterNumber = hunterNumber;
         this.date = DATE_FORMAT.print(date.getTime());
+        this._dateForTests = date;
     }
 
 
@@ -40,5 +42,9 @@ public class LeaderEmailDto {
 
     public String getDate() {
         return date;
+    }
+
+    public Date get_dateForTests() {
+        return _dateForTests;
     }
 }

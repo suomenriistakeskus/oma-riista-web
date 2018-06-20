@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import fi.riista.config.properties.AWSConfigProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.aws.core.task.ShutdownSuppressingExecutorServiceAdapter;
+import org.springframework.cloud.aws.messaging.config.annotation.EnableSqs;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.task.TaskExecutor;
 
 @Configuration
+@EnableSqs
 @Import(AWSConfigProperties.class)
 @ImportResource("classpath:/aws.xml")
 public class AwsCloudConfig {

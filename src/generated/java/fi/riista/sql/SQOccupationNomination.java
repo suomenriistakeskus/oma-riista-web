@@ -65,11 +65,11 @@ public class SQOccupationNomination extends RelationalPathSpatial<SQOccupationNo
 
     public final com.querydsl.sql.ForeignKey<SQPerson> occupationNominationPersonIdFk = createForeignKey(personId, "person_id");
 
+    public final com.querydsl.sql.ForeignKey<SQOccupation> occupationNominationOccupationIdFk = createForeignKey(occupationId, "occupation_id");
+
     public final com.querydsl.sql.ForeignKey<SQSystemUser> occupationNominationUserIdFk = createForeignKey(moderatorUserId, "user_id");
 
     public final com.querydsl.sql.ForeignKey<SQPerson> occupationNominationRhyPersonIdFk = createForeignKey(rhyPersonId, "person_id");
-
-    public final com.querydsl.sql.ForeignKey<SQOccupation> occupationNominationOccupationIdFk = createForeignKey(occupationId, "occupation_id");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> occupationNominationRhyIdFk = createForeignKey(rhyId, "organisation_id");
 
@@ -80,6 +80,11 @@ public class SQOccupationNomination extends RelationalPathSpatial<SQOccupationNo
 
     public SQOccupationNomination(String variable, String schema, String table) {
         super(SQOccupationNomination.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQOccupationNomination(String variable, String schema) {
+        super(SQOccupationNomination.class, forVariable(variable), schema, "occupation_nomination");
         addMetadata();
     }
 

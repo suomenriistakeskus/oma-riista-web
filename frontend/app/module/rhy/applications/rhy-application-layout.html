@@ -1,0 +1,116 @@
+<div class="rhy-sidebar-layout">
+    <div class="left-column" auto-scroll-to="$ctrl.scrollToIndex" prefix-id="application-id-">
+        <form role="form" novalidate autocomplete="off">
+            <div class="form-group">
+                <label translate="harvestpermit.application.selectedSpecies"></label>
+
+                <select name="gameSpecies" id="gameSpecies"
+                        class="form-control"
+                        ng-model="$ctrl.selectedSpecies"
+                        ng-options="(s.name | rI18nNameFilter:'translated') for s in $ctrl.availableSpecies | orderBy:'name.translated' track by s.code"
+                        ng-change="$ctrl.onSpeciesChange($ctrl.selectedSpecies)">
+                    <option value="" translate="harvestpermit.application.showAllSpecies"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label translate="harvestpermit.application.selectedYear"></label>
+                <select name="yearSelect" id="yearSelect"
+                        class="form-control"
+                        ng-model="$ctrl.selectedYear"
+                        ng-change="$ctrl.onHuntingYearChange()"
+                        ng-options="year.year as year.name for year in $ctrl.huntingYears | orderBy:'year'">
+                </select>
+            </div>
+            <div class="form-group">
+                <organisation-selection
+                        show-rk="false"
+                        show-rka="false"
+                        area-code="$ctrl.selectedRkaOfficialCode"
+                        rhy-code="$ctrl.selectedRhyOfficialCode"></organisation-selection>
+            </div>
+        </form>
+
+        <hr/>
+
+        <div class="alert alert-info" ng-if="$ctrl.applications.length === 0"
+             translate="harvestpermit.application.noResults"></div>
+
+        <uib-accordion close-others="true">
+            <div uib-accordion-group class="panel-default"
+                 is-open="application.isOpen"
+                 template-url="common/accordion-group.html"
+                 id="application-id-{{ ::$index }}"
+                 ng-click="$ctrl.selectApplication(application)"
+                 ng-repeat="application in $ctrl.applications track by application.id">
+
+                <uib-accordion-heading>
+                    <span panel-toggle="application.isOpen"></span>&nbsp;
+
+                    <span ng-if="::$ctrl.isRelatedRhy(application)" class="r-badge-blue pull-right"
+                          translate="club.permit.relatedRhy"> </span>
+
+                    <span ng-bind="::application.applicationNumber"></span>,
+                    <span ng-if="::application.permitHolder" ng-bind="::application.permitHolder | rI18nNameFilter"></span>
+                    <span ng-if="::!application.permitHolder" ng-bind="::application.contactPerson.lastName"></span>
+                    <span ng-if="::!application.permitHolder" ng-bind="::application.contactPerson.byName"></span>
+                </uib-accordion-heading>
+
+                <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-default"
+                                ng-class="{'active': $ctrl.isPartnersViewActivated()}"
+                                ng-click="$ctrl.showPartnerList()"
+                                translate="harvestpermit.application.partners"></button>
+                    </div>
+                    <div class="btn-group" role="group" uib-dropdown dropdown-append-to-body>
+                        <button type="button" uib-dropdown-toggle
+                                class="btn btn-default"
+                                ng-class="{'active': $ctrl.isMapViewActivated()}"
+                                ng-disabled="!$ctrl.hasOmaRiistaArea()">
+                            <span translate="global.map.map"></span>
+                            <span class="caret"></span>
+                        </button>
+
+                        <ul class="dropdown-menu" uib-dropdown-menu>
+                            <li ng-class="{'active': $ctrl.mapStyle === 'vector'}">
+                                <a ng-click="$ctrl.showMap('vector')" translate="harvestpermit.application.unionMap"></a>
+                            </li>
+                            <li ng-class="{'active': $ctrl.mapStyle === 'union'}">
+                                <a ng-click="$ctrl.showMap('union')" translate="harvestpermit.application.fragmentMap"></a>
+                            </li>
+                            <li ng-class="{'active': $ctrl.mapStyle === 'partner'}">
+                                <a ng-click="$ctrl.showMap('partner')"
+                                   translate="harvestpermit.application.partnerMap"></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <rhy-application-details
+                        application="application"
+                        diary-parameters="$ctrl.diaryParameters"
+                        show-map="$ctrl.showMap()"
+                        show-partner-list="$ctrl.showPartnerList()"></rhy-application-details>
+            </div>
+        </uib-accordion>
+
+    </div>
+
+    <div class="main-column">
+        <div ng-if="$ctrl.isPartnersViewActivated()">
+            <rhy-application-partners partners="$ctrl.partners"></rhy-application-partners>
+        </div>
+
+        <div ng-if="$ctrl.isMapViewActivated()">
+            <decision-application-geojson
+                    ng-if="$ctrl.mapStyle !== 'vector'"
+                    application-id="$ctrl.selectedApplication.id"
+                    map-style="$ctrl.mapStyle"
+                    feature-collection="$ctrl.featureCollection"></decision-application-geojson>
+
+            <decision-application-vector
+                    ng-if="$ctrl.mapStyle === 'vector'"
+                    selected-application="$ctrl.selectedApplication"></decision-application-vector>
+        </div>
+    </div>
+</div>

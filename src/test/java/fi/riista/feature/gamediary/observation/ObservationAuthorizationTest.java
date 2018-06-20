@@ -1,20 +1,20 @@
 package fi.riista.feature.gamediary.observation;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameDiaryEntryAuthorizationTest;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.observation.ObservationAuthorization.Permission;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.security.EntityPermission;
 import org.junit.Test;
 
-import java.util.EnumSet;
+import java.util.stream.Stream;
 
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static fi.riista.feature.gamediary.observation.ObservationAuthorization.Permission.LINK_OBSERVATION_TO_HUNTING_DAY_OF_GROUP;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.DELETE;
@@ -23,9 +23,8 @@ import static fi.riista.security.EntityPermission.UPDATE;
 
 public class ObservationAuthorizationTest extends GameDiaryEntryAuthorizationTest<Observation> {
 
-    private static final ImmutableSet<Enum<?>> ALL_PERMS = Sets.union(
-            EnumSet.allOf(Permission.class), ImmutableSet.of(CREATE, READ, UPDATE, DELETE))
-            .immutableCopy();
+    private static final ImmutableSet<Enum<?>> ALL_PERMS =
+            Stream.of(CREATE, READ, UPDATE, DELETE, LINK_OBSERVATION_TO_HUNTING_DAY_OF_GROUP).collect(toImmutableSet());
 
     @Test
     public void testActorPermissions() {
@@ -33,9 +32,7 @@ public class ObservationAuthorizationTest extends GameDiaryEntryAuthorizationTes
             final Observation observation = create();
             observation.setObserver(author);
 
-            onSavedAndAuthenticated(
-                    createUser(author),
-                    tx(() -> assertPermissions(observation, EnumSet.of(CREATE, READ, UPDATE, DELETE))));
+            onSavedAndAuthenticated(createUser(author), () -> assertPermissions(observation, EntityPermission.crud()));
         });
     }
 
@@ -111,5 +108,4 @@ public class ObservationAuthorizationTest extends GameDiaryEntryAuthorizationTes
     protected Observation createNonShareableForClub(final GameSpecies species, final Person author) {
         return model().newObservation(species, author, false);
     }
-
 }

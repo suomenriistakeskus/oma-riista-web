@@ -14,13 +14,45 @@ angular.module('app.login.controllers', ['ui.router', 'app.login.services'])
                 templateUrl: 'login/login.html',
                 controller: 'LogoutController',
                 authenticate: false
+            })
+            .state('roleselection', {
+                url: '/roleselection',
+                templateUrl: 'login/roleselection.html',
+                controller: 'RoleSelectionController',
+                controllerAs: '$ctrl',
+                params: {lang: {value: null}},
+                bindToController: true
             });
+    })
+    .controller('RoleSelectionController', function ($state, ActiveRoleService, MapState) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.availableRoles = ActiveRoleService.getAvailableRoles();
+            $ctrl.getRoleTitle = ActiveRoleService.getRoleDisplayName;
+            $ctrl.getRoleLogo = ActiveRoleService.getRoleLogo;
+        };
+
+        $ctrl.getRoleSubtitle = function (role) {
+            if (role && role.type === 'PERMIT') {
+                return role.context.permitNumber;
+            }
+            return '';
+        };
+
+        // Update selected role in view on change
+        $ctrl.selectRole = function (role) {
+            ActiveRoleService.selectActiveRole(role);
+            MapState.reset();
+
+            $state.go('main');
+        };
     })
     .controller('LoginController',
         function ($scope, $uibModal,
                   LoginService, AuthenticationService, ActiveRoleService, NotificationService) {
             // Check if already authenticated?
-            AuthenticationService.authenticate();
+            AuthenticationService.authenticate().then(_.noop, _.noop);
 
             // Active role must be cleared here, because event:auth-loginConfirmed
             // could be caused by normal page reload when authenticated
@@ -59,7 +91,10 @@ angular.module('app.login.controllers', ['ui.router', 'app.login.services'])
 
             $scope.login = function () {
                 LoginService.login($scope.credentials).catch(function (response) {
-                    if (response.data.status === 'OTP_REQUIRED') {
+                    if (!response.data || !response.data.status) {
+                        onLoginFailure();
+
+                    } else if (response.data.status === 'OTP_REQUIRED') {
                         showOneTimePasswordDialog(angular.copy($scope.credentials));
                     } else {
                         onLoginFailure();

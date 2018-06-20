@@ -39,9 +39,11 @@
                 var $ctrl = this;
                 $ctrl.currentMode = null;
 
-                TwoFactorAuthenticationSettings.getCurrentMode().then(function (currentMode) {
-                    $ctrl.currentMode = currentMode;
-                });
+                $ctrl.$onInit = function () {
+                    TwoFactorAuthenticationSettings.getCurrentMode().then(function (currentMode) {
+                        $ctrl.currentMode = currentMode;
+                    });
+                };
 
                 $ctrl.isVisible = function () {
                     return ActiveRoleService.isModerator() || ActiveRoleService.isAdmin();

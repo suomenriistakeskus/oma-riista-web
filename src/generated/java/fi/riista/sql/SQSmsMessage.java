@@ -67,6 +67,11 @@ public class SQSmsMessage extends RelationalPathSpatial<SQSmsMessage> {
         addMetadata();
     }
 
+    public SQSmsMessage(String variable, String schema) {
+        super(SQSmsMessage.class, forVariable(variable), schema, "sms_message");
+        addMetadata();
+    }
+
     public SQSmsMessage(Path<? extends SQSmsMessage> path) {
         super(path.getType(), path.getMetadata(), "public", "sms_message");
         addMetadata();

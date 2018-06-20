@@ -1,0 +1,43 @@
+<div class="row permit-application-wizard-container">
+    <div class="col-xs-10 col-xs-offset-1">
+        <button class="btn btn-default"
+                ui-sref="profile.permits">
+            <span class="fa fa-chevron-left"></span>
+            &nbsp;
+            <span translate="global.button.cancel"></span>
+        </button>
+
+        <br/>
+        <br/>
+
+        <div class="alert alert-info">
+            <div class="row">
+                <div class="col-xs-1">
+                    <span class="fa fa-info-circle"></span>
+                </div>
+                <div class="col-xs-11">
+                    <p class="alert-title" translate="harvestpermit.new.instructionsTitle"></p>
+                    <p translate="harvestpermit.new.instructions"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4 text-center"
+                 ng-repeat="t in $ctrl.types">
+                <img ng-src="/static/elainlajikuvat/512x512/47503.jpg" width="256" height="256"/>
+
+                <p>
+                    <span>{{'harvestpermit.mine.applications.permitTypeCode.' + t.code| translate}}</span>
+                    <br/>
+                    (<span ng-bind="t.price | currency : '&euro;' : 2"></span>)
+                </p>
+
+                <button class="btn btn-primary"
+                        ng-click="$ctrl.create(t)"
+                        translate="harvestpermit.new.createButton">
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

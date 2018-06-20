@@ -47,6 +47,11 @@ public class SQHarvestPermitRhys extends RelationalPathSpatial<SQHarvestPermitRh
         addMetadata();
     }
 
+    public SQHarvestPermitRhys(String variable, String schema) {
+        super(SQHarvestPermitRhys.class, forVariable(variable), schema, "harvest_permit_rhys");
+        addMetadata();
+    }
+
     public SQHarvestPermitRhys(Path<? extends SQHarvestPermitRhys> path) {
         super(path.getType(), path.getMetadata(), "public", "harvest_permit_rhys");
         addMetadata();

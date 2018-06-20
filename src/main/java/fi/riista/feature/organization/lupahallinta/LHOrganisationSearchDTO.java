@@ -27,6 +27,10 @@ public class LHOrganisationSearchDTO extends BaseEntityDTO<Long> {
 
     private Boolean hasActiveContactPerson;
 
+    // If moderator is registering the club, then here is id of the person who is the contact person.
+    // If person himself is registering the club, then this should be null and ignored.
+    private Long personId;
+
     public static LHOrganisationSearchDTO create(final LHOrganisation organisation) {
         LHOrganisationSearchDTO dto = new LHOrganisationSearchDTO(organisation);
         dto.setOfficialCode(organisation.getOfficialCode());
@@ -102,5 +106,13 @@ public class LHOrganisationSearchDTO extends BaseEntityDTO<Long> {
 
     public void setHasActiveContactPerson(final Boolean hasActiveContactPerson) {
         this.hasActiveContactPerson = hasActiveContactPerson;
+    }
+
+    public Long getPersonId() {
+        return personId;
+    }
+
+    public void setPersonId(final Long personId) {
+        this.personId = personId;
     }
 }

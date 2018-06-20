@@ -20,12 +20,13 @@ angular.module('app.clubgroup.directives', [])
                 return groups;
             }
 
-            $ctrl.groups = getGroups($ctrl.selectedSpeciesCode);
-
-            $ctrl.speciesForYear = SpeciesSortByName.sort(_(getGroups())
-                .pluck('species')
-                .uniq('code')
-                .value());
+            $ctrl.$onInit = function () {
+                $ctrl.groups = getGroups($ctrl.selectedSpeciesCode);
+                $ctrl.speciesForYear = SpeciesSortByName.sort(_(getGroups())
+                    .pluck('species')
+                    .uniq('code')
+                    .value());
+            };
 
             $ctrl.speciesChanged = function () {
                 $state.go('club.groups', {year: $ctrl.years.selected, species: $ctrl.selectedSpeciesCode});

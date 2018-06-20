@@ -29,27 +29,37 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class LocalisedString {
+
     public static final LocalisedString EMPTY = new LocalisedString("", "", "");
 
     private final String finnish;
     private final String swedish;
     private final String english;
 
-    public static LocalisedString of(String inFinnish, String inSwedish) {
+    public static LocalisedString of(final String inFinnish) {
+        return new LocalisedString(inFinnish, null, null);
+    }
+
+    public static LocalisedString of(final String inFinnish, final String inSwedish) {
         return new LocalisedString(inFinnish, inSwedish, null);
     }
 
-    public static LocalisedString of(String inFinnish, String inSwedish, String inEnglish) {
+    public static LocalisedString of(final String inFinnish, final String inSwedish, final String inEnglish) {
         return new LocalisedString(inFinnish, inSwedish, inEnglish);
     }
 
-    public LocalisedString(String finnish, String swedish) {
+    public static LocalisedString fromMap(@Nonnull final Map<String, String> map) {
+        Objects.requireNonNull(map);
+        return of(map.get(Locales.FI_LANG), map.get(Locales.SV_LANG), map.get(Locales.EN_LANG));
+    }
+
+    public LocalisedString(final String finnish, final String swedish) {
         this.finnish = finnish;
         this.swedish = swedish;
         this.english = null;
     }
 
-    public LocalisedString(String finnish, String swedish, String english) {
+    public LocalisedString(final String finnish, final String swedish, final String english) {
         this.finnish = finnish;
         this.swedish = swedish;
         this.english = english;
@@ -67,11 +77,11 @@ public class LocalisedString {
         return english;
     }
 
-    public boolean hasTranslation(Locale locale) {
+    public boolean hasTranslation(final Locale locale) {
         return hasTranslation(locale.getLanguage());
     }
 
-    public boolean hasTranslation(String lang) {
+    public boolean hasTranslation(final String lang) {
         if (Locales.FI_LANG.equalsIgnoreCase(lang)) {
             return finnish != null;
         } else if (Locales.SV_LANG.equalsIgnoreCase(lang)) {
@@ -95,29 +105,29 @@ public class LocalisedString {
         }
     }
 
-    public String getAnyTranslation(String preferredLang) {
+    public String getAnyTranslation(final String preferredLang) {
         if (preferredLang == null) {
             return getAnyTranslation();
         }
-        String s = getTranslation(preferredLang);
+        final String s = getTranslation(preferredLang);
         if (s != null) {
             return s;
         }
         return getAnyTranslation();
     }
 
-    public String getAnyTranslation(Locale preferred) {
+    public String getAnyTranslation(final Locale preferred) {
         if (preferred == null) {
             return getAnyTranslation();
         }
         return getAnyTranslation(preferred.getLanguage());
     }
 
-    public String getTranslation(Locale locale) {
+    public String getTranslation(final Locale locale) {
         return getTranslation(locale.getLanguage());
     }
 
-    public String getTranslation(String lang) {
+    public String getTranslation(final String lang) {
         if (Locales.FI_LANG.equals(lang)) {
             return finnish;
         } else if (Locales.SV_LANG.equals(lang)) {
@@ -134,7 +144,7 @@ public class LocalisedString {
     }
 
     public Map<String, String> asMap() {
-        Map<String, String> map = new LinkedHashMap<>();
+        final Map<String, String> map = new LinkedHashMap<>();
         if (finnish != null) {
             map.put(Locales.FI_LANG, finnish);
         }
@@ -166,9 +176,9 @@ public class LocalisedString {
 
     @Override
     public String toString() {
-        String trimmedFi = Strings.isNullOrEmpty(this.finnish) ? "-" : this.finnish;
-        String trimmedSv = Strings.isNullOrEmpty(this.swedish) ? "-" : this.swedish;
-        String trimmedEn = Strings.isNullOrEmpty(this.english) ? "-" : this.english;
+        final String trimmedFi = Strings.isNullOrEmpty(this.finnish) ? "-" : this.finnish;
+        final String trimmedSv = Strings.isNullOrEmpty(this.swedish) ? "-" : this.swedish;
+        final String trimmedEn = Strings.isNullOrEmpty(this.english) ? "-" : this.english;
         return String.format("%s / %s / %s", trimmedFi, trimmedSv, trimmedEn);
     }
 

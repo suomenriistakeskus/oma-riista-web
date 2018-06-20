@@ -13,19 +13,19 @@
                    uib-datepicker-popup is-open="isDatePickerOpen"
                    date-between-min-max
                    max-date="today()"
-                   ng-model="viewState.nonMooseDate"
+                   ng-model="$ctrl.nonMooseDate"
                    required>
 
             <span class="input-group-btn">
-                    <button type="button" class="btn btn-default" tabindex="-1"
-                            ng-click="toggleDatePopup($event)">
-                        <span class="glyphicon glyphicon-calendar"></span>
-                    </button>
-                </span>
+                <button type="button" class="btn btn-default" tabindex="-1"
+                        ng-click="toggleDatePopup($event)">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </button>
+            </span>
         </div>
         <p class="text-danger form-control-static"
            translate="club.hunting.huntingDay.outsidePermitInterval"
-           ng-hide="isPermitValidOnDate()"></p>
+           ng-hide="$ctrl.isPermitValidOnDate()"></p>
     </div>
 </div>
 
@@ -38,12 +38,12 @@
     <div class="form-control-wrapper">
         <input type="text" name="time" id="time"
                class="form-control"
-               finnish-date-time-in-past="viewState.nonMooseDate"
-               ng-model="viewState.time"
+               finnish-date-time-in-past="$ctrl.nonMooseDate"
+               ng-model="$ctrl.time"
                required>
         <p class="help-block has-error"
-           ng-show="parentForm.time.$invalid"
-           ng-messages="parentForm.time.$error">
+           ng-show="$ctrl.parentForm.time.$invalid"
+           ng-messages="$ctrl.parentForm.time.$error">
             <span ng-messages-include="common/errorMessages.html"></span>
         </p>
     </div>

@@ -1,8 +1,6 @@
 <div class="navbar navbar-primary r-main-navbar" role="navigation"
      ng-if="$ctrl.isAuthenticated()">
     <div class="container">
-        <span class="hidden" ng-controller="IdleController"></span>
-
         <div class="navbar-header">
             <nav-active-role></nav-active-role>
         </div>
@@ -13,6 +11,10 @@
             <li ng-show="$ctrl.isAdmin()"
                 active-if-state-includes="admin">
                 <a ui-sref="admin.home" translate="global.menu.admin"></a>
+            </li>
+
+            <li active-if-state-includes="jht">
+                <a ui-sref="jht.home">JHT</a>
             </li>
 
             <li active-if-state-includes="reporting">

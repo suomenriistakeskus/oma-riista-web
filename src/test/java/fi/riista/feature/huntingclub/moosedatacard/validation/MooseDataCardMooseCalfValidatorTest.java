@@ -1,52 +1,53 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.genderOfMooseCalfContainsIllegalCharacters;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.mooseCalfMissingGender;
-import static org.junit.Assert.assertEquals;
-
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseCalf;
-import fi.riista.util.Asserts;
-
+import org.joda.time.LocalDate;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.genderOfMooseCalfContainsIllegalCharacters;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.mooseCalfMissingGender;
+import static fi.riista.test.Asserts.assertValid;
+import static fi.riista.test.Asserts.assertValidationErrors;
+import static org.junit.Assert.assertEquals;
 
 public class MooseDataCardMooseCalfValidatorTest extends MooseDataCardHarvestValidatorTest<MooseDataCardMooseCalf> {
 
     @Override
-    protected MooseDataCardMooseCalfValidator getValidator(@Nonnull final Has2BeginEndDates permitSeason,
+    protected MooseDataCardMooseCalfValidator getValidator(@Nonnull final Has2BeginEndDates season,
                                                            @Nonnull final GeoLocation defaultCoordinates) {
 
-        return new MooseDataCardMooseCalfValidator(permitSeason, defaultCoordinates);
+        return new MooseDataCardMooseCalfValidator(season, defaultCoordinates);
     }
 
     @Override
-    protected MooseDataCardMooseCalf newHarvest() {
-        return MooseDataCardObjectFactory.newMooseCalf();
+    protected MooseDataCardMooseCalf newHarvest(@Nullable final LocalDate date) {
+        return MooseDataCardObjectFactory.newMooseCalf(date);
     }
 
     @Test
     public void testValidGender() {
-        final MooseDataCardMooseCalf input = newHarvest();
+        final MooseDataCardMooseCalf input = newHarvestWithinSeason();
 
-        Asserts.assertValid(validate(input, newSeason()), output -> {
-            assertEquals(input.getGender(), output.getGender());
-        });
+        assertValid(validate(input), output -> assertEquals(input.getGender(), output.getGender()));
     }
 
     @Test
     public void testMissingGender() {
-        final MooseDataCardMooseCalf input = newHarvest().withGender(null);
-        Asserts.assertValidationErrors(validate(input, newSeason()), mooseCalfMissingGender(input));
+        final MooseDataCardMooseCalf input = newHarvestWithinSeason().withGender(null);
+
+        assertValidationErrors(validate(input), mooseCalfMissingGender(input));
     }
 
     @Test
     public void testInvalidGender() {
-        final MooseDataCardMooseCalf input = newHarvest().withGender("invalid");
-        Asserts.assertValidationErrors(validate(input, newSeason()), genderOfMooseCalfContainsIllegalCharacters(input));
-    }
+        final MooseDataCardMooseCalf input = newHarvestWithinSeason().withGender("invalid");
 
+        assertValidationErrors(validate(input), genderOfMooseCalfContainsIllegalCharacters(input));
+    }
 }

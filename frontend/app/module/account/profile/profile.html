@@ -7,14 +7,12 @@
         <account-profile-address
                 address="$ctrl.profile.address"
                 address-source="$ctrl.profile.addressSource"
-                on-save="$ctrl.save(profile)"
-                on-reload-profile="$ctrl.loadAccount()">
+                on-save="$ctrl.saveAddress(address)">
         </account-profile-address>
 
         <account-profile-other
                 profile="$ctrl.profile"
-                on-save="$ctrl.save(profile)"
-                on-reload-profile="$ctrl.loadAccount()">
+                on-save="$ctrl.saveOtherInfo(otherInfo)">
         </account-profile-other>
 
         <account-profile-password
@@ -30,6 +28,9 @@
         <account-profile-hunter
                 profile="$ctrl.profile"></account-profile-hunter>
 
+        <account-profile-shooting-tests
+                shooting-tests="$ctrl.shootingTests"></account-profile-shooting-tests>
+
         <account-profile-invitation
                 club-invitations="$ctrl.clubInvitations"
                 is-user-own-profile="$ctrl.isUserOwnProfile">
@@ -37,7 +38,8 @@
 
         <account-profile-clubs
                 club-occupations="$ctrl.profile.clubOccupations"
-                is-user-own-profile="$ctrl.isUserOwnProfile">
+                is-user-own-profile="$ctrl.isUserOwnProfile"
+                person-id="$ctrl.personId">
         </account-profile-clubs>
 
         <account-profile-occupations
@@ -48,8 +50,8 @@
                 jht-trainings="$ctrl.jhtTrainings">
         </account-profile-jht>
 
-        <account-profile-srva
+        <account-profile-feature-activation
                 profile="$ctrl.profile">
-        </account-profile-srva>
+        </account-profile-feature-activation>
     </div>
 </div>

@@ -1,0 +1,11 @@
+<div class="panel-heading">
+    <div class="panel-title">
+        <div class="timestamped-panel-heading-title" translate="{{::$ctrl.titleKey}}"></div>
+        <div class="timestamped-panel-heading-timestamp"
+             uib-tooltip="{{ 'global.lastModified' | translate }}" tooltip-popup-delay="0" tooltip-placement="top">
+
+             <span>{{::($ctrl.lastModified | date:'d.M.yyyy')}}</span>
+             <span>{{::($ctrl.lastModified | date:'HH:mm')}}</span>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+cd "$(dirname "$0")" # Ensuring correct working directory
 set -e
 
 DATABASE_NAME="$1"
@@ -11,6 +11,7 @@ if [ -z "${DATABASE_NAME}" ]; then
 fi
 
 if [ "$DROP_PREVIOUS" = true ] ; then
+    psql -q -d postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND pg_stat_activity.datname = '${DATABASE_NAME}'"
     psql -d postgres -c "DROP DATABASE IF EXISTS \"${DATABASE_NAME}\";"
 fi
 

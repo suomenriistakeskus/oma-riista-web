@@ -1,20 +1,18 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_4;
+import io.vavr.control.Validation;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.stream.Stream;
+
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newSection84;
 import static fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardSection84Validator.validate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_4;
-
-import javaslang.control.Validation;
-
-import org.junit.Test;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 public class MooseDataCardSection84ValidatorTest {
 
@@ -111,5 +109,4 @@ public class MooseDataCardSection84ValidatorTest {
             });
         });
     }
-
 }

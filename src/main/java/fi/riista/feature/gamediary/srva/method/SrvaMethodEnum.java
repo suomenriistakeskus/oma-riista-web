@@ -1,15 +1,16 @@
 package fi.riista.feature.gamediary.srva.method;
 
 import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
-
-import static java.util.stream.Collectors.toList;
+import fi.riista.util.LocalisedEnum;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-public enum SrvaMethodEnum {
+import static java.util.stream.Collectors.toList;
+
+public enum SrvaMethodEnum implements LocalisedEnum {
 
     DOG(SrvaEventNameEnum.DEPORTATION),
     PAIN_EQUIPMENT(SrvaEventNameEnum.DEPORTATION),
@@ -31,5 +32,4 @@ public enum SrvaMethodEnum {
                 .filter(t -> t.eventLinks.contains(event))
                 .collect(toList());
     }
-
 }

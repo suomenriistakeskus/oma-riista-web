@@ -27,6 +27,10 @@ angular.module('app.common.config', ['ui.router', 'angular-growl'])
             }
 
             NotificationService.showMessage("Navigointi virhe: " + toState.name, "error");
+
+            if (_.isError(error) && Raven && _.isFunction(Raven.captureException)) {
+                Raven.captureException(error);
+            }
         });
 
         $rootScope.$on('$stateChangeStart', UnsavedChangesConfirmationService.checkEvent);
@@ -63,6 +67,11 @@ angular.module('app.common.config', ['ui.router', 'angular-growl'])
             maxAge: 30 * 60 * 1000, // 30 min
             deleteOnExpire: 'aggressive'
         });
+        CacheFactory.createCache('harvestPermitPermitTypesCache', {
+            storageMode: 'sessionStorage',
+            maxAge: 30 * 60 * 1000, // 30 min
+            deleteOnExpire: 'aggressive'
+        });
     })
 
     .config(function ($compileProvider, isProductionEnvironment) {
@@ -75,6 +84,7 @@ angular.module('app.common.config', ['ui.router', 'angular-growl'])
 
         // Without server side support html5 must be disabled.
         $locationProvider.html5Mode(false);
+        $locationProvider.hashPrefix('');
 
         // Endpoint for simple page refresh using fragment
         $urlRouterProvider.when('/restart', function ($match, $stateParams) {
@@ -146,11 +156,11 @@ angular.module('app.common.config', ['ui.router', 'angular-growl'])
             };
         });
     })
-    .config(function(KeepaliveProvider, IdleProvider, TitleProvider) {
+    .config(function (KeepaliveProvider, IdleProvider) {
         KeepaliveProvider.http('/api/ping');
-        KeepaliveProvider.interval(5*60);
-        IdleProvider.idle(25*60);
-        IdleProvider.timeout(5*60);
+        KeepaliveProvider.interval(29 * 60);
+        IdleProvider.idle(25 * 60);
+        IdleProvider.timeout(5 * 60);
         IdleProvider.windowInterrupt('focus');
         IdleProvider.keepalive(true);
     })
@@ -189,12 +199,31 @@ angular.module('app.common.config', ['ui.router', 'angular-growl'])
         });
     })
     .factory('$exceptionHandler', function ($injector, $log, isProductionEnvironment) {
-        return function errorHandler(exception) {
-            var errorMessage = exception.message ? exception.message : exception;
-
+        function showErrorNotification(errorMessage) {
             $injector.get("NotificationService").showMessage("JavaScript virhe: " + errorMessage, "error", {
                 'translateMessage': false
             });
+        }
+
+        var totalErrorCount = 0;
+
+        return function errorHandler(exception) {
+            var errorMessage = exception.message ? exception.message : exception;
+
+            if (angular.isString(errorMessage) && errorMessage.indexOf('Possibly unhandled rejection') !== -1) {
+                $log.warn(exception);
+                return;
+            }
+
+            if (++totalErrorCount > 50) {
+                return;
+            }
+
+            if (Raven && _.isFunction(Raven.captureException)) {
+                Raven.captureException(exception);
+            }
+
+            showErrorNotification(errorMessage);
 
             if (isProductionEnvironment || !_.isError(exception)) {
                 $log.error(exception);
@@ -213,4 +242,13 @@ angular.module('app.common.config', ['ui.router', 'angular-growl'])
     })
     .config(function ($uibModalProvider) {
         $uibModalProvider.options.backdrop = 'static';
+    })
+
+    .controller('ScrollToTop', function ($location, $translate, $anchorScroll, $stateParams) {
+        var lang = $stateParams.lang;
+        if (lang === 'fi' || lang === 'sv' || lang === 'en') {
+            $translate.use(lang);
+        }
+        $location.hash('scrollToTop');
+        $anchorScroll();
     });

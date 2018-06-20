@@ -1,0 +1,86 @@
+<hr class="invisible">
+
+<div class="alert alert-info" ng-show="$ctrl.paymentList.length === 0">
+    <span translate="harvestpermit.management.noPaidPayments"></span>
+</div>
+
+<table class="table" ng-show="$ctrl.paymentList.length > 0">
+    <thead>
+    <tr>
+        <th>
+            &nbsp;
+        </th>
+        <th translate="invoice.invoiceNumber"></th>
+        <th translate="invoice.info"></th>
+        <th translate="payment.paidDate"></th>
+        <th translate="payment.amount"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat-start="p in ::$ctrl.paymentList track by p.id">
+        <td>
+            <a ng-click="p.$$visible = !p.$$visible"
+               panel-toggle="p.$$visible"></a>
+        </td>
+        <td class="col-xs-2">
+            <a class="text-muted"
+               ng-click="p.$$visible = !p.$$visible"
+               ng-bind="::p.invoiceNumber"></a>
+        </td>
+        <td class="col-xs-4">
+            <a class="text-muted"
+               ng-click="p.$$visible = !p.$$visible"
+               ng-bind="::p.invoiceDescription"></a>
+        </td>
+        <td class="col-xs-2">
+            <span ng-bind="::p.paymentDate | date:'dd.MM.yyyy'"></span>
+        </td>
+        <td class="col-xs-4">
+            <span ng-bind="::p.amount"></span> &euro;
+        </td>
+    </tr>
+    <tr ng-repeat-end ng-if="p.$$visible">
+        <td colspan="5">
+            <div class="row" style="margin: 20px 0 40px;">
+                <div class="col-xs-3 text-muted">
+                    <p class="text-uppercase" translate="payment.amount"></p>
+
+                    <p style="font-size: 36px; line-height: 32px; font-weight: 300; margin-bottom: 16px">
+                        <span ng-bind="::p.amount"></span> &euro;
+                    </p>
+
+                    <button class="btn btn-primary" ng-click="$ctrl.downloadReceipt(p)">
+                        <span class="fa fa-file-text"></span>
+                        &nbsp;
+                        <span translate="harvestpermit.management.downloadReceipt"></span>
+                    </button>
+                </div>
+                <div class="col-xs-3 text-muted">
+                    <p class="text-uppercase" translate="invoice.info"></p>
+
+                    <p style="margin-bottom: 6px">
+                        <span translate="invoice.invoiceNumber"></span>:
+                        <span ng-bind="::p.invoiceNumber"></span>
+                    </p>
+                    <p style="margin-bottom: 6px">
+                        <span translate="global.date"></span>:
+                        <span ng-bind="::p.invoiceDate | date:'dd.MM.yyyy'"></span>
+                    </p>
+                    <p style="margin-bottom: 6px">
+                        <span translate="payment.dueDate"></span>:
+                        <span ng-bind="::p.dueDate | date:'dd.MM.yyyy'"></span>
+                    </p>
+                </div>
+                <div class="col-xs-6 text-muted">
+                    <p class="text-uppercase" translate="invoice.items"></p>
+
+                    <p>
+                        <span ng-bind="::p.invoiceDescription"></span>,<br/>
+                        <span translate="harvestpermit.management.invoiceType.{{::p.invoiceType}}"></span>
+                    </p>
+                </div>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>

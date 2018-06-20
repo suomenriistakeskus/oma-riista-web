@@ -1,0 +1,59 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.administration.gameDamage.title'"
+                               last-modified="$ctrl.gameDamage.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.administration.gameDamage.mooselike"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-8" translate="rhy.annualStats.administration.gameDamage.mooselikeDamageInspectionLocations"></td>
+                        <td num-pieces="::$ctrl.gameDamage.mooselikeDamageInspectionLocations"></td>
+                    </tr>
+                    <tr ng-if="false">
+                        <td class="col-xs-8" translate="rhy.annualStats.administration.gameDamage.mooselikeDamageInspectionExpenses"></td>
+                        <td money-sum="::$ctrl.gameDamage.mooselikeDamageInspectionExpenses"></td>
+                    </tr>
+
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.administration.gameDamage.largeCarnivore"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-8" translate="rhy.annualStats.administration.gameDamage.largeCarnivoreDamageInspectionLocations"></td>
+                        <td num-pieces="::$ctrl.gameDamage.largeCarnivoreDamageInspectionLocations"></td>
+                    </tr>
+                    <tr ng-if="false">
+                        <td class="col-xs-8" translate="rhy.annualStats.administration.gameDamage.largeCarnivoreDamageInspectionExpenses"></td>
+                        <td money-sum="::$ctrl.gameDamage.largeCarnivoreDamageInspectionExpenses"></td>
+                    </tr>
+
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.administration.gameDamage.total"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-8" computed-marker-title="rhy.annualStats.administration.gameDamage.totalDamageInspectionLocations"></td>
+                        <td num-pieces="::$ctrl.gameDamage.totalDamageInspectionLocations"></td>
+                    </tr>
+                    <tr ng-if="false">
+                        <td class="col-xs-8" computed-marker-title="rhy.annualStats.administration.gameDamage.totalDamageInspectionExpenses"></td>
+                        <td money-sum="::$ctrl.gameDamage.totalDamageInspectionExpenses"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-8" computed-marker-title="rhy.annualStats.administration.gameDamage.damageInspectors"></td>
+                        <td num-persons="::$ctrl.gameDamage.gameDamageInspectors"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.openEditDialog()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

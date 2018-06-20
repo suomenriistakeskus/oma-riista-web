@@ -1,6 +1,5 @@
 package fi.riista.integration.lupahallinta;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUserPrivilege;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
@@ -10,10 +9,12 @@ import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.integration.lupahallinta.club.LHMooselikeHarvestsCSVRow;
-import javaslang.Tuple;
-import javaslang.Tuple6;
+import fi.riista.test.EmbeddedDatabaseTest;
+import io.vavr.Tuple;
+import io.vavr.Tuple6;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -30,7 +31,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class MooselikeHarvestExportToLupahallintaFeatureTest extends EmbeddedDatabaseTest {
+public class MooselikeHarvestExportToLupahallintaFeatureTest extends EmbeddedDatabaseTest
+        implements HuntingGroupFixtureMixin {
 
     @Resource
     private MooselikeHarvestExportToLupahallintaFeature feature;
@@ -77,7 +79,7 @@ public class MooselikeHarvestExportToLupahallintaFeatureTest extends EmbeddedDat
     public void testWithHarvestsMultiplePermitsAndSpeciesAmounts() {
         withMooseHuntingGroupFixture(f -> withHuntingGroupFixture(f.rhy, f.species, f2 -> {
             final GameSpecies moose = f.species;
-            final GameSpecies deer = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER);
+            final GameSpecies deer = model().newDeerSubjectToClubHunting();
 
             final HarvestPermitSpeciesAmount deerAmount1 = model().newHarvestPermitSpeciesAmount(f.permit, deer);
             final HarvestPermitSpeciesAmount deerAmount2 = model().newHarvestPermitSpeciesAmount(f2.permit, deer);

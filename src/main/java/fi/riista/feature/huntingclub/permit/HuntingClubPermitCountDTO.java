@@ -24,10 +24,16 @@ public class HuntingClubPermitCountDTO implements HasHarvestCountsForPermit {
     @JsonProperty(value = "youngsNotEdible")
     private final int numberOfNonEdibleYoungs;
 
+    private final int numberOfNonEdibleAdultMales;
+    private final int numberOfNonEdibleAdultFemales;
+    private final int numberOfNonEdibleYoungMales;
+    private final int numberOfNonEdibleYoungFemales;
+
     public HuntingClubPermitCountDTO(final long huntingClubId, final HasHarvestCountsForPermit harvestCounts) {
         this(huntingClubId, harvestCounts.getNumberOfAdultMales(), harvestCounts.getNumberOfAdultFemales(),
                 harvestCounts.getNumberOfYoungMales(), harvestCounts.getNumberOfYoungFemales(),
-                harvestCounts.getNumberOfNonEdibleAdults(), harvestCounts.getNumberOfNonEdibleYoungs());
+                harvestCounts.getNumberOfNonEdibleAdults(), harvestCounts.getNumberOfNonEdibleYoungs(),
+                0, 0, 0, 0);
     }
 
     public HuntingClubPermitCountDTO(
@@ -37,7 +43,11 @@ public class HuntingClubPermitCountDTO implements HasHarvestCountsForPermit {
             final int numberOfYoungMales,
             final int numberOfYoungFemales,
             final int numberOfNonEdibleAdults,
-            final int numberOfNonEdibleYoungs) {
+            final int numberOfNonEdibleYoung,
+            final int numberOfNonEdibleAdultMales,
+            final int numberOfNonEdibleAdultFemales,
+            final int numberOfNonEdibleYoungMales,
+            final int numberOfNonEdibleYoungFemales) {
 
         this.huntingClubId = huntingClubId;
         this.numberOfAdultMales = numberOfAdultMales;
@@ -45,7 +55,11 @@ public class HuntingClubPermitCountDTO implements HasHarvestCountsForPermit {
         this.numberOfYoungMales = numberOfYoungMales;
         this.numberOfYoungFemales = numberOfYoungFemales;
         this.numberOfNonEdibleAdults = numberOfNonEdibleAdults;
-        this.numberOfNonEdibleYoungs = numberOfNonEdibleYoungs;
+        this.numberOfNonEdibleYoungs = numberOfNonEdibleYoung;
+        this.numberOfNonEdibleAdultMales = numberOfNonEdibleAdultMales;
+        this.numberOfNonEdibleAdultFemales = numberOfNonEdibleAdultFemales;
+        this.numberOfNonEdibleYoungMales = numberOfNonEdibleYoungMales;
+        this.numberOfNonEdibleYoungFemales = numberOfNonEdibleYoungFemales;
     }
 
     public int countAdults() {
@@ -92,4 +106,19 @@ public class HuntingClubPermitCountDTO implements HasHarvestCountsForPermit {
         return numberOfNonEdibleYoungs;
     }
 
+    public int getNumberOfNonEdibleAdultMales() {
+        return numberOfNonEdibleAdultMales;
+    }
+
+    public int getNumberOfNonEdibleAdultFemales() {
+        return numberOfNonEdibleAdultFemales;
+    }
+
+    public int getNumberOfNonEdibleYoungMales() {
+        return numberOfNonEdibleYoungMales;
+    }
+
+    public int getNumberOfNonEdibleYoungFemales() {
+        return numberOfNonEdibleYoungFemales;
+    }
 }

@@ -1,0 +1,102 @@
+<form name="gameDamageForm" role="form" class="form form-horizontal r-annual-statistics-wide-label-form"
+      autocomplete="off"
+      r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="rhy.annualStats.administration.gameDamage.form.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="mooselikeDamageInspectionLocations" class="control-label">
+                <span translate="rhy.annualStats.administration.gameDamage.form.mooselikeDamageInspectionLocations"></span>
+            </label>
+
+            <div class="form-control-wrapper input-group">
+                <input type="number" name="mooselikeDamageInspectionLocations" id="mooselikeDamageInspectionLocations"
+                       min="0" max="99999" step="1"
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.data.mooselikeDamageInspectionLocations"/>
+
+                <div class="input-group-addon">
+                    <span translate="global.pcs"></span>
+                </div>
+            </div>
+
+            <div class="form-control-offset-wrapper" ng-show="gameDamageForm.mooselikeDamageInspectionLocations.$invalid">
+                <p class="help-block" translate="global.messages.invalid"></p>
+            </div>
+        </div>
+
+        <div ng-if="false" class="form-group" show-errors>
+            <label for="mooselikeDamageInspectionExpenses" class="control-label">
+                <span translate="rhy.annualStats.administration.gameDamage.form.mooselikeDamageInspectionExpenses"></span>
+            </label>
+
+            <div class="form-control-wrapper input-group">
+                <input type="number" name="mooselikeDamageInspectionExpenses" id="mooselikeDamageInspectionExpenses"
+                       min="0" max="9999999.99" ng-step="0.01"
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.data.mooselikeDamageInspectionExpenses"/>
+
+                <div class="input-group-addon">&euro;</div>
+            </div>
+
+            <div class="form-control-offset-wrapper" ng-show="gameDamageForm.mooselikeDamageInspectionExpenses.$invalid">
+                <p class="help-block" translate="global.messages.invalid"></p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="largeCarnivoreDamageInspectionLocations" class="control-label">
+                <span translate="rhy.annualStats.administration.gameDamage.form.largeCarnivoreDamageInspectionLocations"></span>
+            </label>
+
+            <div class="form-control-wrapper input-group">
+                <input type="number" name="largeCarnivoreDamageInspectionLocations" id="largeCarnivoreDamageInspectionLocations"
+                       min="0" max="99999" step="1"
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.data.largeCarnivoreDamageInspectionLocations"/>
+
+                <div class="input-group-addon">
+                    <span translate="global.pcs"></span>
+                </div>
+            </div>
+
+            <div class="form-control-offset-wrapper" ng-show="gameDamageForm.largeCarnivoreDamageInspectionLocations.$invalid">
+                <p class="help-block" translate="global.messages.invalid"></p>
+            </div>
+        </div>
+
+        <div ng-if="false" class="form-group" show-errors>
+            <label for="largeCarnivoreDamageInspectionExpenses" class="control-label">
+                <span translate="rhy.annualStats.administration.gameDamage.form.largeCarnivoreDamageInspectionExpenses"></span>
+            </label>
+
+            <div class="form-control-wrapper input-group">
+                <input type="number" name="largeCarnivoreDamageInspectionExpenses" id="largeCarnivoreDamageInspectionExpenses"
+                       min="0" max="9999999.99" ng-step="0.01"
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.data.largeCarnivoreDamageInspectionExpenses"/>
+
+                <div class="input-group-addon">&euro;</div>
+            </div>
+
+            <div class="form-control-offset-wrapper" ng-show="gameDamageForm.largeCarnivoreDamageInspectionExpenses.$invalid">
+                <p class="help-block" translate="global.messages.invalid"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="gameDamageForm.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

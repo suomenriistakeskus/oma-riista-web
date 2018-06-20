@@ -1,12 +1,11 @@
 package fi.riista.feature.huntingclub.hunting.day;
 
 import fi.riista.util.DtoUtil;
+import fi.riista.util.F;
 import fi.riista.util.ListTransformer;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,9 +14,6 @@ import static java.util.stream.Collectors.toList;
 @Component
 public class GroupHuntingDayDTOTransformer extends ListTransformer<GroupHuntingDay, GroupHuntingDayDTO> {
 
-    @PersistenceContext
-    private EntityManager em;
-
     @Override
     @Nonnull
     protected List<GroupHuntingDayDTO> transform(@Nonnull final List<GroupHuntingDay> huntingDays) {
@@ -25,7 +21,7 @@ public class GroupHuntingDayDTOTransformer extends ListTransformer<GroupHuntingD
             final GroupHuntingDayDTO dto = new GroupHuntingDayDTO();
             DtoUtil.copyBaseFields(entity, dto);
 
-            dto.setHuntingGroupId(entity.getGroup() != null ? entity.getGroup().getId() : null);
+            dto.setHuntingGroupId(F.getId(entity.getGroup()));
             dto.setStartDate(entity.getStartDate());
             dto.setStartTime(entity.getStartTime());
             dto.setEndDate(entity.getEndDate());
@@ -40,5 +36,4 @@ public class GroupHuntingDayDTOTransformer extends ListTransformer<GroupHuntingD
             return dto;
         }).collect(toList());
     }
-
 }

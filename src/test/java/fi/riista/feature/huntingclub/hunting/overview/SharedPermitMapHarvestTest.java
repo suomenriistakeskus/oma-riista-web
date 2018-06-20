@@ -1,6 +1,5 @@
 package fi.riista.feature.huntingclub.hunting.overview;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
@@ -13,6 +12,7 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class SharedPermitMapHarvestTest extends EmbeddedDatabaseTest {
         public SimpleFixture(final EntitySupplier model, final boolean createOccupation) {
             final Riistanhoitoyhdistys rhy = model.newRiistanhoitoyhdistys();
 
-            this.huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+            this.huntingYear = DateUtil.huntingYear();
             this.gameSpecies = model.newGameSpecies();
             this.huntingClub = model.newHuntingClub(rhy);
 

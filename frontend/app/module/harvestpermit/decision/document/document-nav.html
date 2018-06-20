@@ -1,0 +1,16 @@
+<ul class="nav nav-pills nav-stacked">
+    <li ng-class="{'active': $ctrl.isActive('general')}">
+        <a ng-click="$ctrl.focus('general')">
+            <span translate="harvestpermit.decision.sectionId.general"></span>
+            &nbsp;
+            <span class="fa fa-asterisk text-danger" ng-if="!$ctrl.isPublishDateSet()"></span>
+        </a>
+    </li>
+    <li ng-repeat="sectionId in $ctrl.sectionIds" ng-class="{'active': $ctrl.isActive(sectionId), 'hidden': !$ctrl.isSectionVisible(sectionId)}">
+        <a ng-click="$ctrl.focus(sectionId)">
+            <span translate="harvestpermit.decision.sectionId.{{::sectionId}}"></span>
+            &nbsp;
+            <span class="fa fa-asterisk text-danger" ng-if="!$ctrl.isComplete(sectionId)"></span>
+        </a>
+    </li>
+</ul>

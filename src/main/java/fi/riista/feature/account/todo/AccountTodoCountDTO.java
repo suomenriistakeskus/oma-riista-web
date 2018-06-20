@@ -1,29 +1,18 @@
 package fi.riista.feature.account.todo;
 
-public class AccountTodoCountDTO {
-    private long harvests;
-    private long permits;
-    private long harvestsAndPermitsTotal;
+import java.util.Set;
 
+public class AccountTodoCountDTO {
+    private Set<Long> permitIds;
     private long invitations;
 
-    public AccountTodoCountDTO(long harvests, long permits, long invitations) {
-        this.harvests = harvests;
-        this.permits = permits;
-        this.harvestsAndPermitsTotal = harvests + permits;
+    public AccountTodoCountDTO(Set<Long> permitIds, long invitations) {
+        this.permitIds = permitIds;
         this.invitations = invitations;
     }
 
-    public long getHarvests() {
-        return harvests;
-    }
-
-    public long getPermits() {
-        return permits;
-    }
-
-    public long getHarvestsAndPermitsTotal() {
-        return harvestsAndPermitsTotal;
+    public Set<Long> getPermitIds() {
+        return permitIds;
     }
 
     public long getInvitations() {

@@ -4,9 +4,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import fi.riista.feature.common.entity.HasOfficialCode;
 import fi.riista.util.DateUtil;
+import fi.riista.util.LocalisedEnum;
 import org.joda.time.LocalDate;
 
-public enum OrganisationType implements HasOfficialCode {
+public enum OrganisationType implements HasOfficialCode, LocalisedEnum {
 
     RK(1),
     //RKH(2),
@@ -51,8 +52,6 @@ public enum OrganisationType implements HasOfficialCode {
 
     public LocalDate getBeginDateForNewOccupation() {
         // by default club membership begins from begin of the current hunting year
-        return this == OrganisationType.CLUB ? DateUtil.huntingYearBeginDate(
-                DateUtil.getFirstCalendarYearOfCurrentHuntingYear()) : null;
+        return this == OrganisationType.CLUB ? DateUtil.huntingYearBeginDate(DateUtil.huntingYear()) : null;
     }
-
 }

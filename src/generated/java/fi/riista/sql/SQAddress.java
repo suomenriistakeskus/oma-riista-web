@@ -73,6 +73,11 @@ public class SQAddress extends RelationalPathSpatial<SQAddress> {
         addMetadata();
     }
 
+    public SQAddress(String variable, String schema) {
+        super(SQAddress.class, forVariable(variable), schema, "address");
+        addMetadata();
+    }
+
     public SQAddress(Path<? extends SQAddress> path) {
         super(path.getType(), path.getMetadata(), "public", "address");
         addMetadata();

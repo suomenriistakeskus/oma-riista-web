@@ -1,0 +1,20 @@
+<table class="table table-bordered table-striped">
+    <tbody>
+    <tr>
+        <td>Kokonaismäärä</td>
+        <td>{{ $ctrl.metrics.total }}</td>
+    </tr>
+    <tr>
+        <td>Toiminnanohjaajien lähettämät</td>
+        <td>{{ $ctrl.metrics.senderTypeCoordinator }}</td>
+    </tr>
+    <tr>
+        <td>Seurojen lähettämät</td>
+        <td>{{ $ctrl.metrics.senderTypeClub }}</td>
+    </tr>
+    <tr>
+        <td>Riistakeskuksen lähettämät</td>
+        <td>{{ $ctrl.metrics.senderTypeModerator }}</td>
+    </tr>
+    </tbody>
+</table>

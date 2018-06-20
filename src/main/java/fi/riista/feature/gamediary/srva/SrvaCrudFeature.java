@@ -1,22 +1,28 @@
 package fi.riista.feature.gamediary.srva;
 
+import com.google.common.base.Preconditions;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.common.EnumLocaliser;
-import fi.riista.feature.gamediary.PersonRelationshipToGameDiaryEntryDTO;
-import fi.riista.feature.organization.RiistanhoitoyhdistysAuthorization;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.person.PersonWithNameDTO;
+import fi.riista.feature.common.repository.BaseRepositoryImpl;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gis.hta.GISHirvitalousalue;
+import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
+import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DtoUtil;
-import fi.riista.util.jpa.JpaSpecs;
-import org.joda.time.Interval;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.JpaSort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +30,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,7 +42,19 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
     private EnumLocaliser enumLocaliser;
 
     @Resource
+    private RequireEntityService requireEntityService;
+
+    @Resource
     private RiistanhoitoyhdistysRepository riistanhoitoyhdistysRepository;
+
+    @Resource
+    private OrganisationRepository organisationRepository;
+
+    @Resource
+    private GISHirvitalousalueRepository hirvitalousalueRepository;
+
+    @Resource
+    private JPQLQueryFactory jpqlQueryFactory;
 
     @Override
     protected void updateEntity(@Nonnull final SrvaEvent entity, @Nonnull final SrvaEventDTO dto) {
@@ -47,21 +64,6 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
     @Override
     protected SrvaEventDTO toDTO(@Nonnull final SrvaEvent entity) {
         return srvaEventDTOTransformer.apply(entity);
-    }
-
-    @Transactional(readOnly = true)
-    public PersonRelationshipToGameDiaryEntryDTO getRelationshipToSrvaEvent(long id) {
-        final SrvaEvent srvaEvent = requireEntityService.requireSrvaEvent(id, EntityPermission.READ);
-
-        final boolean sameId = Objects.equals(
-                getCurrentUser(PersonWithNameDTO.create(srvaEvent.getAuthor()), srvaEvent.getRhy().getId()).getId(),
-                srvaEvent.getAuthor().getId());
-        return new PersonRelationshipToGameDiaryEntryDTO(sameId, sameId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<SrvaEventDTO> listSrvaEventsForActiveUser(@Nonnull final Interval dateInterval) {
-        return srvaEventDTOTransformer.apply(getSrvaEventsForActiveUser(dateInterval));
     }
 
     @Transactional
@@ -78,14 +80,14 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
 
     @Transactional(readOnly = true)
     public SrvaEventDTO getSrvaEvent(@Nonnull final Long id) {
-        final SrvaEvent entity = requireEntityService.requireSrvaEvent(id, EntityPermission.READ);
+        final SrvaEvent entity = requireEntity(id, EntityPermission.READ);
 
         return srvaEventDTOTransformer.apply(entity);
     }
 
     @Transactional
     public SrvaEventDTO changeState(final Long id, final Integer rev, final SrvaEventStateEnum newstate) {
-        final SrvaEvent entity = requireEntityService.requireSrvaEvent(id, EntityPermission.UPDATE);
+        final SrvaEvent entity = requireEntity(id, EntityPermission.UPDATE);
 
         DtoUtil.assertNoVersionConflict(entity, rev);
 
@@ -95,8 +97,9 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
             entity.setApproverAsUser(null);
             entity.setApproverAsPerson(null);
         } else {
-            entity.setApproverAsUser(activeUserService.getActiveUser());
-            entity.setApproverAsPerson(Optional.ofNullable(activeUserService.getActiveUser().getPerson()).orElse(null));
+            final SystemUser activeUser = activeUserService.requireActiveUser();
+            entity.setApproverAsUser(activeUser);
+            entity.setApproverAsPerson(activeUser.getPerson());
         }
 
         getRepository().saveAndFlush(entity);
@@ -105,91 +108,108 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
     }
 
     @Transactional(readOnly = true)
-    public long countUnfinishedSrvaEvents(final long rhyId) {
-        final Person person = activeUserService.getActiveUser().getPerson();
-        if (person == null) {
-            return 0;
-        }
+    public Slice<SrvaEventDTO> searchPage(final SrvaEventSearchDTO dto, final Pageable pageRequest) {
+        assertCurrentRhyId(dto);
+        Objects.requireNonNull(dto.getRhyCode(), "rhyCode cannot be null");
 
-        final Riistanhoitoyhdistys rhy = requireEntityService.requireRiistanhoitoyhdistys(rhyId,
-                RiistanhoitoyhdistysAuthorization.Permission.LIST_SRVA);
-
-        return getRepository().count(JpaSpecs.and(
-                SrvaSpecs.equalRhy(rhy),
-                SrvaSpecs.equalState(SrvaEventStateEnum.UNFINISHED)
-        ));
+        final Slice<SrvaEvent> slice = getSlice(dto, pageRequest);
+        final List<SrvaEventDTO> dtos = srvaEventDTOTransformer.transform(slice.getContent());
+        return new SliceImpl<>(dtos, pageRequest, slice.hasNext());
     }
 
-    @Transactional(readOnly = true)
-    public Page<SrvaEventDTO> searchPage(final SrvaEventSearchDTO dto, final Pageable pageRequest) {
-        Objects.requireNonNull(dto.getCurrentRhyId(), "currentRhyId cannot be null");
-        Objects.requireNonNull(dto.getRhyId(), "rhyId cannot be null");
-
-        final Page<SrvaEvent> page = getRepository().findAll(getSpecs(dto), pageRequest);
-
-        return srvaEventDTOTransformer.apply(page, pageRequest);
+    private Slice<SrvaEvent> getSlice(final SrvaEventSearchDTO dto, final Pageable pageRequest) {
+        final List<SrvaEvent> result = getQuery(dto).offset(pageRequest.getOffset())
+                .limit(pageRequest.getPageSize() + 1)
+                .fetch();
+        return BaseRepositoryImpl.toSlice(result, pageRequest);
     }
 
     @Transactional(readOnly = true)
     public List<SrvaEventDTO> search(final SrvaEventSearchDTO dto) {
-        Objects.requireNonNull(dto.getCurrentRhyId(), "currentRhyId cannot be null");
+        assertCurrentRhyId(dto);
 
-        final List<SrvaEvent> srvaEvents = getRepository().findAll(getSpecs(dto));
+        final List<SrvaEvent> srvaEvents = getQuery(dto).fetch();
 
         return srvaEventDTOTransformer.apply(srvaEvents);
     }
 
     @Transactional(readOnly = true)
     public List<SrvaEventExportExcelDTO> searchExcel(final SrvaEventSearchDTO dto) {
-        Objects.requireNonNull(dto.getCurrentRhyId(), "currentRhyId cannot be null");
+        assertCurrentRhyId(dto);
 
-        final List<SrvaEvent> srvaEvents = getRepository()
-                .findAll(getSpecs(dto), new JpaSort(Sort.Direction.ASC, SrvaEvent_.id));
+        final List<SrvaEvent> srvaEvents = getQuery(dto).fetch();
 
         return srvaEvents.stream().map(srvaEvent ->
                 SrvaEventExportExcelDTO.create(srvaEvent, enumLocaliser)).collect(Collectors.toList());
     }
 
-    private Specifications<SrvaEvent> getSpecs(final SrvaEventSearchDTO dto) {
-        final Riistanhoitoyhdistys currentRhy = requireEntityService.requireRiistanhoitoyhdistys(dto.getCurrentRhyId(),
-                RiistanhoitoyhdistysAuthorization.Permission.LIST_SRVA);
+    private void assertCurrentRhyId(final SrvaEventSearchDTO dto) {
+        if (!(activeUserService.isModeratorOrAdmin() && dto.isModeratorView())) {
+            Preconditions.checkArgument(dto.getCurrentRhyId() != null, "currentRhyId cannot be null");
+        }
+    }
 
-        Specifications<SrvaEvent> specs = Specifications
-                .where(SrvaSpecs.anyOfEventNames(dto.getEventNames())).and(SrvaSpecs.equalRhy(currentRhy))
-                .or(getOtherRhySpecs(dto));
+    private JPQLQuery<SrvaEvent> getQuery(final SrvaEventSearchDTO dto) {
+        final Riistanhoitoyhdistys currentRhy = dto.getCurrentRhyId() != null
+                ? requireEntityService.requireRiistanhoitoyhdistys(dto.getCurrentRhyId(), RhyPermission.LIST_SRVA)
+                : null;
 
-        if (Objects.nonNull(dto.getRhyId())) {
-            final Riistanhoitoyhdistys rhy = riistanhoitoyhdistysRepository.findOne(dto.getRhyId());
-            specs = specs.and(SrvaSpecs.equalRhy(rhy));
-        } else if (Objects.nonNull(dto.getRkaId())) {
-            specs = specs.and(SrvaSpecs.equalRka(dto.getRkaId()));
+        final QSrvaEvent SRVA = QSrvaEvent.srvaEvent;
+        final BooleanExpression eventNames = SRVA.eventName.in(dto.getEventNames());
+        final BooleanExpression rhyRestriction = currentRhy != null ? SRVA.rhy.eq(currentRhy) : null;
+        final BooleanExpression otherRhyRestriction = getOtherRhySpec(SRVA, dto, currentRhy);
+
+        final JPQLQuery<SrvaEvent> q = jpqlQueryFactory.select(SRVA)
+                .from(SRVA)
+                .where(eventNames.and(rhyRestriction).or(otherRhyRestriction))
+                .orderBy(SRVA.id.asc());
+
+        if (Objects.nonNull(dto.getRhyCode())) {
+            final Riistanhoitoyhdistys rhy = riistanhoitoyhdistysRepository.findByOfficialCode(dto.getRhyCode());
+            q.where(SRVA.rhy.eq(rhy));
+        } else if (Objects.nonNull(dto.getRkaCode())) {
+            final Organisation rka = organisationRepository.findByTypeAndOfficialCode(OrganisationType.RKA, dto.getRkaCode());
+            final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
+            q.join(SRVA.rhy, RHY);
+            q.where(RHY.parentOrganisation.eq(rka));
+        } else if (Objects.nonNull(dto.getHtaCode())) {
+            final GISHirvitalousalue hta = hirvitalousalueRepository.findByNumber(dto.getHtaCode());
+            q.where(SRVA.geom.intersects(hta.getGeom()));
         }
 
         if (Objects.nonNull(dto.getStates())) {
-            specs = specs.and(SrvaSpecs.anyOfStates(dto.getStates()));
+            q.where(SRVA.state.in(dto.getStates()));
         }
 
         if (Objects.nonNull(dto.getGameSpeciesCode())) {
             // 0 stands for other species
             if (dto.getGameSpeciesCode() == 0) {
-                specs = specs.and(SrvaSpecs.equalSpecies(null));
+                q.where(SRVA.species.isNull());
             } else {
-                specs = specs.and(SrvaSpecs.equalSpecies(gameDiaryService.getGameSpeciesByOfficialCode(dto.getGameSpeciesCode())));
+                final GameSpecies gameSpecies = gameSpeciesService.requireByOfficialCode(dto.getGameSpeciesCode());
+                q.where(SRVA.species.eq(gameSpecies));
             }
         }
 
-        if (dto.hasBeginOrEndDate()) {
-            specs = specs.and(SrvaSpecs.withinInterval(dto.getBeginDate(), dto.getEndDate()));
+        if (dto.hasBeginDate()) {
+            q.where(SRVA.pointOfTime.goe(dto.getBeginDate().toDate()));
+        }
+        if (dto.hasEndDate()) {
+            q.where(SRVA.pointOfTime.lt(dto.getEndDate().plusDays(1).toDate()));
         }
 
-        return specs;
+        return q;
     }
 
-    private static Specification<SrvaEvent> getOtherRhySpecs(final SrvaEventSearchDTO dto) {
-        if (!Objects.equals(dto.getCurrentRhyId(), dto.getRhyId()) && dto.getEventNames().contains(SrvaEventNameEnum.ACCIDENT)) {
-            return SrvaSpecs.equalEventName(SrvaEventNameEnum.ACCIDENT);
-        }
+    private static BooleanExpression getOtherRhySpec(final QSrvaEvent SRVA,
+                                                     final SrvaEventSearchDTO dto,
+                                                     final Riistanhoitoyhdistys currentRhy) {
 
-        return JpaSpecs.disjunction();
+        final String currentRhyCode = currentRhy != null ? currentRhy.getOfficialCode() : null;
+        final boolean differentRhy = !Objects.equals(currentRhyCode, dto.getRhyCode());
+
+        return differentRhy && dto.getEventNames() != null && dto.getEventNames().contains(SrvaEventNameEnum.ACCIDENT)
+                ? SRVA.eventName.eq(SrvaEventNameEnum.ACCIDENT)
+                : null;
     }
 }

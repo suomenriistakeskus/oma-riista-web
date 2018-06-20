@@ -23,12 +23,12 @@
                 rhy: function (Rhys, orgId) {
                     return Rhys.get({id: orgId}).$promise;
                 },
-                rhyBounds: function (rhy, GIS) {
-                    return GIS.getRhyBounds(rhy.officialCode);
+                rhyBounds: function (rhy, MapBounds) {
+                    return MapBounds.getRhyBounds(rhy.officialCode);
                 },
-                rhyGeometry: function (rhy, GIS) {
-                    return GIS.getRhyGeom(rhy.officialCode).then(function (response) {
-                        return response.data;
+                rhyGeoJSON: function (rhy, GIS) {
+                    return GIS.getInvertedRhyGeoJSON(rhy.officialCode, rhy.id, {
+                        name: rhy.nameFI
                     });
                 },
                 interval: function (HuntingYearService) {
@@ -104,32 +104,6 @@
             return Markers.transformToLeafletMarkerData(entryList, markerDefaults, createMarkerData);
         };
 
-        this.createRhyFeatures = function (rhy, rhyGeometry) {
-            return {
-                data: {
-                    type: "FeatureCollection",
-                    features: [{
-                        type: "Feature",
-                        id: rhy.id,
-                        properties: {name: rhy.nameFI},
-                        geometry: {
-                            type: "MultiPolygon",
-                            coordinates: [[
-                                [[-180, -180], [180, 0], [180, 180], [0, 180], [-180, -180]],
-                                rhyGeometry.coordinates[0][0]]]
-                        }
-                    }]
-                },
-                style: {
-                    fillColor: "#A080B0",
-                    weight: 2,
-                    opacity: 0,
-                    color: 'none',
-                    fillOpacity: 0.45
-                }
-            };
-        };
-
         function createFormSidebar() {
             var modalOptions = {
                 controller: 'RhyHarvestMapShowController',
@@ -150,19 +124,19 @@
         }
     }
 
-    function RhyHarvestMapShowController($scope, DiaryEntryService, parameters, diaryEntry) {
+    function RhyHarvestMapShowController($scope, DiaryImageService, parameters, diaryEntry) {
         $scope.diaryEntry = diaryEntry;
         $scope.getGameNameWithAmount = parameters.$getGameNameWithAmount;
-        $scope.getUrl = DiaryEntryService.getUrl;
+        $scope.getUrl = DiaryImageService.getUrl;
 
         $scope.cancel = function () {
             $scope.$dismiss('cancel');
         };
     }
 
-    function RhyHarvestMapController($scope, MapState, MapDefaults, Markers,
+    function RhyHarvestMapController(MapState, MapDefaults, Markers,
                                      RhyHarvestMapService, RhyHarvestRepository, TranslatedBlockUI,
-                                     availableSpecies, rhy, rhyGeometry, rhyBounds, orgId, interval) {
+                                     availableSpecies, rhyGeoJSON, rhyBounds, orgId, interval) {
         var $ctrl = this;
 
         $ctrl.availableSpecies = availableSpecies;
@@ -180,6 +154,16 @@
         $ctrl.mapState = MapState.get();
         $ctrl.mapDefaults = MapDefaults.create();
         $ctrl.mapEvents = MapDefaults.getMapBroadcastEvents();
+        $ctrl.mapFeatures = {
+            data: rhyGeoJSON,
+            style: {
+                fillColor: "#A080B0",
+                weight: 2,
+                opacity: 0,
+                color: 'none',
+                fillOpacity: 0.45
+            }
+        };
 
         function fetchHarvests() {
             TranslatedBlockUI.start("global.block.wait");
@@ -197,11 +181,8 @@
         function updateMap(harvests) {
             $ctrl.markers = RhyHarvestMapService.createMarkers(harvests, $ctrl);
 
-            $ctrl.mapFeatures = RhyHarvestMapService.createRhyFeatures(rhy, rhyGeometry);
-
             var markerBounds = Markers.getMarkerBounds($ctrl.markers, rhyBounds);
             MapState.updateMapBounds(markerBounds, rhyBounds, true);
-            MapState.get().center = {};
         }
 
         $ctrl.selectSpeciesCode = function (speciesCode) {

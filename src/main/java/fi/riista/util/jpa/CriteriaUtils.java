@@ -9,8 +9,8 @@ import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.common.repository.BaseRepository;
 import fi.riista.util.F;
 import fi.riista.util.Functions;
-import javaslang.Tuple2;
-import javaslang.collection.HashMap;
+import io.vavr.Tuple2;
+import io.vavr.collection.HashMap;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Hibernate;
 import org.springframework.beans.BeanUtils;
@@ -47,6 +47,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static fi.riista.util.Collect.idSet;
 import static fi.riista.util.Functions.forMap;
 import static fi.riista.util.jpa.JpaSpecs.withIds;
 import static org.springframework.data.jpa.domain.Specifications.where;
@@ -135,8 +136,11 @@ public final class CriteriaUtils {
             @Nonnull final U entity,
             @Nullable final T currentAssociation,
             @Nullable final T newAssociation) {
+        if (inverseAttribute == null) {
+            // Unit-test
+            return;
+        }
 
-        Objects.requireNonNull(inverseAttribute, "inverseAttribute is null");
         Objects.requireNonNull(entity, "entity is null");
 
         final Function<T, C> fn = getCollectionIfInitialized(inverseAttribute);
@@ -238,7 +242,7 @@ public final class CriteriaUtils {
             return function::apply;
         }
 
-        final Set<ID> relationIds = F.getUniqueIdsAfterTransform(objects, function);
+        final Set<ID> relationIds = F.stream(objects).map(function).collect(idSet());
 
         if (relationIds.isEmpty()) {
             return t -> null;

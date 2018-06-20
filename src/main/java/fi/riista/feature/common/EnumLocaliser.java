@@ -1,16 +1,15 @@
 package fi.riista.feature.common;
 
 import fi.riista.util.Locales;
+import fi.riista.util.LocalisedEnum;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.Localiser;
-
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-
 import java.util.Locale;
 
 @Component
@@ -26,7 +25,7 @@ public class EnumLocaliser extends Localiser {
     }
 
     @Nullable
-    public static <E extends Enum<?>> String resourceKey(@Nullable final E enumValue) {
+    public static String resourceKey(@Nullable final Enum<?> enumValue) {
         if (enumValue == null) {
             return null;
         }
@@ -40,20 +39,19 @@ public class EnumLocaliser extends Localiser {
     }
 
     @Nullable
-    public <E extends Enum<?>> String getTranslation(@Nullable final E enumValue) {
+    public <E extends Enum<E> & LocalisedEnum> String getTranslation(@Nullable final E enumValue) {
         return getTranslation(resourceKey(enumValue));
     }
 
     @Nullable
-    public <E extends Enum<E>> String getTranslation(@Nullable final E enumValue, final Locale locale) {
+    public <E extends Enum<E> & LocalisedEnum> String getTranslation(@Nullable final E enumValue, final Locale locale) {
         return getTranslation(resourceKey(enumValue), locale);
     }
 
     @Nullable
-    public <E extends Enum<E>> LocalisedString getLocalisedString(@Nullable final E enumValue) {
+    public <E extends Enum<E> & LocalisedEnum> LocalisedString getLocalisedString(@Nullable final E enumValue) {
         return enumValue != null
                 ? LocalisedString.of(getTranslation(enumValue, Locales.FI), getTranslation(enumValue, Locales.SV))
                 : null;
     }
-
 }

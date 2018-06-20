@@ -1,17 +1,19 @@
 package fi.riista.feature.harvestpermit.season;
 
 import fi.riista.feature.common.entity.BaseEntity;
-import fi.riista.feature.common.entity.BicEntity;
-import fi.riista.feature.common.entity.IbanEntity;
+import fi.riista.feature.common.entity.BicConverter;
+import fi.riista.feature.common.entity.IbanConverter;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.util.BigDecimalHelper;
+import fi.riista.util.BigDecimalComparison;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
+import org.iban4j.Bic;
+import org.iban4j.Iban;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -48,27 +50,26 @@ public class MooselikePrice extends BaseEntity<Long> {
     @Column(nullable = false)
     private BigDecimal youngPrice;
 
-    @NotNull
-    @Embedded
-    private IbanEntity iban;
+    @Column(length = 18)
+    @Convert(converter = IbanConverter.class)
+    private Iban iban;
 
-    @NotNull
-    @Embedded
-    private BicEntity bic;
+    @Convert(converter = BicConverter.class)
+    @Column(length = 11)
+    private Bic bic;
 
     @NotBlank
     @Size(min = 1, max = 70)
     @Column(length = 70, nullable = false)
     private String recipientName;
 
-
     @AssertTrue
-    public boolean assertPricesRange() {
+    public boolean isPriceRangeValid() {
         return priceInRange(adultPrice) && priceInRange(youngPrice);
     }
 
     private static boolean priceInRange(final BigDecimal p) {
-        return BigDecimalHelper.of(p).betweenOrEqual(MIN_PRICE, MAX_PRICE);
+        return BigDecimalComparison.of(p).betweenOrEqual(MIN_PRICE, MAX_PRICE);
     }
 
     @Id
@@ -117,19 +118,19 @@ public class MooselikePrice extends BaseEntity<Long> {
         this.youngPrice = youngPrice;
     }
 
-    public IbanEntity getIban() {
+    public Iban getIban() {
         return iban;
     }
 
-    public void setIban(IbanEntity iban) {
+    public void setIban(Iban iban) {
         this.iban = iban;
     }
 
-    public BicEntity getBic() {
+    public Bic getBic() {
         return bic;
     }
 
-    public void setBic(BicEntity bic) {
+    public void setBic(Bic bic) {
         this.bic = bic;
     }
 

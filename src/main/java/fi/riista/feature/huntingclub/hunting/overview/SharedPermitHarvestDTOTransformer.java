@@ -23,8 +23,6 @@ public class SharedPermitHarvestDTOTransformer extends HarvestDTOTransformerBase
     @Nonnull
     @Override
     protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests) {
-        Objects.requireNonNull(harvests, "harvests must not be null");
-
         final Function<Harvest, GameSpecies> harvestToSpecies = getGameDiaryEntryToSpeciesMapping(harvests);
         final Map<Harvest, List<HarvestSpecimen>> groupedSpecimens = getSpecimensGroupedByHarvests(harvests);
 
@@ -34,10 +32,9 @@ public class SharedPermitHarvestDTOTransformer extends HarvestDTOTransformerBase
                 .collect(toList());
     }
 
-    private static HarvestDTO createDTO(
-            final Harvest harvest,
-            final GameSpecies species,
-            final List<HarvestSpecimen> specimens) {
+    private static HarvestDTO createDTO(final Harvest harvest,
+                                        final GameSpecies species,
+                                        final List<HarvestSpecimen> specimens) {
 
         final HarvestDTO dto = HarvestDTO.builder()
                 .populateWith(harvest)
@@ -46,9 +43,6 @@ public class SharedPermitHarvestDTOTransformer extends HarvestDTOTransformerBase
                 .withDescription(null)
                 .withCanEdit(false)
                 .build();
-
-        dto.setReadOnly(true);
-        dto.setReportedForMe(true);
 
         final HuntingClub club = harvest.getHuntingClub();
 

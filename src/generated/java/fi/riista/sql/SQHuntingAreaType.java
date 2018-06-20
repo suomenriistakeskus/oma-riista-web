@@ -41,6 +41,11 @@ public class SQHuntingAreaType extends RelationalPathSpatial<SQHuntingAreaType> 
         addMetadata();
     }
 
+    public SQHuntingAreaType(String variable, String schema) {
+        super(SQHuntingAreaType.class, forVariable(variable), schema, "hunting_area_type");
+        addMetadata();
+    }
+
     public SQHuntingAreaType(Path<? extends SQHuntingAreaType> path) {
         super(path.getType(), path.getMetadata(), "public", "hunting_area_type");
         addMetadata();

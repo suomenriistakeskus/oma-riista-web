@@ -1,6 +1,8 @@
 package fi.riista.feature.gamediary.harvest;
 
-public enum HuntingAreaType {
+import fi.riista.util.LocalisedEnum;
+
+public enum HuntingAreaType implements LocalisedEnum {
     // metsästysseuran alue
     HUNTING_SOCIETY,
     // erillisalue

@@ -49,9 +49,9 @@ public class SQGroupHarvestRejection extends RelationalPathSpatial<SQGroupHarves
 
     public final com.querydsl.sql.PrimaryKey<SQGroupHarvestRejection> groupHarvestRejectionPkey = createPrimaryKey(groupHarvestRejectionId);
 
-    public final com.querydsl.sql.ForeignKey<SQOrganisation> groupHarvestRejectionHuntingClubGroupFk = createForeignKey(huntingClubGroupId, "organisation_id");
-
     public final com.querydsl.sql.ForeignKey<SQHarvest> groupHarvestRejectionHarvestFk = createForeignKey(harvestId, "harvest_id");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> groupHarvestRejectionHuntingClubGroupFk = createForeignKey(huntingClubGroupId, "organisation_id");
 
     public SQGroupHarvestRejection(String variable) {
         super(SQGroupHarvestRejection.class, forVariable(variable), "public", "group_harvest_rejection");
@@ -60,6 +60,11 @@ public class SQGroupHarvestRejection extends RelationalPathSpatial<SQGroupHarves
 
     public SQGroupHarvestRejection(String variable, String schema, String table) {
         super(SQGroupHarvestRejection.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQGroupHarvestRejection(String variable, String schema) {
+        super(SQGroupHarvestRejection.class, forVariable(variable), schema, "group_harvest_rejection");
         addMetadata();
     }
 

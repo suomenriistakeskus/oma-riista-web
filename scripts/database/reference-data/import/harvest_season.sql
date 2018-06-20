@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_harvest_season;
-
 CREATE TABLE import_harvest_season (
   hunting_year INTEGER NOT NULL,
   game_species_official_code INTEGER NOT NULL,
@@ -25,7 +23,7 @@ INSERT INTO harvest_season (
   end_of_reporting_date2,
   name_finnish,
   name_swedish,
-  harvest_report_fields_id
+  game_species_id
 ) SELECT
     hs.begin_date,
     hs.end_date,
@@ -35,12 +33,6 @@ INSERT INTO harvest_season (
     hs.end_of_reporting_date2,
     hs.name_finnish,
     hs.name_swedish,
-    hr.harvest_report_fields_id
+    g.game_species_id
   FROM import_harvest_season hs
-    JOIN game_species g ON (hs.game_species_official_code = g.official_code)
-    JOIN harvest_report_fields hr ON (hr.game_species_id = g.game_species_id)
-  WHERE hr.used_with_permit = FALSE
-        AND hr.harvests_as_list = FALSE
-        AND (g.official_code <> 47348 OR
-             (g.official_code = 47348 AND reported_with_phone_call = 'YES' AND hunting_year <= 2014) OR
-             (g.official_code = 47348 AND reported_with_phone_call = 'NO' AND hunting_year >= 2015));
+    JOIN game_species g ON (hs.game_species_official_code = g.official_code);

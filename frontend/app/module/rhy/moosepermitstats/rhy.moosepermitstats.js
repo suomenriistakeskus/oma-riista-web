@@ -15,13 +15,14 @@ angular.module('app.rhy.moosepermitstats', [])
                     },
                     huntingYears: function (HuntingYearService) {
                         var currentHuntingYear = HuntingYearService.getCurrent();
-                        return _.range(2016, currentHuntingYear + 1);
+                        var nextHuntingYear = currentHuntingYear + 1;
+                        return _.range(2016, nextHuntingYear + 1);
                     },
                     availableSpecies: function (MooselikeSpecies) {
                         return MooselikeSpecies.getPermitBased();
                     },
                     tabs: function (Rhys, orgId) {
-                        return Rhys.moosepermitStatisticsOrganisations({id: orgId}).$promise;
+                        return Rhys.searchParamOrganisations({id: orgId}).$promise;
                     }
                 }
             })
@@ -36,52 +37,34 @@ angular.module('app.rhy.moosepermitstats', [])
             $ctrl.availableSpecies = availableSpecies;
             $ctrl.tabs = tabs;
 
-            $ctrl.selectedYear = null;
-            $ctrl.selectedSpeciesCode = null;
-            $ctrl.selectedOrgCode = null;
-            $ctrl.selectedTab = null;
+            $ctrl.formData = {
+                id: orgId,
+                year: null,
+                species: null,
+                orgType: null,
+                orgCode: null
+            };
             $ctrl.statistics = null;
 
             $ctrl.selectHuntingYearAndSpeciesCode = function (huntingYear, speciesCode) {
-                $ctrl.selectedYear = huntingYear;
-                $ctrl.selectedSpeciesCode = speciesCode;
+                $ctrl.formData.year = huntingYear;
+                $ctrl.formData.species = speciesCode;
                 loadStatistics();
             };
 
-            $ctrl.isTabSelected = function (tab) {
-                return tab === $ctrl.selectedTab;
-            };
-
-            $ctrl.selectTab = function (tab) {
-                $ctrl.selectedTab = tab;
-                $ctrl.orgChanged(_.get(_.find(tab.organisations, 'selected'), 'officialCode'));
-            };
-
-            $ctrl.orgChanged = function (code) {
-                $ctrl.selectedOrgCode = code;
+            $ctrl.orgChanged = function (type, code) {
+                $ctrl.formData.orgType = type;
+                $ctrl.formData.orgCode = code;
                 loadStatistics();
             };
-
-            // init
-            $ctrl.selectTab(_.first(tabs));
-
-            function params() {
-                return {
-                    id: orgId,
-                    year: $ctrl.selectedYear,
-                    species: $ctrl.selectedSpeciesCode,
-                    orgType: $ctrl.selectedTab.type,
-                    orgCode: $ctrl.selectedOrgCode
-                };
-            }
 
             function loadStatistics() {
                 $ctrl.statistics = null;
 
-                if ($ctrl.selectedYear && $ctrl.selectedSpeciesCode && $ctrl.selectedTab) {
+                if ($ctrl.formData.year && $ctrl.formData.species && $ctrl.formData.orgType) {
                     TranslatedBlockUI.start("global.block.wait");
 
-                    return Rhys.moosepermitStatistics(params()).$promise.then(function (result) {
+                    return Rhys.moosepermitStatistics($ctrl.formData).$promise.then(function (result) {
                         $ctrl.statistics = result;
                     }).finally(TranslatedBlockUI.stop);
                 }
@@ -89,19 +72,19 @@ angular.module('app.rhy.moosepermitstats', [])
 
             $ctrl.exportToExcel = function () {
                 var url = '/api/v1/riistanhoitoyhdistys/' + orgId + '/moosepermit/statistics/excel';
-                FormPostService.submitFormUsingBlankTarget(url, params());
+                FormPostService.submitFormUsingBlankTarget(url, $ctrl.formData);
             };
 
             $ctrl.canNavigateToPermit = function () {
-                return $ctrl.selectedOrgCode === rhy.officialCode && $ctrl.selectedTab.type === 'RHY';
+                return $ctrl.formData.orgCode === rhy.officialCode && $ctrl.formData.orgType === 'RHY';
             };
 
             $ctrl.navigateToPermit = function (permitId) {
                 $state.go('rhy.moosepermit.show', {
                     permitId: permitId,
                     rhyId: orgId,
-                    huntingYear: $ctrl.selectedYear,
-                    species: $ctrl.selectedSpeciesCode
+                    huntingYear: $ctrl.formData.year,
+                    species: $ctrl.formData.species
                 });
             };
         })

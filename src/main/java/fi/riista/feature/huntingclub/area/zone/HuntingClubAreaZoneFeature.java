@@ -1,9 +1,11 @@
 package fi.riista.feature.huntingclub.area.zone;
 
+import com.newrelic.api.agent.Trace;
 import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
-import fi.riista.feature.gis.metsahallitus.GISMetsahallitusRepository;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusHirviRepository;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
@@ -25,8 +27,6 @@ import java.util.stream.Collectors;
 @Component
 public class HuntingClubAreaZoneFeature {
 
-    private static final int SIMPLIFY_AMOUNT = 1;
-
     @Resource
     private RequireEntityService requireEntityService;
 
@@ -34,7 +34,7 @@ public class HuntingClubAreaZoneFeature {
     private GISZoneRepository zoneRepository;
 
     @Resource
-    private GISMetsahallitusRepository metsahallitusRepository;
+    private MetsahallitusHirviRepository metsahallitusRepository;
 
     @Transactional(readOnly = true, timeout = 60)
     public FeatureCollection geoJSON(final long clubAreaId) {
@@ -44,19 +44,22 @@ public class HuntingClubAreaZoneFeature {
         if (huntingClubArea.getZone() != null) {
             final GISZone gisZone = huntingClubArea.getZone();
             final FeatureCollection features = zoneRepository.getPalstaFeatures(gisZone.getId(), GISUtils.SRID.WGS84);
-            features.setBbox(zoneRepository.getBounds(gisZone.getId(), GISUtils.SRID.WGS84));
+
+            final GISBounds bounds = zoneRepository.getBounds(gisZone.getId(), GISUtils.SRID.WGS84);
+            features.setBbox(bounds != null ? bounds.toBBox() : null);
 
             final Optional<Feature> excludedFeature = gisZone.getExcludedAsGeoJSON(GeoJSONConstants.ID_EXCLUDED);
             excludedFeature.ifPresent(features::add);
 
             // Metsähallitus hirvialueet
-            features.addAll(metsahallitusRepository.listZoneHirviFeatures(gisZone.getId(), GISUtils.SRID.WGS84));
+            features.addAll(metsahallitusRepository.findByZoneAsFeatures(gisZone.getId(), GISUtils.SRID.WGS84));
 
             return features;
         }
         return new FeatureCollection();
     }
 
+    @Trace
     @Transactional(timeout = 60)
     public long updateGeoJSON(final long clubAreaId, final FeatureCollection featureCollection) {
         final HuntingClubArea huntingClubArea = requireEntityService
@@ -80,8 +83,9 @@ public class HuntingClubAreaZoneFeature {
         return zone.getId();
     }
 
+    @Trace
     @Async
-    @Transactional(timeout = 120)
+    @Transactional(timeout = 300)
     public void updateAreaSize(final long zoneId) {
         zoneRepository.calculateAreaSize(zoneId);
         zoneRepository.getOne(zoneId).forceRevisionUpdate();
@@ -109,6 +113,9 @@ public class HuntingClubAreaZoneFeature {
     public FeatureCollection combinedGeoJSON(final long clubAreaId) {
         final HuntingClubArea clubArea = requireEntityService.requireHuntingClubArea(clubAreaId, EntityPermission.READ);
 
-        return clubArea.computeCombinedFeatures(zoneRepository, SIMPLIFY_AMOUNT).orElseGet(FeatureCollection::new);
+        return Optional.ofNullable(clubArea.getZone())
+                .map(GISZone::getId)
+                .map(zoneId -> zoneRepository.getCombinedPolygonFeatures(zoneId, GISUtils.SRID.WGS84))
+                .orElseGet(FeatureCollection::new);
     }
 }

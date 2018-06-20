@@ -51,9 +51,13 @@ public class SQObservationContextSensitiveFields extends RelationalPathSpatial<S
 
     public final StringPath legringOrWingmark = createString("legringOrWingmark");
 
+    public final StringPath lengthOfPaw = createString("lengthOfPaw");
+
     public final NumberPath<Integer> metadataVersion = createNumber("metadataVersion", Integer.class);
 
     public final DateTimePath<java.sql.Timestamp> modificationTime = createDateTime("modificationTime", java.sql.Timestamp.class);
+
+    public final StringPath mooselikeCalfAmount = createString("mooselikeCalfAmount");
 
     public final StringPath mooselikeFemale1CalfAmount = createString("mooselikeFemale1CalfAmount");
 
@@ -71,7 +75,17 @@ public class SQObservationContextSensitiveFields extends RelationalPathSpatial<S
 
     public final StringPath observationType = createString("observationType");
 
+    public final StringPath observerName = createString("observerName");
+
+    public final StringPath observerPhoneNumber = createString("observerPhoneNumber");
+
+    public final StringPath officialAdditionalInfo = createString("officialAdditionalInfo");
+
     public final StringPath onCarcass = createString("onCarcass");
+
+    public final StringPath verifiedByCarnivoreAuthority = createString("verifiedByCarnivoreAuthority");
+
+    public final StringPath widthOfPaw = createString("widthOfPaw");
 
     public final BooleanPath withinMooseHunting = createBoolean("withinMooseHunting");
 
@@ -79,41 +93,55 @@ public class SQObservationContextSensitiveFields extends RelationalPathSpatial<S
 
     public final com.querydsl.sql.PrimaryKey<SQObservationContextSensitiveFields> observationContextSensitiveFieldsPkey = createPrimaryKey(id);
 
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsLegringOrWingmarkFk = createForeignKey(legringOrWingmark, "name");
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeMaleAmountFk = createForeignKey(mooselikeMaleAmount, "name");
 
     public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsCollarOrRadioFk = createForeignKey(collarOrRadio, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeMaleAmountFk = createForeignKey(mooselikeMaleAmount, "name");
-
     public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsWoundedFk = createForeignKey(wounded, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQDynamicObservationFieldPresence> observationCtxFieldsObserverPhoneNumberFk = createForeignKey(observerPhoneNumber, "name");
 
     public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeFemale4CalfFk = createForeignKey(mooselikeFemale4CalfsAmount, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsDeadFk = createForeignKey(dead, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQGameSpecies> observationContextSensitiveFieldsSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
-
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsOnCarcassFk = createForeignKey(onCarcass, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsGenderFk = createForeignKey(gender, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsAgeFk = createForeignKey(age, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeFemale2CalfFk = createForeignKey(mooselikeFemale2CalfsAmount, "name");
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsLegringOrWingmarkFk = createForeignKey(legringOrWingmark, "name");
 
     public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeUnknownSpeciFk = createForeignKey(mooselikeUnknownSpecimenAmount, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeFemale1CalfFk = createForeignKey(mooselikeFemale1CalfAmount, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQObservationType> observationContextSensitiveFieldsObservationTypeFk = createForeignKey(observationType, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeFemaleAmountFk = createForeignKey(mooselikeFemaleAmount, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsAmountFk = createForeignKey(amount, "name");
+    public final com.querydsl.sql.ForeignKey<SQDynamicObservationFieldPresence> observationCtxFieldsLengthOfPawFk = createForeignKey(lengthOfPaw, "name");
 
     public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsEarmarkFk = createForeignKey(earmark, "name");
 
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsGenderFk = createForeignKey(gender, "name");
+
     public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeFemale3CalfFk = createForeignKey(mooselikeFemale3CalfsAmount, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeFemaleAmountFk = createForeignKey(mooselikeFemaleAmount, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQDynamicObservationFieldPresence> observationCtxFieldsOfficialAdditionalInfoFk = createForeignKey(officialAdditionalInfo, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQDynamicObservationFieldPresence> observationCtxFieldsVerifiedByCarnivoreAuthorityFk = createForeignKey(verifiedByCarnivoreAuthority, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQGameSpecies> observationContextSensitiveFieldsSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
+
+    public final com.querydsl.sql.ForeignKey<SQObservationType> observationContextSensitiveFieldsObservationTypeFk = createForeignKey(observationType, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsAgeFk = createForeignKey(age, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQDynamicObservationFieldPresence> observationCtxFieldsWidthOfPawFk = createForeignKey(widthOfPaw, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsDeadFk = createForeignKey(dead, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationCtxFieldsMooselikeCalfAmountFk = createForeignKey(mooselikeCalfAmount, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeFemale2CalfFk = createForeignKey(mooselikeFemale2CalfsAmount, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsMooselikeFemale1CalfFk = createForeignKey(mooselikeFemale1CalfAmount, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQDynamicObservationFieldPresence> observationCtxFieldsAmountFk = createForeignKey(amount, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationContextSensitiveFieldsOnCarcassFk = createForeignKey(onCarcass, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQDynamicObservationFieldPresence> observationCtxFieldsObserverNameFk = createForeignKey(observerName, "name");
 
     public SQObservationContextSensitiveFields(String variable) {
         super(SQObservationContextSensitiveFields.class, forVariable(variable), "public", "observation_context_sensitive_fields");
@@ -122,6 +150,11 @@ public class SQObservationContextSensitiveFields extends RelationalPathSpatial<S
 
     public SQObservationContextSensitiveFields(String variable, String schema, String table) {
         super(SQObservationContextSensitiveFields.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQObservationContextSensitiveFields(String variable, String schema) {
+        super(SQObservationContextSensitiveFields.class, forVariable(variable), schema, "observation_context_sensitive_fields");
         addMetadata();
     }
 
@@ -148,8 +181,10 @@ public class SQObservationContextSensitiveFields extends RelationalPathSpatial<S
         addMetadata(gender, ColumnMetadata.named("gender").withIndex(12).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(id, ColumnMetadata.named("id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(legringOrWingmark, ColumnMetadata.named("legring_or_wingmark").withIndex(17).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(lengthOfPaw, ColumnMetadata.named("length_of_paw").withIndex(32).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(metadataVersion, ColumnMetadata.named("metadata_version").withIndex(3).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
+        addMetadata(mooselikeCalfAmount, ColumnMetadata.named("mooselike_calf_amount").withIndex(26).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(mooselikeFemale1CalfAmount, ColumnMetadata.named("mooselike_female_1_calf_amount").withIndex(21).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(mooselikeFemale2CalfsAmount, ColumnMetadata.named("mooselike_female_2_calfs_amount").withIndex(22).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(mooselikeFemale3CalfsAmount, ColumnMetadata.named("mooselike_female_3_calfs_amount").withIndex(23).ofType(Types.VARCHAR).withSize(255).notNull());
@@ -158,7 +193,12 @@ public class SQObservationContextSensitiveFields extends RelationalPathSpatial<S
         addMetadata(mooselikeMaleAmount, ColumnMetadata.named("mooselike_male_amount").withIndex(19).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(mooselikeUnknownSpecimenAmount, ColumnMetadata.named("mooselike_unknown_specimen_amount").withIndex(25).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(observationType, ColumnMetadata.named("observation_type").withIndex(6).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(observerName, ColumnMetadata.named("observer_name").withIndex(29).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(observerPhoneNumber, ColumnMetadata.named("observer_phone_number").withIndex(30).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(officialAdditionalInfo, ColumnMetadata.named("official_additional_info").withIndex(28).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(onCarcass, ColumnMetadata.named("on_carcass").withIndex(15).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(verifiedByCarnivoreAuthority, ColumnMetadata.named("verified_by_carnivore_authority").withIndex(27).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(widthOfPaw, ColumnMetadata.named("width_of_paw").withIndex(31).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(withinMooseHunting, ColumnMetadata.named("within_moose_hunting").withIndex(5).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(wounded, ColumnMetadata.named("wounded").withIndex(13).ofType(Types.VARCHAR).withSize(255).notNull());
     }

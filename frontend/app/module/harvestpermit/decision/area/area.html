@@ -1,0 +1,58 @@
+<permit-decision-nav-header decision="$ctrl.decision"></permit-decision-nav-header>
+
+<div class="row">
+    <div class="col-xs-5">
+
+        <ul class="nav nav-pills">
+            <li ng-class="{'active': $ctrl.isMapActivated('vector')}">
+                <a ng-click="$ctrl.showMap('vector')">Alue</a>
+            </li>
+            <li ng-class="{'active': $ctrl.isMapActivated('partner')}">
+                <a ng-click="$ctrl.showMap('partner')">Osakkaat</a>
+            </li>
+            <li ng-class="{'active': $ctrl.isMapActivated('fragment')}">
+                <a ng-click="$ctrl.showMap('fragment')">Sirpaleet</a>
+            </li>
+            <li ng-class="{'active': $ctrl.isConflictsViewActivated()}">
+                <a ng-click="$ctrl.showConflicts()">Konfliktit</a>
+            </li>
+        </ul>
+    </div>
+    <div class="col-xs-7 text-right">
+        <button class="btn btn-default"
+                ng-click="$ctrl.exportConflictsExcel()">
+            <span class="fa fa-file-excel-o"></span> &nbsp;
+            Konfliktit exceliin
+        </button>
+
+        <button class="btn btn-default"
+                ng-click="$ctrl.exportFragmentExcel()">
+            <span class="fa fa-file-excel-o"></span> &nbsp;
+            Sirpaleet exceliin
+        </button>
+
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.loadMapPdf()">
+            <span class="fa fa-print"></span>
+            &nbsp;
+            Tulosta hakemusalueen kartta
+        </button>
+    </div>
+</div>
+<br>
+<decision-application-vector
+        ng-if="$ctrl.isMapActivated('vector')"
+        selected-application="$ctrl.application"></decision-application-vector>
+
+<decision-application-geojson
+        ng-if="$ctrl.isMapActivated('fragment') || $ctrl.isMapActivated('partner')"
+        application-id="$ctrl.application.id"
+        map-style="$ctrl.mapStyle"
+        feature-collection="$ctrl.featureCollection"></decision-application-geojson>
+
+
+<div ng-if="$ctrl.isConflictsViewActivated()">
+    <harvest-permit-application-conflicts
+            selected-application="$ctrl.application"
+            conflicts="$ctrl.conflicts"></harvest-permit-application-conflicts>
+</div>

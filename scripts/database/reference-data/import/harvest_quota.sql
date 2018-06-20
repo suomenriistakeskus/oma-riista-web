@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_harvest_quota;
-
 CREATE TABLE import_harvest_quota (
   hunting_year               INTEGER      NOT NULL,
   game_species_official_code INTEGER      NOT NULL,
@@ -23,7 +21,5 @@ INSERT INTO harvest_quota (quota, hunting_suspended, harvest_season_id, harvest_
     JOIN game_species g
       ON (hq.game_species_official_code = g.official_code)
     JOIN harvest_season hs
-      ON (hq.hunting_year = EXTRACT(YEAR FROM hs.begin_date))
-    JOIN harvest_report_fields hr
-      ON (hr.harvest_report_fields_id = hs.harvest_report_fields_id)
-  WHERE hr.game_species_id = g.game_species_id;
+      ON (hs.game_species_id = g.game_species_id
+          AND hq.hunting_year = EXTRACT(YEAR FROM hs.begin_date));

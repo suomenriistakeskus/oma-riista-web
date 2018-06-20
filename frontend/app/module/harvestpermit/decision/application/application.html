@@ -1,0 +1,110 @@
+<permit-decision-nav-header decision="$ctrl.decision"></permit-decision-nav-header>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Hakemuksen tiedot</h3>
+            </div>
+
+            <div class="panel-body" style="min-height: 185px;">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <th class="col-xs-6">Hakemuksen numero</th>
+                        <td>
+                            <span ng-bind="$ctrl.application.applicationNumber"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Saapunut</th>
+                        <td>
+                            <span ng-class="{'text-danger': $ctrl.isLateApplication()}"
+                                  ng-bind="$ctrl.application.submitDate | date:'d.M.yyyy HH:mm'"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Toimitustapa</th>
+                        <td>
+                            <span ng-if="$ctrl.application.deliveryByMail === true">Toimitus paperilla</span>
+                            <span ng-if="!$ctrl.application.deliveryByMail === true">Toimitus sähköisesti</span>
+                        </td>
+                    </tr>
+                    <tr ng-if="$ctrl.application.createdByModeratorName">
+                        <th>Riistakeskuksen luoma</th>
+                        <td>
+                            <span ng-bind="$ctrl.application.createdByModeratorName"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="row">
+                    <div class="col-xs-12 text-right">
+                        <button type="button" class="btn btn-default"
+                                ng-click="$ctrl.loadOriginalZip()">
+                            <span class="fa fa-fw fa-file-zip-o"></span>
+                            &nbsp;
+                            Lataa hakemus (ZIP)
+                        </button>
+                        <button type="button" class="btn btn-primary"
+                                ng-click="$ctrl.loadApplicationPdf()">
+                            <span class="fa fa-fw fa-file-pdf-o"></span>
+                            &nbsp;
+                            Lataa hakemus (PDF)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Käsittelyn tilanne</h3>
+            </div>
+
+            <div class="panel-body" style="min-height: 185px;">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <th class="col-xs-6">Tila</th>
+                        <td>
+                            <span translate="harvestpermit.decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus()}}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="col-xs-6">Käsittelijä:</th>
+                        <td>
+                            <div ng-show="$ctrl.decision.handler">
+                                <span ng-bind="$ctrl.decision.handler.byName"></span>
+                                <span ng-bind="$ctrl.decision.handler.lastName"></span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <button type="button" class="btn btn-primary btn-block btn-lg"
+                        ng-hide="$ctrl.decision.userIsHandler"
+                        ng-confirm-click
+                        ng-confirm-click-action="$ctrl.assign()">Ota hakemus käsittelyyn</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<permit-application-summary application="$ctrl.application" permit-area="$ctrl.permitArea"
+                            diary-parameters="$ctrl.diaryParameters"></permit-application-summary>
+
+<div class="text-right">
+    <button type="button" class="btn btn-primary btn-lg"
+            ng-disabled="!$ctrl.canEditApplication()"
+            ng-confirm-click
+            ng-confirm-click-action="$ctrl.editApplication()">
+        <span class="fa fa-edit"></span>
+        &nbsp;
+        Täydennä hakemusta
+    </button>
+</div>

@@ -1,33 +1,60 @@
-(function () {
-    'use strict';
+'use strict';
 
-    angular.module('app.layout.role', [])
-        .service('ActiveRoleService', ActiveRoleService)
-        .controller('ChangeRoleController', ChangeRoleController)
-        .directive('navActiveRole', function () {
-            return {
-                restrict: 'E',
-                replace: true,
-                scope: true,
-                bindToController: true,
-                controllerAs: '$ctrl',
-                controller: ActiveRoleController,
-                templateUrl: 'layout/role/nav-active-role.html'
-            };
-        })
-        .directive('navChangeRole', function () {
-            return {
-                restrict: 'E',
-                replace: true,
-                scope: true,
-                bindToController: true,
-                controllerAs: '$ctrl',
-                controller: ChangeRoleController,
-                templateUrl: 'layout/role/nav-change-role.html'
-            };
-        });
+angular.module('app.layout.role', [])
+    .directive('navActiveRole', function () {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: true,
+            bindToController: true,
+            templateUrl: 'layout/role/nav-active-role.html',
+            controllerAs: '$ctrl',
+            controller: function ($state, ActiveRoleService) {
+                var $ctrl = this;
 
-    function ActiveRoleService(LocalStorageService, $filter) {
+                $ctrl.goHome = function () {
+                    var roleCount = _.size(ActiveRoleService.getAvailableRoles());
+
+                    $state.go(roleCount <= 1 ? 'main' : 'roleselection');
+                };
+            }
+        };
+    })
+    .directive('navChangeRole', function () {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: true,
+            bindToController: true,
+            templateUrl: 'layout/role/nav-change-role.html',
+            controllerAs: '$ctrl',
+            controller: function ($state, ActiveRoleService, MapState) {
+                var $ctrl = this;
+
+                $ctrl.$onInit = function () {
+                    $ctrl.selectedRole = ActiveRoleService.getActiveRole;
+                    $ctrl.roles = ActiveRoleService.getAvailableRoles;
+                    $ctrl.getRoleDisplayName = ActiveRoleService.getRoleDisplayName;
+                    $ctrl.getRoleLogo = ActiveRoleService.getRoleLogo;
+                };
+
+                // Update selected role in view on change
+                $ctrl.selectRole = function (role) {
+                    ActiveRoleService.selectActiveRole(role);
+                    MapState.reset();
+
+                    $state.go('main');
+                };
+
+                $ctrl.isSelectedRole = function (role) {
+                    var activeRole = ActiveRoleService.getActiveRole();
+                    return activeRole && activeRole.id === role.id;
+                };
+            }
+        };
+    })
+
+    .service('ActiveRoleService', function ActiveRoleService(LocalStorageService, $filter) {
         var self = this;
         var availableRoles = [];
         var activeRole = null;
@@ -52,16 +79,38 @@
         };
 
         this.getRoleDisplayName = function (role) {
-            if (role) {
-                if (role.displayName) {
-                    return role.displayName;
-                }
-                if (role.context) {
-                    var i18nFilter = $filter('rI18nNameFilter');
-                    return i18nFilter(role.context);
-                }
+            if (!role) {
+                return null;
             }
-            return null;
+            if (role.displayName) {
+                return role.displayName;
+            }
+            if (role.type === 'PERMIT') {
+                var permitType = role.context.permitType || '';
+                var permitNumber = role.context.permitNumber || '';
+                return permitType + ' ' + permitNumber.substring(0,4);
+            }
+            if (role.context) {
+                var i18nFilter = $filter('rI18nNameFilter');
+                return i18nFilter(role.context);
+            }
+            return '';
+        };
+
+        this.getRoleLogo = function (role) {
+            if (!role) {
+                return null;
+            }
+
+            switch (role.type) {
+                case 'SEURAN_JASEN':
+                case 'SEURAN_YHDYSHENKILO':
+                    return 'fa-group';
+                case 'PERMIT':
+                    return 'fa-file-text';
+                default:
+                    return 'fa-user';
+            }
         };
 
         this.getActiveRole = function () {
@@ -75,15 +124,6 @@
 
         this.updateRoles = function (account) {
             availableRoles = account.accountRoles || [];
-
-            //If logged in user does not have SRVA enabled, then filter out SRVA_YHTEYSHENKILO role.
-            //This should be removed when SRVA services officially published.
-            if (!account.enableSrva) {
-                availableRoles = _.filter(availableRoles, function (role) {
-                    return role.type !== 'SRVA_YHTEYSHENKILO';
-                });
-            }
-
             activeRole = getDefaultRoleFromAvailable();
             persistSelection();
         };
@@ -114,39 +154,19 @@
             return activeRole && ('SRVA_YHTEYSHENKILO' === activeRole.type);
         };
 
+        this.isShootingTestOfficial = function () {
+            return activeRole && ('AMPUMAKOKEEN_VASTAANOTTAJA' === activeRole.type);
+        };
+
         this.isClubContact = function () {
             return activeRole && ('SEURAN_YHDYSHENKILO' === activeRole.type);
         };
-    }
 
-    function ActiveRoleController($state, ActiveRoleService) {
-        var $ctrl = this;
-
-        $ctrl.goHome = function () {
-            var roleCount = _.size(ActiveRoleService.getAvailableRoles());
-
-            $state.go(roleCount <= 1 ? 'main' : 'roleselection');
+        this.getActiveOccupationId = function () {
+            if (activeRole && activeRole.id) {
+                var activeOccupationId = _.parseInt(activeRole.id.split(':')[1]);
+                return activeOccupationId || null;
+            }
+            return null;
         };
-    }
-
-    function ChangeRoleController($state, ActiveRoleService, MapState) {
-        var $ctrl = this;
-
-        $ctrl.selectedRole = ActiveRoleService.getActiveRole;
-        $ctrl.roles = ActiveRoleService.getAvailableRoles;
-        $ctrl.getRoleDisplayName = ActiveRoleService.getRoleDisplayName;
-
-        // Update selected role in view on change
-        $ctrl.selectRole = function (role) {
-            ActiveRoleService.selectActiveRole(role);
-            MapState.reset();
-
-            $state.go('main');
-        };
-
-        $ctrl.isSelectedRole = function (role) {
-            var activeRole = ActiveRoleService.getActiveRole();
-            return activeRole && activeRole.id === role.id;
-        };
-    }
-})();
+    });

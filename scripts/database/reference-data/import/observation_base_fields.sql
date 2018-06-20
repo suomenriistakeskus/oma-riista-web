@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_observation_base_fields;
-
 CREATE TABLE import_observation_base_fields (
   official_code        INTEGER      NOT NULL,
   metadata_version     INTEGER      NOT NULL,

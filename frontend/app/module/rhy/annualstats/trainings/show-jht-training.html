@@ -1,0 +1,28 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.trainings.jht.title'"
+                               last-modified="$ctrl.jhtTraining.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr ng-repeat-start="type in $ctrl.trainingTypes">
+                        <td class="col-xs-8" translate="{{::('rhy.annualStats.trainings.jht.' + type + 'TrainingEvents')}}"></td>
+                        <td num-pieces="::($ctrl.jhtTraining[type + 'TrainingEvents'])"></td>
+                    </tr>
+                    <tr ng-repeat-end>
+                        <td class="col-xs-8" translate="{{::('rhy.annualStats.trainings.jht.' + type + 'TrainingParticipants')}}"></td>
+                        <td num-persons="::($ctrl.jhtTraining[type + 'TrainingParticipants'])"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.editJhtTraining()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

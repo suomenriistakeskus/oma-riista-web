@@ -1,10 +1,10 @@
 package fi.riista.feature.gamediary.observation;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenDTO;
-import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
+import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -31,20 +32,24 @@ public class ObservationDTOTransformer extends ObservationDTOTransformerBase<Obs
     @Resource
     private JPAQueryFactory queryFactory;
 
+    @Override
+    protected List<ObservationDTO> transform(@Nonnull final List<Observation> observations) {
+        return transform(observations, true);
+    }
+
     // Transactional propagation not mandated since entity associations are not traversed.
     @Transactional(readOnly = true)
     @Nonnull
-    @Override
-    public List<ObservationDTO> transform(@Nonnull final List<Observation> observations) {
+    public List<ObservationDTO> transform(@Nonnull final List<Observation> observations,
+                                          final boolean includeLargeCarnivoreFieldsOnlyIfAuthorOrObserver) {
+
         Objects.requireNonNull(observations);
 
         final Person authenticatedPerson = getAuthenticatedPerson();
 
-        final Function<Observation, GameSpecies> observationToSpecies =
-                getGameDiaryEntryToSpeciesMapping(observations);
+        final Function<Observation, GameSpecies> observationToSpecies = getGameDiaryEntryToSpeciesMapping(observations);
         final Function<Observation, Person> observationToAuthor = getGameDiaryEntryToAuthorMapping(observations);
-        final Function<Observation, Person> observationToObserver =
-                getObservationToObserverMapping(observations);
+        final Function<Observation, Person> observationToObserver = getObservationToObserverMapping(observations);
 
         final Map<Observation, List<ObservationSpecimen>> groupedSpecimens =
                 getSpecimensGroupedByObservations(observations);
@@ -62,44 +67,41 @@ public class ObservationDTOTransformer extends ObservationDTOTransformerBase<Obs
             return createDTO(
                     observation,
                     observationToSpecies.apply(observation),
-                    groupedSpecimens.get(observation),
+                    groupedSpecimens.computeIfAbsent(observation, o -> o.getAmount() == null ? null : emptyList()),
                     groupedImages.get(observation),
                     author,
                     observer,
                     authenticatedPerson,
                     groupOfHuntingDay,
-                    approverToHuntingDay
-            );
+                    approverToHuntingDay,
+                    includeLargeCarnivoreFieldsOnlyIfAuthorOrObserver);
 
         }).collect(toList());
     }
 
-    private static ObservationDTO createDTO(
-            final Observation observation,
-            final GameSpecies species,
-            final List<ObservationSpecimen> specimens,
-            final Iterable<GameDiaryImage> images,
-            final Person author,
-            final Person observer,
-            final Person authenticatedPerson,
-            final Organisation groupOfHuntingDay,
-            final Person approverToHuntingDay) {
+    private static ObservationDTO createDTO(final Observation observation,
+                                            final GameSpecies species,
+                                            final List<ObservationSpecimen> specimens,
+                                            final Iterable<GameDiaryImage> images,
+                                            final Person author,
+                                            final Person observer,
+                                            final Person authenticatedPerson,
+                                            final Organisation groupOfHuntingDay,
+                                            final Person approverToHuntingDay,
+                                            final boolean includeLargeCarnivoreFieldsOnlyIfAuthorOrObserver) {
+
+        final boolean authorOrObserver = author.equals(authenticatedPerson) || observer.equals(authenticatedPerson);
 
         final ObservationDTO dto = ObservationDTO.builder()
-                .populateWith(observation)
+                .populateWith(observation, authorOrObserver || !includeLargeCarnivoreFieldsOnlyIfAuthorOrObserver)
                 .populateWith(species)
+                .populateSpecimensWith(specimens)
                 .withAuthorInfo(author)
                 .withActorInfo(observer)
-                .withCanEdit(isObservationEditable(observation, authenticatedPerson, author, observer))
+                .withCanEdit(isObservationEditable(observation, authorOrObserver))
                 .withGroupOfHuntingDay(groupOfHuntingDay)
                 .withApproverToHuntingDay(approverToHuntingDay)
                 .build();
-
-        if (observation.getAmount() != null && !F.isNullOrEmpty(specimens)) {
-            dto.setSpecimens(ObservationSpecimenDTO.transformList(specimens));
-        }
-
-        final boolean authorOrObserver = author.equals(authenticatedPerson) || observer.equals(authenticatedPerson);
 
         if (authorOrObserver) {
             if (images != null) {
@@ -108,6 +110,9 @@ public class ObservationDTOTransformer extends ObservationDTOTransformerBase<Obs
         } else {
             dto.setDescription(null);
         }
+
+        dto.setPack(ObservationSpecimenOps.isPack(species.getOfficialCode(), observation.getAmount()));
+        dto.setLitter(ObservationSpecimenOps.isLitter(species.getOfficialCode(), specimens));
 
         return dto;
     }
@@ -120,6 +125,7 @@ public class ObservationDTOTransformer extends ObservationDTOTransformerBase<Obs
         final QObservation observation = QObservation.observation;
         final QGroupHuntingDay day = QGroupHuntingDay.groupHuntingDay;
         final QHuntingClubGroup group = QHuntingClubGroup.huntingClubGroup;
+
         return queryFactory.select(observation, group)
                 .from(observation)
                 .join(observation.huntingDayOfGroup, day)

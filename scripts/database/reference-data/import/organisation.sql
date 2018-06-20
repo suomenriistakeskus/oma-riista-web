@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_organisation;
-
 CREATE TABLE import_organisation (
   organisation_type        VARCHAR(255) NOT NULL,
   official_code            VARCHAR(3)   NOT NULL,
@@ -35,3 +33,7 @@ SET parent_organisation_id = p.organisation_id
 FROM import_organisation e
   JOIN organisation p ON (p.official_code = e.parent_official_code AND p.organisation_type = e.parent_organisation_type)
 WHERE organisation.official_code = e.official_code AND organisation.organisation_type = e.organisation_type;
+
+UPDATE organisation
+SET email = 'rhy-' || official_code || '@invalid'
+WHERE organisation_type = 'RHY';

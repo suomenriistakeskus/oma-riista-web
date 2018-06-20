@@ -1,0 +1,50 @@
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <td><span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
+        <td>kirjauksia</td>
+        <td>yksilöitä</td>
+    </tr>
+    </thead>
+
+    <tr>
+        <td>Havaintokirjauksia yhteensä</td>
+        <td>{{$ctrl.metrics.countObservation}}</td>
+        <td>{{$ctrl.metrics.countObservationSpecimens}}</td>
+    </tr>
+
+    <tr>
+        <td>Havaintokirjauksia mobiilissa</td>
+        <td>{{$ctrl.metrics.countObservationFromMobile}}</td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td>Havaintokirjauksia webissä</td>
+        <td>{{$ctrl.metrics.countObservationFromWeb}}</td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td>Saaliskirjauksia yhteensä</td>
+        <td>{{$ctrl.metrics.countHarvest}}</td>
+        <td>{{$ctrl.metrics.countHarvestSpecimens}}</td>
+    </tr>
+
+    <tr>
+        <td>Saaliskirjauksia mobiilissa</td>
+        <td>{{$ctrl.metrics.countHarvestFromMobile}}</td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td>Saaliskirjauksia webissä</td>
+        <td>{{$ctrl.metrics.countHarvestFromWeb}}</td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td>Saalisilmoituksia hyväksytty / yhteensä</td>
+        <td>{{$ctrl.metrics.countHarvestReportApproved}} / {{$ctrl.metrics.countHarvestReport}}</td>
+    </tr>
+</table>

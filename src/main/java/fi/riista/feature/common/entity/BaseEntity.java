@@ -1,7 +1,9 @@
 package fi.riista.feature.common.entity;
 
+import fi.riista.security.UserInfo;
 import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.domain.Persistable;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -125,5 +127,9 @@ public abstract class BaseEntity<PK extends Serializable> implements HasID<PK>, 
          * Alternative: Generate UUID in constructor for hashCode().
          */
         return null == getId() ? 0 : 17 + getId().hashCode() * 31;
+    }
+
+    protected static Long getActiveUserId() {
+        return UserInfo.extractUserIdForEntity(SecurityContextHolder.getContext().getAuthentication());
     }
 }

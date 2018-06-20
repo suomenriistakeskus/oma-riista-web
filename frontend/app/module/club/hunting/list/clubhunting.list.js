@@ -1,400 +1,126 @@
 'use strict';
 
 angular.module('app.clubhunting.list', [])
-    .run(function ($rootScope, ClubHuntingPersistentState) {
-        // Reset on login and logout
-        _.forEach(['loginRequired', 'loginCancelled'], function(eventName) {
-            $rootScope.$on('event:auth-' + eventName, function () {
-                ClubHuntingPersistentState.clear();
-            });
-        });
-    })
 
-    .directive('clubHuntingFilters', function () {
-        return {
-            restrict: 'A',
-            scope: {
-                onChange: '&onChange'
-            },
-            templateUrl: 'club/hunting/list/filters.html',
-            controller: 'ClubHuntingEntryFiltersController',
-            controllerAs: 'ctrl',
-            bindToController: true
-        };
-    })
+    .component('clubHuntingFilters', {
+        templateUrl: 'club/hunting/list/filters.html',
+        bindings: {
+            onFilterChange: '&'
+        },
+        controller: function ($q, $timeout, $state,
+                              NotificationService,
+                              HuntingYearService,
+                              ClubHuntingViewData,
+                              ClubGroupService,
+                              ClubTodoService) {
+            var $ctrl = this;
 
-    .directive('clubHuntingList', function () {
-        return {
-            restrict: 'A',
-            scope: {
-                huntingDays: '=clubHuntingList',
-                onSelectEntry: '&selectEntry',
-                onCreateHuntingDay: "&createDay",
-                onEditHuntingDay: "&editDay"
-            },
-            templateUrl: 'club/hunting/list/days.html',
-            controller: 'ClubHuntingEntryListController',
-            controllerAs: 'ctrl',
-            bindToController: true
-        };
-    })
+            $ctrl.huntingData = ClubHuntingViewData.get();
+            $ctrl.beginDate = null;
+            $ctrl.endDate = null;
+            $ctrl.onlyRejected = false;
 
-    .service('ClubHuntingPersistentState', function (LocalStorageService) {
-        // Load value from LocalStorage only once to avoid issues with multiple browser windows
-        var keyNames = ['selectedGroupId', 'selectedSpeciesCode', 'selectedHuntingYear'];
-        var values = _(keyNames)
-            .map(LocalStorageService.getKey)
-            .map(_.parseInt)
-            .map(function (value) {
-                return _.isFinite(value) ? value : null;
-            })
-            .filter()
-            .value();
-        var state = _.zipObject(keyNames, values);
+            $ctrl.$onInit = function () {
+                var huntingYear;
 
-        function store(key, value) {
-            state[key] = value;
-            LocalStorageService.setKey(key, value);
-        }
-
-        function load(key) {
-            return state[key];
-        }
-
-        // Create accessor methods
-        var self = this;
-        _.forEach(keyNames, function (key) {
-           var methodName = key.charAt(0).toUpperCase() + key.substring(1);
-           self['get' + methodName] = _.partial(load, key);
-           self['set' + methodName] = _.partial(store, key);
-        });
-
-        this.clear = function () {
-            state = {};
-            _.forEach(keyNames, function (key) {
-                LocalStorageService.setKey(key, null);
-            });
-        };
-    })
-
-    .service('ClubHuntingViewData', function ($q, ActiveRoleService, GIS, Helpers, HuntingYearService,
-                                              ClubHuntingPersistentState, GameSpeciesCodes,
-                                              ClubGroupDiary, ClubGroups) {
-        // Expose only necessary data items.
-        var data = {
-            club: null,
-            groupStatus: null,
-            huntingYears: [],
-            huntingYear: null,
-            speciesWithinSelectedYear: [],
-            species: null,
-            huntingGroups: null,
-            huntingGroup: null,
-            huntingDays: [],
-            huntingArea: null,
-            rejected: {},
-            diaryForGroup: [],
-            fromMooseDataCard: false,
-            huntingFinished: false
-        };
-
-        // Game species grouped by selected hunting year are cached into this within initialization
-        // for improving performance.
-        var speciesGroupedByYear = null;
-
-        // All hunting groups are cached in internal variable.
-        var allHuntingGroups = null;
-
-        this.get = function () {
-            return data;
-        };
-
-        function isEntryRejected(entry) {
-            return _.has(data.rejected, entry.type) && _.includes(data.rejected[entry.type], entry.id);
-        }
-
-        function linkGameEntriesToHuntingDays(huntingDays, diaryForGroup, groupStatus) {
-            var formatDate = function (date) {
-                return moment(date).format('YYYY-MM-DD');
-            };
-
-            var diaryWithHuntingDay = _.groupBy(diaryForGroup, 'huntingDayId');
-            var diaryWithoutHuntingDay = _.chain(diaryForGroup)
-                .filter(_.negate(isEntryRejected))
-                .filter(_.negate(_.property('huntingDayId')))
-                .groupBy(function (diaryEntry) {
-                    return formatDate(diaryEntry.pointOfTime);
-                })
-                .value();
-
-            var existingHuntingDates = _(huntingDays).pluck('startDate').map(formatDate).value();
-            var allHuntingDates = _.keys(diaryWithoutHuntingDay);
-            var missingHuntingDays = _.difference(allHuntingDates, existingHuntingDates);
-
-            var phantomHuntingDates = _.map(missingHuntingDays, function (key) {
-                return {
-                    id: null,
-                    startDate: key,
-                    endDate: key,
-                    gameEntries: []
-                };
-            });
-
-            // Concat in place
-            huntingDays.push.apply(huntingDays, phantomHuntingDates);
-
-            _.forEach(huntingDays, function (huntingDay) {
-                var byStartDate, byEndDate, byHuntingDayId;
-
-                var startKey = formatDate(huntingDay.startDate);
-                var endKey = formatDate(huntingDay.endDate);
-
-                byStartDate = diaryWithoutHuntingDay[startKey];
-
-                if (endKey !== startKey) {
-                    byEndDate = diaryWithoutHuntingDay[endKey];
+                if ($ctrl.huntingData.huntingYear) {
+                    huntingYear = $ctrl.huntingData.huntingYear;
+                    $ctrl.beginDate = HuntingYearService.getBeginDateStr(huntingYear);
+                    $ctrl.endDate = HuntingYearService.getEndDateStr(huntingYear);
+                } else {
+                    huntingYear = HuntingYearService.getCurrent();
                 }
 
-                if (huntingDay.id) {
-                    byHuntingDayId = diaryWithHuntingDay[huntingDay.id];
-                }
+                ClubTodoService.showTodo(ClubHuntingViewData.getHuntingClubId(), huntingYear);
 
-                var diary = _.chain([byStartDate, byEndDate, byHuntingDayId])
-                    .filter()
-                    .flatten()
-                    .sortByOrder('pointOfTime', false)
-                    .value();
-
-                huntingDay.gameEntries = diary;
-                huntingDay.canEdit = groupStatus.canEditHuntingDay;
-                huntingDay.totalHarvestSpecimenCount = _(diary).filter(_.method('isHarvest')).sum('totalSpecimenAmount');
-                huntingDay.totalObservationSpecimenCount = _(diary).filter(_.method('isObservation')).sum('totalSpecimenAmount');
-            });
-        }
-
-        function loadData() {
-            data.groupStatus = null;
-            data.diaryForGroup = [];
-            data.huntingDays = [];
-            data.rejected = {};
-
-            var clubId = _.get(data, 'club.id');
-            var groupId = _.get(data, 'huntingGroup.id');
-
-            if (!clubId || !groupId) {
-                return $q.when(data);
-            }
-
-            var groupParams = {
-                id: groupId,
-                clubId: clubId
-            };
-
-            var huntingDaysPromise = ClubGroups.huntingDays(groupParams).$promise;
-            var huntingAreaPromise = ClubGroups.huntingArea(groupParams).$promise;
-            var statusPromise = ClubGroups.status(groupParams).$promise;
-            var diaryPromise = ClubGroupDiary.list(groupParams).$promise;
-            var rejectedPromise = ClubGroups.listRejected(groupParams);
-
-            var promiseArray = [statusPromise, diaryPromise, huntingDaysPromise, huntingAreaPromise, rejectedPromise];
-
-            return $q.all(promiseArray).then(function (promises) {
-                data.groupStatus = promises[0];
-                data.diaryForGroup = promises[1];
-                data.huntingDays = promises[2];
-                data.huntingArea = promises[3];
-                data.rejected = promises[4];
-
-                linkGameEntriesToHuntingDays(data.huntingDays, data.diaryForGroup, data.groupStatus);
-
-                return data;
-            });
-        }
-
-        function selectHuntingYearSpeciesAndGroup(huntingYear, speciesCode, groupId) {
-            if (!huntingYear) {
-                huntingYear = HuntingYearService.getCurrent();
-            }
-
-            data.speciesWithinSelectedYear = _.get(speciesGroupedByYear, huntingYear, []);
-            data.huntingYear = _.size(data.speciesWithinSelectedYear) > 0 ? huntingYear : null;
-            data.species = null;
-            data.huntingGroup = null;
-
-            if (data.huntingYear) {
-                if (speciesCode) {
-                    data.species = _.find(data.speciesWithinSelectedYear, 'code', speciesCode);
-                }
-
-                if (!data.species) {
-                    data.species = data.speciesWithinSelectedYear[0];
-                }
-
-                speciesCode = data.species.code;
-                data.huntingGroups = _.filter(allHuntingGroups, function (group) {
-                    return group.huntingYear === huntingYear && group.species.code === speciesCode;
+                // This timeout was added to fix leaflet-directive behaviour. Otherwise changes are not visible.
+                $timeout(function () {
+                    filterContent();
                 });
+            };
 
-                if (_.size(data.huntingGroups) > 0) {
-                    if (groupId) {
-                        data.huntingGroup = _.find(data.huntingGroups, 'id', groupId);
-                    }
+            function filterContent() {
+                $ctrl.mooseGroupSelected = ClubHuntingViewData.isMooseGroupSelected();
 
-                    if (!data.huntingGroup) {
-                        data.huntingGroup = data.huntingGroups[0];
+                $ctrl.onFilterChange({
+                    filter: {
+                        beginDate: $ctrl.beginDate,
+                        endDate: $ctrl.endDate,
+                        onlyRejected: $ctrl.onlyRejected
                     }
+                });
+            }
+
+            $ctrl.onGroupChanged = function (huntingGroup) {
+                if (huntingGroup && huntingGroup.id) {
+                    $ctrl.onlyRejected = false;
+                    ClubHuntingViewData.changeGroup(huntingGroup.id).then(filterContent);
                 }
-            }
+            };
 
-            ClubHuntingPersistentState.setSelectedHuntingYear(data.huntingYear);
-            ClubHuntingPersistentState.setSelectedSpeciesCode(data.species ? data.species.code : null);
+            $ctrl.onSpeciesChanged = function (species) {
+                if (species) {
+                    $ctrl.onlyRejected = false;
+                    ClubHuntingViewData.changeSpecies(species.code).then(filterContent);
+                }
+            };
 
-            if (data.huntingGroup) {
-                ClubHuntingPersistentState.setSelectedGroupId(data.huntingGroup.id);
+            $ctrl.onHuntingYearChanged = function (huntingYear) {
+                if (huntingYear) {
+                    $ctrl.onlyRejected = false;
+                    $ctrl.beginDate = HuntingYearService.getBeginDateStr(huntingYear);
+                    $ctrl.endDate = HuntingYearService.getEndDateStr(huntingYear);
 
-                data.huntingFinished = data.huntingGroup.huntingFinished;
-                data.fromMooseDataCard = data.huntingGroup.fromMooseDataCard;
-            } else {
-                ClubHuntingPersistentState.setSelectedGroupId(null);
+                    ClubHuntingViewData.changeHuntingYear(huntingYear).then(filterContent);
+                    ClubTodoService.showTodo(ClubHuntingViewData.getHuntingClubId(), huntingYear);
+                }
+            };
 
-                data.huntingFinished = false;
-                data.fromMooseDataCard = false;
-            }
+            $ctrl.onDateChange = function () {
+                filterContent();
+            };
+
+            $ctrl.onOnlyRejectedChange = function () {
+                filterContent();
+            };
+
+            $ctrl.isEditPermitPossible = ClubHuntingViewData.isEditPermitPossible;
+
+            $ctrl.editHuntingGroup = function () {
+                var huntingGroup = $ctrl.huntingData.huntingGroup;
+
+                if (huntingGroup) {
+                    var modalPromise = ClubGroupService.editGroup(huntingGroup);
+
+                    NotificationService.handleModalPromise(modalPromise).then(function (result) {
+                        $state.reload();
+                    });
+                }
+            };
         }
-
-        this.initialize = function (club, huntingGroups) {
-            allHuntingGroups = huntingGroups;
-
-            speciesGroupedByYear = _(huntingGroups)
-                .groupBy('huntingYear')
-                .mapValues(function (groups) {
-                    return _(groups).map('species').uniq('code').value();
-                })
-                .value();
-
-            angular.extend(data, {
-                club: club,
-                huntingYears: _(huntingGroups).map('huntingYear').uniq().value()
-            });
-
-            var storedHuntingYear = ClubHuntingPersistentState.getSelectedHuntingYear();
-            var storedSpeciesCode = ClubHuntingPersistentState.getSelectedSpeciesCode();
-            var storedGroupId = ClubHuntingPersistentState.getSelectedGroupId();
-
-            selectHuntingYearSpeciesAndGroup(storedHuntingYear, storedSpeciesCode, storedGroupId);
-
-            return loadData();
-        };
-
-        this.changeHuntingYear = function (huntingYear) {
-            selectHuntingYearSpeciesAndGroup(huntingYear, null, null);
-            return loadData();
-        };
-
-        this.changeSpecies = function (speciesCode) {
-            selectHuntingYearSpeciesAndGroup(data.huntingYear, speciesCode, null);
-            return loadData();
-        };
-
-        this.changeGroup = function (groupId) {
-            selectHuntingYearSpeciesAndGroup(data.huntingYear, data.species.code, groupId);
-            return loadData();
-        };
-
-        this.filterDiary = function (beginDate, endDate, showOnlyRejected) {
-            return _.filter(data.diaryForGroup, function (entry) {
-                if (showOnlyRejected) {
-                    return !entry.huntingDayId && isEntryRejected(entry) && Helpers.dateWithinRange(entry.pointOfTime, beginDate, endDate);
-                }
-                return !isEntryRejected(entry) && Helpers.dateWithinRange(entry.pointOfTime, beginDate, endDate);
-            });
-        };
-
-        this.filterHuntingDays = function (beginDate, endDate) {
-            return _.filter(data.huntingDays, function (huntingDay) {
-                return Helpers.dateWithinRange(huntingDay.startDate, beginDate, endDate);
-            });
-        };
-
-        this.find = function (type, id) {
-            return _.find(data.diaryForGroup, function (entry) {
-                return entry.id === id && entry.type === type;
-            });
-        };
-
-        this.findHuntingDay = function (where) {
-            return _.isObject(where) ? _.findWhere(data.huntingDays, where) : null;
-        };
-
-        this.getHuntingAreaBounds = function () {
-            var bbox = _.get(data, 'huntingArea.features[0].bbox');
-            return GIS.getBoundsFromGeoJsonBbox(bbox);
-        };
-
-        this.isMooseGroupSelected = function () {
-            return data.species && GameSpeciesCodes.isMoose(data.species.code) && data.huntingGroup;
-        };
-
-        this.isAddHarvestVisible = function () {
-            return _.get(data.groupStatus, 'canCreateHarvest', false);
-        };
-
-        this.isAddObservationVisible = function () {
-            return _.get(data.groupStatus, 'canCreateObservation', false);
-        };
-
-        this.isCreateHuntingDayVisible = function () {
-            return _.get(data.groupStatus, 'canCreateHuntingDay', false);
-        };
-
-        this.isExportVisible = function () {
-            return _.get(data.groupStatus, 'canExportData', false);
-        };
-
-        this.isEditPermitPossible = function () {
-            return _.get(data.groupStatus, 'canEditPermit', false);
-        };
     })
 
-    .controller('ClubHuntingEntryFiltersController', function ($q, $timeout, $state,
-                                                               NotificationService,
-                                                               HuntingYearService,
-                                                               ClubHunting,
-                                                               ClubHuntingViewData,
-                                                               ClubGroupService,
-                                                               ClubTodoService,
-                                                               ObservationFieldRequirements) {
+    .component('clubHuntingStatistics', {
+        templateUrl: 'club/hunting/list/statistics.html',
+        bindings: {
+            diary: '<',
+            showObservation: '<'
+        },
+        controller: function (ObservationFieldRequirements) {
+            var $ctrl = this;
 
-        var ctrl = this;
-        var observationStatKeys = ObservationFieldRequirements.getAllMooseAmountFields();
+            $ctrl.mooseAmountFields = ObservationFieldRequirements.getAllMooseAmountFields();
 
-        this.huntingData = ClubHuntingViewData.get();
-        this.beginDate = null;
-        this.endDate = null;
-        this.onlyRejected = false;
+            $ctrl.$onChanges = function (c) {
+                if (c.diary) {
+                    $ctrl.harvestStats = _.reduce(c.diary.currentValue, collectStats, {});
+                } else {
+                    $ctrl.harvestStats = null;
+                }
+            };
 
-        function initialize() {
-            var huntingYear;
-
-            if (ctrl.huntingData.huntingYear) {
-                huntingYear = ctrl.huntingData.huntingYear;
-                ctrl.beginDate = HuntingYearService.getBeginDateStr(huntingYear);
-                ctrl.endDate = HuntingYearService.getEndDateStr(huntingYear);
-            } else {
-                huntingYear = HuntingYearService.getCurrent();
-            }
-
-            ctrl.mooseGroupSelected = ClubHuntingViewData.isMooseGroupSelected();
-            ClubTodoService.showTodo(ctrl.huntingData.club.id, huntingYear);
-
-            ctrl.filterContent();
-        }
-
-        function calculateStatistics(entryList) {
             function collectStats(stats, entry) {
-                stats.entryCount = (stats.entryCount || 0) + 1;
-
-                if (entry.isMoose() || entry.isPermitBasedDeer()) {
+                if (entry.isPermitBasedMooselike()) {
                     if (entry.isHarvest() && entry.huntingDayId) {
                         _.each(entry.specimens, function (specimen) {
                             if (specimen.gender && specimen.age) {
@@ -406,7 +132,7 @@ angular.module('app.clubhunting.list', [])
                     // Count observations only of selected species.
                     // Since observations are shown only for moose, count only moose observations
                     if (entry.isMoose() && entry.isObservation() && entry.huntingDayId) {
-                        _.each(observationStatKeys, function (statsKey) {
+                        _.each($ctrl.mooseAmountFields, function (statsKey) {
                             stats[statsKey] = (stats[statsKey] || 0) + (entry[statsKey] || 0);
                         });
                     }
@@ -414,139 +140,80 @@ angular.module('app.clubhunting.list', [])
 
                 return stats;
             }
-
-            return _.reduce(entryList, collectStats, {});
         }
-
-        this.filterContent = function () {
-            var huntingDays = ClubHuntingViewData.filterHuntingDays(ctrl.beginDate, ctrl.endDate);
-            var diary = ClubHuntingViewData.filterDiary(ctrl.beginDate, ctrl.endDate, ctrl.onlyRejected);
-            var stats = calculateStatistics(diary);
-
-            ctrl.mooseGroupSelected = ClubHuntingViewData.isMooseGroupSelected();
-
-            ctrl.onChange({
-                huntingDays: huntingDays,
-                diary: diary,
-                stats: stats
-            });
-        };
-
-        this.onGroupChanged = function (huntingGroup) {
-            if (huntingGroup && huntingGroup.id) {
-                ctrl.onlyRejected = false;
-                ClubHuntingViewData.changeGroup(huntingGroup.id).then(ctrl.filterContent);
-            }
-        };
-
-        this.onSpeciesChanged = function (species) {
-            if (species) {
-                ctrl.onlyRejected = false;
-                ClubHuntingViewData.changeSpecies(species.code).then(ctrl.filterContent);
-            }
-        };
-
-        this.onHuntingYearChanged = function (huntingYear) {
-            if (huntingYear) {
-                ctrl.onlyRejected = false;
-                ctrl.beginDate = HuntingYearService.getBeginDateStr(huntingYear);
-                ctrl.endDate = HuntingYearService.getEndDateStr(huntingYear);
-
-                ClubHuntingViewData.changeHuntingYear(huntingYear).then(ctrl.filterContent);
-                ClubTodoService.showTodo(ctrl.huntingData.club.id, huntingYear);
-            }
-        };
-
-        this.onDateChange = function () {
-            ctrl.filterContent();
-        };
-
-        this.onOnlyRejectedChange = function () {
-            ctrl.filterContent();
-        };
-
-        this.isEditPermitPossible = ClubHuntingViewData.isEditPermitPossible;
-
-        this.editHuntingGroup = function () {
-            var huntingGroup = ctrl.huntingData.huntingGroup;
-
-            if (huntingGroup) {
-                var modalPromise = ClubGroupService.editGroup(huntingGroup);
-
-                NotificationService.handleModalPromise(modalPromise).then(function (result) {
-                    $state.reload();
-                });
-            }
-        };
-
-        // This timeout was added to fix leaflet-directive behaviour. Otherwise changes are not visible.
-        $timeout(function () {
-            initialize();
-        });
     })
 
-    .controller('ClubHuntingEntryListController', function ($scope, ClubHuntingViewData) {
-        var ctrl = this;
+    .component('clubHuntingList', {
+        templateUrl: 'club/hunting/list/days.html',
+        bindings: {
+            huntingDays: '<',
+            onSelectEntry: '&',
+            onCreateHuntingDay: '&',
+            onEditHuntingDay: '&'
+        },
+        controller: function ($scope, ClubHuntingViewData) {
+            var $ctrl = this;
 
-        $scope.$on('huntingDaySelected', function (event, selected) {
-            var selectedDay;
-            if (selected.id) {
-                selectedDay = _.find(ctrl.huntingDays, 'id', selected.id);
-            } else {
-                selectedDay = _.find(ctrl.huntingDays, 'startDate', selected.startDate);
-            }
+            $scope.$on('huntingDaySelected', function (event, selected) {
+                var selectedDay;
+                if (selected.id) {
+                    selectedDay = _.find($ctrl.huntingDays, 'id', selected.id);
+                } else {
+                    selectedDay = _.find($ctrl.huntingDays, 'startDate', selected.startDate);
+                }
 
-            if (selectedDay) {
-                selectedDay.isOpen = true;
-            }
-        });
-
-        this.createHuntingDay = function ($event, huntingDay) {
-            $event.stopPropagation();
-            this.onCreateHuntingDay({'startDateAsString': huntingDay.startDate});
-        };
-
-        this.editHuntingDay = function ($event, huntingDay) {
-            $event.stopPropagation();
-            this.onEditHuntingDay({'id': huntingDay.id});
-        };
-
-        this.getDayToggleClasses = function (day) {
-            return {
-                'glyphicon': true,
-                'glyphicon-chevron-down': day.isOpen,
-                'glyphicon-chevron-right': !day.isOpen
-            };
-        };
-
-        this.onEntryClick = function (entry, day) {
-            ctrl.onSelectEntry({
-                diaryEntry: entry,
-                huntingDay: day
+                if (selectedDay) {
+                    selectedDay.isOpen = true;
+                }
             });
-        };
 
-        this.showHuntingDayAsterisk = function (day) {
-            return !(day.id && _.every(day.gameEntries, 'huntingDayId'));
-        };
+            $ctrl.createHuntingDay = function ($event, huntingDay) {
+                $event.stopPropagation();
+                $ctrl.onCreateHuntingDay({'startDateAsString': huntingDay.startDate});
+            };
 
-        this.getSpecimenType = function (specimen) {
-            var str = null;
+            $ctrl.editHuntingDay = function ($event, huntingDay) {
+                $event.stopPropagation();
+                $ctrl.onEditHuntingDay({'id': huntingDay.id});
+            };
 
-            if (specimen) {
-                if (_.isString(specimen.gender)) {
-                    str = specimen.gender;
+            $ctrl.getDayToggleClasses = function (day) {
+                return {
+                    'glyphicon': true,
+                    'glyphicon-chevron-down': day.isOpen,
+                    'glyphicon-chevron-right': !day.isOpen
+                };
+            };
+
+            $ctrl.onEntryClick = function (entry, day) {
+                $ctrl.onSelectEntry({
+                    diaryEntry: entry,
+                    huntingDay: day
+                });
+            };
+
+            $ctrl.showHuntingDayAsterisk = function (day) {
+                return !(day.id && _.every(day.gameEntries, 'huntingDayId'));
+            };
+
+            $ctrl.getSpecimenType = function (specimen) {
+                var str = null;
+
+                if (specimen) {
+                    if (_.isString(specimen.gender)) {
+                        str = specimen.gender;
+                    }
+
+                    if (_.isString(specimen.age)) {
+                        str = (str ? str + '_' : '') + specimen.age;
+                    }
                 }
 
-                if (_.isString(specimen.age)) {
-                    str = (str ? str + '_' : '') + specimen.age;
-                }
-            }
+                return str || 'UNKNOWN';
+            };
 
-            return str || 'UNKNOWN';
-        };
-
-        this.isMooseGroupSelected = function () {
-            return ClubHuntingViewData.isMooseGroupSelected();
-        };
+            $ctrl.isMooseGroupSelected = function () {
+                return ClubHuntingViewData.isMooseGroupSelected();
+            };
+        }
     });

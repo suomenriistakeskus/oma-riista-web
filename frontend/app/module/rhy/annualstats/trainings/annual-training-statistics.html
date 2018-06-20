@@ -1,0 +1,32 @@
+<div class="r-annual-statistics-content row">
+    <div class="col-sm-6">
+        <show-training-statistics-overview statistics="$ctrl.statistics"></show-training-statistics-overview>
+
+        <show-hunter-exam-training-statistics hunter-exam-training="$ctrl.statistics.hunterExamTraining"
+                                              editable="$ctrl.editable"
+                                              open-edit-dialog="$ctrl.editHunterExamTraining()">
+        </show-hunter-exam-training-statistics>
+
+        <show-state-aid-training-statistics state-aid-training="$ctrl.statistics.stateAidTraining"
+                                            editable="$ctrl.editable"
+                                            open-edit-dialog="$ctrl.editStateAidTraining(trainingTypes)">
+        </show-state-aid-training-statistics>
+    </div>
+
+    <div class="col-sm-6">
+        <show-jht-training-statistics jht-training="$ctrl.statistics.jhtTraining"
+                                      editable="$ctrl.editable"
+                                      open-edit-dialog="$ctrl.editJhtTraining(trainingTypes)">
+        </show-jht-training-statistics>
+
+        <show-other-hunter-training-statistics other-hunter-training="$ctrl.statistics.otherHunterTraining"
+                                               editable="$ctrl.editable"
+                                               open-edit-dialog="$ctrl.editOtherHunterTraining(trainingTypes)">
+        </show-other-hunter-training-statistics>
+
+        <show-other-training-statistics other-training="$ctrl.statistics.otherTraining"
+                                        editable="$ctrl.editable"
+                                        open-edit-dialog="$ctrl.editOtherTraining(trainingTypes)">
+        </show-other-training-statistics>
+    </div>
+</div>

@@ -29,9 +29,9 @@
     <table class="table table-striped">
         <tr>
             <td>
-                <img ng-src="/static/elainlajikuvat/96x96/{{ ::diaryEntry.gameSpeciesCode }}.jpg"
-                     class="r-gamediary-species-logo" width="96" height="96"/>
+                <img ng-src="/static/elainlajikuvat/96x96/{{ ::diaryEntry.gameSpeciesCode }}.jpg" width="96" height="96"/>
             </td>
+
             <td class="species-name">
                 <p>{{ diaryEntry.gameSpecies.name | rI18nNameFilter | capitalize }}</p>
             </td>
@@ -45,8 +45,18 @@
             <td>
                 <h5 translate="gamediary.form.location"></h5>
 
-                <div translate="global.geoLocation.coordinatesText"
-                     translate-values="diaryEntry.geoLocation"></div>
+                <div class="geolocation-container">
+                    <span translate="global.geoLocation.coordinatesText"
+                          translate-values="diaryEntry.geoLocation"></span>
+
+                        <button type="button"
+                                class="geolocation-edit-button"
+                                ng-if="showGeolocationEditButton"
+                                ng-click="fixGeoLocation()">
+
+                            <span class="glyphicon glyphicon-edit" title="{{'club.hunting.fixGeoLocation' | translate}}"></span>
+                        </button>
+                </div>
             </td>
         </tr>
 
@@ -92,7 +102,7 @@
 
     <button type="button" class="btn btn-primary"
             ng-show="showAccept"
-            ng-click="edit()">
+            ng-click="accept()">
         <span translate="club.hunting.openProposalForEdit"></span>&nbsp;
         <span class="glyphicon glyphicon-chevron-right"></span>
     </button>

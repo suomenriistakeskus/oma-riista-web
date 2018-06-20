@@ -31,6 +31,8 @@ public class SQHarvestSpecimen extends RelationalPathSpatial<SQHarvestSpecimen> 
 
     public final StringPath age = createString("age");
 
+    public final BooleanPath alone = createBoolean("alone");
+
     public final NumberPath<Integer> antlerPointsLeft = createNumber("antlerPointsLeft", Integer.class);
 
     public final NumberPath<Integer> antlerPointsRight = createNumber("antlerPointsRight", Integer.class);
@@ -71,15 +73,15 @@ public class SQHarvestSpecimen extends RelationalPathSpatial<SQHarvestSpecimen> 
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestSpecimen> harvestSpecimenPkey = createPrimaryKey(harvestSpecimenId);
 
-    public final com.querydsl.sql.ForeignKey<SQGameAge> harvestSpecimenAgeFk = createForeignKey(age, "name");
-
     public final com.querydsl.sql.ForeignKey<SQGameAntlersType> specimenAntlersTypeFk = createForeignKey(antlersType, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQGameGender> harvestSpecimenGenderFk = createForeignKey(gender, "name");
+    public final com.querydsl.sql.ForeignKey<SQHarvest> harvestSpecimenHarvestFk = createForeignKey(harvestId, "harvest_id");
 
     public final com.querydsl.sql.ForeignKey<SQGameFitnessClass> specimenFitnessClassFk = createForeignKey(fitnessClass, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQHarvest> harvestSpecimenHarvestFk = createForeignKey(harvestId, "harvest_id");
+    public final com.querydsl.sql.ForeignKey<SQGameAge> harvestSpecimenAgeFk = createForeignKey(age, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQGameGender> harvestSpecimenGenderFk = createForeignKey(gender, "name");
 
     public SQHarvestSpecimen(String variable) {
         super(SQHarvestSpecimen.class, forVariable(variable), "public", "harvest_specimen");
@@ -88,6 +90,11 @@ public class SQHarvestSpecimen extends RelationalPathSpatial<SQHarvestSpecimen> 
 
     public SQHarvestSpecimen(String variable, String schema, String table) {
         super(SQHarvestSpecimen.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQHarvestSpecimen(String variable, String schema) {
+        super(SQHarvestSpecimen.class, forVariable(variable), schema, "harvest_specimen");
         addMetadata();
     }
 
@@ -104,6 +111,7 @@ public class SQHarvestSpecimen extends RelationalPathSpatial<SQHarvestSpecimen> 
     public void addMetadata() {
         addMetadata(additionalInfo, ColumnMetadata.named("additional_info").withIndex(20).ofType(Types.VARCHAR).withSize(2147483647));
         addMetadata(age, ColumnMetadata.named("age").withIndex(11).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(alone, ColumnMetadata.named("alone").withIndex(22).ofType(Types.BIT).withSize(1));
         addMetadata(antlerPointsLeft, ColumnMetadata.named("antler_points_left").withIndex(18).ofType(Types.INTEGER).withSize(10));
         addMetadata(antlerPointsRight, ColumnMetadata.named("antler_points_right").withIndex(19).ofType(Types.INTEGER).withSize(10));
         addMetadata(antlersType, ColumnMetadata.named("antlers_type").withIndex(16).ofType(Types.VARCHAR).withSize(255));

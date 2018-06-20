@@ -165,4 +165,12 @@ public class ObjectFactory {
         return new LEM_WildBoarEstimatedAppearance();
     }
 
+    /**
+     * Create an instance of {@link LEM_BeaverAppearance }
+     * 
+     */
+    public LEM_BeaverAppearance createLEM_BeaverAppearance() {
+        return new LEM_BeaverAppearance();
+    }
+
 }

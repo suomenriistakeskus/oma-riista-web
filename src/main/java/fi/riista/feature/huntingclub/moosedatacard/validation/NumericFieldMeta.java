@@ -1,11 +1,8 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static javaslang.control.Validation.invalid;
-import static javaslang.control.Validation.valid;
-
 import com.google.common.collect.Range;
 import fi.riista.util.ValidationUtils;
-import javaslang.control.Validation;
+import io.vavr.control.Validation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,6 +10,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static io.vavr.control.Validation.invalid;
+import static io.vavr.control.Validation.valid;
 
 public abstract class NumericFieldMeta<T, N extends Number & Comparable<N>> implements Function<T, N> {
 
@@ -97,5 +97,4 @@ public abstract class NumericFieldMeta<T, N extends Number & Comparable<N>> impl
     public Range<N> getRange() {
         return range;
     }
-
 }

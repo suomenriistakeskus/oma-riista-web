@@ -53,11 +53,11 @@ public class SQHuntingClubMemberInvitation extends RelationalPathSpatial<SQHunti
 
     public final com.querydsl.sql.PrimaryKey<SQHuntingClubMemberInvitation> huntingClubMemberInvitationPkey = createPrimaryKey(huntingClubMemberInvitationId);
 
-    public final com.querydsl.sql.ForeignKey<SQPerson> huntingClubMemberInvitationPersonFk = createForeignKey(personId, "person_id");
-
     public final com.querydsl.sql.ForeignKey<SQOccupationType> huntingClubMemberInvitationOccupationTypeFk = createForeignKey(occupationType, "name");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> huntingClubMemberInvitationHuntingClubFk = createForeignKey(huntingClubId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPerson> huntingClubMemberInvitationPersonFk = createForeignKey(personId, "person_id");
 
     public SQHuntingClubMemberInvitation(String variable) {
         super(SQHuntingClubMemberInvitation.class, forVariable(variable), "public", "hunting_club_member_invitation");
@@ -66,6 +66,11 @@ public class SQHuntingClubMemberInvitation extends RelationalPathSpatial<SQHunti
 
     public SQHuntingClubMemberInvitation(String variable, String schema, String table) {
         super(SQHuntingClubMemberInvitation.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQHuntingClubMemberInvitation(String variable, String schema) {
+        super(SQHuntingClubMemberInvitation.class, forVariable(variable), schema, "hunting_club_member_invitation");
         addMetadata();
     }
 

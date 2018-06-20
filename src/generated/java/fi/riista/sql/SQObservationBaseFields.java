@@ -43,9 +43,9 @@ public class SQObservationBaseFields extends RelationalPathSpatial<SQObservation
 
     public final com.querydsl.sql.PrimaryKey<SQObservationBaseFields> observationBaseFieldsPkey = createPrimaryKey(id);
 
-    public final com.querydsl.sql.ForeignKey<SQGameSpecies> observationBaseFieldsSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
-
     public final com.querydsl.sql.ForeignKey<SQRequired> observationBaseFieldsWithinMooseHuntingFk = createForeignKey(withinMooseHunting, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQGameSpecies> observationBaseFieldsSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
 
     public SQObservationBaseFields(String variable) {
         super(SQObservationBaseFields.class, forVariable(variable), "public", "observation_base_fields");
@@ -54,6 +54,11 @@ public class SQObservationBaseFields extends RelationalPathSpatial<SQObservation
 
     public SQObservationBaseFields(String variable, String schema, String table) {
         super(SQObservationBaseFields.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQObservationBaseFields(String variable, String schema) {
+        super(SQObservationBaseFields.class, forVariable(variable), schema, "observation_base_fields");
         addMetadata();
     }
 

@@ -8,8 +8,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>Zertifikat</title>
-    <base href="/static/foreign-hunter-certificate/">
-    <link href="style.css" rel="stylesheet"/>
+    <base href="/static/hunter-certificate/">
+    <link href="certificate.css" rel="stylesheet"/>
 </head>
 <body>
 
@@ -33,25 +33,27 @@
         (bez. <strong><joda:format value="${model.paymentDate}" pattern="dd.MM.yyyy" /></strong>)
     </p>
 
-    <h1 style="padding: 5pt 0">Der Finnische Jagdschein</h1>
+    <h1 style="padding: 5pt 0">Finnischer Jagdschein</h1>
 
     <div style="padding-left: 70pt">
         <p>
-            Jeder Jäger in Finnland muss die Jägerprüfung ablegen um den
-            Jagdschein zu erhalten. Die Prüfung ist eine schriftliche Prüfung mit 60 Fragen.
+            In Finnland muss jeder Jäger erfolgreich eine Jägerprüfung absolvieren, um einen Jagdschein zu erhalten.
+            Die Jägerprüfung wird schriftlich abgenommen und umfasst 60 Fragen.
         </p>
 
         <p>
-            Die Prüfung besteht aus sechs Teilen, sowie einem vorherigen Übungskurs:
+            Die Prüfung und der Vorbereitungskurs dazu ist in die folgenden acht Teilbereiche untergliedert:
         </p>
 
         <ul>
-            <li><span>Das Finnische Jagdgesetz und andere Verordnungen betreffend die Jagd</span></li>
-            <li><span>Finnische Jagdorganisationen</span></li>
-            <li><span>Jagdrechte in Finnland</span></li>
-            <li><span>Hege</span></li>
-            <li><span>Waffen und Patronen</span></li>
-            <li><span>Jagdmethoden, Nachsuche der krankgeschossenen Tiere, Behandlung von Beute, gutes jagdliches Brauchtum usw.</span></li>
+            <li><span>Jagdgesetzgebung und andere Vorschriften bei der Jagd in Finnland</span></li>
+            <li><span>Erkennung von jagbarem Wild</span></li>
+            <li><span>Wildökologie und -management</span></li>
+            <li><span>Ethik und Nachhaltigkeit bei der Jagd</span></li>
+            <li><span>Schusswaffen und Munition (einschließlich Jagdbögen und -pfeile)</span></li>
+            <li><span>Sicherheitsmaßnahmen bei der Jagd</span></li>
+            <li><span>Jagdausrüstungen und Jagdmethoden</span></li>
+            <li><span>Umgang mit erlegtem Wild</span></li>
         </ul>
     </div>
 

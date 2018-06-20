@@ -1,0 +1,90 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title">Muokkaa päätöksen eläinlajeja</h3>
+</div>
+
+<div class="modal-body" style="min-height: 300px;">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Laji</th>
+            <th>Haettu</th>
+            <th>Myönnetty</th>
+            <th>Aikavälit</th>
+            <th>Rajoitukset</th>
+            <th>&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="spa in $ctrl.decisionSpeciesAmounts track by spa.id">
+            <th class="col-xs-2" ng-bind="::$ctrl.getSpeciesName(spa.gameSpeciesCode)"></th>
+            <td class="col-xs-2">
+                <strong ng-show="spa.applicationAmount > 0" ng-bind="spa.applicationAmount | number:0"></strong>
+            </td>
+            <td class="col-xs-2">
+                <strong ng-bind="spa.amount | number:1"></strong>
+            </td>
+            <td class="col-xs-3">
+                <div ng-show="spa.beginDate || spa.endDate">
+                    <span ng-bind="spa.beginDate | date:'d.M.yyyy'"></span>
+                    &dash;
+                    <span ng-bind="spa.endDate | date:'d.M.yyyy'"></span>
+                </div>
+
+                <div ng-show="spa.beginDate2 || spa.endDate2">
+                    <span ng-bind="spa.beginDate2 | date:'d.M.yyyy'"></span>
+                    &dash;
+                    <span ng-bind="spa.endDate2 | date:'d.M.yyyy'"></span>
+                </div>
+            </td>
+            <td class="col-xs-1">
+                <span ng-bind="spa.restrictionType"></span>
+                <span ng-bind="spa.restrictionAmount"></span>
+            </td>
+            <td class="text-right">
+                <!--<a ng-show="!spa.applicationAmount"
+                   ng-click="$ctrl.delete(spa)">
+                    <span class="fa fa-2x fa-remove text-danger"></span>
+                </a>-->
+
+                <a ng-click="$ctrl.edit(spa)">
+                    <span class="fa fa-2x fa-edit text-primary"></span>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!--<hr/>
+
+    <form name="speciesForm"
+          class="form-horizontal"
+          role="form" class="form"
+          novalidate autocomplete="off"
+          r-force-show-errors-check-validity>
+        <div class="row">
+            <label class="control-label col-xs-4">
+                Lisää uusi eläinlaji
+            </label>
+
+            <div class="form-group col-xs-4">
+                <r-species-selection available-species="$ctrl.availableSpecies"
+                                     on-selected-species-changed="$ctrl.setSpeciesCode(speciesCode)">
+                </r-species-selection>
+            </div>
+
+            <div class="col-xs-4">
+                <button type="button" class="btn btn-primary btn-block"
+                        ng-disabled="!$ctrl.gameSpeciesCode"
+                        ng-click="$ctrl.addSpeciesAmount()">Lisää
+                </button>
+            </div>
+        </div>
+    </form>-->
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary"
+            ng-click="$ctrl.close()"
+            translate="global.button.close"></button>
+</div>

@@ -1,6 +1,8 @@
 package fi.riista.feature.gamediary.srva;
 
-public enum SrvaEventStateEnum {
+import fi.riista.util.LocalisedEnum;
+
+public enum SrvaEventStateEnum implements LocalisedEnum {
     UNFINISHED,
     APPROVED,
     REJECTED,

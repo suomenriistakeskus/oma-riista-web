@@ -66,7 +66,18 @@ angular.module('app.clubmap.services', [])
         };
 
         proto.isEmptySelection = function () {
-            return !this.selectedAreaList;
+            return _.size(this.selectedAreaList) === 0;
+        };
+
+        proto.isUpToDate = function (area) {
+            return this.huntingClubArea.metsahallitusYear === area.year;
+        };
+
+        proto.hasChangedFeatures = function () {
+            var self = this;
+            return _.some(this.selectedAreaList, function (area) {
+                return self.huntingClubArea.metsahallitusYear !== area.year;
+            });
         };
 
         proto.filterMooseAreaList = function (searchQuery) {
@@ -82,6 +93,12 @@ angular.module('app.clubmap.services', [])
 
                 return (number && searchRegex.test(number)) || (name && searchRegex.test(name));
             });
+        };
+
+        proto.findByCode = function (code) {
+            return _(this.areaList).filter(function (a) {
+                return a.number === code;
+            }).first();
         };
 
         return {
@@ -201,6 +218,7 @@ angular.module('app.clubmap.services', [])
             this.selectedFeature = null;
             this.highlightedFeature = null;
             this.cachedPalstaFeatures = [];
+            this.cachedHasChangedFeatures = false;
             this.onFeatureSelect = onFeatureSelect || _.noop;
 
             this.allFeaturesChain = function () {
@@ -242,6 +260,11 @@ angular.module('app.clubmap.services', [])
                     .value();
             };
             this.cachedPalstaFeatures = this.filterPalstaFeatures();
+
+            this.checkHasChangedFeatures = function () {
+                return _.some(this.cachedPalstaFeatures, 'properties.changed', true);
+            };
+            this.cachedHasChangedFeatures = this.checkHasChangedFeatures();
         }
 
         var proto = Service.prototype;
@@ -254,15 +277,24 @@ angular.module('app.clubmap.services', [])
             });
         };
 
+        proto.hasChangedFeatures = function () {
+            return this.cachedHasChangedFeatures;
+        };
+
         proto.updateCachedFeatures = function () {
             var self = this;
             $timeout(function () {
                 self.cachedPalstaFeatures = self.filterPalstaFeatures();
+                self.cachedHasChangedFeatures = self.checkHasChangedFeatures();
             });
         };
 
         proto.palstaFeatureList = function () {
             return this.cachedPalstaFeatures;
+        };
+
+        proto.isEmptySelection = function () {
+            return _.size(this.cachedPalstaFeatures) === 0;
         };
 
         proto.addGeoJSON = function (geojson) {
@@ -279,11 +311,6 @@ angular.module('app.clubmap.services', [])
             _.remove(geojson.features, function (f) {
                 return currentIds.indexOf(f.id) !== -1;
             });
-
-            if (_.size(geojson.features) === 1) {
-                // Show details for added feature
-                this.selectFeature(geojson.features[0]);
-            }
 
             this.leafletFeatureGroup.addData(geojson);
             this.updateCachedFeatures();

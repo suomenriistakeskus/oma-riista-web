@@ -1,0 +1,28 @@
+<div ng-if="$ctrl.showActions()" class="r-harvest-report-state-transitions">
+    <button type="button" class="btn r-harvestreport-rejected"
+            ng-disabled="$ctrl.harvest.harvestReportState == 'REJECTED'"
+            ng-click="$ctrl.changeState('REJECTED')">
+
+        <span class="glyphicon glyphicon-thumbs-down"></span> &nbsp;
+
+        <span translate="harvestreport.button.changeStateTo.REJECTED"></span>
+    </button>
+
+    <button type="button" class="btn r-harvestreport-sent-for-approval"
+            ng-disabled="$ctrl.harvest.harvestReportState !== 'REJECTED'"
+            ng-click="$ctrl.changeState('SENT_FOR_APPROVAL')">
+
+        <span class="glyphicon glyphicon-share-alt"></span> &nbsp;
+
+        <span translate="harvestreport.button.changeStateTo.SENT_FOR_APPROVAL"></span>
+    </button>
+
+    <button type="button" class="btn r-harvestreport-approved"
+            ng-disabled="$ctrl.harvest.harvestReportState !== 'SENT_FOR_APPROVAL'"
+            ng-click="$ctrl.changeState('APPROVED')">
+
+        <span class="glyphicon glyphicon-thumbs-up"></span> &nbsp;
+
+        <span translate="harvestreport.button.changeStateTo.APPROVED"></span>
+    </button>
+</div>

@@ -1,0 +1,13 @@
+<ul class="nav nav-pills" ng-if="$navCtrl.showNav()">
+    <li active-if-state-includes="permitmanagement.payment.due">
+        <a ui-sref="permitmanagement.payment.due"
+           translate="harvestpermit.management.nav.paymentsDue"></a>
+    </li>
+
+    <li active-if-state-includes="permitmanagement.payment.paid">
+        <a ui-sref="permitmanagement.payment.paid"
+           translate="harvestpermit.management.nav.paymentsPaid"></a>
+    </li>
+</ul>
+
+<div ui-view autoscroll="false"></div>

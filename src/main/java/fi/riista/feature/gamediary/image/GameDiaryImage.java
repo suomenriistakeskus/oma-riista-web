@@ -8,8 +8,10 @@ import fi.riista.feature.gamediary.observation.Observation_;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEvent_;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
+import fi.riista.util.F;
 import fi.riista.util.jpa.CriteriaUtils;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -23,6 +25,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import static fi.riista.util.Collect.idList;
+import static fi.riista.util.Collect.idSet;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -72,6 +80,14 @@ public class GameDiaryImage extends LifecycleEntity<Long> {
         this(fileMetadata);
 
         setSrvaEvent(event);
+    }
+
+    public static List<UUID> getImageIds(@Nonnull final Iterable<GameDiaryImage> images) {
+        return F.stream(images).map(GameDiaryImage::getFileMetadata).collect(idList());
+    }
+
+    public static Set<UUID> getUniqueImageIds(@Nonnull final Iterable<GameDiaryImage> images) {
+        return F.stream(images).map(GameDiaryImage::getFileMetadata).collect(idSet());
     }
 
     @AssertTrue

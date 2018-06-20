@@ -97,7 +97,7 @@ public class SamlRegistrationService {
                 });
     }
 
-    private void writePersonData(final String email, final SamlUserAttributes samlUser, final Person person) {
+    private static void writePersonData(final String email, final SamlUserAttributes samlUser, final Person person) {
         person.setEmail(email);
         person.setLastName(samlUser.getLastName());
         person.setFirstName(samlUser.getFirstNames());

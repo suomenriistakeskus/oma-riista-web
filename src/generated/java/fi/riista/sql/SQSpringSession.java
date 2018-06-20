@@ -51,6 +51,11 @@ public class SQSpringSession extends RelationalPathSpatial<SQSpringSession> {
         addMetadata();
     }
 
+    public SQSpringSession(String variable, String schema) {
+        super(SQSpringSession.class, forVariable(variable), schema, "spring_session");
+        addMetadata();
+    }
+
     public SQSpringSession(Path<? extends SQSpringSession> path) {
         super(path.getType(), path.getMetadata(), "public", "spring_session");
         addMetadata();

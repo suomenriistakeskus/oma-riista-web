@@ -1,26 +1,35 @@
 package fi.riista.feature.harvestpermit.report.search;
 
-import fi.riista.feature.common.dto.XssSafe;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.validation.XssSafe;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HarvestReportSearchDTO implements HasBeginAndEndDate {
+    public enum SearchType {
+        MODERATOR,
+        COORDINATOR
+    }
 
+    @JsonIgnore
+    private SearchType searchType;
     private LocalDate beginDate;
     private LocalDate endDate;
+    private Long personId;
     private Long seasonId;
-    private Long fieldsId;
+    private Integer gameSpeciesCode;
     private Long harvestAreaId;
     private Long areaId;
     private Long rhyId;
-    private List<HarvestReport.State> states;
 
-    //@FinnishHuntingPermitNumber
+    @NotEmpty
+    private List<HarvestReportState> states;
+
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String permitNumber;
 
@@ -30,26 +39,27 @@ public class HarvestReportSearchDTO implements HasBeginAndEndDate {
     public HarvestReportSearchDTO() {
     }
 
-    public HarvestReportSearchDTO(final HarvestReportSearchDTO that) {
-        setBeginDate(that.getBeginDate());
-        setEndDate(that.getEndDate());
-        setSeasonId(that.getSeasonId());
-        setFieldsId(that.getFieldsId());
-        setHarvestAreaId(that.getHarvestAreaId());
-        setAreaId(that.getAreaId());
-        setRhyId(that.getRhyId());
-        setStates(new ArrayList<>(that.getStates()));
+    public HarvestReportSearchDTO(final SearchType searchType, final List<HarvestReportState> states) {
+        this.searchType = searchType;
+        this.states = states;
     }
 
-    public static HarvestReportSearchDTO cloneWithRhyRelevantFields(final HarvestReportSearchDTO that) {
-        final HarvestReportSearchDTO dto = new HarvestReportSearchDTO(that);
+    @JsonIgnore
+    public boolean isCoordinatorSearch() {
+        return searchType == SearchType.COORDINATOR;
+    }
 
-        // Explicitly null irrelevant fields
-        dto.setSeasonId(null);
-        dto.setHarvestAreaId(null);
-        dto.setAreaId(null);
-        dto.setText(null);
-        return dto;
+    @JsonIgnore
+    public boolean isModeratorSearch() {
+        return searchType == SearchType.MODERATOR;
+    }
+
+    public SearchType getSearchType() {
+        return searchType;
+    }
+
+    public void setSearchType(final SearchType searchType) {
+        this.searchType = searchType;
     }
 
     @Override
@@ -70,20 +80,28 @@ public class HarvestReportSearchDTO implements HasBeginAndEndDate {
         this.endDate = endDate;
     }
 
+    public Long getPersonId() {
+        return personId;
+    }
+
+    public void setPersonId(final Long personId) {
+        this.personId = personId;
+    }
+
+    public Integer getGameSpeciesCode() {
+        return gameSpeciesCode;
+    }
+
+    public void setGameSpeciesCode(final Integer gameSpeciesCode) {
+        this.gameSpeciesCode = gameSpeciesCode;
+    }
+
     public Long getSeasonId() {
         return seasonId;
     }
 
     public void setSeasonId(Long seasonId) {
         this.seasonId = seasonId;
-    }
-
-    public Long getFieldsId() {
-        return fieldsId;
-    }
-
-    public void setFieldsId(Long fieldsId) {
-        this.fieldsId = fieldsId;
     }
 
     public Long getHarvestAreaId() {
@@ -110,14 +128,6 @@ public class HarvestReportSearchDTO implements HasBeginAndEndDate {
         this.rhyId = rhyId;
     }
 
-    public List<HarvestReport.State> getStates() {
-        return states;
-    }
-
-    public void setStates(List<HarvestReport.State> states) {
-        this.states = states;
-    }
-
     public String getText() {
         return text;
     }
@@ -134,4 +144,11 @@ public class HarvestReportSearchDTO implements HasBeginAndEndDate {
         this.permitNumber = permitNumber;
     }
 
+    public List<HarvestReportState> getStates() {
+        return states;
+    }
+
+    public void setStates(final List<HarvestReportState> states) {
+        this.states = states;
+    }
 }

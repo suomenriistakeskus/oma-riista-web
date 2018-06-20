@@ -9,7 +9,6 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.serializer.support.DeserializingConverter;
 import org.springframework.core.serializer.support.SerializationFailedException;
 import org.springframework.core.serializer.support.SerializingConverter;
-import org.springframework.session.MapSession;
 import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
 import org.springframework.session.jdbc.JdbcOperationsSessionRepository;
 import org.springframework.session.web.http.CookieSerializer;
@@ -21,6 +20,8 @@ import javax.sql.DataSource;
 @Configuration
 public class HttpSessionConfig extends SpringHttpSessionConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(HttpSessionConfig.class);
+
+    public static final int DEFAULT_MAX_INACTIVE_INTERVAL_SECONDS = 1800;
 
     @Bean
     public CookieSerializer cookieSerializer() {
@@ -36,7 +37,7 @@ public class HttpSessionConfig extends SpringHttpSessionConfiguration {
             DataSource dataSource, PlatformTransactionManager transactionManager) {
         final JdbcOperationsSessionRepository sessionRepository = new JdbcOperationsSessionRepository(
                 dataSource, transactionManager);
-        sessionRepository.setDefaultMaxInactiveInterval(MapSession.DEFAULT_MAX_INACTIVE_INTERVAL_SECONDS);
+        sessionRepository.setDefaultMaxInactiveInterval(DEFAULT_MAX_INACTIVE_INTERVAL_SECONDS);
         sessionRepository.setConversionService(safeConversionService());
         return sessionRepository;
     }

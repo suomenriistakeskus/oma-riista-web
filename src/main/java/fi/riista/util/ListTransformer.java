@@ -1,6 +1,5 @@
 package fi.riista.util;
 
-import com.google.common.collect.ImmutableList;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +17,7 @@ public abstract class ListTransformer<T, U> {
 
     @Nullable
     public List<U> apply(@Nullable final List<T> list) {
-        return list == null ? null : ImmutableList.copyOf(transform(list));
+        return list == null ? null : transform(list);
     }
 
     @Nullable
@@ -44,11 +43,9 @@ public abstract class ListTransformer<T, U> {
     protected abstract List<U> transform(@Nonnull List<T> list);
 
     @Nonnull
-    @Transactional(readOnly = true)
-    public Page<U> apply(final @Nonnull Page<T> resultPage,
-                         final @Nonnull Pageable pageRequest) {
-        Objects.requireNonNull(resultPage, "resultPage must not be null");
-        Objects.requireNonNull(pageRequest, "pageRequest must not be null");
+    public Page<U> apply(final @Nonnull Page<T> resultPage, final @Nonnull Pageable pageRequest) {
+        Objects.requireNonNull(resultPage, "resultPage is null");
+        Objects.requireNonNull(pageRequest, "pageRequest is null");
 
         final List<U> transformedList = apply(resultPage.getContent());
         final List<U> resultList = transformedList != null ? transformedList : Collections.emptyList();
@@ -65,5 +62,4 @@ public abstract class ListTransformer<T, U> {
     public Function<T, U> asSingletonFunction() {
         return ListTransformer.this::apply;
     }
-
 }

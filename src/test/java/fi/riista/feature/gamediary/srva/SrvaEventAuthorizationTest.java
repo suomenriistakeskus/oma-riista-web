@@ -1,19 +1,15 @@
 package fi.riista.feature.gamediary.srva;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
+import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.gamediary.srva.SrvaEvent;
-import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
 import fi.riista.security.EntityPermission;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.F;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.EnumSet;
 
 public class SrvaEventAuthorizationTest extends EmbeddedDatabaseTest {
 
@@ -31,38 +27,29 @@ public class SrvaEventAuthorizationTest extends EmbeddedDatabaseTest {
             final SrvaEvent srvaEvent = model().newSrvaEvent(person, rhy);
             final SrvaEvent otherSrvaEvent = model().newSrvaEvent(model().newPerson(), rhy);
 
-            onSavedAndAuthenticated(createUser(person), tx(() -> {
-                assertHasPermissions(srvaEvent, getAuthorPermissions());
-                assertNoPermissions(otherSrvaEvent, getAuthorPermissions());
-            }));
+            onSavedAndAuthenticated(createUser(person), () -> {
+                assertHasPermissions(srvaEvent, EntityPermission.crud());
+                assertNoPermissions(otherSrvaEvent, EntityPermission.crud());
+            });
         });
     }
 
     @Test
     public void testAdmin() {
         final SrvaEvent srvaEvent = model().newSrvaEvent(newRhy());
-        onSavedAndAuthenticated(createNewAdmin(), tx(() -> assertHasPermissions(srvaEvent, getAuthorPermissions())));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertHasPermissions(srvaEvent, EntityPermission.crud()));
     }
 
     @Test
     public void testModerator() {
         final SrvaEvent srvaEvent = model().newSrvaEvent(newRhy());
-        onSavedAndAuthenticated(
-                createNewModerator(), tx(() -> assertHasPermissions(srvaEvent, getAuthorPermissions())));
+        onSavedAndAuthenticated(createNewModerator(), () -> assertHasPermissions(srvaEvent, EntityPermission.crud()));
     }
 
     @Test
     public void testNormalUser() {
         final SrvaEvent srvaEvent = model().newSrvaEvent(newRhy());
-        onSavedAndAuthenticated(
-                createUserWithPerson(), tx(() -> assertNoPermissions(srvaEvent, getAuthorPermissions())));
-
-    }
-
-    private static List<EntityPermission> getAuthorPermissions() {
-        return Stream.of(EntityPermission.values())
-                .filter(entityPermission -> !Objects.equals(entityPermission, EntityPermission.NONE))
-                .collect(Collectors.toList());
+        onSavedAndAuthenticated(createUserWithPerson(), () -> assertNoPermissions(srvaEvent, EntityPermission.crud()));
     }
 
     @Test
@@ -84,10 +71,10 @@ public class SrvaEventAuthorizationTest extends EmbeddedDatabaseTest {
             //Using DEPORTATION since ACCIDENTs can be accessed by any coordinator or SRVA contact person.
             final SrvaEvent srvaEventOfOtherRhy = getSrvaEventWithNewPersonAndNewRhy(SrvaEventNameEnum.DEPORTATION);
 
-            onSavedAndAuthenticated(createUser(person), tx(() -> {
+            onSavedAndAuthenticated(createUser(person), () -> {
                 assertHasPermissions(srvaEventOfRhy, getCoordinatorOrSrvaPersonPermissions());
                 assertNoPermissions(srvaEventOfOtherRhy, getCoordinatorOrSrvaPersonPermissions());
-            }));
+            });
         });
     }
 
@@ -109,29 +96,28 @@ public class SrvaEventAuthorizationTest extends EmbeddedDatabaseTest {
             final SrvaEvent srvaEventDeportation = getSrvaEventWithNewPersonAndNewRhy(SrvaEventNameEnum.DEPORTATION);
             final SrvaEvent srvaEventInjured = getSrvaEventWithNewPersonAndNewRhy(SrvaEventNameEnum.INJURED_ANIMAL);
 
-            onSavedAndAuthenticated(createUser(person), tx(() -> {
+            onSavedAndAuthenticated(createUser(person), () -> {
                 assertHasPermissions(srvaEventAccident, getCoordinatorOrSrvaPersonPermissions());
                 assertNoPermissions(srvaEventDeportation, getCoordinatorOrSrvaPersonPermissions());
                 assertNoPermissions(srvaEventInjured, getCoordinatorOrSrvaPersonPermissions());
-            }));
+            });
         });
     }
 
     private SrvaEvent getSrvaEventWithNewPersonAndNewRhy(final SrvaEventNameEnum eventName) {
         final SrvaEvent srvaEvent = model().newSrvaEvent(model().newPerson(), newRhy());
         srvaEvent.setEventName(eventName);
+        srvaEvent.setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(eventName)));
         return srvaEvent;
     }
 
-    private static List<EntityPermission> getCoordinatorOrSrvaPersonPermissions() {
-        return Stream.of(EntityPermission.values())
-                .filter(entityPermission -> !Objects.equals(entityPermission, EntityPermission.NONE)
-                        && !Objects.equals(entityPermission, EntityPermission.CREATE))
-                .collect(Collectors.toList());
+    private static EnumSet<EntityPermission> getCoordinatorOrSrvaPersonPermissions() {
+        return F.filterToEnumSet(EntityPermission.class, perm -> {
+            return perm != EntityPermission.CREATE && perm != EntityPermission.NONE;
+        });
     }
 
     private Riistanhoitoyhdistys newRhy() {
         return model().newRiistanhoitoyhdistys(this.rka);
     }
-
 }

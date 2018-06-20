@@ -4,8 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Range;
 import fi.riista.config.Constants;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -46,11 +46,20 @@ public final class DateUtil {
         return LocalDate.now(Constants.DEFAULT_TIMEZONE);
     }
 
+    public static int currentYear() {
+        return today().getYear();
+    }
+
+    public static DateTime beginOfCalendarYear(final int calendarYear) {
+        return new DateTime(calendarYear, 1, 1, 0, 0, Constants.DEFAULT_TIMEZONE);
+    }
+
     @Nonnull
     public static Duration toDuration(@Nullable final LocalDate startDate, @Nullable final LocalTime startTime,
                                       @Nullable final LocalDate endDate, @Nullable final LocalTime endTime) {
 
-        return startDate == null || startTime == null || endDate == null || endTime == null ? new Duration(0)
+        return startDate == null || startTime == null || endDate == null || endTime == null
+                ? new Duration(0)
                 : new Duration(toDateTimeNullSafe(startDate, startTime), toDateTimeNullSafe(endDate, endTime));
     }
 
@@ -62,6 +71,11 @@ public final class DateUtil {
     @Nullable
     public static DateTime toDateTimeNullSafe(@Nullable final LocalDate date, @Nullable final LocalTime time) {
         return date == null || time == null ? null : toDateTime(date.toLocalDateTime(time));
+    }
+
+    @Nullable
+    public static DateTime toDateTimeNullSafe(@Nullable final Date date) {
+        return date == null ? null : new DateTime(date.getTime(), Constants.DEFAULT_TIMEZONE);
     }
 
     @Nullable
@@ -90,15 +104,22 @@ public final class DateUtil {
     }
 
     @Nonnull
-    public static Period calculateAge(@Nonnull final LocalDate beginDate,
-                                      @Nonnull final DateTime endDateTime) {
+    public static Period calculateAge(@Nonnull final LocalDate beginDate, @Nonnull final DateTime endDateTime) {
         final DateTime start = beginDate.toDateTimeAtStartOfDay();
-
         return new Duration(start, endDateTime).toPeriodFrom(start, PeriodType.years());
     }
 
     public static boolean isAdultBirthDate(@Nonnull final LocalDate dateOfBirth) {
-        return DateUtil.calculateAge(dateOfBirth, DateUtil.now()).getYears() >= 18;
+        return calculateAge(dateOfBirth, now()).getYears() >= 18;
+    }
+
+    public static int huntingYear() {
+        return huntingYearContaining(today());
+    }
+
+    public static int huntingYearContaining(@Nonnull final LocalDate date) {
+        final int year = Objects.requireNonNull(date, "date is null").getYear();
+        return date.getMonthOfYear() >= HUNTING_YEAR_BEGIN_MONTH ? year : year - 1;
     }
 
     @Nonnull
@@ -111,12 +132,38 @@ public final class DateUtil {
         return new LocalDate(beginYear + 1, HUNTING_YEAR_BEGIN_MONTH, 1).minusDays(1);
     }
 
-    public static int getFirstCalendarYearOfCurrentHuntingYear() {
-        return getFirstCalendarYearOfHuntingYearContaining(today());
+    @Nonnull
+    public static Interval huntingYearInterval(final int beginYear) {
+        return createDateInterval(huntingYearBeginDate(beginYear), huntingYearEndDate(beginYear));
     }
 
-    public static Tuple2<LocalDate, LocalDate> parseDateInterval(
-            final String dates, final DateTimeFormatter dateTimeFormatter) {
+    @Nonnull
+    public static IntStream huntingYearsBetween(@Nonnull final LocalDate beginDate, @Nonnull final LocalDate endDate) {
+        Objects.requireNonNull(beginDate, "beginDate is null");
+        Objects.requireNonNull(endDate, "endDate is null");
+
+        return streamHuntingYearsBetweenInternal(beginDate, endDate);
+    }
+
+    @Nonnull
+    public static IntStream streamCurrentAndNextHuntingYear(@Nonnull final LocalDate today) {
+        final int current = huntingYearContaining(today);
+        return IntStream.of(current, current + 1);
+    }
+
+    @Nonnull
+    public static IntStream streamHuntingYearsBetween(@Nullable final LocalDate beginDate,
+                                                      @Nullable final LocalDate endDate) {
+
+        return F.anyNull(beginDate, endDate) ? IntStream.empty() : streamHuntingYearsBetweenInternal(beginDate, endDate);
+    }
+
+    private static IntStream streamHuntingYearsBetweenInternal(final LocalDate beginDate, final LocalDate endDate) {
+        return IntStream.rangeClosed(huntingYearContaining(beginDate), huntingYearContaining(endDate));
+    }
+
+    public static Tuple2<LocalDate, LocalDate> parseDateInterval(final String dates,
+                                                                 final DateTimeFormatter dateTimeFormatter) {
 
         if (StringUtils.isBlank(dates)) {
             return null;
@@ -154,16 +201,6 @@ public final class DateUtil {
         return new Interval(toDateTime(startDate), toDateTime(endDate.plusDays(1)));
     }
 
-    @Nonnull
-    public static Interval huntingYearInterval(final int beginYear) {
-        return createDateInterval(huntingYearBeginDate(beginYear), huntingYearEndDate(beginYear));
-    }
-
-    public static int getFirstCalendarYearOfHuntingYearContaining(@Nonnull final LocalDate date) {
-        final int year = Objects.requireNonNull(date, "date must not be null").getYear();
-        return date.getMonthOfYear() >= HUNTING_YEAR_BEGIN_MONTH ? year : year - 1;
-    }
-
     public static boolean overlapsInclusive(
             @Nullable final Date begin, @Nullable final Date end, @Nonnull final LocalDate date) {
 
@@ -173,16 +210,15 @@ public final class DateUtil {
     public static boolean overlapsInclusive(
             @Nullable final LocalDate begin, @Nullable final LocalDate end, @Nonnull final LocalDate date) {
 
-        Objects.requireNonNull(date, "date must not be null");
+        Objects.requireNonNull(date, "date is null");
 
         return begin == null && end == null || dateRange(begin, end).contains(date);
     }
 
-    public static boolean overlapsInclusive(
-            @Nullable final LocalDate begin,
-            @Nullable final LocalDate end,
-            @Nullable final LocalDate begin2,
-            @Nullable final LocalDate end2) {
+    public static boolean overlapsInclusive(@Nullable final LocalDate begin,
+                                            @Nullable final LocalDate end,
+                                            @Nullable final LocalDate begin2,
+                                            @Nullable final LocalDate end2) {
 
         return begin == null && end == null ||
                 begin2 == null && end2 == null ||
@@ -190,15 +226,12 @@ public final class DateUtil {
     }
 
     private static Range<LocalDate> dateRange(@Nullable final LocalDate begin, @Nullable final LocalDate end) {
-        if (begin == null && end == null) {
-            return Range.all();
-        }
         if (begin == null) {
-            return Range.atMost(end);
-        }
-        if (end == null) {
+            return end == null ? Range.all() : Range.atMost(end);
+        } else if (end == null) {
             return Range.atLeast(begin);
         }
+
         return begin.isBefore(end) ? Range.closed(begin, end) : Range.closed(end, begin);
     }
 
@@ -210,29 +243,15 @@ public final class DateUtil {
         return date.toDateTime(Constants.DEFAULT_TIMEZONE);
     }
 
+    public static LocalDate copyDateForHuntingYear(@Nonnull final LocalDate date, final int huntingYear) {
+        Objects.requireNonNull(date);
+
+        final int monthOfYear = date.getMonthOfYear();
+        final int calendarYear = monthOfYear < HUNTING_YEAR_BEGIN_MONTH ? huntingYear + 1 : huntingYear;
+        return date.withYear(calendarYear);
+    }
+
     private DateUtil() {
         throw new AssertionError();
     }
-
-    @Nonnull
-    public static IntStream huntingYearsBetween(@Nonnull final LocalDate beginDate,
-                                                @Nonnull final LocalDate endDate) {
-
-        Objects.requireNonNull(beginDate, "beginDate must not be null");
-        Objects.requireNonNull(endDate, "endDate must not be null");
-
-        return streamYearsBetween_notNullSafe(beginDate, endDate);
-    }
-
-    @Nonnull
-    public static IntStream streamYearsBetween(@Nullable final LocalDate beginDate, @Nullable final LocalDate endDate) {
-        return F.anyNull(beginDate, endDate) ? IntStream.empty() : streamYearsBetween_notNullSafe(beginDate, endDate);
-    }
-
-    private static IntStream streamYearsBetween_notNullSafe(final LocalDate beginDate, final LocalDate endDate) {
-        return IntStream.rangeClosed(
-                getFirstCalendarYearOfHuntingYearContaining(beginDate),
-                getFirstCalendarYearOfHuntingYearContaining(endDate));
-    }
-
 }

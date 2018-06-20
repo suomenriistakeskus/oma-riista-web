@@ -1,0 +1,410 @@
+<div class="content">
+    <form id="srvaForm" name="srvaForm" role="form" class="form form-horizontal">
+        <h3 ng-if="!srvaEntry.id" class="modal-title" translate="srva.form.bookSrvaEvent"></h3>
+
+        <h4 translate="srva.form.event"></h4>
+
+        <!--Tapahtuma-->
+        <div class="form-group">
+            <div>
+                <label for="srvaEvent" class="col-xs-4 control-label">
+                    <span translate="srva.form.event"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8"  ng-class="{ 'has-error': (!srvaEntry.eventName) }" >
+                    <select name="srvaEvent" id="srvaEvent"
+                            class="form-control"
+                            ng-model="srvaEntry.eventName"
+                            ng-options="event.name as ('srva.event.' + event.name | translate) for event in srvaEvents"
+                            ng-disabled="!srvaEntry.canEdit"
+                            ng-change="resetEventSpecificFields()"><!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+                        IE10 complains of unselected value if  'required', therefore we force existence of this field manually -->
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tyyppi -->
+        <div class="form-group" ng-show="srvaEntry.eventName">
+            <div>
+                <label for="srvaEventType" class="col-xs-4 control-label">
+                    <span translate="srva.form.type"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8" ng-class="{ 'has-error': (!srvaEntry.eventType) }">
+                    <select name="srvaEventType" id="srvaEventType"
+                            class="form-control"
+                            ng-model="srvaEntry.eventType"
+                            ng-options="('srva.type.' + type | translate) for type in getSrvaEventTypes(srvaEntry.eventName)"
+                            ng-disabled="!srvaEntry.canEdit"><option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="showOtherTypeDescription()" show-errors>
+            <div>
+                <label for="otherTypeDescription" class="col-xs-4 control-label">
+                    <span translate="srva.form.typeDescription"></span>
+                    <!--span class="glyphicon glyphicon-asterisk text-danger"></span-->
+                </label>
+            </div>
+            <div class="col-xs-8">
+                <input class="form-control" type="text"
+                       name="otherTypeDescription" id="otherTypeDescription"
+                       ng-maxlength="255"
+                       ng-model="srvaEntry.otherTypeDescription"
+                       ng-disabled="!srvaEntry.canEdit"/>
+            </div>
+        </div>
+
+        <h4 translate="srva.form.animal"></h4>
+
+        <!--Laji-->
+        <div class="form-group">
+            <div>
+                <label for="srvaSpeciesId" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.species"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8"  ng-class="{ 'has-error': (!isValidGameSpeciesCode(srvaEntry.gameSpeciesCode)) }">
+                    <select name="srvaSpeciesId" id="srvaSpeciesId"
+                            class="form-control"
+                            ng-model="srvaEntry.gameSpeciesCode"
+                            ng-options="item.code as getGameName(item.code, item) for item in srvaSpecies"
+                            ie10-optgroup-fix
+                            ng-disabled="!srvaEntry.canEdit"
+                            ng-change="resetOtherSpeciesDescription()">
+                        <!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+                        IE10 complains of unselected value if  'required', therefore we force existence of this field manually -->
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="srvaEntry.isOtherSpecies()" show-errors>
+            <div>
+                <label for="otherSpeciesDescription" class="col-xs-4 control-label">
+                    <span translate="srva.form.otherSpecies"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-8" ng-class="{ 'has-error': (!srvaEntry.otherSpeciesDescription) }">
+                <input class="form-control" type="text"
+                       name="otherTypeDescription" id="otherSpeciesDescription"
+                       ng-maxlength="255"
+                       ng-model="srvaEntry.otherSpeciesDescription"
+                       ng-disabled="!srvaEntry.canEdit"/>
+            </div>
+        </div>
+
+        <!--Määrä-->
+        <div class="form-group">
+            <div>
+                <label for="srvaTotalSpecimenAmount" class="col-xs-4 control-label" >
+                    <span translate="srva.form.amount"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-8" ng-class="{ 'has-error': (!srvaEntry.totalSpecimenAmount) }">
+                    <select name="srvaTotalSpecimenAmount" id="srvaTotalSpecimenAmount"
+                            class="form-control"
+                            ng-model="srvaEntry.totalSpecimenAmount"
+                            ng-options="n for n in [] | range:1:maxSpecimenCount"
+                            ng-disabled="!srvaEntry.canEdit">
+                        <!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+                        IE10 complains of unselected value if  'required', therefore we force existence of this field manually -->
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!--Yksilötiedot-->
+        <div class="form-group" ng-show="srvaEntry.totalSpecimenAmount > 1">
+            <div class="col-xs-12 text-right">
+                <button type="button"
+                        ng-click="editSpecimen()"
+                        ng-disabled="!srvaEntry.canEdit"
+                        class="btn btn-primary">
+                    <span translate="gamediary.form.titleShowSpecimens"></span>
+                </button>
+            </div>
+        </div>
+
+        <div ng-if="srvaEntry.totalSpecimenAmount === 1">
+            <div class="form-group" show-errors>
+                <label for="gender" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.gender"></span>
+                    <!--small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('gender')"></small-->
+                </label>
+
+                <div class="col-xs-8">
+                    <select name="gender" id="gender"
+                            class="form-control"
+                            ng-model="srvaEntry.specimens[0].gender"
+                            ng-options="('gamediary.gender.' + a | translate) for a in parameters.genders"
+                            ng-required="false"
+                            ng-disabled="!srvaEntry.canEdit"></select>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="age" class="col-xs-4 control-label">
+                    <span translate="gamediary.form.age"></span>
+                    <!--small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('age')"></small-->
+                </label>
+
+                <div class="col-xs-8">
+                    <select name="age" id="age"
+                            class="form-control"
+                            ng-model="srvaEntry.specimens[0].age"
+                            ng-options="(age | gameAge: srvaEntry.gameSpeciesCode) for age in parameters.ages"
+                            ng-required="false"
+                            ng-disabled="!srvaEntry.canEdit"></select>
+                </div>
+            </div>
+       </div>
+
+
+        <h4 translate="gamediary.form.titleTimeAndPlace"></h4>
+
+        <!--Sijainti-->
+        <div class="form-group">
+            <label class="col-xs-4 control-label">
+                <span translate="gamediary.form.location"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8">
+                <p class="form-control-static"
+                   ng-show="srvaEntry.geoLocation.longitude"
+                   translate="global.geoLocation.coordinatesText"
+                   translate-values="srvaEntry.geoLocation"></p>
+
+                <p class="text-danger form-control-static"
+                   ng-hide="srvaEntry.geoLocation.longitude"
+                   translate="global.geoLocation.required"></p>
+            </div>
+        </div>
+
+        <!--Päivä-->
+        <div class="form-group" show-errors>
+            <label for="date" class="col-xs-4 control-label">
+                <span translate="gamediary.form.date"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8" >
+                <div class="input-group r-dropdown-align-right"
+                     ng-controller="DatePickerController" ng-class="{ 'has-error': (!viewState.date) }">
+
+                    <input type="text" name="date" id="date"
+                           class="form-control"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           date-between-min-max
+                           ng-model="viewState.date" required max-date="today()"
+                           ng-disabled="!srvaEntry.canEdit">
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)"
+                                ng-disabled="!srvaEntry.canEdit">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!--Aika-->
+        <div class="form-group" show-errors>
+            <label for="time" class="col-xs-4 control-label">
+                <span translate="gamediary.form.time"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8" ng-class="{ 'has-error': (!viewState.time) }">
+                <input type="text" name="time" id="time"
+                       class="form-control"
+                       finnish-date-time-in-past="viewState.date"
+                       ng-model="viewState.time" required
+                       ng-disabled="!srvaEntry.canEdit">
+            </div>
+        </div>
+
+        <h4 translate="global.result"></h4>
+
+        <!--Tulos-->
+        <div class="form-group" ng-show="srvaEntry.eventName">
+            <div>
+                <label for="srvaEventResult" class="col-xs-4 control-label">
+                    <span translate="global.result"></span>
+                    <!--small class="glyphicon glyphicon-asterisk text-danger"></small-->
+                </label>
+
+                <div class="col-xs-8">
+                    <select name="srvaEventResult" id="srvaEventResult"
+                            class="form-control"
+                            ng-model="srvaEntry.eventResult"
+                            ng-options="('srva.result.' + result | translate) for result in getSrvaResults(srvaEntry.eventName)"
+                            ng-disabled="!srvaEntry.canEdit"><!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+                        IE10 complains of unselected value if  'required', therefore we force existence of this field manually -->
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+        <!--Menetelmä-->
+        <div class="form-group" ng-show="srvaEntry.eventName">
+            <div>
+                <label class="col-xs-4 control-label">
+                    <span translate="srva.form.method"></span>
+                    <!--span class="glyphicon glyphicon-asterisk text-danger"></span-->
+                </label>
+            </div>
+            <div class="col-xs-8">
+               <div class="checkbox" ng-repeat="method in getSrvaMethods(srvaEntry.eventName)">
+                    <label>
+                        <input type="checkbox"
+                               ng-model="method.isChecked"
+                               ng-disabled="!srvaEntry.canEdit">
+                        <span translate="srva.method.{{method.name}}"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="showOtherMethodDescription()" show-errors>
+            <div>
+                <label for="otherMethodDescription" class="col-xs-4 control-label">
+                    <span translate="srva.form.methodDescription"></span>
+                    <!--span class="glyphicon glyphicon-asterisk text-danger"></span-->
+                </label>
+            </div>
+            <div class="col-xs-8">
+                <input class="form-control" type="text"
+                       name="otherMethodDescription" id="otherMethodDescription"
+                       ng-maxlength="255"
+                       ng-model="srvaEntry.otherMethodDescription"
+                       ng-disabled="!srvaEntry.canEdit"/>
+            </div>
+        </div>
+
+        <!--Osallistuneita henkilöitä-->
+        <div class="form-group">
+            <div>
+                <label for="srvaPersonCount" class="col-xs-4 control-label">
+                    <span translate="srva.form.personsInvolved"></span>
+                    <!--small class="glyphicon glyphicon-asterisk text-danger"></small-->
+                </label>
+
+                <div class="col-xs-8">
+                    <select name="srvaPersonCount" id="srvaPersonCount"
+                            class="form-control"
+                            ng-model="srvaEntry.personCount"
+                            ng-options="n for n in [] | range:1:100"
+                            ng-disabled="!srvaEntry.canEdit">
+                        <!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+                        IE10 complains of unselected value if  'required', therefore we force existence of this field manually -->
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!--Työtunteja yhteensä-->
+        <div class="form-group">
+            <div>
+                <label for="srvaTimeSpent" class="col-xs-4 control-label" >
+                    <span translate="srva.form.combinedHours"></span>
+                    <!--small class="glyphicon glyphicon-asterisk text-danger"></small-->
+                </label>
+
+                <div class="col-xs-8">
+                    <select name="srvaTimeSpent" id="srvaTimeSpent"
+                            class="form-control"
+                            ng-model="srvaEntry.timeSpent"
+                            ng-options="n for n in [] | range:1:999"
+                            ng-disabled="!srvaEntry.canEdit">
+                        <!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+                        IE10 complains of unselected value if  'required', therefore we force existence of this field manually -->
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <h4 translate="srva.form.additionalInformation"></h4>
+
+        <div class="form-group" show-errors ng-if="!srvaEntry.readOnly">
+            <label for="description" class="control-label col-xs-4">
+                <span translate="gamediary.form.description"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <textarea name="description" id="description"
+                          class="form-control"
+                          rows="6"
+                          ng-model="srvaEntry.description"
+                          ng-disabled="!srvaEntry.canEdit"></textarea>
+            </div>
+        </div>
+
+
+        <div class="form-group" ng-if="!srvaEntry.readOnly">
+            <label class="col-xs-4 control-label">
+                <span translate="gamediary.form.image"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <a ng-show="!srvaEntry.imageIds || srvaEntry.imageIds.length == 0"
+                   ng-click="image()"
+                   class="btn btn-primary">
+                    <span class="glyphicon glyphicon-plus"></span> &nbsp;
+                    <span translate="gamediary.button.addImage"></span>
+                </a>
+            </div>
+
+            <div class="col-xs-11 col-xs-offset-1">
+                <hr class="invisible"/>
+
+                <div ng-repeat="uuid in srvaEntry.imageIds">
+                    <img ng-src="{{getUrl(uuid, 100, 100, true)}}">
+
+                    <div class="pull-right">
+                        <button type="button" ng-click="image(uuid)" class="btn btn-sm  btn-default">
+                            <span class="glyphicon glyphicon-edit"></span> &nbsp;
+                            <span translate="gamediary.button.changeImage"></span>
+                        </button>
+
+                        <button type="button" ng-click="removeImage(uuid)" class="btn btn-sm btn-default">
+                            <span class="glyphicon glyphicon-remove"></span> &nbsp;
+                            <span translate="global.button.delete"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-default"
+            ng-click="cancel()"
+            translate="global.button.cancel"></button>
+    <button type="button"
+            class="btn btn-primary"
+            ng-disabled="srvaForm.$invalid || !isValid() || (srvaEntry.readOnly && !srvaEntry.canEdit)"
+            ng-click="save()"
+            translate="global.button.save"></button>
+</div>

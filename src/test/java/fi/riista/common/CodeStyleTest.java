@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import static fi.riista.util.Asserts.assertEmpty;
+import static fi.riista.test.Asserts.assertEmpty;
 
 public class CodeStyleTest {
 
@@ -52,7 +52,7 @@ public class CodeStyleTest {
 
         while (iter.hasNext()) {
             final File file = iter.next();
-            Files.readLines(file, StandardCharsets.US_ASCII, new LineProcessor<Void>() {
+            Files.asCharSource(file, StandardCharsets.US_ASCII).readLines(new LineProcessor<Void>() {
                 @Override
                 public boolean processLine(@Nonnull final String line) throws IOException {
                     boolean result = true;

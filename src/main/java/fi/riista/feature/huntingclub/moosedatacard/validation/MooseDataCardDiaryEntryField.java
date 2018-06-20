@@ -48,8 +48,11 @@ public abstract class MooseDataCardDiaryEntryField<T extends DateAndLocation, N 
     public static final MooseDataCardDiaryEntryField<MooseDataCardObservation, Integer> FEMALE_3CALF_AMOUNT =
             create("naaras ja kaksi vasaa", 0, 50, MooseDataCardObservation::getN3);
 
+    public static final MooseDataCardDiaryEntryField<MooseDataCardObservation, Integer> CALF_AMOUNT =
+            create("yksinäisten vasojen määrä", 0, 50, MooseDataCardObservation::getY);
+
     public static final MooseDataCardDiaryEntryField<MooseDataCardObservation, Integer> UNKNOWN_AMOUNT =
-            create("tuntemattomien määrä", 0, 100, MooseDataCardObservation::getT);
+            create("tuntemattomien määrä", 0, 50, MooseDataCardObservation::getT);
 
     public static final MooseDataCardDiaryEntryField<MooseDataCardHarvest, Double> ESTIMATED_WEIGHT =
             create("arvioitu teuraspaino", 0.1, 999.9, MooseDataCardHarvest::getWeightEstimated);

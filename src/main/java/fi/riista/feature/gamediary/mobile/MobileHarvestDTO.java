@@ -1,11 +1,11 @@
 package fi.riista.feature.gamediary.mobile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.harvest.HarvestDTOBase;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestDTOBase;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersionSupport;
 import org.hibernate.validator.constraints.Range;
-import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,6 +14,8 @@ import java.util.Objects;
 
 public class MobileHarvestDTO extends HarvestDTOBase {
 
+    // Required for apiVersion >= 2
+    @HarvestSpecVersionSupport(since = HarvestSpecVersion._2)
     private HarvestSpecVersion harvestSpecVersion;
 
     /**
@@ -32,16 +34,15 @@ public class MobileHarvestDTO extends HarvestDTOBase {
     @Deprecated
     private Integer apiVersion;
 
+    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
     protected Long mobileClientRefId;
 
+    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
     @Range(min = Harvest.MIN_AMOUNT, max = Harvest.MAX_AMOUNT)
     protected Integer amount;
 
+    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
     protected boolean harvestReportDone;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    protected String permitType;
 
     public MobileHarvestDTO() {
         // Specimen list needs to be left null to simulate/support old mobile client versions.
@@ -107,14 +108,6 @@ public class MobileHarvestDTO extends HarvestDTOBase {
         this.harvestReportDone = harvestReportDone;
     }
 
-    public String getPermitType() {
-        return permitType;
-    }
-
-    public void setPermitType(final String permitType) {
-        this.permitType = permitType;
-    }
-
     // Builder -->
 
     public static Builder<?> builder(@Nonnull final HarvestSpecVersion specVersion) {
@@ -150,17 +143,13 @@ public class MobileHarvestDTO extends HarvestDTOBase {
             return self();
         }
 
-        public SELF withPermitType(@Nullable final String permitType) {
-            dto.setPermitType(permitType);
-            return self();
-        }
-
         // ASSOCIATIONS MUST NOT BE TRAVERSED IN THIS METHOD (except for identifiers that are
         // part of Harvest itself).
         @Override
         public SELF populateWith(@Nonnull final Harvest harvest) {
             return super.populateWith(harvest)
                     .withMobileClientRefId(harvest.getMobileClientRefId())
+                    .withHarvestReportDone(harvest.isHarvestReportDone())
                     .withAmount(harvest.getAmount());
         }
 

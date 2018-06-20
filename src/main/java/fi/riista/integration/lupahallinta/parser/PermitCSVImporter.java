@@ -10,21 +10,21 @@ import fi.riista.feature.gamediary.GameSpeciesRepository;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount.RestrictionType;
-import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.huntingclub.register.RegisterHuntingClubException;
 import fi.riista.feature.huntingclub.register.RegisterHuntingClubService;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonLookupService;
 import fi.riista.feature.organization.rhy.MergedRhyMapping;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
-import javaslang.Tuple;
-import javaslang.Tuple3;
+import io.vavr.Tuple;
+import io.vavr.Tuple3;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -296,12 +296,15 @@ public class PermitCSVImporter {
         return tryFindOrCreateClub(errors, csvLine.getPermitHolder(), "Luvansaajaa ei löydy:");
     }
 
-
     private Set<HuntingClub> findPermitPartners(PermitCSVLine csvLine, List<String> errors) {
         if (!HarvestPermit.checkShouldResolvePermitPartners(csvLine.getPermitTypeCode())) {
             return Collections.emptySet();
         }
-        return csvLine.getPermitPartners().stream()
+        final List<String> partners = csvLine.getPermitPartners();
+        if (partners.isEmpty()) {
+            errors.add("Lupatyypille vaaditaan osakkaat");
+        }
+        return partners.stream()
                 .map(officialCode -> tryFindOrCreateClub(errors, officialCode, "Lupaosakasta ei löydy:"))
                 .filter(Objects::nonNull)
                 .collect(toSet());

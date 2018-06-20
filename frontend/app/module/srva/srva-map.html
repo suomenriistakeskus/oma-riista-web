@@ -2,103 +2,93 @@
     <riista-sidebar-collapse></riista-sidebar-collapse>
 
     <div class="left-column">
-            <h5 translate="gamediary.state.title"></h5>
-            <div class="checkbox" ng-repeat="state in $ctrl.searchParams.states">
-                <label>
-                    <input type="checkbox" ng-model="state.isChecked">
-                    <span translate="srva.state.{{state.name}}"></span>
-                </label>
-            </div>
+        <h5 translate="gamediary.state.title"></h5>
+        <div class="checkbox" ng-repeat="state in $ctrl.searchParams.states">
+            <label>
+                <input type="checkbox" ng-model="state.isChecked">
+                <span translate="srva.state.{{state.name}}"></span>
+            </label>
+        </div>
 
-            <h5 translate="srva.form.event"></h5>
-            <div class="checkbox" ng-repeat="event in $ctrl.searchParams.eventNames">
-                <label>
-                    <input type="checkbox" ng-model="event.isChecked">
-                    <span translate="srva.event.{{event.name}}"></span>
-                </label>
-            </div>
-            <div class="alert alert-info" translate="srva.form.notAllEventsInfo"></div>
+        <h5 translate="srva.form.event"></h5>
+        <div class="checkbox" ng-repeat="event in $ctrl.searchParams.eventNames">
+            <label>
+                <input type="checkbox" ng-model="event.isChecked">
+                <span translate="srva.event.{{event.name}}"></span>
+            </label>
+        </div>
 
-            <div class="row srva-dates">
-                <div class="col-xs-6">
-                    <h5 translate="global.beginDate"></h5>
-                    <div class="input-group" ng-controller="DatePickerController">
-                        <input type="text" name="beginDate" id="beginDate"
-                               class="form-control"
-                               ng-model="$ctrl.searchParams.dateRange.beginDate"
-                               uib-datepicker-popup is-open="isDatePickerOpen"
-                               datepicker-append-to-body="true"
-                               max-date="$ctrl.searchParams.dateRange.endDate"/>
-                        <span class="input-group-btn">
+        <div class="alert alert-info" ng-if="!$ctrl.moderatorView" translate="srva.form.notAllEventsInfo"></div>
+
+        <div class="row srva-dates">
+            <div class="col-xs-6">
+                <h5 translate="global.beginDate"></h5>
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="beginDate" id="beginDate"
+                           class="form-control"
+                           ng-model="$ctrl.searchParams.dateRange.beginDate"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           datepicker-append-to-body="true"
+                           max-date="$ctrl.searchParams.dateRange.endDate"/>
+                    <span class="input-group-btn">
                                 <button type="button" class="btn btn-default"
                                         ng-click="toggleDatePopup($event)">
                                     <span class="glyphicon glyphicon-calendar"></span>
                                 </button>
                             </span>
-                    </div>
                 </div>
+            </div>
 
-                <div class="col-xs-6">
-                    <h5 translate="global.endDate"></h5>
-                    <div class="input-group" ng-controller="DatePickerController">
-                        <input type="text" name="endDate" id="endDate"
-                               class="form-control"
-                               ng-model="$ctrl.searchParams.dateRange.endDate"
-                               uib-datepicker-popup is-open="isDatePickerOpen"
-                               datepicker-append-to-body="true"
-                               min-date="$ctrl.dateRange.beginDate"
-                               max-date="today()"/>
-                        <span class="input-group-btn">
+            <div class="col-xs-6">
+                <h5 translate="global.endDate"></h5>
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="endDate" id="endDate"
+                           class="form-control"
+                           ng-model="$ctrl.searchParams.dateRange.endDate"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           datepicker-append-to-body="true"
+                           min-date="$ctrl.dateRange.beginDate"
+                           max-date="today()"/>
+                    <span class="input-group-btn">
                                 <button type="button" class="btn btn-default"
                                         ng-click="toggleDatePopup($event)">
                                     <span class="glyphicon glyphicon-calendar"></span>
                                 </button>
                             </span>
-                    </div>
                 </div>
             </div>
+        </div>
 
-            <h5 translate="srva.form.animal"></h5>
-            <select name="srvaSpeciesId" id="srvaSpeciesId"
-                    class="form-control"
-                    ng-model="$ctrl.searchParams.gameSpeciesCode"
-                    ng-options="item.code as $ctrl.getGameName(item.code, item) for item in $ctrl.srvaSpecies"
-                    ie10-optgroup-fix>
-                <option value="" translate="harvestreport.admin.all"></option>
-            </select>
+        <h5 translate="srva.form.animal"></h5>
+        <select name="srvaSpeciesId" id="srvaSpeciesId"
+                class="form-control"
+                ng-model="$ctrl.searchParams.gameSpeciesCode"
+                ng-options="item.code as $ctrl.getGameName(item.code, item) for item in $ctrl.srvaSpecies"
+                ie10-optgroup-fix>
+            <option value="" translate="harvestreport.admin.all"></option>
+        </select>
 
-            <h5 translate="global.organisationType.RKA"></h5>
-            <select class="form-control" ng-model="$ctrl.searchParams.rka"
-                    ng-options="a as a.name for a in $ctrl.areas"
-                    ng-change="$ctrl.updateRhys($ctrl.searchParams.rka)"
-                    ie10-optgroup-fix>
-                <option value="" translate="harvestreport.admin.all"></option>
-            </select>
+        <h5 translate="srva.form.selectArea"></h5>
+        <organisation-select-by-rhy tabs="$ctrl.tabs"
+                                    organisation-changed="$ctrl.orgChanged(type, code)"></organisation-select-by-rhy>
 
-            <h5 translate="global.organisationType.RHY"></h5>
-            <select class="form-control" ng-model="$ctrl.searchParams.rhy"
-                    ng-options="r as r.name for r in $ctrl.rhys | orderBy:['name']"
-                    ie10-optgroup-fix>
-                <option value="" translate="harvestreport.admin.all"></option>
-            </select>
+        <div class="text-right">
+            <button type="button" class="btn btn-default"
+                    ng-click="$ctrl.exportSrva()">
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="reporting.common.toExcel"></span>
+            </button>
 
-            <div class="btn">
-                <a ng-click="$ctrl.search()" class="btn btn-primary">
-                    <span class="glyphicon glyphicon-search"></span>&nbsp;
-                    <span translate="gamediary.button.search"></span>
-                </a>
-            </div>
+            <button type="button" class="btn btn-primary"
+                    ng-click="$ctrl.search()">
+                <span class="glyphicon glyphicon-search"></span>&nbsp;
+                <span translate="gamediary.button.search"></span>
+            </button>
+        </div>
 
-            <div class="form-group btn">
-                <a class="btn btn-primary" ng-click="$ctrl.exportSrva()">
-                    <span class="glyphicon glyphicon-search"></span> &nbsp;
-                    <span translate="reporting.common.toExcel"></span>
-                </a>
-            </div>
-
-            <div ng-show="$ctrl.markers.length <= 0" class="col-xs-12 well">
-                <h5 translate="gamediary.search.noresults"></h5>
-            </div>
+        <div ng-show="$ctrl.markers.length <= 0" class="col-xs-12 well">
+            <h5 translate="gamediary.search.noresults"></h5>
+        </div>
     </div>
 
     <div class="main-column">
@@ -112,7 +102,7 @@
                  bounds="$ctrl.mapState.viewBounds"
                  event-broadcast="$ctrl.mapEvents"
                  width="100%">
-            <marker-cluster id="accidentsMapMarkers" leaflet-markers="$ctrl.markers"/>
+            <marker-cluster id="accidentsMapMarkers" leaflet-markers="$ctrl.markers"></marker-cluster>
         </leaflet>
     </div>
 </div>

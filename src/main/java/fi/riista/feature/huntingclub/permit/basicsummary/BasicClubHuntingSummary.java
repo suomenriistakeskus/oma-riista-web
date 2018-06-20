@@ -29,6 +29,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -64,6 +65,7 @@ public class BasicClubHuntingSummary extends LifecycleEntity<Long> implements Mu
     @Column
     private LocalDate huntingEndDate;
 
+    @Valid
     @Embedded
     private AreaSizeAndRemainingPopulation areaSizeAndPopulation;
 
@@ -85,6 +87,7 @@ public class BasicClubHuntingSummary extends LifecycleEntity<Long> implements Mu
      * Holds values reported originally by the club itself in case of moderator-override. Within
      * revocation of moderator-override these values can be restored.
      */
+    @Valid
     @AttributeOverrides({
         @AttributeOverride(
                 name = "totalHuntingArea",

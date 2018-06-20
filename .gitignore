@@ -63,3 +63,4 @@ frontend/_public
 frontend/bower_components/*
 frontend/test/test-results.xml
 filter-values.properties
+!src/test/resources/fi/riista/integration/metsastajarekisteri/input/sample.csv.gz

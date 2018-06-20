@@ -1,16 +1,14 @@
 package fi.riista.feature.gamediary.mobile;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
 import fi.riista.feature.gamediary.observation.Observation;
-import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationDTOBase;
+import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
-
 import java.util.Objects;
 
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
@@ -104,8 +102,8 @@ public class MobileObservationDTO extends ObservationDTOBase {
         // ASSOCIATIONS MUST NOT BE TRAVERSED IN THIS METHOD (except for identifiers that are
         // part of Observation itself).
         @Override
-        public SELF populateWith(@Nonnull final Observation observation) {
-            return super.populateWith(observation)
+        public SELF populateWith(@Nonnull final Observation observation, final boolean populateLargeCarnivoreFields) {
+            return super.populateWith(observation, populateLargeCarnivoreFields)
                     .withMobileClientRefId(observation.getMobileClientRefId())
                     .chain(self -> dto.setLinkedToGroupHuntingDay(observation.getHuntingDayOfGroup() != null));
         }

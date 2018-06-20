@@ -1,8 +1,8 @@
 package fi.riista.feature.huntingclub.permit.summary;
 
 import fi.riista.util.F;
-import javaslang.Tuple;
-import javaslang.Tuple4;
+import io.vavr.Tuple;
+import io.vavr.Tuple4;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -125,5 +125,4 @@ public class AreaSizeAndRemainingPopulation implements Serializable {
     public void setRemainingPopulationInEffectiveArea(final Integer remainingPopulationInEffectiveArea) {
         this.remainingPopulationInEffectiveArea = remainingPopulationInEffectiveArea;
     }
-
 }

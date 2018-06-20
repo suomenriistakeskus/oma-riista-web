@@ -11,8 +11,10 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 
 @Constraint(validatedBy = FinnishHunterNumberValidator.class)
-@Target({METHOD, FIELD, ANNOTATION_TYPE})
+@Target({ANNOTATION_TYPE, FIELD, METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@HasLengthConstrainedByValidator
+@XssSafe
 public @interface FinnishHunterNumber {
     String message() default "{fi.riista.validation.FinnishHunterNumber.message}";
 

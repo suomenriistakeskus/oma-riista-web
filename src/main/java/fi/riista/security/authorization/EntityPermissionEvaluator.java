@@ -1,6 +1,7 @@
 package fi.riista.security.authorization;
 
 import fi.riista.feature.common.entity.BaseEntity;
+import fi.riista.util.F;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
-
 @Component
 public class EntityPermissionEvaluator {
     private static final Logger LOG = LoggerFactory.getLogger(EntityPermissionEvaluator.class);
@@ -25,7 +23,7 @@ public class EntityPermissionEvaluator {
 
     @Autowired
     public EntityPermissionEvaluator(final List<EntityAuthorizationStrategy> strategies) {
-        this.registry = strategies.stream().collect(toMap(EntityAuthorizationStrategy::getEntityClass, identity()));
+        this.registry = F.index(strategies, EntityAuthorizationStrategy::getEntityClass);
     }
 
     @SuppressWarnings({"unchecked"})

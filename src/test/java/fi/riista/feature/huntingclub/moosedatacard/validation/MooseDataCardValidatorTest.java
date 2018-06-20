@@ -1,19 +1,5 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newHuntingDay;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newLargeCarnivoreObservation;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseCalf;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseDataCardWithoutSummary;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseFemale;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseMale;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseObservation;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newPage7;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.huntingDayStartDateNotWithinPermittedSeason;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.observationTypeOfLargeCarnivoreContainsIllegalCharacters;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.observationAbandonedBecauseOfMissingDate;
-import static fi.riista.util.Asserts.assertValid;
-import static org.junit.Assert.assertEquals;
-
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.feature.gamediary.GameGender;
@@ -34,12 +20,26 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.NumberSequence;
 import fi.riista.util.ValueGeneratorMixin;
-import javaslang.collection.List;
+import io.vavr.collection.List;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
+
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.huntingDayStartDateNotWithinPermittedSeason;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.observationAbandonedBecauseOfMissingDate;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.observationTypeOfLargeCarnivoreContainsIllegalCharacters;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newHuntingDay;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newLargeCarnivoreObservation;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseCalf;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseDataCardWithoutSummary;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseFemale;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseMale;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseObservation;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newPage7;
+import static fi.riista.test.Asserts.assertValid;
+import static org.junit.Assert.assertEquals;
 
 public class MooseDataCardValidatorTest implements ValueGeneratorMixin {
 
@@ -50,27 +50,28 @@ public class MooseDataCardValidatorTest implements ValueGeneratorMixin {
 
     @Test
     public void testCalculateHarvestAmounts() {
+        final LocalDate date = DateUtil.today();
         final Consumer<MooseDataCardHarvest> notEdibleSetter = harvest -> harvest.setNotEdible(true);
 
-        final List<MooseDataCardMooseMale> edibleAdultMales = List.fill(3, () -> newMooseMale());
-        final List<MooseDataCardMooseMale> nonEdibleAdultMales = List.fill(5, () -> newMooseMale());
+        final List<MooseDataCardMooseMale> edibleAdultMales = List.fill(3, () -> newMooseMale(date));
+        final List<MooseDataCardMooseMale> nonEdibleAdultMales = List.fill(5, () -> newMooseMale(date));
         nonEdibleAdultMales.forEach(notEdibleSetter);
 
-        final List<MooseDataCardMooseFemale> edibleAdultFemales = List.fill(7, () -> newMooseFemale());
-        final List<MooseDataCardMooseFemale> nonEdibleAdultFemales = List.fill(11, () -> newMooseFemale());
+        final List<MooseDataCardMooseFemale> edibleAdultFemales = List.fill(7, () -> newMooseFemale(date));
+        final List<MooseDataCardMooseFemale> nonEdibleAdultFemales = List.fill(11, () -> newMooseFemale(date));
         nonEdibleAdultFemales.forEach(notEdibleSetter);
 
-        final List<MooseDataCardMooseCalf> edibleYoungMales = List.fill(13, () -> newMooseCalf());
+        final List<MooseDataCardMooseCalf> edibleYoungMales = List.fill(13, () -> newMooseCalf(date));
         edibleYoungMales.forEach(calf -> calf.setGender(GameGender.MALE.getMooseDataCardEncoding()));
 
-        final List<MooseDataCardMooseCalf> nonEdibleYoungMales = List.fill(17, () -> newMooseCalf());
+        final List<MooseDataCardMooseCalf> nonEdibleYoungMales = List.fill(17, () -> newMooseCalf(date));
         nonEdibleYoungMales.forEach(calf -> calf.setGender(GameGender.MALE.getMooseDataCardEncoding()));
         nonEdibleYoungMales.forEach(notEdibleSetter);
 
-        final List<MooseDataCardMooseCalf> edibleYoungFemales = List.fill(19, () -> newMooseCalf());
+        final List<MooseDataCardMooseCalf> edibleYoungFemales = List.fill(19, () -> newMooseCalf(date));
         edibleYoungFemales.forEach(calf -> calf.setGender(GameGender.FEMALE.getMooseDataCardEncoding()));
 
-        final List<MooseDataCardMooseCalf> nonEdibleYoungFemales = List.fill(23, () -> newMooseCalf());
+        final List<MooseDataCardMooseCalf> nonEdibleYoungFemales = List.fill(23, () -> newMooseCalf(date));
         nonEdibleYoungFemales.forEach(calf -> calf.setGender(GameGender.FEMALE.getMooseDataCardEncoding()));
         nonEdibleYoungFemales.forEach(notEdibleSetter);
 
@@ -98,9 +99,9 @@ public class MooseDataCardValidatorTest implements ValueGeneratorMixin {
         final Has2BeginEndDates permitSeason = new Has2BeginEndDatesDTO(today, today);
 
         final MooseDataCardHuntingDay abandonedHuntingDay = newHuntingDay(today.plusDays(1));
-        final MooseDataCardObservation mooseObservation = newMooseObservation().withDate(null);
+        final MooseDataCardObservation mooseObservation = newMooseObservation(null);
         final MooseDataCardLargeCarnivoreObservation carnivore =
-                newLargeCarnivoreObservation().withObservationType("INVALID");
+                newLargeCarnivoreObservation(today).withObservationType("INVALID");
 
         final MooseDataCard card = newMooseDataCardWithoutSummary()
                 .withPage2(new MooseDataCardPage2()

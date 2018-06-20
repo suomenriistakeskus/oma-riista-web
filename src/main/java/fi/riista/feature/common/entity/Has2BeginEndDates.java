@@ -1,14 +1,12 @@
 package fi.riista.feature.common.entity;
 
 import fi.riista.util.DateUtil;
-
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 
 import javax.annotation.Nonnull;
 import javax.validation.constraints.AssertTrue;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -117,31 +115,58 @@ public interface Has2BeginEndDates extends HasBeginAndEndDate {
         return Stream.of(getBeginDate(), getEndDate(), getBeginDate2(), getEndDate2());
     }
 
-    default IntStream collectClosedRangeHuntingYears() {
-        return IntStream
-                .concat(
-                        DateUtil.streamYearsBetween(getBeginDate(), getEndDate()),
-                        DateUtil.streamYearsBetween(getBeginDate2(), getEndDate2()))
-                .sorted()
-                .distinct();
-    }
-
     default int resolveHuntingYear() {
         return findUnambiguousHuntingYear()
                 .orElseThrow(() -> new IllegalStateException("Date ranges not within one hunting year"));
     }
 
     default OptionalInt findUnambiguousHuntingYear() {
-        if (isOpenEnded()) {
+        final LocalDate beginDate = getBeginDate();
+        int firstResolvedHuntingYear = -1;
+
+        if (beginDate != null) {
+            firstResolvedHuntingYear = DateUtil.huntingYearContaining(beginDate);
+
+            final LocalDate endDate = getEndDate();
+
+            if (endDate == null || firstResolvedHuntingYear != DateUtil.huntingYearContaining(endDate)) {
+                return OptionalInt.empty();
+            }
+        } else if (hasEndDate()) {
             return OptionalInt.empty();
         }
 
-        final int[] years = collectClosedRangeHuntingYears().toArray();
-        return years.length == 1 ? OptionalInt.of(years[0]) : OptionalInt.empty();
+        final LocalDate beginDate2 = getBeginDate2();
+
+        if (beginDate2 != null) {
+            if (firstResolvedHuntingYear < 0) {
+                firstResolvedHuntingYear = DateUtil.huntingYearContaining(beginDate2);
+            } else if (firstResolvedHuntingYear != DateUtil.huntingYearContaining(beginDate2)) {
+                return OptionalInt.empty();
+            }
+
+            final LocalDate endDate2 = getEndDate2();
+
+            if (endDate2 == null || firstResolvedHuntingYear != DateUtil.huntingYearContaining(endDate2)) {
+                return OptionalInt.empty();
+            }
+        } else if (hasEndDate2() || firstResolvedHuntingYear < 0) {
+            return OptionalInt.empty();
+        }
+
+        return OptionalInt.of(firstResolvedHuntingYear);
     }
 
     static IntStream streamUniqueHuntingYearsSorted(final Stream<? extends Has2BeginEndDates> stream) {
         return stream.flatMapToInt(Has2BeginEndDates::collectClosedRangeHuntingYears).distinct().sorted();
     }
 
+    default IntStream collectClosedRangeHuntingYears() {
+        return IntStream
+                .concat(
+                        DateUtil.streamHuntingYearsBetween(getBeginDate(), getEndDate()),
+                        DateUtil.streamHuntingYearsBetween(getBeginDate2(), getEndDate2()))
+                .sorted()
+                .distinct();
+    }
 }

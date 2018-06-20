@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('app.adminharvest.controllers', [])
+angular.module('app.admin.harvest.controllers', [])
     .config(function ($stateProvider) {
         $stateProvider
             .state('admin.harvest_base', {

@@ -10,53 +10,39 @@ import com.github.jknack.handlebars.springmvc.SpringTemplateLoader;
 import fi.riista.config.profile.AmazonDatabase;
 import fi.riista.config.profile.EmbeddedDatabase;
 import fi.riista.config.profile.StandardDatabase;
+import fi.riista.config.properties.MailProperties;
 import fi.riista.feature.mail.HandlebarsHelperSource;
 import fi.riista.feature.mail.delivery.AmazonMailDeliveryServiceImpl;
 import fi.riista.feature.mail.delivery.JavaMailDeliveryServiceImpl;
 import fi.riista.feature.mail.delivery.MailDeliveryService;
-import fi.riista.feature.mail.delivery.NoopMailDeviceryService;
-import fi.riista.feature.mail.queue.DatabaseMailProviderImpl;
-import fi.riista.feature.mail.queue.OutgoingMailProvider;
-import org.springframework.beans.factory.annotation.Value;
+import fi.riista.feature.mail.delivery.NoopMailDeliveryService;
+import fi.riista.feature.mail.queue.DatabaseMailDeliveryQueue;
+import fi.riista.feature.mail.queue.MailDeliveryQueue;
+import org.nlab.smtp.pool.SmtpConnectionPool;
+import org.nlab.smtp.transport.factory.SmtpConnectionFactoryBuilder;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ResourceLoader;
 
-import java.util.Properties;
+import javax.annotation.Resource;
+import javax.mail.Session;
 
 @Configuration
-@PropertySource("classpath:configuration/mail.properties")
+@Import(MailProperties.class)
 public class MailConfig {
 
     @Bean
-    public OutgoingMailProvider<Long> outgoingMailProvider() {
-        return new DatabaseMailProviderImpl();
-    }
-
-    @Bean
-    public TemplateLoader emailTemplateLoader(ResourceLoader resourceLoader) {
-        SpringTemplateLoader templateLoader = new SpringTemplateLoader(resourceLoader);
-        templateLoader.setPrefix("classpath:handlebars");
-        templateLoader.setSuffix(".hbs");
-
-        return templateLoader;
-    }
-
-    @Bean
-    public Handlebars emailHandlebars(TemplateLoader templateLoader, MessageSource messageSource) {
-        return new Handlebars(templateLoader)
-                .with(new HighConcurrencyTemplateCache())
-                .registerHelpers(HandlebarsHelperSource.class)
-                .registerHelpers(new HandlebarsHelperSource(messageSource));
+    public MailDeliveryQueue outgoingMailProvider() {
+        return new DatabaseMailDeliveryQueue();
     }
 
     @Configuration
     @AmazonDatabase
     static class AmazonMailConfiguration {
         @Bean
-        public MailDeliveryService<Long> mailDeliveryService(final AWSCredentialsProvider credentialsProvider) {
+        public MailDeliveryService mailDeliveryService(final AWSCredentialsProvider credentialsProvider) {
             return new AmazonMailDeliveryServiceImpl(AmazonSimpleEmailServiceAsyncClientBuilder.standard()
                     .withRegion(Regions.EU_WEST_1)
                     .withCredentials(credentialsProvider)
@@ -67,22 +53,22 @@ public class MailConfig {
     @Configuration
     @StandardDatabase
     static class SmtpMailConfiguration {
-        @Value("${mail.smtp.host}")
-        private String smtpHost;
+        @Resource
+        private MailProperties mailProperties;
 
         @Bean
-        public MailDeliveryService<Long> mailDeliveryService() {
-            final JavaMailDeliveryServiceImpl sender = new JavaMailDeliveryServiceImpl();
-            sender.setJavaMailProperties(getMailProperties());
-            sender.setHost(smtpHost);
-            return sender;
+        public SmtpConnectionPool smtpConnectionPool() {
+            return new SmtpConnectionPool(SmtpConnectionFactoryBuilder.newSmtpBuilder()
+                    .session(Session.getInstance(mailProperties.getJavaMailProperties()))
+                    .protocol("smtp")
+                    .port(25)
+                    .host(mailProperties.getSmtpHost())
+                    .build());
         }
 
-        private static Properties getMailProperties() {
-            final Properties properties = new Properties();
-            properties.setProperty("mail.smtp.connectiontimeout", "1000");
-            properties.setProperty("mail.smtp.timeout", "5000");
-            return properties;
+        @Bean
+        public MailDeliveryService mailDeliveryService() {
+            return new JavaMailDeliveryServiceImpl(smtpConnectionPool());
         }
     }
 
@@ -90,8 +76,8 @@ public class MailConfig {
     @EmbeddedDatabase
     static class TestMailConfiguration {
         @Bean
-        public MailDeliveryService<Long> mailDeliveryService() {
-            return new NoopMailDeviceryService();
+        public MailDeliveryService mailDeliveryService() {
+            return new NoopMailDeliveryService();
         }
     }
 }

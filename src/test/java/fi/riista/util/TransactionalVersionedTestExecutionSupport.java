@@ -1,7 +1,6 @@
 package fi.riista.util;
 
 import fi.riista.feature.gamediary.GameDiaryEntitySpecVersion;
-import fi.riista.test.TransactionalTaskExecutor;
 import java.util.function.Consumer;
 
 public interface TransactionalVersionedTestExecutionSupport<T extends GameDiaryEntitySpecVersion>

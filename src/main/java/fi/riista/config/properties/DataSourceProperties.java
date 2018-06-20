@@ -49,10 +49,13 @@ public class DataSourceProperties {
         hikariConfig.setPoolName("defaultDatabase");
         hikariConfig.setDriverClassName(driverClassName);
         hikariConfig.setMaximumPoolSize(maximumPoolSize);
-        hikariConfig.setConnectionTimeout(TimeUnit.SECONDS.toMillis(5));
+        hikariConfig.setConnectionTimeout(TimeUnit.SECONDS.toMillis(30));
+        hikariConfig.setIdleTimeout(TimeUnit.MINUTES.toMillis(1));
+        hikariConfig.setLeakDetectionThreshold(TimeUnit.MINUTES.toMillis(10));
+        hikariConfig.setMaxLifetime(TimeUnit.MINUTES.toMillis(15));
 
         if (runtimeEnvironmentUtil.isProductionEnvironment()) {
-            hikariConfig.setInitializationFailFast(false);
+            hikariConfig.setInitializationFailTimeout(-1);
         }
 
         return hikariConfig;

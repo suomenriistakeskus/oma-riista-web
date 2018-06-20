@@ -24,8 +24,21 @@
                 <span translate="club.area.button.importArea"></span>
             </a>
         </li>
-        <li class="divider" ng-show="$ctrl.isContactPerson()"></li>
-        <li>
+        <li class="divider" ng-show="$ctrl.canActivate() || $ctrl.canDeactivate()"></li>
+        <li ng-show="$ctrl.canActivate()">
+            <a ng-click="$ctrl.activate()">
+                <span class="fa fa-archive"></span> &nbsp;
+                <span translate="club.area.button.activate"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.canDeactivate()">
+            <a ng-click="$ctrl.deactivate()">
+                <span class="fa fa-archive"></span> &nbsp;
+                <span translate="club.area.button.deactivate"></span>
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
             <a ng-click="$ctrl.printArea()">
                 <span class="glyphicon glyphicon-print"></span> &nbsp;
                 <span translate="club.area.button.printArea"></span>

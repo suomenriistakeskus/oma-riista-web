@@ -1,19 +1,23 @@
 package fi.riista.feature.gamediary.mobile;
 
-import static fi.riista.util.TestUtils.expectValidationException;
-
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import org.junit.Test;
 
-import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
+
+import static fi.riista.test.TestUtils.expectValidationException;
 
 public class MobileHarvestFeatureV2Test extends MobileHarvestFeatureTest {
 
-    @Resource
-    private MobileGameDiaryV2Feature feature;
+    @Override
+    protected int getApiVersion() {
+        return 2;
+    }
 
     @Override
-    protected MobileGameDiaryFeature feature() {
-        return feature;
+    public List<HarvestSpecVersion> getTestExecutionVersions() {
+        return Arrays.asList(HarvestSpecVersion._3, HarvestSpecVersion._4, HarvestSpecVersion._5);
     }
 
     @Test
@@ -42,5 +46,4 @@ public class MobileHarvestFeatureV2Test extends MobileHarvestFeatureTest {
             invokeCreateHarvest(newDTOBuilderAndFixtureForUpdate(specVersion).withSpecimens(null).build());
         }));
     }
-
 }

@@ -45,6 +45,11 @@ public class SQGameAge extends RelationalPathSpatial<SQGameAge> {
         addMetadata();
     }
 
+    public SQGameAge(String variable, String schema) {
+        super(SQGameAge.class, forVariable(variable), schema, "game_age");
+        addMetadata();
+    }
+
     public SQGameAge(Path<? extends SQGameAge> path) {
         super(path.getType(), path.getMetadata(), "public", "game_age");
         addMetadata();

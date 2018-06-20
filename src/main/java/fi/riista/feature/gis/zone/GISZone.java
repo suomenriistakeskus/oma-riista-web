@@ -22,6 +22,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Optional;
@@ -63,10 +64,30 @@ public class GISZone extends LifecycleEntity<Long> {
     @Column(nullable = false)
     private double waterAreaSize;
 
+    @Column
+    private Double stateLandAreaSize;
+
+    @Column
+    private Double privateLandAreaSize;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @Column(name = "mh_hirvi_id")
     @CollectionTable(name = "zone_mh_hirvi", joinColumns = @JoinColumn(name = ID_COLUMN_NAME))
     private Set<Integer> metsahallitusHirvi = new HashSet<>();
+
+    @Transient
+    public TotalLandWaterSizeDTO getSize() {
+        return new TotalLandWaterSizeDTO(getComputedAreaSize(), getLandAreaSize(), getWaterAreaSize());
+    }
+
+    @Transient
+    public double getLandAreaSize() {
+        return computedAreaSize - waterAreaSize;
+    }
+
+    public boolean isGeometryEmpty() {
+        return this.geom == null || this.geom.isEmpty();
+    }
 
     public GISZone() {
         this(SourceType.LOCAL);
@@ -147,6 +168,22 @@ public class GISZone extends LifecycleEntity<Long> {
 
     public void setWaterAreaSize(final double waterAreaSize) {
         this.waterAreaSize = waterAreaSize;
+    }
+
+    public Double getStateLandAreaSize() {
+        return stateLandAreaSize;
+    }
+
+    public void setStateLandAreaSize(final Double stateLandAreaSize) {
+        this.stateLandAreaSize = stateLandAreaSize;
+    }
+
+    public Double getPrivateLandAreaSize() {
+        return privateLandAreaSize;
+    }
+
+    public void setPrivateLandAreaSize(final Double privateLandAreaSize) {
+        this.privateLandAreaSize = privateLandAreaSize;
     }
 
     public Set<Integer> getMetsahallitusHirvi() {

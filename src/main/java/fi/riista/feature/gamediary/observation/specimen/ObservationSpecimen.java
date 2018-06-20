@@ -19,8 +19,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
+
+import static fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps.MAX_PAW_LENGTH_OF_LARGE_CARNIVORES;
+import static fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps.MAX_PAW_WIDTH_OF_BEAR;
+import static fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps.MIN_PAW_LENGTH_OF_LARGE_CARNIVORES;
+import static fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps.MIN_PAW_WIDTH_OF_LARGE_CARNIVORES;
+import static fi.riista.util.NumberUtils.isInRange;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -49,21 +56,35 @@ public class ObservationSpecimen extends LifecycleEntity<Long> {
     @Enumerated(EnumType.STRING)
     private GameMarking marking;
 
+    /**
+     * Tassun leveys (cm)
+     */
+    @Column
+    private Double widthOfPaw;
+
+    /**
+     * Tassun pituus (cm)
+     */
+    @Column
+    private Double lengthOfPaw;
+
     // Default constructor for Hibernate
     protected ObservationSpecimen() {
     }
 
-    public ObservationSpecimen(final Observation observation) {
-        setObservation(observation);
+    public ObservationSpecimen(@Nonnull final Observation observation) {
+        setObservation(Objects.requireNonNull(observation));
     }
 
-    public boolean hasEqualBusinessFields(@Nonnull final ObservationSpecimen other) {
-        Objects.requireNonNull(other);
+    @AssertTrue
+    public boolean isWidthOfPawInValidRange() {
+        return widthOfPaw == null || isInRange(widthOfPaw, MIN_PAW_WIDTH_OF_LARGE_CARNIVORES, MAX_PAW_WIDTH_OF_BEAR);
+    }
 
-        return getGender() == other.getGender() &&
-                getAge() == other.getAge() &&
-                getState() == other.getState() &&
-                getMarking() == other.getMarking();
+    @AssertTrue
+    public boolean isLengthOfPawInValidRange() {
+        return lengthOfPaw == null
+                || isInRange(lengthOfPaw, MIN_PAW_LENGTH_OF_LARGE_CARNIVORES, MAX_PAW_LENGTH_OF_LARGE_CARNIVORES);
     }
 
     // Accessors -->
@@ -123,4 +144,19 @@ public class ObservationSpecimen extends LifecycleEntity<Long> {
         this.marking = marking;
     }
 
+    public Double getWidthOfPaw() {
+        return widthOfPaw;
+    }
+
+    public void setWidthOfPaw(final Double widthOfPaw) {
+        this.widthOfPaw = widthOfPaw;
+    }
+
+    public Double getLengthOfPaw() {
+        return lengthOfPaw;
+    }
+
+    public void setLengthOfPaw(final Double lengthOfPaw) {
+        this.lengthOfPaw = lengthOfPaw;
+    }
 }

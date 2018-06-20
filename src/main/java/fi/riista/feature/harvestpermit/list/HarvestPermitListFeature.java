@@ -1,0 +1,169 @@
+package fi.riista.feature.harvestpermit.list;
+
+import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
+import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.HarvestPermitSpecs;
+import fi.riista.feature.harvestpermit.HarvestPermit_;
+import fi.riista.feature.harvestpermit.search.HarvestPermitExistsDTO;
+import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTOFactory;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.security.EntityPermission;
+import fi.riista.util.jpa.JpaSpecs;
+import fi.riista.util.jpa.JpaSubQuery;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.Specifications;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+import static fi.riista.util.jpa.JpaSpecs.equal;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.comparingLong;
+import static java.util.stream.Collectors.toList;
+import static org.springframework.data.jpa.domain.Specifications.where;
+
+@Component
+public class HarvestPermitListFeature {
+
+    @Resource
+    private HarvestPermitRepository harvestPermitRepository;
+
+    @Resource
+    private ActiveUserService activeUserService;
+
+    @Resource
+    private RequireEntityService requireEntityService;
+
+    @Resource
+    private UserAuthorizationHelper userAuthorizationHelper;
+
+    @Resource
+    private HuntingClubPermitDTOFactory huntingClubPermitDTOFactory;
+
+    @Resource
+    private PersonRepository personRepository;
+
+    // PERSON
+
+    @Transactional(readOnly = true)
+    public List<HarvestPermitExistsDTO> preloadNonMoosePermits() {
+        final Person person = activeUserService.requireActiveUser().getPerson();
+
+        if (person == null) {
+            return Collections.emptyList();
+        }
+
+        final Specification<HarvestPermit> harvestsAsListAndReportNotDone =
+                where(equal(HarvestPermit_.harvestsAsList, Boolean.TRUE))
+                        .and(HarvestPermitSpecs.harvestReportNotDone());
+        final Specification<HarvestPermit> harvestsNotAsList = equal(HarvestPermit_.harvestsAsList, Boolean.FALSE);
+
+        return harvestPermitRepository.findAll(JpaSpecs.and(
+                where(HarvestPermitSpecs.isPermitContactPerson(person))
+                        .or(HarvestPermitSpecs.withHarvestAuthor(person))
+                        .and(JpaSpecs.or(harvestsAsListAndReportNotDone, harvestsNotAsList)),
+                HarvestPermitSpecs.IS_NOT_ANY_MOOSELIKE_PERMIT)).stream()
+                .map(HarvestPermitExistsDTO::create).collect(toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<HarvestPermitListDTO> listPermitsForPerson(final Long personId) {
+        final Person person = activeUserService.isModeratorOrAdmin()
+                ? personRepository.getOne(personId)
+                : activeUserService.requireActivePerson();
+
+        return harvestPermitRepository.findAll(where(HarvestPermitSpecs.isPermitContactPerson(person))
+                .and(HarvestPermitSpecs.IS_NOT_MOOSELIKE_AMENDMENT_PERMIT)).stream()
+                .map(HarvestPermitListDTO::create)
+                .sorted(comparingLong(HarvestPermitListDTO::getId).reversed())
+                .collect(toList());
+    }
+
+    // CLUB
+
+    @Transactional(readOnly = true)
+    public List<MooselikePermitListDTO> listClubPermits(final long huntingClubId, final int huntingYear, final int speciesCode) {
+        final HuntingClub club = requireEntityService.requireHuntingClub(huntingClubId, EntityPermission.READ);
+
+        return harvestPermitRepository.findAll(spec(club, huntingYear, speciesCode))
+                .stream()
+                .map(p -> huntingClubPermitDTOFactory.getPermitListingDTOWithoutAuthorization(p, speciesCode, huntingClubId))
+                .collect(toList());
+    }
+
+    private static Specifications<HarvestPermit> spec(final HuntingClub club, final int huntingYear, int speciesCode) {
+        return clubPredicate(club)
+                .and(HarvestPermitSpecs.validWithinHuntingYear(huntingYear))
+                .and(HarvestPermitSpecs.IS_MOOSELIKE_PERMIT)
+                .and(HarvestPermitSpecs.withSpeciesCode(speciesCode));
+    }
+
+    private static Specifications<HarvestPermit> clubPredicate(final HuntingClub club) {
+        final Specification<HarvestPermit> clubIsPermitHolder = equal(HarvestPermit_.permitHolder, club);
+        final Specification<HarvestPermit> clubIsPermitPartner =
+                JpaSubQuery.of(HarvestPermit_.permitPartners).exists((root, cb) -> cb.equal(root, club));
+
+        return Specifications.where(clubIsPermitHolder).or(clubIsPermitPartner);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GameSpeciesDTO> listClubPermitSpecies(long huntingClubId) {
+        final HuntingClub club = requireEntityService.requireHuntingClub(huntingClubId, EntityPermission.READ);
+
+        return GameSpeciesDTO.transformList(harvestPermitRepository.findAll(clubPredicate(club)).stream()
+                .flatMap(p -> p.getSpeciesAmounts().stream())
+                .map(HarvestPermitSpeciesAmount::getGameSpecies)
+                .distinct()
+                .collect(toList()));
+    }
+
+    @Transactional(readOnly = true)
+    public List<MooselikeHuntingYearDTO> listClubPermitHuntingYears(final long huntingClubId) {
+        final HuntingClub club = requireEntityService.requireHuntingClub(huntingClubId, EntityPermission.READ);
+
+        return MooselikeHuntingYearDTO.create(harvestPermitRepository.findAll(clubPredicate(club)).stream()
+                .map(HarvestPermit::getSpeciesAmounts)
+                .flatMap(Collection::stream));
+    }
+
+    // RHY
+
+    @Transactional(readOnly = true)
+    public List<MooselikePermitListDTO> listRhyMooselikePermits(final long rhyId,
+                                                                final int year,
+                                                                final int officialCodeMoose,
+                                                                final Locale locale) {
+        userAuthorizationHelper.assertCoordinatorOrModerator(rhyId);
+
+        return harvestPermitRepository.listRhyPermitsByHuntingYearAndSpecies(rhyId, year, officialCodeMoose).stream()
+                .map(p -> {
+                    final MooselikePermitListDTO dto =
+                            huntingClubPermitDTOFactory.getPermitListingDTOWithoutAuthorization(p, officialCodeMoose, null);
+                    dto.setCurrentlyViewedRhyIsRelated(rhyId != p.getRhy().getId());
+                    return dto;
+                })
+                .sorted(comparing(MooselikePermitListDTO::isCurrentlyViewedRhyIsRelated)
+                        .thenComparing(comparing(p -> p.getPermitHolder().getNameLocalisation().getAnyTranslation(locale))))
+                .collect(toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<MooselikeHuntingYearDTO> listRhyMooselikeHuntingYears(final long rhyId) {
+        userAuthorizationHelper.assertCoordinatorOrModerator(rhyId);
+
+        return harvestPermitRepository.listRhyMooselikeHuntingYears(rhyId);
+    }
+
+}

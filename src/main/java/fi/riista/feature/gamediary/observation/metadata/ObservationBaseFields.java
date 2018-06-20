@@ -6,7 +6,6 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpecies_;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.CriteriaUtils;
-
 import org.hibernate.annotations.OptimisticLock;
 import org.joda.time.DateTime;
 
@@ -36,6 +35,14 @@ public class ObservationBaseFields extends BaseEntity<Long> {
     @JoinColumn(name = "game_species_id", nullable = false)
     private GameSpecies species;
 
+    /**
+     * Hirvenmetsästyksen yhteydessä tehty havainto
+     */
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private Required withinMooseHunting = Required.NO;
+
     @Min(1)
     @Column(nullable = false)
     private int metadataVersion;
@@ -50,15 +57,8 @@ public class ObservationBaseFields extends BaseEntity<Long> {
     @Column(nullable = false)
     private DateTime modificationTime;
 
-    /**
-     * Hirvenmetsästyksen yhteydessä tehty havainto
-     */
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    @Column(nullable = false)
-    private Required withinMooseHunting = Required.NO;
-
-    ObservationBaseFields() {
+    // Public default constructor needed for tests.
+    public ObservationBaseFields() {
     }
 
     public ObservationBaseFields(final GameSpecies species, final int metadataVersion) {
@@ -92,16 +92,24 @@ public class ObservationBaseFields extends BaseEntity<Long> {
         return species;
     }
 
-    public void setSpecies(GameSpecies species) {
+    public void setSpecies(final GameSpecies species) {
         CriteriaUtils.updateInverseCollection(GameSpecies_.observationBaseFields, this, this.species, species);
         this.species = species;
+    }
+
+    public Required getWithinMooseHunting() {
+        return withinMooseHunting;
+    }
+
+    public void setWithinMooseHunting(final Required withinMooseHunting) {
+        this.withinMooseHunting = withinMooseHunting;
     }
 
     public int getMetadataVersion() {
         return metadataVersion;
     }
 
-    public void setMetadataVersion(int metadataVersion) {
+    public void setMetadataVersion(final int metadataVersion) {
         this.metadataVersion = metadataVersion;
     }
 
@@ -113,16 +121,8 @@ public class ObservationBaseFields extends BaseEntity<Long> {
         return modificationTime;
     }
 
-    public void setModificationTime(DateTime modificationTime) {
+    public void setModificationTime(final DateTime modificationTime) {
         this.modificationTime = modificationTime;
-    }
-
-    public Required getWithinMooseHunting() {
-        return withinMooseHunting;
-    }
-
-    public void setWithinMooseHunting(final Required withinMooseHunting) {
-        this.withinMooseHunting = withinMooseHunting;
     }
 
 }

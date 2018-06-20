@@ -224,7 +224,7 @@ public class PermitCSVSpeciesAmountParserTest {
         List<String> errors = new ArrayList<>();
         new PermitCSVSpeciesAmountParser(errors).parse("1", "1.0", "2.1.2016-1.1.2016", "", "", "", "1232", true);
         assertEquals(1, errors.size());
-        assertEquals("Lupa-ajat virheelliset, ensimmäinen aikaväli: alkupäivä ei ole ennen loppupäivää", errors.get(0));
+        assertEquals("Lupa-ajat virheelliset, ensimmäinen aikaväli: alkupäivä ei ole ennen loppupäivää. 02.01.2016-01.01.2016", errors.get(0));
     }
 
     @Test
@@ -232,7 +232,7 @@ public class PermitCSVSpeciesAmountParserTest {
         List<String> errors = new ArrayList<>();
         new PermitCSVSpeciesAmountParser(errors).parse("1", "1.0", "1.1.2016-2.1.2016", "2.2.2016-1.2.2016", "", "", "1232", true);
         assertEquals(1, errors.size());
-        assertEquals("Lupa-ajat virheelliset, toinen aikaväli: alkupäivä ei ole ennen loppupäivää", errors.get(0));
+        assertEquals("Lupa-ajat virheelliset, toinen aikaväli: alkupäivä ei ole ennen loppupäivää. 02.02.2016-01.02.2016", errors.get(0));
     }
 
     @Test
@@ -240,7 +240,7 @@ public class PermitCSVSpeciesAmountParserTest {
         List<String> errors = new ArrayList<>();
         new PermitCSVSpeciesAmountParser(errors).parse("1", "1.0", "1.2.2016-2.2.2016", "1.1.2016-2.1.2016", "", "", "1232", true);
         assertEquals(1, errors.size());
-        assertEquals("Lupa-ajat virheelliset: ensimmäinen aikaväli täytyy olla jälkimmäistä ennen", errors.get(0));
+        assertEquals("Lupa-ajat virheelliset: ensimmäinen aikaväli täytyy olla jälkimmäistä ennen. 01.02.2016-02.02.2016, 01.01.2016-02.01.2016", errors.get(0));
     }
 
     @Test
@@ -248,7 +248,32 @@ public class PermitCSVSpeciesAmountParserTest {
         List<String> errors = new ArrayList<>();
         new PermitCSVSpeciesAmountParser(errors).parse("1", "1.0", "1.2.2016-2.2.2016", "2.2.2016-3.2.2016", "", "", "1232", true);
         assertEquals(1, errors.size());
-        assertEquals("Lupa-ajat virheelliset: ensimmäinen aikaväli täytyy olla jälkimmäistä ennen", errors.get(0));
+        assertEquals("Lupa-ajat virheelliset: ensimmäinen aikaväli täytyy olla jälkimmäistä ennen. 01.02.2016-02.02.2016, 02.02.2016-03.02.2016", errors.get(0));
+    }
+
+    @Test
+    public void testTotalIntervalMustBeLessThanYearLong() {
+        List<String> errors = new ArrayList<>();
+        new PermitCSVSpeciesAmountParser(errors).parse("1", "1.0", "1.1.2016-1.2.2016", "1.12.2016-1.1.2017", "", "", "1232", false);
+        assertEquals(1, errors.size());
+        assertEquals("Lupa-ajat virheelliset: ensimmäinen aikavälin alku ja jälkimmäisen aikavälin loppu on yli 365 päivää. 01.01.2016-01.02.2016, 01.12.2016-01.01.2017", errors.get(0));
+    }
+
+    @Test
+    public void testFirstIntervalMustBeLessThanYearLong() {
+        List<String> errors = new ArrayList<>();
+        new PermitCSVSpeciesAmountParser(errors).parse("1", "1.0", "1.1.2016-1.1.2017", "", "", "", "1232", false);
+        assertEquals(1, errors.size());
+        assertEquals("Lupa-ajat virheelliset: ensimmäinen aikaväli on yli 365 päivää. 01.01.2016-01.01.2017", errors.get(0));
+    }
+
+    @Test
+    public void testSecondIntervalMustBeLessThanYearLong() {
+        List<String> errors = new ArrayList<>();
+        new PermitCSVSpeciesAmountParser(errors).parse("1", "1.0", "1.1.2016-1.2.2016", "2.2.2016-2.2.2017", "", "", "1232", false);
+        assertEquals(2, errors.size());
+        assertEquals("Lupa-ajat virheelliset: jälkimmäinen aikaväli on yli 365 päivää. 02.02.2016-02.02.2017", errors.get(0));
+        assertEquals("Lupa-ajat virheelliset: ensimmäinen aikavälin alku ja jälkimmäisen aikavälin loppu on yli 365 päivää. 01.01.2016-01.02.2016, 02.02.2016-02.02.2017", errors.get(1));
     }
 
     @Test

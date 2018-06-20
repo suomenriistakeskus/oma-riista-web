@@ -6,6 +6,9 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportDTO;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportFeature;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
@@ -15,9 +18,6 @@ import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryDTOTransformer;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryRepository;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary_;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportCrudFeature;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportDTO;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportRepository;
 import fi.riista.feature.organization.Organisation_;
 import fi.riista.util.F;
 import org.joda.time.LocalDate;
@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static fi.riista.util.Collect.idSet;
 import static fi.riista.util.jpa.JpaSpecs.conjunction;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.fetch;
@@ -74,7 +75,7 @@ public class ClubHuntingSummaryService {
     private BasicClubHuntingSummaryCrudFeature basicHuntingSummaryCrudFeature;
 
     @Resource
-    private MooseHarvestReportCrudFeature mooseHarvestReportCrudFeature;
+    private MooseHarvestReportFeature mooseHarvestReportCrudFeature;
 
     @Resource
     private BasicClubHuntingSummaryDTOTransformer basicSummaryTransformer;
@@ -96,8 +97,8 @@ public class ClubHuntingSummaryService {
         final List<BasicClubHuntingSummary> existingBasicSummaries = findRelatedBasicSummaries(speciesAmount, isMoose);
         final Set<Long> moderatedClubIds = existingBasicSummaries.stream()
                 .filter(BasicClubHuntingSummary::isModeratorOverride)
-                .map(s -> s.getClub().getId())
-                .collect(toSet());
+                .map(BasicClubHuntingSummary::getClub)
+                .collect(idSet());
 
         final Set<Long> allPartnerIds = F.getUniqueIds(permit.getPermitPartners());
         final Set<Long> idsOfNonModeratedPartners = allPartnerIds.stream()

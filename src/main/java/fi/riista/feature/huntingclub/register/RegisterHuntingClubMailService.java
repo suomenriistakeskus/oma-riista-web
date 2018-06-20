@@ -4,12 +4,12 @@ import com.github.jknack.handlebars.Handlebars;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.huntingclub.HuntingClubDTO;
-import fi.riista.feature.mail.MailService;
 import fi.riista.feature.mail.MailMessageDTO;
-import fi.riista.feature.organization.occupation.OccupationDTO;
-import fi.riista.feature.organization.OrganisationNameDTO;
-import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.mail.MailService;
 import fi.riista.feature.organization.EmailResolver;
+import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationNameDTO;
+import fi.riista.feature.organization.occupation.OccupationDTO;
 import fi.riista.util.LocalisedString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +59,7 @@ public class RegisterHuntingClubMailService {
                                       final OrganisationNameDTO rhyDTO,
                                       final Iterable<String> rhyContactEmails,
                                       final String contactPersonEmail) {
-        final Map<String, Object> model = ImmutableMap.<String, Object> builder()
+        final Map<String, Object> model = ImmutableMap.<String, Object>builder()
                 .put("club", huntingClubDTO)
                 .put("occupation", occupationDTO)
                 .put("rhy", rhyDTO)
@@ -96,11 +96,13 @@ public class RegisterHuntingClubMailService {
                               final String subject,
                               final Map<String, Object> model,
                               final LocalisedString template) {
-        mailService.sendLater(new MailMessageDTO.Builder()
+        mailService.send(MailMessageDTO.builder()
+                .withFrom(mailService.getDefaultFromAddress())
+                .addRecipient(email)
                 .withSubject(subject)
                 .appendHandlebarsBody(handlebars, template.getFinnish(), model)
                 .appendBody("<br/><hr/><br/>")
                 .appendHandlebarsBody(handlebars, template.getSwedish(), model)
-                .withTo(email), null);
+                .build());
     }
 }

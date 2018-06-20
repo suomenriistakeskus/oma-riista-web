@@ -5,9 +5,11 @@ import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.common.CannotChangeAssociatedEntityException;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.area.HuntingClubAreaSizeService;
@@ -15,7 +17,6 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryDTO;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryRepository;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.permit.partner.AllPartnersFinishedHuntingMailFeature;
 import fi.riista.security.EntityPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,6 +43,9 @@ public class MooseHuntingSummaryCrudFeature
     private HuntingClubRepository huntingClubRepository;
 
     @Resource
+    private HuntingClubGroupRepository huntingClubGroupRepository;
+
+    @Resource
     private HarvestPermitRepository harvestPermitRepository;
 
     @Resource
@@ -66,7 +70,7 @@ public class MooseHuntingSummaryCrudFeature
     private MooseHuntingSummaryDTOTransformer mooseHuntingSummaryDTOTransformer;
 
     @Resource
-    private HuntingClubGroupRepository huntingClubGroupRepository;
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
 
     @Override
     protected MooseHuntingSummaryDTO toDTO(@Nonnull final MooseHuntingSummary entity) {
@@ -74,10 +78,10 @@ public class MooseHuntingSummaryCrudFeature
     }
 
     @Override
-    protected Enum<?> getCreatePermission(final MooseHuntingSummary entity,
-                                          final MooseHuntingSummaryDTO dto) {
+    protected Enum<?> getCreatePermission(final MooseHuntingSummary entity, final MooseHuntingSummaryDTO dto) {
         final HarvestPermit harvestPermit = entity.getHarvestPermit();
         final HuntingClub club = entity.getClub();
+
         return isFromMooseDataCard(harvestPermit, club)
                 ? MooseHuntingSummaryAuthorization.Permission.CREATE_WITHIN_MOOSE_DATA_CARD_IMPORT
                 : EntityPermission.CREATE;
@@ -148,7 +152,8 @@ public class MooseHuntingSummaryCrudFeature
         final MooseHuntingSummaryDTO dto = new MooseHuntingSummaryDTO();
         dto.setClubId(clubId);
         dto.setHarvestPermitId(permitId);
-        dto.setLocked(isLockedForCreate(harvestPermit, club));
+        dto.setLocked(isLockedForCreate(harvestPermit, club) ||
+                !activeUserService.isModeratorOrAdmin() && harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(harvestPermit, speciesAmount.resolveHuntingYear()));
         dto.setPermitAreaSize(Objects.requireNonNull(harvestPermit.getPermitAreaSize(), "permitAreaSize is null"));
 
         huntingClubAreaSizeService.getHuntingPermitAreaSize(harvestPermit, club).ifPresent(areaSize -> {
@@ -160,8 +165,9 @@ public class MooseHuntingSummaryCrudFeature
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
     @Transactional(readOnly = true)
-    public List<BasicClubHuntingSummaryDTO> getHuntingSummariesForModeration(
-            final long permitId, final int speciesCode) {
+    public List<BasicClubHuntingSummaryDTO> getHuntingSummariesForModeration(final long permitId,
+                                                                             final int speciesCode) {
+
         final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
         return huntingSummaryService.getHuntingSummariesForModeration(permit, speciesCode);
     }
@@ -220,6 +226,7 @@ public class MooseHuntingSummaryCrudFeature
 
         entity.setHuntingEndDate(dto.getHuntingEndDate());
         entity.setHuntingFinished(dto.isHuntingFinished());
+        entity.setObservationPolicyAdhered(dto.getObservationPolicyAdhered());
 
         entity.setAreaSizeAndPopulation(new AreaSizeAndRemainingPopulation()
                 .withTotalHuntingArea(dto.getTotalHuntingArea())
@@ -244,6 +251,7 @@ public class MooseHuntingSummaryCrudFeature
         entity.setWildForestReindeerAppearance(dto.getWildForestReindeerAppearance());
         entity.setFallowDeerAppearance(dto.getFallowDeerAppearance());
         entity.setWildBoarAppearance(dto.getWildBoarAppearance());
+        entity.setBeaverAppearance(dto.getBeaverAppearance());
 
         entity.setMooseHeatBeginDate(dto.getMooseHeatBeginDate());
         entity.setMooseHeatEndDate(dto.getMooseHeatEndDate());

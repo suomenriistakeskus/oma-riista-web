@@ -37,9 +37,15 @@ public class SQHarvestPermit extends RelationalPathSpatial<SQHarvestPermit> {
 
     public final DateTimePath<java.sql.Timestamp> deletionTime = createDateTime("deletionTime", java.sql.Timestamp.class);
 
-    public final NumberPath<Long> endOfHuntingReportId = createNumber("endOfHuntingReportId", Long.class);
-
     public final NumberPath<Long> harvestPermitId = createNumber("harvestPermitId", Long.class);
+
+    public final NumberPath<Long> harvestReportAuthorId = createNumber("harvestReportAuthorId", Long.class);
+
+    public final DateTimePath<java.sql.Timestamp> harvestReportDate = createDateTime("harvestReportDate", java.sql.Timestamp.class);
+
+    public final BooleanPath harvestReportModeratorOverride = createBoolean("harvestReportModeratorOverride");
+
+    public final StringPath harvestReportState = createString("harvestReportState");
 
     public final BooleanPath harvestsAsList = createBoolean("harvestsAsList");
 
@@ -73,17 +79,19 @@ public class SQHarvestPermit extends RelationalPathSpatial<SQHarvestPermit> {
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestPermit> harvestPermitPkey = createPrimaryKey(harvestPermitId);
 
+    public final com.querydsl.sql.ForeignKey<SQHarvestReportState> harvestPermitReportStateFk = createForeignKey(harvestReportState, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestPermitPermitHolderFk = createForeignKey(permitHolderId, "organisation_id");
+
     public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestPermitRhyFk = createForeignKey(rhyId, "organisation_id");
 
     public final com.querydsl.sql.ForeignKey<SQHta> harvestPermitMooseAreaFk = createForeignKey(mooseAreaId, "gid");
 
-    public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestPermitPermitHolderFk = createForeignKey(permitHolderId, "organisation_id");
+    public final com.querydsl.sql.ForeignKey<SQPerson> harvestPermitOwnerFk = createForeignKey(originalContactPersonId, "person_id");
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestReport> harvestPermitEndOfHuntingReportFk = createForeignKey(endOfHuntingReportId, "harvest_report_id");
+    public final com.querydsl.sql.ForeignKey<SQPerson> harvestPermitReportAuthorFk = createForeignKey(harvestReportAuthorId, "person_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> harvestPermitOriginalPermitFk = createForeignKey(originalPermitId, "harvest_permit_id");
-
-    public final com.querydsl.sql.ForeignKey<SQPerson> harvestPermitOwnerFk = createForeignKey(originalContactPersonId, "person_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitPartners> _harvestPermitPartnersHarvestPermitFk = createInvForeignKey(harvestPermitId, "harvest_permit_id");
 
@@ -101,8 +109,6 @@ public class SQHarvestPermit extends RelationalPathSpatial<SQHarvestPermit> {
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> _harvestPermitOriginalPermitFk = createInvForeignKey(harvestPermitId, "original_permit_id");
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestReport> _harvestReportHarvestPermitFk = createInvForeignKey(harvestPermitId, "harvest_permit_id");
-
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitAllocation> _harvestPermitAllocationHarvestPermitFk = createInvForeignKey(harvestPermitId, "harvest_permit_id");
 
     public SQHarvestPermit(String variable) {
@@ -112,6 +118,11 @@ public class SQHarvestPermit extends RelationalPathSpatial<SQHarvestPermit> {
 
     public SQHarvestPermit(String variable, String schema, String table) {
         super(SQHarvestPermit.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQHarvestPermit(String variable, String schema) {
+        super(SQHarvestPermit.class, forVariable(variable), schema, "harvest_permit");
         addMetadata();
     }
 
@@ -131,22 +142,25 @@ public class SQHarvestPermit extends RelationalPathSpatial<SQHarvestPermit> {
         addMetadata(creationTime, ColumnMetadata.named("creation_time").withIndex(6).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(deletedByUserId, ColumnMetadata.named("deleted_by_user_id").withIndex(4).ofType(Types.BIGINT).withSize(19));
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(endOfHuntingReportId, ColumnMetadata.named("end_of_hunting_report_id").withIndex(17).ofType(Types.BIGINT).withSize(19));
         addMetadata(harvestPermitId, ColumnMetadata.named("harvest_permit_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
+        addMetadata(harvestReportAuthorId, ColumnMetadata.named("harvest_report_author_id").withIndex(24).ofType(Types.BIGINT).withSize(19));
+        addMetadata(harvestReportDate, ColumnMetadata.named("harvest_report_date").withIndex(23).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(harvestReportModeratorOverride, ColumnMetadata.named("harvest_report_moderator_override").withIndex(25).ofType(Types.BIT).withSize(1));
+        addMetadata(harvestReportState, ColumnMetadata.named("harvest_report_state").withIndex(22).ofType(Types.VARCHAR).withSize(255));
         addMetadata(harvestsAsList, ColumnMetadata.named("harvests_as_list").withIndex(16).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(lhSyncTime, ColumnMetadata.named("lh_sync_time").withIndex(14).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
-        addMetadata(mooseAreaId, ColumnMetadata.named("moose_area_id").withIndex(21).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mooseAreaId, ColumnMetadata.named("moose_area_id").withIndex(20).ofType(Types.INTEGER).withSize(10));
         addMetadata(originalContactPersonId, ColumnMetadata.named("original_contact_person_id").withIndex(9).ofType(Types.BIGINT).withSize(19).notNull());
-        addMetadata(originalPermitId, ColumnMetadata.named("original_permit_id").withIndex(19).ofType(Types.BIGINT).withSize(19));
+        addMetadata(originalPermitId, ColumnMetadata.named("original_permit_id").withIndex(18).ofType(Types.BIGINT).withSize(19));
         addMetadata(parsingInfo, ColumnMetadata.named("parsing_info").withIndex(12).ofType(Types.VARCHAR).withSize(255));
-        addMetadata(permitAreaSize, ColumnMetadata.named("permit_area_size").withIndex(22).ofType(Types.INTEGER).withSize(10));
-        addMetadata(permitHolderId, ColumnMetadata.named("permit_holder_id").withIndex(18).ofType(Types.BIGINT).withSize(19));
+        addMetadata(permitAreaSize, ColumnMetadata.named("permit_area_size").withIndex(21).ofType(Types.INTEGER).withSize(10));
+        addMetadata(permitHolderId, ColumnMetadata.named("permit_holder_id").withIndex(17).ofType(Types.BIGINT).withSize(19));
         addMetadata(permitNumber, ColumnMetadata.named("permit_number").withIndex(10).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(permitType, ColumnMetadata.named("permit_type").withIndex(11).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(permitTypeCode, ColumnMetadata.named("permit_type_code").withIndex(15).ofType(Types.CHAR).withSize(3).notNull());
-        addMetadata(printingUrl, ColumnMetadata.named("printing_url").withIndex(20).ofType(Types.VARCHAR).withSize(2048));
+        addMetadata(printingUrl, ColumnMetadata.named("printing_url").withIndex(19).ofType(Types.VARCHAR).withSize(2048));
         addMetadata(rhyId, ColumnMetadata.named("rhy_id").withIndex(13).ofType(Types.BIGINT).withSize(19).notNull());
     }
 

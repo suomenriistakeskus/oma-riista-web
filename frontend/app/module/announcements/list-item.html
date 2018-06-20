@@ -1,58 +1,60 @@
-<div class="announcement">
+<div class="announcement" ng-class="{'open': $ctrl.showContent}">
     <div class="announcement-title"
          ng-click="$ctrl.showContent = !$ctrl.showContent">
 
         <div class="row">
-            <div class="col-xs-10 left">
+            <p class="col-xs-1 text-center chevron">
+                <span ng-hide="$ctrl.showContent" class="glyphicon glyphicon-chevron-right"></span>
+                <span ng-show="$ctrl.showContent" class="glyphicon glyphicon-chevron-down"></span>
+            </p>
+
+            <div class="col-xs-8 left">
                 <div class="subject" ng-bind="::$ctrl.announcement.subject"></div>
                 <div class="sender">
                     <span translate="announcements.list.messageFrom"></span>
                     <span ng-bind="::($ctrl.announcement | announcementSender)"></span>
                 </div>
-            </div>
 
-            <div class="col-xs-2 right">
+                <div ng-if="$ctrl.showContent">
+                    <div class="receiver" ng-show="$ctrl.announcement.visibleToAll">
+                        <span translate="announcements.list.visibleToAll"></span>
+                    </div>
+                    <div class="receiver" ng-if="$ctrl.announcement.subscriberOrganisations">
+                        <span translate="announcements.list.subscriberOrganisations"></span>
+                        <ul>
+                            <li ng-repeat="s in $ctrl.announcement.subscriberOrganisations">
+                                <span ng-bind="::(s.name|rI18nNameFilter)"></span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="receiver" ng-if="$ctrl.announcement.occupationTypes">
+                        <span translate="announcements.list.subscriberOccupations"></span>
+                        <ul>
+                            <li ng-repeat="s in $ctrl.announcement.occupationTypes">
+                                <span ng-bind="::(s|translateWithPrefix:'occupation.type.')"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-3 right">
                 <div class="date" ng-bind="::($ctrl.announcement.date | date:'dd.MM.yyyy')"></div>
-                <small class="btn btn-link" ng-hide="$ctrl.showContent" translate="announcements.list.showMessage"></small>
-                <small class="btn btn-link" ng-show="$ctrl.showContent" translate="announcements.list.hideMessage"></small>
-            </div>
-        </div>
 
-        <div ng-if="$ctrl.showContent">
-            <div class="receiver">
-                <span translate="announcements.list.subscriberOrganisations"></span>
-                <ul>
-                    <li ng-repeat="s in $ctrl.announcement.subscriberOrganisations">
-                        <span ng-bind="::(s.name|rI18nNameFilter)"></span>
-                    </li>
-                </ul>
-            </div>
-            <div class="receiver">
-                <span translate="announcements.list.subscriberOccupations"></span>
-                <ul>
-                    <li ng-repeat="s in $ctrl.announcement.occupationTypes">
-                        <span ng-bind="::(s|translateWithPrefix:'occupation.type.')"></span>
-                    </li>
-                </ul>
+                <div ng-if="$ctrl.showContent && $ctrl.showActions && $ctrl.canEdit($ctrl.announcement)"
+                     class="btn-container">
+                    <button type="button" class="btn btn-danger btn-sm"
+                            ng-click="$ctrl.delete($ctrl.announcement, $event)"
+                            translate="global.button.delete"></button>
+
+                    <button type="button" class="btn btn-default btn-sm"
+                            ng-click="$ctrl.edit($ctrl.announcement, $event)"
+                            translate="global.button.edit"></button>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="announcement-content" ng-if="$ctrl.showContent">
-        <div class="body">
-            <div class="content" ng-bind-html="::($ctrl.announcement.body | htmlSplitLines)"></div>
-        </div>
-
-        <div class="actions" ng-if="$ctrl.showActions && $ctrl.canEdit($ctrl.announcement)">
-            <div class="btn-container">
-                <button type="button" class="btn btn-default btn-sm"
-                        ng-click="$ctrl.edit($ctrl.announcement)"
-                        translate="global.button.edit"></button>
-
-                <button type="button" class="btn btn-default btn-sm"
-                        ng-click="$ctrl.delete($ctrl.announcement)"
-                        translate="global.button.delete"></button>
-            </div>
-        </div>
+        <div class="body" ng-bind-html="::($ctrl.announcement.body | htmlSplitLines)"></div>
     </div>
 </div>

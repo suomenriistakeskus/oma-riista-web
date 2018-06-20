@@ -12,7 +12,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public abstract class AbstractEntityAuthorization<T extends BaseEntity> implements EntityAuthorizationStrategy<T> {
+public abstract class AbstractEntityAuthorization<T extends BaseEntity<?>> implements EntityAuthorizationStrategy<T> {
 
     private final Class<T> entityClass;
     private final AuthorizationTokenHelper authorizationTokenHelper;
@@ -20,7 +20,7 @@ public abstract class AbstractEntityAuthorization<T extends BaseEntity> implemen
     @Resource
     private RoleHierarchy roleHierarchy;
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     protected AbstractEntityAuthorization() {
         this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         this.authorizationTokenHelper = new AuthorizationTokenHelper(entityClass.getSimpleName());
@@ -48,8 +48,9 @@ public abstract class AbstractEntityAuthorization<T extends BaseEntity> implemen
     public boolean hasPermission(@Nonnull final T entity,
                                  @Nonnull final Enum<?> permission,
                                  @Nonnull final Authentication authentication) {
-        final AuthorizationTokenCollector tokenCollector = new AuthorizationTokenCollector(
-                authentication, roleHierarchy, authorizationTokenHelper, permission);
+
+        final AuthorizationTokenCollector tokenCollector =
+                new AuthorizationTokenCollector(authentication, roleHierarchy, authorizationTokenHelper, permission);
 
         if (tokenCollector.hasPermission()) {
             // Short-circuit
@@ -59,10 +60,8 @@ public abstract class AbstractEntityAuthorization<T extends BaseEntity> implemen
             this.authorizeTarget(tokenCollector, entity, UserInfo.extractFrom(authentication));
 
             return tokenCollector.hasPermission();
-
-        } else {
-            return false;
         }
+        return false;
     }
 
     protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,

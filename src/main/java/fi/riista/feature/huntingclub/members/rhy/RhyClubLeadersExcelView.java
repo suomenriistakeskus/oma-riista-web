@@ -9,38 +9,33 @@ import fi.riista.util.ExcelHelper;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.MediaTypeExtras;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.springframework.web.servlet.view.document.AbstractXlsView;
+import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Stream;
 
-public class RhyClubLeadersExcelView extends AbstractXlsView {
-
-    private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
+public class RhyClubLeadersExcelView extends AbstractXlsxView {
 
     private static final String HEADER_PREFIX = "RhyClubLeadersExcel.";
     private static final String[] HEADERS_CONTACTS = new String[]{"club", "name", "primary", "email", "phoneNumber"};
     private static final String[] HEADERS_LEADERS = new String[]{"club", "group", "name", "primary", "email", "phoneNumber"};
 
     private final EnumLocaliser localiser;
-    private final Locale locale;
+    private final int huntingYear;
     private final LocalisedString rhyName;
     private final List<RhyClubOccupationDTO> contacts;
     private final List<RhyClubOccupationDTO> leaders;
 
     public RhyClubLeadersExcelView(final EnumLocaliser localiser,
-                                   final Locale locale,
+                                   final int huntingYear,
                                    final LocalisedString rhyName,
                                    final List<RhyClubOccupationDTO> contacts,
                                    final List<RhyClubOccupationDTO> leaders) {
+
         this.localiser = localiser;
-        this.locale = locale;
+        this.huntingYear = huntingYear;
         this.rhyName = rhyName;
         this.contacts = contacts;
         this.leaders = leaders;
@@ -48,9 +43,10 @@ public class RhyClubLeadersExcelView extends AbstractXlsView {
 
     private String createFilename() {
         return String.format(
-                "Seurajohtajat_%s_%s.xls",
-                rhyName.getAnyTranslation(locale),
-                DATETIME_PATTERN.print(DateUtil.now()));
+                "Seurajohtajat_%s_%s_%s.xlsx",
+                huntingYear,
+                localiser.getTranslation(rhyName),
+                Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
     }
 
     @Override
@@ -61,7 +57,7 @@ public class RhyClubLeadersExcelView extends AbstractXlsView {
 
         setContentType(MediaTypeExtras.APPLICATION_EXCEL_VALUE);
         response.setCharacterEncoding(Constants.DEFAULT_ENCODING);
-        response.setHeader(ContentDispositionUtil.HEADER_NAME, ContentDispositionUtil.encodeAttachmentFilename(createFilename()));
+        ContentDispositionUtil.addHeader(response, createFilename());
 
         createSheet(workbook, OccupationType.SEURAN_YHDYSHENKILO, contacts, HEADERS_CONTACTS);
         createSheet(workbook, OccupationType.RYHMAN_METSASTYKSENJOHTAJA, leaders, HEADERS_LEADERS);
@@ -72,10 +68,13 @@ public class RhyClubLeadersExcelView extends AbstractXlsView {
                              final List<RhyClubOccupationDTO> rhyOccupations,
                              final String[] headers) {
 
-        final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation(occType));
-        helper.appendHeaderRow(createHeaderRow(headers));
+        final String sheetName = localiser.getTranslation(occType)
+                + (occType == OccupationType.RYHMAN_METSASTYKSENJOHTAJA ? " " + huntingYear : "");
 
-        for (RhyClubOccupationDTO dto : rhyOccupations) {
+        final ExcelHelper helper = new ExcelHelper(workbook, sheetName)
+                .appendHeaderRow(localiser.translate(HEADER_PREFIX, headers));
+
+        for (final RhyClubOccupationDTO dto : rhyOccupations) {
             createRow(helper, dto, occType);
         }
 
@@ -83,20 +82,16 @@ public class RhyClubLeadersExcelView extends AbstractXlsView {
     }
 
     private void createRow(final ExcelHelper helper, final RhyClubOccupationDTO dto, OccupationType occType) {
-        helper.appendRow();
-        helper.appendTextCell(dto.getClub().getNameLocalisation().getAnyTranslation(locale));
-        if (occType == OccupationType.RYHMAN_METSASTYKSENJOHTAJA) {
-            helper.appendTextCell(dto.getGroup().getNameLocalisation().getAnyTranslation(locale));
-        }
-        helper.appendTextCell(dto.getLastName() + " " + dto.getFirstName());
-        helper.appendTextCell(dto.getCallOrder() != null && dto.getCallOrder() == 0 ? "x" : "");
-        helper.appendTextCell(dto.getEmail());
-        helper.appendTextCell(dto.getPhoneNumber());
-    }
+        helper.appendRow()
+                .appendTextCell(localiser.getTranslation(dto.getClub().getNameLocalisation()));
 
-    private String[] createHeaderRow(String[] headers) {
-        return Stream.of(headers)
-                .map(key -> localiser.getTranslation(HEADER_PREFIX + key))
-                .toArray(String[]::new);
+        if (occType == OccupationType.RYHMAN_METSASTYKSENJOHTAJA) {
+            helper.appendTextCell(localiser.getTranslation(dto.getGroup().getNameLocalisation()));
+        }
+
+        helper.appendTextCell(dto.getLastName() + " " + dto.getFirstName())
+                .appendTextCell(dto.getCallOrder() != null && dto.getCallOrder() == 0 ? "x" : "")
+                .appendTextCell(dto.getEmail())
+                .appendTextCell(dto.getPhoneNumber());
     }
 }

@@ -1,7 +1,7 @@
 package fi.riista.feature.account.registration;
 
 import com.google.common.base.Preconditions;
-import fi.riista.validation.FinnishSocialSecurityNumberValidator;
+import fi.riista.validation.Validators;
 import org.springframework.util.StringUtils;
 
 public class SamlUserAttributes {
@@ -16,7 +16,7 @@ public class SamlUserAttributes {
 
     SamlUserAttributes(final Builder builder) {
         Preconditions.checkArgument(StringUtils.hasText(builder.ssn), "Missing SSN");
-        Preconditions.checkArgument(FinnishSocialSecurityNumberValidator.isValid(builder.ssn), "Invalid SSN");
+        Preconditions.checkArgument(Validators.isValidSsn(builder.ssn), "Invalid SSN");
         Preconditions.checkArgument(StringUtils.hasText(builder.lastName), "Missing lastName");
         Preconditions.checkArgument(StringUtils.hasText(builder.firstNames), "Missing firstNames");
 

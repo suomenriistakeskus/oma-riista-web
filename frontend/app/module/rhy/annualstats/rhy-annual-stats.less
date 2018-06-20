@@ -1,0 +1,201 @@
+@r-annual-statistics-in-progress-background: #c44d4a;
+@r-annual-statistics-in-progress-border: #8c3d3a;
+
+@r-annual-statistics-under-inspection-background: @r-yellow;
+@r-annual-statistics-under-inspection-border: @r-yellow;
+
+@r-annual-statistics-approved-background: @btn-primary-bg;
+@r-annual-statistics-approved-border: @btn-primary-border;
+
+button.r-annual-statistics-state-label {
+  .btn;
+  .btn-block;
+  color: @btn-primary-color;
+
+  &:hover {
+    color: @btn-primary-color;
+  }
+
+  &.disabled, &[disabled] {
+    opacity: 1.0;
+  }
+
+  &.r-annual-statistics-in-progress {
+    background-color: @r-annual-statistics-in-progress-background;
+    border: 1px solid darken(@r-annual-statistics-in-progress-border, 5%);
+  }
+
+  &.r-annual-statistics-under-inspection {
+    background-color: @r-annual-statistics-under-inspection-background;
+    border: 1px solid darken(@r-annual-statistics-under-inspection-border, 5%);
+  }
+
+  &.r-annual-statistics-approved {
+    background-color: @r-annual-statistics-approved-background;
+    border: 1px solid darken(@r-annual-statistics-approved-border, 5%);
+  }
+}
+
+.r-annual-statistics-year-select {
+  width: 80px;
+  margin-bottom: 10px;
+
+  &.form-control {
+    display: inline-block;
+  }
+}
+
+.r-annual-statistics-tabset {
+  margin-top: 15px;
+}
+
+.r-annual-statistics-content {
+  margin-top: 18px;
+
+  .panel {
+    .panel-heading {
+      color: #333;
+      background-color: #f5f5f5;
+      border-color: #ddd;
+
+      > .panel-title {
+        .make-row(0);
+        .h3;
+        font-size: 15px;
+        line-height: 1.4;
+        margin-top: 0px;
+        margin-bottom: 0px;
+
+        .timestamped-panel-heading-title {
+          .make-xs-column(9, 0);
+
+          display: inline-block;
+        }
+
+        .timestamped-panel-heading-timestamp {
+          .make-xs-column(3, 0);
+          .text-right;
+
+          font-family: @font-family-open-sans;
+          font-size: 12px;
+          font-weight: 400;
+          margin-top: 2px;
+
+          @media (min-width: 768px) and (max-width: 991px) {
+            margin-top: -1px;
+            margin-bottom: -6px;
+          }
+        }
+      }
+    }
+
+    > .panel-body {
+      padding: 3px 15px 10px;
+
+      .table {
+        margin: 0;
+
+        > tbody > tr {
+          > td {
+            border-top: 0;
+            border-bottom: 1px solid @table-border-color;
+          }
+
+          &:last-child > td {
+            border-bottom: 0;
+          }
+
+          &.subtitle-row {
+            font-family: @font-family-roboto-slab;
+            font-weight: 700;
+            font-size: 13px;
+
+            > td {
+              border-top: 1px solid @table-border-color;
+              border-bottom: 0;
+              padding: 5px 0;
+            }
+
+            &:first-child > td {
+              border-top: 0;
+            }
+          }
+
+          &.indented-row > td:first-child {
+            padding-left: 2em;
+          }
+        }
+
+        p {
+          margin: 10px 0 0;
+          padding: 10px;
+        }
+      }
+
+      .btn {
+        margin-top: 15px;
+        min-width: 170px;
+      }
+
+      .unit-suffix {
+        .text-left;
+        color: #b0b0b0;
+        display: inline-block;
+        min-width: 18px;
+      }
+    }
+  }
+}
+
+.r-annual-statistics-short-label-form {
+  .make-form-group(5, 3.4);
+}
+
+.r-annual-statistics-wide-label-form {
+  .make-form-group(8, 4);
+
+  .input-group-addon {
+    .text-left;
+    min-width: 45px;
+  }
+}
+
+.r-annual-statistics-basic-info-form {
+  .make-form-group(5, 4.4);
+}
+
+.r-annual-statistics-game-damage-form {
+  .make-form-group(5.2, 3.4);
+
+  .input-group-addon {
+    min-width: 45px;
+  }
+}
+
+.r-annual-statistics-hunter-exam-form {
+  .make-form-group(5.2, 3.4);
+}
+
+.r-annual-statistics-shooting-tests-form {
+  .make-form-group(5.4, 3.4);
+}
+
+.r-annual-statistics-hunting-control-form {
+  .make-form-group(6.35, 3.4);
+}
+
+.r-annual-statistics-hunter-exam-training-form {
+  .make-form-group(6.3, 3.4);
+}
+
+.r-annual-statistics-shooting-ranges-form {
+  .make-form-group(5.5, 3.4);
+}
+
+.r-annual-statistics-luke-form {
+  .make-form-group(5.6, 3.4);
+}
+
+.r-annual-statistics-metsahallitus-form {
+  .make-form-group(6, 3.4);
+}

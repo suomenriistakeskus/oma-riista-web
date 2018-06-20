@@ -2,16 +2,12 @@ package fi.riista.integration.lupahallinta.parser;
 
 import com.google.common.base.Splitter;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.validation.FinnishHuntingPermitNumberValidator;
-import fi.riista.validation.FinnishSocialSecurityNumberValidator;
+import fi.riista.validation.Validators;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
 public class PermitCSVLineParser {
-    private static final FinnishSocialSecurityNumberValidator SSN_VALIDATOR = new FinnishSocialSecurityNumberValidator();
-    private static final FinnishHuntingPermitNumberValidator PERMIT_NUMBER_VALIDATOR = new FinnishHuntingPermitNumberValidator();
-
     private static final int MINIMUM_FIELD_COUNT = 19;
 
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
@@ -57,7 +53,7 @@ public class PermitCSVLineParser {
             return null;
         }
 
-        if (!SSN_VALIDATOR.isValid(ssn, null)) {
+        if (!Validators.isValidSsn(ssn)) {
             errors.add("Virheellinen HETU:" + ssn);
             return null;
         }
@@ -71,7 +67,7 @@ public class PermitCSVLineParser {
             return null;
         }
 
-        if (!PERMIT_NUMBER_VALIDATOR.isValid(permitNumber, null)) {
+        if (!Validators.isValidPermitNumber(permitNumber)) {
             errors.add("Virheellinen lupanumero:" + permitNumber);
             return null;
         }

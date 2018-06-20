@@ -1,0 +1,25 @@
+<h3 name-translated="$ctrl.permit.speciesAmount.gameSpecies.name"></h3>
+
+<uib-tabset active="tabSelection">
+    <uib-tab heading="{{'club.permit.tabHunting' | translate}}">
+        <moose-permit-table-hunting
+                latest-update="$ctrl.permit.totalStatistics.latestUpdate"
+                latest-updates-by-club-id="$ctrl.latestUpdatesByClubId"
+                harvest-counts="$ctrl.permit.harvestCounts"
+                allocations="$ctrl.allocations"
+                summary-for-partners-table="$ctrl.permit.summaryForPartnersTable"
+                from-moose-data-card="$ctrl.fromMooseDataCard"
+                counter="$ctrl.counter"
+                todos="$ctrl.todos"
+                can-navigate-to-club="false"></moose-permit-table-hunting>
+    </uib-tab>
+    <uib-tab heading="{{'club.permit.tabIndexes' | translate}}" ng-if="$ctrl.isMoose()">
+        <moose-permit-table-indexes
+                total-stats="$ctrl.permit.totalStatistics"
+                stats="$ctrl.permit.statistics"
+                from-moose-data-card="$ctrl.fromMooseDataCard"
+                allocations="$ctrl.allocations"
+                todos="$ctrl.todos"
+                can-navigate-to-club="false"></moose-permit-table-indexes>
+    </uib-tab>
+</uib-tabset>

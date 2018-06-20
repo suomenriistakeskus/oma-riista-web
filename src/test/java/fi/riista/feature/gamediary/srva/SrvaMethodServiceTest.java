@@ -1,7 +1,7 @@
 package fi.riista.feature.gamediary.srva;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodService;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.srva.SrvaEventDTO;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 
-import static fi.riista.util.TestUtils.createList;
+import static fi.riista.test.TestUtils.createList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

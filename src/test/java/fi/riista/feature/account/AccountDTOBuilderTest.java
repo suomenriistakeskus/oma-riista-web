@@ -1,12 +1,12 @@
 package fi.riista.feature.account;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.util.F;
 import org.junit.Test;

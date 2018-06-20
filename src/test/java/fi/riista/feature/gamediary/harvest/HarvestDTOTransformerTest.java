@@ -1,6 +1,5 @@
 package fi.riista.feature.gamediary.harvest;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -8,35 +7,40 @@ import fi.riista.feature.gamediary.harvest.Harvest.StateAcceptedToHarvestPermit;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.harvestpermit.season.HarvestArea;
 import fi.riista.feature.harvestpermit.season.HarvestQuota;
+import fi.riista.feature.harvestpermit.season.HarvestSeason;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.test.rules.HibernateStatisticsAssertions;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import fi.riista.util.Functions;
-import fi.riista.util.jpa.HibernateStatisticsAssertions;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import org.joda.time.LocalDate;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import javax.annotation.Resource;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
+import static fi.riista.feature.gamediary.image.GameDiaryImage.getUniqueImageIds;
+import static fi.riista.test.TestUtils.createList;
+import static fi.riista.test.TestUtils.times;
 import static fi.riista.util.EqualityHelper.equalIdAndContent;
-import static fi.riista.util.TestUtils.createList;
-import static fi.riista.util.TestUtils.times;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
@@ -84,6 +88,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
 
                     assertTrue(dto.isCanEdit());
                     assertNull(dto.getHarvestReportState());
+                    assertNull(dto.getHarvestReportDate());
                     assertFalse(dto.isHarvestReportRequired());
                 }
             });
@@ -117,10 +122,143 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
                     assertTrue(dto.getImageIds().isEmpty());
                     assertTrue(dto.isCanEdit());
                     assertNull(dto.getHarvestReportState());
+                    assertNull(dto.getHarvestReportDate());
                     assertFalse(dto.isHarvestReportRequired());
                 }
             });
         });
+    }
+
+    @Test
+    public void testWithHarvestPermit() {
+        withRhy(rhy -> withPerson(person -> {
+            final GameSpecies species = model().newGameSpecies();
+            final HarvestPermit permit = model().newHarvestPermit(rhy);
+            model().newHarvestPermitSpeciesAmount(permit, species);
+
+            final List<Harvest> harvests = createList(5, () -> {
+                final PermittedMethod permittedMethod = new PermittedMethod();
+                permittedMethod.setTraps(true);
+                permittedMethod.setTapeRecorders(true);
+                permittedMethod.setOther(false);
+
+                final Harvest harvest = model().newHarvest(species, person, person);
+                harvest.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+                harvest.setHarvestReportAuthor(harvest.getAuthor());
+                harvest.setHarvestReportDate(DateUtil.now());
+                harvest.setHarvestReportMemo("memo-" + nextLong());
+
+                harvest.setHarvestPermit(permit);
+                harvest.setRhy(rhy);
+                harvest.setStateAcceptedToHarvestPermit(StateAcceptedToHarvestPermit.ACCEPTED);
+                harvest.setPermittedMethod(permittedMethod);
+
+                return harvest;
+            });
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final List<HarvestDTO> dtos = transformer.apply(harvests);
+                assertEquals(harvests.size(), dtos.size());
+
+                for (int i = 0; i < harvests.size(); i++) {
+                    final Harvest harvest = harvests.get(i);
+                    final HarvestDTO dto = dtos.get(i);
+
+                    assertNotNull(dto);
+                    assertFieldsNotDerivedFromCollections(harvest, dto);
+                    assertNull(dto.getHarvestReportMemo());
+
+                    assertEquals(rhy.getId(), dto.getRhyId());
+                    assertEquals(permit.getPermitNumber(), dto.getPermitNumber());
+                    assertEquals(permit.getPermitType(), dto.getPermitType());
+
+                    assertNull(dto.getHarvestArea());
+                }
+            });
+        }));
+    }
+
+    @Test
+    public void testWithHarvestSeason() {
+        withRhy(rhy -> withPerson(person -> {
+            final GameSpecies species = model().newGameSpecies();
+            final HarvestSeason season = model().newHarvestSeason(species);
+            final HarvestArea harvestArea = model().newHarvestArea(rhy);
+            final HarvestQuota quota = model().newHarvestQuota(season, harvestArea, 1);
+
+            final List<Harvest> harvests = createList(5, () -> {
+                final Harvest harvest = model().newHarvest(species, person, person);
+                harvest.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+                harvest.setHarvestReportAuthor(harvest.getAuthor());
+                harvest.setHarvestReportDate(DateUtil.now());
+                harvest.setHarvestReportMemo("memo-" + nextLong());
+
+                harvest.setSpecies(species);
+                harvest.setRhy(rhy);
+                harvest.setHarvestSeason(season);
+                harvest.setHarvestQuota(quota);
+                harvest.setHuntingAreaType(some(HuntingAreaType.class));
+                harvest.setHuntingAreaSize((double) nextLong());
+                harvest.setHuntingParty("party-" + nextLong());
+                harvest.setHuntingMethod(some(HuntingMethod.class));
+                harvest.setReportedWithPhoneCall(Boolean.TRUE);
+                harvest.setFeedingPlace(Boolean.TRUE);
+                harvest.setTaigaBeanGoose(Boolean.TRUE);
+                harvest.setPropertyIdentifier("11122233334444");
+                harvest.setLukeStatus(HarvestLukeStatus.CONFIRMED_NOT_ALPHA_1TO2Y);
+
+                return harvest;
+            });
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final List<HarvestDTO> dtos = transformer.apply(harvests);
+                assertEquals(harvests.size(), dtos.size());
+
+                for (int i = 0; i < harvests.size(); i++) {
+                    final Harvest harvest = harvests.get(i);
+                    final HarvestDTO dto = dtos.get(i);
+
+                    assertNotNull(dto);
+                    assertFieldsNotDerivedFromCollections(harvest, dto);
+                    assertNull(dto.getHarvestReportMemo());
+
+                    assertNotNull(dto.getHarvestArea());
+                    assertEquals(harvestArea.getId(), dto.getHarvestArea().getId());
+                    assertEquals(harvestArea.getNameFinnish(), dto.getHarvestArea().getNameFI());
+                    assertEquals(harvestArea.getNameSwedish(), dto.getHarvestArea().getNameSV());
+                    assertEquals(rhy.getId(), dto.getRhyId());
+
+                    assertNull(dto.getPermitNumber());
+                    assertNull(dto.getPermitType());
+                    assertNull(dto.getPermittedMethod());
+                    assertNull(dto.getStateAcceptedToHarvestPermit());
+                }
+            });
+        }));
+    }
+
+    @Test
+    public void testWithHarvestReportMemo_asModerator() {
+        withRhy(rhy -> withPerson(person -> {
+            final Harvest harvest = model().newHarvest();
+            harvest.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+            harvest.setHarvestReportAuthor(harvest.getAuthor());
+            harvest.setHarvestReportDate(DateUtil.now());
+            harvest.setHarvestReportMemo("memo-" + nextLong());
+
+            harvest.setDescription("description-" + nextLong());
+            model().newGameDiaryImage(harvest);
+
+            onSavedAndAuthenticated(createNewUser(SystemUser.Role.ROLE_MODERATOR), () -> {
+                final List<HarvestDTO> dtos = transformer.apply(Collections.singletonList(harvest));
+                assertEquals(1, dtos.size());
+
+                final HarvestDTO dto = dtos.get(0);
+                assertEquals(harvest.getHarvestReportMemo(), dto.getHarvestReportMemo());
+                assertNull(dto.getDescription());
+                assertEquals(0, dto.getImageIds().size());
+            });
+        }));
     }
 
     @Test
@@ -142,9 +280,9 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
                     final HarvestDTO dto = dtos.get(i);
 
                     assertNotNull(dto);
-                    assertFieldsNotDerivedFromCollections(pairs.get(i)._1(), dto);
+                    assertFieldsNotDerivedFromCollections(pairs.get(i)._1, dto);
 
-                    verifyImageIds(pairs.get(i)._2(), dto);
+                    assertThat(dto.getImageIds(), containsInAnyOrder(getUniqueImageIds(pairs.get(i)._2).toArray()));
 
                     assertTrue(dto.isCanEdit());
                     assertNull(dto.getHarvestReportState());
@@ -155,9 +293,58 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testWithUndeletedHarvestReport() {
+    public void testWithImages_asModerator() {
         withPerson(author -> {
-            final HarvestReport.State state = HarvestReport.State.PROPOSED;
+            final Harvest harvest = model().newHarvest(author);
+            harvest.setDescription("description-" + nextLong());
+            createList(5, () -> model().newGameDiaryImage(harvest));
+
+            onSavedAndAuthenticated(createNewModerator(), () -> {
+                final List<HarvestDTO> dtos = transformer.apply(singletonList(harvest));
+                assertEquals(1, dtos.size());
+
+                final HarvestDTO dto = dtos.get(0);
+                assertThat(dto.getImageIds(), hasSize(0));
+                assertNull(dto.getDescription());
+            });
+        });
+    }
+
+    @Test
+    public void testWithImages_asPermitContactPerson() {
+        withPerson(contactPerson -> {
+            final GameSpecies species = model().newGameSpecies();
+            final HarvestPermit permit = model().newHarvestPermit(contactPerson);
+            model().newHarvestPermitSpeciesAmount(permit, species);
+
+            final Harvest harvest = model().newHarvest(permit, species);
+            harvest.setDescription("description-" + nextLong());
+
+            createList(5, () -> model().newGameDiaryImage(harvest));
+
+            onSavedAndAuthenticated(createUser(contactPerson), () -> {
+                final List<HarvestDTO> dtos = transformer.apply(singletonList(harvest));
+                assertEquals(1, dtos.size());
+
+                final HarvestDTO dto = dtos.get(0);
+                assertThat(dto.getImageIds(), hasSize(0));
+                assertNull(dto.getDescription());
+            });
+        });
+    }
+
+    @Test
+    public void testWithApprovedHarvestReport() {
+        testWithHarvestReportState(HarvestReportState.APPROVED);
+    }
+
+    @Test
+    public void testWithRejectedHarvestReport() {
+        testWithHarvestReportState(HarvestReportState.REJECTED);
+    }
+
+    private void testWithHarvestReportState(final HarvestReportState state) {
+        withPerson(author -> {
             final List<Harvest> harvests = newHarvestsWithHarvestReport(5, state, author);
 
             // Generate extra harvest that is not included in input and thus should not affect output either.
@@ -166,6 +353,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
             onSavedAndAuthenticated(createUser(author), () -> {
 
                 final List<HarvestDTO> dtos = transformer.apply(harvests);
+
                 assertNotNull(dtos);
                 assertEquals(harvests.size(), dtos.size());
 
@@ -185,125 +373,105 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testWithDeletedHarvestReport() {
-        withPerson(author -> {
-            final HarvestReport.State state = HarvestReport.State.DELETED;
-            final List<Harvest> harvests = newHarvestsWithHarvestReport(5, state, author);
-
-            // Generate extra harvest that is not included in input and thus should not affect output either.
-            newHarvestsWithHarvestReport(5, state, author);
-
-            onSavedAndAuthenticated(createUser(author), () -> {
-
-                final List<HarvestDTO> dtos = transformer.apply(harvests);
-
-                assertNotNull(dtos);
-                assertEquals(harvests.size(), dtos.size());
-
-                for (int i = 0; i < harvests.size(); i++) {
-                    final HarvestDTO dto = dtos.get(i);
-
-                    assertNotNull(dto);
-                    assertFieldsNotDerivedFromCollections(harvests.get(i), dto);
-                    assertTrue(dto.getImageIds().isEmpty());
-
-                    assertTrue(dto.isCanEdit());
-                    assertNull(dto.getHarvestReportState());
-                    assertFalse(dto.isHarvestReportRequired());
-                }
-            });
-        });
-    }
-
-    @Test
-    public void testWithMultipleHarvestReports() {
-        withPerson(author -> {
-            final GameSpecies species = model().newGameSpecies();
-            final HarvestReportFields fields = model().newHarvestReportFields(species, false);
-            final HarvestReport.State state = HarvestReport.State.PROPOSED;
-
-            final List<Harvest> harvests = createList(5, () -> {
-                final Harvest harvest = model().newHarvest(author);
-
-                model().newHarvestReport(fields, state, harvest);
-                model().newHarvestReport(fields, state, harvest);
-
-                return harvest;
-            });
-
-            onSavedAndAuthenticated(createUser(author), () -> transformer.apply(harvests));
-        });
+    public void testHarvestAcceptedToPermit() {
+        doTestCanEdit(false, StateAcceptedToHarvestPermit.ACCEPTED, false);
     }
 
     @Test
     public void testHarvestAcceptedToPermit_AsContactPerson() {
-        final SystemUser author = createUserWithPerson("author");
-        final SystemUser contact = createUserWithPerson("contact");
-        doTestCanEdit(true, StateAcceptedToHarvestPermit.ACCEPTED, contact, author.getPerson(), contact.getPerson());
-    }
-
-    @Test
-    public void testHarvestAcceptedToPermit() {
-        final SystemUser author = createUserWithPerson("author");
-        final Person contact = createUserWithPerson("contact").getPerson();
-        doTestCanEdit(false, StateAcceptedToHarvestPermit.ACCEPTED, author, author.getPerson(), contact);
+        doTestCanEdit(true, StateAcceptedToHarvestPermit.ACCEPTED, true);
     }
 
     @Test
     public void testHarvestProposedToPermit() {
-        final SystemUser author = createUserWithPerson("author");
-        final Person contact = createUserWithPerson("contact").getPerson();
-        doTestCanEdit(true, StateAcceptedToHarvestPermit.PROPOSED, author, author.getPerson(), contact);
+        doTestCanEdit(true, StateAcceptedToHarvestPermit.PROPOSED, false);
     }
 
     @Test
     public void testHarvestRejectedToPermit() {
-        final SystemUser author = createUserWithPerson("author");
-        final Person contact = createUserWithPerson("contact").getPerson();
-        doTestCanEdit(true, StateAcceptedToHarvestPermit.REJECTED, author, author.getPerson(), contact);
+        doTestCanEdit(true, StateAcceptedToHarvestPermit.REJECTED, false);
     }
 
     @Test
-    public void testHarvestAcceptedToPermit_withNotDeletedHarvestReport_asContactPerson() {
-        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReport.State.APPROVED, true);
+    public void testHarvestAcceptedToPermit_withProposedHarvestReport() {
+        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.SENT_FOR_APPROVAL, false);
     }
 
     @Test
-    public void testHarvestAcceptedToPermit_withNotDeletedHarvestReport() {
-        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReport.State.APPROVED, false);
+    public void testHarvestAcceptedToPermit_withProposedHarvestReport_asContactPerson() {
+        doTestCanEditWithReport(true, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.SENT_FOR_APPROVAL, true);
     }
 
     @Test
-    public void testHarvestProposedToPermit_withNotDeletedHarvestReport() {
-        doTestCanEditWithReport(
-                false, StateAcceptedToHarvestPermit.PROPOSED, HarvestReport.State.SENT_FOR_APPROVAL, false);
+    public void testHarvestProposedToPermit_withApprovedHarvestReport() {
+        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.APPROVED, false);
     }
 
     @Test
-    public void testHarvestRejectedToPermit_withNotDeletedHarvestReport() {
-        doTestCanEditWithReport(
-                false, StateAcceptedToHarvestPermit.REJECTED, HarvestReport.State.SENT_FOR_APPROVAL, false);
+    public void testHarvestRejectedToPermit_withRejectedHarvestReport() {
+        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.REJECTED, false);
     }
 
     @Test
-    @HibernateStatisticsAssertions(maxQueries = 13)
-    public void testQueryCountWithCompleteEntityGraph() {
+    public void testHarvestRejectedToPermit_withRejectedHarvestReport_asContactPerson() {
+        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.REJECTED, true);
+    }
+
+    @Test
+    @HibernateStatisticsAssertions(maxQueries = 10)
+    public void testQueryCountWithSeasonHarvest() {
         withRhy(rhy -> withPerson(hunter -> {
             final List<Harvest> harvests = createList(10, () -> {
+                final GameSpecies species = model().newGameSpecies(true);
+                final LocalDate seasonBegin = DateUtil.today();
+                final LocalDate seasonEnd = seasonBegin.plusYears(1);
+                final LocalDate reportingDeadline = seasonEnd.plusMonths(1);
+                final HarvestSeason harvestSeason = model().newHarvestSeason(species, seasonBegin, seasonEnd, reportingDeadline);
+                final HarvestArea harvestArea = model().newHarvestArea(rhy);
+                final HarvestQuota quota = model().newHarvestQuota(harvestSeason, harvestArea, 100);
 
-                final HarvestQuota quota = model().newHarvestQuota(
-                        model().newHarvestSeason(DateUtil.today()), model().newHarvestArea(rhy), 100);
-
-                final HarvestPermit permit = model().newHarvestPermit(rhy);
-                final Harvest harvest =
-                        newHarvestWithStateAcceptedToPermit(permit, some(StateAcceptedToHarvestPermit.class));
-                harvest.setActualShooter(hunter);
+                final Harvest harvest = model().newHarvest(species, hunter);
                 harvest.setHarvestQuota(quota);
+                harvest.setHarvestSeason(harvestSeason);
 
                 times(5).run(() -> model().newHarvestSpecimen(harvest));
                 times(5).run(() -> model().newGameDiaryImage(harvest));
 
-                newHarvestReport(some(HarvestReport.State.class), harvest);
+                harvest.setHarvestReportState(HarvestReportState.APPROVED);
+                harvest.setHarvestReportAuthor(harvest.getAuthor());
+                harvest.setHarvestReportDate(DateUtil.now());
+
+                return harvest;
+            });
+
+            persistAndAuthenticateWithNewUser(true);
+
+            transformer.apply(harvests);
+        }));
+    }
+
+    @Test
+    @HibernateStatisticsAssertions(maxQueries = 10)
+    public void testQueryCountWithPermitHarvest() {
+        withRhy(rhy -> withPerson(hunter -> {
+            final List<Harvest> harvests = createList(10, () -> {
+                final GameSpecies species = model().newGameSpecies(true);
+
+                final HarvestPermit permit = model().newHarvestPermit(rhy);
+                final HarvestPermitSpeciesAmount speciesAmount = model().newHarvestPermitSpeciesAmount(permit, species);
+
+                final Harvest harvest = model().newHarvest(species, hunter);
+                harvest.setActualShooter(hunter);
+                harvest.setHarvestPermit(permit);
+                harvest.setStateAcceptedToHarvestPermit(StateAcceptedToHarvestPermit.ACCEPTED);
+                harvest.setRhy(permit.getRhy());
+
+                times(5).run(() -> model().newHarvestSpecimen(harvest));
+                times(5).run(() -> model().newGameDiaryImage(harvest));
+
+                harvest.setHarvestReportState(HarvestReportState.APPROVED);
+                harvest.setHarvestReportAuthor(harvest.getAuthor());
+                harvest.setHarvestReportDate(DateUtil.now());
 
                 return harvest;
             });
@@ -328,56 +496,97 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         assertEquals(DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTime()), dto.getPointOfTime());
         assertEquals(harvest.getDescription(), dto.getDescription());
         assertEquals(harvest.getAmount(), dto.getAmount());
+        assertEquals(harvest.getHuntingAreaType(), dto.getHuntingAreaType());
+        assertEquals(harvest.getHuntingAreaSize(), dto.getHuntingAreaSize());
+        assertEquals(harvest.getHuntingParty(), dto.getHuntingParty());
+        assertEquals(harvest.getHuntingMethod(), dto.getHuntingMethod());
+        assertEquals(harvest.getReportedWithPhoneCall(), dto.getReportedWithPhoneCall());
+        assertEquals(harvest.getFeedingPlace(), dto.getFeedingPlace());
+        assertEquals(harvest.getTaigaBeanGoose(), dto.getTaigaBeanGoose());
+        assertEquals(harvest.getLukeStatus(), dto.getLukeStatus());
+        assertEquals(harvest.getHarvestReportState(), dto.getHarvestReportState());
+        assertEquals(harvest.getStateAcceptedToHarvestPermit(), dto.getStateAcceptedToHarvestPermit());
+
+        if (harvest.getHarvestReportDate() != null) {
+            assertEquals(harvest.getHarvestReportDate().toLocalDateTime(), dto.getHarvestReportDate());
+        } else {
+            assertNull(dto.getHarvestReportDate());
+        }
+
+        if (harvest.getPropertyIdentifier() != null) {
+            assertEquals(harvest.getPropertyIdentifier().getDelimitedValue(), dto.getPropertyIdentifier());
+        } else {
+            assertNull(dto.getPropertyIdentifier());
+        }
+
+        if (harvest.getPermittedMethod() != null) {
+            assertNotNull(dto.getPermittedMethod());
+            assertEquals(harvest.getPermittedMethod().isTraps(), dto.getPermittedMethod().isTraps());
+            assertEquals(harvest.getPermittedMethod().isOther(), dto.getPermittedMethod().isOther());
+            assertEquals(harvest.getPermittedMethod().isTapeRecorders(), dto.getPermittedMethod().isTapeRecorders());
+
+            if (harvest.getPermittedMethod().isOther()) {
+                assertEquals(harvest.getPermittedMethod().getDescription(), dto.getPermittedMethod().getDescription());
+            } else {
+                assertNull(dto.getPermittedMethod().getDescription());
+            }
+        } else {
+            assertNull(dto.getPermittedMethod());
+        }
     }
 
-    private static void verifyImageIds(final Collection<GameDiaryImage> images, final HarvestDTO dto) {
-        assertEquals(getUniqueImageUuids(images), new HashSet<>(dto.getImageIds()));
-    }
+    private void doTestCanEdit(final boolean canEdit,
+                               final StateAcceptedToHarvestPermit state,
+                               final boolean isContactPerson) {
 
-    private static Set<UUID> getUniqueImageUuids(final Collection<GameDiaryImage> images) {
-        return F.mapNonNullsToSet(images, Functions.idOf(GameDiaryImage::getFileMetadata));
-    }
-
-    private void doTestCanEdit(
-            final boolean canEdit,
-            final StateAcceptedToHarvestPermit state,
-            final SystemUser user,
-            final Person author,
-            final Person contactPerson) {
-
-        withRhy(rhy -> {
+        withRhy(rhy -> withPerson(person -> {
             final List<Harvest> harvests = createList(5, () -> {
+                final GameSpecies species = model().newGameSpecies();
                 final HarvestPermit permit = model().newHarvestPermit(rhy);
-                permit.setOriginalContactPerson(contactPerson);
+                model().newHarvestPermitSpeciesAmount(permit, species);
 
-                return newHarvestWithStateAcceptedToPermit(permit, state, author);
+                final Harvest harvest = model().newHarvest(permit, species);
+                harvest.setStateAcceptedToHarvestPermit(state);
+
+                if (isContactPerson) {
+                    permit.setOriginalContactPerson(person);
+                } else {
+                    harvest.setAuthor(person);
+                }
+
+                return harvest;
             });
 
-            onSavedAndAuthenticated(user, () -> {
+            onSavedAndAuthenticated(createUser(person), () -> {
                 final List<HarvestDTO> dtos = transformer.apply(harvests);
                 assertEquals(harvests.size(), dtos.size());
                 dtos.forEach(dto -> assertEquals(canEdit, dto.isCanEdit()));
             });
-        });
+        }));
     }
 
     private void doTestCanEditWithReport(final boolean canEdit,
                                          final StateAcceptedToHarvestPermit state,
-                                         final HarvestReport.State reportState,
+                                         final HarvestReportState reportState,
                                          final boolean isContactPerson) {
 
         withRhy(rhy -> withPerson(person -> {
 
             final List<Harvest> harvests = createList(5, () -> {
 
+                final GameSpecies species = model().newGameSpecies();
                 final HarvestPermit permit = model().newHarvestPermit(rhy);
+                final HarvestPermitSpeciesAmount speciesAmount = model().newHarvestPermitSpeciesAmount(permit, species);
 
                 if (isContactPerson) {
                     permit.setOriginalContactPerson(person);
                 }
 
-                final Harvest harvest = newHarvestWithStateAcceptedToPermit(permit, state);
-                model().newHarvestReport(harvest, reportState);
+                final Harvest harvest = model().newHarvest(speciesAmount.getHarvestPermit(), speciesAmount.getGameSpecies());
+                harvest.setStateAcceptedToHarvestPermit(state);
+                harvest.setHarvestReportState(reportState);
+                harvest.setHarvestReportAuthor(harvest.getAuthor());
+                harvest.setHarvestReportDate(DateUtil.now());
 
                 return harvest;
             });
@@ -395,8 +604,8 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         return Tuple.of(harvest, createList(numImages, () -> model().newGameDiaryImage(harvest)));
     }
 
-    private Tuple2<Harvest, List<HarvestSpecimen>> newHarvestWithSpecimens(
-            final int numSpecimens, final Person author) {
+    private Tuple2<Harvest, List<HarvestSpecimen>> newHarvestWithSpecimens(final int numSpecimens,
+                                                                           final Person author) {
 
         final Harvest harvest = model().newHarvest(author);
 
@@ -408,35 +617,16 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         return Tuple.of(harvest, specimens);
     }
 
-    private HarvestReport newHarvestReport(final HarvestReport.State state, final Harvest harvest) {
-        final HarvestReportFields fields = model().newHarvestReportFields(harvest.getSpecies(), false);
-        return model().newHarvestReport(fields, state, harvest);
-    }
-
     private List<Harvest> newHarvestsWithHarvestReport(
-            final int numHarvests, final HarvestReport.State state, final Person author) {
+            final int numHarvests, final HarvestReportState state, final Person author) {
 
         return createList(numHarvests, () -> {
             final Harvest harvest = model().newHarvest(author);
-            newHarvestReport(state, harvest);
+            harvest.setHarvestReportState(state);
+            harvest.setHarvestReportAuthor(author);
+            harvest.setHarvestReportDate(DateUtil.now());
+
             return harvest;
         });
     }
-
-    private Harvest newHarvestWithStateAcceptedToPermit(
-            final HarvestPermit permit, final StateAcceptedToHarvestPermit state, final Person author) {
-
-        final Harvest harvest = newHarvestWithStateAcceptedToPermit(permit, state);
-        harvest.setAuthor(author);
-        return harvest;
-    }
-
-    private Harvest newHarvestWithStateAcceptedToPermit(
-            final HarvestPermit permit, final StateAcceptedToHarvestPermit state) {
-
-        final Harvest harvest = model().newHarvest(permit);
-        harvest.setStateAcceptedToHarvestPermit(state);
-        return harvest;
-    }
-
 }

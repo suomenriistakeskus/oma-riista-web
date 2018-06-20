@@ -146,6 +146,19 @@
             var endDate = self.$eventEndDate.val();
             self.searchEvents(areaId, rhyId, eventType, startDate, endDate);
         };
+        this.makeLinks = function (text) {
+            var regex = /((http(s)?:\/\/.)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi;
+
+            function replace(address) {
+                var url = address;
+                if (address.indexOf('http') !== 0) {
+                    url = 'http://' + address;
+                }
+                return jQuery('<a></a>', {href: url}).html(address)[0].outerHTML;
+            }
+
+            return text.replace(regex, replace);
+        };
         this.searchEvents = function(areaId, rhyId, eventType, startDate, endDate) {
             var startDateParsed = moment(startDate, self.dateUIFormat);
             var endDateParsed = moment(endDate, self.dateUIFormat);
@@ -183,7 +196,7 @@
                     tableRowDataString = self.addTableRow(events[i].organisation.name, tableRowDataString, bgColor);
                     tableRowDataString = self.addEventTypeAndNameRow(events[i], tableRowDataString, bgColor);
                     tableRowDataString = self.addVenueRow(events[i].venue, tableRowDataString, bgColor);
-                    var description = events[i].description ? events[i].description.replace(/(?:\r\n|\r|\n)/g, '<br />') : '';
+                    var description = events[i].description ? self.makeLinks(events[i].description.replace(/(?:\r\n|\r|\n)/g, '<br />')) : '';
                     tableRowDataString = self.addTableRow(description, tableRowDataString, bgColor);
                 }
                 self.$searchResults.html("<table style='border-spacing: 0; width: 100%;'>" + tableRowDataString + "</table>");

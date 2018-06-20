@@ -1,21 +1,24 @@
 package fi.riista.api;
 
+import fi.riista.feature.organization.OrganisationCrudFeature;
+import fi.riista.feature.organization.OrganisationDTO;
+import fi.riista.feature.organization.calendar.CalendarEventCrudFeature;
+import fi.riista.feature.organization.calendar.CalendarEventDTO;
+import fi.riista.feature.organization.calendar.CalendarEventType;
+import fi.riista.feature.organization.calendar.VenueCrudFeature;
+import fi.riista.feature.organization.calendar.VenueDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
-import fi.riista.feature.organization.calendar.CalendarEventCrudFeature;
-import fi.riista.feature.organization.OrganisationCrudFeature;
-import fi.riista.feature.organization.calendar.VenueCrudFeature;
-import fi.riista.feature.organization.calendar.CalendarEventDTO;
-import fi.riista.feature.organization.OrganisationDTO;
-import fi.riista.feature.organization.calendar.VenueDTO;
-import fi.riista.feature.organization.calendar.CalendarEventType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +29,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/organisation", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class OrganisationEventApiResource {
+
     @Resource
     private OrganisationCrudFeature organisationCrudFeature;
 
@@ -38,70 +42,73 @@ public class OrganisationEventApiResource {
     // EVENTS
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/eventtypes", method = RequestMethod.GET)
+    @GetMapping(value = "/eventtypes")
     public List<CalendarEventType> readEventTypes() {
         return Arrays.asList(CalendarEventType.values());
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{orgId:\\d+}/events", method = RequestMethod.GET)
-    public List<CalendarEventDTO> listEvents(@PathVariable Long orgId) {
+    @GetMapping(value = "{orgId:\\d+}/events")
+    public List<CalendarEventDTO> listEvents(@PathVariable final long orgId) {
         return organisationCrudFeature.listEvents(orgId);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "{orgId:\\d+}/events", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public CalendarEventDTO createEvent(@RequestBody @Validated CalendarEventDTO dto, @PathVariable Long orgId) {
+    @PostMapping(value = "{orgId:\\d+}/events", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public CalendarEventDTO createEvent(@RequestBody @Validated final CalendarEventDTO dto,
+                                        @PathVariable final long orgId) {
+
         dto.setOrganisation(new OrganisationDTO());
         dto.getOrganisation().setId(orgId);
         return calendarEventCrudFeature.create(dto);
     }
 
-    @RequestMapping(value = "{orgId:\\d+}/events/{id:\\d+}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public CalendarEventDTO updateEvent(
-            @RequestBody @Validated CalendarEventDTO dto, @PathVariable Long orgId, @PathVariable Long id) {
+    @PutMapping(value = "{orgId:\\d+}/events/{id:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public CalendarEventDTO updateEvent(@RequestBody @Validated final CalendarEventDTO dto,
+                                        @PathVariable final long orgId,
+                                        @PathVariable final long id) {
+
         dto.setId(id);
         dto.getOrganisation().setId(orgId);
         return calendarEventCrudFeature.update(dto);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "{orgId:\\d+}/events/{id:\\d+}", method = RequestMethod.DELETE)
-    public void deleteEvent(@PathVariable Long id) {
+    @DeleteMapping(value = "{orgId:\\d+}/events/{id:\\d+}")
+    public void deleteEvent(@PathVariable final long id) {
         calendarEventCrudFeature.delete(id);
     }
 
     // VENUES
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{orgId:\\d+}/venues", method = RequestMethod.GET)
-    public List<VenueDTO> listVenues(@PathVariable Long orgId) {
+    @GetMapping(value = "{orgId:\\d+}/venues")
+    public List<VenueDTO> listVenues(@PathVariable final long orgId) {
         return organisationCrudFeature.listVenues(orgId);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "{orgId:\\d+}/venues", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public VenueDTO createVenue(@RequestBody @Validated VenueDTO dto, @PathVariable Long orgId) {
+    @PostMapping(value = "{orgId:\\d+}/venues", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public VenueDTO createVenue(@RequestBody @Validated final VenueDTO dto, @PathVariable final long orgId) {
         return venueCrudFeature.createForOrganisation(orgId, dto);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "{orgId:\\d+}/venues/{venueId:\\d+}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public VenueDTO updateVenue(@RequestBody @Validated VenueDTO dto, @PathVariable Long venueId) {
+    @PutMapping(value = "{orgId:\\d+}/venues/{venueId:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public VenueDTO updateVenue(@RequestBody @Validated final VenueDTO dto, @PathVariable final long venueId) {
         dto.setId(venueId);
         return venueCrudFeature.update(dto);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "{orgId:\\d+}/attachvenue/{venueId:\\d+}", method = RequestMethod.PUT)
-    public void attachVenue(@PathVariable Long orgId, @PathVariable Long venueId) {
+    @PutMapping(value = "{orgId:\\d+}/attachvenue/{venueId:\\d+}")
+    public void attachVenue(@PathVariable final long orgId, @PathVariable final long venueId) {
         venueCrudFeature.attachVenue(orgId, venueId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "{orgId:\\d+}/detachvenue/{venueId:\\d+}", method = RequestMethod.DELETE)
-    public void detachVenue(@PathVariable Long orgId, @PathVariable Long venueId) {
+    @DeleteMapping(value = "{orgId:\\d+}/detachvenue/{venueId:\\d+}")
+    public void detachVenue(@PathVariable final long orgId, @PathVariable final long venueId) {
         venueCrudFeature.detachVenue(orgId, venueId);
     }
-
 }

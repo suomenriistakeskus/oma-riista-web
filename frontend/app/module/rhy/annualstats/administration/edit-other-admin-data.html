@@ -1,0 +1,64 @@
+<form name="otherAdminDataForm" role="form" class="form form-horizontal r-annual-statistics-wide-label-form"
+      autocomplete="off"
+      r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="rhy.annualStats.administration.other.form.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="grantedRecreationalShootingCertificates" class="control-label">
+                <span translate="rhy.annualStats.administration.other.form.grantedRecreationalShootingCertificates"></span>
+            </label>
+
+            <div class="form-control-wrapper input-group">
+                <input type="number" name="grantedRecreationalShootingCertificates" id="grantedRecreationalShootingCertificates"
+                       min="0" max="99999" step="1"
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.data.grantedRecreationalShootingCertificates"/>
+
+                <div class="input-group-addon">
+                    <span translate="global.pcs"></span>
+                </div>
+            </div>
+
+            <div class="form-control-offset-wrapper" ng-show="otherAdminDataForm.grantedRecreationalShootingCertificates.$invalid">
+                <p class="help-block" translate="global.messages.invalid"></p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="mutualAckShootingCertificates" class="control-label">
+                <span translate="rhy.annualStats.administration.other.form.mutualAckShootingCertificates"></span>
+            </label>
+
+            <div class="form-control-wrapper input-group">
+                <input type="number" name="mutualAckShootingCertificates" id="mutualAckShootingCertificates"
+                       min="0" max="99999" step="1"
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.data.mutualAckShootingCertificates"/>
+
+                <div class="input-group-addon">
+                    <span translate="global.pcs"></span>
+                </div>
+            </div>
+
+            <div class="form-control-offset-wrapper" ng-show="otherAdminDataForm.mutualAckShootingCertificates.$invalid">
+                <p class="help-block" translate="global.messages.invalid"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="otherAdminDataForm.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

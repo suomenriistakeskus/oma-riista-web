@@ -87,9 +87,9 @@ public class SQBasicClubHuntingSummary extends RelationalPathSpatial<SQBasicClub
 
     public final com.querydsl.sql.PrimaryKey<SQBasicClubHuntingSummary> basicClubHuntingSummaryPkey = createPrimaryKey(huntingSummaryId);
 
-    public final com.querydsl.sql.ForeignKey<SQOrganisation> basicClubHuntingSummaryClubFk = createForeignKey(clubId, "organisation_id");
-
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitSpeciesAmount> basicClubHuntingSummarySpeciesAmountFk = createForeignKey(speciesAmountId, "harvest_permit_species_amount_id");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> basicClubHuntingSummaryClubFk = createForeignKey(clubId, "organisation_id");
 
     public SQBasicClubHuntingSummary(String variable) {
         super(SQBasicClubHuntingSummary.class, forVariable(variable), "public", "basic_club_hunting_summary");
@@ -98,6 +98,11 @@ public class SQBasicClubHuntingSummary extends RelationalPathSpatial<SQBasicClub
 
     public SQBasicClubHuntingSummary(String variable, String schema, String table) {
         super(SQBasicClubHuntingSummary.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQBasicClubHuntingSummary(String variable, String schema) {
+        super(SQBasicClubHuntingSummary.class, forVariable(variable), schema, "basic_club_hunting_summary");
         addMetadata();
     }
 

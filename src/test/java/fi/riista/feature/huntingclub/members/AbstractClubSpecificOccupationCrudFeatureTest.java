@@ -1,20 +1,21 @@
 package fi.riista.feature.huntingclub.members;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.organization.address.AddressDTO;
-import fi.riista.feature.organization.occupation.OccupationDTO;
-import fi.riista.feature.organization.person.PersonDTO;
-import fi.riista.feature.organization.address.Address;
-import fi.riista.feature.organization.person.ContactInfoShare;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.organization.address.AddressDTO;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationDTO;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.person.Person;
-import javaslang.Tuple;
+import fi.riista.feature.organization.person.PersonContactInfoDTO;
+import fi.riista.test.EmbeddedDatabaseTest;
+import io.vavr.Tuple;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
@@ -48,12 +49,12 @@ public abstract class AbstractClubSpecificOccupationCrudFeatureTest extends Embe
                 .filter(dto -> dto.getId().equals(member.getId()))
                 .forEach(dto -> {
                     final Person memberPerson = member.getPerson();
-                    final PersonDTO dtoPerson = dto.getPerson();
+                    final PersonContactInfoDTO dtoPerson = dto.getPerson();
                     assertEquals(
                             getExpected(userCanSeeContactInfo, memberPerson),
                             Tuple.of(dtoPerson.getEmail(), dtoPerson.getPhoneNumber())
                     );
-                    assertEquals(canSeeRegistered, dtoPerson.isRegistered());
+                    assertEquals(canSeeRegistered, Optional.ofNullable(dtoPerson.getRegistered()).map(Boolean::valueOf).orElse(false));
                     assertAddress(userCanSeeContactInfo, memberPerson.getAddress(), dtoPerson.getAddress());
                 });
     }

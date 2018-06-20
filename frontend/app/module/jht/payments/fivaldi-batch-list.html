@@ -1,0 +1,22 @@
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th class="col-xs-10" translate="jht.payments.fivaldi.creationTime"></th>
+                <th class="col-xs-2"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="batch in $ctrl.batches track by batch.id">
+                <td ng-bind="::batch.creationTime | date:'d.M.yyyy'"></td>
+                <td class="text-right no-padding">
+                    <button type="button" class="btn btn-lg btn-link"
+                            ng-click="$ctrl.downloadBatchFile(batch.id)">
+
+                        <span class="fa fa-lg fa-download"></span>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

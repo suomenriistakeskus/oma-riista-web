@@ -1,8 +1,8 @@
 package fi.riista.feature.huntingclub.permit.partner;
 
 import com.google.common.collect.Sets;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitTotalPaymentDTO;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.LocalisedString;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;

@@ -1,15 +1,14 @@
 package fi.riista.feature.organization.occupation.search;
 
+import fi.riista.config.Constants;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelRowValue;
 import fi.riista.util.Locales;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.web.servlet.view.document.AbstractXlsView;
+import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,9 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class OccupationContactSearchExcelView extends AbstractXlsView {
-
-    private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
+public class OccupationContactSearchExcelView extends AbstractXlsxView {
 
     private static final String[] HEADERS_FI = {
             "Yläorganisaatio",
@@ -75,8 +72,8 @@ public class OccupationContactSearchExcelView extends AbstractXlsView {
     }
 
     private static String createFilename() {
-        final String timestamp = DATETIME_PATTERN.print(DateUtil.now());
-        return "yhteystiedot-" + timestamp + ".xls";
+        final String timestamp = Constants.FILENAME_TS_PATTERN.print(DateUtil.now());
+        return "yhteystiedot-" + timestamp + ".xlsx";
     }
 
     @Override

@@ -1,0 +1,146 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title">Muokkaa päätöksen liitteitä</h3>
+</div>
+
+<div class="modal-body" style="min-height: 480px;">
+    <uib-tabset type="pills" justified="true" active="$ctrl.activeTabIndex">
+        <uib-tab>
+            <uib-tab-heading>
+                <span class="fa fa-list"></span>
+                &nbsp;
+                Listaus
+            </uib-tab-heading>
+
+            <div class="row" style="margin-top: 20px">
+                <div class="col-xs-12 text-right">
+                    <button type="button" class="btn btn-default"
+                            ng-click="$ctrl.addDefaultMooseAttachment()">
+                        <span class="fa fa-file-text"></span>
+                        &nbsp;
+                        Lisää valtakunnallinen liite
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive" style="max-height: 400px; margin-top: 20px;">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th class="col-xs-1">Järjestys</th>
+                        <th class="col-xs-5">Teksti päätöksellä</th>
+                        <th class="col-xs-3">Liite numeroituna päätöksellä</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="a in $ctrl.decisionAttachments track by a.id">
+                        <td>
+                            <a ng-click="$ctrl.moveAttachment(a.id, 1)">
+                                <span class="fa fa-2x fa-chevron-down"></span>
+                            </a>
+                            <a ng-click="$ctrl.moveAttachment(a.id, -1)">
+                                <span class="fa fa-2x fa-chevron-up"></span>
+                            </a>
+                        </td>
+                        <td>
+                            <a ng-click="$ctrl.downloadAttachment(a.id)" ng-bind="::a.description"></a>
+                        </td>
+                        <td>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-model="a.hasOrdering"
+                                       ng-change="$ctrl.attachmentChanged = true">
+                                <span ng-show="a.hasOrdering">Kyllä</span>
+                                <span ng-show="!a.hasOrdering">Ei</span>
+                            </label>
+                        </td>
+                        <td class="col-xs-1 text-right vcenter">
+                            <a ng-click="$ctrl.deleteAttachment(a.id)">
+                                <span class="fa fa-2x fa-remove text-danger"></span>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr ng-show="!$ctrl.decisionAttachments || $ctrl.decisionAttachments.length === 0">
+                        <td colspan="2"><span class="text-muted">Ei liitteitä</span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-warning" style="margin-top: 20px" ng-show="$ctrl.attachmentChanged">
+                Muistathan tallentaa muutokset ennen uuden liitteen lisäämistä!
+            </div>
+        </uib-tab>
+
+        <uib-tab>
+            <uib-tab-heading>
+                <span class="fa fa-upload"></span>
+                &nbsp;
+                Lisää uusi liitetiedosto
+            </uib-tab-heading>
+
+            <hr class="invisible">
+
+            <div ng-if="$ctrl.errors.incompatibleFileType"
+                 class="alert alert-danger">
+                <span translate="harvestpermit.wizard.attachments.incompatibleFileType"></span>
+            </div>
+
+            <div class="form-horizontal">
+
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Tiedosto</label>
+
+                    <div class="col-xs-9">
+                        <form method="post" enctype="multipart/form-data"
+                              class="dropzone"
+                              ng-dropzone
+                              dropzone="$ctrl.dropzone"
+                              dropzone-config="$ctrl.dropzoneConfig"
+                              event-handlers="$ctrl.dropzoneEventHandlers">
+                            <input type="hidden" spring-csrf-cookie/>
+                            <input type="hidden" name="description" ng-value="$ctrl.attachmentDescription">
+
+                            <div class="dz-message" translate="harvestpermit.wizard.attachments.uploadButton"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <form name="attachmentForm">
+                    <div class="form-group" show-errors>
+                        <label class="control-label col-xs-3" for="attachmentDescription">Teksti päätöksellä</label>
+
+                        <div class="col-xs-6">
+                        <textarea class="form-control" name="attachmentDescription" id="attachmentDescription"
+                                  required
+                                  rows="4"
+                                  minlength="5"
+                                  maxlength="255"
+                                  ng-model="$ctrl.attachmentDescription"></textarea>
+
+                            <p class="help-block has-error"
+                               ng-show="attachmentForm.attachmentDescription.$invalid"
+                               ng-messages="attachmentForm.attachmentDescription.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+
+                        <div class="col-xs-3">
+                            <button type="button" class="btn btn-primary btn-block"
+                                    ng-disabled="$ctrl.uploadDisabled(attachmentForm)"
+                                    ng-click="$ctrl.uploadAttachment()">
+                                <span translate="global.button.submit" style="line-height: 80px"></span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </uib-tab>
+    </uib-tabset>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary"
+            ng-click="$ctrl.save()"
+            translate="global.button.save"></button>
+</div>

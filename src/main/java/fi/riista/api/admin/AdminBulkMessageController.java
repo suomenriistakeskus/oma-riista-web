@@ -3,7 +3,6 @@ package fi.riista.api.admin;
 
 import fi.riista.feature.mail.admin.AdminBulkMessageFeature;
 import fi.riista.feature.mail.admin.AdminBulkMessageRequestDTO;
-import fi.riista.feature.mail.admin.AdminBulkMessageResponseDTO;
 import fi.riista.feature.mail.admin.AdminBulkTestMessageRequestDTO;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -22,19 +21,19 @@ public class AdminBulkMessageController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(value = "/api/v1/admin/sendBulkMail", method = RequestMethod.POST)
-    public AdminBulkMessageResponseDTO send(@RequestBody @Validated AdminBulkMessageRequestDTO requestDTO) {
-        return adminBulkMessageFeature.sendMessageToAllRegisteredUsers(requestDTO);
+    public void send(@RequestBody @Validated AdminBulkMessageRequestDTO requestDTO) {
+        adminBulkMessageFeature.sendMessageToAllRegisteredUsers(requestDTO);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(value = "/api/v1/admin/sendBulkMailToClubContacts", method = RequestMethod.POST)
-    public AdminBulkMessageResponseDTO sendToClubContacts(@RequestBody @Validated AdminBulkMessageRequestDTO requestDTO) {
-        return adminBulkMessageFeature.sendMessageToAllRegisteredClubContactPersons(requestDTO);
+    public void sendToClubContacts(@RequestBody @Validated AdminBulkMessageRequestDTO requestDTO) {
+        adminBulkMessageFeature.sendMessageToAllRegisteredClubContactPersons(requestDTO);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(value = "/api/v1/admin/sendTestBulkMail", method = RequestMethod.POST)
-    public AdminBulkMessageResponseDTO sendTest(@RequestBody @Validated AdminBulkTestMessageRequestDTO requestDTO) {
-        return adminBulkMessageFeature.sendTestMessage(requestDTO, requestDTO.getTestRecipient());
+    public void sendTest(@RequestBody @Validated AdminBulkTestMessageRequestDTO requestDTO) {
+        adminBulkMessageFeature.sendTestMessage(requestDTO, requestDTO.getTestRecipient());
     }
 }

@@ -1,28 +1,26 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseDataCard;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newPage7;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newPage8;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingEndDateNotWithinPermitSeason;
-import static fi.riista.util.Asserts.assertValidationErrors;
-import static fi.riista.util.DateUtil.today;
-import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage8;
-
-import javaslang.control.Validation;
-
+import io.vavr.control.Validation;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.stream.Stream;
+
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseDataCard;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newPage7;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newPage8;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingEndDateNotWithinPermitSeason;
+import static fi.riista.test.Asserts.assertValidationErrors;
+import static fi.riista.util.DateUtil.today;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 // Acts mainly as integration test for composed validations but tests also validation of hunting end
 // date.
@@ -77,5 +75,4 @@ public class MooseDataCardSummaryValidatorTest {
     private static Has2BeginEndDates newPermitSeason(final LocalDate beginDate, final LocalDate endDate) {
         return new Has2BeginEndDatesDTO(beginDate, endDate);
     }
-
 }

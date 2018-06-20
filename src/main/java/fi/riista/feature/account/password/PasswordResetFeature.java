@@ -4,12 +4,11 @@ import com.github.jknack.handlebars.Handlebars;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import fi.riista.feature.account.audit.AccountActivityMessage;
-import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.account.user.UserRepository;
+import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.account.audit.AccountAuditService;
 import fi.riista.feature.account.user.ActiveUserService;
-import fi.riista.feature.RuntimeEnvironmentUtil;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.mail.MailService;
 import fi.riista.feature.mail.token.EmailToken;
@@ -32,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 
@@ -97,8 +95,7 @@ public class PasswordResetFeature {
         }
 
         // Log account activity
-        accountAuditService.auditUserEvent(user, activeUserService.getAuthentication(),
-                AccountActivityMessage.ActivityType.PASSWORD_RESET_REQUESTED, null);
+        accountAuditService.auditPasswordResetRequest(user, request);
 
         final Locale userLocale = MoreObjects.firstNonNull(user.getLocale(), LocaleContextHolder.getLocale());
         final String subject = messageSource.getMessage("account.password.reset.mail.subject", null, userLocale);
@@ -114,10 +111,12 @@ public class PasswordResetFeature {
                 "firstName", user.getFirstName(),
                 "lastName", user.getLastName());
 
-        mailService.sendLater(new MailMessageDTO.Builder()
-                .withTo(email)
+        mailService.send(MailMessageDTO.builder()
+                .withFrom(mailService.getDefaultFromAddress())
+                .addRecipient(email)
                 .withSubject(subject)
-                .withHandlebarsBody(handlebars, selectTemplate(), params), null);
+                .appendHandlebarsBody(handlebars, selectTemplate(), params)
+                .build());
     }
 
     private static String selectTemplate() {
@@ -136,11 +135,10 @@ public class PasswordResetFeature {
 
         if (systemUser.isActive()) {
             // Make sure all existing rememberMe logins are revoked
-            findSessionKeysByUsername(systemUser.getUsername()).forEach(sessionRepository::delete);
+            removeOtherActiveSessions(systemUser, request);
 
             // Log account activity
-            accountAuditService.auditUserEvent(systemUser, activeUserService.getAuthentication(),
-                    AccountActivityMessage.ActivityType.PASSWORD_RESET, null);
+            accountAuditService.auditPasswordResetDone(systemUser, request);
 
             changePasswordService.setUserPassword(systemUser, resetDTO.getPassword());
 
@@ -150,8 +148,13 @@ public class PasswordResetFeature {
         }
     }
 
-    private Stream<String> findSessionKeysByUsername(final String username) {
-        return sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX_NAME, username).keySet().stream();
+    private void removeOtherActiveSessions(final SystemUser systemUser, final HttpServletRequest request) {
+        final String activeSessionId = request.getRequestedSessionId();
+        final String username = systemUser.getUsername();
+
+        sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX_NAME, username).keySet().stream()
+                .filter(id -> !Objects.equals(id, activeSessionId))
+                .forEach(sessionRepository::delete);
     }
 
     @Transactional(readOnly = true)

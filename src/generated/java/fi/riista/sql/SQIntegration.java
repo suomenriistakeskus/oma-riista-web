@@ -57,6 +57,11 @@ public class SQIntegration extends RelationalPathSpatial<SQIntegration> {
         addMetadata();
     }
 
+    public SQIntegration(String variable, String schema) {
+        super(SQIntegration.class, forVariable(variable), schema, "integration");
+        addMetadata();
+    }
+
     public SQIntegration(Path<? extends SQIntegration> path) {
         super(path.getType(), path.getMetadata(), "public", "integration");
         addMetadata();

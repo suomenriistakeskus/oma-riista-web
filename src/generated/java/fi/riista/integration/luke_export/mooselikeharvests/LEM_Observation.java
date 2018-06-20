@@ -30,6 +30,7 @@ import org.joda.time.LocalDateTime;
  *         &lt;element name="gameSpeciesNameFinnish" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
  *         &lt;element name="mooselikeMaleAmount" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="mooseLikeFemaleAndCalfs" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}FemaleAndCalfs" maxOccurs="5" minOccurs="0"/&gt;
+ *         &lt;element name="mooselikeSolitaryCalfAmount" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="mooselikeUnknownSpecimenAmount" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="specimens" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}ObservationSpecimen" maxOccurs="unbounded" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
@@ -49,6 +50,7 @@ import org.joda.time.LocalDateTime;
     "gameSpeciesNameFinnish",
     "mooselikeMaleAmount",
     "mooseLikeFemaleAndCalfs",
+    "mooselikeSolitaryCalfAmount",
     "mooselikeUnknownSpecimenAmount",
     "specimens"
 })
@@ -71,6 +73,8 @@ public class LEM_Observation {
     protected Integer mooselikeMaleAmount;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07", nillable = true)
     protected List<LEM_FemaleAndCalfs> mooseLikeFemaleAndCalfs;
+    @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
+    protected Integer mooselikeSolitaryCalfAmount;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
     protected Integer mooselikeUnknownSpecimenAmount;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07", nillable = true)
@@ -239,6 +243,30 @@ public class LEM_Observation {
             mooseLikeFemaleAndCalfs = new ArrayList<LEM_FemaleAndCalfs>();
         }
         return this.mooseLikeFemaleAndCalfs;
+    }
+
+    /**
+     * Gets the value of the mooselikeSolitaryCalfAmount property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Integer }
+     *     
+     */
+    public Integer getMooselikeSolitaryCalfAmount() {
+        return mooselikeSolitaryCalfAmount;
+    }
+
+    /**
+     * Sets the value of the mooselikeSolitaryCalfAmount property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Integer }
+     *     
+     */
+    public void setMooselikeSolitaryCalfAmount(Integer value) {
+        this.mooselikeSolitaryCalfAmount = value;
     }
 
     /**

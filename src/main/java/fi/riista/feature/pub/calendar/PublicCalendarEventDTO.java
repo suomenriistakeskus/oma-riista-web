@@ -1,15 +1,14 @@
 package fi.riista.feature.pub.calendar;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import fi.riista.config.jackson.LocalTimeToStringSerializer;
-
 import fi.riista.feature.pub.occupation.PublicOrganisationDTO;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
 public class PublicCalendarEventDTO {
 
+    private long id;
     private PublicCalendarEventTypeDTO calendarEventType;
     private String name;
     private String description;
@@ -22,6 +21,14 @@ public class PublicCalendarEventDTO {
 
     @JsonSerialize(using = LocalTimeToStringSerializer.class)
     private LocalTime endTime;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(final long id) {
+        this.id = id;
+    }
 
     public PublicCalendarEventTypeDTO getCalendarEventType() {
         return calendarEventType;

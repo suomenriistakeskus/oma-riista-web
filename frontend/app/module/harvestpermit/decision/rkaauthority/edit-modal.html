@@ -1,0 +1,115 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" ng-if="$ctrl.authority.id">Muokkaa päätöksen esittelijää</h3>
+        <h3 class="modal-title" ng-if="!$ctrl.authority.id">Lisää päätöksen esittelijä</h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="firstName" class="col-xs-4 control-label">
+                <span>Etunimi</span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                    <input name="firstName" id="firstName" class="form-control"
+                       ng-model="$ctrl.authority.firstName"
+                       minlength="2"
+                       maxlength="255"
+                       required
+                       focus-me>
+            </div>
+        </div>
+        <div class="form-group" show-errors>
+            <label for="lastName" class="col-xs-4 control-label">
+                <span>Sukunimi</span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input name="lastName" id="lastName" class="form-control"
+                       ng-model="$ctrl.authority.lastName"
+                       minlength="2"
+                       maxlength="255"
+                       required>
+            </div>
+        </div>
+        <div class="form-group" show-errors>
+            <label for="titleFinnish" class="col-xs-4 control-label">
+                <span>Tehtävänimike suomeksi</span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input name="titleFinnish" id="titleFinnish" class="form-control"
+                       ng-model="$ctrl.authority.titleFinnish"
+                       minlength="5"
+                       maxlength="255"
+                       required>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="titleSwedish" class="col-xs-4 control-label">
+                <span>Tehtävänimike ruotsiksi</span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input name="titleSwedish" id="titleSwedish" class="form-control"
+                       ng-model="$ctrl.authority.titleSwedish"
+                       minlength="5"
+                       maxlength="255"
+                       required>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="phoneNumber" class="col-xs-4 control-label">
+                <span>Puhelinnumero</span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input name="phoneNumber" id="phoneNumber" class="form-control"
+                       ng-model="$ctrl.authority.phoneNumber"
+                       minlength="3"
+                       maxlength="255"
+                       pattern="029[0-9 ]+"
+                       required>
+                <p class="help-block has-error"
+                   ng-show="form.phoneNumber.$invalid">
+                    <span>Puhelinnumeron täytyy alkaa 029</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="email" class="col-xs-4 control-label">
+                <span>Sähköpostiosoite</span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input type="email" id="email" name="email"
+                       class="form-control"
+                       ng-model="$ctrl.authority.email"
+                       required
+                       ng-maxlength="255">
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

@@ -2,6 +2,7 @@ package fi.riista.feature.organization.address;
 
 import com.google.common.base.MoreObjects;
 import fi.riista.feature.common.entity.LifecycleEntity;
+import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -19,22 +20,27 @@ public class Address extends LifecycleEntity<Long> {
     private Long id;
 
     @Size(max = 255)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column
     private String streetAddress;
 
     @Size(max = 255)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column
     private String city;
 
     @Size(max = 255)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column
     private String postalCode;
 
     @Size(max = 255)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(name = "country_name")
     private String country;
 
     @Size(min = 2, max = 2)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(length = 2)
     private String countryCode;
 
@@ -46,6 +52,14 @@ public class Address extends LifecycleEntity<Long> {
         this.postalCode = postalCode;
         this.city = city;
         this.country = country;
+    }
+
+    public Address(final Address other) {
+        this.streetAddress = other.getStreetAddress();
+        this.postalCode = other.getPostalCode();
+        this.city = other.getCity();
+        this.country = other.getCountry();
+        this.countryCode = other.getCountryCode();
     }
 
     @Override

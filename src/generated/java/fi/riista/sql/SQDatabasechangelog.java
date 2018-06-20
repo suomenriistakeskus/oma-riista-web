@@ -65,6 +65,11 @@ public class SQDatabasechangelog extends RelationalPathSpatial<SQDatabasechangel
         addMetadata();
     }
 
+    public SQDatabasechangelog(String variable, String schema) {
+        super(SQDatabasechangelog.class, forVariable(variable), schema, "databasechangelog");
+        addMetadata();
+    }
+
     public SQDatabasechangelog(Path<? extends SQDatabasechangelog> path) {
         super(path.getType(), path.getMetadata(), "public", "databasechangelog");
         addMetadata();

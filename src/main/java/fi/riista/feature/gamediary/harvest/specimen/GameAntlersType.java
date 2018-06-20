@@ -1,8 +1,9 @@
 package fi.riista.feature.gamediary.harvest.specimen;
 
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
+import fi.riista.util.LocalisedEnum;
 
-public enum GameAntlersType implements HasMooseDataCardEncoding<GameAntlersType> {
+public enum GameAntlersType implements HasMooseDataCardEncoding<GameAntlersType>, LocalisedEnum {
 
     HANKO("H"),
     LAPIO("L"),
@@ -18,5 +19,4 @@ public enum GameAntlersType implements HasMooseDataCardEncoding<GameAntlersType>
     public String getMooseDataCardEncoding() {
         return mooseDataCardEncoding;
     }
-
 }

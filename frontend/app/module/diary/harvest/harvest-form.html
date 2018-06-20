@@ -1,0 +1,248 @@
+<div class="content">
+    <form id="harvestForm" name="harvestForm" role="form" class="form form-horizontal">
+        <h3 ng-if="!entry.id" class="modal-title" translate="gamediary.form.titleAddHarvest"></h3>
+        <h3 ng-if="entry.id" class="modal-title" translate="gamediary.form.titleEditHarvest"></h3>
+
+        <diary-harvest-author-shooter-moderator
+                ng-if="viewState.moderatorView"
+                harvest="entry"></diary-harvest-author-shooter-moderator>
+
+        <diary-harvest-permit harvest-permit="viewState.harvestPermit"
+                              harvest="entry"
+                              author-or-actor="viewState.authorOrActor"
+                              fields="viewState.fields">
+        </diary-harvest-permit>
+
+        <diary-harvest-permitted-method
+                harvest="entry"
+                harvest-permit="viewState.harvestPermit"></diary-harvest-permitted-method>
+
+        <h4 translate="gamediary.form.titleHarvestAnimal"></h4>
+
+        <div class="form-group" ng-show="harvestForm.$error.validSpeciesForDate">
+            <div class="col-xs-12">
+                <span class="text-danger" translate="gamediary.form.invalidSpeciesForDate"></span>
+            </div>
+        </div>
+
+        <diary-harvest-select-species
+                diary-parameters="viewState.parameters"
+                game-species-code="entry.gameSpeciesCode"
+                read-only="viewState.speciesReadOnly"
+                harvest-date="viewState.date"
+                harvest-permit="viewState.harvestPermit">
+        </diary-harvest-select-species>
+
+        <h4 translate="gamediary.form.titleTimeAndPlace"></h4>
+
+        <div class="form-group" show-errors>
+            <label for="date" class="col-xs-4 control-label">
+                <span translate="gamediary.form.date"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-5">
+                <div class="input-group r-dropdown-align-right"
+                     ng-controller="DatePickerController">
+
+                    <input type="text" name="date" id="date"
+                           class="form-control"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           date-between-min-max
+                           ng-model="viewState.date"
+                           ng-model-options="{ updateOn: 'blur' }"
+                           required
+                           max-date="today()"
+                           ng-disabled="!entry.canEdit">
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)"
+                                ng-disabled="!entry.canEdit">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+
+                <p class="help-block has-error"
+                   ng-show="harvestForm.date.$invalid && harvestForm.date.$touched"
+                   ng-messages="harvestForm.date.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="time" class="col-xs-4 control-label">
+                <span translate="gamediary.form.time"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-3">
+                <input type="text" name="time" id="time"
+                       class="form-control"
+                       finnish-date-time-in-past="viewState.date"
+                       ng-model="viewState.time"
+                       required
+                       ng-disabled="!entry.canEdit">
+
+                <p class="help-block has-error"
+                   ng-show="harvestForm.time.$invalid && harvestForm.time.$touched"
+                   ng-messages="harvestForm.time.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="viewState.season">
+            <label class="col-xs-4 control-label">
+                <span translate="gamediary.form.season"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <p class="form-control-static">
+                    <span ng-bind="viewState.season.name | rI18nNameFilter"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="isHarvestAreaVisible()" show-errors>
+            <label for="harvestArea" class="col-xs-4 control-label">
+                <span translate="gamediary.form.harvestarea"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8">
+                <input name="harvestArea" id="harvestArea" type="text" class="form-control"
+                       disabled
+                       ng-required="isHarvestAreaRequired()"
+                       ng-value="viewState.harvestArea | rI18nNameFilter">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-xs-4 control-label">
+                <span translate="gamediary.form.location"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8">
+                <p class="form-control-static"
+                   ng-show="entry.geoLocation.longitude"
+                   translate="global.geoLocation.coordinatesText"
+                   translate-values="entry.geoLocation"></p>
+
+                <p class="text-danger form-control-static"
+                   ng-hide="entry.geoLocation.longitude"
+                   translate="global.geoLocation.required"></p>
+            </div>
+        </div>
+
+        <div r-geolocation-input="entry.geoLocation"
+             ng-if="viewState.moderatorView && entry.canEdit">
+        </div>
+
+        <div class="form-group" ng-show="viewState.rhy">
+            <label class="col-xs-5 control-label">
+                <span translate="gamediary.form.rhy"></span>
+            </label>
+
+            <div class="col-xs-7">
+                <p class="form-control-static" ng-bind="viewState.rhy | rI18nNameFilter"></p>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="viewState.propertyIdentifier">
+            <label class="col-xs-5 control-label">
+                <span translate="gamediary.form.propertyIdentifier"></span>
+            </label>
+
+            <div class="col-xs-7">
+                <p class="form-control-static" ng-bind="viewState.propertyIdentifier | formatPropertyIdentifier"></p>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="viewState.municipalityName">
+            <label class="col-xs-5 control-label">
+                <span translate="gamediary.form.municipality"></span>
+            </label>
+
+            <div class="col-xs-7">
+                <p class="form-control-static" ng-bind="viewState.municipalityName | rI18nNameFilter"></p>
+            </div>
+        </div>
+
+        <diary-harvest-author-shooter
+                ng-if="!viewState.moderatorView"
+                harvest="entry"></diary-harvest-author-shooter>
+
+        <diary-harvest-season-fields harvest="entry"
+                                     diary-parameters="viewState.parameters"
+                                     fields="viewState.fields"></diary-harvest-season-fields>
+
+        <h4 ng-show="entry.gameSpeciesCode"
+            translate="gamediary.form.titleShowSpecimens"></h4>
+
+        <diary-harvest-specimen harvest="entry"
+                                diary-parameters="viewState.parameters"
+                                fields="viewState.fields">
+        </diary-harvest-specimen>
+
+        <hr/>
+
+        <div ng-if="viewState.moderatorView && isLukeStatusVisible()" class="form-group" show-errors>
+            <label for="lukeStatus" class="col-xs-4 control-label">
+                <span translate="gamediary.form.lukeStatus"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <select name="lukeStatus" id="lukeStatus" class="form-control"
+                        ng-model="entry.lukeStatus"
+                        ng-options="('harvestreport.lukeStatus.' + a | translate) for a in getAvailableLukeStatuses()">
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+
+        <div ng-if="viewState.moderatorView" class="form-group" show-errors>
+            <label for="harvestReportMemo" class="col-xs-4 control-label">
+                <span translate="gamediary.form.moderatorDescription"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <textarea name="harvestReportMemo" id="harvestReportMemo"
+                          class="form-control"
+                          ng-model="entry.harvestReportMemo"></textarea>
+            </div>
+        </div>
+
+        <div ng-if="viewState.authorOrActor" class="form-group" show-errors>
+            <label for="description" class="control-label col-xs-4">
+                <span translate="gamediary.form.description"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <textarea name="description" id="description"
+                          class="form-control"
+                          rows="6"
+                          ng-model="entry.description"></textarea>
+            </div>
+        </div>
+
+        <diary-harvest-images harvest="entry"
+                              author-or-actor="viewState.authorOrActor"></diary-harvest-images>
+    </form>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-default"
+            ng-click="cancel()"
+            translate="global.button.cancel"></button>
+
+    <button type="button"
+            class="btn btn-primary"
+            ng-disabled="harvestForm.$invalid || !isValid()"
+            ng-click="save()"
+            translate="global.button.save"></button>
+</div>

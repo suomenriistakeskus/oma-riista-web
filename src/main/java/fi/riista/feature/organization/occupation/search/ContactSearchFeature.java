@@ -1,13 +1,13 @@
 package fi.riista.feature.organization.occupation.search;
 
 import com.google.common.collect.Lists;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.Organisation_;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
-import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.JpaPreds;
 import org.springframework.context.MessageSource;
@@ -22,6 +22,7 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -58,7 +59,7 @@ public class ContactSearchFeature {
     }
 
     private static Predicate createPredicate(Root<Occupation> root, CriteriaBuilder cb, OccupationContactSearchDTO dto) {
-        final List<Predicate> predicates = Lists.newArrayList();
+        final List<Predicate> predicates = new ArrayList<>();
 
         final Join<Occupation, Organisation> organisationJoin = root.join(Occupation_.organisation, JoinType.LEFT);
 
@@ -112,7 +113,7 @@ public class ContactSearchFeature {
     }
 
     private static Predicate createPredicate(Root<Organisation> root, CriteriaBuilder cb, RhyContactSearchDTO dto) {
-        final List<Predicate> predicates = Lists.newArrayList();
+        final List<Predicate> predicates = new ArrayList<>();
 
         predicates.add(cb.equal(root.get(Organisation_.organisationType), OrganisationType.RHY));
 

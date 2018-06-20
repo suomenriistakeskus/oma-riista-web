@@ -19,31 +19,31 @@
     <tbody>
     <tr class="summary">
         <td translate="club.permit.sumTitle"></td>
-        <td><r-with-tooltip content-val="{{permit.totalStatistics.dayCount}}" tooltip-key="club.permit.allocation.huntingDays.cellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.totalStats.dayCount}}" tooltip-key="club.permit.allocation.huntingDays.cellTooltip"/></td>
 
-        <td><r-with-tooltip content-val="{{permit.totalStatistics.harvestsPerDay | number: 3}}" tooltip-key="club.permit.allocation.harvestsPer.dayCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{permit.totalStatistics.harvestsPerHunter | number: 3}}" tooltip-key="club.permit.allocation.harvestsPer.hunterCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{permit.totalStatistics.observationsPerDay | number: 3}}" tooltip-key="club.permit.allocation.observationsPer.dayCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{permit.totalStatistics.observationsPerHunter | number: 3}}" tooltip-key="club.permit.allocation.observationsPer.hunterCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.totalStats.harvestsPerDay | number: 3}}" tooltip-key="club.permit.allocation.harvestsPer.dayCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.totalStats.harvestsPerHunter | number: 3}}" tooltip-key="club.permit.allocation.harvestsPer.hunterCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.totalStats.observationsPerDay | number: 3}}" tooltip-key="club.permit.allocation.observationsPer.dayCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{$ctrl.totalStats.observationsPerHunter | number: 3}}" tooltip-key="club.permit.allocation.observationsPer.hunterCellTooltip"/></td>
     </tr>
-    <tr ng-repeat="a in allocations" ng-class="{'current-club': isCurrentClub(a)}">
+    <tr ng-repeat="a in $ctrl.allocations" ng-class="{'current-club': $ctrl.isCurrentClub(a)}">
         <td>
             <div>
-                <moose-permit-todo todo="todos[a.huntingClubId]"></moose-permit-todo>
-                <a ng-if="canNavigateToClub()" name-translated="a.huntingClubName" ng-click="navigateToClub(a)"></a>
-                <span ng-if="!canNavigateToClub()" name-translated="a.huntingClubName"></span>
-                <span class="pull-right" ng-if="::(permit.summaryForPartnersTable[a.huntingClubId].fromMooseDataCard)"
+                <moose-permit-todo todo="$ctrl.todos[a.huntingClubId]"></moose-permit-todo>
+                <a ng-if="$ctrl.canNavigateToClub" name-translated="a.huntingClubName" ng-click="$ctrl.navigateToClub(a)"></a>
+                <span ng-if="!$ctrl.canNavigateToClub" name-translated="a.huntingClubName"></span>
+                <span class="pull-right" ng-if="::($ctrl.fromMooseDataCard[a.huntingClubId])"
                       uib-tooltip="{{ 'club.permit.allocation.fromMooseDataCard' | translate }}" tooltip-popup-delay="0" tooltip-placement="right">
                     <span class="fa fa-file-text"></span>
                 </span>
             </div>
         </td>
-        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].dayCount) || '0'}}" tooltip-key="club.permit.allocation.huntingDays.cellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{($ctrl.stats[a.huntingClubId].dayCount) || '0'}}" tooltip-key="club.permit.allocation.huntingDays.cellTooltip"/></td>
 
-        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].harvestsPerDay | number: 3) || '0'}}" tooltip-key="club.permit.allocation.harvestsPer.dayCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].harvestsPerHunter | number: 3) || '0'}}" tooltip-key="club.permit.allocation.harvestsPer.hunterCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].observationsPerDay | number: 3) || '0'}}" tooltip-key="club.permit.allocation.observationsPer.dayCellTooltip"/></td>
-        <td><r-with-tooltip content-val="{{(permit.statistics[a.huntingClubId].observationsPerHunter | number: 3) || '0'}}" tooltip-key="club.permit.allocation.observationsPer.hunterCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{($ctrl.stats[a.huntingClubId].harvestsPerDay | number: 3) || '0'}}" tooltip-key="club.permit.allocation.harvestsPer.dayCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{($ctrl.stats[a.huntingClubId].harvestsPerHunter | number: 3) || '0'}}" tooltip-key="club.permit.allocation.harvestsPer.hunterCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{($ctrl.stats[a.huntingClubId].observationsPerDay | number: 3) || '0'}}" tooltip-key="club.permit.allocation.observationsPer.dayCellTooltip"/></td>
+        <td><r-with-tooltip content-val="{{($ctrl.stats[a.huntingClubId].observationsPerHunter | number: 3) || '0'}}" tooltip-key="club.permit.allocation.observationsPer.hunterCellTooltip"/></td>
     </tr>
 
     </tbody>

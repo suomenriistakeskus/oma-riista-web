@@ -1,0 +1,16 @@
+<form class="dropzone"
+      method="post"
+      enctype="multipart/form-data"
+      ng-dropzone
+      dropzone="$ctrl.dropzone"
+      dropzone-config="$ctrl.dropzoneConfig"
+      event-handlers="$ctrl.dropzoneEventHandlers">
+
+    <input type="hidden" spring-csrf-cookie/>
+    <div class="dz-message" translate="club.permit.mooseHarvestReport.finishPermit"></div>
+</form>
+
+<div ng-if="$ctrl.dropzoneIncompatibleFileType"
+     class="alert alert-danger">
+    <span translate="club.permit.mooseHarvestReport.fileTypeNotAccepted"></span>
+</div>

@@ -1,11 +1,11 @@
 package fi.riista.feature.huntingclub.group;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.LocalisedString;
 import org.junit.Test;
 

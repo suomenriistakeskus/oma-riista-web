@@ -29,6 +29,20 @@ public class SQMooseHuntingSummary extends RelationalPathSpatial<SQMooseHuntingS
 
     public static final SQMooseHuntingSummary mooseHuntingSummary = new SQMooseHuntingSummary("moose_hunting_summary");
 
+    public final StringPath beaverAdditionalInfo = createString("beaverAdditionalInfo");
+
+    public final NumberPath<Integer> beaverAmountOfInhabitedWinterNests = createNumber("beaverAmountOfInhabitedWinterNests", Integer.class);
+
+    public final BooleanPath beaverAppeared = createBoolean("beaverAppeared");
+
+    public final NumberPath<Integer> beaverAreaOccupiedByWater = createNumber("beaverAreaOccupiedByWater", Integer.class);
+
+    public final NumberPath<Integer> beaverAreaOfDamage = createNumber("beaverAreaOfDamage", Integer.class);
+
+    public final NumberPath<Integer> beaverHarvestAmount = createNumber("beaverHarvestAmount", Integer.class);
+
+    public final StringPath beaverPopulationGrowth = createString("beaverPopulationGrowth");
+
     public final DatePath<java.sql.Date> beginDate = createDate("beginDate", java.sql.Date.class);
 
     public final StringPath causeOfDeath = createString("causeOfDeath");
@@ -109,6 +123,8 @@ public class SQMooseHuntingSummary extends RelationalPathSpatial<SQMooseHuntingS
 
     public final NumberPath<Integer> numberOfYoungMoosesHavingFlies = createNumber("numberOfYoungMoosesHavingFlies", Integer.class);
 
+    public final BooleanPath observationPolicyAdhered = createBoolean("observationPolicyAdhered");
+
     public final BooleanPath roeDeerAppeared = createBoolean("roeDeerAppeared");
 
     public final NumberPath<Integer> roeDeerEstimatedSpecimenAmount = createNumber("roeDeerEstimatedSpecimenAmount", Integer.class);
@@ -141,9 +157,9 @@ public class SQMooseHuntingSummary extends RelationalPathSpatial<SQMooseHuntingS
 
     public final com.querydsl.sql.PrimaryKey<SQMooseHuntingSummary> mooseHuntingSummaryPkey = createPrimaryKey(mooseHuntingSummaryId);
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestPermit> mooseHuntingSummaryPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
-
     public final com.querydsl.sql.ForeignKey<SQOrganisation> mooseHuntingSummaryClubFk = createForeignKey(clubId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermit> mooseHuntingSummaryPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitPartners> mooseHuntingSummaryHarvestPermitPartnersFk = createForeignKey(Arrays.asList(harvestPermitId, clubId), Arrays.asList("harvest_permit_id", "organisation_id"));
 
@@ -154,6 +170,11 @@ public class SQMooseHuntingSummary extends RelationalPathSpatial<SQMooseHuntingS
 
     public SQMooseHuntingSummary(String variable, String schema, String table) {
         super(SQMooseHuntingSummary.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQMooseHuntingSummary(String variable, String schema) {
+        super(SQMooseHuntingSummary.class, forVariable(variable), schema, "moose_hunting_summary");
         addMetadata();
     }
 
@@ -168,6 +189,13 @@ public class SQMooseHuntingSummary extends RelationalPathSpatial<SQMooseHuntingS
     }
 
     public void addMetadata() {
+        addMetadata(beaverAdditionalInfo, ColumnMetadata.named("beaver_additional_info").withIndex(63).ofType(Types.VARCHAR).withSize(2147483647));
+        addMetadata(beaverAmountOfInhabitedWinterNests, ColumnMetadata.named("beaver_amount_of_inhabited_winter_nests").withIndex(59).ofType(Types.INTEGER).withSize(10));
+        addMetadata(beaverAppeared, ColumnMetadata.named("beaver_appeared").withIndex(57).ofType(Types.BIT).withSize(1));
+        addMetadata(beaverAreaOccupiedByWater, ColumnMetadata.named("beaver_area_occupied_by_water").withIndex(62).ofType(Types.INTEGER).withSize(10));
+        addMetadata(beaverAreaOfDamage, ColumnMetadata.named("beaver_area_of_damage").withIndex(61).ofType(Types.INTEGER).withSize(10));
+        addMetadata(beaverHarvestAmount, ColumnMetadata.named("beaver_harvest_amount").withIndex(60).ofType(Types.INTEGER).withSize(10));
+        addMetadata(beaverPopulationGrowth, ColumnMetadata.named("beaver_population_growth").withIndex(58).ofType(Types.CHAR).withSize(1));
         addMetadata(beginDate, ColumnMetadata.named("begin_date").withIndex(11).ofType(Types.DATE).withSize(13));
         addMetadata(causeOfDeath, ColumnMetadata.named("cause_of_death").withIndex(29).ofType(Types.VARCHAR).withSize(255));
         addMetadata(clubId, ColumnMetadata.named("club_id").withIndex(10).ofType(Types.BIGINT).withSize(19).notNull());
@@ -208,6 +236,7 @@ public class SQMooseHuntingSummary extends RelationalPathSpatial<SQMooseHuntingS
         addMetadata(moosesRemainingInTotalHuntingArea, ColumnMetadata.named("mooses_remaining_in_total_hunting_area").withIndex(18).ofType(Types.INTEGER).withSize(10));
         addMetadata(numberOfAdultMoosesHavingFlies, ColumnMetadata.named("number_of_adult_mooses_having_flies").withIndex(48).ofType(Types.INTEGER).withSize(10));
         addMetadata(numberOfYoungMoosesHavingFlies, ColumnMetadata.named("number_of_young_mooses_having_flies").withIndex(49).ofType(Types.INTEGER).withSize(10));
+        addMetadata(observationPolicyAdhered, ColumnMetadata.named("observation_policy_adhered").withIndex(56).ofType(Types.BIT).withSize(1));
         addMetadata(roeDeerAppeared, ColumnMetadata.named("roe_deer_appeared").withIndex(33).ofType(Types.BIT).withSize(1));
         addMetadata(roeDeerEstimatedSpecimenAmount, ColumnMetadata.named("roe_deer_estimated_specimen_amount").withIndex(35).ofType(Types.INTEGER).withSize(10));
         addMetadata(roeDeerPopulationGrowth, ColumnMetadata.named("roe_deer_population_growth").withIndex(34).ofType(Types.CHAR).withSize(1));

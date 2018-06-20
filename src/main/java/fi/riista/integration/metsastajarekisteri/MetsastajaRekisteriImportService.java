@@ -188,7 +188,7 @@ public class MetsastajaRekisteriImportService {
     static void updateHunterFields(final Person person, final MetsastajaRekisteriPerson item, final Riistanhoitoyhdistys rhy) {
         if (item.getHunterNumber() == null && person.getHunterNumber() != null) {
             LOG.warn("Replacing existing hunterNumber={} with empty value for personId={}",
-                    person.getHuntingCardStart(), person.getId());
+                    person.getHunterNumber(), person.getId());
         }
 
         if (person.isHuntingCardValidNow()) {

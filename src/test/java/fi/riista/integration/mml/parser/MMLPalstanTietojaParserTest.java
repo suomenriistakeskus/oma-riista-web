@@ -1,11 +1,13 @@
 package fi.riista.integration.mml.parser;
 
 import fi.riista.integration.mml.dto.MMLPalstanTietoja;
-import fi.riista.integration.mml.support.WFSUtil;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
+import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -23,7 +25,11 @@ public class MMLPalstanTietojaParserTest {
     @Test
     public void testSimple() throws Exception {
         try (InputStream testXmlResource = getTestXmlResource()) {
-            List<MMLPalstanTietoja> result = MMLPalstanTietojaParser.parse(WFSUtil.parse(testXmlResource));
+            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            final DocumentBuilder builder = dbf.newDocumentBuilder();
+            final Document document = builder.parse(testXmlResource);
+            List<MMLPalstanTietoja> result = MMLPalstanTietojaParser.parse(document);
 
             assertNotNull(result);
             assertEquals(2, result.size());

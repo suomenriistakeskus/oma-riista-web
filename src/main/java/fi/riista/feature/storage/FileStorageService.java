@@ -5,6 +5,7 @@ import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,10 +28,12 @@ public interface FileStorageService {
      */
     byte[] getBytes(UUID uuid) throws IOException;
 
+    void downloadTo(UUID uuid, Path targetPath) throws IOException;
+
     /**
      * Remove file data from storage.
      *
-     * @param uuid         file unique id
+     * @param uuid file unique id
      * @throws java.lang.IllegalArgumentException if no metadata with given UUID is found.
      */
     void remove(UUID uuid);
@@ -38,7 +41,7 @@ public interface FileStorageService {
     /**
      * Store file content and metadata using various storage implementations.
      *
-     * @param fileType    General purpose of the file is used to control storage options
+     * @param fileType General purpose of the file is used to control storage options
      * @return File metadata entity suitable as reference from domain classes such as Thumbnail, Upload, Report etc.
      * @throws IOException
      */

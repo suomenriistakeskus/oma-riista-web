@@ -1,14 +1,17 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
 import com.google.common.collect.ImmutableMap;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser.Role;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.util.jpa.HibernateStatisticsAssertions;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
+import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_JASEN;
+import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.DELETE;
 import static fi.riista.security.EntityPermission.READ;
@@ -16,80 +19,77 @@ import static fi.riista.security.EntityPermission.UPDATE;
 
 public class MooseDataCardImportAuthorizationTest extends EmbeddedDatabaseTest {
 
-    @HibernateStatisticsAssertions(maxQueries = 1)
     @Test
-    public void testForEntity_withAdmin() {
-        testForEntity_withUserRole(Role.ROLE_ADMIN);
+    public void testWithAdmin() {
+        testWithUserRole(Role.ROLE_ADMIN);
     }
 
-    @HibernateStatisticsAssertions(maxQueries = 1)
     @Test
-    public void testForEntity_withModerator() {
-        testForEntity_withUserRole(Role.ROLE_MODERATOR);
+    public void testWithModerator() {
+        testWithUserRole(Role.ROLE_MODERATOR);
     }
 
-    private void testForEntity_withUserRole(final Role role) {
+    private void testWithUserRole(final Role role) {
         final MooseDataCardImport imp = model().newMooseDataCardImport(model().newHuntingClubGroup());
 
         ImmutableMap.of(CREATE, true, READ, true, UPDATE, false, DELETE, true).forEach((permission, shouldPass) -> {
-            onSavedAndAuthenticated(createNewUser(role), tx(() -> assertHasPermission(shouldPass, imp, permission)));
-        });
-    }
-
-    @HibernateStatisticsAssertions(maxQueries = 7)
-    @Test
-    public void testForEntity_withGroupMember() {
-        testForEntity_withGroupMember(OccupationType.RYHMAN_JASEN);
-    }
-
-    @HibernateStatisticsAssertions(maxQueries = 6)
-    @Test
-    public void testForEntity_withGroupLeader() {
-        testForEntity_withGroupMember(OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
-    }
-
-    private void testForEntity_withGroupMember(final OccupationType occupationType) {
-        final HuntingClub club = model().newHuntingClub();
-        final HuntingClubGroup group = model().newHuntingClubGroup(club);
-        final MooseDataCardImport imp = model().newMooseDataCardImport(group);
-
-        ImmutableMap.of(CREATE, false, READ, true, UPDATE, false, DELETE, false).forEach((permission, shouldPass) -> {
-            withPerson(person -> {
-
-                model().newOccupation(club, person, OccupationType.SEURAN_JASEN);
-                model().newOccupation(group, person, occupationType);
-
-                onSavedAndAuthenticated(createUser(person), tx(() -> assertHasPermission(shouldPass, imp, permission)));
+            onSavedAndAuthenticated(createNewUser(role), () -> {
+                onCheckingPermission(permission).expect(shouldPass).expectNumberOfQueriesAtMost(1).apply(imp);
             });
         });
     }
 
-    @HibernateStatisticsAssertions(maxQueries = 7)
     @Test
-    public void testForEntity_withClubMember() {
-        testForEntity_withClubMember(false);
+    public void testWithGroupMember() {
+        testWithGroupOccupation(RYHMAN_JASEN, 7);
     }
 
-    @HibernateStatisticsAssertions(maxQueries = 5)
     @Test
-    public void testForEntity_withClubContact() {
-        testForEntity_withClubMember(true);
+    public void testWithGroupLeader() {
+        testWithGroupOccupation(RYHMAN_METSASTYKSENJOHTAJA, 6);
     }
 
-    private void testForEntity_withClubMember(final boolean isClubContact) {
+    private void testWithGroupOccupation(final OccupationType occupationType, final int maxQueries) {
+        final HuntingClub club = model().newHuntingClub();
+        final HuntingClubGroup group = model().newHuntingClubGroup(club);
+        final MooseDataCardImport imp = model().newMooseDataCardImport(group);
+
+        ImmutableMap.of(CREATE, false, READ, true, UPDATE, false, DELETE, false)
+                .forEach((permission, shouldPass) -> withPerson(person -> {
+
+                    model().newOccupation(club, person, SEURAN_JASEN);
+                    model().newOccupation(group, person, occupationType);
+
+                    onSavedAndAuthenticated(createUser(person), () -> onCheckingPermission(permission)
+                            .expect(shouldPass)
+                            .expectNumberOfQueriesAtMost(maxQueries)
+                            .apply(imp));
+                }));
+    }
+
+    @Test
+    public void testWithClubMember() {
+        testWithClubOccupation(false, 7);
+    }
+
+    @Test
+    public void testWithClubContact() {
+        testWithClubOccupation(true, 5);
+    }
+
+    private void testWithClubOccupation(final boolean isClubContact, final int maxQueries) {
         final HuntingClub club = model().newHuntingClub();
         final MooseDataCardImport imp = model().newMooseDataCardImport(model().newHuntingClubGroup(club));
-        final OccupationType role = isClubContact ? OccupationType.SEURAN_YHDYSHENKILO : OccupationType.SEURAN_JASEN;
 
         ImmutableMap.of(READ, isClubContact, CREATE, false, UPDATE, false, DELETE, false)
                 .forEach((permission, shouldPass) -> withPerson(person -> {
 
-                    model().newOccupation(club, person, role);
+                    model().newOccupation(club, person, isClubContact ? SEURAN_YHDYSHENKILO : SEURAN_JASEN);
 
-                    onSavedAndAuthenticated(createUser(person), tx(() -> {
-                        assertHasPermission(shouldPass, imp, permission);
-                    }));
+                    onSavedAndAuthenticated(createUser(person), () -> onCheckingPermission(permission)
+                            .expect(shouldPass)
+                            .expectNumberOfQueriesAtMost(maxQueries)
+                            .apply(imp));
                 }));
     }
-
 }

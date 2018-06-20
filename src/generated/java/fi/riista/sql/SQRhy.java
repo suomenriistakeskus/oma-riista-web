@@ -55,6 +55,11 @@ public class SQRhy extends RelationalPathSpatial<SQRhy> {
         addMetadata();
     }
 
+    public SQRhy(String variable, String schema) {
+        super(SQRhy.class, forVariable(variable), schema, "rhy");
+        addMetadata();
+    }
+
     public SQRhy(Path<? extends SQRhy> path) {
         super(path.getType(), path.getMetadata(), "public", "rhy");
         addMetadata();

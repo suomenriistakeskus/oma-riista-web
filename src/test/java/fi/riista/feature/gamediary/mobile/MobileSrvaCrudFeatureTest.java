@@ -1,6 +1,5 @@
 package fi.riista.feature.gamediary.mobile;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.error.MessageExposableValidationException;
 import fi.riista.feature.error.NotFoundException;
@@ -15,9 +14,10 @@ import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventTypeEnum;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.test.TestUtils;
 import fi.riista.feature.gamediary.srva.SrvaEventRepository;
 import fi.riista.util.DateUtil;
-import fi.riista.util.TestUtils;
 import org.junit.Test;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -134,7 +134,7 @@ public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
                 updateDto.setMethods(Collections.singletonList(new SrvaMethodDTO(SrvaMethodEnum.DOG, true)));
                 updateDto.setSpecimens(Collections.emptyList());
 
-                final SrvaEventTypeEnum newEventType = someOtherThan(updateDto.getEventType(), SrvaEventTypeEnum.class);
+                final SrvaEventTypeEnum newEventType = someOtherThan(updateDto.getEventType(), SrvaEventTypeEnum.getBySrvaEvent(updateDto.getEventName()));
                 updateDto.setEventType(newEventType);
 
                 final MobileSrvaEventDTO outputDto = mobileSrvaCrudFeature.updateSrvaEvent(updateDto);
@@ -279,7 +279,7 @@ public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
         mobileSrvaEventDTO.setGeoLocation(geoLocation());
         mobileSrvaEventDTO.setPointOfTime(DateUtil.localDateTime());
         mobileSrvaEventDTO.setEventName(some(SrvaEventNameEnum.class));
-        mobileSrvaEventDTO.setEventType(some(SrvaEventTypeEnum.class));
+        mobileSrvaEventDTO.setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(mobileSrvaEventDTO.getEventName())));
         mobileSrvaEventDTO.setGameSpeciesCode(model().newGameSpecies().getOfficialCode());
         mobileSrvaEventDTO.setTotalSpecimenAmount(1);
 

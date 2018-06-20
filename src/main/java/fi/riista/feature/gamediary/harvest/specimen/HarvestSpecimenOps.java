@@ -1,28 +1,30 @@
 package fi.riista.feature.gamediary.harvest.specimen;
 
 import com.google.common.base.Preconditions;
-
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameAge;
+import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 import fi.riista.util.NumberUtils;
+
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import static fi.riista.feature.gamediary.GameSpecies.isMooseOrDeerRequiringPermitForHunting;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Encapsulates logic for species and specVersion dependent equality and
+ * business field transferring between harvest specimen objects.
+ */
 public class HarvestSpecimenOps {
 
     private final int gameSpeciesCode;
     private final HarvestSpecVersion specVersion;
-
-    public HarvestSpecimenOps(@Nonnull final GameSpecies species, @Nonnull final HarvestSpecVersion specVersion) {
-        this(Objects.requireNonNull(species, "species is null").getOfficialCode(), specVersion);
-    }
 
     public HarvestSpecimenOps(final int gameSpeciesCode, @Nonnull final HarvestSpecVersion specVersion) {
         Preconditions.checkState(gameSpeciesCode > 0, "gameSpeciesCode not set");
@@ -48,11 +50,15 @@ public class HarvestSpecimenOps {
     }
 
     public boolean supportsExtendedMooselikeFields() {
-        return specVersion.isExtendedMooselikeFieldsSupported(gameSpeciesCode);
+        return specVersion.isPresenceOfMooselikeFieldsLegitimate(gameSpeciesCode);
     }
 
     public boolean supportsExtendedMooseFields() {
-        return specVersion.isExtendedMooseFieldsSupported(gameSpeciesCode);
+        return specVersion.isPresenceOfMooseFieldsLegitimate(gameSpeciesCode);
+    }
+
+    public boolean supportsSolitaryMooseCalves() {
+        return specVersion.isPresenceOfAloneLegitimate(gameSpeciesCode);
     }
 
     public boolean equalContent(@Nonnull final HarvestSpecimen entity, @Nonnull final HarvestSpecimenDTO dto) {
@@ -65,15 +71,24 @@ public class HarvestSpecimenOps {
 
         if (supportsExtendedMooselikeFields()) {
             return supportsExtendedMooseFields()
-                    ? entity.hasEqualMooseFields(dto)
+                    ? hasEqualMooseFields(entity, dto)
                     : entity.hasEqualMooselikeFields(dto);
         }
 
-        final Double entityWeight = GameSpecies.isMooseOrDeerRequiringPermitForHunting(gameSpeciesCode)
+        final Double entityWeight = isMooseOrDeerRequiringPermitForHunting(gameSpeciesCode)
                 ? entity.getWeightEstimated()
                 : entity.getWeight();
 
         return NumberUtils.equal(entityWeight, dto.getWeight());
+    }
+
+    public boolean hasEqualMooseFields(@Nonnull final HasMooseFields first, @Nonnull final HasMooseFields second) {
+        Objects.requireNonNull(first, "first is null");
+
+        return first.hasEqualMooselikeFields(second) &&
+                first.getFitnessClass() == second.getFitnessClass() &&
+                first.getAntlersType() == second.getAntlersType() &&
+                (!supportsSolitaryMooseCalves() || Objects.equals(first.getAlone(), second.getAlone()));
     }
 
     public HarvestSpecimenDTO transform(@Nonnull final HarvestSpecimen entity) {
@@ -93,17 +108,19 @@ public class HarvestSpecimenOps {
         Objects.requireNonNull(dto, "dto is null");
         Objects.requireNonNull(entity, "entity is null");
 
-        entity.setGender(dto.getGender());
         entity.setAge(dto.getAge());
+        entity.setGender(dto.getGender());
 
         if (supportsExtendedMooselikeFields()) {
-            dto.copyMooseFieldsTo(entity);
             entity.setWeight(null);
 
-            if (!supportsExtendedMooseFields()) {
+            if (supportsExtendedMooseFields()) {
+                copyMooseFields(dto, entity);
+            } else {
+                copyMooselikeFields(dto, entity);
                 entity.clearMooseOnlyFields();
             }
-        } else if (GameSpecies.isMooseOrDeerRequiringPermitForHunting(gameSpeciesCode)) {
+        } else if (isMooseOrDeerRequiringPermitForHunting(gameSpeciesCode)) {
             // Customization for old mobile clients.
             entity.setWeightEstimated(dto.getWeight());
             entity.setWeight(null);
@@ -117,24 +134,66 @@ public class HarvestSpecimenOps {
         Objects.requireNonNull(entity, "entity is null");
         Objects.requireNonNull(dto, "dto is null");
 
-        dto.setGender(entity.getGender());
         dto.setAge(entity.getAge());
+        dto.setGender(entity.getGender());
 
         if (supportsExtendedMooselikeFields()) {
-            entity.copyMooseFieldsTo(dto);
             dto.setWeight(null);
 
-            if (!supportsExtendedMooseFields()) {
+            if (supportsExtendedMooseFields()) {
+                copyMooseFields(entity, dto);
+            } else {
+                copyMooselikeFields(entity, dto);
                 dto.clearMooseOnlyFields();
             }
         } else {
             // Weight translation done for old mobile clients.
-            dto.setWeight(GameSpecies.isMooseOrDeerRequiringPermitForHunting(gameSpeciesCode)
-                    ? F.firstNonNull(entity.getWeightEstimated(), entity.getWeight()) 
+            dto.setWeight(isMooseOrDeerRequiringPermitForHunting(gameSpeciesCode)
+                    ? F.firstNonNull(entity.getWeightEstimated(), entity.getWeight())
                     : entity.getWeight());
 
             dto.clearMooseFields();
         }
     }
 
+    private static void copyMooselikeFields(final HarvestSpecimenBusinessFields src,
+                                            final HarvestSpecimenBusinessFields dst) {
+
+        dst.setWeightEstimated(src.getWeightEstimated());
+        dst.setWeightMeasured(src.getWeightMeasured());
+        dst.setNotEdible(src.getNotEdible());
+        dst.setAdditionalInfo(src.getAdditionalInfo());
+
+        if (src.getAge() == GameAge.ADULT && src.getGender() == GameGender.MALE) {
+            dst.setAntlersWidth(src.getAntlersWidth());
+            dst.setAntlerPointsLeft(src.getAntlerPointsLeft());
+            dst.setAntlerPointsRight(src.getAntlerPointsRight());
+        } else {
+            dst.setAntlersWidth(null);
+            dst.setAntlerPointsLeft(null);
+            dst.setAntlerPointsRight(null);
+        }
+    }
+
+    private void copyMooseFields(final HarvestSpecimenBusinessFields src, final HarvestSpecimenBusinessFields dst) {
+        copyMooselikeFields(src, dst);
+
+        dst.setFitnessClass(src.getFitnessClass());
+
+        final GameAge age = src.getAge();
+
+        if (age == GameAge.ADULT && src.getGender() == GameGender.MALE) {
+            dst.setAntlersType(src.getAntlersType());
+        } else {
+            dst.setAntlersType(null);
+
+            if (age == GameAge.YOUNG) {
+                if (specVersion.supportsSolitaryMooseCalves()) {
+                    dst.setAlone(src.getAlone());
+                }
+            } else {
+                dst.setAlone(null);
+            }
+        }
+    }
 }

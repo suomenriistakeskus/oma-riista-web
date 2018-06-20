@@ -1,9 +1,9 @@
 package fi.riista.integration.metsastajarekisteri;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ValueGenerator;
 import org.joda.time.DateTime;

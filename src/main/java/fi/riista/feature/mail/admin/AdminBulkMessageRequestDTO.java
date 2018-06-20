@@ -1,26 +1,25 @@
 package fi.riista.feature.mail.admin;
 
-import fi.riista.feature.common.dto.DoNotValidate;
+import fi.riista.validation.XssSafe;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
-import org.joda.time.DateTime;
 
 import javax.validation.constraints.AssertTrue;
 
 public class AdminBulkMessageRequestDTO {
 
-    @DoNotValidate
-    @NotBlank @Length(min = 5)
+    @XssSafe
+    @NotBlank
+    @Length(min = 5)
     private String body;
 
-    @DoNotValidate
-    @NotBlank @Length(min = 5)
+    @XssSafe
+    @NotBlank
+    @Length(min = 5)
     private String subject;
 
-    private DateTime sendAfter;
-
-    @Length(min=3)
+    @Length(min = 3)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String confirmation;
 
@@ -48,14 +47,6 @@ public class AdminBulkMessageRequestDTO {
 
     public void setSubject(String subject) {
         this.subject = subject;
-    }
-
-    public DateTime getSendAfter() {
-        return sendAfter;
-    }
-
-    public void setSendAfter(DateTime sendAfter) {
-        this.sendAfter = sendAfter;
     }
 
     public String getConfirmation() {

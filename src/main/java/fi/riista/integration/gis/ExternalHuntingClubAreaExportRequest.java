@@ -2,6 +2,7 @@ package fi.riista.integration.gis;
 
 import fi.riista.util.Patterns;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -9,7 +10,8 @@ import javax.validation.constraints.Size;
 
 public class ExternalHuntingClubAreaExportRequest {
     @NotBlank
-    @Size(min = 8, max = 255)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Size(max = 255)
     private String externalId;
 
     @NotNull
@@ -17,6 +19,7 @@ public class ExternalHuntingClubAreaExportRequest {
     private String remoteAddress;
 
     @NotBlank
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String remoteUser;
 
     public String getExternalId() {

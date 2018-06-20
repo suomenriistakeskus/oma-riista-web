@@ -21,6 +21,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -48,10 +49,12 @@ public class VetumaTransaction extends BaseEntity<String> {
 
     @Email
     @NotNull
+    @Size(max = 255)
     @Column(nullable = false)
     private String email;
 
     @NotNull
+    @Size(max = 255)
     @Column(nullable = false)
     private String emailToken;
 
@@ -59,9 +62,11 @@ public class VetumaTransaction extends BaseEntity<String> {
     private SystemUser user;
 
     @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String remoteAddress;
 
+    @Size(max = 255)
     @Column
     private String responseSo;
 

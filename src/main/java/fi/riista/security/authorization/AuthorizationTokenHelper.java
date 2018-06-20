@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 final class AuthorizationTokenHelper {
+
     private static final Logger LOG = LoggerFactory.getLogger(AuthorizationTokenHelper.class);
     private static final String DEFAULT_ROLE_PREFIX = "ROLE_";
 
@@ -22,10 +23,8 @@ final class AuthorizationTokenHelper {
         this.targetName = name;
     }
 
-    private static String canonicalEnumName(Enum<?> authorizationRole) {
-        return String.format("%s.%s",
-                authorizationRole.getDeclaringClass().getCanonicalName(),
-                authorizationRole.name());
+    private static String canonicalEnumName(final Enum<?> enumValue) {
+        return String.format("%s.%s", enumValue.getDeclaringClass().getCanonicalName(), enumValue.name());
     }
 
     static String getAuthorizationRoleName(final Enum<?> authorizationRole) {
@@ -46,10 +45,10 @@ final class AuthorizationTokenHelper {
 
     boolean canAcceptRoleForPermission(final Enum<?> permission, final Enum<?> authorizationRole) {
         final String permissionName = getPermissionName(permission);
-        final String tokenName = getAuthorizationRoleName(authorizationRole);
         final Set<String> permissionConfiguration = authorizationData.get(permissionName);
 
-        return permissionConfiguration != null && permissionConfiguration.contains(tokenName);
+        return permissionConfiguration != null &&
+                permissionConfiguration.contains(getAuthorizationRoleName(authorizationRole));
     }
 
     public boolean hasPermission(final Enum<?> permission, final Set<String> acquiredTokens) {
@@ -65,18 +64,9 @@ final class AuthorizationTokenHelper {
     public void grant(final Enum<?> permission, final Enum<?> token) {
         final String permissionName = getPermissionName(permission);
         final String tokenName = getAuthorizationRoleName(token);
-        final Set<String> permissionConfiguration = authorizationData.get(permissionName);
 
-        LOG.debug("Granting '{}' permission '{}' for token [{}]",
-                this.targetName, permissionName, tokenName);
+        LOG.debug("Granting '{}' permission '{}' for token [{}]", this.targetName, permissionName, tokenName);
 
-        if (permissionConfiguration == null) {
-            HashSet<String> set = new HashSet<>();
-            set.add(tokenName);
-
-            authorizationData.put(permissionName, set);
-        } else {
-            permissionConfiguration.add(tokenName);
-        }
+        authorizationData.computeIfAbsent(permissionName, key -> new HashSet<>()).add(tokenName);
     }
 }

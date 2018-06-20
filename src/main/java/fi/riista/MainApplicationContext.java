@@ -8,6 +8,7 @@ import fi.riista.config.CacheConfig;
 import fi.riista.config.Constants;
 import fi.riista.config.DataSourceConfig;
 import fi.riista.config.ExecutorConfig;
+import fi.riista.config.HandlebarsConfig;
 import fi.riista.config.HttpClientConfig;
 import fi.riista.config.JPAConfig;
 import fi.riista.config.JaxbConfig;
@@ -18,10 +19,11 @@ import fi.riista.config.PapertrailConfig;
 import fi.riista.config.QuartzConfig;
 import fi.riista.config.SchedulingConfig;
 import fi.riista.config.SecurityConfig;
+import fi.riista.config.SentryConfig;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
+import fi.riista.config.SerializationConfig;
 import fi.riista.config.properties.EncryptedProperties;
-import fi.riista.feature.RuntimeEnvironmentUtil;
-import fi.riista.feature.account.certificate.HunterPdfExportFeature;
+import fi.riista.feature.account.certificate.HuntingCardQRCodeKeyHolder;
 import fi.riista.util.JCEUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
@@ -48,13 +50,16 @@ import java.security.Security;
         ExecutorConfig.class,
         AsyncConfig.class,
         SchedulingConfig.class,
+        HandlebarsConfig.class,
         MailConfig.class,
         SecurityConfig.class,
         AopConfig.class,
+        SerializationConfig.class,
         JaxbConfig.class,
         BatchConfig.class,
         QuartzConfig.class,
         AwsCloudConfig.class,
+        SentryConfig.class,
         PapertrailConfig.class
 })
 @PropertySource("classpath:git.properties")
@@ -67,16 +72,11 @@ public class MainApplicationContext {
     }
 
     @Resource
-    private HunterPdfExportFeature hunterPdfExportFeature;
+    private HuntingCardQRCodeKeyHolder qrCodeKeyHolder;
 
     @PostConstruct
     public void afterStartup() {
-        hunterPdfExportFeature.decodePrivateKey();
-    }
-
-    @Bean
-    public CustomJacksonObjectMapper globalJacksonObjectMapper(RuntimeEnvironmentUtil environmentUtil) {
-        return new CustomJacksonObjectMapper(!environmentUtil.isProductionEnvironment());
+        qrCodeKeyHolder.decodePrivateKey();
     }
 
     @Bean

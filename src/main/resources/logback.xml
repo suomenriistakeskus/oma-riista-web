@@ -16,7 +16,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %X{req.remoteHost} [%thread] %-5level %logger{50} - %msg%n%ex{full, ${mask}}</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %X{req.remoteHost} %X{req.method} %X{req.requestURI} [%thread] %-5level %logger{50} - %msg%n%ex{full, ${mask}}</pattern>
         </encoder>
     </appender>
 
@@ -52,13 +52,17 @@
     <logger name="com.zaxxer.hikari" level="INFO" />
     <logger name="com.github.jknack.handlebars" level="INFO"/>
     <logger name="com.amazonaws" level="INFO"/>
+    <logger name="com.ancientprogramming.fixedformat4j.format" level="INFO"/>
     <logger name="com.onelogin.saml2" level="INFO"/>
+    <logger name="org.apache.fontbox" level="INFO"/>
+    <logger name="org.apache.pdfbox" level="INFO"/>
 
     <logger name="org.apache.http" level="INFO" />
     <logger name="org.apache.xml.security" level="INFO"/>
     <logger name="org.hibernate" level="INFO" />
     <logger name="org.hibernate.cfg" level="WARN" />
     <logger name="org.hibernate.type" level="WARN" />
+    <logger name="org.nlab.smtp" level="INFO"/>
 
     <logger name="org.hibernate.engine.internal.StatefulPersistenceContext" level="ERROR" />
 

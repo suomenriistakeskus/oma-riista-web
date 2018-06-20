@@ -5,8 +5,6 @@ UPDATE import_hta
 SET geom = ST_Multi(ST_Buffer(geom, 0))
 WHERE NOT ST_IsValid(geom);
 
-DELETE FROM hta;
-
 INSERT INTO hta (
   gid,
   numero,
@@ -22,5 +20,3 @@ INSERT INTO hta (
     nimi_se,
     geom
   FROM import_hta;
-
-DROP TABLE import_hta;

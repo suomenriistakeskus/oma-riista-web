@@ -1,151 +1,131 @@
 package fi.riista.feature.account;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpecs;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
-import fi.riista.util.F;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.util.DateUtil;
+import fi.riista.util.jpa.JpaSpecs;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA;
+import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
+import static fi.riista.util.Collect.nullSafeGroupingBy;
+import static java.util.Comparator.comparingLong;
+import static java.util.stream.Collectors.partitioningBy;
+import static java.util.stream.Collectors.toList;
+import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Component
 public class AccountRoleService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AccountRoleService.class);
-
-    private static final EnumSet<OccupationType> CLUB_OCCUPATIONS_WITH_ROLE =
-            EnumSet.of(OccupationType.SEURAN_JASEN, OccupationType.SEURAN_YHDYSHENKILO);
-
     private static final Ordering<Occupation> CLUB_ROLE_ORDERING = Ordering.natural().nullsLast().onResultOf(occ -> {
         switch (occ.getOccupationType()) {
             case SEURAN_YHDYSHENKILO:
-                return 10;
+                return 1;
             case RYHMAN_METSASTYKSENJOHTAJA:
-                return 20;
+                return 2;
             case SEURAN_JASEN:
-                return 30;
+                return 3;
             default:
                 return null;
         }
     });
 
-    private static String getFullName(final SystemUser user) {
-        final Person person = user.getPerson();
-        return person != null ? person.getFullName() : user.getFullName();
-    }
-
-    private static AccountRoleDTO getBasicUserRole(final SystemUser user) {
-        final AccountRoleDTO roleDTO = AccountRoleDTO.fromUser(user);
-        roleDTO.setDisplayName(getFullName(user));
-
-        if (user.getPerson() != null) {
-            roleDTO.getContext().setPersonId(user.getPerson().getId());
-        }
-
-        return roleDTO;
-    }
-
-    private static AccountRoleDTO transformToRoleDTO(final Occupation occupation) {
-        final AccountRoleDTO roleDTO = AccountRoleDTO.fromOccupation(occupation);
-        final AccountRoleDTO.ContextDTO context = roleDTO.getContext();
-        Organisation organisation = occupation.getOrganisation();
-
-        switch (organisation.getOrganisationType()) {
-            case RHY:
-                context.setRhyId(organisation.getId());
-                break;
-            case CLUBGROUP:
-                organisation = organisation.getParentOrganisation();
-                // intentional fall-through to CLUB case
-            case CLUB:
-                context.setClubId(organisation.getId());
-                break;
-            default:
-                break;
-        }
-
-        context.setNameFI(organisation.getNameFinnish());
-        context.setNameSV(organisation.getNameSwedish());
-
-        return roleDTO;
-    }
-
     @Resource
     private OccupationRepository occupationRepository;
 
+    @Resource
+    private HarvestPermitRepository harvestPermitRepository;
+
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public List<AccountRoleDTO> getRoles(@Nonnull final SystemUser user) {
-        Objects.requireNonNull(user, "user must not be null");
+        Objects.requireNonNull(user);
 
-        final List<AccountRoleDTO> roleList = Lists.newArrayList(getBasicUserRole(user));
+        final List<AccountRoleDTO> roleList = new LinkedList<>();
+
+        roleList.add(AccountRoleDTO.fromUser(user));
 
         // Do not add person related account roles for admins and moderators
         if (user.getRole() == SystemUser.Role.ROLE_USER && user.getPerson() != null) {
-            roleList.addAll(getRolesForPerson(user.getPerson()));
+            roleList.addAll(getRolesDerivedFromOccupations(user.getPerson()));
+            roleList.addAll(getRolesDerivedFromPermits(user.getPerson()));
         }
 
         return roleList;
     }
 
-    private List<AccountRoleDTO> getRolesForPerson(final Person person) {
-        final Stream<Occupation> roleMappedOccupations = occupationRepository.findActiveByPerson(person).stream()
-                .filter(o -> o.getOccupationType().isMappedToRole());
+    private List<AccountRoleDTO> getRolesDerivedFromPermits(final Person person) {
+        final int currentHuntingYear = DateUtil.huntingYear();
+        final int nextHuntingYear = currentHuntingYear + 1;
+
+        return harvestPermitRepository.findAll(where(JpaSpecs.and(
+                HarvestPermitSpecs.isPermitContactPerson(person),
+                JpaSpecs.or(
+                        HarvestPermitSpecs.withYear(Integer.toString(currentHuntingYear)),
+                        HarvestPermitSpecs.withYear(Integer.toString(nextHuntingYear)))))).stream()
+                .sorted(comparingLong(HarvestPermit::getId).reversed())
+                .map(AccountRoleDTO::fromPermit)
+                .collect(toList());
+    }
+
+    private List<AccountRoleDTO> getRolesDerivedFromOccupations(final Person person) {
+        final Stream<Occupation> roleMappedOccupations = occupationRepository.findOccupationsForRoleMapping(person, DateUtil.huntingYear())
+                .stream()
+                .filter(o -> {
+                    final OccupationType occType = o.getOccupationType();
+                    return occType.isMappedToRole() &&
+                            (occType != AMPUMAKOKEEN_VASTAANOTTAJA || person.isShootingTestsEnabled());
+                });
 
         final Map<Boolean, List<Occupation>> partitionByIsRelatedToClub =
-                roleMappedOccupations.collect(Collectors.partitioningBy(o -> o.getOccupationType().isClubSpecific()));
+                roleMappedOccupations.collect(partitioningBy(o -> o.getOccupationType().isClubSpecific()));
         final List<Occupation> clubOccupations = partitionByIsRelatedToClub.get(true);
         final List<Occupation> nonClubOccupations = partitionByIsRelatedToClub.get(false);
 
+        final Set<Organisation> clubsWithMembership = clubOccupations.stream()
+                .filter(occ -> occ.getOccupationType().isApplicableFor(OrganisationType.CLUB))
+                .map(Occupation::getOrganisation)
+                .collect(Collectors.toSet());
+
+        // filter out occupations where invitation is not accepted
+        final List<Occupation> clubOccupationsWithAcceptedInvites = clubOccupations.stream()
+                .filter(occ -> occ.getOccupationType() != RYHMAN_METSASTYKSENJOHTAJA || clubsWithMembership.contains(occ.getOrganisation().getParentOrganisation()))
+                .collect(toList());
+
         // role-mapped club-occupations indexed by hunting club
-        final Map<Organisation, List<Occupation>> occupationsByClub = F.nullSafeGroupBy(clubOccupations, occ -> {
-            switch (occ.getOccupationType()) {
-                case SEURAN_YHDYSHENKILO:
-                case SEURAN_JASEN:
-                    return occ.getOrganisation();
-                case RYHMAN_METSASTYKSENJOHTAJA:
-                    return occ.getOrganisation().getParentOrganisation();
-                default:
-                    return null;
-            }
-        });
+        final Map<Organisation, List<Occupation>> occupationsByClub = clubOccupationsWithAcceptedInvites
+                .stream()
+                .collect(nullSafeGroupingBy(occ -> occ.getOccupationType() == RYHMAN_METSASTYKSENJOHTAJA
+                        ? occ.getOrganisation().getParentOrganisation()
+                        : occ.getOrganisation()));
 
         final Stream<Occupation> selectedClubOccupations = occupationsByClub.entrySet().stream()
-                .filter(entry -> {
-                    if (entry.getKey().getOrganisationType() != OrganisationType.CLUB) {
-                        LOG.warn("While resolving club roles encountered {} when expected CLUB "
-                                        + "(organisation type), ignoring illegal entry.",
-                                entry.getKey().getOrganisationType());
-                        return false;
-                    }
-
-                    return true;
-                })
                 .map(Entry::getValue)
-                .filter(occupations -> occupations.stream()
-                        .anyMatch(o -> CLUB_OCCUPATIONS_WITH_ROLE.contains(o.getOccupationType())))
-                // Pick most prominent role
                 .map(CLUB_ROLE_ORDERING::min);
 
         return Stream.concat(nonClubOccupations.stream(), selectedClubOccupations)
-                .map(AccountRoleService::transformToRoleDTO)
-                .collect(Collectors.toList());
+                .map(AccountRoleDTO::fromOccupation)
+                .collect(toList());
     }
 }

@@ -1,0 +1,55 @@
+<div class="r-event-list">
+    <div class="table-responsive">
+        <table class="table table-striped table-condensed">
+            <thead>
+            <tr>
+                <th class="col-xs-1" translate="event.date"></th>
+                <th class="col-xs-2" translate="event.event"></th>
+                <th class="col-xs-2" translate="event.venue"></th>
+                <th class="col-xs-3" translate="global.state"></th>
+                <th class="col-xs-3" translate="shootingTest.officials"></th>
+                <th class="col-xs-1">&nbsp;</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr ng-repeat="event in $ctrl.events track by event.calendarEventId">
+                <td>
+                    <div>{{event.date |date:'d.M.yyyy'}}</div>
+                    <div>{{event.beginTime}}
+                        <span ng-if="event.endTime"> - {{event.endTime}}</span>
+                    </div>
+                </td>
+                <td>
+                    <div>{{'event.type.'+event.calendarEventType | translate}}</div>
+                    <div>{{event.name | truncateCharacters:50}}</div>
+                </td>
+                <td>
+                    <div ng-bind="event.venue.name | truncateCharacters:50"></div>
+                    <div class="r-contact-address">
+                        <span ng-bind="event.venue.address.streetAddress | truncateCharacters:30"></span>
+                        <span ng-bind="event.venue.address.postalCode"></span>
+                        <span ng-bind="event.venue.address.city | truncateCharacters:30" class="r-city"></span>
+                    </div>
+                </td>
+                <td>
+                    <span translate="shootingTest.state.waiting" ng-if="!event.isOpened()"></span>
+                    <span translate="shootingTest.state.open" ng-if="event.isOpen()"></span>
+                    <span translate="shootingTest.state.closed" ng-if="event.isClosed()"></span>
+                </td>
+                <td>
+                    <div ng-repeat="official in event.officials | orderBy: ['lastName', 'firstName'] track by official.id">
+                        <span ng-bind="official.firstName"></span>
+                        <span ng-bind="official.lastName"></span>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <button type="button" class="btn btn-default" ng-click="$ctrl.selectEvent(event.calendarEventId)">
+                        <span translate="global.button.select"></span>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

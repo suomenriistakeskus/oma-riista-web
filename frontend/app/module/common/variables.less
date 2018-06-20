@@ -6,11 +6,10 @@
 // -------------------------
 
 @r-dark:                #444444;
-@r-green:               #007236;
-@r-brown:               #8b6026;
+@r-green: #009a49;
 @r-yellow:              #daaf28;
-@r-blue:                #006893;
-@r-red:                 #D7242D;
+@r-blue: #3983da;
+@r-red: #c92424;
 @r-light:               #f4f4ec;
 @r-footer-body:         #fdfdfd;
 @r-footer-grey:         #565656;
@@ -22,7 +21,7 @@
 @brand-primary:         @r-green;
 @brand-success:         @r-green;
 @brand-warning:         @r-yellow;
-@brand-danger:          @r-brown;
+@brand-danger: @r-red;
 @brand-info:            @r-blue;
 
 //** Global color for active items (e.g., navs or dropdowns).
@@ -34,12 +33,43 @@
 // -------------------------
 
 @text-color:            @r-dark;
+@padding-base-vertical: 9px;
+@padding-base-horizontal: 12px;
+
+
+// Panels
+// ----------------------------
+@panel-bg: #fff;
+@panel-body-padding: 15px;
+@panel-heading-padding: 8px 15px;
+@panel-footer-padding: @panel-heading-padding;
+@panel-border-radius: @border-radius-base;
+@panel-border-radius: 8px;
 
 // Tables
 // -------------------------
-@table-bg-accent:       #f3f3f3;
+@table-bg-accent: #f0f0f0;
 @table-bg-hover:        #f0f0f0;
-@table-border-color:    #f3f3f3;
+@table-border-color: #d3d3d3;
+
+// Form states and alerts
+// --------------------------
+@state-success-text: @r-green;
+@state-success-bg: #dff0d8;
+@state-success-border: darken(spin(@state-success-bg, -10), 5%);
+
+@state-info-text: @r-blue;
+@state-info-bg: #d9edf7;
+@state-info-border: darken(spin(@state-info-bg, -10), 7%);
+
+@state-warning-text: darken(@r-yellow, 15%);
+@state-warning-bg: #fcf8e3;
+@state-warning-border: darken(spin(@state-warning-bg, -10), 14%);
+
+@state-danger-text: @r-red;
+@state-danger-bg: #f2dede;
+@state-danger-border: darken(spin(@state-danger-bg, -10), 5%);
+
 
 // Links
 // -------------------------
@@ -52,15 +82,17 @@
 
 @font-family-roboto-slab: 'Roboto Slab', serif;
 @font-family-open-sans:   'Open Sans', sans-serif;
+@font-family-sans-serif: @font-family-open-sans;
 @font-family-base:        @font-family-open-sans;
 
 @headings-font-family:    @font-family-roboto-slab;
 @headings-font-weight:    700;
+@headings-line-height: 1.72;
 
 // Navs
 // -------------------------
-@nav-link-padding:        8px 15px;
-@main-nav-height:         105px;
+@nav-link-padding: 12px 17px;
+@main-nav-height: 106px;
 @sub-nav-height:          44px;
 
 //== Media queries breakpoints

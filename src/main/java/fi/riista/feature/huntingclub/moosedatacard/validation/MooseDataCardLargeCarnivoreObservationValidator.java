@@ -1,29 +1,25 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.largeCarnivoreMissingObservationType;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.observationTypeOfLargeCarnivoreContainsIllegalCharacters;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.sumOfSpecimenAmountsOfLargeCarnivoreObservationIsNotGreaterThanZero;
-
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardLargeCarnivoreObservation;
-import fi.riista.util.F;
-
-import javaslang.control.Either;
+import io.vavr.control.Either;
 
 import javax.annotation.Nonnull;
-
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.largeCarnivoreMissingObservationType;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.observationTypeOfLargeCarnivoreContainsIllegalCharacters;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.sumOfSpecimenAmountsOfLargeCarnivoreObservationIsNotGreaterThanZero;
 
 public class MooseDataCardLargeCarnivoreObservationValidator
         extends MooseDataCardObservationValidator<MooseDataCardLargeCarnivoreObservation> {
 
-    public MooseDataCardLargeCarnivoreObservationValidator(@Nonnull final GeoLocation defaultCoordinates) {
-        super(defaultCoordinates);
+    public MooseDataCardLargeCarnivoreObservationValidator(final int huntingYear,
+                                                           @Nonnull final GeoLocation defaultCoordinates) {
+        super(huntingYear, defaultCoordinates);
     }
 
     @Override
@@ -39,16 +35,20 @@ public class MooseDataCardLargeCarnivoreObservationValidator
 
                     // Total amount is expected to be greater than zero.
 
-                    final Integer totalAmount = Stream
+                    final int totalAmount = Stream
                             .of(input.getNumberOfWolves(), input.getNumberOfBears(), input.getNumberOfLynxes(),
                                     input.getNumberOfWolverines())
                             .filter(Objects::nonNull)
                             .filter(amount -> amount >= 0)
-                            .collect(Collectors.summingInt(Integer::intValue));
+                            .mapToInt(Integer::intValue)
+                            .sum();
 
-                    final Optional<MooseDataCardLargeCarnivoreObservation> opt = Optional.ofNullable(totalAmount)
-                            .filter(sum -> sum > 0)
-                            .map(positiveSum -> new MooseDataCardLargeCarnivoreObservation()
+                    if (totalAmount == 0) {
+                        return Either.left(sumOfSpecimenAmountsOfLargeCarnivoreObservationIsNotGreaterThanZero(input));
+                    }
+
+                    final MooseDataCardLargeCarnivoreObservation validOutput =
+                            new MooseDataCardLargeCarnivoreObservation()
                                     .withDate(date)
                                     .withObservationType(convertedObservationType.getMooseDataCardEncoding())
                                     .withAdditionalInfo(input.getAdditionalInfo())
@@ -56,12 +56,11 @@ public class MooseDataCardLargeCarnivoreObservationValidator
                                     .withNumberOfBears(MooseDataCardDiaryEntryField.BEAR_AMOUNT.getValidOrNull(input))
                                     .withNumberOfLynxes(MooseDataCardDiaryEntryField.LYNX_AMOUNT.getValidOrNull(input))
                                     .withNumberOfWolverines(
-                                            MooseDataCardDiaryEntryField.WOLVERINE_AMOUNT.getValidOrNull(input)));
+                                            MooseDataCardDiaryEntryField.WOLVERINE_AMOUNT.getValidOrNull(input));
 
-                    return F.toEither(
-                            opt, () -> sumOfSpecimenAmountsOfLargeCarnivoreObservationIsNotGreaterThanZero(input))
-                            .peek(obj -> obj.setGeoLocation(getValidGeoLocation(input)));
+                    validOutput.setGeoLocation(getValidGeoLocation(input));
+
+                    return Either.right(validOutput);
                 }));
     }
-
 }

@@ -6,12 +6,10 @@ import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
-import fi.riista.feature.organization.occupation.OccupationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Date;
@@ -19,9 +17,6 @@ import java.util.List;
 
 @Service
 public class HuntingLeaderFinderService {
-
-    @Resource
-    private OccupationRepository occupationRepository;
 
     @PersistenceContext
     private EntityManager entityManager;

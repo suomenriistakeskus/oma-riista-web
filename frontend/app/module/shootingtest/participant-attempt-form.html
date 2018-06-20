@@ -1,0 +1,80 @@
+<form name="form" role="form" class="form form-horizontal">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="shootingTest.attempt.form.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="text-center">
+
+            <div class="h5" translate="shootingTest.attempt.form.titleType"></div>
+
+            <div class="btn-group btn-group-justified">
+                <label ng-repeat="type in $ctrl.listTypes"
+                       class="btn btn-default"
+                       required
+                       ng-model="$ctrl.attempt.type"
+                       ng-change="$ctrl.typeChanged()"
+                       ng-disabled="$ctrl.isTypeDisabled(type)"
+                       uib-btn-radio="type">
+                    <span ng-if="$ctrl.attempt.type === type" class="glyphicon glyphicon-check"></span>
+                    <span>{{'shootingTest.type.' + type | translate}}</span>
+                </label>
+            </div>
+
+            <div class="h5" translate="shootingTest.attempt.form.titleHits"></div>
+
+            <div class="btn-group btn-group-justified">
+                <label ng-repeat="hits in $ctrl.listHits"
+                       class="btn btn-default"
+                       required
+                       ng-model="$ctrl.attempt.hits"
+                       ng-disabled="$ctrl.isHitsDisabled(hits)"
+                       ng-change="$ctrl.hitsChanged()"
+                       uib-btn-radio="hits">
+                    <span ng-if="$ctrl.attempt.hits === hits" class="glyphicon glyphicon-check"></span>
+                    <span ng-bind="hits"></span>
+                </label>
+            </div>
+        </div>
+
+        <br/>
+
+        <div class="row">
+            <div class="text-left col-xs-3">
+                <select name="resultSelection" id="resultSelection"
+                        class="form-control"
+                        ng-model="$ctrl.attempt.result"
+                        ng-disabled="!$ctrl.attempt.result"
+                        ng-options="o as $ctrl.translateResult(o) for o in $ctrl.selectableResults()"
+                        ie10-optgroup-fix>
+                </select>
+            </div>
+            <div class="col-xs-9">
+                <div class="input-group" ng-if="$ctrl.showNote()">
+                    <label for="note" class="input-group-addon"
+                           translate="shootingTest.attempt.note"></label>
+                    <input type="text" class="form-control" name="note" id="note"
+                           placeholder="{{'shootingTest.attempt.notePlaceholder'|translate}}"
+                           uib-tooltip="{{'shootingTest.attempt.notePlaceholder'|translate}}"
+                           autocomplete="false"
+                           ng-model="$ctrl.attempt.note">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <div class="text-right">
+            <button type="button" class="btn btn-default"
+                    ng-click="$ctrl.cancel()"
+                    translate="global.button.cancel"></button>
+
+            <button class="btn btn-primary"
+                    translate="global.button.save"
+                    ng-disabled="form.$invalid"
+                    ng-click="$ctrl.save()"></button>
+        </div>
+    </div>
+</form>

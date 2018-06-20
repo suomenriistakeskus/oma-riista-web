@@ -39,6 +39,9 @@ public class Announcement extends LifecycleEntity<Long> {
     @Column(columnDefinition = "text", nullable = false)
     private String body;
 
+    @Column(nullable = false)
+    private boolean visibleToAll;
+
     @NotNull
     @JoinColumn(nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -106,6 +109,14 @@ public class Announcement extends LifecycleEntity<Long> {
 
     public void setBody(final String body) {
         this.body = body;
+    }
+
+    public boolean isVisibleToAll() {
+        return visibleToAll;
+    }
+
+    public void setVisibleToAll(final boolean visibleToAll) {
+        this.visibleToAll = visibleToAll;
     }
 
     public SystemUser getFromUser() {

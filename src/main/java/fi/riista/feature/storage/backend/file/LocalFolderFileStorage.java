@@ -52,10 +52,6 @@ public class LocalFolderFileStorage implements FileStorageSpi {
         }
 
         checkDirectoryExistsAndWritable(this.storageBasePath);
-
-        for (final FileType fileType : FileType.values()) {
-            checkDirectoryExistsAndWritable(fileType.resolveLocalStorageFolder(this.storageBasePath));
-        }
     }
 
     @Override
@@ -67,8 +63,7 @@ public class LocalFolderFileStorage implements FileStorageSpi {
     public void storeFile(final FileType fileType,
                           final PersistentFileMetadata metadata,
                           final InputStream inputStream) throws IOException {
-        final Path storageFolder = fileType.resolveLocalStorageFolder(this.storageBasePath);
-        final Path storageFile = storageFolder.resolve(fileType.formatFilename(metadata));
+        final Path storageFile = this.storageBasePath.resolve(fileType.formatFilename(metadata));
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override

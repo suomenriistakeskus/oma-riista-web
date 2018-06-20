@@ -47,6 +47,11 @@ public class SQFileContent extends RelationalPathSpatial<SQFileContent> {
         addMetadata();
     }
 
+    public SQFileContent(String variable, String schema) {
+        super(SQFileContent.class, forVariable(variable), schema, "file_content");
+        addMetadata();
+    }
+
     public SQFileContent(Path<? extends SQFileContent> path) {
         super(path.getType(), path.getMetadata(), "public", "file_content");
         addMetadata();

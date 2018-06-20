@@ -6,8 +6,7 @@ import fi.riista.integration.metsastajarekisteri.exception.InvalidHunterInvoiceR
 import fi.riista.integration.metsastajarekisteri.exception.InvalidHunterNumberException;
 import fi.riista.integration.metsastajarekisteri.exception.InvalidPersonName;
 import fi.riista.integration.metsastajarekisteri.exception.InvalidSsnException;
-import fi.riista.validation.FinnishHunterNumberValidator;
-import fi.riista.validation.FinnishSocialSecurityNumberValidator;
+import fi.riista.validation.Validators;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.internal.constraintvalidators.EmailValidator;
 import org.joda.time.LocalDate;
@@ -23,10 +22,6 @@ public class MetsastajaRekisteriItemValidator implements
     private static final Logger LOG = LoggerFactory.getLogger(MetsastajaRekisteriItemValidator.class);
 
     private static final LocalDate INVALID_JOIN_DATE = new LocalDate(1990, 6, 19);
-
-    private static final FinnishSocialSecurityNumberValidator ssnValidator = new FinnishSocialSecurityNumberValidator();
-
-    private static final FinnishHunterNumberValidator hunterNumberValidator = new FinnishHunterNumberValidator();
 
     private static final EmailValidator EMAIL_VALIDATOR = new EmailValidator();
 
@@ -102,13 +97,13 @@ public class MetsastajaRekisteriItemValidator implements
             return null;
         }
 
-        if (!ssnValidator.isValid(person.getSsn(), null)) {
+        if (!Validators.isValidSsn(person.getSsn())) {
             LOG.warn("Invalid SSN: {}", person.getSsn());
 
             throw new InvalidSsnException("Invalid ssn " + person.getSsn());
         }
 
-        if (!hunterNumberValidator.isValid(person.getHunterNumber(), null)) {
+        if (!Validators.isValidHunterNumber(person.getHunterNumber())) {
             LOG.warn("Invalid hunterNumber: {}", person.getHunterNumber());
 
             throw new InvalidHunterNumberException("Invalid hunterNumber " + person.getHunterNumber());

@@ -13,6 +13,10 @@
         });
     });
 
+    function silenceUncaughtInPromise(promise) {
+        return promise.then(undefined, function () {}) && promise;
+    }
+
     /**
      * Service to show multiple off canvas menus / dialogs so that they
      * will be stacked one on top of another.
@@ -57,8 +61,9 @@
                 onBackNavigation: function () {
                     var dialogInstance = _getTopDialog();
 
-                    if (dialogInstance) {
+                    while (dialogInstance) {
                         dialogInstance.dismiss('back');
+                        dialogInstance = _getTopDialog();
                     }
                 },
 
@@ -119,8 +124,8 @@
                      *   dismiss: function(err)}}
                      */
                     var dialogInstance = {
-                        result: dialogResultDeferred.promise,
-                        opened: dialogOpenedDeferred.promise,
+                        result: silenceUncaughtInPromise(dialogResultDeferred.promise),
+                        opened: silenceUncaughtInPromise(dialogOpenedDeferred.promise),
                         stackIndex: stackIndex,
 
                         /**

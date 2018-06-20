@@ -1,17 +1,17 @@
 package fi.riista.integration.lupahallinta;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUserPrivilege;
 import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.lupahallinta.LHOrganisation;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.integration.lupahallinta.club.LHHuntingClubCSVRow;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
 import org.junit.Before;
@@ -59,6 +59,23 @@ public class HuntingClubExportToLupahallintaFeatureTest extends EmbeddedDatabase
     }
 
     @Test
+    public void testDoNotExportTestClubs() {
+        final HuntingClub club = createClub(false);
+        club.setOfficialCode("8999999");
+        final Occupation member1 = createContactPersonWithValidity(club, null, null, false);
+
+        final HuntingClub club2 = createClub(false);
+        club2.setOfficialCode("9999999");
+        final Occupation member2 = createContactPersonWithValidity(club2, null, null, false);
+
+        withPersistedAndAuthenticatedRestUser(() -> {
+            List<LHHuntingClubCSVRow> exportData = feature.exportToCSCV();
+            assertEquals(1, exportData.size());
+            assertMemberEqualsRow(member1, exportData.get(0));
+        });
+    }
+
+    @Test
     public void testExportsOnlyActiveContactPersons() {
         final HuntingClub club = createClub();
 
@@ -72,15 +89,16 @@ public class HuntingClubExportToLupahallintaFeatureTest extends EmbeddedDatabase
         createContactPersonWithValidity(club, null, today.minusDays(1), false);
         createContactPersonWithValidity(club, null, null, true);
 
-        final HuntingClub clubNotExportedBecauseLhOrgMissing = createClub(false);
-        createContactPersonWithValidity(clubNotExportedBecauseLhOrgMissing, null, null, false);
+        final HuntingClub clubMissingFromLhOrg = createClub(false);
+        final Occupation member4 = createContactPersonWithValidity(clubMissingFromLhOrg, null, null, false);
 
         withPersistedAndAuthenticatedRestUser(() -> {
             List<LHHuntingClubCSVRow> exportData = feature.exportToCSCV();
-            assertEquals(3, exportData.size());
+            assertEquals(4, exportData.size());
             assertMemberEqualsRow(member1, exportData.get(0));
             assertMemberEqualsRow(member2, exportData.get(1));
             assertMemberEqualsRow(member3, exportData.get(2));
+            assertMemberEqualsRow(member4, exportData.get(3));
         });
     }
 
@@ -99,16 +117,17 @@ public class HuntingClubExportToLupahallintaFeatureTest extends EmbeddedDatabase
         member1.getPerson().setLastName("AA");
         member1.getPerson().setByName("AB");
 
-        final HuntingClub clubNotExportedBecauseLhOrgMissing = createClub(false);
-        createContactPersonWithValidity(clubNotExportedBecauseLhOrgMissing, null, null, false);
+        final HuntingClub clubMissingFromLhOrg = createClub(false);
+        final Occupation member5 = createContactPersonWithValidity(clubMissingFromLhOrg, null, null, false);
 
         withPersistedAndAuthenticatedRestUser(() -> {
             List<LHHuntingClubCSVRow> exportData = feature.exportToCSCV();
-            assertEquals(4, exportData.size());
+            assertEquals(5, exportData.size());
             assertMemberEqualsRow(member4, exportData.get(0));
             assertMemberEqualsRow(member2, exportData.get(1));
             assertMemberEqualsRow(member1, exportData.get(2));
             assertMemberEqualsRow(member3, exportData.get(3));
+            assertMemberEqualsRow(member5, exportData.get(4));
         });
     }
 

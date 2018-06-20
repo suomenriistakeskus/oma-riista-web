@@ -43,6 +43,11 @@ public class SQObservedGameState extends RelationalPathSpatial<SQObservedGameSta
         addMetadata();
     }
 
+    public SQObservedGameState(String variable, String schema) {
+        super(SQObservedGameState.class, forVariable(variable), schema, "observed_game_state");
+        addMetadata();
+    }
+
     public SQObservedGameState(Path<? extends SQObservedGameState> path) {
         super(path.getType(), path.getMetadata(), "public", "observed_game_state");
         addMetadata();

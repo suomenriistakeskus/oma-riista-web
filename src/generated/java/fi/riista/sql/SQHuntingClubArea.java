@@ -67,6 +67,8 @@ public class SQHuntingClubArea extends RelationalPathSpatial<SQHuntingClubArea> 
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> _organisationHuntingClubAreaIdFk = createInvForeignKey(huntingClubAreaId, "hunting_area_id");
 
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitAreaPartner> _harvestPermitAreaPartnerSourceAreaFk = createInvForeignKey(huntingClubAreaId, "source_area_id");
+
     public SQHuntingClubArea(String variable) {
         super(SQHuntingClubArea.class, forVariable(variable), "public", "hunting_club_area");
         addMetadata();
@@ -74,6 +76,11 @@ public class SQHuntingClubArea extends RelationalPathSpatial<SQHuntingClubArea> 
 
     public SQHuntingClubArea(String variable, String schema, String table) {
         super(SQHuntingClubArea.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQHuntingClubArea(String variable, String schema) {
+        super(SQHuntingClubArea.class, forVariable(variable), schema, "hunting_club_area");
         addMetadata();
     }
 

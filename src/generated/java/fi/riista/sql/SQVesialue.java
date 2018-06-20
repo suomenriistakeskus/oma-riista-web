@@ -83,6 +83,11 @@ public class SQVesialue extends RelationalPathSpatial<SQVesialue> {
         addMetadata();
     }
 
+    public SQVesialue(String variable, String schema) {
+        super(SQVesialue.class, forVariable(variable), schema, "vesialue");
+        addMetadata();
+    }
+
     public SQVesialue(Path<? extends SQVesialue> path) {
         super(path.getType(), path.getMetadata(), "public", "vesialue");
         addMetadata();
@@ -98,7 +103,7 @@ public class SQVesialue extends RelationalPathSpatial<SQVesialue> {
         addMetadata(aluejakoon, ColumnMetadata.named("aluejakoon").withIndex(14).ofType(Types.DOUBLE).withSize(17).withDigits(17));
         addMetadata(attr2, ColumnMetadata.named("attr2").withIndex(20).ofType(Types.DOUBLE).withSize(17).withDigits(17));
         addMetadata(attr3, ColumnMetadata.named("attr3").withIndex(21).ofType(Types.DOUBLE).withSize(17).withDigits(17));
-        addMetadata(geom, ColumnMetadata.named("geom").withIndex(22).ofType(Types.OTHER).withSize(2147483647).notNull());
+        addMetadata(geom, ColumnMetadata.named("geom").withIndex(22).ofType(Types.OTHER).withSize(2147483647));
         addMetadata(gid, ColumnMetadata.named("gid").withIndex(1).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(kartoglk, ColumnMetadata.named("kartoglk").withIndex(13).ofType(Types.DOUBLE).withSize(17).withDigits(17));
         addMetadata(kohdeoso, ColumnMetadata.named("kohdeoso").withIndex(9).ofType(Types.DOUBLE).withSize(17).withDigits(17));

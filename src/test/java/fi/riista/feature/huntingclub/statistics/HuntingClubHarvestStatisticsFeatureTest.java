@@ -1,12 +1,11 @@
 package fi.riista.feature.huntingclub.statistics;
 
 import com.google.common.collect.ImmutableMap;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -14,6 +13,7 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -21,6 +21,7 @@ import org.junit.Test;
 import javax.annotation.Resource;
 import java.util.Map;
 
+import static fi.riista.util.DateUtil.huntingYearBeginDate;
 import static fi.riista.util.DateUtil.today;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertNotNull;
@@ -43,8 +44,8 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Person hunter = model().newPerson();
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-        final GameSpecies species = model().newGameSpecies();
-        createHarvestWithLocationAndHuntingDay(location, hunter, species);
+        final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
+        createHarvestWithLocation(location, hunter, species);
 
         assertHarvestCount(club, species, 1L);
     }
@@ -57,8 +58,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
             model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-            final GameSpecies species = model().newGameSpecies();
-
+            final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
             model().newHarvest(species, author, hunter).setGeoLocation(location);
 
             assertHarvestCount(club, species, 1L);
@@ -73,7 +73,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
             model().newOccupation(club, author, OccupationType.SEURAN_JASEN);
 
-            final GameSpecies species = model().newGameSpecies();
+            final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
             model().newHarvest(species, author, hunter).setGeoLocation(location);
 
             assertHarvestCount(club, species, 1L);
@@ -84,7 +84,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
     public void testOccupationRestriction() {
         final GeoLocation location = geoLocation();
 
-        createHarvestWithLocationAndHuntingDay(location, model().newPerson(), model().newGameSpecies());
+        createHarvestWithLocation(location, model().newPerson(), model().newGameSpecies());
 
         assertNoHarvests(createClubWithAreaAndZone(location));
     }
@@ -99,7 +99,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         // Validity end set to yesterday
         occupation.setEndDate(today().minusDays(1));
 
-        createHarvestWithLocationAndHuntingDay(location, hunter, model().newGameSpecies());
+        createHarvestWithLocation(location, hunter, model().newGameSpecies());
 
         assertNoHarvests(club);
     }
@@ -112,7 +112,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Person hunter = model().newPerson();
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN).softDelete();
 
-        createHarvestWithLocationAndHuntingDay(location, hunter, model().newGameSpecies());
+        createHarvestWithLocation(location, hunter, model().newGameSpecies());
 
         assertNoHarvests(club);
     }
@@ -127,8 +127,8 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-        final GameSpecies species = model().newGameSpecies();
-        createHarvestWithLocationAndHuntingDay(location, hunter, species);
+        final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
+        createHarvestWithLocation(location, hunter, species);
 
         assertHarvestCount(club, species, 1L);
     }
@@ -138,7 +138,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final GeoLocation location = geoLocation();
         final HuntingClub club = createClubWithAreaAndZone(location);
 
-        final GameSpecies species = model().newGameSpecies();
+        final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
         final HuntingClubGroup group = model().newHuntingClubGroupWithAreaContaining(location, club, species);
         // Hunting year not current year
         group.getHuntingArea().setHuntingYear(group.getHuntingArea().getHuntingYear() - 1);
@@ -146,7 +146,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Person hunter = model().newPerson();
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-        createHarvestWithLocationAndHuntingDay(location, hunter, species);
+        createHarvestWithLocation(location, hunter, species);
 
         assertHarvestCount(club, species, 1L);
     }
@@ -159,7 +159,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Person hunter = model().newPerson();
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-        createHarvestWithLocationAndHuntingDay(location.move(10, 10), hunter, model().newGameSpecies());
+        createHarvestWithLocation(location.move(10, 10), hunter, model().newGameSpecies());
 
         assertNoHarvests(club);
     }
@@ -173,7 +173,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
         GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.forEach(speciesCode -> {
-            createHarvestWithLocationAndHuntingDay(location, hunter, model().newGameSpecies(speciesCode));
+            createHarvestWithLocation(location, hunter, model().newGameSpecies(speciesCode));
         });
 
         assertNoHarvests(club);
@@ -187,13 +187,13 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Person hunter = model().newPerson();
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-        createHarvestWithLocationAndHuntingDay(location, hunter, model().newGameSpecies());
+        createHarvestWithLocation(location, hunter, model().newGameSpecies());
 
         assertNoHarvests(club);
     }
 
     private void assertClubMemberHarvests(final HuntingClub club, final Map<Integer, Long> expectedCounts) {
-        final int huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+        final int huntingYear = DateUtil.today().getYear();
         final HuntingClubHarvestStatisticsDTO summary = huntingClubHarvestSummaryFeature.getSummary(club.getId(), huntingYear);
 
         assertNotNull(summary);
@@ -225,22 +225,25 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Person hunter = model().newPerson();
         model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
 
-        final GameSpecies species = model().newGameSpecies();
+        final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
         createHarvestWithHarvestReportRequiredWithReport(location, hunter, species, null);
 
-        for (HarvestReport.State s : HarvestReport.State.values()) {
+        for (HarvestReportState s : HarvestReportState.values()) {
             createHarvestWithHarvestReportRequiredWithReport(location, hunter, species, s);
         }
 
         assertHarvestCount(club, species, 1L);
     }
 
-    private void createHarvestWithHarvestReportRequiredWithReport(GeoLocation location, Person hunter, GameSpecies species, HarvestReport.State state) {
+    private void createHarvestWithHarvestReportRequiredWithReport(GeoLocation location, Person hunter, GameSpecies species, HarvestReportState state) {
         final Harvest harvest = model().newHarvest(species, hunter, hunter);
         harvest.setGeoLocation(location);
         harvest.setHarvestReportRequired(true);
+
         if (state != null) {
-            model().newHarvestReport(harvest, state);
+            harvest.setHarvestReportState(state);
+            harvest.setHarvestReportAuthor(harvest.getAuthor());
+            harvest.setHarvestReportDate(DateUtil.now());
         }
     }
 
@@ -254,8 +257,8 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.forEach(speciesCode -> {
             final GameSpecies species = model().newGameSpecies(speciesCode);
-            createHarvestWithLocationAndHuntingDay(location, hunter, species);
-            createHarvestWithLocationAndHuntingDay(location.move(100, 100), hunter, species);
+            createHarvestWithLocation(location, hunter, species);
+            createHarvestWithLocation(location.move(100, 100), hunter, species);
         });
 
         assertNoHarvests(club);
@@ -263,7 +266,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
     @Test
     public void mooselikeLinkedToGroup() {
-        final int huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+        final int huntingYear = DateUtil.huntingYear();
 
         final GeoLocation location = geoLocation();
         final GameSpecies species = model().newGameSpeciesMoose();
@@ -281,9 +284,26 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
     }
 
     @Test
+    public void mooselikeLinkedToGroup_WrongCalendarYear() {
+        final int huntingYear = DateUtil.huntingYear() - 1;
+
+        final GeoLocation location = geoLocation();
+        final GameSpecies species = model().newGameSpeciesMoose();
+        final HuntingClub club = createClubWithAreaAndZone(location);
+        final HuntingClubGroup group = model().newHuntingClubGroup(club, species, huntingYear);
+        final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, today().minusYears(1));
+
+        // harvest is in wrong calendar year
+        final Harvest h = createHarvestWithLocationAndHuntingDay(location, model().newPerson(), species, huntingDay);
+        h.setPointOfTime(h.getPointOfTimeAsLocalDate().withYear(huntingYear).toDate());
+
+        assertNoHarvests(club);
+    }
+
+    @Test
     public void mooselikeLinkedToGroup_WrongHuntingYear() {
-        // Group is for previous huntingYear
-        final int huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear() - 1;
+        // Group is for previous huntingYear not overlapping with current calendar year
+        final int huntingYear = DateUtil.huntingYear() - 2;
 
         final GeoLocation location = geoLocation();
         final GameSpecies species = model().newGameSpeciesMoose();
@@ -296,7 +316,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         assertNoHarvests(club);
     }
 
-    private Harvest createHarvestWithLocationAndHuntingDay(GeoLocation location, Person hunter, GameSpecies species) {
+    private Harvest createHarvestWithLocation(GeoLocation location, Person hunter, GameSpecies species) {
         final Harvest harvest = model().newHarvest(species, hunter, hunter);
         harvest.setGeoLocation(location);
         return harvest;

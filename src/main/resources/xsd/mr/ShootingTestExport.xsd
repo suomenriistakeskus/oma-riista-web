@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/mr/export/shootingTest"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/mr/export/shootingTest"
+           attributeFormDefault="unqualified"
+           elementFormDefault="qualified">
+
+    <xs:simpleType name="ShootingTestType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="MOOSE"/>
+            <xs:enumeration value="BEAR"/>
+            <xs:enumeration value="ROE_DEER"/>
+            <xs:enumeration value="BOW"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ShootingTest">
+        <xs:sequence>
+            <xs:element name="Type" type="ShootingTestType"/>
+
+            <xs:element name="ValidityBegin" type="xs:date">
+                <xs:annotation>
+                    <xs:documentation>
+                        The begin date of validity period of a qualified shooting test
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="ValidityEnd" type="xs:date">
+                <xs:annotation>
+                    <xs:documentation>
+                        The end date of validity period of a qualified shooting test
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="RHY" type="xs:token">
+                <xs:annotation>
+                    <xs:documentation>
+                        The official code of game management association (in Finnish: riistanhoitoyhdistyksen virallinen koodi)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+
+        <xs:attribute type="xs:long" name="eventId" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The ID of the shooting test event in which the qualification was acquired
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:long" name="participantId" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The ID of participation in a shooting test event
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:long" name="executionId" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The ID of the shooting test execution (attempt) that the qualification is based on
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="ShootingTestList">
+        <xs:sequence>
+            <xs:element name="ShootingTest" type="ShootingTest" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Person">
+        <xs:sequence>
+            <xs:element name="HunterNumber" type="xs:token"/>
+            <xs:element name="ValidTests" type="ShootingTestList"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PersonList">
+        <xs:sequence>
+            <xs:element name="Person" type="Person" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="ShootingTestRegistry">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="RegisterDate" type="xs:date"/>
+                <xs:element name="Persons" type="PersonList"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

@@ -1,0 +1,32 @@
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <td><span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
+        <td>Rekisteröitynyt (Salasana)</td>
+        <td>Kaikki</td>
+    </tr>
+    </thead>
+    <tr>
+        <td class="col-sm-6">Henkilöitä</td>
+        <td class="col-sm-6">{{$ctrl.metrics.countNormalUser}}</td>
+        <td class="col-sm-6">{{$ctrl.metrics.countPerson}}</td>
+    </tr>
+
+    <tr>
+        <td>Henkilöitä joilla voimassaoleva tehtävä organisaatiossa</td>
+        <td>{{$ctrl.metrics.countNormalUserWithOccupationAndPassword}}</td>
+        <td>{{$ctrl.metrics.countAllPeopleWithOccupation}}</td>
+    </tr>
+
+    <tr>
+        <td>Moderaattoreita</td>
+        <td>{{$ctrl.metrics.countModeratorWithPassword}}</td>
+        <td>{{$ctrl.metrics.countAllModerators}}</td>
+    </tr>
+
+    <tr>
+        <td>Toiminnanohjaajia</td>
+        <td>{{$ctrl.metrics.countRHYToiminnanohjaajaWithPassword}}</td>
+        <td>{{$ctrl.metrics.countAllRHYToiminnanohjaaja}}</td>
+    </tr>
+</table>

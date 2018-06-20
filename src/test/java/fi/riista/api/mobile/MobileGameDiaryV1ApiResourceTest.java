@@ -1,10 +1,11 @@
 package fi.riista.api.mobile;
 
-import fi.riista.feature.gamediary.mobile.MobileGameDiaryV1Feature;
+import fi.riista.feature.gamediary.mobile.MobileGameDiaryFeature;
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.verify;
 public class MobileGameDiaryV1ApiResourceTest {
 
     @Mock
-    private MobileGameDiaryV1Feature feature;
+    private MobileGameDiaryFeature feature;
 
     @InjectMocks
     private MobileGameDiaryV1ApiResource api;
@@ -41,7 +42,7 @@ public class MobileGameDiaryV1ApiResourceTest {
         api.createHarvest(dto);
 
         ArgumentCaptor<MobileHarvestDTO> captor = ArgumentCaptor.forClass(MobileHarvestDTO.class);
-        verify(feature).createHarvest(captor.capture());
+        verify(feature).createHarvest(captor.capture(), ArgumentMatchers.eq(1));
         assertNull(captor.getValue().getId());
         assertNull(captor.getValue().getRev());
     }

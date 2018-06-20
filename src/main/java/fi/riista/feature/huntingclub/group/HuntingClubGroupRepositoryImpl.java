@@ -1,17 +1,18 @@
 package fi.riista.feature.huntingclub.group;
 
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.SimpleTemplate;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.sql.JPASQLQuery;
-import com.querydsl.spatial.GeometryExpression;
 import com.querydsl.sql.SQLTemplates;
-import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameDiaryEntry;
-import fi.riista.feature.huntingclub.area.QHuntingClubArea;
+import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.sql.SQHuntingClubArea;
+import fi.riista.sql.SQOrganisation;
 import fi.riista.sql.SQZone;
+import fi.riista.util.F;
 import fi.riista.util.GISUtils;
-import org.geolatte.geom.Geometry;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +20,11 @@ import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
-import static com.querydsl.spatial.GeometryExpressions.setSRID;
+import static java.util.stream.Collectors.toSet;
 
 
 @Repository
@@ -34,39 +37,52 @@ public class HuntingClubGroupRepositoryImpl implements HuntingClubGroupRepositor
     @Resource
     private SQLTemplates queryDslSqlTemplates;
 
+    @Resource
+    private OccupationRepository occupationRepository;
+
     @Override
     @Transactional(readOnly = true)
-    public List<HuntingClubGroup> findAllGroupsWithAreaIntersecting(final GameDiaryEntry diaryEntry,
-                                                                    final int huntingYear) {
-        final GeometryExpression<?> geometryExpression = setSRID(
-                makePoint(diaryEntry.getGeoLocation()),
-                GISUtils.SRID.ETRS_TM35FIN.getValue());
+    public List<HuntingClubGroup> findGroupsByAuthorAndActorWuthAreaIntersecting(final GameDiaryEntry diaryEntry,
+                                                                                 final int huntingYear) {
 
-        final List<Long> zoneIds = new JPASQLQuery<>(entityManager, queryDslSqlTemplates)
-                .from(SQZone.zone)
-                .select(SQZone.zone.zoneId)
-                .where(SQZone.zone.geom.intersects(geometryExpression))
-                .fetch();
+        final Set<Long> authorAndActorClub = findAuthorAndActorClubMemberships(diaryEntry).stream()
+                .map(Occupation::getOrganisation)
+                .map(Organisation::getId)
+                .collect(toSet());
 
-        if (zoneIds.isEmpty()) {
+        if (authorAndActorClub.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final QHuntingClubArea area = QHuntingClubArea.huntingClubArea;
-        final QHuntingClubGroup group = QHuntingClubGroup.huntingClubGroup;
+        final SQOrganisation club = new SQOrganisation("club");
+        final SQOrganisation group = new SQOrganisation("clubgroup");
+        final SQHuntingClubArea area = SQHuntingClubArea.huntingClubArea;
+        final SQZone zone = SQZone.zone;
 
-        return new JPAQuery<>(entityManager)
+        final QHuntingClubGroup groupEntity = new QHuntingClubGroup("clubgroup");
+        return new JPASQLQuery<>(entityManager, queryDslSqlTemplates)
+                .select(groupEntity)
                 .from(group)
-                .join(group.huntingArea, area)
-                .select(group)
-                .where(area.zone.id.in(zoneIds)
-                        .and(area.active.isTrue())
-                        .and(area.huntingYear.eq(huntingYear)))
+                .join(club).on(club.organisationId.eq(group.parentOrganisationId))
+                .join(area).on(area.huntingClubAreaId.eq(group.huntingAreaId))
+                .join(zone).on(zone.zoneId.eq(area.zoneId))
+                .where(club.organisationId.in(authorAndActorClub))
+                .where(area.isActive.isTrue())
+                .where(area.huntingYear.eq(huntingYear))
+                .where(zone.geom.intersects(GISUtils.createPointWithDefaultSRID(diaryEntry.getGeoLocation())))
                 .fetch();
     }
 
-    private static SimpleTemplate<Geometry> makePoint(final GeoLocation geoLocation) {
-        return Expressions.template(Geometry.class, "ST_MakePoint({0},{1})",
-                geoLocation.getLongitude(), geoLocation.getLatitude());
+    private List<Occupation> findAuthorAndActorClubMemberships(final GameDiaryEntry diaryEntry) {
+        final Person actor = diaryEntry.getActor();
+        final Person author = diaryEntry.getAuthor();
+        if (actor.equals(author)) {
+            return findClubMemberships(actor);
+        }
+        return F.concat(findClubMemberships(actor), findClubMemberships(author));
+    }
+
+    private List<Occupation> findClubMemberships(final Person person) {
+        return occupationRepository.findActiveByPersonAndOrganisationTypes(person, EnumSet.of(OrganisationType.CLUB));
     }
 }

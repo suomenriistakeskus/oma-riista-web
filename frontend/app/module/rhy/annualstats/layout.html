@@ -1,0 +1,112 @@
+<div class="row">
+    <div class="col-xs-6 col-md-5">
+        <div class="h5">
+            <span>{{$ctrl.rhy|rI18nNameFilter}}</span>
+            <span>({{$ctrl.rhy.officialCode}})</span>
+        </div>
+
+        <div class="hidden-md hidden-lg">
+            <button class="r-annual-statistics-state-label {{::$ctrl.getCssClassForStateLabel()}}"
+                    ng-click="$ctrl.openAnnualStatisticsDashboard()"
+                    ng-disabled="!$ctrl.isModerator">
+                <span>{{'rhy.annualStats.state.' + $ctrl.statistics.state | translate}}</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="col-xs-6 col-md-7">
+        <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-8 col-lg-9">
+                <div class="row">
+                    <div class="col-md-6 hidden-xs hidden-sm">
+                        <button class="r-annual-statistics-state-label {{::$ctrl.getCssClassForStateLabel()}}"
+                                ng-click="$ctrl.openAnnualStatisticsDashboard()"
+                                ng-disabled="!$ctrl.isModerator">
+                            <span>{{'rhy.annualStats.state.' + $ctrl.statistics.state | translate}}</span>
+                        </button>
+                    </div>
+
+                    <div class="col-md-6 text-right">
+                        <span class="hidden-xs hidden-lg" translate="global.year"></span>
+                        <span class="hidden-sm hidden-md" translate="global.financialYear"></span>
+                        <span>&nbsp;&nbsp;</span>
+
+                        <select name="yearSelection" id="yearSelection"
+                                class="form-control r-annual-statistics-year-select"
+                                ng-model="$ctrl.calendarYear"
+                                ng-options="year for year in $ctrl.availableYears"
+                                ng-change="$ctrl.onSelectedYearChanged()">
+
+                            <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-6 col-xs-offset-6 col-sm-6 col-sm-offset-0 col-md-4 col-lg-3">
+                <div class="btn-group pull-right" role="group" uib-dropdown dropdown-append-to-body>
+                    <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                        <span translate="rhy.annualStats.button.exportToFile"></span>
+                        &nbsp;
+                        <span class="caret"></span>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+                        <li>
+                            <a ng-click="$ctrl.exportToExcel()">
+                                <span class="glyphicon glyphicon-th"></span>
+                                &nbsp;
+                                <span translate="rhy.annualStats.button.exportRhyToExcel"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a ng-click="$ctrl.exportToPdf()">
+                                <span class="fa fa-file-pdf-o"></span>
+                                &nbsp;
+                                <span translate="rhy.annualStats.button.exportRhyToPDF"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a ng-click="$ctrl.exportAllAnnualStatisticsToExcel(false)">
+                                <span class="glyphicon glyphicon-th"></span>
+                                &nbsp;
+                                <span translate="rhy.annualStats.button.exportAllToExcel"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a ng-click="$ctrl.exportAllAnnualStatisticsToExcel(true)">
+                                <span class="glyphicon glyphicon-th"></span>
+                                &nbsp;
+                                <span translate="rhy.annualStats.button.exportAllWithRkaGroupingToExcel"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="r-annual-statistics-tabset">
+    <annual-statistics-tabset statistics="$ctrl.statistics"
+                              all-species-names="$ctrl.allSpeciesNames">
+    </annual-statistics-tabset>
+</div>
+
+<div class="buttons text-right">
+    <button type="button"
+            class="btn btn-warning"
+            translate="rhy.annualStats.button.submitForInspection"
+            ng-confirm-click="{{'rhy.annualStats.confirmation.submitForInspection' | translate}}"
+            ng-confirm-click-action="$ctrl.submitForInspection()"
+            ng-if="$ctrl.isSubmitForInspectionButtonVisible()"
+            ng-disabled="!$ctrl.statistics.readyForInspection"></button>
+
+    <button type="button"
+            class="btn btn-warning"
+            translate="rhy.annualStats.button.approve"
+            ng-confirm-click="{{'rhy.annualStats.confirmation.approval' | translate}}"
+            ng-confirm-click-action="$ctrl.approve()"
+            ng-if="$ctrl.isApproveButtonVisible()"
+            ng-disabled="!$ctrl.statistics.completeForApproval"></button>
+</div>

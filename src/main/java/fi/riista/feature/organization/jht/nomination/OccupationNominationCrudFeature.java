@@ -133,7 +133,7 @@ public class OccupationNominationCrudFeature extends AbstractCrudFeature<Long, O
         final OccupationNomination entity = requireEntity(occupationNominationId,
                 OccupationNominationAuthorization.Permission.PROPOSE);
 
-        entity.propose(activeUserService.getActiveUser().getPerson());
+        entity.propose(activeUserService.requireActiveUser().getPerson());
     }
 
     @Transactional
@@ -158,7 +158,7 @@ public class OccupationNominationCrudFeature extends AbstractCrudFeature<Long, O
 
         final Occupation occupation = createOccupationForNomination(entity, jhtPeriod);
 
-        entity.acceptByModerator(activeUserService.getActiveUser(), occupation);
+        entity.acceptByModerator(activeUserService.requireActiveUser(), occupation);
     }
 
     @Transactional
@@ -168,7 +168,7 @@ public class OccupationNominationCrudFeature extends AbstractCrudFeature<Long, O
         final OccupationNomination entity = requireEntity(occupationNominationId,
                 OccupationNominationAuthorization.Permission.REJECT);
 
-        entity.rejectByModerator(activeUserService.getActiveUser());
+        entity.rejectByModerator(activeUserService.requireActiveUser());
     }
 
     private Occupation createOccupationForNomination(@Nonnull final OccupationNomination occupationNomination,
@@ -176,8 +176,8 @@ public class OccupationNominationCrudFeature extends AbstractCrudFeature<Long, O
         Objects.requireNonNull(occupationNomination, "occupationNomination is null");
         Objects.requireNonNull(occupationNomination, "occupationPeriod is null");
 
-        Preconditions.checkArgument(occupationPeriod.validateBeforeAndEnd(), "invalid jhtPeriod");
-        Preconditions.checkArgument(occupationPeriod.validateEndDate(), "invalid jhtPeriod");
+        Preconditions.checkArgument(occupationPeriod.isPeriodValid(), "invalid jhtPeriod");
+        Preconditions.checkArgument(occupationPeriod.isEndDateValid(), "invalid jhtPeriod");
         Preconditions.checkArgument(OccupationType.isValidJhtOccupationType(occupationNomination.getOccupationType()),
                 "only RHY occupationNominations are supported");
 

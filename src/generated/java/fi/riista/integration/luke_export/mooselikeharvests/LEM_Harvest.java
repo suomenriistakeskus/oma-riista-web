@@ -24,6 +24,7 @@ import org.joda.time.LocalDateTime;
  *         &lt;element name="geoLocation" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}geoLocation"/&gt;
  *         &lt;element name="pointOfTime" type="{http://www.w3.org/2001/XMLSchema}dateTime"/&gt;
  *         &lt;element name="gender" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}gameGender"/&gt;
+ *         &lt;element name="alone" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
  *         &lt;element name="age" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}gameAge"/&gt;
  *         &lt;element name="weightEstimated" type="{http://www.w3.org/2001/XMLSchema}double" minOccurs="0"/&gt;
  *         &lt;element name="weightMeasured" type="{http://www.w3.org/2001/XMLSchema}double" minOccurs="0"/&gt;
@@ -47,6 +48,7 @@ import org.joda.time.LocalDateTime;
     "geoLocation",
     "pointOfTime",
     "gender",
+    "alone",
     "age",
     "weightEstimated",
     "weightMeasured",
@@ -69,6 +71,8 @@ public class LEM_Harvest {
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07", required = true)
     @XmlSchemaType(name = "token")
     protected LEM_GameGender gender;
+    @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
+    protected Boolean alone;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07", required = true)
     @XmlSchemaType(name = "token")
     protected LEM_GameAge age;
@@ -163,6 +167,30 @@ public class LEM_Harvest {
      */
     public void setGender(LEM_GameGender value) {
         this.gender = value;
+    }
+
+    /**
+     * Gets the value of the alone property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isAlone() {
+        return alone;
+    }
+
+    /**
+     * Sets the value of the alone property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setAlone(Boolean value) {
+        this.alone = value;
     }
 
     /**

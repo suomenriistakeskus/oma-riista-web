@@ -81,6 +81,22 @@
             </div>
         </div>
 
+        <div class="form-group" ng-if="entry.isAlonePossible()">
+            <label for="alone" class="control-label">
+                <span translate="gamediary.form.solitaryCalf"></span>
+            </label>
+
+            <div class="form-control-wrapper">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="alone" id="alone"
+                               class="r-non-labeled-checkbox"
+                               ng-model="entry.specimens[0].alone"/>
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <div class="form-group" ng-if="isFieldVisible('notEdible')">
             <label for="notEdible" class="control-label">
                 <span translate="gamediary.form.notEdible"></span>

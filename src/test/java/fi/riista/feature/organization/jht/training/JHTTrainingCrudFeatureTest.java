@@ -1,10 +1,10 @@
 package fi.riista.feature.organization.jht.training;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.organization.jht.nomination.OccupationNomination;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationRepository;
 import org.junit.Test;
 

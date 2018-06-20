@@ -1,6 +1,5 @@
 package fi.riista.feature.huntingclub.members.club;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.huntingclub.HuntingClub;
@@ -9,6 +8,7 @@ import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.junit.Test;
 

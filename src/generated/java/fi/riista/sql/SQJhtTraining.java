@@ -57,9 +57,9 @@ public class SQJhtTraining extends RelationalPathSpatial<SQJhtTraining> {
 
     public final com.querydsl.sql.PrimaryKey<SQJhtTraining> jhtTrainingPkey = createPrimaryKey(jhtTrainingId);
 
-    public final com.querydsl.sql.ForeignKey<SQPerson> jhtTrainingPersonIdFk = createForeignKey(personId, "person_id");
-
     public final com.querydsl.sql.ForeignKey<SQOccupationType> jhtTrainingOccupationTypeFk = createForeignKey(occupationType, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQPerson> jhtTrainingPersonIdFk = createForeignKey(personId, "person_id");
 
     public SQJhtTraining(String variable) {
         super(SQJhtTraining.class, forVariable(variable), "public", "jht_training");
@@ -68,6 +68,11 @@ public class SQJhtTraining extends RelationalPathSpatial<SQJhtTraining> {
 
     public SQJhtTraining(String variable, String schema, String table) {
         super(SQJhtTraining.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQJhtTraining(String variable, String schema) {
+        super(SQJhtTraining.class, forVariable(variable), schema, "jht_training");
         addMetadata();
     }
 

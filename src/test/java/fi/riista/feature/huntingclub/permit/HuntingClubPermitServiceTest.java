@@ -1,22 +1,14 @@
 package fi.riista.feature.huntingclub.permit;
 
-import static fi.riista.feature.huntingclub.permit.summary.ClubHuntingSummaryBasicInfoDTO.calculatePercentageBasedEffectiveArea;
-import static fi.riista.util.Asserts.assertEqualMapsAfterValueTransformation;
-import static fi.riista.util.TestUtils.pair;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
 import fi.riista.feature.huntingclub.permit.summary.ClubHuntingSummaryBasicInfo;
 import fi.riista.feature.huntingclub.permit.summary.ClubHuntingSummaryBasicInfoDTO;
@@ -24,11 +16,10 @@ import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
 import fi.riista.feature.huntingclub.support.HuntingClubTestDataHelper;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import javaslang.Tuple7;
-
+import fi.riista.test.EmbeddedDatabaseTest;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.Tuple7;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,13 +27,19 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
+import static fi.riista.feature.huntingclub.permit.summary.ClubHuntingSummaryBasicInfoDTO.calculatePercentageBasedEffectiveArea;
+import static fi.riista.test.Asserts.assertEqualMapsAfterValueTransformation;
+import static fi.riista.test.TestUtils.pair;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     private enum SummaryType {
         MOOSE, BASIC
@@ -93,7 +90,7 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
     @Transactional
     public void testHasPartnerFinishedHunting_forNonMoose() {
         withRhy(rhy -> {
-            final GameSpecies species = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_MOOSE + 1);
+            final GameSpecies species = model().newDeerSubjectToClubHunting();
 
             final HarvestPermit permit = model().newHarvestPermit(rhy);
             final HarvestPermitSpeciesAmount speciesAmount = model().newHarvestPermitSpeciesAmount(permit, species);
@@ -224,7 +221,7 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
     private void testAllPartnersFinishedHunting(@Nullable final Tuple2<SummaryType, Boolean> summaryTupleForClub1,
                                                 @Nullable final Tuple2<SummaryType, Boolean> summaryTupleForClub2) {
         withRhy(rhy -> {
-            final GameSpecies species = model().newGameSpecies();
+            final GameSpecies species = model().newDeerSubjectToClubHunting();
 
             final HarvestPermit permit = model().newHarvestPermit(rhy);
             final HarvestPermitSpeciesAmount speciesAmount = model().newHarvestPermitSpeciesAmount(permit, species);
@@ -339,7 +336,7 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
 
             // Creating basic summary for species not of interest.
             final HarvestPermitSpeciesAmount speciesAmount2 =
-                    model().newHarvestPermitSpeciesAmount(permit, model().newGameSpecies());
+                    model().newHarvestPermitSpeciesAmount(permit, model().newDeerSubjectToClubHunting());
             model().newModeratedBasicHuntingSummary(speciesAmount2, club4);
 
             // club5 does not have summary at all.
@@ -364,10 +361,10 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
     @Transactional
     public void testGetHuntingSummaryBasicInfoGroupedByClubId_forNonMoose() {
         withRhy(rhy -> {
-            final GameSpecies species = model().newGameSpecies();
+            final GameSpecies deer = model().newDeerSubjectToClubHunting();
 
             final HarvestPermit permit = model().newHarvestPermit(rhy);
-            final HarvestPermitSpeciesAmount speciesAmount = model().newHarvestPermitSpeciesAmount(permit, species);
+            final HarvestPermitSpeciesAmount speciesAmount = model().newHarvestPermitSpeciesAmount(permit, deer);
 
             final HuntingClub club1 = model().newHuntingClub(rhy);
             final HuntingClub club2 = model().newHuntingClub(rhy);
@@ -395,7 +392,7 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
                             club2.getId(), createDTO(club2Summary.getBasicInfo(), false),
                             club3.getId(), empty,
                             club4.getId(), empty),
-                    service.getHuntingSummaryBasicInfoGroupedByClubId(permit, species.getOfficialCode()),
+                    service.getHuntingSummaryBasicInfoGroupedByClubId(permit, deer.getOfficialCode()),
                     HuntingClubPermitServiceTest::toTuple);
         });
     }
@@ -405,8 +402,8 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
     public void testGetHuntingSummaryBasicInfoGroupedByClubId_resultForNonMooseNotAffectedByMooseSummaryWhenNoOtherSummaryPresent() {
         withMooseHuntingGroupFixture(f -> {
 
-            final GameSpecies nonMoose = model().newGameSpecies();
-            model().newHarvestPermitSpeciesAmount(f.permit, nonMoose);
+            final GameSpecies deer = model().newDeerSubjectToClubHunting();
+            model().newHarvestPermitSpeciesAmount(f.permit, deer);
 
             // Intermediate flush needed before persisting MooseHuntingSummary in order to have
             // harvest_permit_partners table populated mandated by foreign key constraint.
@@ -420,7 +417,7 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
 
             assertEqualMapsAfterValueTransformation(
                     ImmutableMap.of(f.club.getId(), empty),
-                    service.getHuntingSummaryBasicInfoGroupedByClubId(f.permit, nonMoose.getOfficialCode()),
+                    service.getHuntingSummaryBasicInfoGroupedByClubId(f.permit, deer.getOfficialCode()),
                     HuntingClubPermitServiceTest::toTuple);
         });
     }
@@ -430,15 +427,15 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
     public void testGetHuntingSummaryBasicInfoGroupedByClubId_nonMooseSummaryNotAffectedByMooseSummaryOfOtherPermit() {
         withMooseHuntingGroupFixture(f -> {
 
-            final GameSpecies nonMoose = model().newGameSpecies();
-            final HarvestPermit nonMoosePermit = model().newHarvestPermit(f.rhy);
-            final HarvestPermitSpeciesAmount nonMooseAmount =
-                    model().newHarvestPermitSpeciesAmount(nonMoosePermit, nonMoose);
+            final GameSpecies deer = model().newDeerSubjectToClubHunting();
+            final HarvestPermit deerPermit = model().newHarvestPermit(f.rhy);
+            final HarvestPermitSpeciesAmount deerAmount =
+                    model().newHarvestPermitSpeciesAmount(deerPermit, deer);
 
-            nonMoosePermit.getPermitPartners().add(f.club);
+            deerPermit.getPermitPartners().add(f.club);
 
-            final BasicClubHuntingSummary nonMooseSummary =
-                    model().newBasicHuntingSummary(nonMooseAmount, f.club, true);
+            final BasicClubHuntingSummary deerSummary =
+                    model().newBasicHuntingSummary(deerAmount, f.club, true);
 
             // Intermediate flush needed before persisting MooseHuntingSummary in order to have
             // harvest_permit_partners table populated mandated by foreign key constraint.
@@ -449,8 +446,8 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
             persistInNewTransaction();
 
             assertEqualMapsAfterValueTransformation(
-                    ImmutableMap.of(f.club.getId(), createDTO(nonMooseSummary.getBasicInfo(), false)),
-                    service.getHuntingSummaryBasicInfoGroupedByClubId(nonMoosePermit, nonMoose.getOfficialCode()),
+                    ImmutableMap.of(f.club.getId(), createDTO(deerSummary.getBasicInfo(), false)),
+                    service.getHuntingSummaryBasicInfoGroupedByClubId(deerPermit, deer.getOfficialCode()),
                     HuntingClubPermitServiceTest::toTuple);
         });
     }
@@ -504,16 +501,15 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
         withMooseHuntingGroupFixture(f -> {
             f.group.setFromMooseDataCard(true);
 
-            final GameSpecies nonMoose = model().newGameSpecies();
-            final HarvestPermitSpeciesAmount nonMooseAmount = model().newHarvestPermitSpeciesAmount(f.permit, nonMoose);
-            final BasicClubHuntingSummary nonMooseSummary =
-                    model().newBasicHuntingSummary(nonMooseAmount, f.club, true);
+            final GameSpecies deer = model().newDeerSubjectToClubHunting();
+            final HarvestPermitSpeciesAmount deerAmount = model().newHarvestPermitSpeciesAmount(f.permit, deer);
+            final BasicClubHuntingSummary deerSummary = model().newBasicHuntingSummary(deerAmount, f.club, true);
 
             persistInNewTransaction();
 
             assertEqualMapsAfterValueTransformation(
-                    ImmutableMap.of(f.club.getId(), createDTO(nonMooseSummary.getBasicInfo(), false)),
-                    service.getHuntingSummaryBasicInfoGroupedByClubId(f.permit, nonMoose.getOfficialCode()),
+                    ImmutableMap.of(f.club.getId(), createDTO(deerSummary.getBasicInfo(), false)),
+                    service.getHuntingSummaryBasicInfoGroupedByClubId(f.permit, deer.getOfficialCode()),
                     HuntingClubPermitServiceTest::toTuple);
         });
     }
@@ -553,5 +549,4 @@ public class HuntingClubPermitServiceTest extends EmbeddedDatabaseTest {
                 dto.getTotalHuntingArea(), dto.getEffectiveHuntingArea(), dto.getRemainingPopulationInTotalArea(),
                 dto.getRemainingPopulationInEffectiveArea());
     }
-
 }

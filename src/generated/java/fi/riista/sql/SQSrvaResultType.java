@@ -43,6 +43,11 @@ public class SQSrvaResultType extends RelationalPathSpatial<SQSrvaResultType> {
         addMetadata();
     }
 
+    public SQSrvaResultType(String variable, String schema) {
+        super(SQSrvaResultType.class, forVariable(variable), schema, "srva_result_type");
+        addMetadata();
+    }
+
     public SQSrvaResultType(Path<? extends SQSrvaResultType> path) {
         super(path.getType(), path.getMetadata(), "public", "srva_result_type");
         addMetadata();

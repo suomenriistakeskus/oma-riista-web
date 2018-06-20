@@ -4,25 +4,35 @@ import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.error.NotFoundException;
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.area.HarvestPermitArea;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
-import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
+import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
+import fi.riista.feature.organization.Riistakeskus;
+import fi.riista.feature.organization.RiistakeskusRepository;
+import fi.riista.feature.organization.calendar.Venue;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.organization.calendar.Venue;
-import fi.riista.feature.gamediary.srva.SrvaEvent;
+import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics;
+import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.area.HarvestPermitArea;
+import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.invoice.Invoice;
+import fi.riista.feature.permit.invoice.batch.PermitDecisionInvoiceBatch;
+import fi.riista.feature.shootingtest.ShootingTestAttempt;
+import fi.riista.feature.shootingtest.ShootingTestEvent;
+import fi.riista.feature.shootingtest.ShootingTestParticipant;
 import fi.riista.security.EntityPermission;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,9 +41,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Objects;
 
-@Service
+@Component
 @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
 public class RequireEntityService {
+
+    @Resource
+    private RiistakeskusRepository riistakeskusRepository;
 
     @Resource
     private ActiveUserService activeUserService;
@@ -53,6 +66,16 @@ public class RequireEntityService {
         return require(id, Venue.class, permission);
     }
 
+    public Riistakeskus requireRiistakeskus(final Enum<?> permission) {
+        final Riistakeskus rk = riistakeskusRepository.get();
+        assertPermission(rk, permission);
+        return rk;
+    }
+
+    public RiistakeskuksenAlue requireRiistakeskuksenAlue(final Long id, final Enum<?> permission) {
+        return require(id, RiistakeskuksenAlue.class, permission);
+    }
+
     public Riistanhoitoyhdistys requireRiistanhoitoyhdistys(final Long id, final Enum<?> permission) {
         return require(id, Riistanhoitoyhdistys.class, permission);
     }
@@ -69,12 +92,20 @@ public class RequireEntityService {
         return require(id, SrvaEvent.class, permission);
     }
 
-    public HarvestReport requireHarvestReport(final Long id, final Enum<?> permission) {
-        return require(id, HarvestReport.class, permission);
-    }
-
     public HarvestPermit requireHarvestPermit(final Long id, final Enum<?> permission) {
         return require(id, HarvestPermit.class, permission);
+    }
+
+    public PermitDecision requirePermitDecision(final Long id, final Enum<?> permission) {
+        return require(id, PermitDecision.class, permission);
+    }
+
+    public PermitDecisionInvoiceBatch requirePermitDecisionInvoiceBatch(final Long id, final Enum<?> permission) {
+        return require(id, PermitDecisionInvoiceBatch.class, permission);
+    }
+
+    public Invoice requireInvoice(final Long id, final Enum<?> permission) {
+        return require(id, Invoice.class, permission);
     }
 
     public HuntingClub requireHuntingClub(final Long id, final Enum<?> permission) {
@@ -97,6 +128,10 @@ public class RequireEntityService {
         return require(id, HarvestPermitArea.class, permission);
     }
 
+    public HarvestPermitApplication requireHarvestPermitApplication(final Long id, final Enum<?> permission) {
+        return require(id, HarvestPermitApplication.class, permission);
+    }
+
     public MooseDataCardImport requireMooseDataCardImport(final Long id, final Enum<?> permission) {
         return require(id, MooseDataCardImport.class, permission);
     }
@@ -113,8 +148,26 @@ public class RequireEntityService {
         return require(id, BasicClubHuntingSummary.class, permission);
     }
 
-    private <T extends BaseEntity<ID>, ID extends java.io.Serializable> T require(
-            final ID id, final Class<T> persistentClass, final Enum<?> permission) {
+    public ShootingTestEvent requireShootingTestEvent(final Long id, final Enum<?> permission) {
+        return require(id, ShootingTestEvent.class, permission);
+    }
+
+    public ShootingTestParticipant requireParticipant(final Long id, final Enum<?> permission) {
+        return require(id, ShootingTestParticipant.class, permission);
+    }
+
+    public ShootingTestAttempt requireShootingTestAttempt(final Long id, final Enum<?> permission) {
+        return require(id, ShootingTestAttempt.class, permission);
+    }
+
+    public RhyAnnualStatistics requireRhyAnnualStatistics(final Long id, final Enum<?> permission) {
+        return require(id, RhyAnnualStatistics.class, permission);
+    }
+
+    private <T extends BaseEntity<ID>, ID extends java.io.Serializable> T require(final ID id,
+                                                                                  final Class<T> persistentClass,
+                                                                                  final Enum<?> permission) {
+
         Objects.requireNonNull(id, persistentClass.getSimpleName() + " primary key is required");
         Objects.requireNonNull(permission, "permission not specified");
 
@@ -125,11 +178,15 @@ public class RequireEntityService {
                     persistentClass.getSimpleName(), id));
         }
 
+        assertPermission(entity, permission);
+
+        return entity;
+    }
+
+    private void assertPermission(final BaseEntity<?> entity, final Enum<?> permission) {
         if (permission != EntityPermission.NONE) {
             // Permission check
             activeUserService.assertHasPermission(entity, permission);
         }
-
-        return entity;
     }
 }

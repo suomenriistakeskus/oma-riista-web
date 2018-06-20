@@ -12,95 +12,196 @@ angular.module('app.moosepermit.services', [])
             return self.permitId;
         };
     })
-    .factory('ClubPermits', function ($resource) {
-        return $resource('/api/v1/club/:clubId/permit', {'clubId': '@clubId'}, {
-            'query': {
+
+    .factory('MoosePermits', function ($http, $resource) {
+        var apiPrefix = '/api/v1/moosepermit';
+
+        return $resource(apiPrefix + '/:permitId', {permitId: '@permitId'}, {
+            lukeReportParams: {
                 method: 'GET',
-                params: {year: '@year', species: '@species'},
-                isArray: true
+                url: apiPrefix + '/lukereportparams'
             },
-            'get': {
+            query: {
                 method: 'GET',
-                url: '/api/v1/club/:clubId/permit/:permitId',
-                params: {'clubId': '@clubId', 'permitId': '@permitId'}
+                isArray: true,
+                params: {year: '@year', personId: '@personId', species: '@species'}
             },
-            'huntingYears': {
+            get: {
                 method: 'GET',
-                url: '/api/v1/club/:clubId/permit/huntingyears',
-                isArray: true
+                url: apiPrefix + '/:permitId',
+                params: {permitId: '@permitId'}
             },
-            'clubLeaders': {
+            getRhyCode: {
                 method: 'GET',
-                url: '/api/v1/harvestpermit/moosepermit/:permitId/leaders',
-                isArray: true
+                url: apiPrefix + '/:permitId/rhy',
+                params: {permitId: '@permitId'}
             },
-            'updateAllocations': {
+            listTodos: {
+                method: 'GET',
+                url: apiPrefix + '/:permitId/todo/:speciesCode',
+                params: {permitId: '@permitId', speciesCode: '@speciesCode'}
+            },
+            partnerAreaFeatures: {
+                method: 'GET',
+                url: apiPrefix + '/:permitId/map',
+                params: {'permitId': '@permitId'}
+            },
+            clubHuntingLeaders: {
+                method: 'GET',
+                isArray: true,
+                url: apiPrefix + '/:permitId/leaders'
+            },
+            rhyStatistics: {
+                method: 'GET',
+                isArray: true,
+                url: apiPrefix + '/:permitId/rhystatistics/:speciesCode',
+                params: {permitId: '@permitId', speciesCode: '@speciesCode'}
+            },
+            updateAllocations: {
                 method: 'POST',
-                url: '/api/v1/harvestpermit/moosepermit/allocation/:permitId/:gameSpeciesCode',
-                params: {'permitId': '@permitId', 'gameSpeciesCode': '@gameSpeciesCode'}
+                url: apiPrefix + '/:permitId/allocation/:gameSpeciesCode',
+                params: {permitId: '@permitId', gameSpeciesCode: '@gameSpeciesCode'}
             },
-            'noHarvests': {
+            getClubHuntingSummariesForModeration: {
+                method: 'GET',
+                isArray: true,
+                url: apiPrefix + '/:permitId/override/:speciesCode',
+                params: {permitId: '@permitId', speciesCode: '@speciesCode'}
+            },
+            massOverrideClubHuntingSummaries: {
                 method: 'POST',
-                url: '/api/v1/harvestpermit/moosepermit/:permitId/species/:speciesCode/harvestreport/noharvests',
-                params: {"permitId": "@permitId", "speciesCode": "@speciesCode"}
+                url: apiPrefix + '/:permitId/override/:speciesCode/:complete',
+                params: {
+                    permitId: '@permitId',
+                    speciesCode: '@speciesCode',
+                    complete: '@complete'
+                }
             },
-            'removeHarvestReport': {
+            deleteModeratorOverriddenClubHuntingSummaries: {
                 method: 'DELETE',
-                url: '/api/v1/harvestpermit/moosepermit/:permitId/species/:speciesCode/harvestreport',
-                params: {'permitId': '@permitId', 'speciesCode': '@speciesCode'}
+                url: apiPrefix + '/:permitId/override/:speciesCode',
+                params: {
+                    permitId: '@permitId',
+                    speciesCode: '@speciesCode'
+                }
             }
         });
     })
+
+    .factory('MoosePermitEndOfHuntingReport', function ($resource) {
+        var apiPrefix = '/api/v1/harvestreport/moosepermit/:permitId/:speciesCode';
+
+        return $resource(apiPrefix, {permitId: "@permitId", speciesCode: "@speciesCode"}, {
+            noHarvests: {
+                method: 'POST',
+                url: apiPrefix + '/noharvests'
+            }
+        });
+    })
+
     .service('MoosePermitPdfUrl', function () {
         this.get = function (permitNumber) {
-            return '/api/v1/harvestpermit/moosepermit/pdf?permitNumber=' + permitNumber;
+            return '/api/v1/moosepermit/pdf?permitNumber=' + permitNumber;
         };
     })
     .service('LukeUrlService', function ($httpParamSerializer) {
         this.get = function (permitId, clubId, lukeOrg, lukePresentation, file) {
-            var url = '/api/v1/harvestpermit/moosepermit/' + permitId + '/luke-reports';
+            var url = '/api/v1/moosepermit/' + permitId + '/luke-reports';
+
             return url + '?' + $httpParamSerializer({
-                    clubId: clubId,
-                    org: lukeOrg,
-                    presentation: lukePresentation,
-                    fileName: file
-                });
+                clubId: clubId,
+                org: lukeOrg,
+                presentation: lukePresentation,
+                fileName: file
+            });
         };
     })
-    .service('MoosePermitLeadersService', function (ClubPermits, offCanvasStack) {
+    .service('MoosePermitLeadersService', function (MoosePermits, $uibModal) {
         this.showLeaders = function (params) {
-            return offCanvasStack.open({
+            return $uibModal.open({
                 templateUrl: 'harvestpermit/moosepermit/permit-leaders.html',
-                largeDialog: true,
                 resolve: {
                     leaders: function () {
-                        return ClubPermits.clubLeaders({
+                        return MoosePermits.clubHuntingLeaders({
                             permitId: params.id,
                             huntingYear: params.huntingYear,
                             gameSpeciesCode: params.gameSpeciesCode
                         }).$promise;
                     }
                 },
-                controller: 'MoosePermitLeadersController'
-            }).resolve;
+                size: 'lg',
+                controllerAs: '$ctrl',
+                controller: ModalController,
+                bindToController: true
+            }).result;
         };
+
+        function ModalController($uibModalInstance, leaders) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.leaders = leaders;
+
+                var previousClub = null;
+
+                // Hide repetitive club names
+                for (var i = 0; i < leaders.length; i++) {
+                    var club = leaders[i].club;
+                    if (previousClub && angular.equals(previousClub, club)) {
+                        leaders[i].club = null;
+                    }
+                    previousClub = club;
+                }
+            };
+
+            $ctrl.close = function () {
+                $uibModalInstance.close();
+            };
+        }
     })
     .service('MoosePermitCounterService', function () {
-        var countHarvestsBy = function (permit) {
-            return function (key) {
-                if (key === 'adult') {
-                    return _.sum(permit.harvestCounts, 'adultMales') +
-                        _.sum(permit.harvestCounts, 'adultFemales');
-                }
-                if (key === 'young') {
-                    return _.sum(permit.harvestCounts, 'youngMales') +
-                        _.sum(permit.harvestCounts, 'youngFemales');
-                }
-                return _.sum(permit.harvestCounts, key);
+        var countHarvestsBy = function (permit, key) {
+            if (key === 'adult') {
+                return _.sum(permit.harvestCounts, 'adultMales') + _.sum(permit.harvestCounts, 'adultFemales');
+            }
+            if (key === 'young') {
+                return _.sum(permit.harvestCounts, 'youngMales') + _.sum(permit.harvestCounts, 'youngFemales');
+            }
+            return _.sum(permit.harvestCounts, key);
+        };
+
+        var countAllocateBy = function (allocations, key) {
+            return _.sum(allocations, key);
+        };
+
+        var countSummaryForPartnersTable = function (permit, key) {
+            return _.sum(permit.summaryForPartnersTable, key);
+        };
+
+        var countMaleAdultPercentage = function (func) {
+            var m = func('adultMales');
+            var f = func('adultFemales');
+            return _.round(100 * m / (m + f)) || 0;
+        };
+
+        var countYoungPercentage = function (func) {
+            var m = func('adultMales');
+            var f = func('adultFemales');
+            var y = func('young');
+            return _.round(100 * y / (m + f + y)) || 0;
+        };
+
+        this.create = function (permit, allocations) {
+            var harvestsBy = _.partial(countHarvestsBy, permit);
+            var allocatedBy = _.partial(countAllocateBy, allocations);
+            return {
+                harvestsBy: harvestsBy,
+                allocatedBy: allocatedBy,
+                maleAdultPercentage: _.partial(countMaleAdultPercentage, allocatedBy),
+                youngPercentage: _.partial(countYoungPercentage, allocatedBy),
+                maleAdultHarvestPercentage: _.partial(countMaleAdultPercentage, harvestsBy),
+                youngHarvestPercentage: _.partial(countYoungPercentage, harvestsBy),
+                summaryForPartnersTable: _.partial(countSummaryForPartnersTable, permit)
             };
         };
-        this.createCountHarvestsBy = function (permit) {
-            return countHarvestsBy(permit);
-        };
-    })
-;
+    });

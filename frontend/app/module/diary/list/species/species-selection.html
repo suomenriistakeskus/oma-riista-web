@@ -1,0 +1,43 @@
+<div class="r-content diary-list-species-selection">
+    <ul class="tag-container" ng-if="$ctrl.state.selectedSpecies.length > 0">
+        <li class="tag" ng-repeat="species in $ctrl.state.selectedSpecies track by species.code">
+            <span>{{ $ctrl.getGameName(species.code) }}</span>
+            <span>{{$ctrl.totalSpecimenAmountBySpecies[species.code]}}</span>
+            <span class="glyphicon glyphicon-remove r-tag-choice-close"
+                  ng-click="$ctrl.removeSpeciesFromSelection(species.code)"></span>
+        </li>
+    </ul>
+
+    <div>
+        <!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
+        IE10 complains of unselected value if 'required', therefore we force existence of this field manually -->
+        <div class="form-group">
+            <select name="speciesSelection" id="speciesSelection"
+                    class="form-control"
+                    ng-disabled="$ctrl.state.unselectedSpecies.length === 0"
+                    ng-model="$ctrl.lastSelectedSpeciesCode"
+                    ng-change="$ctrl.speciesAddedToSelection()"
+                    ng-options="s.code as $ctrl.getGameName(s.code) group by $ctrl.getCategoryName(s.categoryId) for s in $ctrl.state.unselectedSpecies | orderBy:['categoryId'] track by s.code"
+                    ie10-optgroup-fix>
+                <option disabled value="">{{ 'gamediary.search.showSpecies' | translate }}</option>
+            </select>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <button type="button" class="btn btn-primary"
+                        ng-click="$ctrl.selectAllSpecies()"
+                        ng-disabled="$ctrl.state.unselectedSpecies.length === 0">
+                    <span translate="gamediary.button.selectAll"></span>
+                </button>
+            </div>
+            <div class="col-xs-6 text-right">
+                <button type="button" class="btn btn-primary"
+                        ng-click="$ctrl.deselectAllSpecies()"
+                        ng-disabled="$ctrl.state.selectedSpecies.length === 0">
+                    <span translate="gamediary.button.deselectAll"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

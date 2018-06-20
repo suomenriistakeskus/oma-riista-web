@@ -1,18 +1,19 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_3;
-import fi.riista.util.ValidationUtils;
-import javaslang.control.Validation;
+import io.vavr.control.Validation;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static fi.riista.util.ValidationUtils.applying;
+import static java.util.Arrays.asList;
+
 public class MooseDataCardSection83Validator {
 
-    private static final List<Function<MooseDataCardSection_8_3, Validation<String, ?>>> VALIDATIONS = Arrays.asList(
+    private static final List<Function<MooseDataCardSection_8_3, Validation<String, ?>>> VALIDATION_FUNCTIONS = asList(
             MooseDataCardSummaryField.DROWNED_AMOUNT::validate,
             MooseDataCardSummaryField.KILLED_BY_BEAR_AMOUNT::validate,
             MooseDataCardSummaryField.KILLED_BY_WOLF_AMOUNT::validate,
@@ -26,7 +27,6 @@ public class MooseDataCardSection83Validator {
             @Nonnull final MooseDataCardSection_8_3 section) {
 
         Objects.requireNonNull(section);
-        return ValidationUtils.validate(section, VALIDATIONS);
+        return VALIDATION_FUNCTIONS.stream().collect(applying(section));
     }
-
 }

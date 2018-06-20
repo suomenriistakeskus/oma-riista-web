@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings xmlns:annox="http://annox.dev.java.net"
+               xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               schemaLocation="ShootingTestExport.xsd"
+               jaxb:extensionBindingPrefixes="xjc annox"
+               version="2.1">
+
+    <jaxb:schemaBindings>
+        <jaxb:package name="fi.riista.integration.metsastajarekisteri.shootingtest"/>
+
+        <jaxb:nameXmlTransform>
+            <jaxb:typeName prefix="MR_"/>
+            <jaxb:anonymousTypeName prefix="MR_"/>
+            <jaxb:elementName prefix="MR_"/>
+
+        </jaxb:nameXmlTransform>
+    </jaxb:schemaBindings>
+
+    <jaxb:globalBindings>
+        <xjc:javaType adapter="fi.riista.integration.support.LocalDateAdapter"
+                      name="org.joda.time.LocalDate"
+                      xmlType="xsd:date"/>
+    </jaxb:globalBindings>
+
+    <jaxb:bindings node="//xsd:complexType[@name='Person']">
+        <annox:annotate>
+            <annox:annotate annox:class="javax.xml.bind.annotation.XmlRootElement" name="Person"/>
+        </annox:annotate>
+    </jaxb:bindings>
+
+</jaxb:bindings>

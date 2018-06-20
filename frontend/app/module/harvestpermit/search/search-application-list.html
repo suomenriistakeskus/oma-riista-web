@@ -1,0 +1,54 @@
+<div ng-if="$ctrl.results.length === 0" class="alert alert-info">Ei tuloksia</div>
+
+<table ng-if="$ctrl.results.length > 0" class="table table-condensed table-striped">
+    <thead>
+    <tr>
+        <th class="col-xs-1">Hakemusnumero</th>
+        <th class="col-xs-1">Jätetty</th>
+        <th class="col-xs-2">Hakemuksen nimi</th>
+        <th class="col-xs-2">Yhteyshenkilö</th>
+        <th class="col-xs-2">Luvansaaja</th>
+        <th class="col-xs-2">Käsittelijä</th>
+        <th class="col-xs-1">Tila</th>
+        <th class="col-xs-1"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr ng-repeat="application in $ctrl.results">
+        <td>
+            <span ng-bind="::application.applicationNumber"></span>
+        </td>
+        <td>
+            <span ng-class="{'text-danger': $ctrl.isLateApplication(application)}"
+                  ng-bind="::application.submitDate | date:'dd.MM.yyyy'"></span>
+            <span ng-bind="::application.submitDate | date:'HH:mm'"></span>
+        </td>
+        <td>
+            <span ng-bind="::$ctrl.getApplicationName(application)"></span>
+        </td>
+        <td>
+            <span ng-bind="::application.contactPerson.byName"></span>
+            <span ng-bind="::application.contactPerson.lastName"></span>
+        </td>
+        <td>
+            <span ng-show="application.permitHolder" ng-bind="::application.permitHolder.officialCode"></span>
+            <span ng-show="application.permitHolder" ng-bind="::application.permitHolder | rI18nNameFilter"></span>
+            <span ng-show="!application.permitHolder" ng-bind="::application.contactPerson.byName"></span>
+            <span ng-show="!application.permitHolder" ng-bind="::application.contactPerson.lastName"></span>
+        </td>
+        <td>
+            <span ng-show="application.handler" ng-bind="::application.handler.lastName"></span>
+            <span ng-show="application.handler" ng-bind="::application.handler.byName"></span>
+        </td>
+        <td>
+            <span translate="harvestpermit.decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus(application)}}"></span>
+        </td>
+        <td>
+            <button type="button"
+                    class="btn btn-primary btn-block"
+                    ng-click="$ctrl.openApplication(application)">Avaa</button>
+        </td>
+    </tr>
+    </tbody>
+</table>

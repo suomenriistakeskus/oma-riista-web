@@ -24,5 +24,5 @@ public interface OccupationRepositoryCustom {
 
     boolean alreadyExists(OccupationDTO dto);
 
-    Map<Organisation, Occupation> listCoordinators(List<Organisation> organisations);
+    Map<Organisation, Occupation> listCoordinators(List<? extends Organisation> organisations);
 }

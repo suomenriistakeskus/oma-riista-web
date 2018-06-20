@@ -4,12 +4,12 @@ import com.google.common.base.Preconditions;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.organization.jht.nomination.OccupationNomination;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonLookupService;
+import fi.riista.feature.organization.person.PersonNotFoundException;
 import fi.riista.feature.organization.person.Person_;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
@@ -76,7 +76,7 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
             entity.setTrainingLocation(dto.getTrainingLocation());
             entity.setTrainingType(dto.getTrainingType());
             entity.setPerson(personLookupService.findById(dto.getPerson().getId())
-                    .orElseThrow(() -> new NotFoundException("No such person")));
+                    .orElseThrow(() -> new PersonNotFoundException(dto.getPerson().getId())));
         }
     }
 
@@ -178,14 +178,14 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
         occupationNomination.setOccupationType(occupationType);
         occupationNomination.setPerson(person);
         occupationNomination.setRhy(rhy);
-        occupationNomination.setRhyPerson(activeUserService.getActiveUser().getPerson());
+        occupationNomination.setRhyPerson(activeUserService.requireActiveUser().getPerson());
 
         return occupationNominationRepository.save(occupationNomination);
     }
 
     @Transactional(readOnly = true)
     public List<JHTTrainingDTO> listMine() {
-        final SystemUser activeUser = activeUserService.getActiveUser();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
 
         if (activeUser.getRole() == SystemUser.Role.ROLE_USER && activeUser.getPerson() != null) {
             final List<JHTTraining> byPerson = jhtTrainingRepository.findByPerson(activeUser.getPerson());

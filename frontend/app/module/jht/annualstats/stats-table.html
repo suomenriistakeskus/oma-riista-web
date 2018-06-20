@@ -1,0 +1,31 @@
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th class="col-xs-2 col-lg-1 text-right" translate="rhy.officialCode"></th>
+                <th class="col-xs-8 col-lg-10" translate="global.organisationType.RHY"></th>
+                <th class="col-xs-2 col-lg-1"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="entry in $ctrl.annualStats track by entry.rhyId">
+                <td class="text-right" ng-bind="::entry.rhyCode"></td>
+                <td>
+                    <span ng-bind="entry.rhyName | rI18nNameFilter"></span>&nbsp;
+                    <span ng-if="::$ctrl.isReadyForTransitioningToNextState(entry)" class="glyphicon glyphicon-ok"></span>
+                </td>
+                <td class="text-right">
+                    <button type="button"
+                            class="annual-statistics-open-button"
+                            ng-click="$ctrl.openAnnualStatistics(entry.rhyId)">
+
+                        <span ng-switch="::($ctrl.isAnnualStatisticsCreated(entry))">
+                            <span ng-switch-when="true" translate="global.button.open"></span>
+                            <span ng-switch-when="false" translate="global.button.create"></span>
+                        </span>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

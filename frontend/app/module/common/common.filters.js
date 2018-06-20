@@ -47,11 +47,22 @@ angular.module('app.common.filters', [])
     .filter('htmlSplitLines', function ($sce, $filter) {
         var linky = $filter('linky');
 
+        function insideParagraph(input) {
+            return _(input.split(/\n/g)).map(function (line) {
+                return linky(line, '_blank');
+            }).join('<br>');
+        }
+
         return function (input) {
-            return $sce.trustAsHtml(angular.isString(input)
-                ? _(input.split('\n')).map(function (text) {
-                return '<p>' + linky(text, '_blank') + '</p>';
-            }).join('') : '');
+            if (!angular.isString(input)) {
+                return '';
+            }
+
+            var result = _(input.split(/\n{2,}/)).map(function (text) {
+                return '<p>' + insideParagraph(text) + '</p>';
+            }).join('');
+
+            return $sce.trustAsHtml(result);
         };
     })
 
@@ -90,10 +101,11 @@ angular.module('app.common.filters', [])
     })
 
     .filter('range', function () {
-        return function (input, start, end) {
+        return function (input, start, end, step) {
+            step = step || 1;
             start = parseInt(start);
             end = parseInt(end);
-            var direction = (start <= end) ? 1 : -1;
+            var direction = (start <= end) ? step : -step;
 
             while (start !== end) {
                 input.push(start);
@@ -156,6 +168,16 @@ angular.module('app.common.filters', [])
             }
 
             return '';
+        };
+    })
+
+    .filter('sumFinite', function () {
+        return function (arr) {
+            if (!_.isArray(arr)) {
+                return null;
+            }
+            var finite = _.filter(arr, _.isFinite);
+            return _.isEmpty(finite) ? null : _.sum(finite);
         };
     })
 ;

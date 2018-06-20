@@ -4,24 +4,22 @@ import fi.riista.feature.common.entity.HasID;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 public class GISZoneWithoutGeometryDTO implements HasID<Long>, Serializable {
     private final long id;
     private final GISZone.SourceType sourceType;
-    private final double computedAreaSize;
-    private final double waterAreaSize;
+    private final GISZoneSizeDTO size;
     private final Date modificationTime;
 
-    public GISZoneWithoutGeometryDTO(final long id,
-                                     final String sourceType,
-                                     final double computedAreaSize,
-                                     final double waterAreaSize,
+    public GISZoneWithoutGeometryDTO(final Long id,
+                                     final GISZoneSizeDTO size,
+                                     final GISZone.SourceType sourceType,
                                      final Date modificationTime) {
-        this.id = id;
-        this.sourceType = GISZone.SourceType.valueOf(sourceType);
-        this.computedAreaSize = computedAreaSize;
-        this.waterAreaSize = waterAreaSize;
-        this.modificationTime = modificationTime;
+        this.id = Objects.requireNonNull(id);
+        this.size = Objects.requireNonNull(size);
+        this.sourceType = Objects.requireNonNull(sourceType);
+        this.modificationTime = Objects.requireNonNull(modificationTime);
     }
 
     @Override
@@ -29,20 +27,15 @@ public class GISZoneWithoutGeometryDTO implements HasID<Long>, Serializable {
         return id;
     }
 
+    public GISZoneSizeDTO getSize() {
+        return size;
+    }
+
     public GISZone.SourceType getSourceType() {
         return sourceType;
-    }
-
-    public double getComputedAreaSize() {
-        return computedAreaSize;
-    }
-
-    public double getWaterAreaSize() {
-        return waterAreaSize;
     }
 
     public Date getModificationTime() {
         return modificationTime;
     }
-
 }

@@ -2,19 +2,21 @@
 
 angular.module('app.clubhunting.show', [])
 
-    .controller('ClubDiaryEntryShowController', function ($scope, $state, $translate, dialogs, ActiveRoleService,
-                                                          CheckPermitNumber, ClubHuntingEntryService, DiaryEntryService,
-                                                          diaryEntry, groupStatus, parameters, isRejected) {
+    .controller('ClubDiaryEntryShowController', function ($scope, $translate, dialogs, ActiveRoleService,
+                                                          DiaryImageService,
+                                                          diaryEntry, groupStatus, isRejected, parameters) {
 
         $scope.diaryEntry = diaryEntry;
         $scope.getGameNameWithAmount = parameters.$getGameNameWithAmount;
-        $scope.getUrl = DiaryEntryService.getUrl;
+        $scope.getUrl = DiaryImageService.getUrl;
 
         var canEdit = groupStatus.canEditDiaryEntry;
+        var isModerator = ActiveRoleService.isModerator();
 
-        $scope.showEdit = canEdit && diaryEntry.huntingDayId;
+        $scope.showEdit = canEdit && diaryEntry.huntingDayId && !diaryEntry.updateableOnlyByCarnivoreAuthority;
         $scope.showAccept = canEdit && !diaryEntry.huntingDayId;
         $scope.showReject = canEdit && !isRejected;
+        $scope.showGeolocationEditButton = isModerator && groupStatus.fromMooseDataCard;
 
         if (!diaryEntry.huntingDayId) {
             if (diaryEntry.isHarvest()) {
@@ -38,7 +40,6 @@ angular.module('app.clubhunting.show', [])
         } else {
             if (diaryEntry.isHarvest()) {
                 $scope.header = $translate.instant('gamediary.harvest');
-
             } else if (diaryEntry.isObservation()) {
                 $scope.header = $translate.instant('gamediary.observation');
             }
@@ -47,6 +48,10 @@ angular.module('app.clubhunting.show', [])
 
         $scope.edit = function () {
             $scope.$close('edit');
+        };
+
+        $scope.fixGeoLocation = function () {
+            $scope.$close('fixGeoLocation');
         };
 
         $scope.accept = function () {
@@ -72,80 +77,9 @@ angular.module('app.clubhunting.show', [])
         };
     })
 
-    .service('ClubHuntingEntryService', function ($q, $state, $translate,
-                                                  Harvest, Observation,
-                                                  FormSidebarService,
-                                                  ClubGroups,
-                                                  GameDiaryParameters,
-                                                  DiaryEntryService) {
-        var self = this;
-
-        this.createHarvest = function (clubId, groupId, gameSpeciesCode) {
-            $state.go('club.hunting.add.harvest', {
-                gameSpeciesCode: gameSpeciesCode,
-                clubId: clubId,
-                groupId: groupId
-            });
-        };
-
-        this.createObservation = function (clubId, groupId, gameSpeciesCode) {
-            $state.go('club.hunting.add.observation', {
-                gameSpeciesCode: gameSpeciesCode,
-                clubId: clubId,
-                groupId: groupId
-            });
-        };
-
-        this.editHarvest = function (clubId, groupId, entryId) {
-            $state.go('club.hunting.add.harvest', {
-                clubId: clubId,
-                groupId: groupId,
-                entryId: entryId
-            });
-        };
-
-        this.editObservation = function (clubId, groupId, entryId) {
-            $state.go('club.hunting.add.observation', {
-                clubId: clubId,
-                groupId: groupId,
-                entryId: entryId
-            });
-        };
-
-        function editDiaryEntry(clubId, groupId, diaryEntry) {
-            if (diaryEntry.isHarvest()) {
-                self.editHarvest(clubId, groupId, diaryEntry.id);
-            } else if (diaryEntry.isObservation()) {
-                self.editObservation(clubId, groupId, diaryEntry.id);
-            } else {
-                console.log("Unknown diaryEntry", diaryEntry);
-            }
-        }
-
-        var selectedItem = null;
-
-        this.isItemSelected = function () {
-            return selectedItem !== null;
-        };
-
-        this.showSelectedDiaryEntry = function (onSidebarOpen) {
-            if (selectedItem) {
-                self.showDiaryEntry(selectedItem.clubId, selectedItem.groupId, selectedItem.diaryEntry, onSidebarOpen)
-                    .then(function () {
-                        $state.reload();
-                    });
-                selectedItem = null;
-            }
-        };
-
-        this.setSelectedDiaryEntry = function (clubId, groupId, diaryEntry) {
-            selectedItem = {
-                clubId: clubId,
-                groupId: groupId,
-                diaryEntry: diaryEntry
-            };
-        };
-
+    .service('ClubHuntingEntryShowService', function ($q, $state, ActiveRoleService, ClubGroupDiary, ClubGroups,
+                                                      ClubHuntingActiveEntry, DiaryEntryRemoveModal,
+                                                      FormSidebarService, GameDiaryParameters) {
         var modalOptions = {
             controller: 'ClubDiaryEntryShowController',
             templateUrl: 'club/hunting/show/sidebar.html',
@@ -159,19 +93,11 @@ angular.module('app.clubhunting.show', [])
 
         function parametersToResolve(parameters) {
             var entry = parameters.diaryEntry;
-            var diaryEntryId = entry.id;
-            var repository = entry.isHarvest() ? Harvest : entry.isObservation ? Observation : null;
             var clubId = parameters.clubId;
             var groupId = parameters.groupId;
 
-            if (!diaryEntryId || !repository) {
-                return $q.reject('missing diaryEntry');
-            }
-
             return {
-                diaryEntry: function () {
-                    return repository.get({id: diaryEntryId}).$promise.then(parameters.onDiaryEntryLoaded);
-                },
+                diaryEntry: _.constant(entry),
                 groupStatus: function () {
                     return ClubGroups.status({
                         id: groupId,
@@ -179,8 +105,10 @@ angular.module('app.clubhunting.show', [])
                     }).$promise;
                 },
                 isRejected: function () {
-                    return ClubGroups.listRejected({ clubId: clubId, id: groupId}).$promise.then(function(rejected) {
-                        return rejected[entry.type].indexOf(diaryEntryId) >= 0;
+                    return ClubGroupDiary.listRejected({
+                        id: groupId
+                    }).$promise.then(function (rejected) {
+                        return rejected[entry.type].indexOf(entry.id) >= 0;
                     });
                 }
             };
@@ -188,47 +116,44 @@ angular.module('app.clubhunting.show', [])
 
         var formSidebar = FormSidebarService.create(modalOptions, null, parametersToResolve);
 
-        this.showDiaryEntry = function (clubId, groupId, diaryEntry, onSidebarOpen) {
-            function onDiaryEntryLoaded(reloadedEntry) {
-                selectedItem = {
-                    clubId: clubId,
-                    groupId: groupId,
-                    diaryEntry: reloadedEntry
-                };
-
-                if (onSidebarOpen) {
-                    onSidebarOpen(reloadedEntry);
-                }
-
-                return reloadedEntry;
-            }
-
+        this.showDiaryEntry = function (clubId, groupId, diaryEntry) {
             return formSidebar.show({
+                // ID parameter is used to prevent opening same entry twice
                 id: diaryEntry.type + ':' + diaryEntry.id,
                 diaryEntry: diaryEntry,
-                onDiaryEntryLoaded: onDiaryEntryLoaded,
                 clubId: clubId,
                 groupId: groupId
 
             }).then(function (resultCode) {
                 switch (resultCode) {
-                    case 'edit':
-                        editDiaryEntry(clubId, groupId, diaryEntry);
+                    case 'accept':
+                        ClubHuntingActiveEntry.acceptDiaryEntry(clubId, groupId, diaryEntry);
+                        $state.go('club.hunting.add');
+                        return $q.reject('ignore');
 
+                    case 'edit':
+                        ClubHuntingActiveEntry.editDiaryEntry(clubId, groupId, diaryEntry);
+                        $state.go('club.hunting.add');
+                        return $q.reject('ignore');
+
+                    case 'fixGeoLocation':
+                        ClubHuntingActiveEntry.fixGeoLocationOfDiaryEntry(clubId, groupId, diaryEntry);
+                        $state.go('club.hunting.fixgeolocation');
                         return $q.reject('ignore');
 
                     case 'reject':
-                        selectedItem = null;
-                        return ClubGroups.rejectEntry({
-                            clubId: clubId,
+                        ClubHuntingActiveEntry.clearSelectedItem();
+
+                        return ClubGroupDiary.rejectEntry({
                             id: groupId,
                             entryId: diaryEntry.id,
                             type: diaryEntry.type
                         }).$promise;
 
                     case 'delete':
-                        selectedItem = null;
-                        return DiaryEntryService.openRemoveForm(diaryEntry);
+                        ClubHuntingActiveEntry.clearSelectedItem();
+
+                        return DiaryEntryRemoveModal.openModal(diaryEntry);
 
                     default:
                         return $q.reject(resultCode);
@@ -241,7 +166,7 @@ angular.module('app.clubhunting.show', [])
                     default:
                     case 'escape':
                     case 'cancel':
-                        selectedItem = null;
+                        ClubHuntingActiveEntry.clearSelectedItem();
                 }
 
                 return $q.reject(resultCode);

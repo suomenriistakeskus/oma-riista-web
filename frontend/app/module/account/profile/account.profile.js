@@ -28,23 +28,34 @@
                         return isUserOwnProfile
                             ? JHTTrainings.mine().$promise.then(sortResults)
                             : JHTTrainings.forPerson({personId: personId}).$promise.then(sortResults);
+                    },
+                    shootingTests: function (Account, personId, isUserOwnProfile) {
+                        return isUserOwnProfile
+                            ? Account.shootingTests().$promise
+                            : Account.shootingTests({personId: personId}).$promise;
                     }
                 },
                 controller: function ($uibModal, Account, AccountService,
-                                      profile, personId, isUserOwnProfile, clubInvitations, jhtTrainings) {
+                                      profile, personId, isUserOwnProfile, clubInvitations, jhtTrainings, shootingTests) {
                     var $ctrl = this;
                     $ctrl.profile = profile;
+                    $ctrl.profile.address = $ctrl.profile.address || {};
                     $ctrl.isUserOwnProfile = isUserOwnProfile;
                     $ctrl.clubInvitations = clubInvitations;
                     $ctrl.jhtTrainings = jhtTrainings;
+                    $ctrl.shootingTests = shootingTests;
+                    $ctrl.personId = personId;
 
-                    $ctrl.loadAccount = function () {
-                        return AccountService.loadAccount(personId);
+                    $ctrl.saveAddress = function (address) {
+                        return Account.updateAddress({
+                            personId: personId
+                        }, address).$promise;
                     };
 
-                    $ctrl.save = function (profile) {
-                        var saveMethod = $ctrl.isUserOwnProfile ? Account.updateSelf : Account.updateOther;
-                        return saveMethod(profile).$promise;
+                    $ctrl.saveOtherInfo = function (otherInfo) {
+                        return Account.updateOtherInfo({
+                            personId: personId
+                        }, otherInfo).$promise;
                     };
                 }
             });
@@ -67,30 +78,42 @@
                 jhtTrainings: '<'
             }
         })
+        .component('accountProfileShootingTests', {
+            templateUrl: 'account/profile/profile_shooting_test.html',
+            bindings: {
+                shootingTests: '<'
+            }
+        })
         .component('accountProfileOther', {
             templateUrl: 'account/profile/profile_other.html',
             bindings: {
                 profile: '<',
-                onReloadProfile: '&',
                 onSave: '&'
             },
             controller: function ($uibModal, $state, NotificationService) {
                 var $ctrl = this;
 
                 $ctrl.editOtherInfo = function () {
-                    $ctrl.onReloadProfile().then(showModal);
+                    var profile = $ctrl.profile;
+                    var otherInfo = {
+                        email: profile.email,
+                        byName: profile.byName,
+                        phoneNumber: profile.phoneNumber
+                    };
+                    showModal(otherInfo, profile.registered);
                 };
 
-                function showModal(profile) {
+                function showModal(otherInfo, registered) {
                     var modalPromise = $uibModal.open({
                         templateUrl: 'account/edit_otherinfo.html',
                         controllerAs: '$ctrl',
                         controller: ModalController,
                         resolve: {
-                            profile: _.constant(profile)
+                            otherInfo: _.constant(otherInfo),
+                            registered: _.constant(registered)
                         }
-                    }).result.then(function (profile) {
-                        return $ctrl.onSave({profile: profile});
+                    }).result.then(function () {
+                        return $ctrl.onSave({otherInfo: otherInfo});
                     });
 
                     NotificationService.handleModalPromise(modalPromise).then(function () {
@@ -99,12 +122,13 @@
                     });
                 }
 
-                function ModalController($uibModalInstance, profile) {
+                function ModalController($uibModalInstance, otherInfo, registered) {
                     var $modalCtrl = this;
-                    $modalCtrl.profile = profile;
+                    $modalCtrl.otherInfo = otherInfo;
+                    $modalCtrl.registered = registered;
 
                     $modalCtrl.save = function () {
-                        $uibModalInstance.close($modalCtrl.profile);
+                        $uibModalInstance.close();
                     };
 
                     $modalCtrl.cancel = function () {
@@ -121,8 +145,10 @@
             controller: function ($window, AccountService) {
                 var $ctrl = this;
 
-                $ctrl.pdfOptions = AccountService.getPdfOptions($ctrl.profile);
-                $ctrl.pdfSelection = $ctrl.pdfOptions[0];
+                $ctrl.$onInit = function () {
+                    $ctrl.pdfOptions = AccountService.getPdfOptions($ctrl.profile);
+                    $ctrl.pdfSelection = $ctrl.pdfOptions[0];
+                };
 
                 $ctrl.printPdf = function () {
                     if ($ctrl.pdfSelection) {
@@ -137,14 +163,20 @@
             bindings: {
                 address: '<',
                 addressSource: '<',
-                onReloadProfile: '&',
                 onSave: '&'
             },
             controller: function ($uibModal, $state, NotificationService) {
                 var $ctrl = this;
 
                 $ctrl.editAddress = function () {
-                    showModal($ctrl.address);
+                    var a = $ctrl.address;
+
+                    showModal({
+                        streetAddress: a.streetAddress,
+                        postalCode: a.postalCode,
+                        city: a.city,
+                        country: a.country
+                    });
                 };
 
                 function showModal(address) {
@@ -155,7 +187,9 @@
                         resolve: {
                             address: _.constant(address)
                         }
-                    }).result.then(saveAddress);
+                    }).result.then(function() {
+                        return $ctrl.onSave({address: address});
+                    });
 
                     NotificationService.handleModalPromise(modalPromise).then(function () {
                         NotificationService.flashMessage('account.edit.messages.success', 'success');
@@ -163,20 +197,12 @@
                     });
                 }
 
-                function saveAddress(address) {
-                    return $ctrl.onReloadProfile().then(function (profile) {
-                        profile.address = address;
-
-                        return $ctrl.onSave({profile: profile});
-                    });
-                }
-
                 function ModalController($uibModalInstance, address) {
                     var $modalCtrl = this;
-                    $modalCtrl.address = address || {};
+                    $modalCtrl.address = address;
 
                     $modalCtrl.save = function () {
-                        $uibModalInstance.close($modalCtrl.address);
+                        $uibModalInstance.close();
                     };
 
                     $modalCtrl.cancel = function () {
@@ -289,10 +315,22 @@
             templateUrl: 'account/profile/profile_clubs.html',
             bindings: {
                 clubOccupations: '<',
-                isUserOwnProfile: '<'
+                isUserOwnProfile: '<',
+                personId: '<'
             },
-            controller: function ($uibModal, $state, AccountService) {
+            controller: function ($uibModal, $state, AccountService, ActiveRoleService, NotificationService) {
                 var $ctrl = this;
+
+                function ok (clubId) {
+                    if (ActiveRoleService.isModerator()) {
+                        NotificationService.showDefaultSuccess();
+                        $state.go('club.main', {id: clubId});
+                    } else {
+                        AccountService.updateRoles().finally(function () {
+                            $state.go('roleselection');
+                        });
+                    }
+                }
 
                 $ctrl.registerClub = function () {
                     $uibModal.open({
@@ -300,11 +338,12 @@
                         templateUrl: 'account/club_register.html',
                         controller: 'AccountClubRegisterController',
                         controllerAs: 'modalCtrl',
-                        bindToController: true
-                    }).result.then(function () {
-                        AccountService.updateRoles().finally(function () {
-                            $state.go('roleselection');
-                        });
+                        bindToController: true,
+                        resolve: {
+                            personId: _.constant($ctrl.isUserOwnProfile ? null : $ctrl.personId)
+                        }
+                    }).result.then(function (data) {
+                        ok(data.clubId);
                     });
                 };
 
@@ -314,11 +353,12 @@
                         templateUrl: 'account/club_create.html',
                         controller: 'AccountClubCreateController',
                         controllerAs: 'modalCtrl',
-                        bindToController: true
-                    }).result.then(function () {
-                        AccountService.updateRoles().finally(function () {
-                            $state.go('roleselection');
-                        });
+                        bindToController: true,
+                        resolve: {
+                            personId: _.constant($ctrl.isUserOwnProfile ? null : $ctrl.personId)
+                        }
+                    }).result.then(function (club) {
+                        ok(club.id);
                     });
                 };
             }
@@ -346,35 +386,75 @@
                 $ctrl.rejectInvitation = _.partial(_handleInvitation, ClubInvitations.reject, $state.reload);
             }
         })
-        .component('accountProfileSrva', {
-            templateUrl: 'account/profile/profile_srva.html',
+        .component('accountProfileFeatureActivation', {
+            templateUrl: 'account/profile/profile_feature_activation.html',
             bindings: {
                 profile: '<'
             },
-            controller: function ($state, $translate, NotificationService, SrvaService, dialogs) {
+            controller: function ($translate, Account, AccountService, AuthenticationService, NotificationService,
+                                  dialogs) {
+
                 var $ctrl = this;
 
-                $ctrl.deactivate = function () {
-                    updateSrvaStatus(false);
+                $ctrl.$onInit = function () {
+                    $ctrl.srvaEnabled = $ctrl.profile.enableSrva;
+                    $ctrl.shootingTestsEnabled = $ctrl.profile.enableShootingTests;
+
+                    $ctrl.shootingTestActivationVisible = _.some($ctrl.profile.occupations, function (occ) {
+                        return occ.occupationType === 'AMPUMAKOKEEN_VASTAANOTTAJA';
+                    });
                 };
 
-                $ctrl.activate = function () {
+                function toggleActivationOfSrvaFeature(enable) {
+                    var method = enable ? Account.activateSrvaFeature : Account.deactivateSrvaFeature;
+
+                    method().$promise
+                        .then(AuthenticationService.reloadAuthentication)
+                        .then(
+                            function () {
+                                NotificationService.showDefaultSuccess();
+                                $ctrl.srvaEnabled = enable;
+                            },
+                            NotificationService.showDefaultFailure);
+                }
+
+                function toggleActivationOfShootingTestFeature(enable) {
+                    var method = enable ? Account.activateShootingTestFeature : Account.deactivateShootingTestFeature;
+
+                    method().$promise
+                        .then(AccountService.updateRoles)
+                        .then(function () {
+                                NotificationService.showDefaultSuccess();
+                                $ctrl.shootingTestsEnabled = enable;
+                            },
+                            NotificationService.showDefaultFailure);
+                }
+
+                $ctrl.enableSrva = function () {
                     var dialogTitle = $translate.instant('global.dialog.confirmation.title');
                     var dialogMessage = $translate.instant('account.profile.srva.activateConfirmation');
 
                     return dialogs.confirm(dialogTitle, dialogMessage).result.then(function () {
-                        updateSrvaStatus(true);
+                        toggleActivationOfSrvaFeature(true);
                     });
                 };
 
-                function updateSrvaStatus(enable) {
-                    SrvaService.updateSrvaStatus(enable)
-                        .then(function () {
-                                NotificationService.showDefaultSuccess();
-                                $state.reload();
-                            },
-                            NotificationService.showDefaultFailure);
-                }
+                $ctrl.disableSrva = function () {
+                    toggleActivationOfSrvaFeature(false);
+                };
+
+                $ctrl.enableShootingTests = function () {
+                    var dialogTitle = $translate.instant('global.dialog.confirmation.title');
+                    var dialogMessage = $translate.instant('account.profile.shootingTests.activateConfirmation');
+
+                    return dialogs.confirm(dialogTitle, dialogMessage).result.then(function () {
+                        toggleActivationOfShootingTestFeature(true);
+                    });
+                };
+
+                $ctrl.disableShootingTests = function () {
+                    toggleActivationOfShootingTestFeature(false);
+                };
             }
         })
     ;

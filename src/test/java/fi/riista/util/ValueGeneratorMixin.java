@@ -2,15 +2,20 @@ package fi.riista.util;
 
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.GeoLocation;
+import org.iban4j.Iban;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.EnumSet;
 
+@FunctionalInterface
 public interface ValueGeneratorMixin {
 
     NumberGenerator getNumberGenerator();
+
+    default long nextLong() {
+        return getNumberGenerator().nextLong();
+    }
 
     default int nextIntBetween(final int closedLowerBound, final int closedUpperBound) {
         return getNumberGenerator().nextIntBetween(closedLowerBound, closedUpperBound);
@@ -38,6 +43,14 @@ public interface ValueGeneratorMixin {
 
     default int nextNonNegativeIntBelow(final int openUpperBound) {
         return getNumberGenerator().nextNonNegativeIntBelow(openUpperBound);
+    }
+
+    default boolean someBoolean() {
+        return nextPositiveInt() % 2 == 0 ? true : false;
+    }
+
+    default Boolean someOtherThan(@Nullable final Boolean value) {
+        return Boolean.TRUE.equals(value) ? false : true;
     }
 
     default <E extends Enum<E>> E some(@Nonnull final Class<E> enumClass) {
@@ -90,6 +103,10 @@ public interface ValueGeneratorMixin {
 
     default CreditorReference creditorReference() {
         return ValueGenerator.creditorReference(getNumberGenerator());
+    }
+
+    default Iban iban() {
+        return ValueGenerator.iban();
     }
 
     default Double weight() {

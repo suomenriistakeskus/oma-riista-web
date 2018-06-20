@@ -1,10 +1,12 @@
 package fi.riista.feature.huntingclub.hunting;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.error.NotFoundException;
-import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.fixture.ObservationFixtureMixin;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -15,7 +17,8 @@ import static fi.riista.feature.huntingclub.hunting.rejection.RejectClubDiaryEnt
 import static fi.riista.feature.huntingclub.hunting.rejection.RejectClubDiaryEntryDTO.createForObservation;
 import static fi.riista.util.DateUtil.today;
 
-public class GroupHuntingDiaryFeature_RejectTest extends EmbeddedDatabaseTest {
+public class GroupHuntingDiaryFeature_RejectTest extends EmbeddedDatabaseTest
+        implements HuntingGroupFixtureMixin, ObservationFixtureMixin {
 
     @Resource
     private GroupHuntingDiaryFeature feature;

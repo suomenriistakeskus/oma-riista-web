@@ -1,12 +1,12 @@
 package fi.riista.feature.huntingclub.permit.partner;
 
-import fi.riista.feature.gamediary.GameDiaryService;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitContactPerson;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTO;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitFeature;
+import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTOFactory;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitTotalPaymentDTO;
 import fi.riista.feature.organization.occupation.Occupation;
@@ -41,10 +41,10 @@ public class AllPartnersFinishedHuntingMailFeature {
     private AllPartnersFinishedHuntingMailService mailService;
 
     @Resource
-    private HuntingClubPermitFeature huntingClubPermitFeature;
+    private HuntingClubPermitDTOFactory huntingClubPermitDTOFactory;
 
     @Resource
-    private GameDiaryService gameDiaryService;
+    private GameSpeciesService gameSpeciesService;
 
     @Resource
     private HuntingClubPermitService huntingPermitService;
@@ -62,7 +62,7 @@ public class AllPartnersFinishedHuntingMailFeature {
     @Transactional(propagation = Propagation.REQUIRED)
     public void checkAndSend(final HarvestPermit permit, int speciesCode) {
         if (huntingPermitService.allPartnersFinishedHunting(permit, speciesCode)) {
-            sendMail(permit, gameDiaryService.getGameSpeciesByOfficialCode(speciesCode));
+            sendMail(permit, gameSpeciesService.requireByOfficialCode(speciesCode));
         }
     }
 
@@ -112,7 +112,7 @@ public class AllPartnersFinishedHuntingMailFeature {
         final LocalisedString speciesName = species.getNameLocalisation();
 
         final HuntingClubPermitDTO dto =
-                huntingClubPermitFeature.getPermitWithoutAuthorization(permit, species.getOfficialCode(), null);
+                huntingClubPermitDTOFactory.getPermitWithoutAuthorization(permit, species.getOfficialCode(), null);
         final boolean notEdibleOk = dto.isAmendmentPermitsMatchHarvests();
         final HuntingClubPermitTotalPaymentDTO payment = dto.getTotalPayment();
         final long permitHolderId = permit.getPermitHolder().getId();

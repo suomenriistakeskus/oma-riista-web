@@ -32,7 +32,9 @@
         "_": false,
         "L": false,
         "moment": false,
+        "proj4": false,
         "greinerHormann": false,
+        "Raven": false,
         "QRCode": false,
         // Angular Mocks
         "inject": false,
@@ -43,6 +45,7 @@
         "beforeEach": false,
         "after": false,
         "afterEach": false,
-        "expect": false
+        "expect": false,
+        "JsDiff": false
     }
 }

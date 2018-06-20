@@ -43,6 +43,11 @@ public class SQContactInfoShare extends RelationalPathSpatial<SQContactInfoShare
         addMetadata();
     }
 
+    public SQContactInfoShare(String variable, String schema) {
+        super(SQContactInfoShare.class, forVariable(variable), schema, "contact_info_share");
+        addMetadata();
+    }
+
     public SQContactInfoShare(Path<? extends SQContactInfoShare> path) {
         super(path.getType(), path.getMetadata(), "public", "contact_info_share");
         addMetadata();

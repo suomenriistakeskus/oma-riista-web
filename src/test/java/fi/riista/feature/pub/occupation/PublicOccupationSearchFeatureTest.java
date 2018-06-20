@@ -1,6 +1,5 @@
 package fi.riista.feature.pub.occupation;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.address.Address;
@@ -9,6 +8,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.junit.Test;

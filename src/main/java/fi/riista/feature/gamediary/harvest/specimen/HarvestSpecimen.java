@@ -1,17 +1,13 @@
 package fi.riista.feature.gamediary.harvest.specimen;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.Harvest_;
-import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
-import fi.riista.util.NumberUtils;
+import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.Harvest_;
 import fi.riista.util.jpa.CriteriaUtils;
-
 import org.hibernate.validator.constraints.SafeHtml;
 
-import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -28,13 +24,11 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-
-import java.util.Objects;
 import java.util.stream.Stream;
 
 @Entity
 @Access(AccessType.FIELD)
-public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFields {
+public class HarvestSpecimen extends LifecycleEntity<Long> implements HarvestSpecimenBusinessFields {
 
     private Long id;
 
@@ -54,9 +48,11 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     @Column
     private Double weight;
 
+    // Arvioitu teuraspaino
     @Column
     private Double weightEstimated;
 
+    // Punnittu teuraspaino
     @Column
     private Double weightMeasured;
 
@@ -86,6 +82,11 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     @Column
     private Boolean notEdible;
 
+    // Not accompanying mother. Relevant to only calves/juveniles
+    @Column
+    private Boolean alone;
+
+    // Lisätietoja (esim. sarvet pudonneet, loiset, sairaidet, petojen raatelujäljet ...)
     @Column(columnDefinition = "text")
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String additionalInfo;
@@ -106,51 +107,9 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
         setWeight(weight);
     }
 
-    /**
-     * Checks whether the object given as parameter has equal content. ID and
-     * revision fields are not included in comparison.
-     */
-    public boolean hasEqualContent(@Nonnull final HarvestSpecimen that) {
-        Objects.requireNonNull(that);
-
-        return HasMooseFields.super.hasEqualMooseFields(that) &&
-                getGender() == that.getGender() &&
-                getAge() == that.getAge() &&
-                NumberUtils.equal(getWeight(), that.getWeight());
-    }
-
-    public void clearContent() {
-        clearMooseFields();
-        setAge(null);
-        setGender(null);
-        setWeight(null);
-    }
-
     @AssertTrue(message = "{HarvestSpecimen.weightOutOfAcceptableLimits}")
     public boolean isWeightWithinAcceptableLimits() {
         return Stream.of(weight, weightEstimated, weightMeasured).noneMatch(w -> w != null && (w < 0.0 || w > 999.99));
-    }
-
-    public void checkAllMandatoryFieldsPresentWithinClubHunting(final int gameSpeciesCode) {
-        final MandatoryHarvestSpecimenFieldMissingWithinClubHuntingException.Builder builder =
-                new MandatoryHarvestSpecimenFieldMissingWithinClubHuntingException.Builder();
-
-        builder.validateAge(age).validateGender(gender);
-
-        if (GameSpecies.isMoose(gameSpeciesCode)) {
-            builder.validateWeight(getWeightEstimated(), getWeightMeasured())
-                    .validateFitnessClass(fitnessClass)
-                    .validateNotEdible(notEdible);
-
-            if (age == GameAge.ADULT && gender == GameGender.MALE) {
-                builder.validateAntlersType(antlersType)
-                        .validateAntlersWidth(antlersWidth)
-                        .validateAntlerPointsLeft(antlerPointsLeft)
-                        .validateAntlerPointsRight(antlerPointsRight);
-            }
-        }
-
-        builder.throwOnMissingFields();
     }
 
     // Accessors -->
@@ -165,7 +124,7 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -173,32 +132,38 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
         return harvest;
     }
 
-    public void setHarvest(Harvest harvest) {
+    public void setHarvest(final Harvest harvest) {
         CriteriaUtils.updateInverseCollection(Harvest_.specimens, this, this.harvest, harvest);
         this.harvest = harvest;
     }
 
+    @Override
     public GameGender getGender() {
         return gender;
     }
 
-    public void setGender(GameGender gender) {
+    @Override
+    public void setGender(final GameGender gender) {
         this.gender = gender;
     }
 
+    @Override
     public GameAge getAge() {
         return age;
     }
 
-    public void setAge(GameAge age) {
+    @Override
+    public void setAge(final GameAge age) {
         this.age = age;
     }
 
+    @Override
     public Double getWeight() {
         return weight;
     }
 
-    public void setWeight(Double weight) {
+    @Override
+    public void setWeight(final Double weight) {
         this.weight = weight;
     }
 
@@ -208,7 +173,7 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setWeightEstimated(Double weightEstimated) {
+    public void setWeightEstimated(final Double weightEstimated) {
         this.weightEstimated = weightEstimated;
     }
 
@@ -218,7 +183,7 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setWeightMeasured(Double weightMeasured) {
+    public void setWeightMeasured(final Double weightMeasured) {
         this.weightMeasured = weightMeasured;
     }
 
@@ -228,7 +193,7 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setFitnessClass(GameFitnessClass fitnessClass) {
+    public void setFitnessClass(final GameFitnessClass fitnessClass) {
         this.fitnessClass = fitnessClass;
     }
 
@@ -238,7 +203,7 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setAntlersType(GameAntlersType antlersType) {
+    public void setAntlersType(final GameAntlersType antlersType) {
         this.antlersType = antlersType;
     }
 
@@ -248,7 +213,7 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setAntlersWidth(Integer antlersWidth) {
+    public void setAntlersWidth(final Integer antlersWidth) {
         this.antlersWidth = antlersWidth;
     }
 
@@ -258,7 +223,7 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setAntlerPointsLeft(Integer antlerPointsLeft) {
+    public void setAntlerPointsLeft(final Integer antlerPointsLeft) {
         this.antlerPointsLeft = antlerPointsLeft;
     }
 
@@ -268,7 +233,7 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setAntlerPointsRight(Integer antlerPointsRight) {
+    public void setAntlerPointsRight(final Integer antlerPointsRight) {
         this.antlerPointsRight = antlerPointsRight;
     }
 
@@ -278,8 +243,18 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setNotEdible(Boolean notEatable) {
-        this.notEdible = notEatable;
+    public void setNotEdible(final Boolean notEdible) {
+        this.notEdible = notEdible;
+    }
+
+    @Override
+    public Boolean getAlone() {
+        return alone;
+    }
+
+    @Override
+    public void setAlone(final Boolean alone) {
+        this.alone = alone;
     }
 
     @Override
@@ -288,7 +263,7 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HasMooseFi
     }
 
     @Override
-    public void setAdditionalInfo(String additionalInfo) {
+    public void setAdditionalInfo(final String additionalInfo) {
         this.additionalInfo = additionalInfo;
     }
 }

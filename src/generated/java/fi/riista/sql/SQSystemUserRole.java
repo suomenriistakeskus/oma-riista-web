@@ -43,6 +43,11 @@ public class SQSystemUserRole extends RelationalPathSpatial<SQSystemUserRole> {
         addMetadata();
     }
 
+    public SQSystemUserRole(String variable, String schema) {
+        super(SQSystemUserRole.class, forVariable(variable), schema, "system_user_role");
+        addMetadata();
+    }
+
     public SQSystemUserRole(Path<? extends SQSystemUserRole> path) {
         super(path.getType(), path.getMetadata(), "public", "system_user_role");
         addMetadata();

@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS import_harvest_area;
-DROP TABLE IF EXISTS import_harvest_area_rhys;
+-- Remove data created by Liquibase
+DELETE FROM harvest_area;
 
 CREATE TABLE import_harvest_area (
   "type"        VARCHAR(255) NOT NULL,

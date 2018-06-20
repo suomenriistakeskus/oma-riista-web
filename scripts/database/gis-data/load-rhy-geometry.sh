@@ -17,7 +17,7 @@ else
     echo "Using source file: ${SOURCE_FILE}"
 fi
 
-PSQL="psql -v ON_ERROR_STOP=1 -d ${DATABASE}"
+PSQL="psql -q1X -v ON_ERROR_STOP=1 -d ${DATABASE}"
 
 ${PSQL} -c "DROP TABLE IF EXISTS import_rhy;"
 

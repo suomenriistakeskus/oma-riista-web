@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import fi.riista.config.Constants;
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
+import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventTypeEnum;
+import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 
@@ -16,7 +17,7 @@ import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-public class SrvaPublicExportDTO {
+public class SrvaPublicExportDTO implements HasID<Long> {
 
     public static SrvaPublicExportDTO create(@Nonnull final SrvaEvent entity,
                                              final Integer gameSpeciesCode,
@@ -79,8 +80,8 @@ public class SrvaPublicExportDTO {
 
     //Accessors -->
 
-
-    public long getId() {
+    @Override
+    public Long getId() {
         return id;
     }
 

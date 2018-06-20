@@ -24,14 +24,14 @@ public class OrganisationDTO extends BaseEntityDTO<Long> {
 
     private boolean editable;
 
-    public static OrganisationDTO create(Organisation organisation) {
+    public static OrganisationDTO create(final Organisation organisation) {
         return new OrganisationDTO(organisation);
     }
 
     public OrganisationDTO() {
     }
 
-    public OrganisationDTO(Organisation organisation) {
+    public OrganisationDTO(final Organisation organisation) {
         setId(organisation.getId());
         setRev(organisation.getConsistencyVersion());
         setOfficialCode(organisation.getOfficialCode());
@@ -47,7 +47,7 @@ public class OrganisationDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -57,7 +57,7 @@ public class OrganisationDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setRev(Integer rev) {
+    public void setRev(final Integer rev) {
         this.rev = rev;
     }
 
@@ -65,7 +65,7 @@ public class OrganisationDTO extends BaseEntityDTO<Long> {
         return officialCode;
     }
 
-    public void setOfficialCode(String officialCode) {
+    public void setOfficialCode(final String officialCode) {
         this.officialCode = officialCode;
     }
 
@@ -73,7 +73,7 @@ public class OrganisationDTO extends BaseEntityDTO<Long> {
         return nameFI;
     }
 
-    public void setNameFI(String nameFI) {
+    public void setNameFI(final String nameFI) {
         this.nameFI = nameFI;
     }
 
@@ -81,7 +81,7 @@ public class OrganisationDTO extends BaseEntityDTO<Long> {
         return nameSV;
     }
 
-    public void setNameSV(String nameSV) {
+    public void setNameSV(final String nameSV) {
         this.nameSV = nameSV;
     }
 
@@ -89,7 +89,7 @@ public class OrganisationDTO extends BaseEntityDTO<Long> {
         return organisationType;
     }
 
-    public void setOrganisationType(OrganisationType organisationType) {
+    public void setOrganisationType(final OrganisationType organisationType) {
         this.organisationType = organisationType;
     }
 
@@ -97,7 +97,7 @@ public class OrganisationDTO extends BaseEntityDTO<Long> {
         return editable;
     }
 
-    public void setEditable(boolean editable) {
+    public void setEditable(final boolean editable) {
         this.editable = editable;
     }
 
@@ -105,8 +105,7 @@ public class OrganisationDTO extends BaseEntityDTO<Long> {
         return hasOccupations;
     }
 
-    public void setHasOccupations(boolean hasOccupations) {
+    public void setHasOccupations(final boolean hasOccupations) {
         this.hasOccupations = hasOccupations;
     }
-
 }

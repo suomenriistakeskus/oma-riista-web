@@ -2,7 +2,6 @@ package fi.riista.feature.huntingclub.moosedatacard;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameDiaryEntry;
@@ -15,6 +14,7 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
 import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportException;
@@ -26,15 +26,16 @@ import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.util.Asserts;
+import fi.riista.test.Asserts;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import javaslang.control.Either;
-import javaslang.control.Try;
-import javaslang.control.Validation;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.control.Either;
+import io.vavr.control.Try;
+import io.vavr.control.Validation;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,8 +62,8 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.multipleHarvestPermitMooseAmountsFound;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.permitNotFoundByPermitNumber;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.permitNotOfCorrectType;
-import static fi.riista.util.Asserts.assertEmpty;
-import static fi.riista.util.Asserts.assertSuccess;
+import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.test.Asserts.assertSuccess;
 import static fi.riista.util.DateUtil.today;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -76,7 +77,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
+public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     private static final String NON_EXISTENT = "nonExistent";
 
@@ -122,7 +123,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
 
             this.permit = model.newMooselikePermit(rhy);
 
-            this.huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+            this.huntingYear = DateUtil.huntingYear();
             this.speciesAmount = model.newHarvestPermitSpeciesAmount(this.permit, this.speciesMoose, this.huntingYear);
             this.speciesAmount2 = model.newHarvestPermitSpeciesAmount(this.permit, this.speciesBear, this.huntingYear);
 
@@ -201,7 +202,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
         final EntityResolveFixture f = new EntityResolveFixture(model(), createClub);
         final MooseDataCardPage1Validation input = f.getValidationInput().asTuple4()
                 .map3(TO_NON_EXISTENT)
-                .transform(MooseDataCardPage1Validation::new);
+                .apply(MooseDataCardPage1Validation::new);
 
         assertValidationFailure(input, huntingClubNotFoundByCustomerNumber(NON_EXISTENT));
     }
@@ -212,7 +213,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
         final EntityResolveFixture f = new EntityResolveFixture(model());
         final MooseDataCardPage1Validation input = f.getValidationInput().asTuple4()
                 .map2(TO_NON_EXISTENT)
-                .transform(MooseDataCardPage1Validation::new);
+                .apply(MooseDataCardPage1Validation::new);
 
         assertValidationFailure(input, permitNotFoundByPermitNumber(NON_EXISTENT));
     }
@@ -297,10 +298,10 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
         final EntityResolveFixture f = new EntityResolveFixture(model());
 
         final MooseDataCardPage1Validation input = f.getValidationInput(findByHunterNumber).asTuple4()
-                .map1(findByHunterNumber
+                .<Either<String, String>> map1(findByHunterNumber
                         ? hunterNumberOrSsn -> hunterNumberOrSsn.mapLeft(TO_NON_EXISTENT)
                         : hunterNumberOrSsn -> hunterNumberOrSsn.map(TO_NON_EXISTENT))
-                .transform(MooseDataCardPage1Validation::new);
+                .apply(MooseDataCardPage1Validation::new);
 
         assertValidationFailure(input, contactPersonCouldNotBeFoundByHunterNumberOrSsn(
                 findByHunterNumber ? NON_EXISTENT : null,
@@ -316,7 +317,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
                 .map1(hunterNumberOrSsn -> hunterNumberOrSsn.mapLeft(TO_NON_EXISTENT))
                 .map2(TO_NON_EXISTENT)
                 .map3(TO_NON_EXISTENT)
-                .transform(MooseDataCardPage1Validation::new);
+                .apply(MooseDataCardPage1Validation::new);
 
         f.speciesAmount2.setGameSpecies(f.speciesMoose);
 
@@ -419,12 +420,12 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
 
             final String expectedHarvestIgnoreMessage =
                     harvestsIgnoredBecauseOfAlreadyExistingHuntingDays(ImmutableMap.of(
-                            transientHarvest5.getPointOfTimeAsLocalDate(), 1));
+                            transientHarvest5.getPointOfTimeAsLocalDate(), 1L));
             assertEquals(expectedHarvestIgnoreMessage, messages.get(2));
 
             final String expectedObservationIgnoreMessage =
                     observationsIgnoredBecauseOfAlreadyExistingHuntingDays(ImmutableMap.of(
-                            transientObservation5.getPointOfTimeAsLocalDate(), 1));
+                            transientObservation5.getPointOfTimeAsLocalDate(), 1L));
             assertEquals(expectedObservationIgnoreMessage, messages.get(3));
 
             final List<GroupHuntingDay> resultHuntingDays = result._1;
@@ -780,8 +781,8 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
             anotherMooseDataCardGroup.setFromMooseDataCard(true);
             model().newOccupation(anotherMooseDataCardGroup, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-            final HarvestPermitSpeciesAmount deerAmount =
-                    model().newHarvestPermitSpeciesAmount(hpsa.getHarvestPermit(), model().newGameSpecies());
+            final HarvestPermitSpeciesAmount deerAmount = model().newHarvestPermitSpeciesAmount(
+                    hpsa.getHarvestPermit(), model().newDeerSubjectToClubHunting());
             final HuntingClubGroup deerGroup = model().newHuntingClubGroup(club, deerAmount);
             model().newOccupation(deerGroup, contactPerson, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
@@ -811,15 +812,15 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
         }));
     }
 
-    private Try<HuntingClubGroup> invokeFindGroupService(
-            final HuntingClub club, final HarvestPermitSpeciesAmount speciesAmount, final Person contactPerson) {
+    private Try<HuntingClubGroup> invokeFindGroupService(final HuntingClub club,
+                                                         final HarvestPermitSpeciesAmount speciesAmount,
+                                                         final Person contactPerson) {
 
         final HarvestPermit permit = speciesAmount.getHarvestPermit();
         final GameSpecies species = speciesAmount.getGameSpecies();
         final int huntingYear = speciesAmount.resolveHuntingYear();
 
-        return helper.findOrCreateGroupForMooseDataCardImport(
-                club, permit, species, huntingYear, contactPerson, null, null);
+        return helper.findOrCreateGroupForMooseDataCardImport(club, permit, species, huntingYear, contactPerson);
     }
 
     @Test
@@ -874,5 +875,4 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest {
             testBody.accept(hpsa, model().newHuntingClub(rhy));
         });
     }
-
 }

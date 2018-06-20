@@ -9,24 +9,12 @@ if [ -z "${DATABASE}" ]; then
     exit 1
 fi
 
-PSQL="psql -v ON_ERROR_STOP=1 -d ${DATABASE}"
-
-${PSQL} -c "DELETE FROM harvest_quota;"
-${PSQL} -c "DELETE FROM harvest_season;"
-${PSQL} -c "DELETE FROM observation_context_sensitive_fields;"
-${PSQL} -c "DELETE FROM observation_base_fields;"
-${PSQL} -c "DELETE FROM harvest_area_rhys;"
-${PSQL} -c "DELETE FROM harvest_area;"
-${PSQL} -c "DELETE FROM harvest_report_fields;"
-${PSQL} -c "DELETE FROM organisation;"
-${PSQL} -c "DELETE FROM municipality;"
-${PSQL} -c "DELETE FROM game_species;"
+PSQL="psql -q1X -v ON_ERROR_STOP=1 -d ${DATABASE}"
 
 ${PSQL} -f ./import/game_species.sql
 ${PSQL} -f ./import/municipality.sql
 ${PSQL} -f ./import/organisation.sql
 ${PSQL} -f ./import/harvest_area.sql
-${PSQL} -f ./import/harvest_report_fields.sql
 ${PSQL} -f ./import/observation_base_fields.sql
 ${PSQL} -f ./import/observation_context_sensitive_fields.sql
 ${PSQL} -f ./import/harvest_season.sql

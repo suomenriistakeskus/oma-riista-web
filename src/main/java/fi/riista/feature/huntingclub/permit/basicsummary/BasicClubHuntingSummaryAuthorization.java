@@ -87,7 +87,7 @@ public class BasicClubHuntingSummaryAuthorization extends AbstractEntityAuthoriz
                     userAuthorizationHelper.isClubContact(club, activePerson));
 
             collector.addAuthorizationRole(RYHMAN_METSASTYKSENJOHTAJA, () ->
-                    userAuthorizationHelper.isLeaderOfSomePermitHuntingGroup(activePerson, permit, club));
+                    userAuthorizationHelper.isLeaderOfSomePermitHuntingGroup(activePerson, permit, club, speciesAmount.getGameSpecies(), speciesAmount.resolveHuntingYear()));
 
             collector.addAuthorizationRole(SEURAN_JASEN, () ->
                     userAuthorizationHelper.isClubMember(club, activePerson));

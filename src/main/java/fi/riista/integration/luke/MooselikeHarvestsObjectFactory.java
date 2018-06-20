@@ -12,6 +12,7 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
 import fi.riista.feature.huntingclub.permit.summary.AreaSizeAndRemainingPopulation;
+import fi.riista.feature.huntingclub.permit.summary.BeaverAppearance;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
 import fi.riista.feature.huntingclub.permit.summary.SpeciesEstimatedAppearance;
 import fi.riista.feature.huntingclub.permit.summary.SpeciesEstimatedAppearanceWithPiglets;
@@ -20,6 +21,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Address;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Amount;
+import fi.riista.integration.luke_export.mooselikeharvests.LEM_BeaverAppearance;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Club;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_DataSource;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_EstimatedAppearance;
@@ -146,6 +148,7 @@ public class MooselikeHarvestsObjectFactory {
         dto.setClubOfficialCode(club.getOfficialCode());
         dto.setNameFinnish(club.getNameFinnish());
         dto.setRhyOfficialCode(club.getParentOrganisation().getOfficialCode());
+        dto.setGeoLocation(createGeoLocation(club.getGeoLocation()));
         dto.setContactPerson(Optional.of(club.getId())
                 .map(clubContacts::get)
                 .map(Occupation::getPerson)
@@ -155,12 +158,10 @@ public class MooselikeHarvestsObjectFactory {
         final boolean hasOverride = clubOverrides.containsKey(club.getId());
 
         final List<HuntingClubGroup> clubGroups = groups.getOrDefault(club.getId(), emptyList());
-        final List<HuntingClubGroup> groupsWithHuntingDays = clubGroups.stream()
+
+        dto.setGroups(clubGroups.stream()
                 .filter(g -> g.getHarvestPermit().equals(moosePermit))
                 .filter(g -> CollectionUtils.isNotEmpty(groupDays.getOrDefault(g.getId(), emptyList())))
-                .collect(toList());
-
-        dto.setGroups(groupsWithHuntingDays.stream()
                 .map(g -> {
                     if (hasOverride) {
                         return createGroup(g, emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap());
@@ -173,7 +174,7 @@ public class MooselikeHarvestsObjectFactory {
         if (hasOverride) {
             dto.setOverrides(createOverrides(club, clubOverrides));
 
-        } else if (!groupsWithHuntingDays.isEmpty()) {
+        } else {
             dto.setHuntingSummary(Optional.of(moosePermit)
                     .map(permitToClubToSummary::get)
                     .map(summaries -> summaries.get(club))
@@ -215,9 +216,9 @@ public class MooselikeHarvestsObjectFactory {
         dto.setNameFinnish(group.getNameFinnish());
 
         days.stream().map(d -> {
-            final List<Harvest> harvests = F.firstNonNull(dayHarvests.get(d.getId()), Collections.<Harvest> emptyList());
+            final List<Harvest> harvests = F.firstNonNull(dayHarvests.get(d.getId()), Collections.<Harvest>emptyList());
             final List<Observation> observations =
-                    F.firstNonNull(dayObservations.get(d.getId()), Collections.<Observation> emptyList());
+                    F.firstNonNull(dayObservations.get(d.getId()), Collections.<Observation>emptyList());
             return createHuntingDay(d, harvests, observations, harvestSpecimens, observationSpecimens);
         }).forEach(dto.getHuntingDays()::add);
         return dto;
@@ -271,6 +272,7 @@ public class MooselikeHarvestsObjectFactory {
 
         dto.setGender(convert(LEM_GameGender.class, specimen.getGender()));
         dto.setAge(convert(LEM_GameAge.class, specimen.getAge()));
+        dto.setAlone(specimen.getAlone());
         dto.setWeightEstimated(specimen.getWeightEstimated());
         dto.setWeightMeasured(specimen.getWeightMeasured());
         dto.setFitnessClass(convert(LEM_GameFitnessClass.class, specimen.getFitnessClass()));
@@ -294,6 +296,9 @@ public class MooselikeHarvestsObjectFactory {
         dto.setGameSpeciesNameFinnish(observation.getSpecies().getNameFinnish());
 
         dto.setMooselikeMaleAmount(observation.getMooselikeMaleAmount());
+        dto.setMooselikeSolitaryCalfAmount(observation.getMooselikeCalfAmount());
+        dto.setMooselikeUnknownSpecimenAmount(observation.getMooselikeUnknownSpecimenAmount());
+
         Stream.of(
                 createFemaleAndCalfs(observation.getMooselikeFemaleAmount(), 0),
                 createFemaleAndCalfs(observation.getMooselikeFemale1CalfAmount(), 1),
@@ -303,13 +308,14 @@ public class MooselikeHarvestsObjectFactory {
         ).filter(Objects::nonNull)
                 .forEach(dto.getMooseLikeFemaleAndCalfs()::add);
 
-        dto.setMooselikeUnknownSpecimenAmount(observation.getMooselikeUnknownSpecimenAmount());
-
         observationSpecimens.stream().map(MooselikeHarvestsObjectFactory::createSpecimen).forEach(dto.getSpecimens()::add);
         return dto;
     }
 
     private static LEM_GeoLocation createGeoLocation(GeoLocation geoLocation) {
+        if (geoLocation == null) {
+            return null;
+        }
         LEM_GeoLocation dto = new LEM_GeoLocation();
         dto.setLatitude(geoLocation.getLatitude());
         dto.setLongitude(geoLocation.getLongitude());
@@ -373,6 +379,7 @@ public class MooselikeHarvestsObjectFactory {
         dto.setWildForestReindeerAppearance(createEstimatedAppearance(summary.getWildForestReindeerAppearance()));
         dto.setFallowDeerAppearance(createEstimatedAppearance(summary.getFallowDeerAppearance()));
         dto.setWildBoarAppearance(createWildBoarEstimatedAppearance(summary.getWildBoarAppearance()));
+        dto.setBeaverAppearance(createBeaverAppearance(summary.getBeaverAppearance()));
 
         dto.setMooseHeatBeginDate(summary.getMooseHeatBeginDate());
         dto.setMooseHeatEndDate(summary.getMooseHeatEndDate());
@@ -385,6 +392,9 @@ public class MooselikeHarvestsObjectFactory {
         dto.setNumberOfYoungMoosesHavingFlies(summary.getNumberOfYoungMoosesHavingFlies());
         dto.setDeerFliesAppeared(summary.getDeerFliesAppeared());
         dto.setTrendOfDeerFlyPopulationGrowth(convert(LEM_TrendOfPopulationGrowth.class, summary.getTrendOfDeerFlyPopulationGrowth()));
+
+        dto.setObservationPolicyAdhered(summary.getObservationPolicyAdhered());
+
         return dto;
     }
 
@@ -406,6 +416,20 @@ public class MooselikeHarvestsObjectFactory {
         dto.setTrendOfPopulationGrowth(convert(LEM_TrendOfPopulationGrowth.class, appearance.getTrendOfPopulationGrowth()));
         dto.setEstimatedAmountOfSpecimens(appearance.getEstimatedAmountOfSpecimens());
         dto.setEstimatedAmountOfSowWithPiglets(appearance.getEstimatedAmountOfSowWithPiglets());
+        return dto;
+    }
+
+    private static LEM_BeaverAppearance createBeaverAppearance(BeaverAppearance appearance) {
+        if (appearance == null || !Boolean.TRUE.equals(appearance.getAppeared())) {
+            return null;
+        }
+        LEM_BeaverAppearance dto = new LEM_BeaverAppearance();
+        dto.setTrendOfPopulationGrowth(convert(LEM_TrendOfPopulationGrowth.class, appearance.getTrendOfPopulationGrowth()));
+        dto.setAmountOfInhabitedWinterNests(appearance.getAmountOfInhabitedWinterNests());
+        dto.setHarvestAmount(appearance.getHarvestAmount());
+        dto.setAreaOfDamage(appearance.getAreaOfDamage());
+        dto.setAreaOccupiedByWater(appearance.getAreaOccupiedByWater());
+        dto.setAdditionalInfo(appearance.getAdditionalInfo());
         return dto;
     }
 

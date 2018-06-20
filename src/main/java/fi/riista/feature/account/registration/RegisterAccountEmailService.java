@@ -51,7 +51,7 @@ public class RegisterAccountEmailService {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public String sendEmail(final RegisterAccountDTO dto, final HttpServletRequest request) {
         // Forbid using internal Riistakeskus email addresses
-        if (dto.getEmail().endsWith("riista.fi")) {
+        if (dto.getEmail().endsWith("@riista.fi") ||dto.getEmail().endsWith(".riista.fi")) {
             throw new IllegalArgumentException("Invalid email domain");
         }
 
@@ -72,10 +72,12 @@ public class RegisterAccountEmailService {
 
         final Map<String, Object> params = Collections.singletonMap("registerLink", emailLink.toString());
 
-        mailService.sendImmediate(new MailMessageDTO.Builder()
-                .withTo(dto.getEmail())
+        mailService.send(MailMessageDTO.builder()
+                .withFrom(mailService.getDefaultFromAddress())
+                .addRecipient(dto.getEmail())
                 .withSubject(subject)
-                .withHandlebarsBody(handlebars, selectTemplate(), params));
+                .appendHandlebarsBody(handlebars, selectTemplate(), params)
+                .build());
 
         return token;
     }

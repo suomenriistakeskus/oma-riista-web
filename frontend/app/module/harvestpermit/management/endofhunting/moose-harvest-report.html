@@ -1,0 +1,78 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="club.permit.mooseHarvestReport.title"></h3>
+</div>
+
+<div class="modal-body" style="min-height: 200px">
+    <div class="well" ng-if="$ctrl.mooseHarvestReport && !$ctrl.finishedWithoutHarvests">
+        <span class="text-success fa fa-check"></span>
+        &nbsp;
+        <span translate="club.permit.mooseHarvestReport.permitFinished"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-6">
+            <button type="button" class="btn btn-warning"
+                    ng-show="$ctrl.canRemoveMooseHarvestReport"
+                    ng-click="$ctrl.removeHarvestReport()">
+                <span translate="club.permit.mooseHarvestReport.unfinishPermit"></span>
+            </button>
+        </div>
+
+        <div class="col-xs-6 text-right">
+            <button type="button" class="btn btn-info"
+                    ng-click="$ctrl.downloadReceipt()"
+                    ng-show="$ctrl.canDownloadMooseHarvestReport">
+                <span class="fa fa-lg fa-download"></span>
+                &nbsp;
+                <span translate="club.permit.mooseHarvestReport.downloadReceipt"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="well" ng-if="$ctrl.mooseHarvestReport && $ctrl.finishedWithoutHarvests">
+        <span class="text-success fa fa-check"></span>
+        &nbsp;
+        <span translate="club.permit.mooseHarvestReport.finishedWithoutHarvests"></span>
+    </div>
+
+    <div ng-if="!$ctrl.mooseHarvestReport && !$ctrl.canCreateMooseHarvestReport">
+        <span translate="club.permit.mooseHarvestReport.cannotCreateMooseHarvestReport.header"></span>
+
+        <ul>
+            <li ng-if="!$ctrl.permit.allPartnersFinishedHunting">
+                <strong translate="club.permit.mooseHarvestReport.cannotCreateMooseHarvestReport.allPartnersFinishedHunting"></strong>
+            </li>
+
+            <li ng-if="!$ctrl.permit.amendmentPermitsMatchHarvests">
+                <strong translate="club.permit.mooseHarvestReport.cannotCreateMooseHarvestReport.amendmentPermitsMatchHarvests"></strong>
+            </li>
+        </ul>
+    </div>
+
+    <div ng-if="!$ctrl.mooseHarvestReport && $ctrl.canCreateMooseHarvestReport">
+        <div ng-if="$ctrl.hasHarvests">
+            <moose-permit-upload-receipt
+                    done="$ctrl.done()"
+                    uri="$ctrl.uri">
+            </moose-permit-upload-receipt>
+
+            <moose-permit-price-breakdown
+                    total-payment="$ctrl.permit.totalPayment">
+            </moose-permit-price-breakdown>
+        </div>
+
+        <div ng-if="!$ctrl.hasHarvests">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.createNoHarvestsReport()"
+                    translate="club.permit.mooseHarvestReport.finishWithoutHarvests"></button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button"
+            class="btn btn-default"
+            ng-click="$ctrl.cancel()"
+            translate="global.button.close"></button>
+</div>

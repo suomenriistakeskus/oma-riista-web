@@ -3,10 +3,9 @@ package fi.riista.feature.sso.dto;
 import com.google.common.collect.Lists;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
-import fi.riista.feature.organization.address.AddressSource;
+import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.UserInfo;
 import org.joda.time.LocalDate;
@@ -137,8 +136,7 @@ public class ExternalAuthenticationResponse {
             this.hunterNumber = null;
         }
 
-        if (activeUserInfo.hasPrivilege(SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION_ADDRESS)
-                && person.getAddressSource() != AddressSource.VTJ) { // OR-8 Address can be exported only if it not from VTJ.
+        if (activeUserInfo.hasPrivilege(SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION_ADDRESS)) {
             this.address = Address.from(person.getAddress());
             this.homeMunicipality = person.getHomeMunicipalityCode();
         } else {

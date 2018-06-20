@@ -1,6 +1,8 @@
 package fi.riista.feature.announcement;
 
-public enum AnnouncementSenderType {
+import fi.riista.util.LocalisedEnum;
+
+public enum AnnouncementSenderType implements LocalisedEnum {
     RIISTAKESKUS,
     TOIMINNANOHJAAJA,
     SEURAN_YHDYSHENKILO

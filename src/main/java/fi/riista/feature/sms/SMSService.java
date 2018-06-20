@@ -3,16 +3,14 @@ package fi.riista.feature.sms;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
-import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.sms.delivery.SMSGatewayProperties;
 import fi.riista.feature.sms.delivery.SMSGatewayProvider;
 import fi.riista.feature.sms.delivery.TokenQuotaLimiter;
 import fi.riista.feature.sms.storage.SMSMessageRepository;
 import fi.riista.feature.sms.storage.SMSMessageStatus;
 import fi.riista.feature.sms.storage.SMSPersistentMessage;
-import fi.riista.security.UserInfo;
 import fi.riista.util.F;
 import fi.riista.validation.PhoneNumberValidator;
 import org.joda.time.DateTime;
@@ -44,9 +42,6 @@ public class SMSService {
 
     @Resource
     private ActiveUserService activeUserService;
-
-    @Resource
-    private UserRepository userRepository;
 
     @Resource
     private SMSGatewayProperties properties;
@@ -105,11 +100,7 @@ public class SMSService {
     }
 
     private SystemUser getSendingUser() {
-        final UserInfo activeUserInfo = activeUserService.getActiveUserInfo();
-
-        return activeUserInfo != null && activeUserInfo.getUserId() != null
-                ? userRepository.findOne(activeUserInfo.getUserId())
-                : null;
+        return activeUserService.findActiveUser().orElse(null);
     }
 
     private boolean checkQuotaExceeded(final Phonenumber.PhoneNumber phoneNumber) {

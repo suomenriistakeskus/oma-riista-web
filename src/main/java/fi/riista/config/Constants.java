@@ -1,6 +1,8 @@
 package fi.riista.config;
 
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +13,7 @@ public final class Constants {
     public static final DateTimeZone DEFAULT_TIMEZONE = DateTimeZone.forID(DEFAULT_TIMEZONE_ID);
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     public static final String DEFAULT_ENCODING = DEFAULT_CHARSET.name();
+    public static final DateTimeFormatter FILENAME_TS_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
 
     // Top-level Java packages
     public static final String APPLICATION_ROOT_PACKAGE = "fi.riista";

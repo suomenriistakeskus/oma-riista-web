@@ -1,12 +1,16 @@
 package fi.riista.feature.huntingclub.group;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.F;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -17,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-public class HuntingClubGroupCrudFeatureTest extends EmbeddedDatabaseTest {
+public class HuntingClubGroupCrudFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     @Resource
     private HuntingClubGroupCrudFeature feature;
@@ -28,10 +32,23 @@ public class HuntingClubGroupCrudFeatureTest extends EmbeddedDatabaseTest {
     @Resource
     private HuntingClubGroupDTOTransformer transformer;
 
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
+
+    @Before
+    public void disablePermitLockByDate() {
+        harvestPermitLockedByDateService.disableLockingForTests();
+    }
+
+    @After
+    public void enablePermitLockByDate() {
+        harvestPermitLockedByDateService.normalLocking();
+    }
+
     @Test
     public void testUpdateHuntingGroup() {
         withMooseHuntingGroupFixture(fixture -> {
-            final GameSpecies newSpecies = model().newGameSpecies();
+            final GameSpecies newSpecies = model().newDeerSubjectToClubHunting();
             final HuntingClubArea newArea = model().newHuntingClubArea(fixture.club);
             final HarvestPermit newPermit = model().newHarvestPermit(fixture.rhy);
             model().newHarvestPermitSpeciesAmount(newPermit, newSpecies, fixture.group.getHuntingYear() + 1);

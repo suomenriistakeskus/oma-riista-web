@@ -15,6 +15,8 @@ import static java.lang.annotation.ElementType.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ FIELD, METHOD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
 @Constraint(validatedBy={})
+@HasLengthConstrainedByValidator
+@XssSafe
 public @interface FinnishPropertyIdentifier {
     String message() default "{fi.riista.validation.FinnishPropertyIdentifier.message}";
 

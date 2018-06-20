@@ -53,8 +53,6 @@ public class SQFileMetadata extends RelationalPathSpatial<SQFileMetadata> {
 
     public final StringPath resourceUrl = createString("resourceUrl");
 
-    public final StringPath resourceUrlLocal = createString("resourceUrlLocal");
-
     public final StringPath storageType = createString("storageType");
 
     public final com.querydsl.sql.PrimaryKey<SQFileMetadata> fileMetadataPkey = createPrimaryKey(fileMetadataUuid);
@@ -78,6 +76,11 @@ public class SQFileMetadata extends RelationalPathSpatial<SQFileMetadata> {
 
     public SQFileMetadata(String variable, String schema, String table) {
         super(SQFileMetadata.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQFileMetadata(String variable, String schema) {
+        super(SQFileMetadata.class, forVariable(variable), schema, "file_metadata");
         addMetadata();
     }
 
@@ -105,7 +108,6 @@ public class SQFileMetadata extends RelationalPathSpatial<SQFileMetadata> {
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(11).ofType(Types.BIGINT).withSize(19));
         addMetadata(originalFileName, ColumnMetadata.named("original_file_name").withIndex(6).ofType(Types.VARCHAR).withSize(255));
         addMetadata(resourceUrl, ColumnMetadata.named("resource_url").withIndex(7).ofType(Types.VARCHAR).withSize(255));
-        addMetadata(resourceUrlLocal, ColumnMetadata.named("resource_url_local").withIndex(15).ofType(Types.VARCHAR).withSize(255));
         addMetadata(storageType, ColumnMetadata.named("storage_type").withIndex(5).ofType(Types.VARCHAR).withSize(255).notNull());
     }
 

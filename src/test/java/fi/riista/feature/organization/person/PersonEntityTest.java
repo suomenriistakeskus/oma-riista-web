@@ -1,18 +1,15 @@
 package fi.riista.feature.organization.person;
 
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
 import java.util.Optional;
 
+import static fi.riista.test.TestUtils.ld;
 import static fi.riista.util.DateUtil.today;
-import static fi.riista.util.TestUtils.ld;
 import static org.junit.Assert.assertEquals;
 
 public class PersonEntityTest {
-    private static final String INVOICE_REFERENCE1 = "14507700161";
-    private static final String INVOICE_REFERENCE2 = "15862640169";
 
     @Test
     public void testMaskSSN() {
@@ -153,118 +150,5 @@ public class PersonEntityTest {
         assertEquals(Optional.of(paymentOneDay), p.getHuntingPaymentDateForNextOrCurrentSeason(2014));
         assertEquals(Optional.of(paymentTwoDay), p.getHuntingPaymentDateForNextOrCurrentSeason(2015));
         assertEquals(Optional.of(paymentTwoDay), p.getHuntingPaymentDateForNextOrCurrentSeason(2016));
-    }
-
-    @Test
-    public void testHuntingPaymentPdfYears_NoPayments_NoInvoiceReference() {
-        Person p = new Person();
-        assertEquals(ImmutableSet.of(), p.getHuntingPaymentPdfYears(2015));
-    }
-
-    @Test
-    public void testHuntingPaymentPdfYears_NoPayments_NextYearReference() {
-        final int currentHuntingYear = 2015;
-        final int nextHuntingYear = currentHuntingYear + 1;
-
-        Person p = new Person();
-        p.setInvoiceReferenceCurrent(INVOICE_REFERENCE1);
-        p.setInvoiceReferenceCurrentYear(nextHuntingYear);
-
-        assertEquals("next hunting year is included",
-                ImmutableSet.of(nextHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
-    }
-
-    @Test
-    public void testHuntingPaymentPdfYears_NoPayments_BothYearReference() {
-        final int currentHuntingYear = 2015;
-        final int nextHuntingYear = currentHuntingYear + 1;
-
-        Person p = new Person();
-        p.setInvoiceReferenceCurrent(INVOICE_REFERENCE1);
-        p.setInvoiceReferenceCurrentYear(nextHuntingYear);
-        p.setInvoiceReferencePrevious(INVOICE_REFERENCE2);
-        p.setInvoiceReferencePreviousYear(currentHuntingYear);
-
-        assertEquals("both hunting years are included",
-                ImmutableSet.of(currentHuntingYear, nextHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
-    }
-
-    @Test
-    public void testHuntingPaymentPdfYears_NoPayments_CurrentYearReference() {
-        final int currentHuntingYear = 2015;
-
-        Person p = new Person();
-        p.setInvoiceReferencePrevious(INVOICE_REFERENCE1);
-        p.setInvoiceReferencePreviousYear(currentHuntingYear);
-
-        assertEquals("current year reference is included",
-                ImmutableSet.of(currentHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
-    }
-
-    @Test
-    public void testHuntingPaymentPdfYears_NoPayments_OldYearReference() {
-        final int currentHuntingYear = 2015;
-        final int oldHuntingYear = currentHuntingYear - 1;
-
-        Person p = new Person();
-        p.setInvoiceReferencePrevious(INVOICE_REFERENCE1);
-        p.setInvoiceReferencePreviousYear(oldHuntingYear);
-
-        assertEquals("old reference is ignored", ImmutableSet.of(), p.getHuntingPaymentPdfYears(currentHuntingYear));
-    }
-
-    @Test
-    public void testHuntingPaymentPdfYears_OldPayment_BothYearReference() {
-        final int currentHuntingYear = 2015;
-        final int nextHuntingYear = currentHuntingYear + 1;
-
-        Person p = new Person();
-        p.setInvoiceReferenceCurrent(INVOICE_REFERENCE1);
-        p.setInvoiceReferenceCurrentYear(nextHuntingYear);
-        p.setInvoiceReferencePrevious(INVOICE_REFERENCE2);
-        p.setInvoiceReferencePreviousYear(currentHuntingYear);
-        p.setHuntingPaymentOneYear(2012);
-        p.setHuntingPaymentOneDay(ld(2012, 6, 9));
-        p.setHuntingPaymentTwoYear(2013);
-        p.setHuntingPaymentTwoDay(ld(2013, 6, 9));
-
-        assertEquals("both hunting years are included",
-                ImmutableSet.of(currentHuntingYear, nextHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
-    }
-
-    @Test
-    public void testHuntingPaymentPdfYears_CurrentPayment_BothYearReference() {
-        final int currentHuntingYear = 2015;
-        final int nextHuntingYear = currentHuntingYear + 1;
-
-        Person p = new Person();
-        p.setInvoiceReferenceCurrent(INVOICE_REFERENCE1);
-        p.setInvoiceReferenceCurrentYear(nextHuntingYear);
-        p.setInvoiceReferencePrevious(INVOICE_REFERENCE2);
-        p.setInvoiceReferencePreviousYear(currentHuntingYear);
-        p.setHuntingPaymentOneYear(currentHuntingYear);
-        p.setHuntingPaymentOneDay(ld(currentHuntingYear, 6, 9));
-
-        assertEquals("both hunting years are included",
-                ImmutableSet.of(nextHuntingYear), p.getHuntingPaymentPdfYears(currentHuntingYear));
-    }
-
-    @Test
-    public void testHuntingPaymentPdfYears_AllPayments_BothReferences() {
-        final int currentHuntingYear = 2015;
-        final int nextHuntingYear = currentHuntingYear + 1;
-
-        Person p = new Person();
-        p.setInvoiceReferenceCurrent(INVOICE_REFERENCE1);
-        p.setInvoiceReferenceCurrentYear(nextHuntingYear);
-        p.setInvoiceReferencePrevious(INVOICE_REFERENCE2);
-        p.setInvoiceReferencePreviousYear(currentHuntingYear);
-        p.setHuntingPaymentOneYear(nextHuntingYear);
-        p.setHuntingPaymentOneDay(ld(nextHuntingYear, 6, 9));
-        p.setHuntingPaymentTwoYear(currentHuntingYear);
-        p.setHuntingPaymentTwoDay(ld(currentHuntingYear, 6, 9));
-
-        assertEquals("both hunting years are excluded",
-                ImmutableSet.of(), p.getHuntingPaymentPdfYears(currentHuntingYear));
     }
 }

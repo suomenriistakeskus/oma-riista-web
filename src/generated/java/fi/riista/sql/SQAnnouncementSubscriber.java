@@ -51,11 +51,11 @@ public class SQAnnouncementSubscriber extends RelationalPathSpatial<SQAnnounceme
 
     public final com.querydsl.sql.PrimaryKey<SQAnnouncementSubscriber> announcementSubscriberPkey = createPrimaryKey(announcementSubscriberId);
 
-    public final com.querydsl.sql.ForeignKey<SQOccupationType> announcementSubscriberOccupationTypeFk = createForeignKey(occupationType, "name");
-
     public final com.querydsl.sql.ForeignKey<SQOrganisation> announcementSubscriberOrganisationFk = createForeignKey(organisationId, "organisation_id");
 
     public final com.querydsl.sql.ForeignKey<SQAnnouncement> announcementSubscriberAnnouncementFk = createForeignKey(announcementId, "announcement_id");
+
+    public final com.querydsl.sql.ForeignKey<SQOccupationType> announcementSubscriberOccupationTypeFk = createForeignKey(occupationType, "name");
 
     public SQAnnouncementSubscriber(String variable) {
         super(SQAnnouncementSubscriber.class, forVariable(variable), "public", "announcement_subscriber");
@@ -64,6 +64,11 @@ public class SQAnnouncementSubscriber extends RelationalPathSpatial<SQAnnounceme
 
     public SQAnnouncementSubscriber(String variable, String schema, String table) {
         super(SQAnnouncementSubscriber.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQAnnouncementSubscriber(String variable, String schema) {
+        super(SQAnnouncementSubscriber.class, forVariable(variable), schema, "announcement_subscriber");
         addMetadata();
     }
 

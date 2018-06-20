@@ -8,7 +8,10 @@ import fi.riista.config.Constants;
 import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 
-@JsonPropertyOrder({ "observationSpecVersion", "lastModified", "gameSpeciesId", "gameSpeciesCode", "baseFields", "specimenFields", "contextSensitiveFieldSets" })
+import javax.annotation.Nonnull;
+import java.util.Collection;
+
+@JsonPropertyOrder({ "observationSpecVersion", "lastModified", "gameSpeciesId", "gameSpeciesCode", "baseFields", "specimenFields", "contextSensitiveFieldSets", "minWidthOfPaw", "maxWidthOfPaw", "minLengthOfPaw", "maxLengthOfPaw" })
 public class GameSpeciesObservationMetadataDTO extends GameSpeciesObservationFieldRequirementsDTO {
 
     private final long gameSpeciesId;
@@ -23,9 +26,12 @@ public class GameSpeciesObservationMetadataDTO extends GameSpeciesObservationFie
             timezone = Constants.DEFAULT_TIMEZONE_ID)
     private DateTime lastModified;
 
-    public GameSpeciesObservationMetadataDTO(final long gameSpeciesId, final int gameSpeciesCode) {
-        super(gameSpeciesCode);
-        this.gameSpeciesId = gameSpeciesId;
+    public GameSpeciesObservationMetadataDTO(@Nonnull final ObservationBaseFields fields,
+                                             @Nonnull final Collection<ObservationContextSensitiveFields> ctxFieldsets,
+                                             final boolean omitNullValueRequirements) {
+
+        super(fields, ctxFieldsets, omitNullValueRequirements);
+        this.gameSpeciesId = fields.getSpecies().getId();
     }
 
     // Accessors -->
@@ -38,7 +44,7 @@ public class GameSpeciesObservationMetadataDTO extends GameSpeciesObservationFie
         return mobileApiObservationSpecVersion;
     }
 
-    public void setMobileApiObservationSpecVersion(Integer mobileApiObservationSpecVersion) {
+    public void setMobileApiObservationSpecVersion(final Integer mobileApiObservationSpecVersion) {
         this.mobileApiObservationSpecVersion = mobileApiObservationSpecVersion;
     }
 
@@ -46,8 +52,7 @@ public class GameSpeciesObservationMetadataDTO extends GameSpeciesObservationFie
         return lastModified;
     }
 
-    public void setLastModified(DateTime lastModified) {
+    public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }
-
 }

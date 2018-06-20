@@ -1,7 +1,16 @@
 package fi.riista.feature.gis.zone.query;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.ByteOrderValues;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKBReader;
+import com.vividsolutions.jts.io.WKBWriter;
+import fi.riista.util.GISUtils;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+
+import java.util.List;
 
 public class CalculateCombinedGeometryQueries {
     private static final double BUFFER_ZONE = 0.5; // metres
@@ -12,10 +21,19 @@ public class CalculateCombinedGeometryQueries {
         this.jdbcOperations = jdbcOperations;
     }
 
-    public void updateGeometryFromPalsta(final long zoneId) {
+    public void updateGeometry(final long zoneId) {
         // Combine geometries
-        mergePalstaGeometries(zoneId);
-        mergeMetsahallitusHirviGeometries(zoneId);
+        final List<Geometry> geometries = loadSplicedGeometries(zoneId);
+
+        if (geometries.isEmpty()) {
+            jdbcOperations.update("UPDATE zone SET geom = NULL WHERE zone_id = :zoneId", zoneParam(zoneId));
+            return;
+        }
+
+        final Geometry union = GISUtils.computeUnionFaster(geometries);
+        final WKBWriter wkbWriter = new WKBWriter(2, ByteOrderValues.LITTLE_ENDIAN, true);
+        jdbcOperations.update("UPDATE zone SET geom = :geom WHERE zone_id = :zoneId",
+                zoneParam(zoneId).addValue("geom", wkbWriter.write(union)));
 
         // Make sure geometry is valid
         enforceCombinedGeometryValidity(zoneId);
@@ -28,32 +46,31 @@ public class CalculateCombinedGeometryQueries {
         subtractExcludedGeometryFromUnion(zoneId);
     }
 
-    public void updateGeometryFromFeatures(final long zoneId) {
-        jdbcOperations.update("UPDATE zone SET geom = (" +
-                        " SELECT ST_UnaryUnion(ST_Collect(ST_Buffer(zf.geom, :bufferZone)))" +
-                        " FROM zone_feature zf WHERE zf.zone_id = :zoneId" +
-                        ") WHERE zone_id = :zoneId",
-                zoneParam(zoneId).addValue("bufferZone", BUFFER_ZONE));
-    }
+    private List<Geometry> loadSplicedGeometries(final long zoneId) {
+        final GeometryFactory geometryFactory = GISUtils.getGeometryFactory(GISUtils.SRID.ETRS_TM35FIN);
+        final WKBReader wkbReader = new WKBReader(geometryFactory);
+        final MapSqlParameterSource params = zoneParam(zoneId)
+                .addValue("chunkSize", 16384);
 
-    private void mergePalstaGeometries(final long zoneId) {
-        jdbcOperations.update("UPDATE zone SET geom = (" +
-                " SELECT ST_UnaryUnion(ST_CollectionHomogenize(ST_Collect(zp.geom)))" +
-                " FROM zone_palsta zp WHERE zp.zone_id = :zoneId" +
-                ") WHERE zone_id = :zoneId", zoneParam(zoneId));
-    }
+        return jdbcOperations.query("WITH g AS (" +
+                        "   SELECT (ST_Dump(zp.geom)).geom AS geom FROM zone_palsta zp " +
+                        "   WHERE zp.zone_id = :zoneId" +
+                        "   UNION ALL" +
+                        "   SELECT (ST_Dump(zp.geom)).geom AS geom FROM zone_feature zp " +
+                        "   WHERE zp.zone_id = :zoneId" +
+                        "   UNION ALL " +
+                        "   SELECT (ST_Dump(mh.geom)).geom AS geom FROM zone_mh_hirvi zh " +
+                        "   JOIN mh_hirvi mh ON (zh.zone_id = :zoneId AND zh.mh_hirvi_id = mh.gid)" +
+                        ") SELECT ST_AsBinary(ST_SubDivide(geom, :chunkSize)) AS geom FROM g",
+                params, (resultSet, i) -> {
+                    final byte[] wkb = resultSet.getBytes("geom");
 
-    private void mergeMetsahallitusHirviGeometries(final long zoneId) {
-        jdbcOperations.update("UPDATE zone SET geom = (" +
-                "WITH mh AS (" +
-                " SELECT ST_UnaryUnion(ST_CollectionHomogenize(ST_Collect(mh.geom))) AS geom" +
-                " FROM zone_mh_hirvi zh " +
-                " JOIN mh_hirvi mh ON (zh.zone_id = :zoneId AND zh.mh_hirvi_id = mh.gid)" +
-                ") SELECT CASE " +
-                " WHEN zone.geom IS NOT NULL AND mh.geom IS NOT NULL THEN ST_Union(zone.geom, mh.geom)" +
-                " WHEN mh.geom IS NOT NULL THEN mh.geom" +
-                " ELSE zone.geom END FROM zone, mh WHERE zone_id = :zoneId" +
-                ") WHERE zone_id = :zoneId", zoneParam(zoneId));
+                    try {
+                        return wkbReader.read(wkb);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     private void enforceCombinedGeometryValidity(final long zoneId) {
@@ -78,7 +95,7 @@ public class CalculateCombinedGeometryQueries {
     private void subtractExcludedGeometryFromUnion(final long zoneId) {
         // NOTE: ST_Buffer is used to avoid creating invalid line-geometries during ST_Difference
         jdbcOperations.update("UPDATE zone SET geom =" +
-                        " ST_Difference(geom, ST_Buffer(ST_Transform(excluded_geom, 3067), :bufferZone))" +
+                        " ST_Difference(geom, ST_Buffer(ST_Transform(excluded_geom, 3067), :bufferZone, 'join=bevel endcap=flat'))" +
                         " WHERE zone_id = :zoneId AND excluded_geom IS NOT NULL",
                 zoneParam(zoneId).addValue("bufferZone", BUFFER_ZONE));
     }

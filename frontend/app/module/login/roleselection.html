@@ -1,0 +1,32 @@
+<div class="container container-role-selection">
+    <h2 translate="account.roleselection.title"></h2>
+
+    <div class="row">
+        <div class="col-xs-4"
+             ng-repeat="role in ::$ctrl.availableRoles">
+            <div class="role-item"
+                 ng-click="$ctrl.selectRole(role)">
+                <div class="role-logo">
+                    <i class="fa fa-fw" ng-class="$ctrl.getRoleLogo(role)"></i>
+                </div>
+
+                <div class="role-badge" ng-show="::role.recentlyAdded">
+                    <span translate="global.new"></span>
+                </div>
+
+                <div class="role-content">
+                    <div class="role-name" translate="global.role.{{::role.type}}"></div>
+
+                    <div class="role-title" ng-bind="::$ctrl.getRoleTitle(role)"></div>
+
+                    <div class="role-subtitle" ng-bind="::$ctrl.getRoleSubtitle(role)"></div>
+
+                    <div class="role-nav">
+                        <span translate="account.roleselection.selectRole"></span>
+                        <span class="fa fa-fw fa-arrow-right"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

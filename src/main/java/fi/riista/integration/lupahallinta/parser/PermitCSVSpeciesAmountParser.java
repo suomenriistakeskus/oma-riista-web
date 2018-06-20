@@ -2,9 +2,11 @@ package fi.riista.integration.lupahallinta.parser;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.validation.FinnishCreditorReferenceValidator;
-import javaslang.Tuple2;
+import io.vavr.Tuple2;
+import org.joda.time.Duration;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -16,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static fi.riista.util.DateUtil.toDateTimeNullSafe;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -218,14 +221,30 @@ public class PermitCSVSpeciesAmountParser {
     private void checkDates(List<PermitCSVLine.SpeciesAmount> amounts, boolean mooselike) {
         amounts.forEach(a -> {
             if (beginAfterEnd(a.getBeginDate(), a.getEndDate())) {
-                errors.add("Lupa-ajat virheelliset, ensimmäinen aikaväli: alkupäivä ei ole ennen loppupäivää");
+                errors.add("Lupa-ajat virheelliset, ensimmäinen aikaväli: alkupäivä ei ole ennen loppupäivää. "
+                        + fmtDates(a.getBeginDate(), a.getEndDate()));
             }
             if (beginAfterEnd(a.getBeginDate2(), a.getEndDate2())) {
-                errors.add("Lupa-ajat virheelliset, toinen aikaväli: alkupäivä ei ole ennen loppupäivää");
+                errors.add("Lupa-ajat virheelliset, toinen aikaväli: alkupäivä ei ole ennen loppupäivää. "
+                        + fmtDates(a.getBeginDate2(), a.getEndDate2()));
             }
 
             if (beginAfterEnd(a.getEndDate(), a.getBeginDate2()) || a.getEndDate().equals(a.getBeginDate2())) {
-                errors.add("Lupa-ajat virheelliset: ensimmäinen aikaväli täytyy olla jälkimmäistä ennen");
+                errors.add("Lupa-ajat virheelliset: ensimmäinen aikaväli täytyy olla jälkimmäistä ennen. "
+                        + fmtDates(a));
+            }
+
+            if (isIntervalLongerThanYear(a.getBeginDate(), a.getEndDate())) {
+                errors.add("Lupa-ajat virheelliset: ensimmäinen aikaväli on yli 365 päivää. "
+                        + fmtDates(a.getBeginDate(), a.getEndDate()));
+            }
+            if (isIntervalLongerThanYear(a.getBeginDate2(), a.getEndDate2())) {
+                errors.add("Lupa-ajat virheelliset: jälkimmäinen aikaväli on yli 365 päivää. "
+                        + fmtDates(a.getBeginDate2(), a.getEndDate2()));
+            }
+            if (isIntervalLongerThanYear(a.getBeginDate(), a.getEndDate2())) {
+                errors.add("Lupa-ajat virheelliset: ensimmäinen aikavälin alku ja jälkimmäisen aikavälin loppu on yli 365 päivää. "
+                        + fmtDates(a));
             }
             if (mooselike && a.collectClosedRangeHuntingYears().count() > 1) {
                 errors.add("Hirvieläinluvan voimassaoloajat täytyy olla yhden metsästysvuoden sisällä");
@@ -237,11 +256,24 @@ public class PermitCSVSpeciesAmountParser {
         return begin != null && end != null && begin.isAfter(end);
     }
 
+    private static boolean isIntervalLongerThanYear(final LocalDate begin, final LocalDate end) {
+        return begin != null && end != null
+                && new Duration(toDateTimeNullSafe(begin), toDateTimeNullSafe(end)).getStandardDays() > 365;
+    }
+
     private void checkSpeciesGivenOnlyOnce(List<PermitCSVLine.SpeciesAmount> amounts) {
         final Map<Integer, Long> count = amounts.stream().collect(groupingBy(a -> a.getSpeciesOfficialCode(), counting()));
         final boolean anyGivenMoreThanOnce = count.values().stream().anyMatch(c -> c > 1);
         if (anyGivenMoreThanOnce) {
             errors.add("Luvalle voi antaa eläinlajin vain kerran");
         }
+    }
+
+    private static String fmtDates(LocalDate beginDate, LocalDate endDate) {
+        return DATE_FORMAT.print(beginDate) + "-" + DATE_FORMAT.print(endDate);
+    }
+
+    private static String fmtDates(final Has2BeginEndDatesDTO dates) {
+        return fmtDates(dates.getBeginDate(), dates.getEndDate()) + ", " + fmtDates(dates.getBeginDate2(), dates.getEndDate2());
     }
 }

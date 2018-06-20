@@ -61,6 +61,11 @@ public class SQEmailToken extends RelationalPathSpatial<SQEmailToken> {
         addMetadata();
     }
 
+    public SQEmailToken(String variable, String schema) {
+        super(SQEmailToken.class, forVariable(variable), schema, "email_token");
+        addMetadata();
+    }
+
     public SQEmailToken(Path<? extends SQEmailToken> path) {
         super(path.getType(), path.getMetadata(), "public", "email_token");
         addMetadata();

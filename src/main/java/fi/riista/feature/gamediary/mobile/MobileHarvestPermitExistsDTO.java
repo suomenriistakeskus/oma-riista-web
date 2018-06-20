@@ -2,7 +2,6 @@ package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 import fi.riista.validation.FinnishHuntingPermitNumber;
@@ -10,28 +9,20 @@ import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Map;
 
 public class MobileHarvestPermitExistsDTO extends BaseEntityDTO<Long> {
 
-    public static @Nonnull List<MobileHarvestPermitExistsDTO> create(
-            @Nonnull final List<HarvestPermit> permits,
-            @Nonnull final Map<Long, HarvestReportFields> gameSpeciesIdToFields) {
-
-        return F.mapNonNullsToList(permits, permit -> {
-            return permit == null ? null : MobileHarvestPermitExistsDTO.create(permit, gameSpeciesIdToFields);
-        });
+    public static @Nonnull List<MobileHarvestPermitExistsDTO> create(@Nonnull final List<HarvestPermit> permits) {
+        return F.mapNonNullsToList(permits, MobileHarvestPermitExistsDTO::create);
     }
 
-    public static @Nonnull MobileHarvestPermitExistsDTO create(
-            @Nonnull final HarvestPermit permit,
-            @Nonnull final Map<Long, HarvestReportFields> gameSpeciesIdToFields) {
+    public static @Nonnull MobileHarvestPermitExistsDTO create(@Nonnull final HarvestPermit permit) {
         MobileHarvestPermitExistsDTO dto = new MobileHarvestPermitExistsDTO();
         DtoUtil.copyBaseFields(permit, dto);
         dto.setPermitType(permit.getPermitType());
         dto.setPermitNumber(permit.getPermitNumber());
-        dto.setSpeciesAmounts(MobileHarvestPermitSpeciesAmountDTO.create(permit.getSpeciesAmounts(), gameSpeciesIdToFields));
-        dto.setUnavailable(permit.isUnavailable());
+        dto.setSpeciesAmounts(MobileHarvestPermitSpeciesAmountDTO.create(permit.getSpeciesAmounts()));
+        dto.setUnavailable(permit.isHarvestReportDone());
         return dto;
     }
 

@@ -8,15 +8,14 @@ import com.nsftele.tempo.api.LanguageApi;
 import com.nsftele.tempo.model.BaseCallRing;
 import com.nsftele.tempo.model.BasicRedirection;
 import com.nsftele.tempo.model.CallRingSetup;
-import com.nsftele.tempo.model.CallTrackingReport;
 import com.nsftele.tempo.model.CallTrackingRule;
 import com.nsftele.tempo.model.CallTrackingRules;
 import com.nsftele.tempo.model.EmailCallTrackingReport;
 import com.nsftele.tempo.model.Language;
-import com.nsftele.tempo.model.Languages;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -25,8 +24,8 @@ public class TempoApiAdapter {
     private static final String COMPANY_ID = "19";
 
     // Hard-coded parameters for notification template added manually
-    private static final String EMAIL_MESSAGE_TEMPLATE_ID = "15";
-    private static final String EMAIL_SUBJECT_TEMPLATE_ID = "13";
+    private static final int EMAIL_MESSAGE_TEMPLATE_ID = 15;
+    private static final int EMAIL_SUBJECT_TEMPLATE_ID = 13;
 
     // Maximum timeout for unanswered call before proceeding to next member in call ring
     private static final int RINGING_TIMEOUT_SEC = 30;
@@ -41,7 +40,7 @@ public class TempoApiAdapter {
     private LanguageApi languageApi;
 
     private Supplier<Map<String, Integer>> LANGUAGE_CODE_CACHE = Suppliers.memoize(() -> {
-        final Languages languages = languageApi.getLanguages();
+        final List<Language> languages = languageApi.getLanguages();
 
         if (languages == null || languages.isEmpty()) {
             throw new IllegalStateException("Could not retrieve language codes");
@@ -61,7 +60,7 @@ public class TempoApiAdapter {
         final BasicRedirection basicRedirection = new BasicRedirection()
                 .ringingTimeout(RINGING_TIMEOUT_SEC)
                 .languageId(finnishLanguageId)
-                .answerPreferences(BasicRedirection.AnswerPreferencesEnum._1)
+                .answerPreferences(2)
                 .call(rhyConfiguration.getFormattedPhoneNumbers());
 
         final BaseCallRing callRing = new BaseCallRing()
@@ -78,7 +77,7 @@ public class TempoApiAdapter {
                     .messageTemplateId(EMAIL_MESSAGE_TEMPLATE_ID)
                     .email(email);
 
-            callTrackingReport.setType(CallTrackingReport.TypeEnum.EMAILCALLTRACKINGREPORT);
+            callTrackingReport.setType(EmailCallTrackingReport.TypeEnum.EMAILCALLTRACKINGREPORT);
 
             return new CallTrackingRule()
                     .event(CallTrackingRule.EventEnum.NO_ANSWER)
@@ -86,6 +85,6 @@ public class TempoApiAdapter {
 
         }).collect(Collectors.toCollection(CallTrackingRules::new));
 
-        callTrackingApi.updateCallTrackingRules(COMPANY_ID, rhyConfiguration.getRhyOfficialCode(), callTrackingRules);
+        callTrackingApi.updateCallTrackingRules(callTrackingRules, COMPANY_ID, rhyConfiguration.getRhyOfficialCode());
     }
 }

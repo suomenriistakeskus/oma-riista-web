@@ -5,14 +5,14 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.gamediary.GameDiaryService;
-import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
-import fi.riista.feature.gis.zone.QGISZone;
 import fi.riista.feature.gis.zone.GISZoneRepository;
+import fi.riista.feature.gis.zone.QGISZone;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
@@ -40,13 +40,11 @@ import static java.util.stream.Collectors.toMap;
 @Component
 public class SharedPermitMapFeature {
 
-    private static final int SIMPLIFY_AMOUNT = 10;
-
     @Resource
     private JPQLQueryFactory queryFactory;
 
     @Resource
-    private GameDiaryService gameDiaryService;
+    private GameSpeciesService gameSpeciesService;
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -61,7 +59,7 @@ public class SharedPermitMapFeature {
     public FeatureCollection findPermitArea(final long harvestPermitId,
                                             final int huntingYear,
                                             final int gameSpeciesCode) {
-        final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(gameSpeciesCode);
+        final GameSpecies species = gameSpeciesService.requireByOfficialCode(gameSpeciesCode);
         final HarvestPermit harvestPermit =
                 requireEntityService.requireHarvestPermit(harvestPermitId, EntityPermission.READ);
 
@@ -71,7 +69,7 @@ public class SharedPermitMapFeature {
 
         final Map<Long, Map<String, Object>> permitZones = getPermitZones(harvestPermit, huntingYear, species);
         final FeatureCollection combinedFeatures = zoneRepository.getCombinedFeatures(
-                permitZones.keySet(), GISUtils.SRID.WGS84, SIMPLIFY_AMOUNT);
+                permitZones.keySet(), GISUtils.SRID.WGS84);
 
         combinedFeatures.forEach(feature -> {
             final long zoneId = Long.parseLong(feature.getId());
@@ -87,7 +85,7 @@ public class SharedPermitMapFeature {
     public List<HarvestDTO> listHarvest(final long harvestPermitId,
                                         final int huntingYear,
                                         final int gameSpeciesCode) {
-        final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(gameSpeciesCode);
+        final GameSpecies species = gameSpeciesService.requireByOfficialCode(gameSpeciesCode);
         final HarvestPermit harvestPermit =
                 requireEntityService.requireHarvestPermit(harvestPermitId, EntityPermission.READ);
 

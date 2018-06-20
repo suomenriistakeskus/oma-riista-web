@@ -1,0 +1,40 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.misc.luke.title'"
+                               last-modified="$ctrl.luke.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.misc.luke.totalGameTriangles"></td>
+                        <td num-pieces="::([$ctrl.luke.winterGameTriangles, $ctrl.luke.summerGameTriangles] | sumFinite)"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.winterGameTriangles"></td>
+                        <td num-pieces="::$ctrl.luke.winterGameTriangles"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.summerGameTriangles"></td>
+                        <td num-pieces="::$ctrl.luke.summerGameTriangles"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.fieldTriangles"></td>
+                        <td num-pieces="::$ctrl.luke.fieldTriangles"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.waterBirds"></td>
+                        <td num-pieces="::$ctrl.luke.waterBirds"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.openEditDialog()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

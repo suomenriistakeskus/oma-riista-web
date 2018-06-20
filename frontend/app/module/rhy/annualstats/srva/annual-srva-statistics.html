@@ -1,0 +1,21 @@
+<div class="r-annual-statistics-content row">
+    <div class="col-sm-6">
+        <show-srva-total-statistics srva="$ctrl.srva"></show-srva-total-statistics>
+
+        <show-srva-accident-statistics srva="$ctrl.srva"
+                                       species-code-name-pairs="$ctrl.speciesCodeNamePairs">
+        </show-srva-accident-statistics>
+    </div>
+
+    <div class="col-sm-6">
+        <show-srva-event-statistics events="$ctrl.srva.deportation"
+                                    species-code-name-pairs="$ctrl.speciesCodeNamePairs"
+                                    localisation-prefix="'rhy.annualStats.srva.deportation'">
+        </show-srva-event-statistics>
+
+        <show-srva-event-statistics events="$ctrl.srva.injury"
+                                    species-code-name-pairs="$ctrl.speciesCodeNamePairs"
+                                    localisation-prefix="'rhy.annualStats.srva.injury'">
+        </show-srva-event-statistics>
+    </div>
+</div>

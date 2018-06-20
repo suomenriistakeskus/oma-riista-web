@@ -8,6 +8,7 @@
         <select name="member-{{::$id}}" id="memberSelect-{{::$id}}" class="form-control"
                 ng-model="$ctrl.selectedMember"
                 ng-change="$ctrl.onMemberSelected()"
+                ng-disabled="$ctrl.readOnly"
                 ng-options="m as $ctrl.formatPersonName(m.person) for m in ::$ctrl.memberList | orderBy:['person.lastName', 'person.byName'] track by m.id">
             <option value=""></option>
         </select>

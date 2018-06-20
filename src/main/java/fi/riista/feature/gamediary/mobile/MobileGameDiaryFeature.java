@@ -1,62 +1,58 @@
 package fi.riista.feature.gamediary.mobile;
 
-import com.google.common.collect.ImmutableMap;
-import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.error.MessageExposableValidationException;
 import fi.riista.feature.error.NotFoundException;
-import fi.riista.feature.gamediary.AbstractGameDiaryFeature;
-import fi.riista.feature.gamediary.GameDiaryEntry;
-import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.HarvestChangeHistory;
+import fi.riista.feature.gamediary.HarvestChangeHistoryRepository;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.harvest.HarvestService;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenService;
+import fi.riista.feature.gamediary.image.GameDiaryImageService;
 import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationRepository;
+import fi.riista.feature.gamediary.observation.ObservationService;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
+import fi.riista.feature.gamediary.observation.metadata.ObservationFieldValidator;
+import fi.riista.feature.gamediary.observation.metadata.ObservationFieldsMetadataService;
 import fi.riista.feature.gamediary.observation.metadata.ObservationMetadataDTO;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
+import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenService;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermit_;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFieldsSpecs;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields_;
-import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.huntingclub.hunting.ClubHuntingStatusService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
-import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
-import fi.riista.util.Functions;
 import fi.riista.util.jpa.JpaSpecs;
-import javaslang.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.domain.Specifications;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.Collection;
-import java.util.Date;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 
 import static fi.riista.feature.gamediary.GameDiarySpecs.harvestsByHuntingYear;
 import static fi.riista.feature.gamediary.GameDiarySpecs.observationsByHuntingYear;
 import static fi.riista.feature.gamediary.GameDiarySpecs.observer;
 import static fi.riista.feature.gamediary.GameDiarySpecs.shooter;
 import static fi.riista.feature.gamediary.GameDiarySpecs.temporalSort;
-import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_PENKKA;
@@ -67,61 +63,76 @@ import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.isPermitContact
 import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.withHarvestAuthor;
 import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.withHarvestShooter;
 import static fi.riista.util.jpa.JpaSpecs.equal;
-import static fi.riista.util.jpa.JpaSpecs.fetch;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
 import static org.springframework.data.jpa.domain.Specifications.where;
 
-public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
+@Component
+public class MobileGameDiaryFeature {
 
     private static final Logger LOG = LoggerFactory.getLogger(MobileGameDiaryFeature.class);
 
-    // Contains mappings from observation-specification-versions to observation-field-metadata-versions.
-    private static final Map<ObservationSpecVersion, Integer> OBSERVATION_SPEC_VERSION_TO_METADATA_VERSION =
-            ImmutableMap.of(ObservationSpecVersion._1, 1, ObservationSpecVersion._2, 2);
-
-    protected static int getObservationMetadataVersion(final ObservationSpecVersion observationSpecVersion) {
-        return OBSERVATION_SPEC_VERSION_TO_METADATA_VERSION.get(observationSpecVersion);
-    }
+    @Resource
+    private HarvestRepository harvestRepository;
 
     @Resource
-    protected MobileHarvestDTOTransformer harvestDtoTransformer;
+    private ObservationRepository observationRepository;
 
     @Resource
-    protected MobileObservationDTOTransformer observationDtoTransformer;
+    private HarvestPermitRepository harvestPermitRepository;
 
     @Resource
-    protected MobileOccupationDTOFactory mobileOccupationDTOFactory;
+    private HarvestService harvestService;
 
     @Resource
-    protected OccupationRepository occupationRepository;
+    private HarvestChangeHistoryRepository harvestChangeHistoryRepository;
 
-    public abstract EnumSet<HarvestSpecVersion> getSupportedSpecVersions();
+    @Resource
+    private ObservationService observationService;
 
-    protected abstract MobileAccountDTO getMobileAccount();
+    @Resource
+    private GameDiaryImageService gameDiaryImageService;
+
+    @Resource
+    private ActiveUserService activeUserService;
+
+    @Resource
+    private RequireEntityService requireEntityService;
+
+    @Resource
+    private HarvestSpecimenService harvestSpecimenService;
+
+    @Resource
+    private ObservationSpecimenService observationSpecimenService;
+
+    @Resource
+    private ObservationFieldsMetadataService observationFieldsMetadataService;
+
+    @Resource
+    private ClubHuntingStatusService clubHuntingStatusService;
+
+    @Resource
+    private UserAuthorizationHelper userAuthorizationHelper;
+
+    @Resource
+    private MobileHarvestDTOTransformer harvestDtoTransformer;
+
+    @Resource
+    private MobileObservationDTOTransformer observationDtoTransformer;
 
     @Transactional(readOnly = true)
-    public ObservationMetadataDTO getMobileObservationFieldMetadata(
-            @Nonnull final ObservationSpecVersion observationSpecVersion) {
-
-        Objects.requireNonNull(observationSpecVersion);
-
-        final ObservationMetadataDTO dto =
-                getObservationFieldMetadata(getObservationMetadataVersion(observationSpecVersion));
-        dto.setMobileApiObservationSpecVersion(observationSpecVersion);
+    public ObservationMetadataDTO getMobileObservationFieldMetadata(@Nonnull final ObservationSpecVersion specVersion) {
+        final ObservationMetadataDTO dto = observationFieldsMetadataService.getObservationFieldsMetadata(specVersion);
+        dto.setMobileApiObservationSpecVersion(specVersion);
         return dto;
     }
 
     @Transactional(readOnly = true)
-    public List<MobileHarvestDTO> getHarvests(
-            final int firstCalendarYearOfHuntingYear, @Nonnull final HarvestSpecVersion harvestSpecVersion) {
+    public List<MobileHarvestDTO> getHarvests(final int firstCalendarYearOfHuntingYear,
+                                              @Nonnull final HarvestSpecVersion specVersion) {
 
-        Objects.requireNonNull(harvestSpecVersion, "harvestSpecVersion must not be null");
+        Objects.requireNonNull(specVersion);
 
         final Person person = activeUserService.requireActivePerson();
 
@@ -131,12 +142,12 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
                         .and(harvestsByHuntingYear(firstCalendarYearOfHuntingYear)),
                 temporalSort(Direction.ASC));
 
-        return harvestDtoTransformer.apply(harvests, harvestSpecVersion);
+        return harvestDtoTransformer.apply(harvests, specVersion);
     }
 
     @Transactional(readOnly = true)
-    public MobileHarvestDTO getExistingByMobileClientRefId(final MobileHarvestDTO dto) {
-        assertHarvestDTOIsValid(dto);
+    public MobileHarvestDTO getExistingByMobileClientRefId(final MobileHarvestDTO dto, final int apiVersion) {
+        assertHarvestDTOIsValid(dto, apiVersion);
 
         final Person authenticatedPerson = activeUserService.requireActivePerson();
 
@@ -153,33 +164,28 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
     }
 
     @Transactional
-    public MobileHarvestDTO createHarvest(final MobileHarvestDTO dto) {
-        assertHarvestDTOIsValid(dto);
+    public MobileHarvestDTO createHarvest(final MobileHarvestDTO dto, final int apiVersion) {
+        assertHarvestDTOIsValid(dto, apiVersion);
 
         // Duplicate prevention check
-        final MobileHarvestDTO existing = getExistingByMobileClientRefId(dto);
+        final MobileHarvestDTO existing = getExistingByMobileClientRefId(dto, apiVersion);
+
         if (existing != null) {
             return existing;
         }
 
         // Not duplicate, create new one
-        final Person authenticatedPerson = activeUserService.requireActivePerson();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final Person currentPerson = Objects.requireNonNull(activeUser.getPerson());
 
         final Harvest harvest = new Harvest();
-        harvest.setAuthor(authenticatedPerson);
-        harvest.setActualShooter(authenticatedPerson);
+        harvest.setAuthor(currentPerson);
+        harvest.setActualShooter(currentPerson);
         harvest.setFromMobile(true);
         harvest.setMobileClientRefId(dto.getMobileClientRefId());
 
-        // Use 1 as default specimen amount
-        harvest.setAmount(Optional.ofNullable(dto.getAmount()).orElse(1));
-
-        // Default to GPS if GeoLocation.Source not explicitly given.
-        if (dto.getGeoLocation().getSource() == null) {
-            dto.getGeoLocation().setSource(GeoLocation.Source.GPS_DEVICE);
-        }
-
-        updateMutableFields(harvest, dto, authenticatedPerson, true);
+        final HarvestChangeHistory historyEvent =
+                harvestService.updateMutableFields(harvest, dto, activeUser, true);
 
         harvestRepository.saveAndFlush(harvest);
 
@@ -188,28 +194,37 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
                     harvest, dto.getAmount(), dto.getSpecimens(), dto.getHarvestSpecVersion());
         }
 
+        if (historyEvent != null) {
+            harvestChangeHistoryRepository.save(historyEvent);
+        }
+
         return harvestDtoTransformer.apply(harvest, dto.getHarvestSpecVersion());
     }
 
     @Transactional
-    public MobileHarvestDTO updateHarvest(final MobileHarvestDTO dto) {
-        assertHarvestDTOIsValid(dto);
+    public MobileHarvestDTO updateHarvest(final MobileHarvestDTO dto, final int apiVersion) {
+        assertHarvestDTOIsValid(dto, apiVersion);
 
         final HarvestSpecVersion specVersion = dto.getHarvestSpecVersion();
-        final Person currentPerson = activeUserService.requireActivePerson();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final Person currentPerson = Objects.requireNonNull(activeUser.getPerson());
 
         final Harvest harvest = requireEntityService.requireHarvest(dto.getId(), EntityPermission.UPDATE);
         DtoUtil.assertNoVersionConflict(harvest, dto);
 
-        final boolean businessFieldsCanBeUpdated = canBusinessFieldsBeUpdated(currentPerson, harvest, false);
-        updateMutableFields(harvest, dto, currentPerson, businessFieldsCanBeUpdated);
+        final boolean businessFieldsCanBeUpdated =
+                harvestService.canBusinessFieldsBeUpdated(currentPerson, harvest, specVersion);
+
+        final HarvestChangeHistory historyEvent =
+                harvestService.updateMutableFields(harvest, dto, activeUser, businessFieldsCanBeUpdated);
 
         if (businessFieldsCanBeUpdated) {
             if (dto.getSpecimens() != null) {
-                final Tuple2<?, Boolean> specimenResult =
-                        harvestSpecimenService.setSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), specVersion);
+                final boolean anyChangesDetected = harvestSpecimenService
+                        .setSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), specVersion)
+                        .apply((specimens, changesDetected) -> changesDetected);
 
-                if (specimenResult._2) {
+                if (anyChangesDetected) {
                     harvest.forceRevisionUpdate();
                 }
             } else if (dto.getAmount() != null) {
@@ -217,61 +232,28 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
             }
         }
 
+        if (historyEvent != null) {
+            harvestChangeHistoryRepository.save(historyEvent);
+        }
+
         // flush is mandatory! because mobile will use the returned revision, and revision is updated on save
         return harvestDtoTransformer.apply(harvestRepository.saveAndFlush(harvest), specVersion);
     }
 
-    private void updateMutableFields(
-            final Harvest harvest,
-            final MobileHarvestDTO dto,
-            final Person currentPerson,
-            final boolean businessFieldsCanBeUpdated) {
-
-        if (businessFieldsCanBeUpdated) {
-            // Try to do queries first (as far as possible) in order to prevent
-            // harvest revision bumping many integer steps.
-
-            final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(dto.getGameSpeciesCode());
-            final Date pointOfTime = DateUtil.toDateNullSafe(dto.getPointOfTime());
-
-            // Null-checking of geolocation source done for backwards-compatibility.
-            final boolean geoLocationSourceMissingFromDto = dto.getGeoLocation().getSource() == null;
-            final GeoLocation location;
-
-            if (!dto.getHarvestSpecVersion().requiresGeolocationSource()) {
-                // Keep original location within updates if source is missing from DTO.
-                if (geoLocationSourceMissingFromDto) {
-                    location = harvest.getGeoLocation();
-                } else {
-                    location = dto.getGeoLocation();
-                }
-            } else {
-                location = dto.getGeoLocation();
-            }
-
-            final BiConsumer<Harvest, HarvestSpecVersion> permitStateAndReportRequirementSetter =
-                    prepareMutatorForPermitStateAndReportRequirement(
-                            dto, species, location, currentPerson, false);
-
-            if (!geoLocationSourceMissingFromDto) {
-                harvest.updateGeoLocation(location, gisQueryService);
-            }
-
-            harvest.setSpecies(species);
-            harvest.setPointOfTime(pointOfTime);
-            Optional.ofNullable(dto.getAmount()).ifPresent(harvest::setAmount);
-
-            permitStateAndReportRequirementSetter.accept(harvest, dto.getHarvestSpecVersion());
-        }
-
-        harvest.setDescription(dto.getDescription());
+    @Transactional
+    public void deleteHarvest(final long harvestId) {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final Harvest harvest = requireEntityService.requireHarvest(harvestId, EntityPermission.DELETE);
+        harvestSpecimenService.deleteAllSpecimens(harvest);
+        gameDiaryImageService.deleteGameDiaryImages(harvest);
+        harvestService.deleteHarvest(harvest, activeUser);
     }
 
     @Transactional(readOnly = true)
-    public List<MobileObservationDTO> getObservations(
-            final int firstCalendarYearOfHuntingYear, @Nonnull final ObservationSpecVersion observationSpecVersion) {
+    public List<MobileObservationDTO> getObservations(final int firstCalendarYearOfHuntingYear,
+                                                      @Nonnull final ObservationSpecVersion specVersion) {
 
-        Objects.requireNonNull(observationSpecVersion, "observationSpecVersion must not be null");
+        Objects.requireNonNull(specVersion);
 
         final Person person = activeUserService.requireActivePerson();
 
@@ -281,7 +263,7 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
                         .and(observationsByHuntingYear(firstCalendarYearOfHuntingYear)),
                 temporalSort(Direction.ASC));
 
-        return observationDtoTransformer.apply(observations, observationSpecVersion);
+        return observationDtoTransformer.apply(observations, specVersion);
     }
 
     @Transactional
@@ -305,104 +287,145 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
             throw new MessageExposableValidationException("mobileClientRefId is missing");
         }
 
-        final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(dto.getGameSpeciesCode());
+        final boolean carnivoreAuthority =
+                userAuthorizationHelper.isCarnivoreContactPersonAnywhere(dto.getPointOfTime().toLocalDate());
 
-        getObservationFieldsValidator(species, getObservationMetadataVersion(specVersion))
-                .validate(dto, Optional.ofNullable(dto.getSpecimens()));
+        ObservationFieldValidator validator = observationFieldsMetadataService.getObservationFieldValidator(dto.getObservationContext(), carnivoreAuthority);
+        validator.validate(dto, Optional.ofNullable(dto.getSpecimens()));
 
-        // Not duplicate, create new one
+        // Not duplicate, create a new one
 
         final Observation observation = new Observation();
         observation.setFromMobile(true);
         observation.setMobileClientRefId(dto.getMobileClientRefId());
         observation.setAuthor(authenticatedPerson);
         observation.setObserver(authenticatedPerson);
+        observation.setDescription(dto.getDescription());
 
-        updateMutableFields(observation, species, dto, true);
+        updateMutableFields(observation, dto, carnivoreAuthority);
+
+        if (!specVersion.isMostRecent()) {
+            validator = observationFieldsMetadataService.getObservationFieldValidator(observation.getObservationContext(), carnivoreAuthority);
+
+            fixMooseCalfAmountIfNeeded(observation, specVersion, validator);
+        }
 
         observationRepository.saveAndFlush(observation);
 
         final List<ObservationSpecimen> specimens = F.isNullOrEmpty(dto.getSpecimens())
                 ? null
                 : observationSpecimenService.addSpecimens(
-                        observation, dto.getAmount(), dto.getSpecimens(), specVersion);
+                observation, dto.getAmount(), dto.getSpecimens(), specVersion);
 
-        // Validate entity graph after specimens are persisted. Amount field is excluded because in
-        // moose/mooselike-within-moose-hunting cases the field is computed automatically even
-        // though in the REST-API it is actually prohibited (because of separate moose amount
-        // fields are used).
-        getObservationFieldsValidator(species, getObservationMetadataVersion(MOST_RECENT))
-                .validate(observation, Optional.ofNullable(specimens), singleton("amount"), emptySet());
+        // Validate entity graph after specimens are persisted. Amount field is excluded
+        // because in within-moose-hunting cases the field is computed automatically based on
+        // the separate moose amount fields. Therefore the field is prohibited in the REST API.
+        validator.validate(observation, Optional.ofNullable(specimens), singleton("amount"), emptySet());
 
-        return observationDtoTransformer.apply(observation, dto.getObservationSpecVersion());
+        return observationDtoTransformer.apply(observation, specVersion);
     }
 
     @Transactional
     public MobileObservationDTO updateObservation(@Nonnull final MobileObservationDTO dto) {
         Objects.requireNonNull(dto);
 
-        final ObservationSpecVersion specVersion = dto.getObservationSpecVersion();
         activeUserService.requireActivePerson();
 
-        final Observation observation =
-                requireEntityService.requireObservation(dto.getId(), EntityPermission.UPDATE);
+        final Observation observation = requireEntityService.requireObservation(dto.getId(), EntityPermission.UPDATE);
         DtoUtil.assertNoVersionConflict(observation, dto);
 
-        final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(dto.getGameSpeciesCode());
+        final boolean carnivoreAuthority =
+                userAuthorizationHelper.isCarnivoreContactPersonAnywhere(dto.getPointOfTime().toLocalDate());
 
-        getObservationFieldsValidator(species, getObservationMetadataVersion(specVersion))
-                .validate(dto, Optional.ofNullable(dto.getSpecimens()));
+        ObservationFieldValidator validator = observationFieldsMetadataService.getObservationFieldValidator(dto.getObservationContext(), carnivoreAuthority);
+        validator.validate(dto, Optional.ofNullable(dto.getSpecimens()));
 
-        final boolean businessFieldsCanBeUpdated = canBusinessFieldsBeUpdated(observation);
-        updateMutableFields(observation, species, dto, businessFieldsCanBeUpdated);
+        final ObservationSpecVersion specVersion = dto.getObservationSpecVersion();
+        final boolean observationLockedByClubHunting = clubHuntingStatusService.isDiaryEntryLocked(observation);
 
-        if (businessFieldsCanBeUpdated) {
-            final List<ObservationSpecimen> specimens;
+        if (!observationLockedByClubHunting) {
 
-            if (dto.getAmount() != null) {
-                final Tuple2<List<ObservationSpecimen>, Boolean> specimenResult =
-                        observationSpecimenService.setSpecimens(
-                                observation, dto.getAmount(), dto.getSpecimens(), specVersion);
-                specimens = specimenResult._1;
+            // Cannot mutate most of the state if user's carnivore authority has expired.
+            if (carnivoreAuthority || !observation.isAnyLargeCarnivoreFieldPresent()) {
 
-                if (specimenResult._2) {
-                    observation.forceRevisionUpdate();
+                updateMutableFields(observation, dto, carnivoreAuthority);
+
+                final List<ObservationSpecimen> specimens;
+
+                if (dto.getAmount() != null) {
+                    specimens = observationSpecimenService
+                            .setSpecimens(observation, dto.getAmount(), dto.getSpecimens(), specVersion)
+                            .apply((specimenEntities, anyChangesDetected) -> {
+                                if (anyChangesDetected) {
+                                    observation.forceRevisionUpdate();
+                                }
+
+                                return specimenEntities;
+                            });
+                } else {
+                    specimens = null;
+                    observationSpecimenService.deleteAllSpecimens(observation);
                 }
-            } else {
-                specimens = null;
-                observationSpecimenService.deleteAllSpecimens(observation);
-            }
 
-            // Validate entity graph after specimens are persisted. Amount field is excluded because in
-            // moose/mooselike-within-moose-hunting cases the field is computed automatically even
-            // though in the REST-API it is actually prohibited (because of separate moose amount
-            // fields are used).
-            getObservationFieldsValidator(species, getObservationMetadataVersion(MOST_RECENT))
-                    .validate(observation, Optional.ofNullable(specimens), singleton("amount"), emptySet());
+                if (!specVersion.isMostRecent()) {
+                    validator = observationFieldsMetadataService.getObservationFieldValidator(observation.getObservationContext(), carnivoreAuthority);
+
+                    fixMooseCalfAmountIfNeeded(observation, specVersion, validator);
+                }
+
+                final Optional<List<?>> specimensOpt = Optional.ofNullable(specimens);
+
+                // While supporting old spec-versions it is easier to nullify illegal fields in an
+                // "after hook" manner than try to bake the logic directly into
+                // game-diary-feature/specimen-service ().
+                validator.nullifyIllegalFields(observation, specimensOpt, singleton("amount"), emptySet());
+
+                // Validate entity graph after specimens are persisted. Amount field is excluded
+                // because in within-moose-hunting cases the field is computed automatically based on
+                // the separate moose amount fields. Therefore the field is prohibited in the REST API.
+                validator.validate(observation, specimensOpt, singleton("amount"), emptySet());
+            }
         }
 
+        // Description updated separately b/c it is independent of club-hunting status.
+        observation.setDescription(dto.getDescription());
+
         // flush is mandatory! because mobile will use the returned revision, and revision is updated on save
-        return observationDtoTransformer.apply(
-                observationRepository.saveAndFlush(observation), dto.getObservationSpecVersion());
+        return observationDtoTransformer.apply(observationRepository.saveAndFlush(observation), specVersion);
     }
 
     private void updateMutableFields(final Observation observation,
-                                     final GameSpecies species,
                                      final MobileObservationDTO dto,
-                                     final boolean businessFieldsCanBeUpdated) {
+                                     final boolean carnivoreAuthorityGranted) {
 
         final ObservationType existingType = observation.getObservationType();
 
-        super.updateMutableFields(observation, species, dto, businessFieldsCanBeUpdated);
+        observationService.updateMutableFields(observation, dto, carnivoreAuthorityGranted);
 
-        if (businessFieldsCanBeUpdated) {
-            if (dto.requiresBeaverObservationTypeTranslation() && dto.getObservationType() == PESA) {
-                observation.setObservationType(
-                        existingType == PESA_PENKKA || existingType == PESA_SEKA ? existingType : PESA_KEKO);
-            }
+        if (dto.requiresBeaverObservationTypeTranslation() && dto.getObservationType() == PESA) {
+            observation.setObservationType(
+                    existingType == PESA_PENKKA || existingType == PESA_SEKA ? existingType : PESA_KEKO);
         }
+    }
 
-        observation.setDescription(dto.getDescription());
+    private static void fixMooseCalfAmountIfNeeded(final Observation observation,
+                                                   final ObservationSpecVersion dtoSpecVersion,
+                                                   final ObservationFieldValidator validator) {
+
+        if (!dtoSpecVersion.supportsMooselikeCalfAmount()
+                && validator.getContextSensitiveFields().getMooselikeCalfAmount().nonNullValueRequired()
+                && observation.getMooselikeCalfAmount() == null) {
+
+            observation.setMooselikeCalfAmount(0);
+        }
+    }
+
+    @Transactional
+    public void deleteObservation(final long observationId) {
+        final Observation observation = requireEntityService.requireObservation(observationId, EntityPermission.DELETE);
+        observationSpecimenService.deleteAllSpecimens(observation);
+        gameDiaryImageService.deleteGameDiaryImages(observation);
+        observationService.deleteObservation(observation);
     }
 
     @Transactional
@@ -415,40 +438,20 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
         }
     }
 
-    protected SortedSet<Integer> getBeginningCalendarYearsOfHuntingYearsContainingHarvests(final Person person) {
-        return getBeginningCalendarYearsOfHuntingYears(harvestRepository.findByActualShooter(person));
-    }
-
-    protected SortedSet<Integer> getBeginningCalendarYearsOfHuntingYearsContainingObservations(final Person person) {
-        return getBeginningCalendarYearsOfHuntingYears(observationRepository.findByObserver(person));
-    }
-
-    private static <T extends GameDiaryEntry> SortedSet<Integer> getBeginningCalendarYearsOfHuntingYears(
-            final Iterable<T> diaryEntries) {
-
-        return F.stream(diaryEntries)
-                .map(GameDiaryEntry::getPointOfTime)
-                .map(DateUtil::toLocalDateNullSafe)
-                .filter(Objects::nonNull)
-                .map(DateUtil::getFirstCalendarYearOfHuntingYearContaining)
-                .collect(toCollection(TreeSet::new));
-    }
-
     @Transactional(readOnly = true)
     public MobileHarvestPermitExistsDTO findPermitNumber(final String permitNumber) {
         return Optional.ofNullable(harvestPermitRepository.findByPermitNumber(permitNumber))
-                .map(permit -> MobileHarvestPermitExistsDTO.create(permit, gameSpeciesIdToFields(singleton(permit))))
+                .map(MobileHarvestPermitExistsDTO::create)
                 .orElseThrow(NotFoundException::new);
     }
 
     @Transactional(readOnly = true)
     public List<MobileHarvestPermitExistsDTO> preloadPermits() {
-        final List<HarvestPermit> permits = preloadPermitEntities();
-        return MobileHarvestPermitExistsDTO.create(permits, gameSpeciesIdToFields(permits));
+        return MobileHarvestPermitExistsDTO.create(preloadPermitEntities());
     }
 
     private List<HarvestPermit> preloadPermitEntities() {
-        final Person person = activeUserService.getActiveUser().getPerson();
+        final Person person = activeUserService.requireActiveUser().getPerson();
 
         if (person == null) {
             return emptyList();
@@ -472,35 +475,28 @@ public abstract class MobileGameDiaryFeature extends AbstractGameDiaryFeature {
                 IS_NOT_ANY_MOOSELIKE_PERMIT));
     }
 
-    private Map<Long, HarvestReportFields> gameSpeciesIdToFields(final Collection<HarvestPermit> permits) {
-
-        final Set<Long> gameSpeciesIds = permits.stream()
-                .map(HarvestPermit::getSpeciesAmounts)
-                .flatMap(List::stream)
-                .map(HarvestPermitSpeciesAmount::getGameSpecies)
-                .map(GameSpecies::getId)
-                .collect(toSet());
-
-        return harvestReportFieldsRepository.findAll(
-                where(HarvestReportFieldsSpecs.withUsedWithPermit(true))
-                        .and(HarvestReportFieldsSpecs.withGameSpeciesCodes(gameSpeciesIds))
-                        .and(fetch(HarvestReportFields_.species)))
-                .stream()
-                .collect(toMap(Functions.idOf(HarvestReportFields::getSpecies), identity()));
-    }
-
-    protected void assertHarvestDTOIsValid(final MobileHarvestDTO dto) {
+    protected void assertHarvestDTOIsValid(final MobileHarvestDTO dto, final int apiVersion) {
         if (dto.getHarvestSpecVersion() == null) {
-            throw new MessageExposableValidationException("harvestSpecVersion must not be null");
+            throw new MessageExposableValidationException("harvestSpecVersion is null");
         }
 
         if (dto.getHarvestSpecVersion().requiresGeolocationSource() && dto.getGeoLocation().getSource() == null) {
-            throw new MessageExposableValidationException("geoLocation.source must not be null");
+            throw new MessageExposableValidationException("geoLocation.source is null");
         }
 
         if (dto.getHarvestSpecVersion().requiresAmount() && dto.getAmount() == null) {
-            throw new MessageExposableValidationException("amount must not be null");
+            throw new MessageExposableValidationException("amount is null");
+        }
+
+        if (apiVersion >= 2) {
+            if (dto.getId() == null && dto.getMobileClientRefId() == null) {
+                throw new MessageExposableValidationException("mobileClientRefId must not be null");
+            }
+
+            // Specimens are allowed to be null on creation.
+            if (F.hasId(dto) && dto.getSpecimens() == null) {
+                throw new MessageExposableValidationException("specimens must not be null");
+            }
         }
     }
-
 }

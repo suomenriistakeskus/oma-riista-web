@@ -41,8 +41,6 @@ public class SQAnnouncement extends RelationalPathSpatial<SQAnnouncement> {
 
     public final DateTimePath<java.sql.Timestamp> deletionTime = createDateTime("deletionTime", java.sql.Timestamp.class);
 
-    public final StringPath fromOccupationType = createString("fromOccupationType");
-
     public final NumberPath<Long> fromOrganisationId = createNumber("fromOrganisationId", Long.class);
 
     public final NumberPath<Long> fromUserId = createNumber("fromUserId", Long.class);
@@ -51,15 +49,19 @@ public class SQAnnouncement extends RelationalPathSpatial<SQAnnouncement> {
 
     public final NumberPath<Long> modifiedByUserId = createNumber("modifiedByUserId", Long.class);
 
+    public final StringPath senderType = createString("senderType");
+
     public final StringPath subject = createString("subject");
+
+    public final BooleanPath visibleToAll = createBoolean("visibleToAll");
 
     public final com.querydsl.sql.PrimaryKey<SQAnnouncement> announcementPkey = createPrimaryKey(announcementId);
 
-    public final com.querydsl.sql.ForeignKey<SQOccupationType> announcementFromOccupationTypeFk = createForeignKey(fromOccupationType, "name");
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> announcementFromOrganisationFk = createForeignKey(fromOrganisationId, "organisation_id");
 
     public final com.querydsl.sql.ForeignKey<SQSystemUser> announcementUserIdFk = createForeignKey(fromUserId, "user_id");
 
-    public final com.querydsl.sql.ForeignKey<SQOrganisation> announcementFromOrganisationFk = createForeignKey(fromOrganisationId, "organisation_id");
+    public final com.querydsl.sql.ForeignKey<SQAnnouncementSenderType> announcementSenderTypeFk = createForeignKey(senderType, "name");
 
     public final com.querydsl.sql.ForeignKey<SQAnnouncementSubscriber> _announcementSubscriberAnnouncementFk = createInvForeignKey(announcementId, "announcement_id");
 
@@ -70,6 +72,11 @@ public class SQAnnouncement extends RelationalPathSpatial<SQAnnouncement> {
 
     public SQAnnouncement(String variable, String schema, String table) {
         super(SQAnnouncement.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQAnnouncement(String variable, String schema) {
+        super(SQAnnouncement.class, forVariable(variable), schema, "announcement");
         addMetadata();
     }
 
@@ -91,12 +98,13 @@ public class SQAnnouncement extends RelationalPathSpatial<SQAnnouncement> {
         addMetadata(creationTime, ColumnMetadata.named("creation_time").withIndex(6).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(deletedByUserId, ColumnMetadata.named("deleted_by_user_id").withIndex(4).ofType(Types.BIGINT).withSize(19));
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(fromOccupationType, ColumnMetadata.named("from_occupation_type").withIndex(12).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(fromOrganisationId, ColumnMetadata.named("from_organisation_id").withIndex(13).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(fromUserId, ColumnMetadata.named("from_user_id").withIndex(11).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
+        addMetadata(senderType, ColumnMetadata.named("sender_type").withIndex(12).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(subject, ColumnMetadata.named("subject").withIndex(9).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(visibleToAll, ColumnMetadata.named("visible_to_all").withIndex(14).ofType(Types.BIT).withSize(1).notNull());
     }
 
 }

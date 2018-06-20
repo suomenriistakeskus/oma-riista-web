@@ -1,6 +1,5 @@
 package fi.riista.integration.lupahallinta;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -14,6 +13,7 @@ import fi.riista.feature.organization.lupahallinta.LHOrganisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.integration.lupahallinta.parser.PermitCSVImporterTest;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -378,11 +378,13 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
         final LHOrganisation lhOrg = model().newLHOrganisation(rhy);
         lhOrg.setRhyOfficialCode(null);
 
+        final HuntingClub partner = model().newHuntingClub(rhy);
+
         final GISHirvitalousalue hta = model().newGISHirvitalousalue();
 
         SystemUser admin = createNewAdmin();
         Reader reader = createReaderForOneRowData(
-                person.getSsn(), lhOrg.getOfficialCode(), "", PERMIT_NUMBER,
+                person.getSsn(), lhOrg.getOfficialCode(), partner.getOfficialCode(), PERMIT_NUMBER,
                 HarvestPermit.MOOSELIKE_PERMIT_TYPE, GAME_SPECIES_NAME,
                 species.getOfficialCode(), "1.0", "1.04.2014 - 28.5.2014", "15.7.2014 - 31.7.2014",
                 rhy.getOfficialCode(), RESTRICTION_TYPE, "1.0",

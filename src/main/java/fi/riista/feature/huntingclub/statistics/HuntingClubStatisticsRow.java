@@ -1,7 +1,7 @@
 package fi.riista.feature.huntingclub.statistics;
 
-import fi.riista.feature.common.dto.DoNotValidate;
 import fi.riista.feature.organization.OrganisationDTO;
+import fi.riista.validation.DoNotValidate;
 
 public class HuntingClubStatisticsRow {
     @DoNotValidate

@@ -9,16 +9,15 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.mail.MailService;
+import fi.riista.feature.organization.EmailResolver;
+import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.organization.EmailResolver;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.joda.time.Duration;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +30,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static fi.riista.util.Collect.idSet;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 @Component
 public class HuntingLeaderEmailSenderService {
@@ -51,8 +50,6 @@ public class HuntingLeaderEmailSenderService {
             this.groupRows = groupRows;
         }
     }
-
-    private static final Logger LOG = LoggerFactory.getLogger(HuntingLeaderEmailSenderService.class);
 
     private static final String EMAIL_TEMPLATE = "email_hunting_leaders_changed";
     private static final String EMAIL_TEMPLATE_SV = "email_hunting_leaders_changed.sv";
@@ -78,7 +75,7 @@ public class HuntingLeaderEmailSenderService {
             return Collections.emptyList();
         }
 
-        final List<Occupation> allGroupLeaders = getAllGroupLeaders(changedLeaders);
+        final List<Occupation> allGroupLeaders = getGroupLeadersOfCurrentAndFutureHuntingYears(changedLeaders);
         final Map<Long, HuntingClubGroup> groupsById = getGroupsByIdFromGroupsOccupations(allGroupLeaders);
         final Map<Organisation, Map<HuntingClubGroup, List<Occupation>>> clubToGroupsToOccupations =
                 allGroupLeaders.stream().collect(groupingBy(
@@ -117,24 +114,21 @@ public class HuntingLeaderEmailSenderService {
                            final Organisation club,
                            final List<GroupEmailDto> groupRows) {
 
-        final Map<String, Object> model = ImmutableMap.<String, Object> builder()
+        final Map<String, Object> model = ImmutableMap.<String, Object>builder()
                 .put("club", club.getNameFinnish())
                 .put("clubCustomerNumber", club.getOfficialCode())
                 .put("groups", groupRows)
                 .build();
 
-        final MailMessageDTO.Builder builder = new MailMessageDTO.Builder()
+        mailService.send(MailMessageDTO.builder()
+                .withFrom(mailService.getDefaultFromAddress())
+                .withRecipients(coordinatorEmails)
                 .withSubject(String.format("Metsästyksenjohtajailmoitus (%s)", club.getNameFinnish()))
+                .withScheduledTimeAfter(Duration.standardHours(1))
                 .appendHandlebarsBody(handlebars, EMAIL_TEMPLATE, model)
                 .appendBody("\n<hr>\n")
-                .appendHandlebarsBody(handlebars, EMAIL_TEMPLATE_SV, model);
-
-        for (final String email : coordinatorEmails) {
-            LOG.info("Sending leaders to {}", email);
-
-            builder.withTo(email);
-            mailService.sendLater(builder, DateTime.now().plusHours(1));
-        }
+                .appendHandlebarsBody(handlebars, EMAIL_TEMPLATE_SV, model)
+                .build());
     }
 
     private static GroupEmailDto createDto(final HuntingClubGroup group,
@@ -149,24 +143,27 @@ public class HuntingLeaderEmailSenderService {
         );
     }
 
-    private List<Occupation> getAllGroupLeaders(final List<Occupation> changedLeaders) {
+    private List<Occupation> getGroupLeadersOfCurrentAndFutureHuntingYears(final List<Occupation> changedLeaders) {
         final Set<Long> clubIds = changedLeaders.stream()
-                .map(occ -> occ.getOrganisation().getParentOrganisation().getId()).collect(toSet());
+                .map(occ -> occ.getOrganisation().getParentOrganisation())
+                .collect(idSet());
 
         final QOccupation occupation = QOccupation.occupation;
         final QHuntingClubGroup group = QHuntingClubGroup.huntingClubGroup;
+        final int currentHuntingYear = DateUtil.huntingYear();
 
         return jpqlQueryFactory.selectFrom(occupation)
                 .join(occupation.organisation, group._super)
                 .where(occupation.organisation.parentOrganisation.id.in(clubIds),
                         occupation.occupationType.eq(OccupationType.RYHMAN_METSASTYKSENJOHTAJA),
                         occupation.validAndNotDeleted(),
-                        group.harvestPermit.isNotNull()
+                        group.harvestPermit.isNotNull(),
+                        group.huntingYear.goe(currentHuntingYear)
                 ).fetch();
     }
 
     private Map<Long, HuntingClubGroup> getGroupsByIdFromGroupsOccupations(final List<Occupation> allGroupsOccupations) {
-        final Set<Long> groupIds = allGroupsOccupations.stream().map(o -> o.getOrganisation().getId()).collect(toSet());
+        final Set<Long> groupIds = allGroupsOccupations.stream().map(Occupation::getOrganisation).collect(idSet());
         return F.indexById(huntingClubGroupRepository.findAll(groupIds));
     }
 }

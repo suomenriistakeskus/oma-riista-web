@@ -1,0 +1,11 @@
+<h3 style="margin: 0;">
+    <span ng-bind="::$ctrl.decisionName"></span>
+    <span ng-show="::$ctrl.isLocked"
+          uib-tooltip="Päätös on lukittu"
+          class="fa fa-fw fa-lock text-danger"></span>
+    <span class="text-muted"
+           ng-show="::$ctrl.decision.harvestPermitNumber"
+           ng-bind="::$ctrl.decision.harvestPermitNumber"></span>
+</h3>
+<span class="text-muted" ng-bind="::$ctrl.permitHolderName"></span>
+<hr class="invisible" style="margin: 10px 0">

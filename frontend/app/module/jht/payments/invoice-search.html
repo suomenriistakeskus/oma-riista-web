@@ -1,0 +1,9 @@
+<moderator-invoice-search-filters filters="$ctrl.filters"
+                                  search="$ctrl.search()">
+</moderator-invoice-search-filters>
+
+<hr ng-show="$ctrl.results && $ctrl.results.length">
+
+<moderator-invoice-search-results results="$ctrl.results"
+                                  open-invoice="$ctrl.openInvoice(invoiceId)">
+</moderator-invoice-search-results>

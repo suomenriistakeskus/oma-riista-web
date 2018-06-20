@@ -1,15 +1,16 @@
 package fi.riista.security.authorization;
 
-import com.google.common.collect.Sets;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 public final class AuthorizationTokenCollector {
-    private final Set<String> acquiredTokens = Sets.newHashSet();
+
+    private final Set<String> acquiredTokens = new HashSet<>();
     private final AuthorizationTokenHelper authorizationTokenHelper;
     private final Enum<?> permission;
 
@@ -17,6 +18,7 @@ public final class AuthorizationTokenCollector {
                                        final RoleHierarchy roleHierarchy,
                                        final AuthorizationTokenHelper authorizationTokenHelper,
                                        final Enum<?> permission) {
+
         this.authorizationTokenHelper = Objects.requireNonNull(authorizationTokenHelper);
 
         // Initialize default role authorization tokens using active user role and role hierarchy
@@ -35,8 +37,7 @@ public final class AuthorizationTokenCollector {
                 Objects.requireNonNull(authorizationRole, "authorizationRole is null")));
     }
 
-    public void addAuthorizationRole(final Enum<?> authorizationRole,
-                                     final ConditionalAuthorization condition) {
+    public void addAuthorizationRole(final Enum<?> authorizationRole, final ConditionalAuthorization condition) {
         // Skip condition evaluation if already granted
         if (hasPermission()) {
             return;

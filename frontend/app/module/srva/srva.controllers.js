@@ -11,8 +11,11 @@ angular.module('app.srva.controllers', [])
                     parameters: function (GameDiarySrvaParameters) {
                         return GameDiarySrvaParameters.query().$promise;
                     },
-                    orgId: function ($stateParams) {
+                    rhyId: function ($stateParams) {
                         return $stateParams.id;
+                    },
+                    initialRhy: function (Rhys, rhyId) {
+                        return Rhys.getPublicInfo({id: rhyId}).$promise;
                     }
                 }
             })
@@ -29,187 +32,143 @@ angular.module('app.srva.controllers', [])
                 controller: 'SrvaEventMapController',
                 controllerAs: '$ctrl',
                 resolve: {
-                    areas: function (Areas) {
-                        return Areas.query().$promise;
+                    moderatorView: _.constant(false),
+                    tabs: function (Rhys, rhyId) {
+                        return Rhys.searchParamOrganisations({id: rhyId}).$promise;
                     }
                 }
             })
         ;
     })
 
-    .controller('SrvaEventMapController', function ($state, SrvaEventMapSearchService, MapDefaults, DiaryEntryUrl,
-                                                    Helpers, MapState, Markers, DiaryListService,
-                                                    DiaryEntryRepositoryFactory, DiaryListMarkerService,
-                                                    SrvaEventMapSearchParametersService, FormPostService,
-                                                    areas, parameters, orgId) {
+    .controller('SrvaEventMapController', function ($state, $q, Helpers, FormPostService,
+                                                    MapDefaults, MapState, MapBounds, Markers,
+                                                    DiaryListService, DiaryEntryRepositoryFactory,
+                                                    DiaryListMarkerService,
+                                                    SrvaEventMapSearchService, SrvaEventMapSearchParametersService,
+                                                    parameters, moderatorView, initialRhy, tabs) {
         var $ctrl = this;
 
-        $ctrl.areas = areas;
+        $ctrl.searchParams = {};
+        $ctrl.moderatorView = moderatorView;
         $ctrl.srvaSpecies = parameters.species;
+
         $ctrl.getGameName = parameters.$getGameName;
         $ctrl.getGameNameWithAmount = parameters.$getGameNameWithAmount;
+        $ctrl.showEntry = DiaryListService.showSidebar();
 
         $ctrl.mapState = MapState.get();
-        $ctrl.mapState.center = {};
         $ctrl.mapEvents = MapDefaults.getMapBroadcastEvents();
         $ctrl.mapDefaults = MapDefaults.create();
 
-        $ctrl.showEntry = DiaryListService.showSidebar();
+        $ctrl.tabs = tabs;
 
-        $ctrl.searchParams = [];
+        $ctrl.$onInit = function () {
+            $ctrl.searchParams = SrvaEventMapSearchParametersService.pop();
 
-        $ctrl.updateRhys = function (area) {
-            $ctrl.searchParams.rhy = null;
-            $ctrl.rhys = _($ctrl.areas).map(function (a) {
-                if (!area || a === area) {
-                    return a.subOrganisations;
-                }
-            }).flatten().compact().value();
-        };
-
-        $ctrl.searchParams.states = SrvaEventMapSearchParametersService.getStates();
-        $ctrl.searchParams.eventNames = SrvaEventMapSearchParametersService.getEventNames();
-        $ctrl.searchParams.dateRange = SrvaEventMapSearchParametersService.getDateRange();
-        $ctrl.searchParams.gameSpeciesCode = SrvaEventMapSearchParametersService.getGameSpeciesCode();
-        $ctrl.searchParams.rka = SrvaEventMapSearchParametersService.getRka();
-        $ctrl.updateRhys($ctrl.searchParams.rka);
-        $ctrl.searchParams.rhy = SrvaEventMapSearchParametersService.getRhy();
-
-        // Use currently selected rhy as default at the first time
-        if (_.isUndefined($ctrl.searchParams.rhy)) {
-            $ctrl.searchParams.rhy =
-                _.find(_.flatten(_.pluck($ctrl.areas, 'subOrganisations')), {'id': _.parseInt(orgId)});
-        }
-
-        var getEnabled = function (data) {
-            return _.pluck(_.filter(data, {'isChecked': true}), 'name');
-        };
-
-        var saveSearchParams = function () {
-            SrvaEventMapSearchParametersService.saveStates($ctrl.searchParams.states);
-            SrvaEventMapSearchParametersService.saveEventNames($ctrl.searchParams.eventNames);
-            SrvaEventMapSearchParametersService.saveDateRange($ctrl.searchParams.dateRange);
-            SrvaEventMapSearchParametersService.saveGameSpeciesCode($ctrl.searchParams.gameSpeciesCode);
-            SrvaEventMapSearchParametersService.saveRhy($ctrl.searchParams.rhy);
-            SrvaEventMapSearchParametersService.saveRka($ctrl.searchParams.rka);
-        };
-
-        function getSearchParams() {
-            return {
-                currentRhyId: orgId,
-                states: getEnabled($ctrl.searchParams.states),
-                eventNames: getEnabled($ctrl.searchParams.eventNames),
-                beginDate: Helpers.dateToString($ctrl.searchParams.dateRange.beginDate),
-                endDate: Helpers.dateToString($ctrl.searchParams.dateRange.endDate),
-                gameSpeciesCode: $ctrl.searchParams.gameSpeciesCode,
-                rhyId: _.get($ctrl.searchParams, 'rhy.id', null),
-                rkaId: _.get($ctrl.searchParams, 'rka.id', null)
-            };
-        }
-
-        $ctrl.search = function () {
-            saveSearchParams();
-            SrvaEventMapSearchService.search(getSearchParams()).$promise.then(
-                function (accidents) {
-                    $ctrl.mapState.viewBounds = DiaryListService.getEntryBounds(accidents);
-                    $ctrl.markers = DiaryListMarkerService.createMarkersForDiaryEntryList(accidents, function (srvaEvent) {
-                        $ctrl.showEntry(srvaEvent);
-                    });
-                }
-            );
-        };
-
-        $ctrl.exportSrva = function () {
-            FormPostService.submitFormUsingBlankTarget('/api/v1/srva/search/excel', {json: angular.toJson(getSearchParams())});
-        };
-
-        $ctrl.search();
-    })
-    .controller('SrvaEventListController', function ($state, SrvaEventChangeStateService, SrvaEventListSearchService,
-                                                     SrvaEventListSearchParametersService, MapDefaults, DiaryEntryUrl,
-                                                     Helpers, SrvaEventState, NotificationService, FormPostService,
-                                                     parameters, orgId) {
-        var $ctrl = this;
-
-        $ctrl.srvaSpecies = parameters.species;
-        $ctrl.getGameName = parameters.$getGameName;
-        $ctrl.getGameNameWithAmount = parameters.$getGameNameWithAmount;
-
-        $ctrl.mapDefaults = MapDefaults.create();
-        $ctrl.getImageUrl = DiaryEntryUrl.getUrl;
-
-        $ctrl.searchParams = [];
-        $ctrl.searchParams.states = SrvaEventListSearchParametersService.getStates();
-        $ctrl.searchParams.eventNames = SrvaEventListSearchParametersService.getEventNames();
-        $ctrl.searchParams.dateRange = SrvaEventListSearchParametersService.getDateRange();
-        $ctrl.searchParams.gameSpeciesCode = SrvaEventListSearchParametersService.getGameSpeciesCode();
-
-        $ctrl.pager = {
-            page: 1,
-            pageSize: 10,
-            total: 0,
-            sort: 'pointOfTime,DESC'
-        };
-
-        var saveSearchParams = function () {
-            SrvaEventListSearchParametersService.saveStates($ctrl.searchParams.states);
-            SrvaEventListSearchParametersService.saveEventNames($ctrl.searchParams.eventNames);
-            SrvaEventListSearchParametersService.saveDateRange($ctrl.searchParams.dateRange);
-            SrvaEventListSearchParametersService.saveGameSpeciesCode($ctrl.searchParams.gameSpeciesCode);
-        };
-
-        var getEnabled = function (data) {
-            return _.pluck(_.filter(data, {'isChecked': true}), 'name');
-        };
-
-        function getSearchParams() {
-            var searchParams = {
-                states: getEnabled($ctrl.searchParams.states),
-                eventNames: getEnabled($ctrl.searchParams.eventNames),
-                beginDate: Helpers.dateToString($ctrl.searchParams.dateRange.beginDate),
-                endDate: Helpers.dateToString($ctrl.searchParams.dateRange.endDate),
-                gameSpeciesCode: $ctrl.searchParams.gameSpeciesCode,
-                rhyId: orgId,
-                currentRhyId: orgId
-            };
-            return searchParams;
-        }
-
-        $ctrl.search = function (resetPager) {
-            saveSearchParams();
-            if (resetPager) {
-                $ctrl.pager.page = 1;
+            if (!$ctrl.searchParams) {
+                var initialRhyCode = _.get(initialRhy, 'officialCode');
+                $ctrl.searchParams = SrvaEventMapSearchParametersService.createEmpty(initialRhyCode);
             }
 
+            $ctrl.search();
+        };
+
+        $ctrl.orgChanged = function (type, code) {
+            if (type === 'RKA') {
+                $ctrl.searchParams.rkaCode = code;
+                $ctrl.searchParams.rhyCode = null;
+                $ctrl.searchParams.htaCode = null;
+            }
+            if (type === 'RHY') {
+                $ctrl.searchParams.rkaCode = null;
+                $ctrl.searchParams.rhyCode = code;
+                $ctrl.searchParams.htaCode = null;
+            }
+            if (type === 'HTA') {
+                $ctrl.searchParams.rkaCode = null;
+                $ctrl.searchParams.rhyCode = null;
+                $ctrl.searchParams.htaCode = code;
+            }
+        };
+
+        $ctrl.search = function () {
+            SrvaEventMapSearchParametersService.push($ctrl.searchParams);
+
+            SrvaEventMapSearchService.search(createRequest()).$promise.then(function (accidents) {
+                $ctrl.markers = DiaryListMarkerService.createMarkersForDiaryEntryList(accidents, function (srvaEvent) {
+                    $ctrl.showEntry(srvaEvent);
+                });
+
+                resolveMapBounds().then(function (defaultBounds) {
+                    var entryBounds = DiaryListService.getEntryBounds(accidents, defaultBounds);
+                    MapState.updateMapBounds(entryBounds, defaultBounds, true);
+                });
+            });
+        };
+
+        function resolveMapBounds() {
+            if ($ctrl.searchParams.rhyCode) {
+                return MapBounds.getRhyBounds($ctrl.searchParams.rhyCode);
+            } else {
+                return $q.when(MapBounds.getBoundsOfFinland());
+            }
+        }
+
+        $ctrl.exportSrva = function () {
+            FormPostService.submitFormUsingBlankTarget('/api/v1/srva/search/excel', {
+                json: angular.toJson(createRequest())
+            });
+        };
+
+        function createRequest() {
+            return SrvaEventMapSearchParametersService.createRequest(
+                $ctrl.searchParams, moderatorView, _.get(initialRhy, 'id'));
+        }
+    })
+
+    .controller('SrvaEventListController', function ($state, SrvaEventChangeStateService, SrvaEventListSearchService,
+                                                     SrvaEventListSearchParametersService, MapDefaults, DiaryImageService,
+                                                     Helpers, SrvaEventState, NotificationService, FormPostService,
+                                                     parameters, initialRhy) {
+        var $ctrl = this;
+
+        $ctrl.searchParams = {};
+        $ctrl.srvaSpecies = parameters.species;
+        $ctrl.getGameName = parameters.$getGameName;
+        $ctrl.getImageUrl = DiaryImageService.getUrl;
+        $ctrl.getGameNameWithAmount = parameters.$getGameNameWithAmount;
+        $ctrl.mapDefaults = MapDefaults.create();
+
+        $ctrl.$onInit = function () {
+            $ctrl.searchParams = SrvaEventListSearchParametersService.pop();
+            if (!$ctrl.searchParams) {
+                $ctrl.searchParams = SrvaEventListSearchParametersService.createEmpty();
+                $ctrl.searchParams.rhyCode = _.get(initialRhy, 'officialCode');
+            }
+            $ctrl.search();
+        };
+
+        $ctrl.search = function () {
+            SrvaEventListSearchParametersService.push($ctrl.searchParams);
+            $ctrl.loadPage(0);
+        };
+
+        $ctrl.loadPage = function (page) {
             var pageRequest = {
-                page: $ctrl.pager.page - 1,
-                size: $ctrl.pager.pageSize,
-                sort: $ctrl.pager.sort
+                page: page,
+                size: 10
             };
 
-            SrvaEventListSearchService.searchPage(getSearchParams(), pageRequest).then(function (response) {
-                $ctrl.srvaEvents = response.data.content;
-                $ctrl.pager.total = response.data.total;
+            SrvaEventListSearchService.searchPage(createRequest(), pageRequest).then(function (response) {
+                $ctrl.results = response.data;
             });
         };
 
         $ctrl.exportSrva = function () {
-            FormPostService.submitFormUsingBlankTarget('/api/v1/srva/search/excel', {json: angular.toJson(getSearchParams())});
-        };
-
-        var changeState = function (entry, newState) {
-            SrvaEventChangeStateService.changeState({
-                id: entry.id,
-                rev: entry.rev,
-                newState: newState
-            }).$promise
-                .then(function (answer) {
-                    entry.state = answer.state;
-                    NotificationService.showDefaultSuccess();
-                }, NotificationService.showDefaultFailure)
-                .finally(function () {
-                    $state.reload();
-                });
+            FormPostService.submitFormUsingBlankTarget('/api/v1/srva/search/excel', {
+                json: angular.toJson(createRequest())
+            });
         };
 
         $ctrl.acceptSrvaEvent = function (entry) {
@@ -224,7 +183,25 @@ angular.module('app.srva.controllers', [])
             $state.go('profile.diary.editSrva', {id: 'me', entryId: entry.id});
         };
 
-        $ctrl.search();
-    })
-;
+        function createRequest() {
+            return SrvaEventListSearchParametersService.createRequest($ctrl.searchParams, _.get(initialRhy, 'id'));
+        }
+
+        function changeState(entry, newState) {
+            SrvaEventChangeStateService.changeState({
+                id: entry.id,
+                rev: entry.rev,
+                newState: newState
+            }).$promise.then(function (answer) {
+                entry.state = answer.state;
+                NotificationService.showDefaultSuccess();
+
+            }, function () {
+                NotificationService.showDefaultFailure();
+
+            }).finally(function () {
+                $state.reload();
+            });
+        }
+    });
 

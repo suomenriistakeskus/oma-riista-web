@@ -1,5 +1,11 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_1;
+import fi.riista.test.Asserts;
+import org.junit.Test;
+
+import java.util.stream.Stream;
+
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newSection81;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.effectiveHuntingAreaLargerThanTotalHuntingArea;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingAreaNotGivenAtAll;
@@ -9,16 +15,10 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingNotGivenAtAll;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.totalHuntingAreaMissingAndEffectiveHuntingAreaGivenAsPercentageShare;
 import static fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardSection81Validator.validate;
-import static fi.riista.util.Asserts.assertNumericFieldValidationError;
-import static fi.riista.util.Asserts.assertValidationErrors;
+import static fi.riista.test.Asserts.assertNumericFieldValidationError;
+import static fi.riista.test.Asserts.assertValidationErrors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_1;
-import fi.riista.util.Asserts;
-import org.junit.Test;
-
-import java.util.stream.Stream;
 
 public class MooseDataCardSection81ValidatorTest {
 
@@ -163,5 +163,4 @@ public class MooseDataCardSection81ValidatorTest {
 
         assertNumericFieldValidationError(section, MooseDataCardSection81Validator::validate, field);
     }
-
 }

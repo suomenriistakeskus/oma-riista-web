@@ -7,7 +7,7 @@ public class GroupHuntingStatusDTO {
     private boolean canEditDiaryEntry;
     private boolean canEditPermit;
     private boolean canEditHuntingDay;
-    private boolean canExportData;
+    private boolean fromMooseDataCard;
 
     public boolean isCanCreateHuntingDay() {
         return canCreateHuntingDay;
@@ -57,11 +57,11 @@ public class GroupHuntingStatusDTO {
         this.canEditHuntingDay = canEditHuntingDay;
     }
 
-    public boolean isCanExportData() {
-        return canExportData;
+    public boolean isFromMooseDataCard() {
+        return fromMooseDataCard;
     }
 
-    public void setCanExportData(final boolean canExportData) {
-        this.canExportData = canExportData;
+    public void setFromMooseDataCard(final boolean fromMooseDataCard) {
+        this.fromMooseDataCard = fromMooseDataCard;
     }
 }

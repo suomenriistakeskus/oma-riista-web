@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_observation_context_sensitive_fields;
-
 CREATE TABLE import_observation_context_sensitive_fields (
   official_code                     INTEGER      NOT NULL,
   metadata_version                  INTEGER      NOT NULL,
@@ -17,6 +15,7 @@ CREATE TABLE import_observation_context_sensitive_fields (
   earmark                           VARCHAR(255) NOT NULL,
   mooselike_male_amount             VARCHAR(255) NOT NULL,
   mooselike_female_amount           VARCHAR(255) NOT NULL,
+  mooselike_calf_amount             VARCHAR(255) NOT NULL,
   mooselike_female_1_calf_amount    VARCHAR(255) NOT NULL,
   mooselike_female_2_calfs_amount   VARCHAR(255) NOT NULL,
   mooselike_female_3_calfs_amount   VARCHAR(255) NOT NULL,
@@ -44,6 +43,7 @@ INSERT INTO observation_context_sensitive_fields (
   earmark,
   mooselike_male_amount,
   mooselike_female_amount,
+  mooselike_calf_amount,
   mooselike_female_1_calf_amount,
   mooselike_female_2_calfs_amount,
   mooselike_female_3_calfs_amount,
@@ -66,6 +66,7 @@ INSERT INTO observation_context_sensitive_fields (
     o.earmark,
     o.mooselike_male_amount,
     o.mooselike_female_amount,
+    o.mooselike_calf_amount,
     o.mooselike_female_1_calf_amount,
     o.mooselike_female_2_calfs_amount,
     o.mooselike_female_3_calfs_amount,

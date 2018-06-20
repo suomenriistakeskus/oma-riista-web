@@ -7,13 +7,15 @@ import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationDTO;
+import fi.riista.feature.organization.person.PersonWithNameDTO;
 import fi.riista.util.DtoUtil;
+import fi.riista.validation.DoNotValidate;
+import fi.riista.validation.FinnishBusinessId;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public class HuntingClubDTO extends BaseEntityDTO<Long> {
@@ -37,6 +39,16 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         }
 
         dto.setMooseArea(mooseAreaDto);
+        dto.setActive(club.isActive());
+
+        dto.setSubtype(club.getSubtype());
+        if (club.getClubPerson() != null) {
+            dto.setClubPerson(PersonWithNameDTO.create(club.getClubPerson()));
+        }
+        if (club.getBusinessId() != null) {
+            dto.setBusinessId(club.getBusinessId().getValue());
+        }
+        dto.setAssociationRegistryNumber(club.getAssociationRegistryNumber());
         return dto;
     }
 
@@ -60,20 +72,34 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String customerId;
 
+    @Valid
     private GeoLocation geoLocation;
 
     private boolean canEdit;
 
+    @DoNotValidate
     private List<OccupationDTO> yhdyshenkilot;
 
     @Valid
-    @NotNull
     private GISHirvitalousalueDTO mooseArea;
 
     @Email
     @Length(max = 255)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String email;
+
+    private boolean active;
+
+    private HuntingClubSubtype subtype;
+
+    @Valid
+    private PersonWithNameDTO clubPerson;
+
+    @FinnishBusinessId
+    private String businessId;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String associationRegistryNumber;
 
     public HuntingClubDTO() {
     }
@@ -176,5 +202,45 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
 
     public void setMooseArea(GISHirvitalousalueDTO mooseArea) {
         this.mooseArea = mooseArea;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public HuntingClubSubtype getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(final HuntingClubSubtype subtype) {
+        this.subtype = subtype;
+    }
+
+    public PersonWithNameDTO getClubPerson() {
+        return clubPerson;
+    }
+
+    public void setClubPerson(final PersonWithNameDTO clubPerson) {
+        this.clubPerson = clubPerson;
+    }
+
+    public String getBusinessId() {
+        return businessId;
+    }
+
+    public void setBusinessId(final String businessId) {
+        this.businessId = businessId;
+    }
+
+    public String getAssociationRegistryNumber() {
+        return associationRegistryNumber;
+    }
+
+    public void setAssociationRegistryNumber(final String associationRegistryNumber) {
+        this.associationRegistryNumber = associationRegistryNumber;
     }
 }

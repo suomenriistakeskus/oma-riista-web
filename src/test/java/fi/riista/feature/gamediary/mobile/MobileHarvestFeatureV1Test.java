@@ -2,29 +2,29 @@ package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersionNotSupportedException;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-
 import org.junit.Test;
 
-import javax.annotation.Resource;
-
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 public class MobileHarvestFeatureV1Test extends MobileHarvestFeatureTest {
 
-    @Resource
-    private MobileGameDiaryV1Feature feature;
+    @Override
+    protected int getApiVersion() {
+        return 1;
+    }
 
     @Override
-    protected MobileGameDiaryFeature feature() {
-        return feature;
+    public List<HarvestSpecVersion> getTestExecutionVersions() {
+        return Arrays.asList(HarvestSpecVersion._1, HarvestSpecVersion._2);
     }
 
     @Test
@@ -46,24 +46,19 @@ public class MobileHarvestFeatureV1Test extends MobileHarvestFeatureTest {
         });
     }
 
-    @Test
+    @Test(expected = HarvestSpecVersionNotSupportedException.class)
     public void testCreateHarvest_withPermit_whenClientDoesNotSupportPermit() {
         final GameSpecies species = model().newGameSpecies();
         final HarvestPermit permit = model().newHarvestPermit();
         model().newHarvestPermitSpeciesAmount(permit, species);
 
         onSavedAndAuthenticated(createUserWithPerson(), user -> {
-
             final MobileHarvestDTO inputDto = create(HarvestSpecVersion._1, species)
                     .withPermitNumber(permit.getPermitNumber())
                     .withPermitType(permit.getPermitType())
                     .build();
 
-            final MobileHarvestDTO outputDto = invokeCreateHarvest(inputDto);
-
-            doCreateAssertions(outputDto.getId(), inputDto, user.getPerson(), harvest -> {
-                assertNull(harvest.getHarvestPermit());
-            });
+            invokeCreateHarvest(inputDto);
         });
     }
 
@@ -97,21 +92,21 @@ public class MobileHarvestFeatureV1Test extends MobileHarvestFeatureTest {
         withPerson(person -> {
 
             final Harvest harvest = model().newMobileHarvest(model().newGameSpecies(true), person);
-            final List<HarvestSpecimen> specimensToBePreserved = createSpecimens(harvest, 5, specVersion);
+            final List<HarvestSpecimen> specimensToBePreserved = createSpecimens(harvest, 5);
             final GameSpecies updatedSpecies = model().newGameSpecies(true);
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest, updatedSpecies)
+                final MobileHarvestDTO dto = create(specVersion, harvest, updatedSpecies)
                         .withAmount(null)
                         .withSpecimens(null)
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                inputDto.setSpecimensMappedFrom(specimensToBePreserved);
+                dto.setSpecimensMappedFrom(specimensToBePreserved);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1);
+                doUpdateAssertions(dto, person, 1);
             });
         });
     }
@@ -122,24 +117,24 @@ public class MobileHarvestFeatureV1Test extends MobileHarvestFeatureTest {
 
             final Harvest harvest = model().newMobileHarvest(model().newGameSpecies(true), person);
 
-            final List<HarvestSpecimen> specimensToBePreserved = createSpecimens(harvest, 5, specVersion);
+            final List<HarvestSpecimen> specimensToBePreserved = createSpecimens(harvest, 5);
             harvest.setAmount(specimensToBePreserved.size());
 
             final GameSpecies newSpecies = model().newGameSpecies(true);
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(specVersion, harvest, newSpecies)
+                final MobileHarvestDTO dto = create(specVersion, harvest, newSpecies)
                         .mutate()
                         .withAmount(harvest.getAmount())
                         .withSpecimens(null)
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                inputDto.setSpecimensMappedFrom(specimensToBePreserved);
+                dto.setSpecimensMappedFrom(specimensToBePreserved);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1);
+                doUpdateAssertions(dto, person, 1);
             });
         }));
     }
@@ -151,7 +146,7 @@ public class MobileHarvestFeatureV1Test extends MobileHarvestFeatureTest {
             final Harvest harvest = model().newMobileHarvest(model().newGameSpecies(true), person);
 
             // These HarvestSpecimens should be preserved over update operation.
-            final List<HarvestSpecimen> specimensToBePreserved = createSpecimens(harvest, 5, specVersion);
+            final List<HarvestSpecimen> specimensToBePreserved = createSpecimens(harvest, 5);
 
             // These HarvestSpecimens will not exist after update operation.
             model().newHarvestSpecimen(harvest);
@@ -159,22 +154,22 @@ public class MobileHarvestFeatureV1Test extends MobileHarvestFeatureTest {
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                final MobileHarvestDTO inputDto = create(HarvestSpecVersion._1, harvest)
+                final MobileHarvestDTO dto = create(HarvestSpecVersion._1, harvest)
                         .withAmount(specimensToBePreserved.size())
                         .withSpecimens(null)
                         .build();
 
-                invokeUpdateHarvest(inputDto);
+                invokeUpdateHarvest(dto);
 
-                inputDto.setSpecimensMappedFrom(specimensToBePreserved);
+                dto.setSpecimensMappedFrom(specimensToBePreserved);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1);
+                doUpdateAssertions(dto, person, 1);
             });
         }));
     }
 
     @Test
-    public void testUpdateHarvest_permitKeptWhenClientDoesNotSupportPermit() {
+    public void testUpdateHarvest_harvestNotUpdatedWhenClientDoesNotSupportPermit() {
         withPerson(person -> {
 
             final GameSpecies species = model().newGameSpecies(true);
@@ -184,18 +179,22 @@ public class MobileHarvestFeatureV1Test extends MobileHarvestFeatureTest {
 
             final Harvest harvest = model().newMobileHarvest(species, person);
             harvest.setHarvestPermit(permit);
+            harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.PROPOSED);
             harvest.setRhy(permit.getRhy());
 
             onSavedAndAuthenticated(createUser(person), () -> {
-
                 final MobileHarvestDTO inputDto = create(HarvestSpecVersion._1, harvest)
                         .mutate()
                         .withPermitNumber(null)
                         .build();
 
+                final MobileHarvestDTO expected = create(HarvestSpecVersion._1, harvest)
+                        .withDescription(inputDto.getDescription())
+                        .build();
+
                 invokeUpdateHarvest(inputDto);
 
-                doUpdateAssertions(harvest.getId(), inputDto, person, 1, h -> {
+                doUpdateAssertions(expected, person, 1, h -> {
                     final HarvestPermit permit2 = h.getHarvestPermit();
                     assertNotNull(permit2);
                     assertEquals(permit.getPermitNumber(), permit2.getPermitNumber());
@@ -204,5 +203,4 @@ public class MobileHarvestFeatureV1Test extends MobileHarvestFeatureTest {
             });
         });
     }
-
 }

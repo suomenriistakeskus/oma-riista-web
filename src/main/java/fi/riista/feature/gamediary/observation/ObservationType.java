@@ -1,8 +1,9 @@
 package fi.riista.feature.gamediary.observation;
 
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
+import fi.riista.util.LocalisedEnum;
 
-public enum ObservationType implements HasMooseDataCardEncoding<ObservationType> {
+public enum ObservationType implements HasMooseDataCardEncoding<ObservationType>, LocalisedEnum {
 
     NAKO,
     JALKI,
@@ -30,6 +31,19 @@ public enum ObservationType implements HasMooseDataCardEncoding<ObservationType>
     PESIMASUO,
     MUUTON_AIKAINEN_LEPAILYALUE,
     RIISTANKULKUPAIKKA,
+
+    // Metsäkanalintujen (engl. grouse) elinympäristöä kuvaavat havaintotyypit
+    POIKUEYMPARISTO,
+    VAIHTELEVARAKENTEINEN_MUSTIKKAMETSA,
+    KUUSISEKOTTEINEN_METSA,
+    VAIHTELEVARAKENTEINEN_MANTYSEKOTTEINEN_METSA,
+    VAIHTELEVARAKENTEINEN_LEHTIPUUSEKOTTEINEN_METSA,
+    SUON_REUNAMETSA,
+    HAKOMAMANTY,
+    RUOKAILUKOIVIKKO,
+    LEPPAKUUSIMETSA_TAI_KOIVUKUUSIMETSA,
+    RUOKAILUPAJUKKO_TAI_KOIVIKKO,
+
     MUU;
 
     @Override

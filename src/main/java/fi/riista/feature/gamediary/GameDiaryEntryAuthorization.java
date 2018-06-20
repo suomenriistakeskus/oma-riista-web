@@ -65,6 +65,9 @@ public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry>
             @Nonnull final UserInfo userInfo) {
         userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
             collectNonClubRoles(activePerson, collector, diaryEntry);
+            if (collector.hasPermission()) {
+                return;
+            }
 
             if (diaryEntry.getHuntingDayOfGroup() != null) {
                 final HuntingClubGroup group = diaryEntry.getHuntingDayOfGroup().getGroup();
@@ -103,10 +106,10 @@ public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry>
 
     private List<HuntingClubGroup> findCandidateGroups(@Nonnull final GameDiaryEntry diaryEntry) {
         final LocalDate diaryEntryDate = DateUtil.toLocalDateNullSafe(diaryEntry.getPointOfTime());
-        final int huntingYearOfDiaryEntry = DateUtil.getFirstCalendarYearOfHuntingYearContaining(diaryEntryDate);
+        final int huntingYearOfDiaryEntry = DateUtil.huntingYearContaining(diaryEntryDate);
 
         return huntingClubGroupRepository
-                .findAllGroupsWithAreaIntersecting(diaryEntry, huntingYearOfDiaryEntry).stream()
+                .findGroupsByAuthorAndActorWuthAreaIntersecting(diaryEntry, huntingYearOfDiaryEntry).stream()
                 .filter(group -> hasCorrectSpeciesOrObservedWithinHunting(diaryEntry, group))
                 .filter(group -> authorOrActorHasValidClubAndGroupRole(diaryEntry, group))
                 .filter(group -> groupPermitIsValidDuringPointOfTime(diaryEntry, group))
@@ -141,7 +144,7 @@ public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry>
         final EnumSet<OccupationType> groupRoles = EnumSet.of(OccupationType.RYHMAN_JASEN, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
         final EnumSet<OccupationType> clubRoles = EnumSet.of(OccupationType.SEURAN_JASEN, OccupationType.SEURAN_YHDYSHENKILO);
 
-        return 0 < occupationRepository.countActiveOccupationByTypeAndPersonAndOrganizationValidOn(group, person, groupRoles, localDate) &&
-                0 < occupationRepository.countActiveOccupationByTypeAndPersonAndOrganizationValidOn(group.getParentOrganisation(), person, clubRoles, localDate);
+        return 0 < occupationRepository.countActiveByTypeAndPersonAndOrganizationValidOn(group, person, groupRoles, localDate) &&
+                0 < occupationRepository.countActiveByTypeAndPersonAndOrganizationValidOn(group.getParentOrganisation(), person, clubRoles, localDate);
     }
 }

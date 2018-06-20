@@ -5,19 +5,21 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.HasID;
-import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
+import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermitSpeciesAmount;
-import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.endofhunting.QMooseHarvestReport;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
-import fi.riista.feature.huntingclub.permit.harvestreport.QMooseHarvestReport;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
@@ -33,13 +35,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
 import static java.util.stream.Collectors.toList;
 
 @Component
 public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHuntingSummary, MooseHuntingSummaryDTO> {
-
-    @Resource
-    private MooseHuntingSummaryAuthorization authorization;
 
     @Resource
     protected ActiveUserService activeUserService;
@@ -51,6 +51,12 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
     private HarvestPermitRepository harvestPermitRepository;
 
     @Resource
+    private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
+
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
+
+    @Resource
     private JPQLQueryFactory queryFactory;
 
     @Nonnull
@@ -60,23 +66,32 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
             return Collections.emptyList();
         }
 
-        final Function<MooseHuntingSummary, HarvestPermit> summaryToPermitMapping = getSummaryToPermitMapping(list);
-        final Function<MooseHuntingSummary, HuntingClub> summaryToClubMapping = getSummaryToClubMapping(list);
+        final Function<MooseHuntingSummary, HarvestPermit> getHarvestPermit = getSummaryToPermitMapping(list);
+        final Function<MooseHuntingSummary, HuntingClub> getClub = getSummaryToClubMapping(list);
         final List<SummaryPermitClubGroupFromMooseDataCard> groupFromMooseDataCardCount = summaryPermitClubGroupFromMooseDataCardCount(list);
         final List<Long> permitsHavingMooseHarvestReport = listPermitsHavingMooseHarvestReport(list);
 
         final boolean isModerator = activeUserService.isModeratorOrAdmin();
 
-        return list.stream().map(s -> {
-            final HarvestPermit permit = summaryToPermitMapping.apply(s);
-            final HuntingClub club = summaryToClubMapping.apply(s);
+        return list.stream().map(summary -> {
+            final HarvestPermit permit = getHarvestPermit.apply(summary);
+            final HuntingClub club = getClub.apply(summary);
 
-            final boolean usesMooseDataCard = isFromMooseDataCard(s, permit, club, groupFromMooseDataCardCount);
+            final boolean fromMooseDataCard = isFromMooseDataCard(summary, permit, club, groupFromMooseDataCardCount);
             final boolean reportDone = permitsHavingMooseHarvestReport.contains(permit.getId());
-            final boolean locked = !isModerator && usesMooseDataCard || reportDone || !hasPermissionToEdit(s);
+            final boolean locked = !isModerator && fromMooseDataCard || reportDone || !hasPermissionToEdit(summary)
+                    || !isModerator && isPermitLockedByDate(permit);
 
-            return create(s, locked, s.getHarvestPermit().getPermitAreaSize());
+            return create(summary, locked, permit.getPermitAreaSize());
         }).collect(toList());
+    }
+
+    private Boolean isPermitLockedByDate(final HarvestPermit permit) {
+        return harvestPermitSpeciesAmountRepository.findByHarvestPermitAndSpeciesCode(permit, OFFICIAL_CODE_MOOSE)
+                .stream()
+                .map(Has2BeginEndDates::resolveHuntingYear)
+                .map(huntingYear -> harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(permit, huntingYear))
+                .anyMatch(isLocked -> isLocked);
     }
 
     private boolean hasPermissionToEdit(final MooseHuntingSummary summary) {
@@ -95,6 +110,7 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
 
     private static MooseHuntingSummaryDTO create(
             @Nonnull final MooseHuntingSummary entity, final boolean locked, final int permitAreaSize) {
+
         final MooseHuntingSummaryDTO dto = createInternal(entity.getBasicInfo(), locked, permitAreaSize);
         DtoUtil.copyBaseFields(entity, dto);
 
@@ -121,6 +137,7 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
         dto.setWildForestReindeerAppearance(newIfNull(entity.getWildForestReindeerAppearance()));
         dto.setFallowDeerAppearance(newIfNull(entity.getFallowDeerAppearance()));
         dto.setWildBoarAppearance(newIfNull(entity.getWildBoarAppearance()));
+        dto.setBeaverAppearance(entity.getBeaverAppearance());
 
         dto.setMooseHeatBeginDate(entity.getMooseHeatBeginDate());
         dto.setMooseHeatEndDate(entity.getMooseHeatEndDate());
@@ -133,6 +150,8 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
         dto.setNumberOfAdultMoosesHavingFlies(entity.getNumberOfAdultMoosesHavingFlies());
         dto.setNumberOfYoungMoosesHavingFlies(entity.getNumberOfYoungMoosesHavingFlies());
         dto.setTrendOfDeerFlyPopulationGrowth(entity.getTrendOfDeerFlyPopulationGrowth());
+
+        dto.setObservationPolicyAdhered(entity.getObservationPolicyAdhered());
 
         return dto;
     }
@@ -190,7 +209,7 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
                 .join(permit.speciesAmounts, speciesAmount)
                 .join(speciesAmount.gameSpecies, species)
                 .where(summary.in(summaries),
-                        species.officialCode.eq(GameSpecies.OFFICIAL_CODE_MOOSE)));
+                        species.officialCode.eq(OFFICIAL_CODE_MOOSE)));
 
         return queryFactory.select(permit.id)
                 .from(mooseHarvestReport)
@@ -215,12 +234,11 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
                 .join(speciesAmount.gameSpecies, species)
                 .join(summary.club, club)
                 .leftJoin(club.subOrganisations, group._super)
+                // is it enough to match group by permit, no need to check that group.huntingYear matches to speciesAmount?
                 .where(summary.in(summaries),
-                        species.officialCode.eq(GameSpecies.OFFICIAL_CODE_MOOSE),
+                        species.officialCode.eq(OFFICIAL_CODE_MOOSE),
                         group.harvestPermit.eq(permit),
-                        group.fromMooseDataCard.eq(true)
-                        // is it enought to match group by permit, no need to check that group.huntingYear matches to speciesAmount?
-                )
+                        group.fromMooseDataCard.eq(true))
                 .groupBy(summary.id, permit.id, club.id)
                 .fetch()
                 .stream()
@@ -247,20 +265,22 @@ public class MooseHuntingSummaryDTOTransformer extends ListTransformer<MooseHunt
         private final long clubId;
         private final long groupFromMooseDataCardCount;
 
-        SummaryPermitClubGroupFromMooseDataCard(long summaryId, long permitId, long clubId, long groupFromMooseDataCardCount) {
+        SummaryPermitClubGroupFromMooseDataCard(final long summaryId,
+                                                final long permitId,
+                                                final long clubId,
+                                                final long groupFromMooseDataCardCount) {
             this.summaryId = summaryId;
             this.permitId = permitId;
             this.clubId = clubId;
             this.groupFromMooseDataCardCount = groupFromMooseDataCardCount;
         }
 
-        public boolean matches(MooseHuntingSummary s, HarvestPermit permit, HuntingClub club) {
+        public boolean matches(final MooseHuntingSummary s, final HarvestPermit permit, final HuntingClub club) {
             return idEquals(s, summaryId) && idEquals(permit, permitId) && idEquals(club, clubId);
         }
 
-        private static boolean idEquals(HasID<Long> obj, long id) {
-            return F.getId(obj).equals(id);
+        private static boolean idEquals(final HasID<Long> obj, long id) {
+            return Objects.equals(F.getId(obj), id);
         }
-
     }
 }

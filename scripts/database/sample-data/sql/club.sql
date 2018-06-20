@@ -1,8 +1,6 @@
-DROP TABLE IF EXISTS import_club;
-
 CREATE TABLE import_club (
   organisation_type        VARCHAR(255) NOT NULL,
-  official_code            VARCHAR(3)   NOT NULL,
+  official_code            VARCHAR(255) NOT NULL,
   parent_organisation_type VARCHAR(255),
   parent_official_code     VARCHAR(3),
   name_finnish             VARCHAR(255) NOT NULL,

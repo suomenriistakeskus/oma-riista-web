@@ -1,0 +1,45 @@
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <td><span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
+        <td>kirjauksia</td>
+        <td>yksilöitä</td>
+    </tr>
+    </thead>
+
+    <tr>
+        <td>SRVA-kirjauksia yhteensä</td>
+        <td>{{$ctrl.metrics.countSrvaEvent}}</td>
+        <td>{{$ctrl.metrics.countSrvaEventSpecimen}}</td>
+    </tr>
+
+    <tr>
+        <td>SRVA-kirjauksia kesken</td>
+        <td>{{$ctrl.metrics.countSrvaEventUnfinished}}</td>
+        <td>{{$ctrl.metrics.countSrvaEventSpecimenUnfinished}}</td>
+    </tr>
+
+    <tr>
+        <td>SRVA-kirjauksia hyväksytty</td>
+        <td>{{$ctrl.metrics.countSrvaEventApproved}}</td>
+        <td>{{$ctrl.metrics.countSrvaEventSpecimenApproved}}</td>
+    </tr>
+
+    <tr>
+        <td>SRVA-kirjauksia hylätty</td>
+        <td>{{$ctrl.metrics.countSrvaEventRejected}}</td>
+        <td>{{$ctrl.metrics.countSrvaEventSpecimenRejected}}</td>
+    </tr>
+
+    <tr>
+        <td>SRVA-kirjauksia mobiilissa</td>
+        <td>{{$ctrl.metrics.countSrvaEventFromMobile}}</td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td>SRVA-kirjauksia webissä</td>
+        <td>{{$ctrl.metrics.countSrvaEventFromWeb}}</td>
+        <td></td>
+    </tr>
+</table>

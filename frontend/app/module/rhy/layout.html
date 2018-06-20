@@ -1,16 +1,29 @@
 <nav class="navbar r-subnav-navbar" role="navigation">
     <div class="container">
         <div class="navbar-collapse collapse" class="in">
-            <ul class="nav navbar-nav r-subnav-nav" ng-show="authenticated">
-                <li ui-sref-active="active"><a ui-sref=".show" translate="rhy.menu.main"></a></li>
-                <li ui-sref-active="active"><a ui-sref=".occupations" translate="rhy.menu.occupations"></a></li>
-                <li ui-sref-active="active"><a ui-sref=".announcements" translate="announcements.list.title"></a></li>
-                <li ui-sref-active="active"><a ui-sref=".events" translate="rhy.menu.events"></a></li>
-                <li ui-sref-active="active"><a ui-sref=".locations" translate="rhy.menu.venues"></a></li>
-                <li ui-sref-active="active"><a ui-sref=".harvestreports" translate="rhy.menu.harvestreports"></a></li>
+            <ul class="nav navbar-nav r-subnav-nav" ng-if="$ctrl.coordinatorView">
+                <li class="dropdown"
+                    active-if-state-includes="rhy.show,rhy.announcements,rhy.events,rhy.locations,rhy.nomination,rhy.occupations,rhy.annualstats"
+                    uib-dropdown dropdown-append-to-body>
+                    <a uib-dropdown-toggle>
+                        <span translate="rhy.menu.main"></span>
+                        <span class="caret"></span>
+                    </a>
+
+                    <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
+                        <li ui-sref-active="active"><a ui-sref="rhy.show" translate="rhy.menu.general"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.announcements" translate="announcements.list.title"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.events" translate="rhy.menu.events"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.locations" translate="rhy.menu.venues"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.nomination" translate="rhy.menu.jht"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.occupations" translate="rhy.menu.occupations"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.annualstats" translate="rhy.menu.annualStatistics"></a></li>
+                    </ul>
+                </li>
+                <li ui-sref-active="active"><a ui-sref="rhy.harvestreports" translate="rhy.menu.harvestreports"></a></li>
 
                 <li class="dropdown"
-                    active-if-state-includes="rhy.harvestmap,rhy.moosepermit,rhy.moosepermitstats"
+                    active-if-state-includes="rhy.harvestmap,rhy.moosepermit,rhy.moosepermitstats,rhy.moosepermitapplications"
                     uib-dropdown dropdown-append-to-body>
                     <a uib-dropdown-toggle>
                         <span translate="rhy.menu.mooselike"></span>
@@ -18,20 +31,14 @@
                     </a>
 
                     <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
-                        <li>
-                            <a ui-sref="rhy.moosepermit" translate="rhy.menu.mooselikePermits"></a>
-                        </li>
-                        <li>
-                            <a ui-sref="rhy.harvestmap" translate="rhy.menu.mooselikeHarvestMap"></a>
-                        </li>
-                        <li>
-                            <a ui-sref="rhy.moosepermitstats" translate="rhy.menu.mooselikeStats"></a>
-                        </li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.moosepermitapplications" translate="rhy.menu.mooselikeApplications"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.moosepermit" translate="rhy.menu.mooselikePermits"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.harvestmap" translate="rhy.menu.mooselikeHarvestMap"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.moosepermitstats" translate="rhy.menu.mooselikeStats"></a></li>
                     </ul>
                 </li>
 
-                <li ui-sref-active="active"><a ui-sref=".permits" translate="rhy.menu.permits"></a></li>
-                <li ui-sref-active="active"><a ui-sref=".nomination" translate="rhy.menu.jht"></a></li>
+                <li ui-sref-active="active"><a ui-sref="rhy.permits" translate="rhy.menu.permits"></a></li>
                 <li active-if-state-includes="rhy.club"><a ui-sref="rhy.club.contacts" translate="rhy.menu.clubs"></a></li>
 
                 <li class="dropdown"
@@ -45,15 +52,42 @@
                     </a>
 
                     <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
-                        <li>
-                            <a ui-sref="rhy.srva.list" translate="rhy.menu.srvaList"></a>
-                        </li>
-                        <li>
-                            <a ui-sref="rhy.srva.map" translate="global.map.map"></a>
-                        </li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.srva.list" translate="rhy.menu.srvaList"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.srva.map" translate="global.map.map"></a></li>
                     </ul>
                 </li>
+                <li class="dropdown"
+                    active-if-state-includes="rhy.shootingtest"
+                    uib-dropdown dropdown-append-to-body
+                    ng-if="$ctrl.showPilotShootingTestMenu">
 
+                    <a uib-dropdown-toggle>
+                        <span translate="shootingTest.events"></span>
+                        <span class="caret"></span>
+                    </a>
+
+                    <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
+                        <li ui-sref-active="active"><a ui-sref="rhy.shootingtest.events" translate="shootingTest.events"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.shootingtest.stats" translate="shootingTest.stats.title"></a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav r-subnav-nav" ng-if="$ctrl.shootingTestOfficialView">
+                <li class="dropdown"
+                    active-if-state-includes="rhy.shootingtest"
+                    uib-dropdown dropdown-append-to-body>
+
+                    <a uib-dropdown-toggle>
+                        <span translate="shootingTest.events"></span>
+                        <span class="caret"></span>
+                    </a>
+
+                    <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
+                        <li ui-sref-active="active"><a ui-sref="rhy.shootingtest.events" translate="shootingTest.events"></a></li>
+                        <li ui-sref-active="active"><a ui-sref="rhy.shootingtest.stats" translate="shootingTest.stats.title"></a></li>
+                    </ul>
+                </li>
             </ul>
         </div>
     </div>

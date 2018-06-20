@@ -1,0 +1,61 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.misc.communication.title'"
+                               last-modified="$ctrl.communication.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.communication.interviews"></td>
+                        <td num-pieces="::$ctrl.communication.interviews"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.communication.announcements"></td>
+                        <td num-pieces="::$ctrl.communication.announcements"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.misc.communication.omariistaAnnouncements"></td>
+                        <td num-pieces="::$ctrl.communication.omariistaAnnouncements"></td>
+                    </tr>
+                    <tr ng-switch="::!!$ctrl.communication.homePage">
+                        <td ng-switch-when="true" colspan="2">
+                            <div>
+                                <span translate="rhy.annualStats.misc.communication.www"></span>
+                                <div class="pull-right text-right">{{$ctrl.communication.homePage}}</div>
+                            </div>
+                        </td>
+
+                        <td ng-switch-when="false" class="col-xs-9" translate="rhy.annualStats.misc.communication.www"></td>
+                        <td ng-switch-when="false" class="text-right">-&nbsp;</td>
+                    </tr>
+                    <tr ng-switch="::!!$ctrl.communication.someInfo">
+                        <td ng-switch-when="true" colspan="2">
+                            <div translate="rhy.annualStats.misc.communication.someChannels"></div>
+                            <p class="well">{{::$ctrl.communication.someInfo}}</p>
+                        </td>
+
+                        <td ng-switch-when="false" class="col-xs-9" translate="rhy.annualStats.misc.communication.someChannels"></td>
+                        <td ng-switch-when="false" class="text-right">-&nbsp;</td>
+                    </tr>
+                    <tr ng-if="false" ng-switch="::!!$ctrl.communication.info">
+                        <td ng-switch-when="true" colspan="2">
+                            <div translate="rhy.annualStats.misc.communication.info"></div>
+                            <p class="well">{{::$ctrl.communication.info}}</p>
+                        </td>
+
+                        <td ng-switch-when="false" class="col-xs-9" translate="rhy.annualStats.misc.communication.info"></td>
+                        <td ng-switch-when="false" class="text-right">-&nbsp;</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.openEditDialog()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

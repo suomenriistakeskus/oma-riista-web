@@ -30,13 +30,13 @@ public class ModifyTwoFactorAuthenticationFeature {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @Transactional(readOnly = true)
     public ModifyTwoFactorAuthenticationDTO getTwoFactorAuthentication() {
-        return createDTO(activeUserService.getActiveUser());
+        return createDTO(activeUserService.requireActiveUser());
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @Transactional
     public ModifyTwoFactorAuthenticationDTO updateTwoFactorAuthentication(final ModifyTwoFactorAuthenticationDTO dto) {
-        final SystemUser activeUser = activeUserService.getActiveUser();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
         final String otpSecret = oneTimePasswordCodeService.getOtpSecret(activeUser);
 
         if (dto.getTwoFactorAuthentication() == SystemUser.TwoFactorAuthenticationMode.SMS) {

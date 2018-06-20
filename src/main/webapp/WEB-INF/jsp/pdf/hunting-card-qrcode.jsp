@@ -3,15 +3,15 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:if test="${fn:length(model.qrCode) > 0}">
-<div id="qrcode" style="position:absolute; top:155pt;right: 5pt;"></div>
+<div id="qrcode" class="qr-code"></div>
 
 <!-- Do not use minified qrcode, minified won't always work with non-ascii chars -->
 <script type="text/javascript" src="/static/lib/qrcode.js"></script>
 <script type="text/javascript">
     new QRCode(document.getElementById("qrcode"), {
         text: "${model.qrCode}",
-        width: 165,
-        height: 165,
+        width: 180,
+        height: 180,
         colorDark : "#000000",
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.H

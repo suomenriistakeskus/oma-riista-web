@@ -1,32 +1,32 @@
 package fi.riista.feature.huntingclub.permit.summary;
 
 import com.google.common.collect.ImmutableSet;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameCategory;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReport;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportDoneException;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.permit.HasHarvestCountsForPermit;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryDTO;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryRepository;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReport;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportDoneException;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.support.HuntingClubTestDataHelper;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.util.Asserts;
+import fi.riista.test.Asserts;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import javaslang.Tuple3;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +39,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static fi.riista.util.Asserts.assertEmpty;
+import static fi.riista.test.Asserts.assertEmpty;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Comparator.comparing;
@@ -91,7 +91,7 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
         species = model().newGameSpeciesMoose();
         otherSpecies = model().newGameSpecies(1, GameCategory.GAME_MAMMAL, "muu", "annan", "other");
 
-        final int huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+        final int huntingYear = DateUtil.huntingYear();
 
         withRhy(rhy -> withPerson(person -> {
             this.person = person;
@@ -204,7 +204,7 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
 
     @Test
     public void testGetHuntingSummariesForModeration_inCaseOfNonMooseSpecies() {
-        species.setOfficialCode(GameSpecies.OFFICIAL_CODE_MOOSE + 1);
+        species.setOfficialCode(GameSpecies.OFFICIAL_CODE_WILD_FOREST_REINDEER);
 
         final HuntingClub anotherPartner = model().newHuntingClub(permit.getRhy());
         permit.getPermitPartners().add(anotherPartner);
@@ -266,7 +266,7 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
 
     @Test
     public void testProcessModeratorOverriddenHuntingSummaries_forChangesPersisted_inCaseOfNonMooseSpecies() {
-        species.setOfficialCode(GameSpecies.OFFICIAL_CODE_MOOSE + 1);
+        species.setOfficialCode(GameSpecies.OFFICIAL_CODE_WILD_FOREST_REINDEER);
 
         final BasicClubHuntingSummary summary = model().newBasicHuntingSummary(speciesAmount, permitHolder, false);
         summary.setHuntingEndDate(speciesAmount.getEndDate());
@@ -579,7 +579,7 @@ public class MooseHuntingSummaryCrudFeature_ModerationTest extends EmbeddedDatab
 
     @Test
     public void testRevokeHuntingSummaryModeration_inCaseOfNonMooseSpecies() {
-        species.setOfficialCode(GameSpecies.OFFICIAL_CODE_MOOSE + 1);
+        species.setOfficialCode(GameSpecies.OFFICIAL_CODE_WILD_FOREST_REINDEER);
 
         // Create second partner for permit to extend test coverage of revocation effects.
         final HuntingClub partner2 = model().newHuntingClub(permit.getRhy());

@@ -1,18 +1,16 @@
 package fi.riista.feature.gamediary.observation.specimen;
 
+import fi.riista.feature.gamediary.AbstractSpecimenService;
+import fi.riista.feature.gamediary.OutOfBoundsSpecimenAmountException;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
-
-import fi.riista.feature.gamediary.AbstractSpecimenService;
-import javaslang.Tuple2;
-
+import io.vavr.Tuple2;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -31,19 +29,17 @@ public class ObservationSpecimenService
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public List<ObservationSpecimen> addSpecimens(
-            @Nonnull final Observation observation,
-            final int totalAmount,
-            @Nonnull final List<ObservationSpecimenDTO> dtos) {
+    public List<ObservationSpecimen> addSpecimens(@Nonnull final Observation observation,
+                                                  final int totalAmount,
+                                                  @Nonnull final List<ObservationSpecimenDTO> dtos) {
 
         return addSpecimens(observation, totalAmount, dtos, VERSION);
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Tuple2<List<ObservationSpecimen>, Boolean> setSpecimens(
-            @Nonnull final Observation observation,
-            final int totalAmount,
-            @Nonnull final List<ObservationSpecimenDTO> dtos) {
+    public Tuple2<List<ObservationSpecimen>, Boolean> setSpecimens(@Nonnull final Observation observation,
+                                                                   final int totalAmount,
+                                                                   @Nonnull final List<ObservationSpecimenDTO> dtos) {
 
         return setSpecimens(observation, totalAmount, dtos, VERSION);
     }
@@ -65,38 +61,27 @@ public class ObservationSpecimenService
         return !dto.allBusinessFieldsNull();
     }
 
+    protected ObservationSpecimenOps getSpecimenOps(@Nonnull final Observation observation,
+                                                    @Nonnull final ObservationSpecVersion version) {
+
+        Objects.requireNonNull(observation, "observation is null");
+        return new ObservationSpecimenOps(observation.getSpecies(), version);
+    }
+
     @Override
     protected BiConsumer<ObservationSpecimenDTO, ObservationSpecimen> getSpecimenFieldCopier(
-            final Observation diaryEntry, final ObservationSpecVersion version) {
+            @Nonnull final Observation observation, @Nonnull final ObservationSpecVersion version) {
 
-        return (dto, entity) -> {
-            Objects.requireNonNull(dto, "dto is null");
-            Objects.requireNonNull(entity, "entity is null");
-
-            entity.setGender(dto.getGender());
-            entity.setAge(dto.getAge());
-            entity.setState(dto.getState());
-            entity.setMarking(dto.getMarking());
-        };
+        return getSpecimenOps(observation, version)::copyContentToEntity;
     }
 
     @Override
-    protected void checkParameters(
-            final Observation observation,
-            final int totalAmount,
-            final List<ObservationSpecimenDTO> dtos,
-            final ObservationSpecVersion specVersion) {
+    protected void checkParameters(final Observation observation,
+                                   final int totalAmount,
+                                   final List<ObservationSpecimenDTO> dtos,
+                                   final ObservationSpecVersion specVersion) {
 
         super.checkParameters(observation, totalAmount, dtos, specVersion);
-        assertSpecimenAmountWithinBounds(totalAmount);
+        OutOfBoundsSpecimenAmountException.assertObservationSpecimenAmountWithinBounds(totalAmount);
     }
-
-    private static void assertSpecimenAmountWithinBounds(final int totalAmount) {
-        if (totalAmount < Observation.MIN_AMOUNT || totalAmount > Observation.MAX_AMOUNT) {
-            throw new IllegalArgumentException(String.format(
-                    "Total amount of observation specimens must be between %d and %d",
-                    Observation.MIN_AMOUNT, Observation.MAX_AMOUNT));
-        }
-    }
-
 }

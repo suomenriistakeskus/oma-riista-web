@@ -27,6 +27,9 @@ public class OrganisationNameDTO extends BaseEntityDTO<Long> {
     }
 
     public static OrganisationNameDTO createWithOfficialCode(Organisation organisation) {
+        if (organisation == null) {
+            return null;
+        }
         OrganisationNameDTO dto = new OrganisationNameDTO(organisation);
         dto.setOfficialCode(organisation.getOfficialCode());
         return dto;

@@ -1,6 +1,7 @@
 package fi.riista.util;
 
-import javaslang.Tuple;
+import fi.riista.config.Constants;
+import io.vavr.Tuple;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
@@ -11,14 +12,14 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.IntStream;
 
+import static fi.riista.test.TestUtils.dt;
+import static fi.riista.test.TestUtils.i;
+import static fi.riista.test.TestUtils.ld;
 import static fi.riista.util.DateUtil.HUNTING_YEAR_BEGIN_MONTH;
-import static fi.riista.util.DateUtil.getFirstCalendarYearOfHuntingYearContaining;
 import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.DateUtil.today;
-import static fi.riista.util.TestUtils.dt;
-import static fi.riista.util.TestUtils.i;
-import static fi.riista.util.TestUtils.ld;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -30,6 +31,7 @@ public class DateUtilTest {
     @Test
     public void testCalculateAge() {
         final LocalDate today = today();
+
         assertEquals(DateUtil.calculateAge(today.minusYears(30), now()).getYears(), 30);
         assertEquals(DateUtil.calculateAge(today.minusYears(30).minusDays(1), now()).getYears(), 30);
         assertEquals(DateUtil.calculateAge(today.minusYears(30).plusDays(1), now()).getYears(), 29);
@@ -38,6 +40,7 @@ public class DateUtilTest {
     @Test
     public void testIsAdultBirthDate() {
         final LocalDate today = today();
+
         assertFalse(DateUtil.isAdultBirthDate(today));
         assertTrue(DateUtil.isAdultBirthDate(ld(1970, 1, 1)));
         assertTrue(DateUtil.isAdultBirthDate(today.minusYears(18).minusDays(1)));
@@ -46,14 +49,13 @@ public class DateUtilTest {
     }
 
     @Test
-    public void testGetFirstCalendarYearOfHuntingYearContaining() {
+    public void testHuntingYearContaining() {
         final int year = today().getYear();
 
-        assertEquals(year - 1, getFirstCalendarYearOfHuntingYearContaining(ld(year, 1, 1)));
-        assertEquals(
-                year - 1, getFirstCalendarYearOfHuntingYearContaining(ld(year, HUNTING_YEAR_BEGIN_MONTH, 1).minusDays(1)));
-        assertEquals(year, getFirstCalendarYearOfHuntingYearContaining(ld(year, HUNTING_YEAR_BEGIN_MONTH, 1)));
-        assertEquals(year, getFirstCalendarYearOfHuntingYearContaining(ld(year, 12, 31)));
+        assertEquals(year - 1, DateUtil.huntingYearContaining(ld(year, 1, 1)));
+        assertEquals(year - 1, DateUtil.huntingYearContaining(ld(year, HUNTING_YEAR_BEGIN_MONTH, 1).minusDays(1)));
+        assertEquals(year, DateUtil.huntingYearContaining(ld(year, HUNTING_YEAR_BEGIN_MONTH, 1)));
+        assertEquals(year, DateUtil.huntingYearContaining(ld(year, 12, 31)));
     }
 
     @Test
@@ -90,8 +92,8 @@ public class DateUtilTest {
         assertFalse(DateUtil.overlapsInclusive(begin, end, begin.minusDays(1)));
 
         assertTrue(DateUtil.overlapsInclusive(null, end, begin));
-        assertTrue(DateUtil.overlapsInclusive(begin, null, begin));
         assertTrue(DateUtil.overlapsInclusive(null, end, end));
+        assertTrue(DateUtil.overlapsInclusive(begin, null, begin));
         assertTrue(DateUtil.overlapsInclusive(begin, null, end));
 
         assertFalse(DateUtil.overlapsInclusive(begin, null, begin.minusDays(1)));
@@ -139,12 +141,11 @@ public class DateUtilTest {
         assertCommutativeInclusiveOverlapForDateRange(false, begin, end, end.plusDays(1), null);
     }
 
-    private static void assertCommutativeInclusiveOverlapForDateRange(
-            final boolean expected,
-            @Nullable final LocalDate begin,
-            @Nullable final LocalDate end,
-            @Nullable final LocalDate begin2,
-            @Nullable final LocalDate end2) {
+    private static void assertCommutativeInclusiveOverlapForDateRange(final boolean expected,
+                                                                      @Nullable final LocalDate begin,
+                                                                      @Nullable final LocalDate end,
+                                                                      @Nullable final LocalDate begin2,
+                                                                      @Nullable final LocalDate end2) {
 
         assertEquals(expected, DateUtil.overlapsInclusive(begin, end, begin2, end2));
         assertEquals(expected, DateUtil.overlapsInclusive(begin2, end2, begin, end));
@@ -159,8 +160,7 @@ public class DateUtilTest {
 
     @Test
     public void testParseBlankDateInterval() {
-        assertNull(DateUtil.parseDateInterval(
-                "", DateTimeFormat.forPattern("dd.MM.yyyy")));
+        assertNull(DateUtil.parseDateInterval("", DateTimeFormat.forPattern("dd.MM.yyyy")));
     }
 
     @Test
@@ -187,9 +187,32 @@ public class DateUtilTest {
         assertEquals(Arrays.asList(2014, 2015, 2016), getYearsBetween(2014, 2016));
     }
 
-    private static List<Integer> getYearsBetween(int begin, int end) {
+    private static List<Integer> getYearsBetween(final int begin, final int end) {
         return DateUtil.huntingYearsBetween(DateUtil.huntingYearBeginDate(begin), DateUtil.huntingYearEndDate(end))
                 .boxed()
                 .collect(toList());
+    }
+
+    @Test
+    public void testCopyDateForHuntingYear() {
+        final LocalDate today = today();
+        final int currentYear = today.getYear();
+
+        IntStream.of(currentYear + 1, currentYear, currentYear - 1).forEach(year -> {
+            final LocalDate date1 = ld(year, 1, 1);
+            final LocalDate date2 = DateUtil.huntingYearEndDate(year);
+            final LocalDate date3 = DateUtil.huntingYearBeginDate(year);
+            final LocalDate date4 = ld(year, 12, 31);
+
+            assertEquals(date1.withYear(year + 1), DateUtil.copyDateForHuntingYear(date1, year));
+            assertEquals(date2.withYear(year + 1), DateUtil.copyDateForHuntingYear(date2, year));
+            assertEquals(date3.withYear(year), DateUtil.copyDateForHuntingYear(date3, year));
+            assertEquals(date4.withYear(year), DateUtil.copyDateForHuntingYear(date4, year));
+        });
+    }
+
+    @Test
+    public void testBeginOfCalendarYear() {
+        assertEquals(new DateTime(2017, 1, 1, 0, 0, 0, 0, Constants.DEFAULT_TIMEZONE), DateUtil.beginOfCalendarYear(2017));
     }
 }

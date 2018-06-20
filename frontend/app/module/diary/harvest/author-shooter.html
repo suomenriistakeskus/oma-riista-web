@@ -1,0 +1,77 @@
+<h4 translate="gamediary.form.titleActualShooter"></h4>
+
+<div ng-if="!$ctrl.authorIsMe">
+    <div class="form-group">
+        <label class="col-xs-4 control-label"
+               translate="gamediary.form.onBehalfAuthor"></label>
+
+        <div class="col-xs-8">
+            <p class="form-control-static">
+                <span ng-bind="$ctrl.harvest.authorInfo.byName"></span>
+                <span ng-bind="$ctrl.harvest.authorInfo.lastName"></span>
+            </p>
+        </div>
+    </div>
+
+    <div ng-if="!$ctrl.actorIsMe" class="form-group">
+        <label class="col-xs-4 control-label"
+               translate="gamediary.form.hunterNumberOfActualShooter"></label>
+
+        <div class="col-xs-8">
+            <p class="form-control-static">
+                <span ng-bind="$ctrl.harvest.actorInfo.byName"></span>
+                <span ng-bind="$ctrl.harvest.actorInfo.lastName"></span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div ng-if="$ctrl.authorIsMe">
+    <div class="form-group">
+        <div class="col-xs- col-xs-offset-1 checkbox">
+            <label>
+                <input type="checkbox" name="shotByMe" id="shotByMe"
+                       ng-model="$ctrl.actorIsMe"
+                       ng-change="$ctrl.actorIsMeChanged($ctrl.actorIsMe)">
+                <span translate="gamediary.form.iAmTheShooter"></span>
+            </label>
+        </div>
+    </div>
+
+    <div ng-if="!$ctrl.actorIsMe">
+        <div class="form-group" show-errors>
+            <label for="hunterNumber" class="col-xs-4 control-label">
+                <span translate="gamediary.form.hunterNumberOfActualShooter"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input type="text" name="hunterNumber" id="hunterNumber"
+                       class="form-control"
+                       ng-model="$ctrl.searchHunterNumber"
+                       ng-change="$ctrl.searchHunterNumberChanged($ctrl.searchHunterNumber)"
+                       valid-hunter-number
+                       maxlength="8"
+                       ng-required="!$ctrl.actorIsMe">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-8 col-xs-offset-4">
+                <p class="form-control-static"
+                   ng-show="$ctrl.searchHunterNumber && !$ctrl.hunterByNumberNotFound">
+                    <span ng-bind="$ctrl.harvest.actorInfo.byName"></span>
+                    <span ng-bind="$ctrl.harvest.actorInfo.lastName"></span>
+                </p>
+
+                <p ng-show="$ctrl.hunterByNumberNotFound"
+                   class="form-control-static alert alert-warning"
+                   translate="gamediary.messages.notFound"></p>
+
+                <p ng-show="!$ctrl.searchHunterNumber"
+                   class="form-control-static alert alert-info"
+                   translate="gamediary.messages.insertHunterNumber"></p>
+            </div>
+        </div>
+    </div>
+</div>

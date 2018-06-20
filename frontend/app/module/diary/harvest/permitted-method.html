@@ -1,0 +1,61 @@
+<div ng-if="$ctrl.isPermittedMethodAllowed()">
+    <div class="form-group">
+        <div class="col-xs-8 col-xs-offset-4">
+            <label class="checkbox-inline">
+                <input type="checkbox" name="withPermittedMethod" id="withPermittedMethod"
+                       ng-model="$ctrl.withPermittedMethod">
+                <span translate="gamediary.form.withPermittedMethod"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group" ng-if="$ctrl.withPermittedMethod">
+        <label class="col-xs-4 control-label">
+            <span translate="gamediary.form.permittedMethod"></span>
+            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+        </label>
+
+        <ul class="list-unstyled col-xs-8">
+            <li>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="tapeRecorders" id="tapeRecorders"
+                           ng-required="$ctrl.isPermittedMethodRequired()"
+                           ng-model="$ctrl.harvest.permittedMethod.tapeRecorders">
+                    <span translate="permittedMethod.TAPE_RECORDERS"></span>
+                </label>
+            </li>
+            <li>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="traps" id="traps"
+                           ng-required="$ctrl.isPermittedMethodRequired()"
+                           ng-model="$ctrl.harvest.permittedMethod.traps">
+                    <span translate="permittedMethod.TRAPS"></span>
+                </label>
+            </li>
+            <li>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="other" id="other"
+                           ng-required="$ctrl.isPermittedMethodRequired()"
+                           ng-model="$ctrl.harvest.permittedMethod.other">
+                    <span translate="permittedMethod.OTHER"></span>
+                </label>
+            </li>
+        </ul>
+    </div>
+
+    <div class="form-group" ng-show="$ctrl.harvest.permittedMethod.other" show-errors>
+        <div>
+            <label for="permittedMethodDescription" class="col-xs-4 control-label">
+                <span translate="gamediary.form.permittedMethodDescription"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+        </div>
+        <div class="col-xs-8">
+            <input class="form-control" type="text"
+                   name="permittedMethodDescription" id="permittedMethodDescription"
+                   ng-maxlength="255"
+                   ng-required="$ctrl.harvest.permittedMethod.other"
+                   ng-model="$ctrl.harvest.permittedMethod.description"/>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,1491 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd"
+        logicalFilePath="migrations/db.changelog.xml">
+
+    <changeSet id="2018-01-04-add-diary-entry-geometry" author="vincit-kyostihe" dbms="h2">
+        <addColumn tableName="harvest">
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="game_observation">
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-01-04-add-diary-entry-geometry" author="vincit-kyostihe" dbms="postgresql">
+        <sql><![CDATA[
+        SELECT AddGeometryColumn('public', 'harvest', 'geom', 3067, 'POINT', 2);
+        SELECT AddGeometryColumn('public', 'game_observation', 'geom', 3067, 'POINT', 2);
+
+        UPDATE harvest set geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 3067);
+        UPDATE game_observation set geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 3067);
+
+        CREATE INDEX ndx_game_observation_geom ON game_observation USING gist (geom);
+        CREATE INDEX ndx_harvest_geom ON harvest USING gist (geom);
+        ]]></sql>
+        <addNotNullConstraint tableName="harvest" columnName="geom"/>
+        <addNotNullConstraint tableName="game_observation" columnName="geom"/>
+    </changeSet>
+
+    <changeSet id="2018-01-05-add-srva-event-geometry" author="vincit-terova" dbms="h2">
+        <addColumn tableName="srva_event">
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-01-05-add-srva-event-geometry" author="vincit-terova" dbms="postgresql">
+        <sql><![CDATA[
+        SELECT AddGeometryColumn('public', 'srva_event', 'geom', 3067, 'POINT', 2);
+        UPDATE srva_event set geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 3067);
+        CREATE INDEX ndx_srva_event_geom ON srva_event USING gist (geom);
+        ]]></sql>
+        <addNotNullConstraint tableName="srva_event" columnName="geom"/>
+    </changeSet>
+
+    <changeSet id="2018-01-12-add-moderator-override-timestamps-to-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="hunter_exam_events_last_overridden" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="firearm_test_events_last_overridden" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="bow_test_events_last_overridden" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="hunter_exam_training_events_last_overridden" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-01-02-harvest_permit_application_hunting_year" author="vincit-terova">
+        <addColumn tableName="harvest_permit_application">
+            <column name="hunting_year" type="INT"/>
+        </addColumn>
+        <sql><![CDATA[
+            ALTER TABLE harvest_permit_application ADD CONSTRAINT harvest_permit_application_hunting_year_check
+            CHECK (hunting_year >= 2017);
+        ]]>
+        </sql>
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE harvest_permit_application
+            SET hunting_year = substring(permit_number, 0, 5)::INT;
+        ]]>
+        </sql>
+        <addNotNullConstraint tableName="harvest_permit_application"
+                              columnName="hunting_year"
+                              columnDataType="INT"/>
+    </changeSet>
+
+    <changeSet id="2017-01-18-application-submit-date" author="vincit-terova">
+        <addColumn tableName="harvest_permit_application">
+            <column name="submit_date" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE harvest_permit_application SET submit_date = DATE '2017-05-01 00:00:00+0300' WHERE status <> 'DRAFT';
+        ]]></sql>
+        <sql><![CDATA[
+            ALTER TABLE harvest_permit_application ADD CONSTRAINT harvest_permit_application_submit_date_check
+            CHECK (status = 'DRAFT' OR submit_date IS NOT NULL);
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2018-02-26-permit-area-rhy-more-sizes" author="vincit-kyostihe">
+        <addColumn tableName="harvest_permit_area_rhy">
+            <column name="land_size" type="DOUBLE" defaultValueNumeric="0"/>
+            <column name="water_size" type="DOUBLE" defaultValueNumeric="0"/>
+            <column name="state_size" type="DOUBLE" defaultValueNumeric="0"/>
+            <column name="state_land_size" type="DOUBLE" defaultValueNumeric="0"/>
+            <column name="state_water_size" type="DOUBLE" defaultValueNumeric="0"/>
+            <column name="private_size" type="DOUBLE" defaultValueNumeric="0"/>
+            <column name="private_land_size" type="DOUBLE" defaultValueNumeric="0"/>
+            <column name="private_water_size" type="DOUBLE" defaultValueNumeric="0"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-02-21-permit-area-free-hunting" author="vincit-kyostihe">
+        <addColumn tableName="harvest_permit_area">
+            <column name="free_hunting" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-02-27-remove-unused-lh-code" author="vincit-terova" dbms="postgresql">
+        <sql>
+            <![CDATA[
+            DELETE FROM integration WHERE integration_id = 'lh_mooselike_permit_application_import';
+            DELETE FROM system_user_privilege WHERE name = 'export.lupahallinta.permit.area';
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2018-03-05-permit-application-archive" author="vincit-kyostihe">
+        <createTable tableName="permit_application_archive">
+            <column autoIncrement="true" name="permit_application_archive_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_application_archive_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="harvest_permit_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_permit_application_archive_application"/>
+            </column>
+            <column name="file_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_permit_application_archive_metadata"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-03-08-decision-status-amending" author="vincit-kyostihe">
+        <insert tableName="harvest_permit_application_status">
+            <column name="name" value="AMENDING"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2018-03-19-drop-legacy-application-fields" author="vincit-kyostihe">
+        <dropColumn tableName="harvest_permit_application">
+            <column name="area_size"/>
+            <column name="state_land_area_size"/>
+            <column name="private_land_area_size"/>
+            <column name="lh_sync_time"/>
+            <column name="parsing_info"/>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet id="2018-03-20-rename-rhy-annual-statistics-table" author="vincit-jarkkoka">
+        <renameTable oldTableName="rhy_annual_report" newTableName="rhy_annual_statistics"/>
+
+        <renameColumn tableName="rhy_annual_statistics"
+                      oldColumnName="rhy_annual_report_id"
+                      newColumnName="rhy_annual_statistics_id"/>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_statistics RENAME CONSTRAINT fk_rhy_annual_report_rhy TO fk_rhy_annual_statistics_rhy;
+
+                ALTER INDEX IF EXISTS rhy_annual_report_pkey RENAME TO rhy_annual_statistics_pkey;
+                ALTER INDEX IF EXISTS ndx_rhy_annual_report_rhy_year RENAME TO ndx_rhy_annual_statistics_rhy_year;
+            ]]>
+        </sql>
+
+        <sql dbms="postgresql">
+            <![CDATA[
+                ALTER SEQUENCE IF EXISTS rhy_annual_report_rhy_annual_report_id_seq RENAME TO rhy_annual_statistics_rhy_annual_statistics_id_seq;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2018-03-27-add-rhy_annual_statistics_state-table" author="vincit-jarkkoka">
+        <createTable tableName="rhy_annual_statistics_state">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="rhy_annual_statistics_state">
+            <column name="name" value="IN_PROGRESS"/>
+        </insert>
+        <insert tableName="rhy_annual_statistics_state">
+            <column name="name" value="UNDER_INSPECTION"/>
+        </insert>
+        <insert tableName="rhy_annual_statistics_state">
+            <column name="name" value="APPROVED"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2018-03-27-add-rhy_annual_statistics_state_change_event-table" author="vincit-jarkkoka">
+        <createTable tableName="rhy_annual_statistics_state_change_event">
+            <column autoIncrement="true" name="rhy_annual_statistics_state_change_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="rhy_annual_statistics_state_change_event_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="statistics_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="rhy_annual_statistics(rhy_annual_statistics_id)"
+                             foreignKeyName="fk_rhy_annual_statistics_state_change_event_statistics"/>
+            </column>
+            <column name="state" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="rhy_annual_statistics_state(name)"
+                             foreignKeyName="fk_rhy_annual_statistics_state_change_event_state"/>
+            </column>
+            <column name="point_of_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+
+        <createIndex tableName="rhy_annual_statistics_state_change_event"
+                     indexName="ndx_rhy_annual_statistics_state_change_event_statistics">
+            <column name="statistics_id"/>
+        </createIndex>
+
+        <sql dbms="postgresql">
+            <![CDATA[
+                INSERT INTO rhy_annual_statistics_state_change_event (statistics_id, state, point_of_time, user_id)
+                SELECT ras.rhy_annual_statistics_id, 'IN_PROGRESS', ras.creation_time, ras.created_by_user_id
+                FROM rhy_annual_statistics ras;
+
+                INSERT INTO rhy_annual_statistics_state_change_event (statistics_id, state, point_of_time)
+                SELECT rhy_annual_statistics_id, 'UNDER_INSPECTION', coalesce(locked_time, modification_time)
+                FROM rhy_annual_statistics;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2018-03-27-add-state-into-rhy_annual_statistics-table" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="state" type="VARCHAR(255)">
+                <constraints nullable="true"
+                             references="rhy_annual_statistics_state(name)"
+                             foreignKeyName="fk_rhy_annual_statistics_state"/>
+            </column>
+        </addColumn>
+
+        <sql dbms="postgresql">
+            <![CDATA[
+                UPDATE rhy_annual_statistics SET state = 'IN_PROGRESS' WHERE locked_time IS NULL;
+                UPDATE rhy_annual_statistics SET state = 'UNDER_INSPECTION' WHERE locked_time IS NOT NULL;
+            ]]>
+        </sql>
+
+        <addNotNullConstraint tableName="rhy_annual_statistics" columnName="state" columnDataType="VARCHAR(255)"/>
+        <dropColumn tableName="rhy_annual_statistics" columnName="locked_time"/>
+    </changeSet>
+
+
+    <changeSet id="2018-01-02-permit-decision" author="vincit-kyostihe">
+        <createTable tableName="permit_decision_status">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="permit_decision_status">
+            <column name="name" value="DRAFT"/>
+        </insert>
+        <insert tableName="permit_decision_status">
+            <column name="name" value="COMPLETE"/>
+        </insert>
+        <insert tableName="permit_decision_status">
+            <column name="name" value="LOCKED"/>
+        </insert>
+        <insert tableName="permit_decision_status">
+            <column name="name" value="PUBLISHED"/>
+        </insert>
+        <insert tableName="permit_decision_status">
+            <column name="name" value="REVOKED"/>
+        </insert>
+        <insert tableName="permit_decision_status">
+            <column name="name" value="IGNORED"/>
+        </insert>
+
+        <createTable tableName="permit_decision">
+            <column autoIncrement="true" name="permit_decision_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="status" type="VARCHAR(255)" defaultValue="DRAFT">
+                <constraints nullable="false" references="permit_decision_status(name)"
+                             foreignKeyName="fk_permit_decision_status"/>
+            </column>
+            <column name="application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_permit_decision_application"/>
+            </column>
+            <column name="original_decision_id" type="BIGINT">
+                <constraints references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_permit_decision_original_decision"/>
+            </column>
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_permit_decision_rhy"/>
+            </column>
+            <column name="hta_id" type="INT">
+                <constraints references="hta(gid)"
+                             foreignKeyName="fk_permit_decision_hta"/>
+            </column>
+            <column name="contact_person_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="person(person_id)"
+                             foreignKeyName="fk_permit_decision_contact_person"/>
+            </column>
+            <column name="permit_holder_id" type="BIGINT">
+                <constraints references="organisation(organisation_id)"
+                             foreignKeyName="fk_permit_decision_holder"/>
+            </column>
+            <column name="locked_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="publish_date" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="decision_body" type="TEXT"/>
+            <column name="decision_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="application_body" type="TEXT"/>
+            <column name="application_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="application_reasoning_body" type="TEXT"/>
+            <column name="application_reasoning_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="processing_body" type="TEXT"/>
+            <column name="processing_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="decision_reasoning_body" type="TEXT"/>
+            <column name="decision_reasoning_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="restriction_body" type="TEXT"/>
+            <column name="restriction_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="execution_body" type="TEXT"/>
+            <column name="execution_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="legal_advice_body" type="TEXT"/>
+            <column name="legal_advice_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="notification_obligation_body" type="TEXT"/>
+            <column name="notification_obligation_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="appeal_body" type="TEXT"/>
+            <column name="appeal_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="additional_info_body" type="TEXT"/>
+            <column name="additional_info_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="delivery_body" type="TEXT"/>
+            <column name="delivery_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="payment_body" type="TEXT"/>
+            <column name="payment_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="attachments_body" type="TEXT"/>
+            <column name="attachments_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-01-23-decision-handler-user" author="vincit-kyostihe">
+        <addColumn tableName="permit_decision">
+            <column name="handler_id" type="BIGINT">
+                <constraints references="system_user(user_id)"
+                             foreignKeyName="fk_permit_decision_handler_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-01-30-decision-species-amount" author="vincit-kyostihe">
+        <createTable tableName="permit_decision_species_amount">
+            <column autoIncrement="true" name="permit_decision_species_amount_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_species_amount_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false" references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_permit_decision_species_amount_decision"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false" references="game_species(game_species_id)"
+                             foreignKeyName="fk_permit_decision_species_amount_game_species"/>
+            </column>
+            <column name="amount" type="DECIMAL(6,1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="begin_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="begin_date2" type="DATE"/>
+            <column name="end_date2" type="DATE"/>
+            <column name="restriction_type" type="VARCHAR(2)"/>
+            <column name="restriction_amount" type="NUMERIC(6,1)"/>
+        </createTable>
+
+        <createIndex tableName="permit_decision_species_amount" indexName="nd_permit_decision_species_amount_decision">
+            <column name="permit_decision_id"/>
+        </createIndex>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE permit_decision_species_amount ADD CONSTRAINT ck_permit_decision_species_amount_dates
+                CHECK (begin_date <= end_date AND (begin_date2 IS NULL OR (end_date < begin_date2 AND begin_date2 <= end_date2)));
+
+                ALTER TABLE permit_decision_species_amount ADD CONSTRAINT ck_permit_decision_restriction_valid
+                CHECK ((restriction_type IS NULL AND restriction_amount IS NULL)
+                OR (restriction_type IS NOT NULL AND restriction_amount IS NOT NULL));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2018-02-08-decision-reference" author="vincit-terova">
+        <addColumn tableName="permit_decision">
+            <column name="reference_id" type="BIGINT">
+                <constraints references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_permit_decision_reference"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-02-21-decision-administrative-court" author="vincit-terova">
+        <addColumn tableName="permit_decision">
+            <column name="administrative_court_body" type="TEXT"/>
+            <column name="administrative_court_complete" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-03-05-decision-price" author="vincit-terova">
+        <addColumn tableName="permit_decision">
+            <column name="payment_amount" type="NUMERIC(6,2)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-03-08-decision-status-amending" author="vincit-kyostihe">
+        <insert tableName="harvest_permit_application_status">
+            <column name="name" value="AMENDING"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2018-03-06-decision-intermediate-action" author="vincit-terova">
+        <createTable tableName="permit_decision_action_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="SELVITYSPYYNTO"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="SELVITYS"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="TIETOPYYNTO"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="TIETOPYYNTOVASTAUS"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="LAUSUNTOPYYNTO"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="LAUSUNTO"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="KUULEMINEN"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="VASTASELITYSPYYNTO"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="VASTASELITYS"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="TAYDENNYS"/>
+        </insert>
+        <insert tableName="permit_decision_action_type">
+            <column name="name" value="MUU"/>
+        </insert>
+
+        <createTable tableName="permit_decision_action_communication_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="permit_decision_action_communication_type">
+            <column name="name" value="TELEPHONE"/>
+        </insert>
+        <insert tableName="permit_decision_action_communication_type">
+            <column name="name" value="EMAIL"/>
+        </insert>
+        <insert tableName="permit_decision_action_communication_type">
+            <column name="name" value="MEETING"/>
+        </insert>
+        <insert tableName="permit_decision_action_communication_type">
+            <column name="name" value="MAIL"/>
+        </insert>
+
+        <createTable tableName="permit_decision_action">
+            <column autoIncrement="true" name="permit_decision_action_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_action_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_permit_decision_action_decision"/>
+            </column>
+            <column name="point_of_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             foreignKeyName="fk_permit_decision_action_type"
+                             references="permit_decision_action_type(name)"/>
+            </column>
+            <column name="communication_type" type="VARCHAR(255)">
+                <constraints foreignKeyName="fk_permit_decision_action_communication_type"
+                             references="permit_decision_action_communication_type(name)"/>
+            </column>
+            <column name="text" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="decision_text" type="VARCHAR(255)"/>
+        </createTable>
+
+        <createIndex tableName="permit_decision_action" indexName="ndx_permit_decision_action_decision">
+            <column name="permit_decision_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-02-16-permit_decision_rka_recipient" author="vincit-terova">
+        <createTable tableName="permit_decision_rka_recipient">
+            <column autoIncrement="true" name="permit_decision_rka_recipient_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_rka_recipient_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+
+            <column name="rka_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_permit_decision_rka_recipient_rka"/>
+            </column>
+
+            <column name="name_finnish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="2018-02-16-permit_decision_delivery" author="vincit-terova">
+        <createTable tableName="permit_decision_delivery">
+            <column autoIncrement="true" name="permit_decision_delivery_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_delivery_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_permit_decision_delivery_decision"/>
+            </column>
+
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-04-09-decision-revision" author="vincit-kyostihe">
+        <createTable tableName="permit_decision_revision">
+            <column autoIncrement="true" name="permit_decision_revision_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_revision_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_permit_decision_revision_decision_id"/>
+            </column>
+
+            <column name="pdf_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_permit_decision_revision_pdf"/>
+            </column>
+
+            <column name="scheduled_publish_date" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="locked_date" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="decision_body" type="TEXT"/>
+            <column name="decision_reasoning_body" type="TEXT"/>
+            <column name="application_body" type="TEXT"/>
+            <column name="application_reasoning_body" type="TEXT"/>
+            <column name="processing_body" type="TEXT"/>
+            <column name="restriction_body" type="TEXT"/>
+            <column name="execution_body" type="TEXT"/>
+            <column name="legal_advice_body" type="TEXT"/>
+            <column name="notification_obligation_body" type="TEXT"/>
+            <column name="appeal_body" type="TEXT"/>
+            <column name="additional_info_body" type="TEXT"/>
+            <column name="delivery_body" type="TEXT"/>
+            <column name="payment_body" type="TEXT"/>
+            <column name="attachments_body" type="TEXT"/>
+            <column name="administrative_court_body" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-04-10-decision-attachment" author="vincit-kyostihe">
+        <createTable tableName="permit_decision_attachment">
+            <column autoIncrement="true" name="permit_decision_attachment_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_attachment_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="ordering_number" type="INT"/>
+
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_permit_decision_attachment_decision_id"/>
+            </column>
+
+            <column name="attachment_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_permit_decision_attachment_metadata_id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-04-11-decision-revision-attachment" author="vincit-kyostihe">
+        <createTable tableName="permit_decision_revision_attachment">
+            <column autoIncrement="true" name="permit_decision_revision_attachment_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_revision_attachment_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="ordering_number" type="INT"/>
+
+            <column name="permit_decision_revision_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision_revision(permit_decision_revision_id)"
+                             foreignKeyName="fk_permit_decision_revision_attachment_revision_id"/>
+            </column>
+
+            <column name="permit_decision_attachment_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision_attachment(permit_decision_attachment_id)"
+                             foreignKeyName="fk_permit_decision_revision_attachment_decision_id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-04-11-decision-revision-receiver" author="vincit-kyostihe">
+        <createTable tableName="permit_decision_revision_receiver_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="permit_decision_revision_receiver_type">
+            <column name="name" value="CONTACT_PERSON"/>
+        </insert>
+        <insert tableName="permit_decision_revision_receiver_type">
+            <column name="name" value="OTHER"/>
+        </insert>
+
+        <createTable tableName="permit_decision_revision_receiver">
+            <column autoIncrement="true" name="permit_decision_revision_receiver_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_revision_receiver_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="receiver_type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             foreignKeyName="fk_permit_decision_revision_receiver_type"
+                             references="permit_decision_revision_receiver_type(name)"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scheduled_date" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sent" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="permit_decision_revision_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision_revision(permit_decision_revision_id)"
+                             foreignKeyName="fk_permit_decision_revision_receiver_revision_id"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="2018-04-03-permit_decision_rka_authority" author="vincit-terova">
+        <createTable tableName="permit_decision_rka_authority">
+            <column autoIncrement="true" name="permit_decision_rka_authority_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_rka_authority_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+
+            <column name="rka_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_permit_decision_rka_authority_rka"/>
+            </column>
+
+            <column name="first_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title_finnish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone_number" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-04-03-permit_decision_authority" author="vincit-terova">
+        <createTable tableName="permit_decision_authority">
+            <column autoIncrement="true" name="permit_decision_authority_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_authority_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_permit_decision_authority_decision"/>
+            </column>
+
+            <column name="first_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone_number" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-04-03-permit_decision_authorities" author="vincit-terova">
+        <addColumn tableName="permit_decision">
+            <column name="presenter_id" type="BIGINT">
+                <constraints references="permit_decision_authority(permit_decision_authority_id)"
+                             foreignKeyName="fk_permit_decision_presenter_authority"/>
+            </column>
+            <column name="decision_maker_id" type="BIGINT">
+                <constraints references="permit_decision_authority(permit_decision_authority_id)"
+                             foreignKeyName="fk_permit_decision_decision_maker_authority"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-04-18-permit-decision-restriction-extra" author="vincit-terova">
+        <addColumn tableName="permit_decision">
+            <column name="restriction_extra" type="TEXT"/>
+        </addColumn>
+        <addColumn tableName="permit_decision_revision">
+            <column name="restriction_extra" type="TEXT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-04-18-harvest-permit-decision" author="vincit-kyostihe">
+        <addColumn tableName="harvest_permit">
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_harvest_permit_permit_decision"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-04-24-permit-decision-revision-receiver-cancel" author="vincit-terova">
+        <addColumn tableName="permit_decision_revision_receiver">
+            <column name="sent_date" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql dbms="postgresql">
+            UPDATE permit_decision_revision_receiver
+            SET sent_date = now() WHERE sent = true;
+        </sql>
+
+        <dropColumn tableName="permit_decision_revision_receiver" columnName="sent"/>
+
+        <addColumn tableName="permit_decision_revision_receiver">
+            <column name="cancelled" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-04-25-permit-decision-receiver-uuid-and-counter" author="vincit-terova">
+        <addColumn tableName="permit_decision_revision_receiver">
+            <column name="uuid" type="CHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="permit_decision_revision_receiver">
+            <column name="view_count" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-04-27-permit-decision-revision-publish-cancellation" author="vincit-terova">
+        <addColumn tableName="permit_decision_revision">
+            <column name="publish_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="postal_by_mail" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="posted_by_mail_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="cancelled" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-05-04-paytrail-payment-event" author="vincit-kyostihe">
+        <createTable tableName="paytrail_payment_event">
+            <column autoIncrement="true" name="paytrail_payment_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="paytrail_payment_event_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="remote_address" type="VARCHAR(255)"/>
+            <column name="user_id" type="BIGINT"/>
+            <column name="order_number" type="VARCHAR(255)"/>
+            <column name="payment_id" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(255)"/>
+            <column name="currency" type="VARCHAR(255)"/>
+            <column name="amount" type="VARCHAR(255)"/>
+            <column name="payment_method" type="VARCHAR(255)"/>
+            <column name="settlement_reference_number" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-05-08-decision-locale" author="vincit-kyostihe">
+        <addColumn tableName="permit_decision">
+            <column name="locale_id" type="VARCHAR(255)" defaultValue="fi_FI">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-05-09-decision-unique-application" author="vincit-kyostihe">
+        <createIndex tableName="permit_decision" indexName="uk_permit_decision_application" unique="true">
+            <column name="application_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-04-30-invoice" author="vincit-jarkkoka">
+        <createTable tableName="invoice">
+            <column autoIncrement="true" name="invoice_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="invoice_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invoice_number" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bic" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="iban" type="CHAR(18)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invoice_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="due_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="NUMERIC(6,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creditor_reference" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient_address_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="address(address_id)"
+                             foreignKeyName="fk_invoice_recipient_address"/>
+            </column>
+            <column name="online_payment_expected" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_invoice_file_metadata"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="invoice" indexName="uk_invoice_invoice_number" unique="true">
+            <column name="invoice_number"/>
+        </createIndex>
+
+        <createIndex tableName="invoice" indexName="uk_invoice_creditor_reference" unique="true">
+            <column name="creditor_reference"/>
+        </createIndex>
+
+        <createIndex tableName="invoice" indexName="uk_invoice_recipient_address" unique="true">
+            <column name="recipient_address_id"/>
+        </createIndex>
+
+        <createIndex tableName="invoice" indexName="uk_invoice_file_metadata" unique="true">
+            <column name="file_metadata_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-04-30-permit_decision_invoice" author="vincit-jarkkoka">
+        <createTable tableName="permit_decision_invoice">
+            <column autoIncrement="true" name="permit_decision_invoice_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_invoice_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_permit_decision_invoice_decision"/>
+            </column>
+            <column name="invoice_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="invoice(invoice_id)"
+                             foreignKeyName="fk_permit_decision_invoice_invoice"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="permit_decision_invoice" indexName="uk_permit_decision_invoice_decision" unique="true">
+            <column name="permit_decision_id"/>
+        </createIndex>
+
+        <createIndex tableName="permit_decision_invoice" indexName="uk_permit_decision_invoice_invoice" unique="true">
+            <column name="invoice_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-05-21-permit_decision_action_text_type" author="vincit-kyostihe">
+        <modifyDataType tableName="permit_decision_action" columnName="decision_text" newDataType="TEXT"/>
+    </changeSet>
+
+    <changeSet id="2018-04-30-add-state-to-invoice" author="vincit-jarkkoka">
+        <addColumn tableName="invoice">
+            <column name="state" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-04-30-permit_decision_invoice_batch" author="vincit-jarkkoka">
+        <createTable tableName="permit_decision_invoice_batch">
+            <column autoIncrement="true" name="permit_decision_invoice_batch_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_invoice_batch_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="file_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_permit_decision_invoice_batch_file_metadata"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="permit_decision_invoice_batch"
+                     indexName="uk_permit_decision_invoice_batch_file_metadata"
+                     unique="true">
+            <column name="file_metadata_id"/>
+        </createIndex>
+
+        <addColumn tableName="permit_decision_invoice">
+            <column name="batch_id" type="BIGINT">
+                <constraints references="permit_decision_invoice_batch(permit_decision_invoice_batch_id)"
+                             foreignKeyName="fk_permit_decision_invoice_batch"/>
+            </column>
+        </addColumn>
+
+        <createIndex tableName="permit_decision_invoice" indexName="ndx_permit_decision_invoice_batch">
+            <column name="batch_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-05-21-permit_decision_grant_status" author="vincit-terova">
+        <addColumn tableName="permit_decision">
+            <column name="grant_status" type="VARCHAR(255)"></column>
+        </addColumn>
+        <sql dbms="postgresql"><![CDATA[
+            WITH p AS (
+                SELECT
+                  p.permit_decision_id,
+                  coalesce(sum(amount.amount), 0) AS permit_amount,
+                  sum(appamount.amount)           AS app_amount,
+                  sum(CASE WHEN amount.restriction_type IS NOT NULL
+                    THEN 1
+                      ELSE 0 END)                 AS restriction
+                FROM permit_decision p
+                  LEFT JOIN harvest_permit_application app
+                    ON app.harvest_permit_application_id = p.application_id
+                  LEFT JOIN harvest_permit_application_species_amount appamount
+                    ON app.harvest_permit_application_id = appamount.harvest_permit_application_id
+                  LEFT JOIN permit_decision_species_amount amount
+                    ON p.permit_decision_id = amount.permit_decision_id
+                WHERE appamount.game_species_id = amount.game_species_id
+                GROUP BY p.permit_decision_id),
+                gt AS (
+                  SELECT
+                    p.*,
+                    CASE WHEN p.restriction = 0 AND p.app_amount = p.permit_amount
+                      THEN 'UNCHANGED'
+                    WHEN p.restriction IS NOT NULL AND p.permit_amount > 0
+                      THEN 'RESTRICTED'
+                    ELSE 'REJECTED'
+                    END AS grant_status
+                  FROM p
+              )
+            UPDATE permit_decision
+            SET grant_status = gt.grant_status
+            FROM gt
+            WHERE gt.permit_decision_id = permit_decision.permit_decision_id;
+
+            UPDATE permit_decision SET grant_status='UNCHANGED' WHERE grant_status IS NULL;
+        ]]></sql>
+        <addNotNullConstraint tableName="permit_decision" columnName="grant_status" columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <changeSet id="2018-05-27-mail-message-bounce" author="vincit-kyostihe">
+        <createTable tableName="mail_message_bounce">
+            <column autoIncrement="true" name="mail_message_bounce_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="mail_message_bounce_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="bounce_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bounce_sub_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bounce_timestamp" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bounce_feedback_id" type="VARCHAR(255)"/>
+            <column name="recipient_email_address" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient_action" type="VARCHAR(255)"/>
+            <column name="recipient_status" type="VARCHAR(255)"/>
+            <column name="recipient_diagnostic_code" type="TEXT"/>
+            <column name="mail_timestamp" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="mail_message_id" type="VARCHAR(255)"/>
+            <column name="mail_subject" type="VARCHAR(255)"/>
+        </createTable>
+
+        <createIndex tableName="mail_message_bounce" indexName="ndx_mail_message_bounce_recipient_email">
+            <column name="recipient_email_address"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-05-27-mail-message-complaint" author="vincit-kyostihe">
+        <createTable tableName="mail_message_complaint">
+            <column autoIncrement="true" name="mail_message_complaint_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="mail_message_complaint_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="complaint_timestamp" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="complaint_feedback_id" type="VARCHAR(255)"/>
+            <column name="recipient_email_address" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient_action" type="VARCHAR(255)"/>
+            <column name="recipient_status" type="VARCHAR(255)"/>
+            <column name="recipient_diagnostic_code" type="TEXT"/>
+            <column name="mail_timestamp" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="mail_message_id" type="VARCHAR(255)"/>
+            <column name="mail_subject" type="VARCHAR(255)"/>
+        </createTable>
+
+        <createIndex tableName="mail_message_complaint" indexName="ndx_mail_message_complaint_recipient_email">
+            <column name="recipient_email_address"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-05-18-invoice_sequence_number" author="vincit-jarkkoka">
+        <createSequence sequenceName="seq_invoice_number" startValue="200000"/>
+    </changeSet>
+
+    <changeSet id="2018-05-23-add-downloaded-flag-to-permit_decision_invoice_batch" author="vincit-jarkkoka">
+        <addColumn tableName="permit_decision_invoice_batch">
+            <column name="downloaded" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-05-28-decision-revision-posted-by-mail-username" author="vincit-terova">
+        <addColumn tableName="permit_decision_revision">
+            <column name="posted_by_mail_username" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-05-23-invoice-payment-date" author="vincit-kyostihe">
+        <addColumn tableName="invoice">
+            <column name="payment_date" type="DATE"/>
+        </addColumn>
+
+        <sql><![CDATA[
+            ALTER TABLE invoice ADD CONSTRAINT invoice_payment_date_check
+            CHECK (state <> 'PAID' OR payment_date IS NOT NULL);
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2018-05-24-invoice-paytrail-data" author="vincit-kyostihe">
+        <addColumn tableName="invoice">
+            <column name="paytrail_payment_id" type="VARCHAR(255)"/>
+            <column name="paytrail_settlement_reference_number" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-05-31-permit_decision_revision_receiver-mail-to-nullable" author="vincit-terova">
+        <dropNotNullConstraint tableName="permit_decision_revision_receiver"
+                               columnName="email"
+                               columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <changeSet id="2018-06-12-update-mh-pienriista-schema" author="vincit-kyostihe">
+        <dropTable tableName="mh_pienriista"/>
+
+        <createTable tableName="mh_pienriista">
+            <column autoIncrement="true" name="gid" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="mh_pienriista_pkey"/>
+            </column>
+            <column name="vuosi" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="koodi" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nimi" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pinta_ala" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="mh_pienriista" constraintName="uk_mh_pienriista_vuosi_kohde" columnNames="vuosi,koodi"/>
+    </changeSet>
+
+    <changeSet id="2018-06-11-rename-boolean-flag-in-invoice" author="vincit-jarkkoka">
+         <renameColumn tableName="invoice" oldColumnName="online_payment_expected" newColumnName="electronic_invoicing_enabled"/>
+    </changeSet>
+
+    <changeSet id="2018-06-11-add-original-delivery-method-to-invoice" author="vincit-jarkkoka">
+        <addColumn tableName="invoice">
+            <column name="original_delivery_by_email" type="BOOLEAN"/>
+        </addColumn>
+
+        <sql><![CDATA[
+            UPDATE invoice SET original_delivery_by_email = electronic_invoicing_enabled;
+        ]]></sql>
+
+        <addNotNullConstraint tableName="invoice" columnName="original_delivery_by_email" columnDataType="BOOLEAN"/>
+    </changeSet>
+
+    <changeSet id="2018-06-11-add-invoice_state_change_event-table" author="vincit-jarkkoka">
+        <createTable tableName="invoice_state_change_event">
+            <column autoIncrement="true" name="invoice_state_change_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="invoice_state_change_event_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="invoice_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="invoice(invoice_id)"
+                             foreignKeyName="fk_invoice_state_change_event_invoice"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="invoice_state_change_event" indexName="ndx_invoice_state_change_event_invoice">
+            <column name="invoice_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

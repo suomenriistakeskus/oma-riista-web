@@ -1,13 +1,16 @@
 package fi.riista.feature.gamediary.srva;
 
+import fi.riista.util.LocalisedEnum;
+
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-public enum SrvaEventTypeEnum {
+public enum SrvaEventTypeEnum implements LocalisedEnum {
 
     TRAFFIC_ACCIDENT(SrvaEventNameEnum.ACCIDENT),
     RAILWAY_ACCIDENT(SrvaEventNameEnum.ACCIDENT),
@@ -26,10 +29,14 @@ public enum SrvaEventTypeEnum {
         this.eventLinks = Collections.unmodifiableList(Arrays.asList(events));
     }
 
-    public static List<SrvaEventTypeEnum> getBySrvaEvent(final SrvaEventNameEnum event) {
-        return Stream.of(SrvaEventTypeEnum.values())
-                .filter(t -> t.eventLinks.contains(event))
-                .collect(toList());
+    public static EnumSet<SrvaEventTypeEnum> getBySrvaEvent(final SrvaEventNameEnum event) {
+        return EnumSet.copyOf(Stream.of(SrvaEventTypeEnum.values())
+                .filter(t -> t.matchesEventName(event))
+                .collect(toList()));
+    }
+
+    public boolean matchesEventName(final SrvaEventNameEnum event) {
+        return this.eventLinks.contains(event);
     }
 
 }

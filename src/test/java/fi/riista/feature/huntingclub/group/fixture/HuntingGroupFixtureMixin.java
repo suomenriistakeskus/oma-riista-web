@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.group.fixture;
 
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.fixture.FixtureMixin;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -13,6 +14,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+
 import java.util.function.Consumer;
 
 public interface HuntingGroupFixtureMixin extends FixtureMixin {
@@ -49,6 +51,7 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
         public final HuntingClubGroup group;
         public final HuntingClubArea clubArea;
         public final GISZone zone;
+        public final GeoLocation zoneCentroid;
 
         public final Person clubContact;
         public final Person clubMember;
@@ -96,8 +99,9 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
                 es.newMooselikePrice(group.getHuntingYear(), species);
             }
 
+            zoneCentroid = es.geoLocation(GeoLocation.Source.MANUAL);
             clubArea = es.newHuntingClubArea(club, "fi", "sv", group.getHuntingYear());
-            zone = es.newGISZone();
+            zone = es.newGISZoneContaining(zoneCentroid);
             clubArea.setZone(zone);
             group.setHuntingArea(clubArea);
 
@@ -117,5 +121,4 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
             groupMemberOccupation = es.newOccupation(group, groupMember, OccupationType.RYHMAN_JASEN);
         }
     }
-
 }

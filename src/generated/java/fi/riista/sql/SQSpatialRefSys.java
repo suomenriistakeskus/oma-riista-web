@@ -49,6 +49,11 @@ public class SQSpatialRefSys extends RelationalPathSpatial<SQSpatialRefSys> {
         addMetadata();
     }
 
+    public SQSpatialRefSys(String variable, String schema) {
+        super(SQSpatialRefSys.class, forVariable(variable), schema, "spatial_ref_sys");
+        addMetadata();
+    }
+
     public SQSpatialRefSys(Path<? extends SQSpatialRefSys> path) {
         super(path.getType(), path.getMetadata(), "public", "spatial_ref_sys");
         addMetadata();

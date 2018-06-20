@@ -5,17 +5,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <script src="/frontend/js/lib/script.min.js"></script>
-
-    <link href="//cdnjs.cloudflare.com/ajax/libs/dropzone/4.3.0/min/dropzone.min.css" rel="stylesheet">
-    <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <link href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" rel="stylesheet">
-    <link href="/static/moosedatacard/upload.css" rel="stylesheet">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/loadjs/3.5.1/loadjs.min.js"></script>
 
     <script>
         (function () {
             var ts = +(new Date());
+            var rev = '2017-12-27';
 
             function bootstrapApp() {
                 var uploadWidget = new UploadWidget({
@@ -28,24 +23,25 @@
                 uploadWidget.init();
             }
 
-            $script([
-                "//cdnjs.cloudflare.com/ajax/libs/dropzone/4.3.0/min/dropzone.min.js",
-                "//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js",
-                "//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.15.0/lodash.min.js",
-                "//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"
-            ], function () {
-                $script([
-                    // Bootstrap and Bootstrap Notify depend on jQuery.
-                    "//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js",
-                    "//cdnjs.cloudflare.com/ajax/libs/mouse0270-bootstrap-notify/3.1.5/bootstrap-notify.min.js"
-                ], function () {
-                    $script([
-                        "/static/moosedatacard/upload.js?ts=" + ts,
-                        "/static/moosedatacard/upload-templates.js?ts=" + ts
-                    ], function () {
-                        bootstrapApp();
-                    })
-                });
+            loadjs([
+                'css!//cdnjs.cloudflare.com/ajax/libs/dropzone/4.3.0/min/dropzone.min.css',
+                'css!//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css',
+                'css!//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css',
+                'css!/static/moosedatacard/upload.css?v=' + rev,
+                '//cdnjs.cloudflare.com/ajax/libs/dropzone/4.3.0/min/dropzone.min.js',
+                '//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js',
+                '//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.15.0/lodash.min.js',
+                '//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js',
+                // Bootstrap and Bootstrap Notify depend on jQuery.
+                '//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js',
+                '//cdnjs.cloudflare.com/ajax/libs/mouse0270-bootstrap-notify/3.1.5/bootstrap-notify.min.js',
+                '/static/moosedatacard/upload.js?ts=' + ts,
+                '/static/moosedatacard/upload-templates.js?ts=' + ts
+            ], {
+                async: false,
+                success: function () {
+                    bootstrapApp();
+                }
             });
         })();
     </script>

@@ -13,7 +13,7 @@ angular.module('app.srva.services', [])
         rejected: 'REJECTED'
     })
 
-    .service('SrvaEventChangeStateService', function ($resource) {
+    .factory('SrvaEventChangeStateService', function ($resource) {
         return $resource('/api/v1/srva/changestate/:id', {"id": "@id"}, {
             'changeState': {
                 method: 'PUT',
@@ -21,167 +21,143 @@ angular.module('app.srva.services', [])
             }
         });
     })
+
+    .factory('SrvaEventMapSearchService', function ($resource, DiaryEntryRepositoryFactory) {
+        return DiaryEntryRepositoryFactory.decorateRepository($resource('api/v1/srva/search', {}, {
+            'search': {
+                method: 'POST',
+                isArray: true
+            }
+        }));
+    })
+
     .service('SrvaEventListSearchService', function ($http, SrvaOtherSpeciesService) {
+        function appendTransform(defaults, transform) {
+            defaults = angular.isArray(defaults) ? defaults : [defaults];
+            return defaults.concat(transform);
+        }
+
         this.searchPage = function (searchParams, pager) {
             return $http({
                 method: 'POST',
                 url: 'api/v1/srva/searchPage',
                 params: pager,
                 data: searchParams,
-                transformResponse: function (data, headers, status) {
-                    var result = angular.fromJson(data);
-
-                    if (status >= 400) {
-                        return result;
+                transformResponse: appendTransform($http.defaults.transformResponse, function (data, headersGetter, status) {
+                    if (status === 200 && angular.isObject(data)) {
+                        SrvaOtherSpeciesService.replaceNullsWithOtherSpeciesCodeInEntries(data.content);
+                        return data;
+                    } else {
+                        return data || {};
                     }
-
-                    SrvaOtherSpeciesService.replaceNullsWithOtherSpeciesCodeInEntries(result.content);
-                    return result;
-                }
+                })
             });
         };
 
         return this;
     })
-    .service('SrvaEventMapSearchService', function ($resource, DiaryEntryRepositoryFactory) {
-        var r = $resource('api/v1/srva/search', {}, {
-            'search': {
-                method: 'POST',
-                isArray: true
-            }
-        });
-        return DiaryEntryRepositoryFactory.decorateRepository(r);
+
+    .service('SrvaEventListSearchParametersService', function (Helpers, SrvaEventState, SrvaEventName) {
+        this.createEmpty = function () {
+            return {
+                gameSpeciesCode: null,
+                dateRange: {
+                    beginDate: null,
+                    endDate: null
+                },
+                states: [
+                    {name: SrvaEventState.unfinished, isChecked: true},
+                    {name: SrvaEventState.approved, isChecked: false},
+                    {name: SrvaEventState.rejected, isChecked: false}
+                ],
+                eventNames: [
+                    {name: SrvaEventName.accident, isChecked: true},
+                    {name: SrvaEventName.deportation, isChecked: true},
+                    {name: SrvaEventName.injuredAnimal, isChecked: true}
+                ]
+            };
+        };
+
+        var _state = null;
+
+        this.push = function (state) {
+            _state = state;
+        };
+
+        this.pop = function () {
+            var tmp = _state;
+            _state = null;
+            return tmp;
+        };
+
+        this.createRequest = function (searchParams, currentRhyId) {
+            return {
+                currentRhyId: currentRhyId,
+                gameSpeciesCode: searchParams.gameSpeciesCode,
+                rhyCode: searchParams.rhyCode,
+                beginDate: Helpers.dateToString(searchParams.dateRange.beginDate),
+                endDate: Helpers.dateToString(searchParams.dateRange.endDate),
+                states: filterEnabledChoices(searchParams.states),
+                eventNames: filterEnabledChoices(searchParams.eventNames)
+            };
+        };
+
+        function filterEnabledChoices(choices) {
+            return _.pluck(_.filter(choices, 'isChecked', true), 'name');
+        }
     })
-    .service('SrvaEventListSearchParametersService', function (SrvaEventState, SrvaEventName) {
-        var _states = [
-            {name: SrvaEventState.unfinished, 'isChecked': true},
-            {name: SrvaEventState.approved, 'isChecked': false},
-            {name: SrvaEventState.rejected, 'isChecked': false}
-        ];
 
-        var _eventNames = [
-            {name: SrvaEventName.accident, 'isChecked': true},
-            {name: SrvaEventName.deportation, 'isChecked': true},
-            {name: SrvaEventName.injuredAnimal, 'isChecked': true}
-        ];
-
-        var _dateRange = {
-            beginDate: null,
-            endDate: null
+    .service('SrvaEventMapSearchParametersService', function (Helpers, SrvaEventState, SrvaEventName) {
+        this.createEmpty = function (initialRhyCode) {
+            return {
+                gameSpeciesCode: null,
+                rkaCode: null,
+                rhyCode: initialRhyCode,
+                htaCode: null,
+                dateRange: {
+                    beginDate: new Date(new Date().getFullYear(), 0, 1),
+                    endDate: null
+                },
+                states: [
+                    {name: SrvaEventState.unfinished, isChecked: true},
+                    {name: SrvaEventState.approved, isChecked: true}
+                ],
+                eventNames: [
+                    {name: SrvaEventName.accident, isChecked: true},
+                    {name: SrvaEventName.deportation, isChecked: true},
+                    {name: SrvaEventName.injuredAnimal, isChecked: true}
+                ]
+            };
         };
 
-        var _gameSpeciesCode = null;
+        var _state = null;
 
-        this.saveStates = function (states) {
-            _states = states;
+        this.push = function (state) {
+            _state = state;
         };
 
-        this.getStates = function () {
-            return _states;
+        this.pop = function () {
+            var tmp = _state;
+            _state = null;
+            return tmp;
         };
 
-        this.saveEventNames = function (eventNames) {
-            _eventNames = eventNames;
+        this.createRequest = function (searchParams, moderatorView, currentRhyId) {
+            return {
+                moderatorView: moderatorView,
+                currentRhyId: currentRhyId,
+                gameSpeciesCode: searchParams.gameSpeciesCode,
+                rkaCode: searchParams.rkaCode,
+                rhyCode: searchParams.rhyCode,
+                htaCode: searchParams.htaCode,
+                beginDate: Helpers.dateToString(searchParams.dateRange.beginDate),
+                endDate: Helpers.dateToString(searchParams.dateRange.endDate),
+                states: filterEnabledChoices(searchParams.states),
+                eventNames: filterEnabledChoices(searchParams.eventNames)
+            };
         };
 
-        this.getEventNames = function () {
-            return _eventNames;
-        };
-
-        this.saveDateRange = function (dateRange) {
-            _dateRange = dateRange;
-        };
-
-        this.getDateRange = function () {
-            return _dateRange;
-        };
-
-        this.saveGameSpeciesCode = function (gameSpeciesCode) {
-            _gameSpeciesCode = gameSpeciesCode;
-        };
-
-        this.getGameSpeciesCode = function () {
-            return _gameSpeciesCode;
-        };
-    })
-    .service('SrvaEventMapSearchParametersService', function (SrvaEventState, SrvaEventName) {
-        var _states = [
-            {name: SrvaEventState.unfinished, 'isChecked': true},
-            {name: SrvaEventState.approved, 'isChecked': true},
-        ];
-
-        var _eventNames = [
-            {name: SrvaEventName.accident, 'isChecked': true},
-            {name: SrvaEventName.deportation, 'isChecked': true},
-            {name: SrvaEventName.injuredAnimal, 'isChecked': true}
-        ];
-
-        var _dateRange = {
-            beginDate: new Date(new Date().getFullYear(), 0, 1),
-            endDate: null
-        };
-
-        var _gameSpeciesCode = null;
-        // not defined is used to determine if value has been ever set.
-        var _rhy;
-        var _rka = null;
-
-        this.saveStates = function (states) {
-            _states = states;
-        };
-
-        this.getStates = function () {
-            return _states;
-        };
-
-        this.saveEventNames = function (eventNames) {
-            _eventNames = eventNames;
-        };
-
-        this.getEventNames = function () {
-            return _eventNames;
-        };
-
-        this.saveDateRange = function (dateRange) {
-            _dateRange = dateRange;
-        };
-
-        this.getDateRange = function () {
-            return _dateRange;
-        };
-
-        this.saveGameSpeciesCode = function (gameSpeciesCode) {
-            _gameSpeciesCode = gameSpeciesCode;
-        };
-
-        this.getGameSpeciesCode = function () {
-            return _gameSpeciesCode;
-        };
-
-        this.saveRhy = function (rhy) {
-            _rhy = rhy;
-        };
-
-        this.getRhy = function () {
-            return _rhy;
-        };
-        this.saveRka = function (rka) {
-            _rka = rka;
-        };
-
-        this.getRka = function () {
-            return _rka;
-        };
-    })
-    .service('SrvaSelectedSubpageService', function (SrvaEventState, SrvaEventName) {
-        var _selected = 'events';
-
-        this.getSelected = function () {
-            return _selected;
-        };
-
-        this.setSelected = function(selected) {
-            _selected = selected;
-        };
-    })
-;
+        function filterEnabledChoices(choices) {
+            return _.pluck(_.filter(choices, 'isChecked', true), 'name');
+        }
+    });

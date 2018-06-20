@@ -48,14 +48,17 @@ public class EmailToken extends BaseEntity<String> {
     private DateTime revokedAt;
 
     @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String createRemoteAddress;
 
+    @Size(max = 255)
     @Column(length = 255)
     private String revokeRemoteAddress;
 
     @Email
     @NotNull
+    @Size(max = 255)
     @Column(nullable = false)
     private String email;
 

@@ -146,10 +146,9 @@ public class InnofactorImportFileLine {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("ssn", ssn)
+                .add("hunterNumber", hunterNumber)
                 .add("firstName", firstName)
                 .add("lastName", lastName)
-                .add("hunterNumber", hunterNumber)
                 .toString();
     }
 

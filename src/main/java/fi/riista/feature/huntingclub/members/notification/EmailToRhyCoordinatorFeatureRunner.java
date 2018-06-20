@@ -24,7 +24,7 @@ public class EmailToRhyCoordinatorFeatureRunner {
         final DateTime processingStart = DateTime.now();
         final Date latestRun = getLastRunTime().toDate();
 
-        final int currentHuntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+        final int currentHuntingYear = DateUtil.huntingYear();
         final List<Occupation> changedLeaders = feature.findChangedLeaders(
                 latestRun, processingStart.toDate(), currentHuntingYear);
         mailSender.sendMails(changedLeaders);

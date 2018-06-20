@@ -286,8 +286,9 @@
 
                 HttpPost.post('api/v1/club/' + club.id + '/validateHunterNumbers', {
                     hunterNumbers: getHunterNumbers()
-                }).success(function (res) {
-                    $ctrl.notFoundHunterNumbers = res && res.length ? res : null;
+                }).then(function (response) {
+                    var data = response.data;
+                    $ctrl.notFoundHunterNumbers = data && data.length ? data : null;
                 });
             };
 

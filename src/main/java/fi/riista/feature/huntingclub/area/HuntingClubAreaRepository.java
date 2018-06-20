@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface HuntingClubAreaRepository extends BaseRepository<HuntingClubArea, Long> {
+public interface HuntingClubAreaRepository extends BaseRepository<HuntingClubArea, Long>, HuntingClubAreaRepositoryCustom {
     @Query("select distinct o.huntingYear FROM #{#entityName} o WHERE o.club= ?1")
     List<Integer> listHuntingYears(HuntingClub club);
 

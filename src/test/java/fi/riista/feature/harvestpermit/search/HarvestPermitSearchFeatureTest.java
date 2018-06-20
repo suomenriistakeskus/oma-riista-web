@@ -1,8 +1,8 @@
 package fi.riista.feature.harvestpermit.search;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import javax.annotation.Resource;

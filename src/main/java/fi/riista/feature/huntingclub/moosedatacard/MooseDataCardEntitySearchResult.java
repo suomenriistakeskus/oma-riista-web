@@ -3,8 +3,7 @@ package fi.riista.feature.huntingclub.moosedatacard;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.lupahallinta.LHOrganisation;
-
-import javaslang.control.Either;
+import io.vavr.control.Either;
 
 public class MooseDataCardEntitySearchResult {
 
@@ -13,11 +12,10 @@ public class MooseDataCardEntitySearchResult {
     public final int huntingYear;
     public final long contactPersonId;
 
-    public MooseDataCardEntitySearchResult(
-            final Either<LHOrganisation, HuntingClub> lhOrganisationOrClub,
-            final HarvestPermitSpeciesAmount speciesAmount,
-            final int huntingYear,
-            final long contactPersonId) {
+    public MooseDataCardEntitySearchResult(final Either<LHOrganisation, HuntingClub> lhOrganisationOrClub,
+                                           final HarvestPermitSpeciesAmount speciesAmount,
+                                           final int huntingYear,
+                                           final long contactPersonId) {
 
         this.speciesAmount = speciesAmount;
         this.lhOrganisationOrClub = lhOrganisationOrClub;
@@ -28,5 +26,4 @@ public class MooseDataCardEntitySearchResult {
     public String getClubOfficialCode() {
         return lhOrganisationOrClub.fold(LHOrganisation::getOfficialCode, HuntingClub::getOfficialCode);
     }
-
 }

@@ -1,8 +1,8 @@
 package fi.riista.util;
 
 import fi.riista.validation.FinnishSocialSecurityNumberValidator;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.joda.time.LocalDate;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,7 +43,7 @@ public class SsnSequence {
         final int day = t._1.getDayOfMonth();
         final int year = t._1.getYear() - 1900;
 
-        final char checksum = t.transform(FinnishSocialSecurityNumberValidator::calculateChecksum);
+        final char checksum = t.apply(FinnishSocialSecurityNumberValidator::calculateChecksum);
 
         return String.format("%02d%02d%02d-%03d%s", day, month, year, t._2, checksum);
     }

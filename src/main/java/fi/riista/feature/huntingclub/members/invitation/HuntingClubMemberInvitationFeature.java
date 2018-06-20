@@ -2,21 +2,22 @@ package fi.riista.feature.huntingclub.members.invitation;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
-import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
-import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.organization.occupation.OccupationDTO;
+import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationDTO;
+import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.Occupation_;
-import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.person.Person_;
-import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.feature.organization.person.Person_;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.JpaSpecs;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -109,7 +111,7 @@ public class HuntingClubMemberInvitationFeature {
     }
 
     private Set<Person> findPersonsNotHavingOccupation(final Organisation org, final Set<Person> persons) {
-        final List<OccupationType> occTypes = OccupationType.getListOfApplicableTypes(org.getOrganisationType());
+        final EnumSet<OccupationType> occTypes = OccupationType.getApplicableTypes(org.getOrganisationType());
         final Set<Person> havingOccupation = occupationRepository.findAll(JpaSpecs.and(
                 JpaSpecs.equal(Occupation_.organisation, org),
                 JpaSpecs.inCollection(Occupation_.occupationType, occTypes),
@@ -157,10 +159,11 @@ public class HuntingClubMemberInvitationFeature {
     public List<HuntingClubMemberInvitationDTO> listInvitations(final Long clubId) {
         final HuntingClub club = requireEntityService.requireHuntingClub(clubId, EntityPermission.READ);
 
-        final Person person = activeUserService.getActiveUser().getPerson();
-        final boolean showInvitations = person == null
-                ? activeUserService.isModeratorOrAdmin()
-                : userAuthorizationHelper.isClubContact(club, person);
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final Person person = activeUser.getPerson();
+        final boolean showInvitations =
+                person == null ? activeUser.isModeratorOrAdmin() : userAuthorizationHelper.isClubContact(club, person);
+
         if (!showInvitations) {
             return Collections.emptyList();
         }
@@ -173,10 +176,12 @@ public class HuntingClubMemberInvitationFeature {
     }
 
     @Transactional(readOnly = true)
-    public List<HuntingClubMemberInvitationDTO> myInvitations(Long personId) {
-        Person person = activeUserService.getActiveUser().getPerson();
+    public List<HuntingClubMemberInvitationDTO> listMyInvitations(Long personId) {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        Person person = activeUser.getPerson();
+
         if (person == null) {
-            if (personId != null && activeUserService.isModeratorOrAdmin()) {
+            if (personId != null && activeUser.isModeratorOrAdmin()) {
                 person = personRepository.getOne(personId);
             } else {
                 return Collections.emptyList();
@@ -187,18 +192,6 @@ public class HuntingClubMemberInvitationFeature {
                 JpaSpecs.equal(HuntingClubMemberInvitation_.person, person),
                 JpaSpecs.isNull(HuntingClubMemberInvitation_.userRejectedTime)
         )));
-    }
-
-    @Transactional(readOnly = true)
-    public long countInvitations() {
-        final Person person = activeUserService.getActiveUser().getPerson();
-        if (person == null) {
-            return 0;
-        }
-        return invitationRepository.count(JpaSpecs.and(
-                JpaSpecs.equal(HuntingClubMemberInvitation_.person, person),
-                JpaSpecs.isNull(HuntingClubMemberInvitation_.userRejectedTime)
-        ));
     }
 
     @Transactional
@@ -222,7 +215,7 @@ public class HuntingClubMemberInvitationFeature {
 
     private HuntingClubMemberInvitation getInvitationAndAssertCurrentPerson(Long invitationId) {
         final HuntingClubMemberInvitation invitation = invitationRepository.getOne(invitationId);
-        final Person person = activeUserService.getActiveUser().getPerson();
+        final Person person = activeUserService.requireActiveUser().getPerson();
         Preconditions.checkState(Objects.equals(person, invitation.getPerson()),
                 "Current person is not the invited person, invitationId:" + invitationId);
         return invitation;

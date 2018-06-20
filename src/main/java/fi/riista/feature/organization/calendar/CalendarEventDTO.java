@@ -2,11 +2,14 @@ package fi.riista.feature.organization.calendar;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.config.jackson.LocalTimeToStringSerializer;
 import fi.riista.config.jackson.StringToLocalTimeDeserializer;
+import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationDTO;
+import fi.riista.feature.organization.address.Address;
 import fi.riista.util.DateUtil;
+import fi.riista.util.DtoUtil;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
@@ -16,19 +19,27 @@ import javax.validation.constraints.Size;
 
 public class CalendarEventDTO extends BaseEntityDTO<Long> {
 
-    public static CalendarEventDTO create(CalendarEvent calendarEvent) {
-        CalendarEventDTO dto = new CalendarEventDTO();
-        dto.setId(calendarEvent.getId());
-        dto.setRev(calendarEvent.getConsistencyVersion());
+    public static CalendarEventDTO create(final CalendarEvent event,
+                                          final Organisation organisation,
+                                          final Venue venue,
+                                          final Address venueAddress,
+                                          final boolean isAssociatedWithShootingTestEvent) {
 
-        dto.setName(calendarEvent.getName());
-        dto.setCalendarEventType(calendarEvent.getCalendarEventType());
-        dto.setDate(DateUtil.toLocalDateNullSafe(calendarEvent.getDate()));
-        dto.setBeginTime(calendarEvent.getBeginTime());
-        dto.setEndTime(calendarEvent.getEndTime());
-        dto.setDescription(calendarEvent.getDescription());
-        dto.setOrganisation(OrganisationDTO.create(calendarEvent.getOrganisation()));
-        dto.setVenue(VenueDTO.create(calendarEvent.getVenue()));
+        final CalendarEventDTO dto = new CalendarEventDTO();
+        DtoUtil.copyBaseFields(event, dto);
+
+        dto.setName(event.getName());
+        dto.setCalendarEventType(event.getCalendarEventType());
+        dto.setDate(DateUtil.toLocalDateNullSafe(event.getDate()));
+        dto.setBeginTime(event.getBeginTime());
+        dto.setEndTime(event.getEndTime());
+        dto.setDescription(event.getDescription());
+
+        dto.setOrganisation(OrganisationDTO.create(organisation));
+        dto.setVenue(VenueDTO.create(venue, venueAddress));
+
+        dto.setAssociatedWithShootingTestEvent(isAssociatedWithShootingTestEvent);
+
         return dto;
     }
 
@@ -58,13 +69,15 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
     @Valid
     private VenueDTO venue;
 
+    private Boolean associatedWithShootingTestEvent;
+
     @Override
     public Long getId() {
         return id;
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -74,7 +87,7 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setRev(Integer rev) {
+    public void setRev(final Integer rev) {
         this.rev = rev;
     }
 
@@ -82,7 +95,7 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         return calendarEventType;
     }
 
-    public void setCalendarEventType(CalendarEventType calendarEventType) {
+    public void setCalendarEventType(final CalendarEventType calendarEventType) {
         this.calendarEventType = calendarEventType;
     }
 
@@ -90,7 +103,7 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         return date;
     }
 
-    public void setDate(LocalDate date) {
+    public void setDate(final LocalDate date) {
         this.date = date;
     }
 
@@ -98,7 +111,7 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         return beginTime;
     }
 
-    public void setBeginTime(LocalTime beginTime) {
+    public void setBeginTime(final LocalTime beginTime) {
         this.beginTime = beginTime;
     }
 
@@ -106,7 +119,7 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         return endTime;
     }
 
-    public void setEndTime(LocalTime endTime) {
+    public void setEndTime(final LocalTime endTime) {
         this.endTime = endTime;
     }
 
@@ -114,7 +127,7 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -122,7 +135,7 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
@@ -130,7 +143,7 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         return organisation;
     }
 
-    public void setOrganisation(OrganisationDTO organisation) {
+    public void setOrganisation(final OrganisationDTO organisation) {
         this.organisation = organisation;
     }
 
@@ -138,8 +151,15 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         return venue;
     }
 
-    public void setVenue(VenueDTO venue) {
+    public void setVenue(final VenueDTO venue) {
         this.venue = venue;
     }
 
+    public Boolean getAssociatedWithShootingTestEvent() {
+        return associatedWithShootingTestEvent;
+    }
+
+    public void setAssociatedWithShootingTestEvent(final Boolean associatedWithShootingTestEvent) {
+        this.associatedWithShootingTestEvent = associatedWithShootingTestEvent;
+    }
 }

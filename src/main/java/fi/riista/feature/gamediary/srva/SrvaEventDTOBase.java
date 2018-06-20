@@ -1,10 +1,10 @@
 package fi.riista.feature.gamediary.srva;
 
 import fi.riista.feature.gamediary.GameDiaryEntryDTO;
+import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
-import fi.riista.feature.gamediary.GameDiaryEntryType;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDateTime;
 
@@ -60,6 +60,7 @@ public abstract class SrvaEventDTOBase extends GameDiaryEntryDTO {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String otherTypeDescription;
 
+    @Valid
     private List<SrvaMethodDTO> methods;
 
     @Min(0)
@@ -73,6 +74,7 @@ public abstract class SrvaEventDTOBase extends GameDiaryEntryDTO {
     @Valid
     private PersonWithNameDTO authorInfo;
 
+    @Valid
     private List<SrvaSpecimenDTO> specimens;
 
     private Long rhyId;

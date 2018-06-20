@@ -1,0 +1,45 @@
+<leaflet class="r-cursor-pointer"
+         id="viewClubMap"
+         defaults="$ctrl.mapDefaults"
+         layers="$ctrl.mapDefaults.mmlLayers"
+         controls="$ctrl.mapDefaults.controls"
+         event-broadcast="$ctrl.mapEvents"
+         lf-center="$ctrl.mapState.center"
+         r-geolocation-marker="$ctrl.club.geoLocation"
+         r-geolocation-editable="$ctrl.editLocation"
+         r-geolocation-marker-force-finland="true"
+         height="300px">
+</leaflet>
+
+<table class="table table-condensed">
+    <tbody>
+    <tr>
+        <th class="col-md-3" translate="club.main.location"></th>
+        <td ng-show="$ctrl.club.geoLocation" translate="global.geoLocation.coordinatesText"
+            translate-values="$ctrl.club.geoLocation"></td>
+    </tr>
+    <tr>
+        <th class="col-md-3" translate="club.main.general.rhy"></th>
+        <td ng-show="!$ctrl.editLocation" name-translated="$ctrl.club.rhy"></td>
+    </tr>
+    <tr ng-show="$ctrl.club.mooseArea">
+        <th class="col-md-3" translate="club.main.general.mooseArea"></th>
+        <td ng-show="!$ctrl.editLocation">{{ $ctrl.club.mooseArea.name }}</td>
+    </tr>
+    </tbody>
+</table>
+
+<div ng-if="$ctrl.club.canEdit && !$ctrl.editLocation">
+    <span ng-show="!$ctrl.club.geoLocation" translate="global.messages.notSet"></span>
+    <div class="text-right">
+        <button class="btn btn-primary" ng-click="$ctrl.editLocationStart()" translate="global.button.edit"></button>
+    </div>
+</div>
+<div ng-if="$ctrl.editLocation">
+    <div class="text-right">
+        <button class="btn btn-default" ng-click="$ctrl.editLocationCancel()"
+                translate="global.button.cancel"></button>
+        <button class="btn btn-primary" ng-click="$ctrl.editLocationEnd()" translate="global.button.save"
+                ng-disabled="!$ctrl.locationChanged()"></button>
+    </div>
+</div>

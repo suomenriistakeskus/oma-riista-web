@@ -87,6 +87,19 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
             }
 
             $scope.eventTypes = eventTypes.data;
+
+            $scope.isDateRequiredAtLeast7DaysIntoFuture = function () {
+                var e = $scope.event;
+                if ((e.calendarEventType === 'AMPUMAKOE' || e.calendarEventType === 'JOUSIAMPUMAKOE') && e.date) {
+                    return Helpers.toMoment(e.date).subtract(6, 'days').isBefore(moment());
+                }
+                return false;
+            };
+
+            $scope.isDateInvalid = function () {
+                return !$scope.event.id && $scope.isDateRequiredAtLeast7DaysIntoFuture();
+            };
+
             $scope.save = function (event) {
                 event = angular.copy(event);// prevent ui showing updated object properties on save
                 event.date = Helpers.dateToString(event.date);
@@ -241,6 +254,7 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
     .controller('VenueFormController',
         function ($scope, $uibModalInstance, Venues, venue, orgId) {
             $scope.venue = venue;
+
             $scope.save = function (venue) {
                 var saveMethod = !venue.id ? Venues.save : Venues.update;
 
@@ -250,11 +264,8 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                     }, function() {
                         $uibModalInstance.dismiss('error');
                     });
-
-                $scope.cancel = function () {
-                    $uibModalInstance.dismiss('cancel');
-                };
             };
+
             $scope.cancel = function () {
                 $uibModalInstance.dismiss('cancel');
             };

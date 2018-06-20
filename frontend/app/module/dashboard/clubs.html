@@ -1,0 +1,23 @@
+<span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span>
+<table class="table table-bordered table-striped">
+    <tr>
+        <td class="col-sm-6">Kaikki seurat</td>
+        <td class="col-sm-6">{{$ctrl.metrics.allClubs}}</td>
+    </tr>
+    <tr>
+        <td class="col-sm-6">OR:ssa luodut seurat</td>
+        <td class="col-sm-6">{{$ctrl.metrics.userCreatedClubs}}</td>
+    </tr>
+    <tr>
+        <td class="col-sm-6">Seurojen aktiiviset alueet</td>
+        <td class="col-sm-6">{{$ctrl.metrics.clubAreas}}</td>
+    </tr>
+    <tr>
+        <td class="col-sm-6">Seurojen lupa-alueet</td>
+        <td class="col-sm-6">{{$ctrl.metrics.clubPermitAreas}}</td>
+    </tr>
+    <tr>
+        <td class="col-sm-6">Hirvieläinlupahakemukset</td>
+        <td class="col-sm-6">{{$ctrl.metrics.permitApplications}}</td>
+    </tr>
+</table>

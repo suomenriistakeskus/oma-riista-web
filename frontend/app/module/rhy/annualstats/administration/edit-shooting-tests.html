@@ -1,0 +1,114 @@
+<form name="shootingTestForm" role="form" class="form r-annual-statistics-shooting-tests-form"
+      autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="rhy.annualStats.administration.shootingTests.form.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div ng-if="$ctrl.isModerator" class="form-horizontal">
+            <div class="form-group" show-errors>
+                <label for="moderatorOverriddenFirearmTestEvents" class="control-label">
+                    <span translate="rhy.annualStats.administration.shootingTests.form.moderatorOverriddenFirearmTestEvents"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger" ng-if="$ctrl.firearmTestEventsOverridden"></span>
+                </label>
+
+                <div class="form-control-wrapper input-group">
+                    <input type="number" name="moderatorOverriddenFirearmTestEvents" id="moderatorOverriddenFirearmTestEvents"
+                           min="0" max="999" step="1"
+                           class="form-control no-spinner"
+                           ng-model="$ctrl.data.moderatorOverriddenFirearmTestEvents"
+                           ng-required="$ctrl.firearmTestEventsOverridden"/>
+
+                    <div class="input-group-addon">
+                        <span translate="global.pcs"></span>
+                    </div>
+                </div>
+
+                <p class="help-block"
+                   ng-show="shootingTestForm.moderatorOverriddenFirearmTestEvents.$invalid"
+                   translate="global.messages.invalid"></p>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="moderatorOverriddenBowTestEvents" class="control-label">
+                    <span translate="rhy.annualStats.administration.shootingTests.form.moderatorOverriddenBowTestEvents"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger" ng-if="$ctrl.bowTestEventsOverridden"></span>
+                </label>
+
+                <div class="form-control-wrapper input-group">
+                    <input type="number" name="moderatorOverriddenBowTestEvents" id="moderatorOverriddenBowTestEvents"
+                           min="0" max="999" step="1"
+                           class="form-control no-spinner"
+                           ng-model="$ctrl.data.moderatorOverriddenBowTestEvents"
+                           ng-required="$ctrl.bowTestEventsOverridden"/>
+
+                    <div class="input-group-addon">
+                        <span translate="global.pcs"></span>
+                    </div>
+                </div>
+
+                <p class="help-block"
+                   ng-show="shootingTestForm.moderatorOverriddenBowTestEvents.$invalid"
+                   translate="global.messages.invalid"></p>
+            </div>
+        </div>
+
+        <table class="form-inline table table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th class="col-xs-6" translate="rhy.annualStats.administration.shootingTests.form.shootingTestType"></th>
+                    <th translate="rhy.annualStats.administration.shootingTests.form.allAttempts"></th>
+                    <th translate="rhy.annualStats.administration.shootingTests.form.qualifiedAttempts"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="shootingTestType in $ctrl.shootingTestTypes">
+                    <td class="col-xs-6 vcenter" translate="{{::$ctrl.getTitleKey(shootingTestType)}}"></td>
+
+                    <td>
+                        <div class="form-group" show-errors>
+                            <div class="input-group">
+                                <input type="number" name="{{::shootingTestType.value1Key}}" id="{{::shootingTestType.value1Key}}"
+                                       ng-min="$ctrl.getValue1Min(shootingTestType)" max="99999" step="1"
+                                       class="form-control no-spinner"
+                                       ng-model="$ctrl.data[shootingTestType.value1Key]"/>
+
+                                <div class="input-group-addon">
+                                    <span translate="global.pcs"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="form-group" show-errors>
+                            <div class="input-group">
+                                <input type="number" name="{{::shootingTestType.value2Key}}" id="{{::shootingTestType.value2Key}}"
+                                       min="0" ng-max="$ctrl.getValue2Max(shootingTestType)" step="1"
+                                       class="form-control no-spinner"
+                                       ng-model="$ctrl.data[shootingTestType.value2Key]"/>
+
+                                <div class="input-group-addon">
+                                    <span translate="global.pcs"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="shootingTestForm.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

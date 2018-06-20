@@ -1,30 +1,36 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.huntingDayEndDateNotWithinPermittedSeason;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.huntingDayStartDateNotWithinPermittedSeason;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.huntingDayWithoutDate;
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newHuntingDay;
-import static fi.riista.util.DateUtil.today;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardHuntingDay;
-
-import javaslang.control.Either;
-
+import io.vavr.control.Either;
 import org.joda.time.LocalDate;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.function.Consumer;
 
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.huntingDayEndDateNotWithinPermittedSeason;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.huntingDayStartDateNotWithinPermittedSeason;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.huntingDayWithoutDate;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newHuntingDay;
+import static fi.riista.test.TestUtils.ld;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class MooseDataCardHuntingDayValidatorTest {
+
+    private Has2BeginEndDates permitSeason;
+
+    @Before
+    public void setup() {
+        permitSeason = new Has2BeginEndDatesDTO(ld(2015, 9, 1), ld(2015, 12, 31));
+    }
 
     @Test
     public void testWithCompleteData() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
 
         assertAccepted(input, output -> {
             assertEquals(input.getStartDate(), output.getStartDate());
@@ -37,118 +43,128 @@ public class MooseDataCardHuntingDayValidatorTest {
 
     @Test
     public void testMissingDate() {
-        final LocalDate today = today();
-        assertAbandonReason(newHuntingDay(null), newSeason(today, today), huntingDayWithoutDate());
+        assertAbandonReason(newHuntingDay(null), huntingDayWithoutDate());
+    }
+
+    @Test
+    public void testCorrectionOfWrongHuntingYear() {
+        final LocalDate lastPermitDate = permitSeason.getLastDate();
+        final MooseDataCardHuntingDay input = newHuntingDay(lastPermitDate.plusYears(2));
+
+        assertAccepted(input, output -> assertEquals(lastPermitDate, output.getStartDate()));
     }
 
     @Test
     public void testWhenDateBeforePermittedSeason() {
-        final LocalDate today = today();
-        final LocalDate huntingDate = today.minusDays(1);
-        final Has2BeginEndDates season = newSeason(today, today);
+        final LocalDate huntingDate = permitSeason.getFirstDate().minusDays(1);
+
         assertAbandonReason(
-                newHuntingDay(huntingDate), season, huntingDayStartDateNotWithinPermittedSeason(huntingDate, season));
+                newHuntingDay(huntingDate),
+                huntingDayStartDateNotWithinPermittedSeason(huntingDate, permitSeason));
     }
 
     @Test
     public void testWhenDateAfterPermittedSeason() {
-        final LocalDate today = today();
+        final LocalDate seasonBeginDate = permitSeason.getBeginDate();
+        permitSeason.setEndDate(seasonBeginDate);
 
-        final MooseDataCardHuntingDay huntingDay = newHuntingDay(today);
+        final MooseDataCardHuntingDay huntingDay = newHuntingDayWithinSeason();
         huntingDay.setHuntingTime(25.0f);
 
-        final Has2BeginEndDates season = newSeason(today, today);
-
         assertAbandonReason(
-                huntingDay, season, huntingDayEndDateNotWithinPermittedSeason(today, today.plusDays(1), season));
+                huntingDay,
+                huntingDayEndDateNotWithinPermittedSeason(seasonBeginDate, seasonBeginDate.plusDays(1), permitSeason));
     }
 
     @Test
     public void testWhenDurationTooLow() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
         input.setHuntingTime(0f);
+
         assertAccepted(input, output -> assertNull(output.getHuntingTime()));
     }
 
     @Test
     public void testWhenDurationTooHigh() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
         input.setHuntingTime(Float.MAX_VALUE);
+
         assertAccepted(input, output -> assertNull(output.getHuntingTime()));
     }
 
     @Test
     public void testWhenSnowDepthTooLow() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
         input.setSnowDepth(-1);
+
         assertAccepted(input, output -> assertNull(output.getSnowDepth()));
     }
 
     @Test
     public void testWhenSnowDepthTooHigh() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
         input.setSnowDepth(Integer.MAX_VALUE);
+
         assertAccepted(input, output -> assertNull(output.getSnowDepth()));
     }
 
     @Test
     public void testWhenHuntingDayMethodInvalid() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
         input.setHuntingMethod(-1);
+
         assertAccepted(input, output -> assertNull(output.getHuntingMethod()));
     }
 
     @Test
     public void testWhenNumberOfHuntersTooLow() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
         input.setNumberOfHunters(0);
+
         assertAccepted(input, output -> assertNull(output.getNumberOfHunters()));
     }
 
     @Test
     public void testWhenNumberOfHuntersTooHigh() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
         input.setNumberOfHunters(Integer.MAX_VALUE);
+
         assertAccepted(input, output -> assertNull(output.getNumberOfHunters()));
     }
 
     @Test
     public void testWhenNumberOfHoundsTooLow() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
         input.setNumberOfHounds(-1);
+
         assertAccepted(input, output -> assertNull(output.getNumberOfHounds()));
     }
 
     @Test
     public void testWhenNumberOfHoundsTooHigh() {
-        final MooseDataCardHuntingDay input = newHuntingDay(today());
+        final MooseDataCardHuntingDay input = newHuntingDayWithinSeason();
         input.setNumberOfHounds(Integer.MAX_VALUE);
+
         assertAccepted(input, output -> assertNull(output.getNumberOfHounds()));
     }
 
-    private static void assertAccepted(
-            final MooseDataCardHuntingDay day, final Consumer<MooseDataCardHuntingDay> assertions) {
-
-        final LocalDate date = day.getStartDate();
-
-        final Either<String, MooseDataCardHuntingDay> result =
-                new MooseDataCardHuntingDayValidator(newSeason(date, date)).validate(day);
+    private void assertAccepted(final MooseDataCardHuntingDay day, final Consumer<MooseDataCardHuntingDay> assertions) {
+        final Either<String, MooseDataCardHuntingDay> result = validate(day);
         assertTrue(result.isRight());
-
         assertions.accept(result.get());
     }
 
-    private static void assertAbandonReason(
-            final MooseDataCardHuntingDay day, final Has2BeginEndDates season, final String expectedReason) {
-
-        final Either<String, MooseDataCardHuntingDay> result =
-                new MooseDataCardHuntingDayValidator(season).validate(day);
+    private void assertAbandonReason(final MooseDataCardHuntingDay day, final String expectedReason) {
+        final Either<String, MooseDataCardHuntingDay> result = validate(day);
         assertTrue(result.isLeft());
         assertEquals(expectedReason, result.getLeft());
     }
 
-    private static Has2BeginEndDates newSeason(final LocalDate startDate, final LocalDate endDate) {
-        return new Has2BeginEndDatesDTO(startDate, endDate);
+    private Either<String, MooseDataCardHuntingDay> validate(final MooseDataCardHuntingDay day) {
+        return new MooseDataCardHuntingDayValidator(permitSeason).validate(day);
     }
 
+    private MooseDataCardHuntingDay newHuntingDayWithinSeason() {
+        return newHuntingDay(permitSeason.getFirstDate());
+    }
 }

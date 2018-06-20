@@ -1,21 +1,22 @@
 package fi.riista.feature.huntingclub.hunting;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.error.NotFoundException;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationDTO;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
@@ -36,7 +37,7 @@ import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest {
+public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     @Resource
     private GroupHuntingDiaryFeature feature;
@@ -212,7 +213,7 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest {
         final Person groupLeader = newHuntingClubGroupLeader(group);
         final Person groupMember = newHuntingClubGroupMember(group);
 
-        final int currentHuntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+        final int currentHuntingYear = DateUtil.huntingYear();
         final LocalDate lastDayOfPreviousHuntingYear = DateUtil.huntingYearEndDate(currentHuntingYear - 1);
 
         newHarvest(species, groupLeader, lastDayOfPreviousHuntingYear, location);
@@ -315,7 +316,7 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testGetObservationsOfGroupMembers_whenGroupIsOtherThanMoose() {
-        final GameSpecies groupSpecies = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_MOOSE + 1);
+        final GameSpecies groupSpecies = model().newDeerSubjectToClubHunting();
         final GameSpecies observationSpecies = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_BEAR);
         doTestGetObservationsOfGroupMembers(groupSpecies, observationSpecies);
     }
@@ -392,22 +393,20 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest {
         return harvest;
     }
 
-    private Harvest newHarvest(
-            final GameSpecies species,
-            final Person hunter,
-            final GroupHuntingDay huntingDay,
-            final GeoLocation location) {
+    private Harvest newHarvest(final GameSpecies species,
+                               final Person hunter,
+                               final GroupHuntingDay huntingDay,
+                               final GeoLocation location) {
 
         final Harvest harvest = model().newHarvest(species, hunter, huntingDay);
         harvest.setGeoLocation(location);
         return harvest;
     }
 
-    private Observation newObservation(
-            final GameSpecies species,
-            final GeoLocation location,
-            final Person member,
-            final Boolean withinMooseHunting) {
+    private Observation newObservation(final GameSpecies species,
+                                       final GeoLocation location,
+                                       final Person member,
+                                       final Boolean withinMooseHunting) {
 
         final Observation observation = model().newObservation(species, member, withinMooseHunting);
         observation.setGeoLocation(location);

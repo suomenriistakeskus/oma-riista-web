@@ -2,8 +2,6 @@ package fi.riista.feature.gamediary;
 
 import fi.riista.feature.common.entity.BaseEntityDTO;
 
-import javax.annotation.Nonnull;
-
 public abstract class GameDiaryEntrySpecimenDTO extends BaseEntityDTO<Long> {
 
     public Long id;
@@ -17,19 +15,6 @@ public abstract class GameDiaryEntrySpecimenDTO extends BaseEntityDTO<Long> {
 
     public GameDiaryEntrySpecimenDTO(final GameGender gender) {
         setGender(gender);
-    }
-
-    public GameDiaryEntrySpecimenDTO(@Nonnull final GameDiaryEntrySpecimenDTO other) {
-        super(other);
-        setGender(other.getGender());
-    }
-
-    public boolean allBusinessFieldsNull() {
-        return getGender() == null;
-    }
-
-    public void clearBusinessFields() {
-        setGender(null);
     }
 
     // Accessors -->
@@ -61,5 +46,4 @@ public abstract class GameDiaryEntrySpecimenDTO extends BaseEntityDTO<Long> {
     public void setGender(final GameGender gender) {
         this.gender = gender;
     }
-
 }

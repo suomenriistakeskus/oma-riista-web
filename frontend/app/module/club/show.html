@@ -8,29 +8,127 @@
             <div class="panel-heading">
                 <h3 class="panel-title" translate="club.main.general.title"></h3>
             </div>
+
             <div class="panel-body">
                 <table class="table table-condensed">
                     <tbody>
                     <tr>
-                        <td class="col-md-3" translate="club.main.general.customerId"></td>
-                        <td>{{club.customerId}}</td>
+                        <th class="col-xs-3" translate="club.main.general.customerId"></th>
+                        <td ng-bind="::$ctrl.club.customerId"></td>
                     </tr>
                     <tr>
-                        <td class="col-md-3" translate="club.main.general.nameFI"></td>
-                        <td>{{club.nameFI}}</td>
+                        <th class="col-xs-3" translate="club.main.general.nameFI"></th>
+                        <td ng-bind="::$ctrl.club.nameFI"></td>
                     </tr>
                     <tr>
-                        <td class="col-md-3" translate="club.main.general.nameSV"></td>
-                        <td>{{club.nameSV}}</td>
+                        <th class="col-xs-3" translate="club.main.general.nameSV"></th>
+                        <td ng-bind="::$ctrl.club.nameSV"></td>
+                    </tr>
+
+                    <tr ng-if="::$ctrl.moderatorView">
+                        <td colspan="2" class="text-right">
+                            <a class="btn btn-primary" ng-click="$ctrl.editName()"
+                               translate="global.button.edit"></a>
+                        </td>
+                    </tr>
+
+                    <!-- TYPE -->
+                    <tr ng-if="::(!$ctrl.club.subtype)">
+                        <th></th>
+                        <td>
+                            <strong class="text-danger" translate="club.subtype.notSelected"></strong>
+                        </td>
+                    </tr>
+
+                    <!-- PERSON -->
+                    <tr ng-if="::($ctrl.club.subtype == 'PERSON')">
+                        <th></th>
+                        <td><strong translate="club.subtype.person.title"></strong></td>
+                    </tr>
+                    <tr ng-if="::($ctrl.club.subtype == 'PERSON' && $ctrl.club.clubPerson)">
+                        <th class="col-xs-3" translate="club.subtype.person.link"></th>
+                        <td>
+                            <span ng-bind="::$ctrl.club.clubPerson.lastName"></span>
+                            <span ng-bind="::$ctrl.club.clubPerson.byName"></span>
+                        </td>
+                    </tr>
+                    <tr ng-if="::($ctrl.club.subtype == 'PERSON' && !$ctrl.club.clubPerson)">
+                        <th></th>
+                        <td>
+                            <strong class="text-danger" translate="club.subtype.person.notSelected"></strong>
+                        </td>
+                    </tr>
+
+                    <!-- BUSINESS -->
+                    <tr ng-if="::($ctrl.club.subtype == 'BUSINESS')">
+                        <th></th>
+                        <td><strong translate="club.subtype.business.title"></strong></td>
+                    </tr>
+                    <tr ng-if="::($ctrl.club.subtype == 'BUSINESS' && $ctrl.club.businessId)">
+                        <th class="col-xs-3" translate="club.subtype.business.link"></th>
+                        <td ng-bind="::$ctrl.club.businessId"></td>
+                    </tr>
+                    <tr ng-if="::($ctrl.club.subtype == 'BUSINESS' && !$ctrl.club.businessId)">
+                        <th></th>
+                        <td>
+                            <strong class="text-danger" translate="club.subtype.business.notSelected"></strong>
+                        </td>
+                    </tr>
+
+                    <!-- RY -->
+                    <tr ng-if="::($ctrl.club.subtype == 'RY')">
+                        <th></th>
+                        <td><strong translate="club.subtype.ry.title"></strong></td>
+                    </tr>
+                    <tr ng-if="::($ctrl.club.subtype == 'RY' && $ctrl.club.associationRegistryNumber)">
+                        <th class="col-xs-3" translate="club.subtype.ry.link"></th>
+                        <td ng-bind="::$ctrl.club.associationRegistryNumber"></td>
+                    </tr>
+                    <tr ng-if="::($ctrl.club.subtype == 'RY' && !$ctrl.club.associationRegistryNumber)">
+                        <th></th>
+                        <td>
+                            <strong class="text-danger" translate="club.subtype.ry.notSelected"></strong>
+                        </td>
+                    </tr>
+
+                    <tr ng-if="::$ctrl.club.canEdit">
+                        <th></th>
+                        <td class="text-right">
+                            <a class="btn btn-primary"
+                               ng-click="$ctrl.editType()"
+                               translate="global.button.edit"></a>
+                        </td>
+                    </tr>
+
+                    <tr ng-if="::(!$ctrl.club.active)">
+                        <td colspan="2">
+                            <div class="alert alert-warning" translate="club.main.deactivation.deactive"></div>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
-                <div>
-                    <a class="btn btn-primary pull-right" ng-show="canEdit()" ng-click="edit()"
-                       translate="global.button.edit"></a>
+            </div>
+        </div>
+
+        <div class="panel panel-default" ng-show="$ctrl.moderatorView">
+            <div class="panel-heading">
+                <h3 class="panel-title" translate="club.main.deactivation.title"></h3>
+            </div>
+            <div class="panel-body">
+                <div class="well" translate="club.main.deactivation.info"></div>
+                <div class="alert alert-warning" ng-show="!$ctrl.club.active"
+                     translate="club.main.deactivation.deactive"></div>
+                <div class="text-right">
+                    <a class="btn btn-danger" ng-show="$ctrl.club.active"
+                       ng-confirm-click ng-confirm-click-action="$ctrl.setActive(false)"
+                       translate="club.main.deactivation.button.deactivate"></a>
+                    <a class="btn btn-danger" ng-show="!$ctrl.club.active"
+                       ng-confirm-click ng-confirm-click-action="$ctrl.setActive(true)"
+                       translate="club.main.deactivation.button.activate"></a>
                 </div>
             </div>
         </div>
+
 
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -39,7 +137,7 @@
             <div class="panel-body">
                 <table class="table table-striped">
                     <tbody>
-                    <tr ng-repeat="member in club.yhdyshenkilot">
+                    <tr ng-repeat="member in $ctrl.club.yhdyshenkilot">
                         <td class="col-xs-6">
                             <div class="r-contact-name">
                                 <div>
@@ -74,7 +172,7 @@
 
                             <div class="btn-group btn-group-sm"
                                  uib-dropdown
-                                 ng-show="club.canEdit && member.callOrder != 0">
+                                 ng-show="$ctrl.club.canEdit && member.callOrder != 0">
 
                                 <button type="button" class="btn btn-default" uib-dropdown-toggle>
                                     <span class="glyphicon glyphicon-cog"></span>&nbsp;
@@ -84,7 +182,7 @@
 
                                 <ul class="dropdown-menu" role="menu" uib-dropdown-menu>
                                     <li>
-                                        <a ng-click="setPrimaryContact(member)">
+                                        <a ng-click="$ctrl.setPrimaryContact(member)">
                                             <span translate="club.main.contactPersons.setPrimaryContact"></span>
                                         </a>
                                     </li>
@@ -104,52 +202,7 @@
                 <h3 class="panel-title" translate="club.main.location"></h3>
             </div>
             <div class="panel-body">
-                <leaflet class="r-cursor-pointer"
-                         id="viewClubMap"
-                         defaults="mapDefaults"
-                         layers="mapDefaults.mmlLayers"
-                         controls="mapDefaults.controls"
-                         event-broadcast="mapEvents"
-                         r-geolocation-center="club.geoLocation"
-                         r-geolocation-marker="club.geoLocation"
-                         r-geolocation-editable="editLocation"
-                         r-geolocation-marker-force-finland="true"
-                         height="300px">
-                </leaflet>
-
-                <table class="table table-condensed">
-                    <tbody>
-                    <tr>
-                        <td class="col-md-3" translate="club.main.location"></td>
-                        <td ng-show="club.geoLocation" translate="global.geoLocation.coordinatesText"
-                            translate-values="club.geoLocation"></td>
-                    </tr>
-                    <tr>
-                        <td class="col-md-3" translate="club.main.general.rhy"></td>
-                        <td ng-show="!editLocation" name-translated="club.rhy"></td>
-                    </tr>
-                    <tr ng-show="club.mooseArea">
-                        <td class="col-md-3" translate="club.main.general.mooseArea"></td>
-                        <td ng-show="!editLocation">{{ club.mooseArea.name }}</td>
-                    </tr>
-                    </tbody>
-                </table>
-
-                <div ng-if="club.canEdit && !editLocation">
-                    <span ng-show="!club.geoLocation" translate="global.messages.notSet"></span>
-                    <div class="pull-right">
-                        <button class="btn btn-primary" ng-click="editLocationStart()"
-                                translate="global.button.edit"></button>
-                    </div>
-                </div>
-                <div ng-if="editLocation">
-                    <div class="pull-right">
-                        <button class="btn btn-default" ng-click="editLocationCancel()"
-                                translate="global.button.cancel"></button>
-                        <button class="btn btn-primary" ng-click="editLocationEnd()" translate="global.button.save"
-                                ng-disabled="!locationChanged()"></button>
-                    </div>
-                </div>
+                <club-location-edit club="$ctrl.club"></club-location-edit>
             </div>
         </div>
     </div>

@@ -9,100 +9,54 @@ angular.module('app.harvestpermit.services', ['ngResource'])
             }
         };
     })
-    .factory('PermitAcceptHarvest', function (HttpPost) {
-        return {
-            accept: function (harvestId, harvestRev, toState) {
-                return HttpPost.post('api/v1/harvestpermit/acceptHarvest', {
-                    harvestId: harvestId,
-                    harvestRev: harvestRev,
-                    toState: toState
-                });
-            }
+    .service('PermitAcceptHarvest', function ($http) {
+        this.accept = function (harvestId, harvestRev, toState) {
+            return $http.post('api/v1/harvestpermit/acceptHarvest', {
+                harvestId: harvestId,
+                harvestRev: harvestRev,
+                toState: toState
+            }).then(function (response) {
+                return response.data;
+            });
         };
     })
-    .factory('HarvestPermits', function ($resource) {
+    .factory('HarvestPermits', function ($http, $resource, CacheFactory) {
         return $resource('api/v1/harvestpermit/:id', {id: '@id'}, {
-            get: {method: 'GET'},
-            query: {method: 'GET', isArray: true, url: 'api/v1/harvestpermit/mypermits'},
-            listByRhy: {method: 'GET', url: 'api/v1/harvestpermit/rhy/:rhyId/list'},
-            updateContactPersons: {method: 'PUT', url: 'api/v1/harvestpermit/:id/contactpersons'},
-            species: {method: 'GET', isArray: true, url: 'api/v1/harvestpermit/species'},
+            permitTypes: {
+                method: 'GET',
+                isArray: true,
+                url: 'api/v1/harvestpermit/permittypes',
+                cache: CacheFactory.get('harvestPermitPermitTypesCache')
+            },
+            query: {
+                method: 'GET',
+                isArray: true,
+                url: 'api/v1/harvestpermit/mypermits'
+            },
+            get: {
+                method: 'GET'
+            },
+            getHarvestList: {
+                method: 'GET',
+                url: 'api/v1/harvestpermit/:id/harvests',
+                isArray: true
+            },
+            getSpeciesUsage: {
+                method: 'GET',
+                url: 'api/v1/harvestpermit/:id/species',
+                isArray: true
+            },
+            getAttachmentList: {
+                method: 'GET',
+                url: 'api/v1/harvestpermit/:id/attachment',
+                isArray: true
+            },
             search: {method: 'POST', isArray: true, url: 'api/v1/harvestpermit/admin/search'},
-            rhySearch: {method: 'POST', isArray: true, url: 'api/v1/harvestpermit/rhy/search'},
-            moosePermitRhyCode: {
-                method: 'GET',
-                url: 'api/v1/harvestpermit/moosepermit/rhy/:permitId',
-                params: {permitId: '@permitId'}
-            },
-            moosePermitRhyStats: {
-                method: 'GET',
-                url: 'api/v1/harvestpermit/moosepermit/rhy/stats/:permitId/:speciesCode',
-                params: {'permitId': '@permitId', 'speciesCode': '@speciesCode'},
-                isArray: true
-            },
-            moosePermitHuntingYears: {
-                method: 'GET',
-                url: 'api/v1/harvestpermit/moosepermit/huntingyears',
-                params: {personId: '@personId'},
-                isArray: true
-            },
-            listMoosePermits: {
-                method: 'GET',
-                url: 'api/v1/harvestpermit/moosepermit',
-                params: {year: '@year', personId: '@personId', species: '@species'},
-                isArray: true
-            },
-            moosePermit: {
-                method: 'GET',
-                url: 'api/v1/harvestpermit/moosepermit/:permitId',
-                params: {permitId: '@permitId'}
-            },
-            permitMapFeatures: {
-                method: 'GET',
-                url: 'api/v1/harvestpermit/moosepermit/:permitId/map',
-                params: {'permitId': '@permitId'}
-            },
-            listTodos: {
-                method: 'GET',
-                url: 'api/v1/harvestpermit/moosepermit/todo/permit/:permitId/species/:speciesCode',
-                params: {'permitId': '@permitId', 'speciesCode': '@speciesCode'}
-            },
-            listClubTodos: {
-                method: 'GET',
-                url: 'api/v1/harvestpermit/moosepermit/todo/club/:clubId',
-                params: {'clubId': '@clubId', 'year': '@year'}
-            },
-            lukeReportParams: {method: 'GET', url: 'api/v1/harvestpermit/moosepermit/lukereportparams'},
-            getClubHuntingSummariesForModeration: {
-                method: 'GET',
-                url: 'api/v1/harvestpermit/:permitId/huntingsummariesformoderation/species/:speciesCode',
-                params: {
-                    'permitId': '@permitId',
-                    'speciesCode': '@speciesCode'
-                },
-                isArray: true
-            },
-            massOverrideClubHuntingSummaries: {
-                method: 'POST',
-                url: 'api/v1/harvestpermit/:permitId/massoverrideclubhuntingsummaries/species/:speciesCode/:complete',
-                params: {
-                    'permitId': '@permitId',
-                    'speciesCode': '@speciesCode',
-                    'complete': '@complete'
-                }
-            },
-            deleteModeratorOverriddenClubHuntingSummaries: {
-                method: 'DELETE',
-                url: 'api/v1/harvestpermit/:permitId/deleteoverriddenclubhuntingsummaries/species/:speciesCode',
-                params: {
-                    'permitId': '@permitId',
-                    'speciesCode': '@speciesCode'
-                }
-            }
+            rhySearch: {method: 'POST', isArray: true, url: 'api/v1/harvestpermit/rhy/search'}
         });
     })
 
-    .factory('speciesAmountIntervalTextFunc', function(Helpers) {
+    .factory('speciesAmountIntervalTextFunc', function (Helpers) {
         return function (wrapToParentheses) {
             return function (speciesAmount) {
                 if (speciesAmount) {
@@ -137,7 +91,7 @@ angular.module('app.harvestpermit.services', ['ngResource'])
     })
 
     .service('HarvestPermitSpeciesAmountService',
-        function(Helpers, $filter) {
+        function (Helpers, $filter) {
             var self = this;
             var speciesAmountIntervalTextFilter = $filter('speciesAmountIntervalText');
 
@@ -149,7 +103,7 @@ angular.module('app.harvestpermit.services', ['ngResource'])
              * @param validOnDate {Date} optional
              * @returns {*} single result or null
              */
-            this.findMatchingAmount = function(speciesAmounts, speciesCode, validOnDate) {
+            this.findMatchingAmount = function (speciesAmounts, speciesCode, validOnDate) {
                 return _.find(speciesAmounts, function (speciesAmount) {
                     if (validOnDate) {
                         return speciesAmount.gameSpecies.code === speciesCode &&
@@ -168,7 +122,7 @@ angular.module('app.harvestpermit.services', ['ngResource'])
              * @param validOnDate {Date} optional
              * @returns {*} string or empty string
              */
-            this.findMatchingAmountIntervalAsText = function(speciesAmounts, speciesCode, validOnDate) {
+            this.findMatchingAmountIntervalAsText = function (speciesAmounts, speciesCode, validOnDate) {
                 var spa = this.findMatchingAmount(speciesAmounts, speciesCode, validOnDate);
 
                 if (!spa) {
@@ -193,35 +147,4 @@ angular.module('app.harvestpermit.services', ['ngResource'])
                 return false;
             };
         }
-    )
-    .factory('PermitEndOfHuntingReportService',
-        function ($uibModal, HarvestPermits) {
-
-            var showModal = function (permit, report) {
-                return $uibModal.open({
-                    templateUrl: 'harvestpermit/form-end-of-hunting-report.html',
-                    resolve: {
-                        permit: _.constant(permit),
-                        report: _.constant(report)
-                    },
-                    controller: 'PermitEndOfHuntingReportEditController',
-                    size: 'lg'
-                }).result;
-            };
-
-            var viewById = function (permitId) {
-                return HarvestPermits.get({id: permitId}).$promise.then(function (permit) {
-                    return showModal(permit, permit.endOfHuntingReport);
-                });
-            };
-
-            var create = function (permit) {
-                return showModal(permit);
-            };
-
-            return {
-                create: create,
-                viewById: viewById
-            };
-        })
-;
+    );

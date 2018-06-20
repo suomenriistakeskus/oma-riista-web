@@ -1,17 +1,19 @@
 package fi.riista.sql;
 
-import static com.querydsl.core.types.PathMetadataFactory.*;
-
-import com.querydsl.core.types.dsl.*;
-
-import com.querydsl.core.types.PathMetadata;
-import javax.annotation.Generated;
 import com.querydsl.core.types.Path;
-
+import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.dsl.BooleanPath;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.sql.ColumnMetadata;
+import com.querydsl.sql.spatial.RelationalPathSpatial;
+
+import javax.annotation.Generated;
 import java.sql.Types;
 
-import com.querydsl.sql.spatial.RelationalPathSpatial;
+import static com.querydsl.core.types.PathMetadataFactory.forVariable;
+
 
 
 /**
@@ -70,15 +72,15 @@ public class SQGameSpecies extends RelationalPathSpatial<SQGameSpecies> {
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitSpeciesAmount> _harvestPermitSpeciesAmountGameSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
-    public final com.querydsl.sql.ForeignKey<SQObservation> _gameObservationSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
+    public final com.querydsl.sql.ForeignKey<SQGameObservation> _gameObservationSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
     public final com.querydsl.sql.ForeignKey<SQMooselikePrice> _mooselikePriceGameSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
     public final com.querydsl.sql.ForeignKey<SQObservationBaseFields> _observationBaseFieldsSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
-    public final com.querydsl.sql.ForeignKey<SQObservationContextSensitiveFields> _observationContextSensitiveFieldsSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationSpecies> _harvestPermitApplicationSpeciesSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestReportFields> _harvestReportFieldsGameSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
+    public final com.querydsl.sql.ForeignKey<SQObservationContextSensitiveFields> _observationContextSensitiveFieldsSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
     public SQGameSpecies(String variable) {
         super(SQGameSpecies.class, forVariable(variable), "public", "game_species");
@@ -87,6 +89,11 @@ public class SQGameSpecies extends RelationalPathSpatial<SQGameSpecies> {
 
     public SQGameSpecies(String variable, String schema, String table) {
         super(SQGameSpecies.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQGameSpecies(String variable, String schema) {
+        super(SQGameSpecies.class, forVariable(variable), schema, "game_species");
         addMetadata();
     }
 

@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_user;
-
 CREATE TABLE import_user (
   username VARCHAR(255) PRIMARY KEY,
   role     VARCHAR(255) NOT NULL,

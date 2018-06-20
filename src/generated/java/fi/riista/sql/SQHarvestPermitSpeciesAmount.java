@@ -65,9 +65,9 @@ public class SQHarvestPermitSpeciesAmount extends RelationalPathSpatial<SQHarves
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestPermitSpeciesAmount> harvestPermitSpeciesAmountPkey = createPrimaryKey(harvestPermitSpeciesAmountId);
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestPermit> harvestPermitSpeciesAmountPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
-
     public final com.querydsl.sql.ForeignKey<SQGameSpecies> harvestPermitSpeciesAmountGameSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermit> harvestPermitSpeciesAmountPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
 
     public final com.querydsl.sql.ForeignKey<SQBasicClubHuntingSummary> _basicClubHuntingSummarySpeciesAmountFk = createInvForeignKey(harvestPermitSpeciesAmountId, "species_amount_id");
 
@@ -80,6 +80,11 @@ public class SQHarvestPermitSpeciesAmount extends RelationalPathSpatial<SQHarves
 
     public SQHarvestPermitSpeciesAmount(String variable, String schema, String table) {
         super(SQHarvestPermitSpeciesAmount.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQHarvestPermitSpeciesAmount(String variable, String schema) {
+        super(SQHarvestPermitSpeciesAmount.class, forVariable(variable), schema, "harvest_permit_species_amount");
         addMetadata();
     }
 

@@ -18,7 +18,7 @@ import org.springframework.context.annotation.PropertySource;
 public class PapertrailConfig {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(PapertrailConfig.class);
 
-    private static final String LOG_PATTERN = "%d{yyyy-MM-dd HH:mm:ss.SSS} %X{req.remoteHost} %X{req.requestURI} [%thread] %-5level %logger{35}: %m%n%xEx";
+    private static final String LOG_PATTERN = "%d{yyyy-MM-dd HH:mm:ss.SSS} %X{req.remoteHost} %X{req.method} %X{req.requestURI} [%thread] %-5level %logger{50}: %m%n%xEx";
 
     @Value("${papertrail.hostname}")
     private String hostname;

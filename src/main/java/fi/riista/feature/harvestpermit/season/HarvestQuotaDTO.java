@@ -1,11 +1,10 @@
 package fi.riista.feature.harvestpermit.season;
 
-import fi.riista.feature.common.dto.DoNotValidate;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.util.DtoUtil;
+import fi.riista.validation.DoNotValidate;
 
 import javax.annotation.Nonnull;
-
 import java.util.Optional;
 
 public class HarvestQuotaDTO extends BaseEntityDTO<Long> {

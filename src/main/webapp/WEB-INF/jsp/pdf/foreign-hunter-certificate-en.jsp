@@ -13,8 +13,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>Certificate</title>
-    <base href="/static/foreign-hunter-certificate/">
-    <link href="style.css" rel="stylesheet"/>
+    <base href="/static/hunter-certificate/">
+    <link href="certificate.css" rel="stylesheet"/>
 </head>
 <body>
 
@@ -39,8 +39,8 @@
         <img width="280" alt="image" src="01.jpg"/>
     </div>
 
-    <div style="float:right; position:relative; width: 200pt; padding-top:20pt;">
-        <h2>Certificate of hunting card</h2>
+    <div style="float:right; position:relative; width: 200pt; padding-top:10pt;">
+        <h1>Certificate of hunting card</h1>
         <h1>The
             <joda:format value="${model.currentDate}" pattern="d" locale="en-GB"/>
             <%=getOrdinalSuffix(model.getCurrentDate())%>
@@ -70,16 +70,18 @@
         </p>
 
         <p>
-            There are six parts in the examination and the training course for it:
+            There are eight parts in the examination and the training course for it:
         </p>
 
         <ul>
             <li><span>hunting legislation in Finland and other regulations of hunting</span></li>
-            <li><span>Finnish organizations in hunting</span></li>
-            <li><span>hunting rights in Finland</span></li>
-            <li><span>game management</span></li>
-            <li><span>firearms and cartridges</span></li>
-            <li><span>hunting methods, search of wounded game, handling of quarry, good hunting behaviour etc.</span></li>
+            <li><span>identification of game animals</span></li>
+            <li><span>game ecology and game management</span></li>
+            <li><span>ethical and sustainable hunting</span></li>
+            <li><span>firearms and cartridges (includes also hunting bows and arrows)</span></li>
+            <li><span>hunting safety</span></li>
+            <li><span>hunting equipments and hunting methods</span></li>
+            <li><span>handling of quarry</span></li>
         </ul>
 
         <p style="padding-top: 40pt;">
@@ -208,81 +210,106 @@
         IN HUNTING CARD
     </h1>
 
-    <div class="position:relative">
-        <div style="padding-left: 60pt; float:left;">
-            <p style="text-decoration: underline;">
-                In Finnish:
-            </p>
+    <table border="0" width="80%" style="margin-left: 60pt;">
+        <th>
+            <tr>
+                <td width="50%" style="text-decoration: underline;">In Finnish:</td>
+                <td width="50%" style="text-decoration: underline;">In English:</td>
+            </tr>
+        </th>
+        <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+        <tr>
+            <td>Metsästyskortti</td>
+            <td>Hunting card</td>
+        </tr>
+        <tr>
+            <td>Metsästäjän nimi</td>
+            <td>Hunter`s name</td>
+        </tr>
+        <tr>
+            <td>Syntymäaika</td>
+            <td>Date of birth</td>
+        </tr>
+        <tr>
+            <td>Yhdistys</td>
+            <td>Game Management Association</td>
+        </tr>
+        <tr>
+            <td>Yhdistysnumero</td>
+            <td>Register number of the GMA</td>
+        </tr>
+        <tr>
+            <td>Metsästäjänumero</td>
+            <td>Register number of the Hunter</td>
+        </tr>
+        <tr>
+            <td>Jakeluosoite</td>
+            <td>Street address</td>
+        </tr>
 
-            <p style="padding-top: 10pt;">
-                Metsästyskortti<br/>
-                Metsästäjän nimi<br/>
-                Syntymäaika<br/>
-                Yhdistys<br/>
-                Yhdistysnumero<br/>
-                Metsästäjänumero<br/>
-                Jakeluosoite<br/>
-                Kotipaikka<br/>
-                Postinumero ja -toimipaikka<br/>
-            </p>
-        </div>
+        <tr>
+            <td>Kotipaikka</td>
+            <td>Domicile</td>
+        </tr>
 
-        <div style="margin-left: 260pt;">
-            <p style="text-decoration: underline;">
-                In English:
-            </p>
+        <tr>
+            <td>Postinumero ja -toimipaikka</td>
+            <td>City and Zip code</td>
+        </tr>
 
-            <p style="padding-top: 10pt;">
-                Hunting card<br/>
-                Hunter`s name<br/>
-                Date of birth<br/>
-                Game Management Association<br/>
-                Register number of the GMA<br/>
-                Register number of the Hunter<br/>
-                Street address<br/>
-                Domicile<br/>
-                City and Zip code<br/>
-            </p>
-        </div>
-    </div>
+    </table>
 
     <h1 style="padding-left: 20pt; padding-top:40pt;">
         IN CERTIFICATE OF PASSED SHOOTING TEST
     </h1>
 
-    <div class="position:relative">
-        <div style="padding-left: 60pt; float:left;">
-            <p style="padding-top: 10pt;">
-                Ampumakokeen suorituskortti<br/>
-                Nimi<br/>
-                Syntymäaika<br/>
-                Metsästäjänumero<br/>
-                on suorittanut metsästyslain<br/>
-                edellyttämän ampumakokeen<br/>
-                Suoritus on voimassa __/__ saakka<br/>
-                Ammunnan valvoja<br/>
-                Leima<br/>
-                Suoritus on voimassa kolme vuot-<br/>
-                ta suorittamisajankohdasta lukien
-            </p>
-        </div>
-
-        <div style="margin-left: 260pt;">
-            <p style="padding-top: 10pt;">
-                Certificate of the passed shooting test<br/>
-                Name<br/>
-                Date of birth<br/>
-                Register number of the Hunter<br/>
-                ...has passed the shooting test required<br/>
-                in the Hunting Act (place, date)<br/>
-                The test is valid until __/__<br/>
-                Supervisor of the test (signature)<br/>
-                Stamp<br/>
-                The test result is valid for three years<br/>
-                from the date of test
-            </p>
-        </div>
-    </div>
+    <table border="0" width="80%" style="margin-left: 60pt;">
+        <tr>
+            <td width="50%">Ampumakokeen suorituskortti</td>
+            <td width="50%">Certificate of the passed shooting test</td>
+        </tr>
+        <tr>
+            <td>Nimi</td>
+            <td>Name</td>
+        </tr>
+        <tr>
+            <td>Syntymäaika</td>
+            <td>Date of birth</td>
+        </tr>
+        <tr>
+            <td>Metsästäjänumero</td>
+            <td>Register number of the Hunter</td>
+        </tr>
+        <tr>
+            <td>on suorittanut metsästyslain</td>
+            <td>...has passed the shooting test required</td>
+        </tr>
+        <tr>
+            <td>edellyttämän ampumakokeen</td>
+            <td>in the Hunting Act (place, date)</td>
+        </tr>
+        <tr>
+            <td>Suoritus on voimassa __/__ saakka</td>
+            <td>The test is valid until __/__</td>
+        </tr>
+        <tr>
+            <td>Ammunnan valvoja</td>
+            <td>Supervisor of the test (signature)</td>
+        </tr>
+        <tr>
+            <td>Leima</td>
+            <td>Stamp</td>
+        </tr>
+        <tr>
+            <td>Suoritus on voimassa kolme vuot-</td>
+            <td>The test result is valid for three years</td>
+        </tr>
+        <tr>
+            <td>ta suorittamisajankohdasta lukien</td>
+            <td>from the date of test</td>
+        </tr>
+    </table>
 
     <div class="footer" style="margin-top: 460pt">
         <%@include file="footer-en.jsp"%>

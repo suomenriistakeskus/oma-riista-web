@@ -2,31 +2,37 @@ package fi.riista.api;
 
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.harvestpermit.list.HarvestPermitListFeature;
+import fi.riista.feature.harvestpermit.list.MooselikeHuntingYearDTO;
+import fi.riista.feature.harvestpermit.list.MooselikePermitListDTO;
+import fi.riista.feature.harvestpermit.statistics.MoosePermitStatisticsDTO;
+import fi.riista.feature.harvestpermit.statistics.MoosePermitStatisticsExcelView;
+import fi.riista.feature.harvestpermit.statistics.MoosePermitStatisticsFeature;
 import fi.riista.feature.huntingclub.hunting.overview.CoordinatorClubHarvestFeature;
+import fi.riista.feature.huntingclub.members.HuntingClubContactFeature;
 import fi.riista.feature.huntingclub.members.rhy.RhyClubOccupationDTO;
-import fi.riista.feature.huntingclub.members.rhy.RiistanhoitoyhdistysClubFeature;
-import fi.riista.feature.huntingclub.permit.MooselikeHuntingYearDTO;
-import fi.riista.feature.huntingclub.permit.MooselikePermitListingDTO;
-import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsDTO;
-import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsExcelView;
-import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsFeature;
-import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsFeature.OrgList;
-import fi.riista.feature.huntingclub.permit.stats.MoosePermitStatisticsFeature.OrgType;
+import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysCrudFeature;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysDTO;
-import fi.riista.util.MediaTypeExtras;
+import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsCrudFeature;
+import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsDTO;
+import fi.riista.feature.search.RhySearchParamsFeature;
+import fi.riista.feature.search.RhySearchParamsFeature.RhySearchOrgType;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.joda.time.LocalDate;
 import org.springframework.context.MessageSource;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,131 +42,165 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Locale;
 
+import static fi.riista.util.MediaTypeExtras.APPLICATION_EXCEL_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+
 @RestController
-@RequestMapping(value = "/api/v1/riistanhoitoyhdistys", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/riistanhoitoyhdistys", produces = APPLICATION_JSON_UTF8_VALUE)
 public class RiistanhoitoyhdistysApiResource {
 
     @Resource
     private RiistanhoitoyhdistysCrudFeature crudFeature;
 
     @Resource
-    private RiistanhoitoyhdistysClubFeature rhyClubFeature;
+    private CoordinatorClubHarvestFeature coordinatorClubHarvestFeature;
 
     @Resource
-    private CoordinatorClubHarvestFeature coordinatorClubHarvestFeature;
+    private HuntingClubContactFeature huntingClubContactFeature;
+
+    @Resource
+    private HarvestPermitListFeature harvestPermitListFeature;
+
+    @Resource
+    private RhySearchParamsFeature rhySearchParamsFeature;
 
     @Resource
     private MoosePermitStatisticsFeature moosePermitStatisticsFeature;
 
     @Resource
+    private RhyAnnualStatisticsCrudFeature annualStatisticsCrudFeature;
+
+    @Resource
     private MessageSource messageSource;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{id:\\d+}", method = RequestMethod.GET)
-    public RiistanhoitoyhdistysDTO read(@PathVariable Long id) {
+    @GetMapping(value = "{id:\\d+}")
+    public RiistanhoitoyhdistysDTO read(final @PathVariable Long id) {
         return crudFeature.read(id);
     }
 
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "{id:\\d+}/public")
+    public OrganisationNameDTO getPublicInfo(final @PathVariable Long id) {
+        return crudFeature.getPublicInfo(id);
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public RiistanhoitoyhdistysDTO create(@RequestBody @Validated RiistanhoitoyhdistysDTO dto) {
+    @PostMapping(consumes = APPLICATION_JSON_UTF8_VALUE)
+    public RiistanhoitoyhdistysDTO create(final @RequestBody @Validated RiistanhoitoyhdistysDTO dto) {
         return crudFeature.create(dto);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "{id:\\d+}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void update(@PathVariable Long id, @RequestBody @Validated RiistanhoitoyhdistysDTO dto) {
+    @PutMapping(value = "{id:\\d+}", consumes = APPLICATION_JSON_UTF8_VALUE)
+    public void update(final @PathVariable Long id,
+                       final @RequestBody @Validated RiistanhoitoyhdistysDTO dto) {
+
         dto.setId(id);
         crudFeature.update(dto);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "{id:\\d+}", method = RequestMethod.DELETE)
-    public void delete(@PathVariable Long id) {
+    @DeleteMapping(value = "{id:\\d+}")
+    public void delete(final @PathVariable Long id) {
         crudFeature.delete(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{id:\\d+}/contacts", method = RequestMethod.GET)
+    @GetMapping(value = "{id:\\d+}/contacts")
     public List<RhyClubOccupationDTO> contacts(final @PathVariable long id) {
-        return rhyClubFeature.listContacts(id);
+        return huntingClubContactFeature.listRhyContacts(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{id:\\d+}/leaders/{year:\\d+}", method = RequestMethod.GET)
-    public List<RhyClubOccupationDTO> leaders(final @PathVariable long id, final @PathVariable int year) {
-        return rhyClubFeature.listLeaders(id, year);
+    @GetMapping(value = "{id:\\d+}/leaders/{year:\\d+}")
+    public List<RhyClubOccupationDTO> leaders(final @PathVariable long id,
+                                              final @PathVariable int year) {
+
+        return huntingClubContactFeature.listRhyHuntingLeaders(id, year);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/contacts-and-leaders/excel",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            produces = MediaTypeExtras.APPLICATION_EXCEL_VALUE)
-    public ModelAndView exportExcel(@RequestParam final long orgId, @RequestParam final int year, final Locale locale) {
-        return new ModelAndView(rhyClubFeature.exportToExcel(orgId, year, locale));
+    @PostMapping(value = "/contacts-and-leaders/excel",
+            consumes = APPLICATION_FORM_URLENCODED_VALUE,
+            produces = APPLICATION_EXCEL_VALUE)
+    public ModelAndView exportExcel(final @RequestParam long orgId,
+                                    final @RequestParam int year,
+                                    final Locale locale) {
+
+        return new ModelAndView(huntingClubContactFeature.exportRhyOccupationsToExcel(orgId, year, locale));
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{id:\\d+}/harvest", method = RequestMethod.GET)
-    public List<HarvestDTO> listHarvests(@PathVariable final Long id,
-                                         @RequestParam final int speciesCode,
-                                         @RequestParam final boolean filterByAreaGeometry,
-                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-                                         final LocalDate begin,
-                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-                                         final LocalDate end) {
+    @GetMapping(value = "{id:\\d+}/harvest")
+    public List<HarvestDTO> listHarvests(final @PathVariable Long id,
+                                         final @RequestParam int speciesCode,
+                                         final @RequestParam boolean filterByAreaGeometry,
+                                         final @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate begin,
+                                         final @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate end) {
 
         return coordinatorClubHarvestFeature.listHarvest(id, speciesCode, filterByAreaGeometry, begin, end);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{id:\\d+}/moosepermit", method = RequestMethod.GET)
-    public List<MooselikePermitListingDTO> listPermits(@PathVariable long id,
-                                                       @RequestParam int year,
-                                                       @RequestParam int species,
-                                                       Locale locale) {
-        return crudFeature.listPermits(id, year, species, locale);
+    @GetMapping(value = "{id:\\d+}/moosepermit")
+    public List<MooselikePermitListDTO> listPermits(final @PathVariable long id,
+                                                    final @RequestParam int year,
+                                                    final @RequestParam int species,
+                                                    Locale locale) {
+        return harvestPermitListFeature.listRhyMooselikePermits(id, year, species, locale);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{id:\\d+}/moosepermit/huntingyears", method = RequestMethod.GET)
-    public List<MooselikeHuntingYearDTO> listHuntingYears(@PathVariable long id) {
-        return crudFeature.listMooselikeHuntingYears(id);
+    @GetMapping(value = "{id:\\d+}/moosepermit/huntingyears")
+    public List<MooselikeHuntingYearDTO> listHuntingYears(final @PathVariable long id) {
+        return harvestPermitListFeature.listRhyMooselikeHuntingYears(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{id:\\d+}/moosepermit/statistics/orgs", method = RequestMethod.GET)
-    public List<OrgList> listRhyMooseStatisticsOrgs(@PathVariable long id, Locale locale) {
-        return moosePermitStatisticsFeature.listOrganisations(id, locale);
+    @GetMapping(value = "/searchparams/orgs")
+    public List<RhySearchParamsFeature.RhySearchOrgList> listSearchParamOrganisations(
+            final @RequestParam(required = false) Long id,
+            final Locale locale) {
+
+        return rhySearchParamsFeature.listOrganisations(id, locale);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{id:\\d+}/moosepermit/statistics", method = RequestMethod.GET)
-    public List<MoosePermitStatisticsDTO> listRhyMooseStatistics(@PathVariable long id,
-                                                                 @RequestParam int year,
-                                                                 @RequestParam int species,
-                                                                 @RequestParam OrgType orgType,
-                                                                 @RequestParam String orgCode,
-                                                                 Locale locale) {
+    @GetMapping(value = "{id:\\d+}/moosepermit/statistics")
+    public List<MoosePermitStatisticsDTO> listRhyMooseStatistics(final @PathVariable long id,
+                                                                 final @RequestParam int year,
+                                                                 final @RequestParam int species,
+                                                                 final @RequestParam RhySearchOrgType orgType,
+                                                                 final @RequestParam String orgCode,
+                                                                 final Locale locale) {
+
         return moosePermitStatisticsFeature.calculateByHolder(id, locale, species, year, orgType, orgCode);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{id:\\d+}/moosepermit/statistics/excel",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            produces = MediaTypeExtras.APPLICATION_EXCEL_VALUE)
-    public ModelAndView exportRhyMooseStatisticsExcel(@PathVariable long id,
-                                                      @RequestParam int year,
-                                                      @RequestParam int species,
-                                                      @RequestParam OrgType orgType,
-                                                      @RequestParam String orgCode,
-                                                      Locale locale) {
+    @PostMapping(value = "{id:\\d+}/moosepermit/statistics/excel",
+            consumes = APPLICATION_FORM_URLENCODED_VALUE,
+            produces = APPLICATION_EXCEL_VALUE)
+    public ModelAndView exportRhyMooseStatisticsExcel(final @PathVariable long id,
+                                                      final @RequestParam int year,
+                                                      final @RequestParam int species,
+                                                      final @RequestParam RhySearchOrgType orgType,
+                                                      final @RequestParam String orgCode,
+                                                      final Locale locale) {
 
         final List<MoosePermitStatisticsDTO> stats =
                 moosePermitStatisticsFeature.calculateByHolder(id, locale, species, year, orgType, orgCode);
         final EnumLocaliser localiser = new EnumLocaliser(messageSource, locale);
-        return new ModelAndView(new MoosePermitStatisticsExcelView(locale, localiser, stats));
+        return new ModelAndView(new MoosePermitStatisticsExcelView(localiser, stats));
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{rhyId:\\d+}/annualstatistics/{calendarYear:\\d+}")
+    public RhyAnnualStatisticsDTO getOrCreateAnnualStatistics(final @PathVariable long rhyId,
+                                                              final @PathVariable int calendarYear) {
+
+        return annualStatisticsCrudFeature.getOrCreate(rhyId, calendarYear);
     }
 }

@@ -87,9 +87,11 @@ public class SystemUser extends LifecycleEntity<Long> {
     private Set<SystemUserPrivilege> privileges = new HashSet<>();
 
     @NotBlank
+    @Size(max = 255)
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Size(max = 255)
     @Column
     private String password;
 
@@ -102,6 +104,7 @@ public class SystemUser extends LifecycleEntity<Long> {
     private TwoFactorAuthenticationMode twoFactorAuthentication;
 
     @Email
+    @Size(max = 255)
     @Column
     private String email;
 
@@ -116,9 +119,11 @@ public class SystemUser extends LifecycleEntity<Long> {
     @Column(name = "timezone_id")
     private TimeZone timeZone;
 
+    @Size(max = 255)
     @Column
     private String firstName;
 
+    @Size(max = 255)
     @Column
     private String lastName;
 
@@ -132,6 +137,13 @@ public class SystemUser extends LifecycleEntity<Long> {
 
     public void setPasswordAsPlaintext(final String plainTextPassword, final PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(plainTextPassword);
+    }
+
+    public boolean isAdmin() {
+        if (role == null) {
+            throw new IllegalStateException("User role not defined");
+        }
+        return role.isAdmin();
     }
 
     public boolean isModeratorOrAdmin() {

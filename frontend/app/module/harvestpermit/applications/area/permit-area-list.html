@@ -1,0 +1,54 @@
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th translate="harvestpermit.wizard.partners.table.clubName"></th>
+            <th translate="harvestpermit.wizard.partners.table.clubAreaName"></th>
+            <th translate="harvestpermit.wizard.partners.table.areaExternalId"></th>
+            <th class="text-right">
+                <span class="text-nowrap" translate="harvestpermit.wizard.partners.table.landAreaSize"></span>
+                <br/>
+                <span class="text-nowrap" translate="harvestpermit.wizard.partners.table.waterAreaSize"></span>
+                <br/>
+                <span class="text-nowrap" translate="harvestpermit.wizard.partners.table.totalAreaSize"></span>
+            </th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="p in $ctrl.partners track by p.id">
+            <td>
+                <span name-translated="p.club"></span>
+            </td>
+
+            <td>
+                <p name-translated="p.sourceArea.name"></p>
+            </td>
+
+            <td>
+                <p ng-bind="p.sourceArea.externalId"></p>
+                <a ng-click="$ctrl.updateGeometry(p.id)"
+                   ng-if="p.sourceArea.hasChanged"
+                   uib-tooltip="{{ 'harvestpermit.wizard.partners.table.clubAreaChanged' | translate }}"
+                   tooltip-popup-delay="0" tooltip-placement="right">
+                    <span class="fa fa-2x fa-refresh"></span>
+                </a>
+            </td>
+
+            <td class="text-right">
+                <span class="text-nowrap" ng-bind="p.size.land | prettyAreaSize:0"></span>
+                <br/>
+                <span class="text-nowrap" ng-bind="p.size.water | prettyAreaSize:0"></span>
+                <br/>
+                <span class="text-nowrap"  ng-bind="p.size.total | prettyAreaSize:0"></span>
+            </td>
+
+            <td class="text-center vcenter col-xs-1">
+                <a ng-click="$ctrl.deletePartner(p.id)">
+                    <span class="fa fa-2x fa-remove text-danger"></span>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

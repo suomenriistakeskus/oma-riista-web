@@ -32,7 +32,9 @@
                     $ctrl.revoked = _.filter(all, 'revocationTimestamp');
                 };
 
-                groupMooseDataCardImports($ctrl.mooseDataCardImports);
+                $ctrl.$onInit = function () {
+                    groupMooseDataCardImports($ctrl.mooseDataCardImports);
+                };
 
                 $ctrl.toggleImportMessages = function (object) {
                     object.showMessages = !object.showMessages;

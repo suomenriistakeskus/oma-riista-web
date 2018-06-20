@@ -1,0 +1,25 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th class="col-xs-2" translate="gamediary.form.species"></th>
+        <th class="col-xs-1" translate="harvestpermit.amount.granted"></th>
+        <th class="col-xs-1" translate="harvestpermit.amount.used "></th>
+        <th class="col-xs-2" translate="harvestpermit.amount.remaining"></th>
+        <th class="col-xs-4" translate="harvestpermit.amount.period"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="spa in $ctrl.speciesAmounts" ng-class="{danger: spa.remainingAmount < 0}">
+        <td name-translated="spa.gameSpecies.name"></td>
+        <td ng-bind="spa.amount"></td>
+        <td ng-bind="spa.reportedAmount"></td>
+        <td>
+            <span ng-if="spa.remainingAmount > 0" ng-bind="spa.remainingAmount"></span>
+            <span ng-if="spa.remainingAmount == 0" class="badge" translate="harvestpermit.amount.grantedUsedMsg"></span>
+            <span ng-if="spa.remainingAmount < 0" class="r-badge-red"
+                  translate="harvestpermit.amount.exceededMsg"></span>
+        </td>
+        <td ng-bind="spa | speciesAmountIntervalTextPlain"></td>
+    </tr>
+    </tbody>
+</table>

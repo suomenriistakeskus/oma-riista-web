@@ -21,11 +21,6 @@ angular.module('app.clubgroup.services', [])
                 method: 'GET',
                 url: 'api/v1/club/:clubId/group/:id/status'
             },
-            'huntingDays': {
-                method: 'GET',
-                url: 'api/v1/club/:clubId/group/:id/huntingdays',
-                isArray: true
-            },
             'availablePermits': {
                 method: 'GET',
                 url: 'api/v1/club/:clubId/group/:id/permits',
@@ -35,14 +30,6 @@ angular.module('app.clubgroup.services', [])
                 method: 'GET',
                 url: 'api/v1/club/:clubId/group/:id/permit-species-amount'
             },
-            'rejectEntry': {
-                method: 'POST',
-                url: 'api/v1/club/:clubId/group/:id/rejectentry'
-            },
-            'listRejected': {
-                method: 'GET',
-                url: 'api/v1/club/:clubId/group/:id/rejected'
-            },
             'copy': {
                 method: 'POST',
                 url: 'api/v1/club/:clubId/group/:id/copy'
@@ -50,11 +37,11 @@ angular.module('app.clubgroup.services', [])
         });
     })
 
-    .factory('ClubGroupDiary', function ($resource, DiaryEntryRepositoryFactory) {
-        var repository = $resource('api/v1/club/:clubId/group/:id', {"clubId": "@clubId", "id": "@id"}, {
+    .factory('ClubGroupDiaryEntryRepository', function ($resource, DiaryEntryRepositoryFactory) {
+        var repository = $resource('api/v1/club/group/:id', {"id": "@id"}, {
             'list': {
                 method: 'GET',
-                url: 'api/v1/club/:clubId/group/:id/diary',
+                url: 'api/v1/club/group/:id/diary',
                 isArray: true
             }
         });
@@ -63,12 +50,39 @@ angular.module('app.clubgroup.services', [])
         return DiaryEntryRepositoryFactory.decorateRepository(repository);
     })
 
+    .factory('ClubGroupDiary', function ($resource) {
+        return $resource('api/v1/club/group/:id', {"id": "@id"}, {
+            'huntingDays': {
+                method: 'GET',
+                url: 'api/v1/club/group/:id/huntingdays',
+                isArray: true
+            },
+            'listRejected': {
+                method: 'GET',
+                url: 'api/v1/club/group/:id/rejected'
+            },
+            'rejectEntry': {
+                method: 'POST',
+                url: 'api/v1/club/group/:id/rejectentry'
+            },
+            'editHarvestLocation': {
+                method: 'POST',
+                url: 'api/v1/club/group/harvest/:harvestId/editlocation'
+            },
+            'editObservationLocation': {
+                method: 'POST',
+                url: 'api/v1/club/group/observation/:observationId/editlocation'
+            }
+        });
+    })
+
     .service('ClubGroupAreas', function ($q, ClubAreas) {
         this.loadGroupAreaOptions = function (huntingGroup) {
             var params = {
                 clubId: huntingGroup.clubId,
                 year: huntingGroup.huntingYear,
-                activeOnly: true
+                activeOnly: true,
+                includeEmpty: false
             };
 
             return params.clubId && params.year
@@ -77,8 +91,8 @@ angular.module('app.clubgroup.services', [])
         };
 
         this.loadGroupArea = function (huntingGroup) {
-            return huntingGroup.huntingAreaId && huntingGroup.clubId
-                ? ClubAreas.get({id: huntingGroup.huntingAreaId, clubId: huntingGroup.clubId}).$promise
+            return huntingGroup.huntingAreaId
+                ? ClubAreas.get({id: huntingGroup.huntingAreaId}).$promise
                 : $q.when(null);
         };
     })
@@ -97,7 +111,7 @@ angular.module('app.clubgroup.services', [])
         function showModal(clubGroup, mooseDataCardGroupExistsForCurrentYear) {
             return GameDiaryParameters.query().$promise.then(function (parameters) {
                 var availableSpecies = _.filter(parameters.species, function (s) {
-                    return GameSpeciesCodes.isMoose(s.code) || GameSpeciesCodes.isPermitBasedDeer(s.code);
+                    return GameSpeciesCodes.isPermitBasedMooselike(s.code);
                 });
 
                 var modalInstance = $uibModal.open({

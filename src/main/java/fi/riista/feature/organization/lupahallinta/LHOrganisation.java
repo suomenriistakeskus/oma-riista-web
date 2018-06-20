@@ -53,30 +53,39 @@ public class LHOrganisation extends BaseEntity<Long> {
     @Column
     private Integer areaSize;
 
+    @Size(max = 255)
     @Column
     private String contactPersonSsn;
 
+    @Size(max = 255)
     @Column
     private String contactPersonRhy;
 
+    @Size(max = 255)
     @Column
     private String contactPersonName;
 
+    @Size(max = 255)
     @Column(name = "contact_person_address_1")
     private String contactPersonAddress1;
 
+    @Size(max = 255)
     @Column(name = "contact_person_address_2")
     private String contactPersonAddress2;
 
+    @Size(max = 255)
     @Column(name = "contact_person_phone_1")
     private String contactPersonPhone1;
 
+    @Size(max = 255)
     @Column(name = "contact_person_phone_2")
     private String contactPersonPhone2;
 
+    @Size(max = 255)
     @Column
     private String contactPersonEmail;
 
+    @Size(max = 255)
     @Column
     private String contactPersonLang;
 

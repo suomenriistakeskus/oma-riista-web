@@ -1,0 +1,22 @@
+<div class="container-fluid">
+    <table class="table">
+        <thead>
+        <tr>
+            <th class="col-md-2" translate="harvestpermit.application.partnerList.customerId"></th>
+            <th class="col-md-4" translate="harvestpermit.application.partnerList.partnerName"></th>
+            <th class="col-md-6" translate="harvestpermit.application.partnerList.contactPerson"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="p in $ctrl.partners track by p.id">
+            <td ng-bind="::p.officialCode"></td>
+            <td>
+                <span name-translated="::p"></span>
+            </td>
+            <td>
+                {{ $ctrl.contactPersonsStr(p.contactPersons) }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static fi.riista.util.Collect.nullSafeGroupingBy;
+import static java.util.stream.Collectors.toList;
 
 public class AccountDTOBuilder {
 
@@ -83,7 +85,7 @@ public class AccountDTOBuilder {
         dto.setHuntingCardStart(person.getHuntingCardStart());
         dto.setHuntingCardEnd(person.getHuntingCardEnd());
 
-        final int huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+        final int huntingYear = DateUtil.huntingYear();
         final Optional<LocalDate> paymentDate = person.getHuntingPaymentDateForNextOrCurrentSeason();
 
         dto.setHuntingPaymentPending(person.isPaymentPendingForHuntingYear(huntingYear));
@@ -108,7 +110,8 @@ public class AccountDTOBuilder {
             dto.setRhyMembership(OrganisationNameDTO.createWithOfficialCode(person.getRhyMembership()));
         }
 
-        dto.setEnableSrva(person.isEnableSrva() == null ? false : person.isEnableSrva());
+        dto.setEnableSrva(person.isSrvaEnabled());
+        dto.setEnableShootingTests(person.isShootingTestsEnabled());
 
         // If there is no address, we return blank address which user can then edit.
         final AddressDTO addressDTO = AddressDTO.from(Optional.ofNullable(person.getAddress()).orElseGet(Address::new));
@@ -123,13 +126,14 @@ public class AccountDTOBuilder {
     }
 
     private static List<MyClubOccupationDTO> createClubOccupationDTOs(final Collection<Occupation> clubSpecificOccupations) {
-        final Map<Organisation, List<Occupation>> organisationToSubOrganisationOccupations =
-                F.nullSafeGroupBy(clubSpecificOccupations, o -> o.getOrganisation().getParentOrganisation());
+        final Map<Organisation, List<Occupation>> organisationToSubOrganisationOccupations = clubSpecificOccupations
+                .stream()
+                .collect(nullSafeGroupingBy(o -> o.getOrganisation().getParentOrganisation()));
 
         return clubSpecificOccupations.stream()
-                .filter(o -> o.getOrganisation().getOrganisationType() == OrganisationType.CLUB)
+                .filter(o -> o.getOrganisation().isActive() && o.getOrganisation().getOrganisationType() == OrganisationType.CLUB)
                 .map(o -> MyClubOccupationDTO.create(o, organisationToSubOrganisationOccupations.get(o.getOrganisation())))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public AccountDTOBuilder withRoles(@Nullable final List<AccountRoleDTO> roles) {

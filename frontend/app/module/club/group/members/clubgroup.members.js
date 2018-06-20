@@ -175,6 +175,11 @@
 
                 $ctrl.isClubContact = ActiveRoleService.isClubContact() || ActiveRoleService.isModerator();
 
+                var maxCallOrder = 0;
+                $ctrl.$onInit = function () {
+                    maxCallOrder = calculateMaxCallOrder($ctrl.members);
+                };
+
                 $ctrl.canEditMember = function (member) {
                     return member.occupationType === 'RYHMAN_METSASTYKSENJOHTAJA'
                         ? $ctrl.canEdit && $ctrl.isClubContact : $ctrl.canEdit;
@@ -224,8 +229,6 @@
                         $state.reload();
                     });
                 };
-
-                var maxCallOrder = calculateMaxCallOrder($ctrl.members);
 
                 $ctrl.adjustDisabled = function (index, delta) {
                     var member = $ctrl.members[index];

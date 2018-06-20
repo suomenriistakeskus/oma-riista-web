@@ -1,6 +1,4 @@
-<form id="diaryEntrySearchForm" name="searchForm"
-      class="form form-horizontal" role="form">
-
+<form class="form form-horizontal" role="form">
     <div class="form-group" show-errors>
         <label for="beginDate" translate="global.beginDate" class="col-xs-4 control-label"></label>
         <div class="col-xs-8">
@@ -43,96 +41,54 @@
         </div>
     </div>
 
-    <div class="form-group col-xs-11 col-xs-offset-1">
-        <div class="checkbox">
-            <label>
+    <ul class="list-unstyled col-xs-offset-1">
+        <li>
+            <label class="checkbox-inline">
                 <input type="checkbox"
                        name="reportedForOthers" id="reportedForOthers"
                        ng-model="state.reportedForOthers">
                 <span translate="gamediary.search.reportedForOthers"></span>
             </label>
-        </div>
-
-        <div class="checkbox">
-            <label>
+        </li>
+        <li>
+            <label class="checkbox-inline">
+                <input type="checkbox"
+                       name="onlyTodo" id="onlyTodo"
+                       ng-model="state.onlyTodo">
+                <span translate="gamediary.search.onlyTodo"></span>
+            </label>
+        </li>
+        <li>
+            <label class="checkbox-inline">
+                <input type="checkbox"
+                       name="onlyReports" id="onlyReports"
+                       ng-model="state.onlyReports">
+                <span translate="gamediary.search.onlyHarvestReports"></span>
+            </label>
+        </li>
+        <li>
+            <label class="checkbox-inline">
                 <input type="checkbox"
                        name="showHarvest" id="showHarvest"
                        ng-model="state.showHarvest">
                 <span translate="gamediary.search.showHarvest"></span>
             </label>
-        </div>
-
-        <div class="checkbox">
-            <label>
+        </li>
+        <li>
+            <label class="checkbox-inline">
                 <input type="checkbox"
                        name="showObservation" id="showObservation"
                        ng-model="state.showObservation">
                 <span translate="gamediary.search.showObservation"></span>
             </label>
-        </div>
-        <div class="checkbox" ng-show="enableSrva">
-            <label>
+        </li>
+        <li ng-show="enableSrva">
+            <label class="checkbox-inline">
                 <input type="checkbox"
                        name="showSrvaEvent" id="showSrvaEvent"
                        ng-model="state.showSrvaEvent">
                 <span translate="srva.form.showSrvaEvent"></span>
             </label>
-        </div>
-    </div>
-
-    <a class="btn btn-primary pull-right"
-       ng-click="search()"
-       ng-disabled="searchForm.$invalid">
-        <span class="glyphicon glyphicon-search"></span> &nbsp;
-        <span translate="gamediary.button.search"></span>
-    </a>
-
-    <div class="clearfix"></div>
-</form>
-
-<hr/>
-
-<div class="form-group">
-    <label for="speciesSelection" class="control-label">
-        <span translate="gamediary.search.selectSpeciesTitle"></span>
-    </label>
-
-    <div>
-        <!-- IE9 and IE10 do not work well with opt-groups, IE9 requires empty value and
-        IE10 complains of unselected value if 'required', therefore we force existence of this field manually -->
-        <select name="speciesSelection" id="speciesSelection"
-                class="form-control"
-                ng-disabled="state.unselectedSpecies.length === 0"
-                ng-model="state.lastSelectedSpeciesCode"
-                ng-change="speciesAddedToSelection()"
-                ng-options="s.code as getGameName(s.code) group by getCategoryName(s.categoryId) for s in state.unselectedSpecies | orderBy:['categoryId'] track by s.code"
-                ie10-optgroup-fix>
-            <option disabled value="">{{ 'gamediary.search.showSpecies' | translate }}</option>
-        </select>
-    </div>
-</div>
-
-<div class="form-group">
-    <a ng-click="selectAllSpecies()" class="btn btn-primary"
-       ng-disabled="state.unselectedSpecies.length === 0">
-        <span translate="gamediary.button.selectAll"></span>
-    </a>
-    <a ng-click="deselectAllSpecies()" class="btn btn-primary pull-right"
-       ng-disabled="state.selectedSpecies.length === 0">
-        <span translate="gamediary.button.deselectAll"></span>
-    </a>
-</div>
-
-<div ng-if="state.selectedSpecies.length > 0">
-    <ul class="r-tag-choices">
-        <li class="r-tag-choice" ng-repeat="species in state.selectedSpecies track by species.code">
-            <span>{{ getGameName(species.code) }}</span>
-            <span>{{totalSpecimenAmountBySpecies[species.code]}}</span>
-            <span class="glyphicon glyphicon-remove r-tag-choice-close"
-                  ng-click="removeSpeciesFromSelection(species.code)">
-            </span>
         </li>
     </ul>
-</div>
-
-<div class="clearfix"></div>
+</form>

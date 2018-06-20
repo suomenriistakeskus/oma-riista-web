@@ -1,0 +1,63 @@
+<h3>
+    <span translate="harvestpermit.management.receiptTitle"></span>
+    &nbsp;
+    <span class="fa fa-check text-primary"></span>
+</h3>
+
+<p style="font-weight: 700; font-size: 18px; margin: 25px 0 35px;">
+    <span translate="payment.amount"></span>
+    <span ng-bind="::$ctrl.invoice.amount"></span> &euro;
+</p>
+
+<div class="row">
+    <div class="col-xs-3">
+        <p><strong translate="invoice.info"></strong></p>
+
+        <p style="margin-bottom: 6px">
+            <span translate="invoice.invoiceNumber"></span>:
+            <span ng-bind="::$ctrl.invoice.invoiceNumber"></span>
+        </p>
+        <p style="margin-bottom: 6px">
+            <span translate="global.date"></span>:
+            <span ng-bind="::$ctrl.invoice.invoiceDate | date:'dd.MM.yyyy'"></span>
+        </p>
+    </div>
+
+    <div class="col-xs-3">
+        <p><strong translate="invoice.items"></strong></p>
+
+        <p style="margin-bottom: 6px"><span ng-bind="::$ctrl.invoice.invoiceDescription"></span>,</p>
+        <p style="margin-bottom: 6px"
+           translate="harvestpermit.management.invoiceType.{{::$ctrl.invoice.invoiceType}}"></p>
+    </div>
+
+    <div class="col-xs-3">
+        <p><strong translate="payment.payer"></strong></p>
+
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.from.name"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.from.addressLine1"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.from.addressLine2"></p>
+    </div>
+
+    <div class="col-xs-3">
+        <p><strong translate="payment.payee"></strong></p>
+
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.to.name"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.to.addressLine1"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.to.addressLine2"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.to.phoneNumber"></p>
+    </div>
+</div>
+
+<hr class="invisible">
+
+<button type="button" class="btn btn-lg btn-primary"
+        ng-click="$ctrl.downloadReceipt()">
+    <span class="fa fa-file-text"></span>
+    &nbsp;
+    <span translate="harvestpermit.management.downloadReceipt"></span>
+</button>
+
+<hr class="invisible"/>
+
+<a ui-sref="permitmanagement.dashboard" translate="harvestpermit.management.returnToManagement"></a>

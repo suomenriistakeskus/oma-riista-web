@@ -1,14 +1,14 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static javaslang.control.Validation.valid;
-
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
-import javaslang.control.Validation;
+import io.vavr.control.Validation;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
+
+import static io.vavr.control.Validation.valid;
 
 public class MooseDataCardSection82Validator {
 
@@ -21,5 +21,4 @@ public class MooseDataCardSection82Validator {
 
         return MooseDataCardExtractor.notEmpty(section) ? calculatedHarvestAmounts.validate(section) : valid(section);
     }
-
 }

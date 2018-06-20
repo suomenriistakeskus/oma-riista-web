@@ -3,7 +3,7 @@
 .announcement-modal {
   .badge {
     padding: 5px 5px 5px 10px;
-    background-color: #678424;
+    background-color: @r-green;
     font-size: 14px;
     font-weight: normal;
     line-height: 22px;
@@ -37,26 +37,30 @@
     width: 300px;
     margin: 0 auto 10px;
   }
-
-  .total-pages {
-    display: inline-block;
-    padding: 5px 0;
-    font-family: @font-family-open-sans;
-  }
 }
 
 .announcement {
   border: 1px solid #d3d3d3;
   border-radius: 3px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+
+  &.open {
+    >.announcement-title {
+      background-color: #f9f9f9;
+    }
+  }
 
   > .announcement-title {
     position: relative;
     overflow: hidden;
-    background-color: #f7f7f7;
+    background-color: #f0f0f0;
     padding: 10px;
     font-family: @font-family-open-sans;
     cursor: pointer;
+
+    .chevron {
+      line-height: 32px;
+    }
 
     .row > .right {
       text-align: right;
@@ -78,52 +82,25 @@
       line-height: 32px;
       color: #555;
     }
+
+    .btn-container {
+      margin-top: 10px;
+    }
   }
 
   > .announcement-content {
-    display: table;
-    border-collapse: collapse;
     position: relative;
     overflow: hidden;
     border-top: 1px solid #ddd;
     width: 100%;
 
     .body {
-      display: table-cell;
+      text-align: justify;
+      line-height: 1.4em;
+      min-height: 75px;
 
-      .content {
-        position: relative;
-        text-align: justify;
-        line-height: 1.4em;
-        min-height: 75px;
-
-        p {
-          margin: 10px;
-        }
-      }
-    }
-
-    .actions {
-      display: table-cell;
-      width: @announcement-item-width;
-      background-color: #f7f7f7;
-      border-left: 1px solid #ccc;
-      padding: 10px;
-
-      .btn-container {
-        display: table;
-        width: 100%;
-        border-collapse: collapse;
-
-        .btn {
-          display: table-cell;
-          margin: 5px 0 5px;
-          width: 100%;
-        }
-
-        .btn + .btn {
-          margin-top: 10px;
-        }
+      p {
+        margin: 10px;
       }
     }
   }

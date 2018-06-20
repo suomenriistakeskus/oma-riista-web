@@ -1,8 +1,6 @@
 package fi.riista.feature.common.entity;
 
-import fi.riista.security.UserInfo;
 import org.joda.time.DateTime;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -48,9 +46,5 @@ public abstract class BaseEntityEvent extends BaseEntity<Long> {
     protected void prePersist() {
         setEventTime(now());
         setUserId(getActiveUserId());
-    }
-
-    private static Long getActiveUserId() {
-        return UserInfo.extractUserIdForEntity(SecurityContextHolder.getContext().getAuthentication());
     }
 }

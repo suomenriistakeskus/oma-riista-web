@@ -3,16 +3,16 @@ package fi.riista.feature.announcement.crud;
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementSubscriber;
 import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.List;
@@ -81,6 +81,7 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
 
         dto.setBody(announcement.getBody());
         dto.setSubject(announcement.getSubject());
+        dto.setVisibleToAll(announcement.isVisibleToAll());
 
         if (announcement.getFromOrganisation() != null) {
             dto.setFromOrganisation(AnnouncementDTO.OrganisationDTO.create(announcement.getFromOrganisation()));
@@ -104,7 +105,6 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
     @NotNull
     private OrganisationDTO fromOrganisation;
 
-    @NotEmpty
     private Set<OccupationType> occupationTypes;
 
     @Valid
@@ -118,7 +118,14 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String body;
 
+    private boolean visibleToAll;
+
     private boolean sendEmail;
+
+    @AssertTrue
+    protected boolean isRecipientsOk() {
+        return visibleToAll || !F.isNullOrEmpty(this.occupationTypes);
+    }
 
     @Override
     public Long getId() {
@@ -186,5 +193,13 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
 
     public void setSendEmail(final boolean sendEmail) {
         this.sendEmail = sendEmail;
+    }
+
+    public boolean isVisibleToAll() {
+        return visibleToAll;
+    }
+
+    public void setVisibleToAll(final boolean visibleToAll) {
+        this.visibleToAll = visibleToAll;
     }
 }

@@ -45,6 +45,11 @@ public class SQGeolocationSource extends RelationalPathSpatial<SQGeolocationSour
         addMetadata();
     }
 
+    public SQGeolocationSource(String variable, String schema) {
+        super(SQGeolocationSource.class, forVariable(variable), schema, "geolocation_source");
+        addMetadata();
+    }
+
     public SQGeolocationSource(Path<? extends SQGeolocationSource> path) {
         super(path.getType(), path.getMetadata(), "public", "geolocation_source");
         addMetadata();

@@ -41,12 +41,15 @@
             },
             controller: function ($state, ActiveRoleService, AnnouncementFormModal) {
                 var $ctrl = this;
+                $ctrl.canSend = false;
 
-                var fromOrganisationType = $ctrl.fromOrganisation.organisationType;
+                $ctrl.$onInit = function () {
+                    var fromOrganisationType = $ctrl.fromOrganisation.organisationType;
 
-                $ctrl.canSend = ActiveRoleService.isClubContact() && fromOrganisationType === 'CLUB' ||
-                    ActiveRoleService.isCoordinator() && fromOrganisationType === 'RHY' ||
-                    ActiveRoleService.isModerator() && fromOrganisationType === 'RK';
+                    $ctrl.canSend = ActiveRoleService.isClubContact() && fromOrganisationType === 'CLUB' ||
+                        ActiveRoleService.isCoordinator() && fromOrganisationType === 'RHY' ||
+                        ActiveRoleService.isModerator() && fromOrganisationType === 'RK';
+                };
 
                 $ctrl.openSendModal = function () {
                     AnnouncementFormModal.openModal($ctrl.fromOrganisation, {}).then(function () {
@@ -79,6 +82,10 @@
                 };
 
                 $ctrl.refresh = function () {
+                    $ctrl.loadPage(0);
+                };
+
+                $ctrl.$onInit = function () {
                     $ctrl.loadPage(0);
                 };
             }
@@ -117,7 +124,10 @@
             controller: function (dialogs, $translate, $filter,
                                   Announcements, AnnouncementFormModal) {
                 var $ctrl = this;
-                $ctrl.showContent = !$ctrl.initiallyHidden;
+
+                $ctrl.$onInit = function () {
+                    $ctrl.showContent = !$ctrl.initiallyHidden;
+                };
 
                 $ctrl.canEdit = function (announcement) {
                     var from = announcement.fromOrganisation;
@@ -134,7 +144,8 @@
                     return false;
                 };
 
-                $ctrl.edit = function (announcement) {
+                $ctrl.edit = function (announcement, $event) {
+                    $event.stopPropagation();
                     Announcements.get({
                         id: announcement.id
                     }).$promise.then(function (dto) {
@@ -144,7 +155,8 @@
                     });
                 };
 
-                $ctrl.delete = function (announcement) {
+                $ctrl.delete = function (announcement, $event) {
+                    $event.stopPropagation();
                     dialogs.confirm().result.then(function () {
                         removeAnnouncement(announcement);
                     });
@@ -160,7 +172,7 @@
             }
         })
 
-        .service('AnnouncementFormModal', function ($uibModal, $translate, NotificationService,
+        .service('AnnouncementFormModal', function ($uibModal, $translate, NotificationService, ActiveRoleService,
                                                     Announcements, AnnouncementSubscriberType) {
             this.openModal = function (fromOrganisation, announcement) {
                 return $uibModal.open({
@@ -178,15 +190,26 @@
                 }).result;
             };
 
-            function ModalController($uibModalInstance, $q, announcement, fromOrganisation, occupationTypeChoices) {
+            function ModalController($uibModalInstance, $q, TranslatedBlockUI,
+                                     announcement, fromOrganisation, occupationTypeChoices) {
+
                 var $modalCtrl = this;
 
+                $modalCtrl.adminView = ActiveRoleService.isAdmin();
                 $modalCtrl.fromOrganisation = fromOrganisation;
                 $modalCtrl.announcement = announcement;
                 $modalCtrl.availableChoices = [];
                 $modalCtrl.selectedOrganisations = announcement.subscriberOrganisations || [];
                 $modalCtrl.showOrganisationSelect = function () {
                     return $modalCtrl.fromOrganisation.organisationType === 'RK';
+                };
+
+                $modalCtrl.visibleToAllChanged = function () {
+                    if ($modalCtrl.announcement.visibleToAll) {
+                        $modalCtrl.selectedOrganisations = [];
+                        $modalCtrl.announcement.occupationTypes = [];
+                        updateOccupationTypeChoices();
+                    }
                 };
 
                 function updateOccupationTypeChoices() {
@@ -253,11 +276,16 @@
                 };
 
                 $modalCtrl.canNotSubmit = function (form) {
-                    return form.$invalid || $modalCtrl.occupationTypeMissing() || $modalCtrl.organisationMissing();
+                    return form.$invalid || !recipientSelected();
                 };
 
+                function recipientSelected() {
+                    return $modalCtrl.announcement.visibleToAll ||
+                        (!$modalCtrl.occupationTypeMissing() && !$modalCtrl.organisationMissing());
+                }
+
                 $modalCtrl.submit = function () {
-                    if ($modalCtrl.occupationTypeMissing() || $modalCtrl.organisationMissing()) {
+                    if (!recipientSelected()) {
                         return;
                     }
 
@@ -273,7 +301,7 @@
                     showSendEmailDialog()
                         .then(function (sendEmail) {
                             announcement.sendEmail = sendEmail;
-
+                            TranslatedBlockUI.start("global.block.wait");
                             return announcement.id
                                 ? Announcements.update(announcement).$promise
                                 : Announcements.save(announcement).$promise;
@@ -283,7 +311,8 @@
                             NotificationService.showDefaultSuccess();
                         }, function () {
                             NotificationService.showDefaultFailure();
-                        });
+                        })
+                        .finally(TranslatedBlockUI.stop);
                 };
 
                 $modalCtrl.cancel = function () {

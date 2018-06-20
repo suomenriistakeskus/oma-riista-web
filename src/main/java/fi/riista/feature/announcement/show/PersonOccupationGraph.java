@@ -4,9 +4,9 @@ import com.google.common.base.Preconditions;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import fi.riista.feature.announcement.QAnnouncementSubscriber;
+import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.Organisation;
 
 import java.util.List;
 import java.util.Map;
@@ -44,8 +44,8 @@ public class PersonOccupationGraph {
         this.activeOccupations = Objects.requireNonNull(activeOccupations, "activeOccupations is null");
     }
 
-    public PersonOccupationGraph withOrganisationFilter(final Set<Organisation> organisation) {
-        this.organisationFilter = Objects.requireNonNull(organisation, "organisation is null");
+    public PersonOccupationGraph withOrganisationFilter(final Organisation organisation) {
+        this.organisationFilter = organisation != null ? organisation.getAllParentsAndSelf() : null;
         return this;
     }
 
@@ -67,9 +67,11 @@ public class PersonOccupationGraph {
                         return subscriber.organisation.eq(organisation);
 
                     } else if (childOccupationTypes.contains(OccupationType.SEURAN_YHDYSHENKILO)) {
+                        childOccupationTypes.addAll(OccupationType.clubValues());
+
                         // Club contact person should see all club communication
                         return subscriber.organisation.eq(organisation)
-                                .and(subscriber.occupationType.in(OccupationType.clubValues()));
+                                .and(subscriber.occupationType.in(childOccupationTypes));
 
                     } else {
                         Preconditions.checkArgument(!childOccupationTypes.isEmpty(), "should not be empty");

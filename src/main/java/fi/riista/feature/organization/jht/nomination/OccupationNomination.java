@@ -5,11 +5,12 @@ import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.common.entity.PersistableEnum;
 import fi.riista.feature.common.entity.PersistableEnumConverter;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.DateUtil;
+import fi.riista.util.LocalisedEnum;
 import org.joda.time.LocalDate;
 
 import javax.persistence.Access;
@@ -39,7 +40,7 @@ public class OccupationNomination extends LifecycleEntity<Long> {
     public static class NominationStatusConverter implements PersistableEnumConverter<NominationStatus> {
     }
 
-    public enum NominationStatus implements PersistableEnum {
+    public enum NominationStatus implements LocalisedEnum, PersistableEnum {
         EHDOLLA("A"),
         ESITETTY("E"),
         HYLATTY("H"),

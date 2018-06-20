@@ -1,6 +1,5 @@
 package fi.riista.feature.gamediary.harvest;
 
-import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameDiaryEntryAuthorization;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
@@ -11,11 +10,17 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
+import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
+import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
+import static fi.riista.feature.account.user.SystemUser.Role.ROLE_USER;
+
 @Component
 public class HarvestAuthorization extends GameDiaryEntryAuthorization<Harvest> {
 
     public enum Permission {
-        LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP
+        LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP,
+        // To fix incorrect location scanned from moose data card regardless of state of hunting
+        FIX_GEOLOCATION
     }
 
     private enum Role {
@@ -26,14 +31,11 @@ public class HarvestAuthorization extends GameDiaryEntryAuthorization<Harvest> {
     }
 
     public HarvestAuthorization() {
-        allow(EntityPermission.CREATE,
-                SystemUser.Role.ROLE_USER,
-                SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR);
+        allow(EntityPermission.CREATE, ROLE_USER, ROLE_ADMIN, ROLE_MODERATOR);
 
         allow(EntityPermission.READ,
-                SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                ROLE_ADMIN,
+                ROLE_MODERATOR,
                 Role.AUTHOR,
                 Role.ACTOR,
                 Role.HARVEST_RHY_COORDINATOR,
@@ -44,25 +46,23 @@ public class HarvestAuthorization extends GameDiaryEntryAuthorization<Harvest> {
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
         allow(EntityPermission.UPDATE,
-                SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                ROLE_ADMIN,
+                ROLE_MODERATOR,
                 Role.AUTHOR,
                 Role.ACTOR,
                 Role.PERMIT_CONTACT_PERSON,
                 OccupationType.SEURAN_YHDYSHENKILO,
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-        allow(EntityPermission.DELETE,
-                SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
-                Role.AUTHOR,
-                Role.ACTOR);
+        allow(EntityPermission.DELETE, Role.AUTHOR, Role.ACTOR);
 
         allow(Permission.LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP,
-                SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                ROLE_ADMIN,
+                ROLE_MODERATOR,
                 OccupationType.SEURAN_YHDYSHENKILO,
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
+
+        allow(Permission.FIX_GEOLOCATION, ROLE_ADMIN, ROLE_MODERATOR);
     }
 
     @Override
@@ -78,7 +78,6 @@ public class HarvestAuthorization extends GameDiaryEntryAuthorization<Harvest> {
 
     private static boolean isPermitContactPerson(final Person person, final Harvest harvest) {
         return harvest.getHarvestPermit() != null &&
-                harvest.getHarvestPermit().isHarvestsAsList() &&
                 harvest.getHarvestPermit().hasContactPerson(person);
     }
 

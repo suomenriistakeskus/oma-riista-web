@@ -1,5 +1,7 @@
 package fi.riista.integration.lupahallinta.job;
 
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.Trace;
 import fi.riista.config.quartz.QuartzScheduledJob;
 import fi.riista.integration.lupahallinta.club.LHHuntingClubBatchConfig;
 import org.quartz.DisallowConcurrentExecution;
@@ -25,8 +27,10 @@ public class LupahallintaClubImportJob implements Job {
     private JobOperator jobOperator;
 
     @Override
+    @Trace(dispatcher = true, metricName = "Job execution")
     public void execute(final JobExecutionContext context) {
         try {
+            NewRelic.setTransactionName(null, LHHuntingClubBatchConfig.JOB_NAME);
             jobOperator.startNextInstance(LHHuntingClubBatchConfig.JOB_NAME);
 
         } catch (Exception e) {

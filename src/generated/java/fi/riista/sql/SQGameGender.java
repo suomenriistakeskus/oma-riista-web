@@ -47,6 +47,11 @@ public class SQGameGender extends RelationalPathSpatial<SQGameGender> {
         addMetadata();
     }
 
+    public SQGameGender(String variable, String schema) {
+        super(SQGameGender.class, forVariable(variable), schema, "game_gender");
+        addMetadata();
+    }
+
     public SQGameGender(Path<? extends SQGameGender> path) {
         super(path.getType(), path.getMetadata(), "public", "game_gender");
         addMetadata();

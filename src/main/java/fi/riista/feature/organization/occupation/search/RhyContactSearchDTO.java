@@ -1,8 +1,13 @@
 package fi.riista.feature.organization.occupation.search;
 
+import org.hibernate.validator.constraints.SafeHtml;
+
 public class RhyContactSearchDTO {
 
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String areaCode;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String rhyCode;
 
     public String getAreaCode() {

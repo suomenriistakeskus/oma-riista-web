@@ -1,10 +1,10 @@
 package fi.riista.feature.organization.occupation;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.organization.person.PersonDTO;
+import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.person.PersonIsDeceasedException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -191,7 +191,7 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
             deadPerson.setDeletionCode(Person.DeletionCode.D);
 
             onSavedAndAuthenticated(createUser(coordinator), () -> {
-                final List<PersonDTO> candidates = occupationCrudFeature.listCandidateForNewOccupation(rhy.getId());
+                final List<PersonContactInfoDTO> candidates = occupationCrudFeature.listCandidatesForNewOccupation(rhy.getId());
 
                 assertEquals(1, candidates.size());
                 assertEquals(coordinator.getId(), candidates.get(0).getId());
@@ -203,7 +203,7 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
         OccupationDTO dto = new OccupationDTO();
         dto.setOrganisationId(rhy.getId());
 
-        PersonDTO personDTO = new PersonDTO();
+        PersonContactInfoDTO personDTO = new PersonContactInfoDTO();
         personDTO.setId(person.getId());
         dto.setPerson(personDTO);
         dto.setOccupationType(type);
@@ -246,7 +246,7 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
         onSavedAndAuthenticated(createUser(person), () -> {
             thrown.expect(AccessDeniedException.class);
             thrown.expectMessage("Cannot list occupations for organisationType CLUB");
-            occupationCrudFeature.listCandidateForNewOccupation(club.getId());
+            occupationCrudFeature.listCandidatesForNewOccupation(club.getId());
         });
     }
 
@@ -259,7 +259,7 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
         onSavedAndAuthenticated(createUser(person), () -> {
             thrown.expect(AccessDeniedException.class);
             thrown.expectMessage("Cannot list occupations for organisationType CLUB");
-            occupationCrudFeature.listCandidateForNewOccupation(club.getId());
+            occupationCrudFeature.listCandidatesForNewOccupation(club.getId());
         });
     }
 }

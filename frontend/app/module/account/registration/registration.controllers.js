@@ -75,14 +75,9 @@ angular.module('app.account.registration.controllers', [
     .controller('AccountRegistrationFromEmailController', function ($stateParams, $uibModal, $translate,
                                                                     AccountRegistrationService) {
         var $ctrl = this;
-        $ctrl.showTermsAndConditions = false;
         $ctrl.termsAndConditionsAccepted = false;
         $ctrl.checkStatus = 'waiting';
         $ctrl.lang = $stateParams.lang || $translate.use() || 'fi';
-
-        $ctrl.toggleTermsVisibility = function () {
-            $ctrl.showTermsAndConditions = !$ctrl.showTermsAndConditions;
-        };
 
         if ($stateParams.lang) {
             $translate.use($stateParams.lang);

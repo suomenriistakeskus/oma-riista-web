@@ -1,7 +1,6 @@
 package fi.riista.feature.common.entity;
 
-import javaslang.control.Either;
-
+import io.vavr.control.Either;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -101,5 +100,4 @@ public class HasMooseDataCardEncodingTest {
         assertFalse(TestEnum.D.equalsMooseDataCardEncoding(""));
         assertFalse(TestEnum.D.equalsMooseDataCardEncoding("ABC"));
     }
-
 }

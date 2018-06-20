@@ -31,9 +31,9 @@ public class DatabaseFileStorage implements FileStorageSpi {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public void retrieveFile(final PersistentFileMetadata metadata, final OutputStream outputStream) {
-        final Object[] params = {metadata.getId().toString()};
+        final Object[] params = { metadata.getId().toString() };
 
         jdbcTemplate.query("SELECT file_content FROM file_content WHERE file_metadata_uuid = ?", params, rs -> {
             try (final InputStream binaryStream = rs.getBinaryStream(1)) {

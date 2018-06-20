@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_occupation;
-
 CREATE TABLE import_occupation (
   ssn                        CHAR(11)     NOT NULL,
   organisation_type          VARCHAR(255) NOT NULL,

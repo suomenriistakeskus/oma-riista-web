@@ -1,0 +1,42 @@
+<ul class="nav nav-pills">
+    <li>
+        <div class="h5">
+            <span translate="global.year"></span>
+            &nbsp;
+        </div>
+    </li>
+    <li>
+        <select name="yearSelection" id="yearSelection"
+                class="form-control"
+                ng-model="$ctrl.calendarYear"
+                ng-options="year for year in $ctrl.availableYears"
+                ng-change="$ctrl.onSelectedYearChanged()">
+
+            <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
+        </select>
+    </li>
+    <li class="pull-right">
+        <button type="button" class="btn btn-primary" ng-click="$ctrl.exportToExcel()">
+            <span class="glyphicon glyphicon-search"></span>
+            &nbsp;
+            <span translate="reporting.common.toExcel"></span>
+        </button>
+    </li>
+</ul>
+
+<br/>
+
+<shooting-test-statistics-table statistic="$ctrl.statistics.summary"></shooting-test-statistics-table>
+
+<div ng-repeat="event in $ctrl.statistics.eventStatistics track by event.calendarEvent.calendarEventId">
+    <div class="h5">
+        {{::('event.type.' + event.calendarEvent.calendarEventType | translate)}}
+        {{::event.calendarEvent.date | date: 'dd.M.yyyy'}}
+        {{::event.calendarEvent.beginTime}}
+        <span ng-if="event.calendarEvent.endTime">- {{event.calendarEvent.endTime}}</span>
+    </div>
+    <div>{{::event.calendarEvent.venue.address.streetAddress}} {{::event.calendarEvent.venue.address.city}}</div>
+    <div>{{::$ctrl.joinOfficials(event.calendarEvent.officials)}}</div>
+
+    <shooting-test-statistics-table statistic="event"></shooting-test-statistics-table>
+</div>

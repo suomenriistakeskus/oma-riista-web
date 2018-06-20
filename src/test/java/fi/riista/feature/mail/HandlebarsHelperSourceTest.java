@@ -3,7 +3,7 @@ package fi.riista.feature.mail;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 import fi.riista.config.Constants;
-import fi.riista.feature.EmbeddedDatabaseTest;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class HandlebarsHelperSourceTest extends EmbeddedDatabaseTest {
         Date input = new DateTime(2012, 6, 30, 15, 21, Constants.DEFAULT_TIMEZONE).toDate();
         String expected = "2012.06.30 15:21";
 
-        assertEquals(expected, HandlebarsHelperSource.timestamp(input,"yyyy.MM.dd HH:mm"));
+        assertEquals(expected, HandlebarsHelperSource.timestamp(input, "yyyy.MM.dd HH:mm"));
     }
 
     @Test

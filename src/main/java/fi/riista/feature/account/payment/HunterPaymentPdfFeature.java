@@ -1,10 +1,8 @@
 package fi.riista.feature.account.payment;
 
-import fi.riista.feature.account.audit.AccountActivityMessage;
-import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.account.audit.AccountAuditService;
-import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.audit.AccountActivityMessage;
+import fi.riista.feature.account.audit.AccountAuditService;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
@@ -34,7 +32,6 @@ import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,25 +56,19 @@ public class HunterPaymentPdfFeature {
     private RequireEntityService requireEntityService;
 
     @Resource
-    private ActiveUserService activeUserService;
-
-    @Resource
     private AccountAuditService accountAuditService;
 
     @Transactional
     public ResponseEntity<byte[]> create(final long personId, final int huntingYear) {
         final Person person = requireEntityService.requirePerson(personId, EntityPermission.READ);
-
-        final HuntingPaymentInfo paymentInfo = person.getPaymentInfo(huntingYear)
-                .orElseThrow(() -> new RuntimeException("Could not calculate paymentInfo"));
+        final HuntingPaymentInfo paymentInfo = person.getPaymentInfo(huntingYear);
+        audit(paymentInfo, person);
 
         final LocalDate beginDate = DateUtil.huntingYearBeginDate(huntingYear);
         final LocalDate endDate = DateUtil.huntingYearEndDate(huntingYear);
         final String hunterNumber = Objects.requireNonNull(person.getHunterNumber(), "hunterNumber is null");
         final String filename = String.format("%d-%d-riistanhoitomaksu-%s.pdf",
                 huntingYear, huntingYear + 1, hunterNumber);
-
-        audit(paymentInfo, person);
 
         try (final InputStream is = PDF_TEMPLATE.getInputStream();
              final PDDocument pdfTemplate = PDDocument.load(is)) {
@@ -100,8 +91,7 @@ public class HunterPaymentPdfFeature {
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .contentType(MediaTypeExtras.APPLICATION_PDF)
-                    .header(ContentDispositionUtil.HEADER_NAME,
-                            ContentDispositionUtil.encodeAttachmentFilename(filename))
+                    .headers(ContentDispositionUtil.header(filename))
                     .body(builder.build());
 
         } catch (IOException e) {
@@ -110,13 +100,10 @@ public class HunterPaymentPdfFeature {
     }
 
     private void audit(final HuntingPaymentInfo paymentInfo, final Person person) {
-        final SystemUser activeUser = activeUserService.getActiveUser();
-        final Authentication authentication = activeUserService.getAuthentication();
         final String barcode = paymentInfo.createBarCodeMessage(null);
         final String auditMessage = person.getHunterNumber() + ":" + barcode;
 
-        accountAuditService.auditUserEvent(activeUser, authentication,
-                AccountActivityMessage.ActivityType.PDF_HUNTER_PAYMENT, auditMessage);
+        accountAuditService.auditActiveUserEvent(AccountActivityMessage.ActivityType.PDF_HUNTER_PAYMENT, auditMessage);
     }
 
     private static String formatPaymentRecipient(final Person person) {

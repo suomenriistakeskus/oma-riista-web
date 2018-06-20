@@ -28,7 +28,7 @@ public class LogoutAuditEventListener implements LogoutHandler {
                        Authentication authentication) {
         try {
             if (authentication != null) {
-                accountAuditService.auditLogoutEvent(request, authentication);
+                accountAuditService.auditLogoutEvent(authentication);
                 auditService.log("logout", authentication.getName());
             }
         } catch (Exception ex) {

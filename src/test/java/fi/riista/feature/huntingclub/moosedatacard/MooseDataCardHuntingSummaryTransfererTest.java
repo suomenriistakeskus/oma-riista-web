@@ -1,19 +1,8 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.convertTrendOfPopulationGrowthOfMooselikeSpecies;
-import static fi.riista.util.Asserts.assertFailure;
-import static fi.riista.util.Asserts.assertSuccess;
-import static fi.riista.util.DateUtil.today;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.huntingclub.permit.summary.AreaSizeAndRemainingPopulation;
 import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.permit.summary.AreaSizeAndRemainingPopulation;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummaryRepository;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
@@ -23,15 +12,27 @@ import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage8;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_1;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_3;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_4;
-
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-
 import java.util.Collections;
 import java.util.stream.Stream;
+
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.convertAppearance;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.convertMooseHuntingAreaType;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.convertTrendOfPopulationGrowth;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.convertTrendOfPopulationGrowthOfFlyDeer;
+import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.test.Asserts.assertSuccess;
+import static fi.riista.util.DateUtil.today;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseTest {
 
@@ -77,25 +78,7 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
 
         assertSuccess(transferer.upsertHuntingSummaryData(card, club, permit), summaryOpt -> {
             assertFalse(summaryOpt.isPresent());
-            assertEquals(0L, summaryRepo.count());
-        });
-    }
-
-    @Test
-    @Transactional
-    public void testUpsertHuntingSummaryData_forCreate_whenTransferFails() {
-        final HarvestPermit permit = model().newHarvestPermit();
-        final HuntingClub club = model().newHuntingClub(permit.getRhy());
-        permit.getPermitPartners().add(club);
-
-        persistInCurrentlyOpenTransaction();
-
-        final MooseDataCard card = MooseDataCardObjectFactory.newMooseDataCard();
-        // Inject failure source.
-        card.setPage1(null);
-
-        assertFailure(transferer.upsertHuntingSummaryData(card, club, permit), throwable -> {
-            assertEquals(0L, summaryRepo.count());
+            assertEmpty(summaryRepo.findAll());
         });
     }
 
@@ -118,8 +101,6 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
         persistInCurrentlyOpenTransaction();
 
         final MooseDataCard card = MooseDataCardObjectFactory.newMooseDataCard();
-        card.getPage1().setReportingPeriodBeginDate(today);
-        card.getPage1().setReportingPeriodBeginDate(today.plusDays(1));
 
         assertSuccess(transferer.upsertHuntingSummaryData(card, club, permit), summaryOpt -> {
             assertTrue(summaryOpt.isPresent());
@@ -129,8 +110,6 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
             assertEquals(Integer.valueOf(1), updated.getConsistencyVersion());
             assertEquals(club, updated.getClub());
             assertEquals(permit, updated.getHarvestPermit());
-            assertEquals(card.getPage1().getReportingPeriodBeginDate(), updated.getBeginDate());
-            assertEquals(card.getPage1().getReportingPeriodEndDate(), updated.getEndDate());
         });
     }
 
@@ -145,13 +124,11 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
         // harvest_permit_partners table populated.
         persistInCurrentlyOpenTransaction();
 
-        final MooseHuntingSummary original = model().newMooseHuntingSummary(permit, club, false);
+        model().newMooseHuntingSummary(permit, club, false);
 
         persistInCurrentlyOpenTransaction();
 
         final MooseDataCard card = MooseDataCardObjectFactory.newMooseDataCardWithoutSummary();
-        card.getPage1().setReportingPeriodBeginDate(original.getBeginDate());
-        card.getPage1().setReportingPeriodEndDate(original.getEndDate());
 
         assertSuccess(transferer.upsertHuntingSummaryData(card, club, permit), summaryOpt -> {
             assertTrue(summaryOpt.isPresent());
@@ -159,31 +136,6 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
             final MooseHuntingSummary refreshed = summaryOpt.get();
             assertEquals(Collections.singletonList(refreshed), summaryRepo.findAll());
             assertEquals(Integer.valueOf(0), refreshed.getConsistencyVersion());
-        });
-    }
-
-    @Test
-    @Transactional
-    public void testUpsertHuntingSummaryData_forUpdate_whenTransferFails() {
-        final HarvestPermit permit = model().newHarvestPermit();
-        final HuntingClub club = model().newHuntingClub(permit.getRhy());
-        permit.getPermitPartners().add(club);
-
-        // Need to flush before creating MooseHuntingSummary in order to have
-        // harvest_permit_partners table populated.
-        persistInCurrentlyOpenTransaction();
-
-        final MooseHuntingSummary original = model().newMooseHuntingSummary(permit, club, false);
-
-        persistInCurrentlyOpenTransaction();
-
-        final MooseDataCard card = MooseDataCardObjectFactory.newMooseDataCard();
-        // Inject failure source.
-        card.setPage1(null);
-
-        assertFailure(transferer.upsertHuntingSummaryData(card, club, permit), throwable -> {
-            assertEquals(Collections.singletonList(original), summaryRepo.findAll());
-            assertEquals(Integer.valueOf(0), original.getConsistencyVersion());
         });
     }
 
@@ -201,7 +153,7 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
                 page7.getEstimatedSpecimenAmountOfWhiteTailedDeer(),
                 summary.getWhiteTailedDeerAppearance().getEstimatedAmountOfSpecimens());
         assertEquals(
-                convertTrendOfPopulationGrowthOfMooselikeSpecies(page7.getTrendOfWhiteTailedDeerPopulationGrowth()),
+                convertTrendOfPopulationGrowth(page7.getTrendOfWhiteTailedDeerPopulationGrowth()),
                 summary.getWhiteTailedDeerAppearance().getTrendOfPopulationGrowth());
 
         assertNotNull(summary.getRoeDeerAppearance());
@@ -210,7 +162,7 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
                 page7.getEstimatedSpecimenAmountOfRoeDeer(),
                 summary.getRoeDeerAppearance().getEstimatedAmountOfSpecimens());
         assertEquals(
-                convertTrendOfPopulationGrowthOfMooselikeSpecies(page7.getTrendOfRoeDeerPopulationGrowth()),
+                convertTrendOfPopulationGrowth(page7.getTrendOfRoeDeerPopulationGrowth()),
                 summary.getRoeDeerAppearance().getTrendOfPopulationGrowth());
 
         assertNotNull(summary.getWildForestReindeerAppearance());
@@ -219,7 +171,7 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
                 page7.getEstimatedSpecimenAmountOfWildForestReindeer(),
                 summary.getWildForestReindeerAppearance().getEstimatedAmountOfSpecimens());
         assertEquals(
-                convertTrendOfPopulationGrowthOfMooselikeSpecies(page7.getTrendOfWildForestReindeerPopulationGrowth()),
+                convertTrendOfPopulationGrowth(page7.getTrendOfWildForestReindeerPopulationGrowth()),
                 summary.getWildForestReindeerAppearance().getTrendOfPopulationGrowth());
 
         assertNotNull(summary.getFallowDeerAppearance());
@@ -228,8 +180,17 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
                 page7.getEstimatedSpecimenAmountOfFallowDeer(),
                 summary.getFallowDeerAppearance().getEstimatedAmountOfSpecimens());
         assertEquals(
-                convertTrendOfPopulationGrowthOfMooselikeSpecies(page7.getTrendOfFallowDeerPopulationGrowth()),
+                convertTrendOfPopulationGrowth(page7.getTrendOfFallowDeerPopulationGrowth()),
                 summary.getFallowDeerAppearance().getTrendOfPopulationGrowth());
+
+        assertNotNull(summary.getWildBoarAppearance());
+        assertEquals(Boolean.TRUE, summary.getWildBoarAppearance().getAppeared());
+        assertEquals(
+                page7.getEstimatedSpecimenAmountOfWildBoar(),
+                summary.getWildBoarAppearance().getEstimatedAmountOfSpecimens());
+        assertEquals(
+                convertTrendOfPopulationGrowth(page7.getTrendOfWildBoarPopulationGrowth()),
+                summary.getWildBoarAppearance().getTrendOfPopulationGrowth());
     }
 
     @Test
@@ -242,7 +203,10 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
                 .withEstimatedSpecimenAmountOfWildForestReindeer(-1)
                 .withTrendOfWildForestReindeerPopulationGrowth(INVALID)
                 .withEstimatedSpecimenAmountOfFallowDeer(-1)
-                .withTrendOfFallowDeerPopulationGrowth(INVALID);
+                .withTrendOfFallowDeerPopulationGrowth(INVALID)
+                .withEstimatedSpecimenAmountOfWildBoar(-1)
+                .withTrendOfWildBoarPopulationGrowth(INVALID)
+                .withEstimatedAmountOfSowsWithPiglets(-1);
 
         final MooseDataCard card = MooseDataCardObjectFactory.newMooseDataCard(page7);
 
@@ -268,6 +232,12 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
         assertEquals(Boolean.TRUE, summary.getFallowDeerAppearance().getAppeared());
         assertNull(summary.getFallowDeerAppearance().getEstimatedAmountOfSpecimens());
         assertNull(summary.getFallowDeerAppearance().getTrendOfPopulationGrowth());
+
+        assertNotNull(summary.getWildBoarAppearance());
+        assertEquals(Boolean.TRUE, summary.getWildBoarAppearance().getAppeared());
+        assertNull(summary.getWildBoarAppearance().getEstimatedAmountOfSpecimens());
+        assertNull(summary.getWildBoarAppearance().getTrendOfPopulationGrowth());
+        assertNull(summary.getWildBoarAppearance().getEstimatedAmountOfSowWithPiglets());
     }
 
     @Test
@@ -290,7 +260,7 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
             assertEquals(section84.getMooseFawnBeginDate(), summary.getMooseFawnBeginDate());
             assertEquals(section84.getMooseFawnEndDate(), summary.getMooseFawnEndDate());
 
-            assertEquals(MooseDataCardExtractor.convertDeerFlyAppearance(appearance), summary.getDeerFliesAppeared());
+            assertEquals(convertAppearance(appearance), summary.getDeerFliesAppeared());
 
             if (appearance == MooseDataCardGameSpeciesAppearance.NO) {
                 assertNull(summary.getDateOfFirstDeerFlySeen());
@@ -307,7 +277,7 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
                         section84.getNumberOfYoungMoosesHavingFlies(), summary.getNumberOfYoungMoosesHavingFlies());
                 assertEquals(
                         MooseDataCardExtractor
-                                .convertTrendOfPopulationGrowth(section84.getTrendOfDeerFlyPopulationGrowth()),
+                                .convertTrendOfPopulationGrowthOfFlyDeer(section84.getTrendOfDeerFlyPopulationGrowth()),
                         summary.getTrendOfDeerFlyPopulationGrowth());
             }
         });
@@ -341,7 +311,7 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
         assertNull(summary.getNumberOfAdultMoosesHavingFlies());
         assertNull(summary.getNumberOfYoungMoosesHavingFlies());
         assertEquals(
-                MooseDataCardExtractor.convertTrendOfPopulationGrowth(section84.getTrendOfDeerFlyPopulationGrowth()),
+                convertTrendOfPopulationGrowthOfFlyDeer(section84.getTrendOfDeerFlyPopulationGrowth()),
                 summary.getTrendOfDeerFlyPopulationGrowth());
     }
 
@@ -350,8 +320,8 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
         assertTrue(summary.isHuntingFinished());
     }
 
-    private static void assertTransferOfSection81(
-            final MooseHuntingSummary summary, final MooseDataCardSection_8_1 section81) {
+    private static void assertTransferOfSection81(final MooseHuntingSummary summary,
+                                                  final MooseDataCardSection_8_1 section81) {
 
         final AreaSizeAndRemainingPopulation areaAndPopulation = summary.getAreaSizeAndPopulation();
         assertNotNull(areaAndPopulation);
@@ -366,13 +336,11 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
                 areaAndPopulation.getRemainingPopulationInEffectiveArea());
 
         assertNull(summary.getEffectiveHuntingAreaPercentage());
-        assertEquals(
-                MooseDataCardExtractor.convertMooseHuntingAreaType(section81.getHuntingAreaType()),
-                summary.getHuntingAreaType());
+        assertEquals(convertMooseHuntingAreaType(section81.getHuntingAreaType()), summary.getHuntingAreaType());
     }
 
-    private static void assertTransferOfSection83(
-            final MooseHuntingSummary summary, final MooseDataCardSection_8_3 section83) {
+    private static void assertTransferOfSection83(final MooseHuntingSummary summary,
+                                                  final MooseDataCardSection_8_3 section83) {
 
         assertEquals(section83.getNumberOfDrownedMooses(), summary.getNumberOfDrownedMooses());
         assertEquals(section83.getNumberOfMoosesKilledByBear(), summary.getNumberOfMoosesKilledByBear());
@@ -387,5 +355,4 @@ public class MooseDataCardHuntingSummaryTransfererTest extends EmbeddedDatabaseT
                 section83.getNumberOfMoosesDeceasedByOtherReason(), summary.getNumberOfMoosesDeceasedByOtherReason());
         assertEquals(section83.getExplanationForOtherReason(), summary.getCauseOfDeath());
     }
-
 }

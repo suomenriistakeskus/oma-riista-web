@@ -9,8 +9,6 @@ UPDATE import_rhy
 SET geom = ST_Multi(ST_Buffer(geom, 0))
 WHERE NOT ST_IsValid(geom);
 
-DELETE FROM rhy;
-
 INSERT INTO rhy (gid, nimi_fi, nimi_sv, id, geom)
   SELECT
     gid,
@@ -19,5 +17,3 @@ INSERT INTO rhy (gid, nimi_fi, nimi_sv, id, geom)
     numero,
     geom
   FROM import_rhy;
-
-DROP TABLE import_rhy;

@@ -15,6 +15,7 @@ SELECT
   o.earmark,
   o.mooselike_male_amount,
   o.mooselike_female_amount,
+  o.mooselike_calf_amount,
   o.mooselike_female_1_calf_amount,
   o.mooselike_female_2_calfs_amount,
   o.mooselike_female_3_calfs_amount,

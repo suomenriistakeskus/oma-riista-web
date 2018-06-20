@@ -1,8 +1,8 @@
 package fi.riista.feature.gamediary.excel;
 
+import com.google.common.collect.Streams;
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
-import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
@@ -13,48 +13,41 @@ import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
 import fi.riista.util.F;
+import fi.riista.util.LocalisedEnum;
+import fi.riista.util.LocalisedString;
 import fi.riista.util.MediaTypeExtras;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.springframework.web.servlet.view.document.AbstractXlsView;
+import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 
-public class GameDiaryExcelView extends AbstractXlsView {
+public class GameDiaryExcelView extends AbstractXlsxView {
 
-    private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
-
-    private final Locale locale;
-    private final EnumLocaliser localiser;
-
+    private final EnumLocaliser i18n;
     private final List<HarvestDTO> harvests;
     private final List<ObservationDTO> observations;
-    private final Map<Integer, GameSpeciesDTO> species;
+    private final Map<Integer, LocalisedString> species;
 
-    public GameDiaryExcelView(final Locale locale,
-                              final EnumLocaliser localiser,
-                              final Map<Integer, GameSpeciesDTO> species,
-                              final List<HarvestDTO> harvests,
-                              final List<ObservationDTO> observations) {
-        this.locale = locale;
-        this.localiser = localiser;
-
+    GameDiaryExcelView(final EnumLocaliser localiser,
+                       final Map<Integer, LocalisedString> species,
+                       final List<HarvestDTO> harvests,
+                       final List<ObservationDTO> observations) {
+        this.i18n = localiser;
         this.species = species;
         this.harvests = harvests;
         this.observations = observations;
     }
 
     private String createFilename() {
-        return String.format("%s-%s.xls", localiser.getTranslation("gameDiary"), DATETIME_PATTERN.print(DateUtil.now()));
+        return String.format("%s-%s.xlsx", i18n.getTranslation("gameDiary"),
+                Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
     }
 
     @Override
@@ -64,37 +57,41 @@ public class GameDiaryExcelView extends AbstractXlsView {
                                       final HttpServletResponse response) {
         setContentType(MediaTypeExtras.APPLICATION_EXCEL_VALUE);
         response.setCharacterEncoding(Constants.DEFAULT_ENCODING);
-        response.setHeader(ContentDispositionUtil.HEADER_NAME,
-                ContentDispositionUtil.encodeAttachmentFilename(createFilename()));
+        ContentDispositionUtil.addHeader(response, createFilename());
 
         createHarvestsSheet(workbook);
         createObservationsSheet(workbook);
     }
 
     private void createHarvestsSheet(final Workbook workbook) {
-        final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("harvests"));
-        helper.appendHeaderRow(concatAndTranslate(getCommonHeaders(), "amount", "description", "gender", "age", "weight", "notEdible",
-                "weightEstimated", "weightMeasured", "fitnessClass", "antlersType", "antlersWidth",
-                "antlerPointsLeft", "antlerPointsRight", "additionalInfo"));
+        final ExcelHelper helper = new ExcelHelper(workbook, i18n.getTranslation("harvests"));
+
+        helper.appendHeaderRow(Streams.concat(
+                Arrays.stream(getCommonHeaders()),
+                Arrays.stream(getHarvestHeaders()),
+                Arrays.stream(getHarvestSpecimenHeaders()))
+                .map(i18n::getTranslation)
+                .collect(Collectors.toList()));
 
         for (HarvestDTO harvest : harvests) {
             final List<HarvestSpecimenDTO> specimens = harvest.getSpecimens();
             final int specimensSize = ofNullable(specimens).map(List::size).orElse(0);
             final int amount = harvest.getAmount();
 
-            if (specimensSize != amount && amount != 1 || specimensSize == 0) {
+            if (specimensSize < amount) {
+                // Export remaining specimens without details
                 helper.appendRow();
                 addCommonColumns(helper, harvest, harvest.getAuthorInfo(), harvest.getActorInfo());
-                helper.appendNumberCell(amount - specimensSize)
-                        .appendTextCell(harvest.getDescription());
+                addHarvestFields(helper, harvest, amount - specimensSize);
             }
-            for (int i = 0; i < specimensSize; i++) {
-                final HarvestSpecimenDTO specimen = specimens.get(i);
+
+            for (HarvestSpecimenDTO specimen : specimens) {
                 helper.appendRow();
+
                 addCommonColumns(helper, harvest, harvest.getAuthorInfo(), harvest.getActorInfo());
-                helper.appendNumberCell(1)
-                        .appendTextCell(harvest.getDescription())
-                        .appendTextCell(localise(specimen.getGender()))
+                addHarvestFields(helper, harvest, 1);
+
+                helper.appendTextCell(localise(specimen.getGender()))
                         .appendTextCell(localise(specimen.getAge()))
                         .appendNumberCell(specimen.getWeight())
                         .appendBoolCell(specimen.getNotEdible())
@@ -111,12 +108,43 @@ public class GameDiaryExcelView extends AbstractXlsView {
         helper.autoSizeColumns();
     }
 
+    private void addHarvestFields(final ExcelHelper helper, final HarvestDTO dto, final int amount) {
+        helper
+                .appendNumberCell(amount)
+                .appendTextCell(dto.getDescription())
+                .appendTextCell(i18n.getTranslation(dto.getHarvestReportState()))
+                .appendTextCell(dto.getPermitNumber())
+                .appendTextCell(i18n.getTranslation(dto.getFeedingPlace()))
+                .appendTextCell(i18n.getTranslation(dto.getTaigaBeanGoose()))
+                .appendTextCell(i18n.getTranslation(dto.getReportedWithPhoneCall()))
+                .appendTextCell(i18n.getTranslation(dto.getHuntingMethod()))
+                .appendTextCell(i18n.getTranslation(dto.getHuntingAreaType()))
+                .appendTextCell(dto.getHuntingParty())
+                .appendNumberCell(dto.getHuntingAreaSize());
+    }
+
+    private static String[] getHarvestHeaders() {
+        return new String[]{
+                "amount", "description", "state", "permitNumber",
+                "feedingPlace", "taigaBeanGoose", "reportedWithPhoneCall",
+                "huntingMethod", "huntingAreaType", "nameOfHuntingClubOrParty", "huntingAreaSize"};
+    }
+
+    private static String[] getHarvestSpecimenHeaders() {
+        return new String[]{"gender", "age", "weight", "notEdible",
+                "weightEstimated", "weightMeasured", "fitnessClass", "antlersType", "antlersWidth",
+                "antlerPointsLeft", "antlerPointsRight", "additionalInfo"};
+    }
+
     private void createObservationsSheet(final Workbook workbook) {
-        final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("observations"));
-        helper.appendHeaderRow(concatAndTranslate(getCommonHeaders(), "observationType", "amount", "description",
-                "mooselikeMaleAmount", "mooselikeFemaleAmount", "mooselikeFemale1CalfAmount",
-                "mooselikeFemale2CalfsAmount", "mooselikeFemale3CalfsAmount", "mooselikeFemale4CalfsAmount",
-                "mooselikeUnknownSpecimenAmount", "gender", "age", "gameMarking", "observedGameState"));
+        final ExcelHelper helper = new ExcelHelper(workbook, i18n.getTranslation("observations"));
+
+        helper.appendHeaderRow(Streams.concat(
+                Arrays.stream(getCommonHeaders()),
+                Arrays.stream(getObservationHeaders()),
+                Arrays.stream(getObservationSpecimenHeaders()))
+                .map(i18n::getTranslation)
+                .collect(Collectors.toList()));
 
         for (ObservationDTO observation : observations) {
             final List<ObservationSpecimenDTO> specimens = observation.getSpecimens();
@@ -158,7 +186,19 @@ public class GameDiaryExcelView extends AbstractXlsView {
                 .appendNumberCell(observation.getMooselikeFemale2CalfsAmount())
                 .appendNumberCell(observation.getMooselikeFemale3CalfsAmount())
                 .appendNumberCell(observation.getMooselikeFemale4CalfsAmount())
+                .appendNumberCell(observation.getMooselikeCalfAmount())
                 .appendNumberCell(observation.getMooselikeUnknownSpecimenAmount());
+    }
+
+    private static String[] getObservationHeaders() {
+        return new String[]{"observationType", "amount", "description"};
+    }
+
+    private static String[] getObservationSpecimenHeaders() {
+        return new String[]{"mooselikeMaleAmount", "mooselikeFemaleAmount", "mooselikeFemale1CalfAmount",
+                "mooselikeFemale2CalfsAmount", "mooselikeFemale3CalfsAmount", "mooselikeFemale4CalfsAmount",
+                "mooselikeCalfAmount", "mooselikeUnknownSpecimenAmount", "gender", "age", "gameMarking",
+                "observedGameState"};
     }
 
     private void addCommonColumns(final ExcelHelper helper,
@@ -168,7 +208,7 @@ public class GameDiaryExcelView extends AbstractXlsView {
         helper.appendNumberCell(entry.getId())
                 .appendDateCell(entry.getPointOfTime().toDate())
                 .appendTimeCell(entry.getPointOfTime().toDate())
-                .appendTextCell(localiser.getTranslation(entry.getGeoLocation().getSource()))
+                .appendTextCell(i18n.getTranslation(entry.getGeoLocation().getSource()))
                 .appendNumberCell(entry.getGeoLocation().getAccuracy())
                 .appendNumberCell(entry.getGeoLocation().getLatitude())
                 .appendNumberCell(entry.getGeoLocation().getLongitude())
@@ -176,21 +216,15 @@ public class GameDiaryExcelView extends AbstractXlsView {
                 .appendTextCell(author.getByName())
                 .appendTextCell(actor.getLastName())
                 .appendTextCell(actor.getByName())
-                .appendTextCell(species.get(entry.getGameSpeciesCode()).getName().get(locale.getLanguage()));
+                .appendTextCell(i18n.getTranslation(species.get(entry.getGameSpeciesCode())));
     }
 
-    private String localise(final Enum<?> e) {
-        return localiser.getTranslation(e);
+    private <E extends Enum<E> & LocalisedEnum> String localise(final E e) {
+        return i18n.getTranslation(e);
     }
 
     private static String[] getCommonHeaders() {
         return new String[]{"commonId", "date", "clockTime", "geolocationSource", "geolocationAccuracy", "latitude", "longitude",
                 "lastNameOfAuthor", "firstNameOfAuthor", "lastNameOfHunter", "firstNameOfHunter", "species"};
-    }
-
-    private String[] concatAndTranslate(final String[] arr1, final String... arr2) {
-        return Stream.concat(Arrays.stream(arr1), Arrays.stream(arr2))
-                .map(localiser::getTranslation)
-                .toArray(String[]::new);
     }
 }

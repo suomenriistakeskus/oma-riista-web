@@ -1,8 +1,9 @@
 package fi.riista.feature.organization.occupation;
 
-import fi.riista.feature.organization.address.AddressDTO;
+import fi.riista.config.Constants;
 import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.pub.occupation.PublicOccupationDTO;
+import fi.riista.feature.organization.address.AddressDTO;
+import fi.riista.feature.pub.occupation.PublicOccupationTypeDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.Locales;
@@ -14,7 +15,7 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.context.MessageSource;
-import org.springframework.web.servlet.view.document.AbstractXlsView;
+import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,10 +25,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-public class OccupationExcelView extends AbstractXlsView {
+public class OccupationExcelView extends AbstractXlsxView {
 
     private static final DateTimeFormatter DATE_PATTERN = DateTimeFormat.forPattern("d.M.yyyy");
-    private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
 
     public static final Predicate<OccupationDTO> PAST = occ -> {
         Objects.requireNonNull(occ, "occ must not be null");
@@ -43,8 +43,8 @@ public class OccupationExcelView extends AbstractXlsView {
         Objects.requireNonNull(occ, "occ must not be null");
         final LocalDate today = DateUtil.today();
 
-        return (occ.getBeginDate() == null || occ.getBeginDate().compareTo(today) < 0)
-                && (occ.getEndDate() == null || occ.getEndDate().compareTo(today) > 0);
+        return (occ.getBeginDate() == null || occ.getBeginDate().compareTo(today) <= 0)
+                && (occ.getEndDate() == null || occ.getEndDate().compareTo(today) >= 0);
     };
 
     private static final String[] HEADERS_FI = {
@@ -92,7 +92,7 @@ public class OccupationExcelView extends AbstractXlsView {
     }
 
     private String[] createRow(OccupationDTO result) {
-        final String occupationType = messageSource.getMessage(PublicOccupationDTO.class.getSimpleName() + "."
+        final String occupationType = messageSource.getMessage(PublicOccupationTypeDTO.class.getSimpleName() + "."
                 + organisationType.name()
                 + "."
                 + result.getOccupationType().name(), null, locale);
@@ -130,9 +130,9 @@ public class OccupationExcelView extends AbstractXlsView {
     }
 
     private String createFilename() {
-        final String timestamp = DATETIME_PATTERN.print(DateUtil.now());
+        final String timestamp = Constants.FILENAME_TS_PATTERN.print(DateUtil.now());
         final String prefix = messageSource.getMessage("occupations.title", null, locale);
-        return prefix + "-" + timestamp + ".xls";
+        return prefix + "-" + timestamp + ".xlsx";
     }
 
     @Override

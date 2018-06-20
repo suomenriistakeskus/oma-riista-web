@@ -21,7 +21,7 @@ public class HarvestPermitExistsDTO extends BaseEntityDTO<Long> {
         dto.setPermitNumber(permit.getPermitNumber());
         dto.setSpeciesAmounts(F.mapNonNullsToList(permit.getSpeciesAmounts(), HarvestPermitSpeciesAmountDTO::create));
         dto.setHarvestsAsList(permit.isHarvestsAsList());
-        dto.setUnavailable(permit.isUnavailable());
+        dto.setUnavailable(permit.isHarvestReportDone());
         dto.setPermittedMethodAllowed(permit.isPermittedMethodAllowed());
         return dto;
     }

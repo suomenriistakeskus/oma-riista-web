@@ -1,10 +1,14 @@
 package fi.riista.feature.huntingclub.permit.summary;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
+import fi.riista.test.EmbeddedDatabaseTest;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -14,10 +18,23 @@ import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertEquals;
 
-public class MooseHuntingSummaryCrudFeatureTest extends EmbeddedDatabaseTest {
+public class MooseHuntingSummaryCrudFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     @Resource
     private MooseHuntingSummaryCrudFeature feature;
+
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
+
+    @Before
+    public void disablePermitLockByDate() {
+        harvestPermitLockedByDateService.disableLockingForTests();
+    }
+
+    @After
+    public void enablePermitLockByDate() {
+        harvestPermitLockedByDateService.normalLocking();
+    }
 
     private final BiConsumer<HarvestPermit, HuntingClub> FEATURE_CREATE = (permit, club) -> {
         final MooseHuntingSummaryDTO dto = new MooseHuntingSummaryDTO();
@@ -331,7 +348,8 @@ public class MooseHuntingSummaryCrudFeatureTest extends EmbeddedDatabaseTest {
     public void testHuntingEndDateNotWithinPermittedDates() {
         withMooseHuntingGroupFixture(f -> {
             persistInNewTransaction();
-            final MooseHuntingSummary summary = model().newMooseHuntingSummary(f.permit, f.club, true);
+            model().newMooseHuntingSummary(f.permit, f.club, true);
+
             onSavedAndAuthenticated(createNewModerator(), () -> {
                 final MooseHuntingSummaryDTO dto = feature.getMooseSummary(f.club.getId(), f.permit.getId());
                 dto.setHuntingEndDate(f.speciesAmount.getBeginDate().minusDays(1));

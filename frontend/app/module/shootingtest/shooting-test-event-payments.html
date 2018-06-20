@@ -1,0 +1,99 @@
+<div class="row">
+    <div class="col-xs-offset-6 col-xs-6 col-sm-offset-7 col-sm-5 col-md-offset-8 col-md-4 col-lg-offset-9 col-lg-3">
+        <shooting-test-payment-summary total-paid-amount="$ctrl.event.totalPaidAmount"></shooting-test-payment-summary>
+    </div>
+</div>
+
+<table class="table table-striped table-condensed shooting-test-payment-list">
+    <thead>
+    <tr>
+        <th class="col-xs-3" translate="global.person.name"></th>
+        <th class="col-xs-2" translate="shootingTest.testType"></th>
+        <th translate="global.result"></th>
+        <th class="text-right" translate="global.pcs"></th>
+        <th class="text-right visible-xs visible-sm" translate="shootingTest.payment.payments"></th>
+        <th class="text-right visible-md visible-lg" translate="global.total"></th>
+        <th class="text-right visible-md visible-lg" translate="shootingTest.payment.paid"></th>
+        <th class="text-right visible-md visible-lg" translate="shootingTest.payment.remaining"></th>
+        <th ng-if="$ctrl.event.isOpen()"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr ng-repeat="participant in $ctrl.participants track by participant.id"
+        ng-class="{'shooting-test-participant-divider-row': $index === $ctrl.completedBeginIndex}">
+
+        <td>
+            <div>
+                <span ng-bind="participant.lastName"></span>
+                <span ng-bind="participant.firstName"></span>,
+                <span ng-bind="participant.hunterNumber"></span>
+            </div>
+            <div ng-if="!participant.completed">
+                <span class="shooting-test-status-badge-red" translate="shootingTest.payment.incomplete"></span>
+            </div>
+            <div ng-if="participant.completed">
+                <div ng-switch="$ctrl.hasIncompletePayment(participant)">
+                    <span ng-switch-when="true" class="shooting-test-status-badge-red" translate="shootingTest.payment.unpaid"></span>
+                    <span ng-switch-when="false" class="shooting-test-status-badge-green" translate="shootingTest.payment.paid"></span>
+                </div>
+            </div>
+        </td>
+        <td>
+            <div ng-repeat="attempt in participant.attempts track by attempt.type">
+                {{'shootingTest.type.' + attempt.type | translate}}
+            </div>
+        </td>
+        <td>
+            <div ng-repeat="attempt in participant.attempts track by attempt.type">
+                <div ng-switch="attempt.qualified">
+                    <span ng-switch-when="true" translate="shootingTest.result.QUALIFIED"></span>
+                    <span ng-switch-when="false" translate="shootingTest.result.UNQUALIFIED"></span>
+                </div>
+            </div>
+        </td>
+        <td class="text-right">
+            <div ng-repeat="attempt in participant.attempts track by attempt.type" ng-bind="attempt.attemptCount"></div>
+        </td>
+        <td class="visible-xs visible-sm">
+            <div class="row">
+                <span class="payment-col1" translate="global.total"></span>
+                <span class="payment-col2" ng-bind="participant.totalDueAmount | currency : '&euro;' : 2"></span>
+            </div>
+            <div class="row">
+                <span class="payment-col1" translate="shootingTest.payment.paid"></span>
+                <span class="payment-col2" ng-bind="participant.paidAmount | currency : '&euro;' : 2"></span>
+            </div>
+            <div class="row">
+                <span class="payment-col1" translate="shootingTest.payment.remaining"></span>
+                <span class="payment-col2" ng-bind="participant.remainingAmount | currency : '&euro;' : 2"></span>
+            </div>
+        </td>
+        <td class="text-right visible-md visible-lg">
+            <span ng-bind="participant.totalDueAmount | currency : '&euro;' : 2"></span>
+        </td>
+        <td class="text-right visible-md visible-lg">
+            <span ng-bind="participant.paidAmount | currency : '&euro;' : 2"></span>
+        </td>
+        <td class="text-right visible-md visible-lg">
+            <span ng-class="{'incomplete-payment': $ctrl.hasIncompletePayment(participant)}"
+                  ng-bind="participant.remainingAmount | currency : '&euro;' : 2"></span>
+        </td>
+        <td class="shooting-test-buttons" ng-if="$ctrl.event.isOpen()">
+            <button class="btn" ng-class="$ctrl.getCompleteButtonClass(participant)"
+                    ng-disabled="participant.completed || !$ctrl.hasUpdatePermission"
+                    ng-confirm-click="{{ 'shootingTest.payment.confirmation' | translate:{'firstName': participant.firstName, 'lastName': participant.lastName, 'hunterNumber': participant.hunterNumber} }}"
+                    ng-confirm-click-action="$ctrl.completePayment(participant)">
+                <span class="glyphicon glyphicon-ok"
+                      title="{{'shootingTest.payment.button.setCompleted' | translate}}"></span>
+            </button>
+            <button class="btn btn-default"
+                    ng-click="$ctrl.updatePayment(participant)"
+                    ng-disabled="!$ctrl.hasUpdatePermission">
+                <span class="glyphicon glyphicon-edit"
+                      title="{{'shootingTest.payment.button.changePaidAmount' | translate}}"></span>
+            </button>
+        </td>
+    </tr>
+    </tbody>
+</table>

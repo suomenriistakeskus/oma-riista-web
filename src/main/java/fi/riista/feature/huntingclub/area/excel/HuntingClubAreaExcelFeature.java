@@ -10,8 +10,7 @@ import fi.riista.feature.common.entity.PropertyIdentifier;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
-import fi.riista.security.EntityPermission;
-import fi.riista.sql.SQPalstaalue;
+import fi.riista.sql.SQKiinteistoNimet;
 import fi.riista.sql.SQZonePalsta;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -26,12 +25,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Locale;
 
+import static fi.riista.security.EntityPermission.READ;
 import static java.util.Collections.emptyList;
 
 @Component
 public class HuntingClubAreaExcelFeature {
+
     @Resource
     private RequireEntityService requireEntityService;
 
@@ -44,19 +44,16 @@ public class HuntingClubAreaExcelFeature {
     private NamedParameterJdbcOperations namedParameterJdbcTemplate;
 
     @Autowired
-    public void setDataSource(DataSource dataSource) {
+    public void setDataSource(final DataSource dataSource) {
         this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
     }
 
     @Transactional(readOnly = true)
     public HuntingClubAreaExcelView exportAll(final long clubAreaId) {
-        final HuntingClubArea huntingClubArea = requireEntityService
-                .requireHuntingClubArea(clubAreaId, EntityPermission.READ);
+        final HuntingClubArea huntingClubArea = requireEntityService.requireHuntingClubArea(clubAreaId, READ);
 
-        final Locale locale = LocaleContextHolder.getLocale();
-        final EnumLocaliser enumLocaliser = new EnumLocaliser(messageSource, locale);
-
-        return new HuntingClubAreaExcelView(locale, enumLocaliser,
+        return new HuntingClubAreaExcelView(
+                new EnumLocaliser(messageSource, LocaleContextHolder.getLocale()),
                 huntingClubArea.getClub().getNameLocalisation(),
                 huntingClubArea.getNameLocalisation(),
                 fetchAll(huntingClubArea));
@@ -64,13 +61,10 @@ public class HuntingClubAreaExcelFeature {
 
     @Transactional(readOnly = true)
     public HuntingClubAreaChangedExcelView exportChanged(final long clubAreaId) {
-        final HuntingClubArea huntingClubArea = requireEntityService
-                .requireHuntingClubArea(clubAreaId, EntityPermission.READ);
+        final HuntingClubArea huntingClubArea = requireEntityService.requireHuntingClubArea(clubAreaId, READ);
 
-        final Locale locale = LocaleContextHolder.getLocale();
-        final EnumLocaliser enumLocaliser = new EnumLocaliser(messageSource, locale);
-
-        return new HuntingClubAreaChangedExcelView(locale, enumLocaliser,
+        return new HuntingClubAreaChangedExcelView(
+                new EnumLocaliser(messageSource, LocaleContextHolder.getLocale()),
                 huntingClubArea.getClub().getNameLocalisation(),
                 huntingClubArea.getNameLocalisation(),
                 fetchChanged(huntingClubArea));
@@ -98,12 +92,13 @@ public class HuntingClubAreaExcelFeature {
                 ") SELECT" +
                 " zp.palsta_id AS id," +
                 " zp.palsta_tunnus AS tunnus," +
+                " kn.nimi AS nimi," +
                 " ST_Area(zp.geom) AS area_size," +
                 " COALESCE(ex.excluded_size, 0) AS excluded_size," +
                 " zp.is_changed" +
                 " FROM zone_palsta zp" +
                 " LEFT JOIN ex USING (palsta_id)" +
-                " LEFT JOIN palstaalue pa ON (pa.id = zp.palsta_id)" +
+                " LEFT JOIN kiinteisto_nimet kn ON (kn.tunnus = zp.palsta_tunnus)" +
                 " WHERE zp.zone_id = :zoneId" +
                 " ORDER BY zp.palsta_tunnus, zp.palsta_id;";
 
@@ -112,6 +107,7 @@ public class HuntingClubAreaExcelFeature {
         return namedParameterJdbcTemplate.query(sql, params, (rs, i) -> new HuntingClubAreaExcelView.ExcelRow(
                 rs.getInt("id"),
                 PropertyIdentifier.create(rs.getLong("tunnus")),
+                rs.getString("nimi"),
                 rs.getDouble("area_size"),
                 rs.getDouble("excluded_size"),
                 rs.getBoolean("is_changed")
@@ -119,27 +115,30 @@ public class HuntingClubAreaExcelFeature {
     }
 
     private List<HuntingClubAreaChangedExcelView.ExcelRow> fetchChanged(final @Nonnull GISZone zoneEntity) {
-        final SQZonePalsta zonePalsta = new SQZonePalsta("zp");
-        final SQPalstaalue pa1 = new SQPalstaalue("pa1"); // Current
-        final SQPalstaalue pa2 = new SQPalstaalue("pa2"); // New
+        final SQZonePalsta ZONE_PALSTA = new SQZonePalsta("zp");
+        final SQKiinteistoNimet NIMI_A = new SQKiinteistoNimet("n1"); // Current
+        final SQKiinteistoNimet NIMI_B = new SQKiinteistoNimet("n2"); // New
 
-        final NumberPath<Integer> pathPalstaId = zonePalsta.palstaId;
-        final NumberPath<Integer> pathPalstaIdNew = zonePalsta.newPalstaId;
+        final NumberPath<Integer> pathPalstaId = ZONE_PALSTA.palstaId;
 
-        final NumberPath<Long> pathPalstaTunnus = zonePalsta.palstaTunnus;
-        final NumberPath<Long> pathPalstaTunnusNew = zonePalsta.newPalstaTunnus;
+        final NumberPath<Long> pathPalstaTunnus = ZONE_PALSTA.palstaTunnus;
+        final NumberPath<Long> pathPalstaTunnusNew = ZONE_PALSTA.newPalstaTunnus;
 
-        final NumberPath<Double> pathAreaDiff = zonePalsta.diffArea;
-        final NumberExpression<Double> pathAreaSize = zonePalsta.geom.asMultiPolygon().area();
+        final StringPath pathPalstaName = NIMI_A.nimi;
+        final StringPath pathPalstaNameNew = NIMI_B.nimi;
+
+        final NumberPath<Double> pathAreaDiff = ZONE_PALSTA.diffArea;
+        final NumberExpression<Double> pathAreaSize = ZONE_PALSTA.geom.asMultiPolygon().area();
 
         return sqlQueryFactory
-                .from(zonePalsta)
-                .leftJoin(pa1).on(pa1.id.eq(pathPalstaId))
-                .leftJoin(pa2).on(pa2.id.eq(pathPalstaIdNew))
-                .where(zonePalsta.zoneId.eq(zoneEntity.getId())
-                        .and(zonePalsta.isChanged.isTrue()))
+                .from(ZONE_PALSTA)
+                .leftJoin(NIMI_A).on(NIMI_A.tunnus.eq(pathPalstaTunnus))
+                .leftJoin(NIMI_B).on(NIMI_B.tunnus.eq(pathPalstaTunnusNew))
+                .where(ZONE_PALSTA.zoneId.eq(zoneEntity.getId())
+                        .and(ZONE_PALSTA.isChanged.isTrue()))
                 .select(Projections.constructor(HuntingClubAreaChangedExcelView.ExcelRow.class,
                         pathPalstaTunnus, pathPalstaTunnusNew,
+                        pathPalstaName, pathPalstaNameNew,
                         pathAreaSize, pathAreaDiff))
                 .orderBy(pathPalstaTunnus.asc(), pathPalstaId.asc())
                 .fetch();

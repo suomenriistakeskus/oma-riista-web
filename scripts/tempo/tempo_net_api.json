@@ -1,0 +1,4074 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Tempo Net API",
+        "description": "",
+        "version": "1"
+    },
+    "basePath": "/tempo-net-api/index.php",
+    "paths": {
+        "/account.json": {},
+        "/account.json/{account_id}": {
+            "get": {
+                "tags": [
+                    "account"
+                ],
+                "summary": "Show account",
+                "description": "Show account",
+                "operationId": "showAccount",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamAccountId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Account details were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/Account"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/account.json/project/{project_id}": {},
+        "/announcement.json": {
+            "get": {
+                "tags": [
+                    "announcement"
+                ],
+                "summary": "Get announcements",
+                "description": "...",
+                "operationId": "getAnnouncements",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamSearchProjectId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamSearchCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamSearchId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseAnnouncements"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/announcement.json/project/{project_id}": {
+            "post": {
+                "tags": [
+                    "announcement"
+                ],
+                "summary": "Add announcement to project",
+                "description": "Add announcement",
+                "operationId": "addAnnouncementToProject",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamAddAnnouncement"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNewResource"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/announcement.json/company/{company_id}": {
+            "post": {
+                "tags": [
+                    "announcement"
+                ],
+                "summary": "Add announcement to company",
+                "description": "Add announcement",
+                "operationId": "addAnnouncementToCompany",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamAddAnnouncement"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNewResource"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/announcement.json/{announcement_id}": {
+            "put": {
+                "tags": [
+                    "announcement"
+                ],
+                "summary": "Update announcement",
+                "description": "Update announcement details",
+                "operationId": "updateAnnouncement",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamUpdateAnnouncement"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamAnnouncementId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "announcement"
+                ],
+                "summary": "Delete announcement",
+                "description": "Removes an announcement.",
+                "operationId": "deleteAnnouncement",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamAnnouncementId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/call_ring.json/{company_id}": {
+            "put": {
+                "tags": [
+                    "call ring"
+                ],
+                "summary": "Add or update call ring",
+                "operationId": "putCallRing",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamCallRingDetails"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/call_ring.json/{company_id}/{ring_number}": {
+            "get": {
+                "tags": [
+                    "call ring"
+                ],
+                "summary": "Get call ring details",
+                "operationId": "getCallRing",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamRingNumber"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Call ring details were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/CallRing"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "call ring"
+                ],
+                "summary": "Delete call ring",
+                "operationId": "deleteCallRing",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamRingNumber"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/call_tracking.json/{company_id}/{short_number}": {
+            "get": {
+                "tags": [
+                    "call tracking"
+                ],
+                "summary": "List call tracking rules",
+                "description": "Lists short numbers's call tracking rules.",
+                "operationId": "getCallTrackingRules",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamShortNumber"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Call tracking rules were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/CallTrackingRules"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "call tracking"
+                ],
+                "summary": "Update call tracking rules",
+                "description": "Registers call tracking rules for specified short number. Current implementation provides email reporting of calls that were answered/unanswered.",
+                "operationId": "updateCallTrackingRules",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCallTrackingRules"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamShortNumber"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/company.json": {
+            "get": {
+                "tags": [
+                    "company"
+                ],
+                "summary": "Get companies",
+                "description": "...",
+                "operationId": "getCompanies",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamSearchProjectId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamSearchId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseCompanies"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/company.json/{company_id}": {
+            "get": {
+                "tags": [
+                    "company"
+                ],
+                "summary": "Get company details",
+                "description": "Reads configuration details of a company.",
+                "operationId": "getCompany",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Company details were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/Company"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "deprecated": true,
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "company"
+                ],
+                "summary": "Update company details",
+                "description": "Updates the configuration details of a company.",
+                "operationId": "updateCompany",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyDetails"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "company"
+                ],
+                "summary": "Delete company",
+                "description": "Removes a company. Short numbers belonging to the removed company are also removed.",
+                "operationId": "deleteCompany",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/company.json/project/{project_id}": {
+            "post": {
+                "tags": [
+                    "company"
+                ],
+                "summary": "Add company",
+                "description": "Company is a logical unit within project. Short numbers, IVRs, etc. belong to one and only one company.",
+                "operationId": "addCompany",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyDetails"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNewResource"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/company.json/{company_id}/short_numbers": {
+            "get": {
+                "tags": [
+                    "company"
+                ],
+                "summary": "List company short numbers",
+                "description": "Lists all short numbers belonging to particular company.",
+                "operationId": "getCompanyShortNumbers",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of short numbers was fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/ShortNumbers"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "deprecated": true,
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/defaults.json/project/{project_id}": {
+            "get": {
+                "tags": [
+                    "defaults"
+                ],
+                "summary": "Get project defaults",
+                "description": "...",
+                "operationId": "getProjectDefaults",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Defaults details were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/ShowDefaults"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "defaults"
+                ],
+                "summary": "Set project defaults",
+                "operationId": "setProjectDefaults",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamDefaults"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/file/{file_id}": {
+            "get": {
+                "tags": [
+                    "file"
+                ],
+                "summary": "Download file",
+                "description": "Download file from the server by id",
+                "operationId": "getFileById",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamFileId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File was fetched successfully.",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/ivr.json/company/{company_id}": {
+            "post": {
+                "tags": [
+                    "ivr"
+                ],
+                "summary": "Create IVR",
+                "description": "IVR...",
+                "operationId": "createIvr",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamIvr"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNewResource"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/ivr.json/{ivr_id}": {
+            "delete": {
+                "tags": [
+                    "ivr"
+                ],
+                "summary": "Delete IVR",
+                "description": "Removes an IVR",
+                "operationId": "deleteIvr",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamIvrId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/ivr.json": {
+            "get": {
+                "tags": [
+                    "ivr"
+                ],
+                "summary": "Get IVRs",
+                "description": "...",
+                "operationId": "getIvrs",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamMenuNumberId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamSearchCompanyId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseIvrs"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/language.json": {
+            "get": {
+                "tags": [
+                    "language"
+                ],
+                "summary": "List languages",
+                "description": "Lists supported languages",
+                "operationId": "getLanguages",
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseLanguages"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/notification.json/{number_id}": {
+            "post": {
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Make notification call",
+                "description": "Make notification call",
+                "operationId": "notify",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamNumberId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamNotification"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNewResources"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/number.json": {
+            "get": {
+                "tags": [
+                    "number"
+                ],
+                "summary": "Get numbers",
+                "description": "...",
+                "operationId": "getNumbers",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamNumberLanguageId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamNumberType"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamNumberInfo"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamNumberNumber"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamSearchId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamSearchCompanyId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNumbers"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/number.json/{number_id}": {
+            "get": {
+                "tags": [
+                    "number"
+                ],
+                "summary": "Get number details",
+                "description": "Reads number details. USE /number.json ENDPOINT INSTEAD!",
+                "operationId": "getNumber",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamNumberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Number details were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/Number"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "deprecated": true,
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "number"
+                ],
+                "summary": "Update number details",
+                "description": "Updates a number.",
+                "operationId": "updateNumbers",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamNumberId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamUpdateNumber"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/number.json/company/{company_id}": {},
+        "/post_code.json": {
+            "get": {
+                "tags": [
+                    "post_code"
+                ],
+                "summary": "Get post codes",
+                "description": "...",
+                "operationId": "getPostCodes",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamSearchPostCode"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamSearchTownCode"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponsePostCodes"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/project.json/{project_id}": {
+            "get": {
+                "tags": [
+                    "project"
+                ],
+                "summary": "Get project details",
+                "description": "Project can be considered as a top-level 'account' on Tempo Platform. Username and password of the API access are the credentials of the project. All interfaces in this API create/read/update/delete resources that belong to the project. Removing the project removes all resources allocated by the project.",
+                "operationId": "getProject",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Project details were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/Project"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/project.json": {},
+        "/project.json/{project_id}/companies": {
+            "get": {
+                "tags": [
+                    "project"
+                ],
+                "summary": "List companies",
+                "description": "Lists companies in this project.",
+                "operationId": "listCompanies",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of companies were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/Companies"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "deprecated": true,
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/project.json/{project_id}/templates": {
+            "get": {
+                "tags": [
+                    "project"
+                ],
+                "summary": "List templates",
+                "description": "Lists all templates that are available in this project.",
+                "operationId": "listTemplates",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of templates was fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/Templates"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/provision.json/{number_id}": {
+            "get": {
+                "tags": [
+                    "provision"
+                ],
+                "summary": "Get provisioning details",
+                "description": "Reads provisioning details.",
+                "operationId": "getProvision",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamNumberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ProvisionShow"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "provision"
+                ],
+                "summary": "Update provisioning details",
+                "description": "Updates provisioning.",
+                "operationId": "updateProvision",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamProvision"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamNumberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/ringtone.json/company/{company_id}": {
+            "post": {
+                "tags": [
+                    "ringtone"
+                ],
+                "summary": "Add ringtone",
+                "description": "...",
+                "operationId": "add_ringtone",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamAddRingtone"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNewResource"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/ringtone.json/{ringtone_id}": {
+            "delete": {
+                "tags": [
+                    "ringtone"
+                ],
+                "summary": "Delete ringtone",
+                "description": "Removes a ringtone.",
+                "operationId": "deleteRingtone",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamRingtoneId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/ringtone.json": {
+            "get": {
+                "tags": [
+                    "ringtone"
+                ],
+                "summary": "Get ringtones",
+                "description": "...",
+                "operationId": "getRingtones",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamSearchCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamSearchId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseRingtones"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/ringtone/{number_id}": {},
+        "/short_number.json/{company_id}": {
+            "put": {
+                "tags": [
+                    "short number"
+                ],
+                "summary": "Add or update short number",
+                "description": "Updates the configuration of an existing short number or configures a new short number if it doesn't exist.  Short numbers can be dialed like regular numbers but unlike regular numbers short numbers cannot be registered to a phone. As a consequence short numbers are always redirected to some regular number(s). A short number can be redirected to different  list of numbers depending on the date and time of the call. start_date, start_time, end_date, end_time, weekday_mask attributes  define when numbers in call list are applicable. If date and time rules of multiple RedirectTo objects match the first one in the list is used.",
+                "operationId": "addOrUpdateShortNumber",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamShortNumberDetails"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/short_number.json/{company_id}/{short_number}": {
+            "get": {
+                "tags": [
+                    "short number"
+                ],
+                "summary": "Get short number details",
+                "description": "Reads short number configuration details.",
+                "operationId": "getShortNumber",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamShortNumber"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Short number details were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/ShortNumber"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "deprecated": true,
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "short number"
+                ],
+                "summary": "Delete short number",
+                "description": "Removes a short number and all associated call tracking rules.",
+                "operationId": "deleteShortNumber",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamCompanyId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamShortNumber"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/short_number.json": {
+            "get": {
+                "tags": [
+                    "short number"
+                ],
+                "summary": "Get short numbers",
+                "description": "...",
+                "operationId": "getShortNumbers",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamSearchCompanyId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Short number details were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/ShortNumbers"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/template.json/{template_id}": {
+            "get": {
+                "tags": [
+                    "template"
+                ],
+                "summary": "Get template details",
+                "description": "Reads template details.",
+                "operationId": "getTemplate",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamTemplateId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Template details were fetched successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/Template"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "template"
+                ],
+                "summary": "Update template details",
+                "description": "Updates a template.",
+                "operationId": "updateTemplate",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamTemplateDetails"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamTemplateId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "template"
+                ],
+                "summary": "Delete template",
+                "description": "Removes a template.",
+                "operationId": "deleteTemplate",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamTemplateId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/template.json/project/{project_id}": {
+            "post": {
+                "tags": [
+                    "template"
+                ],
+                "summary": "Add template",
+                "description": "Templates are used within Tempo Platform to construct variable-dependant strings. Template format is [mustache](https://mustache.github.io/)",
+                "operationId": "addTemplate",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamTemplateDetails"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNewResource"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/upload.json/{project_id}": {
+            "post": {
+                "tags": [
+                    "upload"
+                ],
+                "summary": "Upload file",
+                "description": "Upload files to the server.",
+                "operationId": "upload",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamUpload"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNewResource"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/yealink.json/project/{project_id}": {
+            "post": {
+                "tags": [
+                    "yealink"
+                ],
+                "summary": "Provision Yealink phone",
+                "description": "Provision Yealink phone",
+                "operationId": "yealink_add",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamProjectId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamYealink"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseNewResource"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/yealink.json": {
+            "get": {
+                "tags": [
+                    "yealink"
+                ],
+                "summary": "Get yealinks",
+                "description": "...",
+                "operationId": "getYealinks",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamSearchId"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamSearchProjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/ResponseYealinks"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/yealink.json/{yealink_id}": {
+            "put": {
+                "tags": [
+                    "yealink"
+                ],
+                "summary": "Update yealink",
+                "description": "Update yealink details",
+                "operationId": "updateYealink",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamYealinkUpdate"
+                    },
+                    {
+                        "$ref": "#/parameters/ParamYealinkId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "400": {
+                        "$ref": "#/responses/Response400"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "yealink"
+                ],
+                "summary": "Delete yealink phone",
+                "description": "Removes an yealink phone.",
+                "operationId": "deleteYealink",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/ParamYealinkId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/Response200"
+                    },
+                    "401": {
+                        "$ref": "#/responses/Response401"
+                    },
+                    "403": {
+                        "$ref": "#/responses/Response403"
+                    },
+                    "404": {
+                        "$ref": "#/responses/Response404"
+                    },
+                    "500": {
+                        "$ref": "#/responses/Response500"
+                    }
+                },
+                "security": [
+                    {
+                        "sso": [
+                            "openid"
+                        ]
+                    },
+                    {
+                        "http_basic": []
+                    }
+                ]
+            }
+        },
+        "/yealink.json/{yealink_id}/set_admin_encryption_key": {},
+        "/yealink.json/{yealink_id}/check_config": {}
+    },
+    "definitions": {
+        "UpdateAccount": {
+            "required": [
+                "passwd"
+            ],
+            "properties": {
+                "passwd": {
+                    "description": "password",
+                    "type": "string"
+                }
+            }
+        },
+        "AddAccount": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/UpdateAccount"
+                },
+                {
+                    "required": [
+                        "username"
+                    ],
+                    "properties": {
+                        "username": {
+                            "description": "username",
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "Account": {
+            "required": [
+                "id",
+                "project_id",
+                "username"
+            ],
+            "properties": {
+                "id": {
+                    "description": "account identifier",
+                    "type": "string"
+                },
+                "project_id": {
+                    "description": "account identifier",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "username",
+                    "type": "string"
+                }
+            }
+        },
+        "Accounts": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Account"
+            }
+        },
+        "BaseAnnouncement": {
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "description": "human friendly announcement identifier",
+                    "type": "string"
+                }
+            }
+        },
+        "AddAnnouncement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseAnnouncement"
+                },
+                {
+                    "required": [
+                        "files"
+                    ],
+                    "properties": {
+                        "files": {
+                            "description": "different language versions of the announcement",
+                            "type": "array",
+                            "items": {
+                                "required": [
+                                    "language_id",
+                                    "upload_id"
+                                ],
+                                "properties": {
+                                    "language_id": {
+                                        "description": "language identifier",
+                                        "type": "integer"
+                                    },
+                                    "upload_id": {
+                                        "description": "upload identifier",
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "UpdateAnnouncement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseAnnouncement"
+                },
+                {
+                    "required": [
+                        "files"
+                    ],
+                    "properties": {
+                        "files": {
+                            "description": "different language version definitions",
+                            "type": "array",
+                            "items": {
+                                "required": [
+                                    "language_id"
+                                ],
+                                "properties": {
+                                    "language_id": {
+                                        "description": "language identifier",
+                                        "type": "integer"
+                                    },
+                                    "upload_id": {
+                                        "description": "upload identifier",
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "ShowAnnouncement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseAnnouncement"
+                },
+                {
+                    "required": [
+                        "id",
+                        "files"
+                    ],
+                    "properties": {
+                        "id": {
+                            "description": "announcement identifier",
+                            "type": "string"
+                        },
+                        "files": {
+                            "description": "different language versions of the announcement",
+                            "type": "array",
+                            "items": {
+                                "required": [
+                                    "language_id",
+                                    "file_id"
+                                ],
+                                "properties": {
+                                    "language_id": {
+                                        "description": "language identifier",
+                                        "type": "integer"
+                                    },
+                                    "file_id": {
+                                        "description": "file identifier",
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "BasicRedirection": {
+            "required": [
+                "call",
+                "ringing_timeout",
+                "answer_preferences",
+                "language_id"
+            ],
+            "properties": {
+                "call": {
+                    "description": "phone numbers that will be called. numbers are tried for answer in order from first to last. hunting stops once some number answers or the end of the list is reached.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ringing_timeout": {
+                    "description": "number of seconds to let it ring without answer before trying next number in call list",
+                    "type": "integer",
+                    "default": 30
+                },
+                "answer_preferences": {
+                    "description": "'1' means 'do not confirm call answer with DTMF', '0' means 'use recipients answer preferences', '2' means 'confirm answer with DTMF'",
+                    "type": "integer",
+                    "default": 1
+                },
+                "language_id": {
+                    "description": "call ring language",
+                    "type": "integer"
+                },
+                "dtmf_instructions_announcement_id": {
+                    "description": "instructions announcement id",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "dtmf_incorrect_announcement_id": {
+                    "description": "incorrect selection announcement id",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "dtmf_accepted_announcement_id": {
+                    "description": "selection accepted announcement id",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "dtmf_instructions_enabled": {
+                    "description": "is 'instructions' announcement enabled",
+                    "type": "boolean"
+                },
+                "dtmf_incorrect_enabled": {
+                    "description": "is 'incorrect selection' announcement enabled",
+                    "type": "boolean"
+                },
+                "dtmf_accepted_enabled": {
+                    "description": "is 'selection accepted' announcement enabled",
+                    "type": "boolean"
+                }
+            },
+            "type": "object"
+        },
+        "CallRingSetup": {
+            "required": [
+                "default"
+            ],
+            "properties": {
+                "default": {
+                    "$ref": "#/definitions/BasicRedirection"
+                }
+            }
+        },
+        "BaseCallRing": {
+            "required": [
+                "setup",
+                "number"
+            ],
+            "properties": {
+                "setup": {
+                    "$ref": "#/definitions/CallRingSetup"
+                },
+                "number": {
+                    "type": "string"
+                }
+            }
+        },
+        "CallRing": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseCallRing"
+                },
+                {
+                    "required": [
+                        "company_id"
+                    ],
+                    "properties": {
+                        "company_id": {
+                            "description": "identifier of call ring's parent company",
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "EmailCallTrackingReport": {
+            "required": [
+                "type",
+                "email",
+                "message_template_id",
+                "subject_template_id"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "EmailCallTrackingReport"
+                    ]
+                },
+                "email": {
+                    "description": "recipient of the call tracking report",
+                    "type": "string"
+                },
+                "message_template_id": {
+                    "description": "identifier of the template used to construct the body of the email",
+                    "type": "integer"
+                },
+                "subject_template_id": {
+                    "description": "identifier of the template used to construct the subject of the email",
+                    "type": "integer"
+                }
+            },
+            "discriminator": "method"
+        },
+        "CallTrackingRule": {
+            "required": [
+                "event",
+                "report"
+            ],
+            "properties": {
+                "event": {
+                    "description": "type of the event that triggers reporting",
+                    "type": "string",
+                    "enum": [
+                        "NO_ANSWER"
+                    ]
+                },
+                "report": {
+                    "$ref": "#/definitions/EmailCallTrackingReport"
+                }
+            }
+        },
+        "CallTrackingRules": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/CallTrackingRule"
+            }
+        },
+        "BaseCompany": {
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "description": "human-friendly identifier",
+                    "type": "string"
+                }
+            }
+        },
+        "Companies": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Company"
+            }
+        },
+        "Company": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseCompany"
+                },
+                {
+                    "required": [
+                        "id",
+                        "external_id"
+                    ],
+                    "properties": {
+                        "id": {
+                            "description": "company identifier",
+                            "type": "integer"
+                        },
+                        "external_id": {
+                            "description": "user-specified company identifier",
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "ShowDefaults": {
+            "required": [
+                "menus_announcement_id",
+                "menus_instructions_id",
+                "menus_badchoice_id",
+                "menus_connecting_id"
+            ],
+            "properties": {
+                "menus_announcement_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "menus_instructions_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "menus_badchoice_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "menus_connecting_id": {
+                    "description": "...",
+                    "type": "integer"
+                }
+            }
+        },
+        "Defaults": {
+            "properties": {
+                "menus_announcement_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "menus_instructions_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "menus_badchoice_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "menus_connecting_id": {
+                    "description": "...",
+                    "type": "integer"
+                }
+            }
+        },
+        "IvrChoice": {
+            "required": [
+                "action",
+                "input"
+            ],
+            "properties": {
+                "action": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "input": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "confirmation_id": {
+                    "description": "...",
+                    "type": "integer"
+                }
+            }
+        },
+        "Ivr": {
+            "required": [
+                "menu_number_id",
+                "name",
+                "choices"
+            ],
+            "properties": {
+                "menu_number_id": {
+                    "description": "access number id",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "IVR name",
+                    "type": "string"
+                },
+                "max_loops": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "dtmf_length": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "show_caller_number": {
+                    "description": "...",
+                    "type": "boolean"
+                },
+                "announcement_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "instructions_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "badchoice_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "connecting_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IvrChoice"
+                    }
+                }
+            }
+        },
+        "IvrShow": {
+            "required": [
+                "id",
+                "menu_number_id",
+                "name",
+                "choices"
+            ],
+            "properties": {
+                "id": {
+                    "description": "ivr id",
+                    "type": "integer"
+                },
+                "menu_number_id": {
+                    "description": "access number id",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "IVR name",
+                    "type": "string"
+                },
+                "max_loops": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "dtmf_length": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "show_caller_number": {
+                    "description": "...",
+                    "type": "boolean"
+                },
+                "announcement_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "instructions_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "badchoice_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "connecting_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/IvrChoice"
+                    }
+                }
+            }
+        },
+        "Language": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "lang_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "NumberWhitelist": {
+            "required": [
+                "number",
+                "direction",
+                "users",
+                "whitelistlevel"
+            ],
+            "properties": {
+                "number": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "direction": {
+                    "description": "2 - in, 3 - out",
+                    "type": "integer",
+                    "enum": [
+                        2,
+                        3
+                    ]
+                },
+                "users": {
+                    "description": "...",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "whitelistlevel": {
+                    "description": "...",
+                    "type": "integer"
+                }
+            }
+        },
+        "UpdateNumber": {
+            "properties": {
+                "language_id": {
+                    "description": "language",
+                    "type": "integer"
+                },
+                "type": {
+                    "description": "type",
+                    "type": "string",
+                    "enum": [
+                        "VoIP",
+                        "Mobile",
+                        "tech"
+                    ]
+                },
+                "info": {
+                    "description": "Additional information",
+                    "type": "string"
+                },
+                "voiplocation_code": {
+                    "description": "Town code that matches phone's physical location",
+                    "type": "string"
+                },
+                "aservicemask_id": {
+                    "description": "Barring class",
+                    "type": "integer"
+                },
+                "use_default": {
+                    "description": "use defaults",
+                    "type": "boolean"
+                },
+                "whitelist_mode": {
+                    "description": "0 - disabled, 1 - both, 2 - in, 3 - out",
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                "whitelist": {
+                    "description": "...",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/NumberWhitelist"
+                    }
+                },
+                "whitelist_pin_in_enabled": {
+                    "description": "...",
+                    "type": "boolean"
+                },
+                "whitelist_pin_in": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "whitelist_pin_out_enabled": {
+                    "description": "...",
+                    "type": "boolean"
+                },
+                "whitelist_pin_out": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "notify": {
+                    "description": "...",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "operator_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "forward_autoself": {
+                    "description": "auto answer",
+                    "type": "boolean"
+                },
+                "alert_info_enabled": {
+                    "description": "...",
+                    "type": "boolean"
+                }
+            }
+        },
+        "AddNumber": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/UpdateNumber"
+                },
+                {
+                    "properties": {
+                        "number": {
+                            "description": "number",
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "Number": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/AddNumber"
+                },
+                {
+                    "required": [
+                        "id",
+                        "company_id"
+                    ],
+                    "properties": {
+                        "id": {
+                            "description": "number identifier",
+                            "type": "integer"
+                        },
+                        "company_id": {
+                            "description": "company identifier",
+                            "type": "integer"
+                        }
+                    }
+                }
+            ]
+        },
+        "Numbers": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Number"
+            }
+        },
+        "PostCodeShow": {
+            "required": [
+                "post_code",
+                "town_code"
+            ],
+            "properties": {
+                "post_code": {
+                    "description": "post code",
+                    "type": "string"
+                },
+                "town_code": {
+                    "description": "town code",
+                    "type": "string"
+                }
+            }
+        },
+        "BaseProject": {
+            "required": [
+                "email",
+                "name"
+            ],
+            "properties": {
+                "email": {
+                    "description": "email address of project's contact person",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "human-friendly identifier",
+                    "type": "string"
+                }
+            }
+        },
+        "Project": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseProject"
+                },
+                {
+                    "required": [
+                        "id"
+                    ],
+                    "properties": {
+                        "id": {
+                            "description": "project identifier",
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "Projects": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Project"
+            }
+        },
+        "ProvisionYealink": {
+            "required": [
+                "id",
+                "line"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "line": {
+                    "type": "integer"
+                }
+            },
+            "type": "object"
+        },
+        "ProvisionData": {
+            "properties": {
+                "yealink": {
+                    "$ref": "#/definitions/ProvisionYealink"
+                }
+            },
+            "type": "object"
+        },
+        "AddRingtone": {
+            "required": [
+                "name",
+                "upload_id"
+            ],
+            "properties": {
+                "name": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "upload_id": {
+                    "description": "...",
+                    "type": "integer"
+                }
+            }
+        },
+        "RingtoneVersion": {
+            "required": [
+                "codec",
+                "file_id"
+            ],
+            "properties": {
+                "codec": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "file_id": {
+                    "description": "file identifier",
+                    "type": "integer"
+                }
+            }
+        },
+        "ShowRingtone": {
+            "required": [
+                "id",
+                "company_id",
+                "name",
+                "versions"
+            ],
+            "properties": {
+                "id": {
+                    "description": "ringtone identifier",
+                    "type": "integer"
+                },
+                "company_id": {
+                    "description": "company identifier",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "ringtone name",
+                    "type": "string"
+                },
+                "versions": {
+                    "description": "different versions of the ringtone",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/RingtoneVersion"
+                    }
+                }
+            }
+        },
+        "BaseShortNumber": {
+            "required": [
+                "short_number",
+                "number_id"
+            ],
+            "properties": {
+                "number_id": {
+                    "type": "integer"
+                },
+                "short_number": {
+                    "description": "short number as it would be dialed",
+                    "type": "string"
+                }
+            }
+        },
+        "ShortNumber": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseShortNumber"
+                },
+                {
+                    "required": [
+                        "company_id"
+                    ],
+                    "properties": {
+                        "company_id": {
+                            "description": "identifier of short number's parent company",
+                            "type": "integer"
+                        }
+                    }
+                }
+            ]
+        },
+        "ShortNumbers": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/ShortNumber"
+            }
+        },
+        "Error": {
+            "required": [
+                "msg"
+            ],
+            "properties": {
+                "msg": {
+                    "description": "description of violation",
+                    "type": "string"
+                },
+                "property": {
+                    "description": "identifier of erroneous property",
+                    "type": "string"
+                },
+                "key": {
+                    "description": "identifier of erroneous property",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "invalid value",
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "Errors": {
+            "properties": {
+                "errors": {
+                    "description": "invalid value",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Error"
+                    }
+                }
+            }
+        },
+        "NewResource": {
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "description": "identifier of the new resource",
+                    "type": "integer"
+                }
+            }
+        },
+        "BaseTemplate": {
+            "required": [
+                "template"
+            ],
+            "properties": {
+                "template": {
+                    "description": "{{ [mustache](https://mustache.github.io/) }} template",
+                    "type": "string"
+                }
+            }
+        },
+        "Template": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/BaseTemplate"
+                },
+                {
+                    "required": [
+                        "id"
+                    ],
+                    "properties": {
+                        "id": {
+                            "description": "template identiefier",
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "Templates": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/Template"
+            }
+        },
+        "ShowYealink": {
+            "required": [
+                "id",
+                "initialized",
+                "type",
+                "mac",
+                "contacts",
+                "speed_dials",
+                "language_id",
+                "super_search_enabled"
+            ],
+            "properties": {
+                "id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "super_search_enabled": {
+                    "description": "...",
+                    "type": "boolean"
+                },
+                "initialized": {
+                    "description": "...",
+                    "type": "boolean"
+                },
+                "type": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "mac": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "vpn_cnf_has": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "openvpn_fetched_at": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "http_user_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "openvpn_client_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "language_id": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "hotline_number": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "hotline_delay": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "contacts": {
+                    "description": "...",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/YealinkContact"
+                    }
+                },
+                "speed_dials": {
+                    "description": "...",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/YealinkSpeedDial"
+                    }
+                }
+            }
+        },
+        "YealinkContact": {
+            "required": [
+                "name",
+                "mobile_number",
+                "group"
+            ],
+            "properties": {
+                "name": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "mobile_number": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "office_number": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "group": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "ringtone_id": {
+                    "description": "...",
+                    "type": "integer"
+                }
+            }
+        },
+        "YealinkSpeedDial": {
+            "required": [
+                "input",
+                "dial"
+            ],
+            "properties": {
+                "input": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "dial": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "...",
+                    "type": "string"
+                }
+            }
+        },
+        "YealinkUpdate": {
+            "properties": {
+                "hotline_number": {
+                    "description": "...",
+                    "type": "string"
+                },
+                "hotline_delay": {
+                    "description": "...",
+                    "type": "integer"
+                },
+                "contacts": {
+                    "description": "...",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/YealinkContact"
+                    }
+                },
+                "speed_dials": {
+                    "description": "...",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/YealinkSpeedDial"
+                    }
+                }
+            }
+        },
+        "NewPassword": {
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "password": {
+                    "description": "password",
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "parameters": {
+        "ParamAddAccount": {
+            "name": "add_account",
+            "in": "body",
+            "description": "configuration details for an account",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/AddAccount"
+            }
+        },
+        "ParamAccountId": {
+            "name": "account_id",
+            "in": "path",
+            "description": "the id of the account that this operation affects",
+            "required": true,
+            "type": "string"
+        },
+        "ParamUpdateAccount": {
+            "name": "update_account",
+            "in": "body",
+            "description": "configuration details for an account",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/UpdateAccount"
+            }
+        },
+        "ParamAnnouncementId": {
+            "name": "announcement_id",
+            "in": "path",
+            "description": "the id of the announcement that this operation affects",
+            "required": true,
+            "type": "string"
+        },
+        "ParamAddAnnouncement": {
+            "name": "add_announcement",
+            "in": "body",
+            "description": "configuration details for an announcement",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/AddAnnouncement"
+            }
+        },
+        "ParamUpdateAnnouncement": {
+            "name": "update_announcement",
+            "in": "body",
+            "description": "update details for an announcement",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/UpdateAnnouncement"
+            }
+        },
+        "ParamRingNumber": {
+            "name": "ring_number",
+            "in": "path",
+            "description": "the number of call ring that this operation affects",
+            "required": true,
+            "type": "string"
+        },
+        "ParamCallRingDetails": {
+            "name": "call_ring_details",
+            "in": "body",
+            "description": "call ring configuration details",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/BaseCallRing"
+            }
+        },
+        "ParamCallTrackingRules": {
+            "name": "call tracking rules",
+            "in": "body",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/CallTrackingRules"
+            }
+        },
+        "ParamCompanyId": {
+            "name": "company_id",
+            "in": "path",
+            "description": "the id of the company that this operation affects",
+            "required": true,
+            "type": "string"
+        },
+        "ParamCompanyDetails": {
+            "name": "company_details",
+            "in": "body",
+            "description": "configuratin details for a company",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/BaseCompany"
+            }
+        },
+        "ParamSearchCompanyId": {
+            "name": "s_company_id",
+            "in": "query",
+            "description": "company identifier",
+            "required": false,
+            "type": "string"
+        },
+        "ParamDefaults": {
+            "name": "defaults",
+            "in": "body",
+            "description": "...",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/Defaults"
+            }
+        },
+        "ParamFileId": {
+            "name": "file_id",
+            "in": "path",
+            "description": "the id of the file",
+            "required": true,
+            "type": "string"
+        },
+        "ParamIvrId": {
+            "name": "ivr_id",
+            "in": "path",
+            "description": "the id of the IVR",
+            "required": true,
+            "type": "string"
+        },
+        "ParamIvr": {
+            "name": "ivr",
+            "in": "body",
+            "description": "object that describes an ivr",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/Ivr"
+            }
+        },
+        "ParamMenuNumberId": {
+            "name": "s_menu_number_id",
+            "in": "query",
+            "description": "identifier",
+            "required": false,
+            "type": "string"
+        },
+        "ParamNotification": {
+            "name": "notification_notify",
+            "in": "body",
+            "description": "object that describes a notification",
+            "required": true,
+            "schema": {
+                "type": "object",
+                "required": [
+                    "recipients",
+                    "message",
+                    "prompt_connect"
+                ],
+                "properties": {
+                    "recipients": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "required": [
+                            "text"
+                        ],
+                        "properties": {
+                            "text": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "prompt_connect": {
+                        "type": "string",
+                        "enum": [
+                            "true",
+                            "false",
+                            "none",
+                            "direct"
+                        ]
+                    },
+                    "ringing_timeout": {
+                        "type": "integer"
+                    },
+                    "callback": {
+                        "required": [
+                            "url"
+                        ],
+                        "properties": {
+                            "url": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "ParamNumberId": {
+            "name": "number_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+        },
+        "ParamAddNumbers": {
+            "name": "add_numbers",
+            "in": "body",
+            "description": "object that describes list of numbers",
+            "required": true,
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/AddNumber"
+                }
+            }
+        },
+        "ParamUpdateNumber": {
+            "name": "update_number",
+            "in": "body",
+            "description": "object that describes a number",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/UpdateNumber"
+            }
+        },
+        "ParamNumberLanguageId": {
+            "name": "s_language_id",
+            "in": "query",
+            "description": "language_id",
+            "required": false,
+            "type": "integer"
+        },
+        "ParamNumberType": {
+            "name": "s_type",
+            "in": "query",
+            "description": "type",
+            "required": false,
+            "type": "string"
+        },
+        "ParamNumberInfo": {
+            "name": "s_info",
+            "in": "query",
+            "description": "info",
+            "required": false,
+            "type": "string"
+        },
+        "ParamNumberNumber": {
+            "name": "s_number",
+            "in": "query",
+            "description": "number",
+            "required": false,
+            "type": "string"
+        },
+        "ParamSearchPostCode": {
+            "name": "s_post_code",
+            "in": "query",
+            "description": "post code",
+            "required": false,
+            "type": "string"
+        },
+        "ParamSearchTownCode": {
+            "name": "s_town_code",
+            "in": "query",
+            "description": "town code",
+            "required": false,
+            "type": "string"
+        },
+        "ParamSearchProjectId": {
+            "name": "s_project_id",
+            "in": "query",
+            "description": "project id",
+            "required": false,
+            "type": "string"
+        },
+        "ParamProjectId": {
+            "name": "project_id",
+            "in": "path",
+            "description": "the id of the project that this operation affects",
+            "required": true,
+            "type": "string"
+        },
+        "ParamProjectDetails": {
+            "name": "project_details",
+            "in": "body",
+            "description": "configuration details for a project",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/BaseProject"
+            }
+        },
+        "ParamProvision": {
+            "name": "provision",
+            "in": "body",
+            "description": "object that describes a provisioning",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/ProvisionData"
+            }
+        },
+        "ParamRingtoneId": {
+            "name": "ringtone_id",
+            "in": "path",
+            "description": "the id of the ringtone that this operation affects",
+            "required": true,
+            "type": "string"
+        },
+        "ParamAddRingtone": {
+            "name": "add_ringtone",
+            "in": "body",
+            "description": "object that describes a ringtone",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/AddRingtone"
+            }
+        },
+        "ParamShortNumber": {
+            "name": "short_number",
+            "in": "path",
+            "description": "the short number that this operation affects",
+            "required": true,
+            "type": "string"
+        },
+        "ParamShortNumberDetails": {
+            "name": "short_number_details",
+            "in": "body",
+            "description": "short number configuration details",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/BaseShortNumber"
+            }
+        },
+        "ParamSearchId": {
+            "name": "s_id",
+            "in": "query",
+            "description": "identifier",
+            "required": false,
+            "type": "string"
+        },
+        "ParamTemplateDetails": {
+            "name": "template_details",
+            "in": "body",
+            "description": "object that describes a template",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/BaseTemplate"
+            }
+        },
+        "ParamTemplateId": {
+            "name": "template_id",
+            "in": "path",
+            "description": "the id of the template that this operation affects",
+            "required": true,
+            "type": "string"
+        },
+        "ParamUpload": {
+            "name": "file",
+            "in": "formData",
+            "description": "file to upload",
+            "required": true,
+            "type": "file"
+        },
+        "ParamYealinkUpdate": {
+            "name": "yealink",
+            "in": "body",
+            "description": "object that describes a yealink update",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/YealinkUpdate"
+            }
+        },
+        "ParamYealink": {
+            "name": "yealink",
+            "in": "body",
+            "description": "object that describes a yealink phone",
+            "required": true,
+            "schema": {
+                "type": "object",
+                "required": [
+                    "type",
+                    "mac",
+                    "language_id"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "T19P_E2"
+                        ]
+                    },
+                    "mac": {
+                        "type": "string"
+                    },
+                    "language_id": {
+                        "type": "integer"
+                    },
+                    "super_search_enabled": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+        "ParamYealinkId": {
+            "name": "yealink_id",
+            "in": "path",
+            "description": "the id of the yealink that this operation affects",
+            "required": true,
+            "type": "string"
+        },
+        "ParamPgpPubkey": {
+            "name": "pgp_pubkey",
+            "in": "formData",
+            "description": "pgp public key",
+            "required": true,
+            "type": "file"
+        }
+    },
+    "responses": {
+        "ResponseAnnouncements": {
+            "description": "Announcements details were fetched successfully.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/ShowAnnouncement"
+                }
+            }
+        },
+        "ResponseCompanies": {
+            "description": "Companies were fetched successfully.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/Company"
+                }
+            }
+        },
+        "ResponseIvrs": {
+            "description": "Ivr details were fetched successfully.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/IvrShow"
+                }
+            }
+        },
+        "ResponseLanguages": {
+            "description": "List of languages was fetched successfully.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/Language"
+                }
+            }
+        },
+        "ResponseNumbers": {
+            "description": "Number details were fetched successfully.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/Number"
+                }
+            }
+        },
+        "ResponsePostCodes": {
+            "description": "Post codes were fetched successfully.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/PostCodeShow"
+                }
+            }
+        },
+        "ProvisionShow": {
+            "description": "Provisioning details were fetched successfully.",
+            "schema": {
+                "$ref": "#/definitions/ProvisionData"
+            }
+        },
+        "ResponseRingtones": {
+            "description": "Ringtones were fetched successfully.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/ShowRingtone"
+                }
+            }
+        },
+        "Response200": {
+            "description": "Operation was successful."
+        },
+        "Response400": {
+            "description": "Request data was invalid.",
+            "schema": {
+                "$ref": "#/definitions/Errors"
+            }
+        },
+        "Response401": {
+            "description": "Access is denied. Invalid or no credentials were provided."
+        },
+        "Response403": {
+            "description": "Access is forbidden.",
+            "schema": {
+                "$ref": "#/definitions/Errors"
+            }
+        },
+        "Response404": {
+            "description": "Resource was not found. Path parameters didn't match any resource.",
+            "schema": {
+                "$ref": "#/definitions/Errors"
+            }
+        },
+        "Response500": {
+            "description": "Internal server error"
+        },
+        "ResponseNewResource": {
+            "description": "Operation was successful. Returned data contains the id of newly created resource.",
+            "schema": {
+                "$ref": "#/definitions/NewResource"
+            }
+        },
+        "ResponseNewResources": {
+            "description": "Operation was successful. Returned data contains the ids of newly created resources.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/NewResource"
+                }
+            }
+        },
+        "ResponseNewPassword": {
+            "description": "Operation was successful. Returned data contains the new password.",
+            "schema": {
+                "$ref": "#/definitions/NewPassword"
+            }
+        },
+        "ResponseYealinks": {
+            "description": "Yealinks were fetched successfully.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/ShowYealink"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "http_basic": {
+            "type": "basic",
+            "description": "Log in with local account"
+        },
+        "sso": {
+            "type": "oauth2",
+            "flow": "implicit",
+            "authorizationUrl": "http://auth.nsfoffice:8080/auth/realms/master/protocol/openid-connect/auth",
+            "scopes": {
+                "openid": "Log in with NSF Telecom"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "call ring",
+            "description": "Manage call rings"
+        },
+        {
+            "name": "short number",
+            "description": "Manage short numbers"
+        },
+        {
+            "name": "project",
+            "description": "Manage your project"
+        },
+        {
+            "name": "company",
+            "description": "Manage companies"
+        },
+        {
+            "name": "template",
+            "description": "Manage templates"
+        },
+        {
+            "name": "call tracking",
+            "description": "Manage call tracking rules"
+        },
+        {
+            "name": "language",
+            "description": "Manage languages"
+        },
+        {
+            "name": "post_code",
+            "description": "Manage post codes"
+        },
+        {
+            "name": "account",
+            "description": "Manage accounts"
+        },
+        {
+            "name": "number",
+            "description": "Manage numbers"
+        },
+        {
+            "name": "upload",
+            "description": "Manage uploads"
+        },
+        {
+            "name": "file",
+            "description": "Manage files"
+        },
+        {
+            "name": "announcement",
+            "description": "Manage announcements"
+        },
+        {
+            "name": "notification",
+            "description": "Make notifications"
+        },
+        {
+            "name": "yealink",
+            "description": "Manage Yealink phones"
+        },
+        {
+            "name": "provision",
+            "description": "Manage provisioning"
+        },
+        {
+            "name": "ivr",
+            "description": "Manage IVRs"
+        },
+        {
+            "name": "defaults",
+            "description": "Manage defaults"
+        },
+        {
+            "name": "ringtone",
+            "description": "Manage ringtones"
+        }
+    ]
+}

@@ -1,7 +1,6 @@
 package fi.riista.feature.organization.jht.nomination;
 
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.common.dto.DoNotValidate;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
@@ -10,6 +9,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.validation.DoNotValidate;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 

@@ -14,7 +14,7 @@ import javax.annotation.Resource;
 @QuartzScheduledJob(
         name = "MailSender",
         enabledProperty = "mail.enabled",
-        fixedRate = 30_000)
+        fixedRate = 5_000)
 public class EmailSchedulerJob implements Job {
     private static final Logger LOG = LoggerFactory.getLogger(EmailSchedulerJob.class);
 

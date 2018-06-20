@@ -1,29 +1,28 @@
 package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.gamediary.image.GameDiaryImage;
-import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
+import fi.riista.feature.gamediary.srva.AbstractSrvaEventDTOTransformerTest;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
+import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
 import fi.riista.feature.gamediary.srva.method.SrvaMethod;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
-import fi.riista.feature.gamediary.srva.AbstractSrvaEventDTOTransformerTest;
+import fi.riista.test.rules.HibernateStatisticsAssertions;
 import fi.riista.util.F;
-import fi.riista.util.Functions;
-import fi.riista.util.jpa.HibernateStatisticsAssertions;
-import javaslang.Tuple2;
+import io.vavr.Tuple2;
 import org.junit.Test;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
-import static fi.riista.util.TestUtils.createList;
+import static fi.riista.feature.gamediary.image.GameDiaryImage.getUniqueImageIds;
+import static fi.riista.test.TestUtils.createList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class MobileSrvaEventDTOTransformerTest extends AbstractSrvaEventDTOTransformerTest {
@@ -121,10 +120,8 @@ public class MobileSrvaEventDTOTransformerTest extends AbstractSrvaEventDTOTrans
                     assertNotNull(dto);
                     assertCommonFields(pairs.get(i)._1, dto);
 
-                    final Set<UUID> uuids =
-                            F.mapNonNullsToSet(pairs.get(i)._2, Functions.idOf(GameDiaryImage::getFileMetadata));
+                    assertThat(dto.getImageIds(), containsInAnyOrder(getUniqueImageIds(pairs.get(i)._2).toArray()));
 
-                    assertEquals(uuids, new HashSet<>(dto.getImageIds()));
                     assertCanEdit(dto);
                     assertEquals(specVersion, dto.getSrvaEventSpecVersion());
                 }

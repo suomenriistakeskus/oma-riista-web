@@ -1,0 +1,114 @@
+<h1>Ansökning inlämnad</h1>
+<h2>Tillstånd som ansöks</h2>
+<p>
+    Tillstånd som ansöks: {{ permitType.swedish }}<br/>
+    Ansökningsnummer: {{ applicationNumber }}
+</p>
+
+<h3>Tillståndets kontaktperson</h3>
+<p>
+    {{contactPerson.firstName}} {{contactPerson.lastName}}<br/>
+    {{contactPerson.address.streetAddress}}<br/>
+    {{contactPerson.address.postalCode}} {{contactPerson.address.city}}, {{contactPerson.address.country}}<br/>
+    Telefonnummer: {{contactPerson.phoneNumber}}<br/>
+    E-postadress: {{contactPerson.email}}
+</p>
+
+<h3>Tillståndet söks av</h3>
+<p>
+{{~#if permitHolder}}
+    {{ permitHolder.officialCode }} - {{ permitHolder.nameSV }}
+{{else}}
+    {{contactPerson.firstName}} {{contactPerson.lastName}}<br/>
+    {{contactPerson.address.streetAddress}}<br/>
+    {{contactPerson.address.postalCode}} {{contactPerson.address.city}}, {{contactPerson.address.country}}<br/>
+    Telefonnummer: {{contactPerson.phoneNumber}}<br/>
+    E-postadress: {{contactPerson.email}}
+{{/if~}}
+</p>
+
+<h2>Antal jaktlicenser som söks</h2>
+{{#each speciesAmounts~}}
+    <p>{{name.swedish}} {{amount}} st.</p>
+{{/each}}
+{{~#if includeSpeciesDescriptions}}
+<h2>Motiveringen för ansökan</h2>
+{{#each speciesAmounts~}}
+{{~#if description~}}
+    <p>{{name.swedish}}: {{description}}</p>
+{{/if~}}
+{{/each~}}
+{{/if~}}
+{{#if partners}}
+<h2>Delägare</h2>
+<p>
+{{#each partners~}}
+    {{officialCode}} - {{name.swedish}}, Områdets beteckning: {{areaCodes}}<br/>
+{{/each~}}
+</p>
+{{/if}}
+<h2>Ansökningsområde</h2>
+Markyta: {{hectaresRounded landAreaSize}}<br>
+Vattenarealen: {{hectaresRounded  waterAreaSize}}<br>
+Areal: {{hectaresRounded  totalAreaSize}}<br>
+Statsägda områdens areal: {{hectaresRounded  stateLandAreaSize}}<br>
+Privatägda områdens areal: {{hectaresRounded privateLandAreaSize}}<br>
+
+<h3>Ansökningsområdet är beläget på följande jaktvårdsföreningars områden</h3>
+<p>
+{{#each rhys~}}
+    {{rhy.nameSV}} {{hectaresRounded bothSize.total}}<br/>
+{{/each~}}
+</p>
+{{#if htas}}
+<h3>Ansökningsområdet är beläget på följande älgförvaltningsområdens områden</h3>
+<p>
+{{#each htas~}}
+    {{hta.nameSV}} {{hectaresRounded computedAreaSize}}<br/>
+{{/each~}}
+</p>
+{{/if~}}
+{{#if freeHunting}}
+    <h2>Antalet skyttar JL 8 §</h2>
+    <p>Skyttar som inte hör till annan  förening / annat sällskap som ansöker om jaktlicens: {{shooterOnlyClub}}</p>
+    <p>Skyttar som hör till en annan förening / annat sällskap som jagar älg men
+        som inte jagar där under den aktuella jaktsäsongen: {{shooterOtherClubPassive}}</p>
+    <p>Skyttar som hör till en annan förening / annat sällskap som jagar älg
+        och som jagar där under den aktuella jaktsäsongen: {{shooterOtherClubActive}}</p>
+    <p>Det totala antalet skyttar som inverkar på antalet jaktlicenser: {{shooterTotal}}</p>
+{{/if}}
+<h2>Bilagor</h2>
+{{#if freeHunting}}
+    <h3>Områdeslicens JL 8 §</h3>
+    <p>
+    {{#each mhAreaPermits~}}
+        {{ this }}<br/>
+    {{/each~}}
+    </p>
+
+    <h3>Skytteförteckningar JL 8 §</h3>
+    <p>
+    {{#each shooterLists~}}
+        {{ this }}<br/>
+    {{/each~}}
+    </p>
+{{/if~}}
+{{#if otherAttachments}}
+    <h3>Övriga bilagor</h3>
+    <p>
+    {{#each otherAttachments~}}
+        {{ this }}<br/>
+    {{/each~}}
+    </p>
+{{/if}}
+<h2>Leverans av tillståndsbeslut</h2>
+{{#if deliveryByMail}}
+    <p>Jag önskar beslutet per brevpost</p>
+{{else}}
+    <p>Jag önskar beslutet i elektronisk form</p>
+{{/if~}}
+{{#if additionalEmails}}
+    <p>
+        Elektronisk distribution: {{email1}} {{email2}}
+    </p>
+{{/if~}}

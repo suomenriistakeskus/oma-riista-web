@@ -70,7 +70,7 @@
     </div>
 
     <div class="buttons">
-        <button ng-show="group.canEdit" ng-click="addMember()" class="btn btn-primary">
+        <button ng-show="canEdit()" ng-click="addMember()" class="btn btn-primary">
             <span class="glyphicon glyphicon-plus"></span> &nbsp;
             <span translate="club.genericMember.button.add"></span>
         </button>
@@ -79,7 +79,7 @@
 
 <group-member-list
         members="members"
-        can-edit="group.canEdit">
+        can-edit="canEdit()">
 </group-member-list>
 
 <group-moose-data-card-import-list

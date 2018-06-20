@@ -43,6 +43,8 @@ public class SQHta extends RelationalPathSpatial<SQHta> {
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> _harvestPermitMooseAreaFk = createInvForeignKey(gid, "moose_area_id");
 
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitAreaHta> _harvestPermitAreaHtaRefFk = createInvForeignKey(gid, "hta_id");
+
     public final com.querydsl.sql.ForeignKey<SQOrganisation> _organisationMooseAreaFk = createInvForeignKey(gid, "moose_area_id");
 
     public SQHta(String variable) {
@@ -52,6 +54,11 @@ public class SQHta extends RelationalPathSpatial<SQHta> {
 
     public SQHta(String variable, String schema, String table) {
         super(SQHta.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQHta(String variable, String schema) {
+        super(SQHta.class, forVariable(variable), schema, "hta");
         addMetadata();
     }
 

@@ -1,8 +1,8 @@
 package fi.riista.feature.organization.jht.nomination;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.jht.JHTPeriod;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;

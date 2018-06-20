@@ -39,7 +39,7 @@ public class SecurityConfigurationProperties {
         return TTL_REMEMBER_ME_NORMAL.toDurationFrom(DateUtil.now()).toStandardSeconds();
     }
 
-    public Seconds getRemeberMeTimeToLiveForModerator() {
+    public Seconds getRememberMeTimeToLiveForModerator() {
         return TTL_REMEMBER_ME_MODERATOR.toDurationFrom(DateUtil.now()).toStandardSeconds();
     }
 

@@ -1,14 +1,16 @@
 package fi.riista.feature.huntingclub.register;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubDTO;
+import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.OrganisationType;
@@ -24,9 +26,10 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.util.F;
-import javaslang.Tuple3;
+import io.vavr.Tuple3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -38,10 +41,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +54,8 @@ import static java.util.stream.Collectors.toList;
 public class RegisterHuntingClubFeature {
     private static final Logger LOG = LoggerFactory.getLogger(RegisterHuntingClubFeature.class);
 
-    public static final double MAX_FUZZY_DISTANCE_ORGANISATION_NAME = 0.7;
-    public static final int MAX_RESULT_ORGANISATION = 5;
+    private static final double MAX_FUZZY_DISTANCE_ORGANISATION_NAME = 0.7;
+    private static final int MAX_RESULT_ORGANISATION = 5;
 
     @Resource
     private ActiveUserService activeUserService;
@@ -75,8 +75,11 @@ public class RegisterHuntingClubFeature {
     @Resource
     private RiistanhoitoyhdistysRepository riistanhoitoyhdistysRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @Resource
+    private PersonRepository personRepository;
+
+    @Resource
+    private JPQLQueryFactory jpqlQueryFactory;
 
     @Transactional(readOnly = true)
     public List<LHOrganisationSearchDTO> findByName(final String queryString) {
@@ -106,12 +109,14 @@ public class RegisterHuntingClubFeature {
 
         // Lookup table: clubOfficialCode -> contactPerson
         final Map<String, Person> activeClubs = findClubOfficialCodesWithActiveContactPerson(officialCodeList);
+        final List<String> deactiveExistingClubOfficialCodes = findDeactiveExistingClubOfficialCodes(officialCodeList);
 
         return matches.stream()
                 // Sanity check: filter invalid results which should not exist
                 .filter(club -> club.getNameFinnish() != null && StringUtils.hasText(club.getOfficialCode()) &&
                         (club.getRhyOfficialCode() != null || club.getContactPersonRhy() != null) &&
-                        rhyExists(club.getRhyOfficialCode()))
+                        rhyExists(club.getRhyOfficialCode()) &&
+                        !deactiveExistingClubOfficialCodes.contains(club.getOfficialCode()))
                 .map(club -> {
                     final LHOrganisationSearchDTO dto = LHOrganisationSearchDTO.create(club);
 
@@ -139,7 +144,7 @@ public class RegisterHuntingClubFeature {
         final BooleanExpression isContactPerson = occupation.occupationType.eq(OccupationType.SEURAN_YHDYSHENKILO);
 
         // NOTE: If multiple occupation exist with same callOrder -> selects contactPerson randomly
-        return new JPAQuery<>(entityManager)
+        return jpqlQueryFactory
                 .from(occupation)
                 .join(occupation.organisation, organisation)
                 .where(occupation.validAndNotDeleted()
@@ -150,13 +155,17 @@ public class RegisterHuntingClubFeature {
                 .transform(GroupBy.groupBy(organisation.officialCode).as(occupation.person));
     }
 
+    private List<String> findDeactiveExistingClubOfficialCodes(final List<String> officialCodeList) {
+        final QHuntingClub CLUB = QHuntingClub.huntingClub;
+        return jpqlQueryFactory.select(CLUB.officialCode)
+                .from(CLUB)
+                .where(CLUB.officialCode.in(officialCodeList), CLUB.active.isFalse())
+                .fetch();
+    }
+
     @Transactional
     public Map<String, Object> register(final LHOrganisationSearchDTO dto) {
-        final SystemUser activeUser = activeUserService.getActiveUser();
-
-        if (activeUser.getPerson() == null) {
-            throw new IllegalStateException("No person associated with active user");
-        }
+        final SystemUser activeUser = activeUserService.requireActiveUser();
 
         final LHOrganisation lhOrganisation = findLhOrg(dto);
         final String officialCode = lhOrganisation.getOfficialCode();
@@ -175,16 +184,28 @@ public class RegisterHuntingClubFeature {
             if (activeContactPersons.isPresent()) {
                 return ImmutableMap.<String, Object> builder()
                         .put("result", "exists")
+                        .put("clubId", club.getId())
                         .put("contactPersonName", activeContactPersons.get().getPerson().getFullName())
                         .build();
             }
         }
 
-        final Occupation contactPerson = createContactPerson(activeUser.getPerson(), club);
+        final Occupation contactPerson = createContactPerson(resolvePerson(activeUser, dto), club);
 
         sendNotificationEmail(club, activeUser, contactPerson, rhy);
 
-        return Collections.singletonMap("result", "success");
+        return ImmutableMap.<String, Object> builder()
+                .put("result", "success")
+                .put("clubId", club.getId())
+                .build();
+    }
+
+    private Person resolvePerson(final SystemUser activeUser, final LHOrganisationSearchDTO dto) {
+        if (activeUser.isModeratorOrAdmin()) {
+            Preconditions.checkArgument(dto.getPersonId() != null);
+            return personRepository.getOne(dto.getPersonId());
+        }
+        return activeUser.getPerson();
     }
 
     private LHOrganisation findLhOrg(LHOrganisationSearchDTO dto) {
@@ -209,13 +230,14 @@ public class RegisterHuntingClubFeature {
             existingOccupation.setEndDate(null);
             existingOccupation.setOrganisationAndOccupationType(club, OccupationType.SEURAN_YHDYSHENKILO);
             existingOccupation.getLifecycleFields().setDeletionTime(null);
+            existingOccupation.setCallOrder(0);
 
             return existingOccupation;
         }
 
-        final Occupation contactPerson = new Occupation(person, club, OccupationType.SEURAN_YHDYSHENKILO);
+        final Occupation contactPerson = new Occupation(person, club,
+                OccupationType.SEURAN_YHDYSHENKILO, ContactInfoShare.ALL_MEMBERS, 0);
         contactPerson.setBeginDate(OrganisationType.CLUB.getBeginDateForNewOccupation());
-        contactPerson.setContactInfoShare(ContactInfoShare.ALL_MEMBERS);
 
         return occupationRepository.save(contactPerson);
     }
@@ -229,7 +251,7 @@ public class RegisterHuntingClubFeature {
         final OccupationDTO occupationDTO = OccupationDTO.createWithPerson(contactPerson);
         final OrganisationNameDTO rhyDTO = OrganisationNameDTO.create(rhy);
 
-        final String contactPersonEmail = activeUser.getEmail();
+        final String contactPersonEmail = activeUser.isModeratorOrAdmin() ? null : activeUser.getEmail();
         final Iterable<String> rhyContactEmails = registerHuntingClubMailService.getRhyContactEmails(rhy);
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {

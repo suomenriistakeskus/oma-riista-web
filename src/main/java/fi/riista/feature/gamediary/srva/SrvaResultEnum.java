@@ -1,5 +1,7 @@
 package fi.riista.feature.gamediary.srva;
 
+import fi.riista.util.LocalisedEnum;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -7,7 +9,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-public enum SrvaResultEnum {
+public enum SrvaResultEnum implements LocalisedEnum {
 
     ANIMAL_FOUND_DEAD(SrvaEventNameEnum.ACCIDENT, SrvaEventNameEnum.INJURED_ANIMAL),
     ANIMAL_FOUND_AND_TERMINATED(SrvaEventNameEnum.ACCIDENT, SrvaEventNameEnum.INJURED_ANIMAL),

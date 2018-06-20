@@ -1,0 +1,37 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="rhy.annualStats.overview.basicInfo.title"></h3>
+    </div>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr ng-switch="::!!$ctrl.basicInfo.iban">
+                        <td ng-switch-when="true" colspan="2">
+                            <div>
+                                <span translate="rhy.annualStats.overview.basicInfo.iban"></span>
+                                <div class="pull-right text-right">{{$ctrl.basicInfo.iban}}</div>
+                            </div>
+                        </td>
+
+                        <td ng-switch-when="false" class="col-xs-9" translate="rhy.annualStats.overview.basicInfo.iban"></td>
+                        <td ng-switch-when="false" class="text-right">
+                            <span>-</span>&nbsp;<span class="unit-suffix"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.overview.basicInfo.operationalLandAreaSize"></td>
+                        <td num-items="::$ctrl.basicInfo.operationalLandAreaSize" unit-key="global.hectares"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.openEditDialog()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

@@ -1,25 +1,27 @@
 package fi.riista.feature.account.todo;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
+import com.google.common.collect.Sets;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.srva.SrvaEvent;
+import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
-import fi.riista.feature.harvestpermit.report.HarvestReportRequirementsService;
-import fi.riista.feature.harvestpermit.season.HarvestSeason;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.util.DateUtil;
-import fi.riista.util.F;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.test.TestUtils;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Resource;
 
+import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
 
@@ -27,15 +29,6 @@ public class AccountTodoFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
     private AccountTodoFeature accountTodoFeature;
-
-    @Resource
-    private HarvestReportRequirementsService harvestReportRequirementsService;
-
-    @Resource
-    private HarvestRepository harvestRepository;
-
-    @Resource
-    private HarvestPermitRepository harvestPermitRepository;
 
     private Riistanhoitoyhdistys rhy;
 
@@ -45,187 +38,124 @@ public class AccountTodoFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testTodoCountWithNothing() {
+    public void testCountTodosWithNothing() {
         persistAndAuthenticateWithNewUser(true);
-        assertCount(0, 0, accountTodoFeature.todoCount());
+        assertEmpty(accountTodoFeature.countTodos().getPermitIds());
     }
 
     @Test
-    public void testCountSeasonAndPermitHarvests() {
+    public void testCountInvitations() {
         withPerson(person -> {
-
-            HarvestSeason season = model().newHarvestSeason(today());
-            Harvest seasonHarvest = model().newHarvest(season.getFields().getSpecies(), person);
-
-            HarvestPermit permit = model().newHarvestPermit(this.rhy);
-            Harvest permitHarvest = model().newHarvest(person);
-            model().newHarvestReportFields(permitHarvest.getSpecies(), true);
-            permitHarvest.setHarvestPermit(permit);
-            permitHarvest.setRhy(permit.getRhy());
-
+            model().newHuntingClubInvitation(person, model().newHuntingClub(rhy), OccupationType.SEURAN_JASEN);
             onSavedAndAuthenticated(createUser(person), () -> {
-                updateHarvestReportRequired(seasonHarvest, permitHarvest);
-                assertCount(2, 0, accountTodoFeature.todoCount());
+                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
+                assertEquals(1, dto.getInvitations());
+                assertEmpty(dto.getPermitIds());
             });
         });
     }
 
     @Test
-    public void testPermitEndOfHuntingReportNotDone() {
+    public void testCountPermits_huntingTimeNotEnded() {
         withPerson(person -> {
-            final LocalDate today = today();
-
-            createPermit(person, today.plusDays(1), null); // not counted
-            createPermit(person, today, null);
-
-            onSavedAndAuthenticated(createUser(person), () -> assertCount(0, 1, accountTodoFeature.todoCount()));
+            createPermit(person, today().minusDays(1), today().plusDays(1));
+            onSavedAndAuthenticated(createUser(person), () -> {
+                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
+                assertEquals(0, dto.getInvitations());
+                assertEmpty(dto.getPermitIds());
+            });
         });
     }
 
     @Test
-    public void testPermitEndOfHuntingReportNotDoneMooselikePermit() {
+    public void testCountPermits_huntingTimeEnded() {
         withPerson(person -> {
-            final LocalDate today = today();
-
-            HarvestPermit p1 = createPermit(person, today.plusDays(1), null);
-            HarvestPermit p2 = createPermit(person, today, null);
-
-            // because both permits are to mooselike, neither of them are counted
-            p1.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
-            p1.setPermitAreaSize(123);
-            p2.setPermitTypeCode(HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE);
-
-            onSavedAndAuthenticated(createUser(person), () -> assertCount(0, 0, accountTodoFeature.todoCount()));
+            final HarvestPermit permit = createPermit(person, today().minusDays(1), null)._1;
+            onSavedAndAuthenticated(createUser(person), () -> {
+                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
+                assertEquals(0, dto.getInvitations());
+                assertEquals(Sets.newHashSet(permit.getId()), dto.getPermitIds());
+            });
         });
     }
 
     @Test
-    public void testPermitEndOfHuntingReportDone() {
+    public void testCountPermits_huntingTimeEnded_permitCompleted() {
         withPerson(person -> {
-            final LocalDate today = today();
-
-            createPermit(person, today.plusDays(1), null); // not counted
-            final HarvestPermit permit = createPermit(person, today, null);
-
-            permit.setEndOfHuntingReport(
-                    model().newHarvestReport_endOfHunting(permit, HarvestReport.State.SENT_FOR_APPROVAL));
-
-            onSavedAndAuthenticated(createUser(person), () -> assertCount(0, 0, accountTodoFeature.todoCount()));
+            final HarvestPermit permit = createPermit(person, today().minusDays(1), null)._1;
+            permit.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+            permit.setHarvestReportAuthor(person);
+            permit.setHarvestReportDate(now());
+            permit.setHarvestReportModeratorOverride(false);
+            onSavedAndAuthenticated(createUser(person), () -> {
+                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
+                assertEquals(0, dto.getInvitations());
+                assertEmpty(dto.getPermitIds());
+            });
         });
     }
 
     @Test
-    public void testPermitQuotaUsed() {
+    public void testCountPermits_proposedHarvests() {
         withPerson(person -> {
+            final Tuple2<HarvestPermit, HarvestPermitSpeciesAmount> t = createPermit(person, today().plusDays(1), null);
+            final HarvestPermit permit = t._1;
+            final HarvestPermitSpeciesAmount spa = t._2;
+            model().newHarvest(permit, spa.getGameSpecies());
 
-            final HarvestPermit permit = createPermit(person, today(), null);
-
-            onSavedAndAuthenticated(createUser(person), tx(() -> {
-                HarvestPermit reloadedPermit = harvestPermitRepository.getOne(permit.getId());
-                HarvestPermitSpeciesAmount amount = reloadedPermit.getSpeciesAmounts().get(0);
-                HarvestPermitSpeciesAmount amount2 = reloadedPermit.getSpeciesAmounts().get(1);
-
-                model().newHarvestReport(model().newHarvest(reloadedPermit, amount.getGameSpecies()), HarvestReport.State.SENT_FOR_APPROVAL);
-                model().newHarvestReport(model().newHarvest(reloadedPermit, amount.getGameSpecies()), HarvestReport.State.SENT_FOR_APPROVAL);
-                model().newHarvestReport(model().newHarvest(reloadedPermit, amount2.getGameSpecies()), HarvestReport.State.APPROVED);
-                model().newHarvestReport(model().newHarvest(reloadedPermit, amount2.getGameSpecies()), HarvestReport.State.APPROVED);
-
-                persistInCurrentlyOpenTransaction();
-
-                assertCount(0, 0, accountTodoFeature.todoCount());
-            }));
+            onSavedAndAuthenticated(createUser(person), () -> {
+                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
+                assertEquals(0, dto.getInvitations());
+                assertEquals(Sets.newHashSet(permit.getId()), dto.getPermitIds());
+            });
         });
     }
 
-    @Test
-    public void testPermitQuotaUnUsed() {
-        withPerson(person -> {
-
-            final HarvestPermit permit = createPermit(person, today().minusDays(1), null);
-
-            onSavedAndAuthenticated(createUser(person), tx(() -> {
-                HarvestPermit reloadedPermit = harvestPermitRepository.getOne(permit.getId());
-                HarvestPermitSpeciesAmount amount = reloadedPermit.getSpeciesAmounts().get(0);
-                HarvestPermitSpeciesAmount amount2 = reloadedPermit.getSpeciesAmounts().get(1);
-
-                model().newHarvestReport(model().newHarvest(reloadedPermit, amount.getGameSpecies()), HarvestReport.State.SENT_FOR_APPROVAL);
-                model().newHarvestReport(model().newHarvest(reloadedPermit, amount.getGameSpecies()), HarvestReport.State.DELETED);
-                model().newHarvestReport(model().newHarvest(reloadedPermit, amount2.getGameSpecies()), HarvestReport.State.REJECTED);
-                model().newHarvestReport(model().newHarvest(reloadedPermit, amount2.getGameSpecies()), HarvestReport.State.DELETED);
-
-                persistInCurrentlyOpenTransaction();
-
-                assertCount(0, 1, accountTodoFeature.todoCount());
-            }));
-        });
-    }
-
-    private HarvestPermit createPermit(Person person, LocalDate beginDate, LocalDate beginDate2) {
+    private Tuple2<HarvestPermit, HarvestPermitSpeciesAmount> createPermit(final Person person, final LocalDate dateValid, final LocalDate dateValid2) {
         final HarvestPermit permit = model().newHarvestPermit(this.rhy);
         permit.setOriginalContactPerson(person);
 
         HarvestPermitSpeciesAmount spa = model().newHarvestPermitSpeciesAmount(permit, model().newGameSpecies(), 2.0f);
-        spa.setBeginDate(beginDate);
-        spa.setBeginDate2(beginDate2);
-
-        HarvestPermitSpeciesAmount spa2 = model().newHarvestPermitSpeciesAmount(permit, model().newGameSpecies(), 2.0f);
-        spa2.setBeginDate(beginDate);
-        spa2.setBeginDate2(beginDate2);
-
-        return permit;
+        spa.setBeginDate(dateValid);
+        spa.setEndDate(dateValid);
+        spa.setBeginDate2(dateValid2);
+        spa.setEndDate2(dateValid2);
+        return Tuple.of(permit, spa);
     }
 
     @Test
-    public void testHarvestProposedForPermit() {
-        doTestHarvestForPermit(Harvest.StateAcceptedToHarvestPermit.PROPOSED, 0);
-    }
+    public void testCountUnfinishedSrvaEvents() {
+        withPerson(person -> withRhy(rhy -> {
+            model().newOccupation(rhy, person, OccupationType.SRVA_YHTEYSHENKILO);
+            person.setRhyMembership(rhy);
 
-    @Test
-    public void testHarvestAcceptedForPermit() {
-        doTestHarvestForPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED, 0);
-    }
+            final SystemUser moderator = createNewUser(SystemUser.Role.ROLE_MODERATOR);
 
-    @Test
-    public void testHarvestRejectedForPermit() {
-        doTestHarvestForPermit(Harvest.StateAcceptedToHarvestPermit.REJECTED, 1);
-    }
+            TestUtils.createList(5, () -> {
+                final SrvaEvent event = model().newSrvaEvent(person, rhy);
+                event.setState(SrvaEventStateEnum.UNFINISHED);
+                return event;
+            });
 
-    private void doTestHarvestForPermit(Harvest.StateAcceptedToHarvestPermit state, int expectedTodoCount) {
-        SystemUser user = createUserWithPerson();
+            TestUtils.createList(7, () -> {
+                final SrvaEvent event = model().newSrvaEvent(person, rhy);
+                event.setState(SrvaEventStateEnum.APPROVED);
+                event.setApproverAsUser(moderator);
+                return event;
+            });
 
-        HarvestPermit permit = model().newHarvestPermit(this.rhy, true);
+            TestUtils.createList(13, () -> {
+                final SrvaEvent event = model().newSrvaEvent(person, rhy);
+                event.setState(SrvaEventStateEnum.REJECTED);
+                event.setApproverAsUser(moderator);
+                return event;
+            });
 
-        Harvest permitHarvest = model().newHarvest(user.getPerson());
-        permitHarvest.setHarvestPermit(permit);
-        permitHarvest.setStateAcceptedToHarvestPermit(state);
-        permitHarvest.setRhy(permit.getRhy());
-
-        persistInNewTransaction();
-
-        updateHarvestReportRequired(permitHarvest);
-
-        authenticate(user);
-
-        assertCount(expectedTodoCount, 0, accountTodoFeature.todoCount());
-    }
-
-    private void updateHarvestReportRequired(final Harvest... harvests) {
-        runInTransaction(() -> {
-            for (final Harvest h : harvestRepository.findAll(F.getUniqueIds(harvests))) {
-                h.setHarvestReportRequired(harvestReportRequirementsService.isHarvestReportRequired(
-                        h.getSpecies(),
-                        DateUtil.toLocalDateNullSafe(h.getPointOfTime()),
-                        h.getGeoLocation(),
-                        h.getHarvestPermit()));
-            }
-            persistInCurrentlyOpenTransaction();
-        });
-    }
-
-    private static void assertCount(int harvestCount, int permitCount, AccountTodoCountDTO dto) {
-        assertEquals("Harvest todo count does not match expected", harvestCount, dto.getHarvests());
-        assertEquals("Permit todo count does not match expected", permitCount, dto.getPermits());
-        assertEquals("harvest+permit todo sum does not match", harvestCount + permitCount, dto.getHarvestsAndPermitsTotal());
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final AccountSrvaTodoCountDTO todo = accountTodoFeature.countSrvaTodos(rhy.getId());
+                assertEquals(5, todo.getUnfinishedSrvaEvents());
+            });
+        }));
     }
 
 }

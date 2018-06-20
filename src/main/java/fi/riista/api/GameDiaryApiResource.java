@@ -1,36 +1,39 @@
 package fi.riista.api;
 
-import fi.riista.feature.gamediary.todo.GameDiaryTodoFeature;
-import fi.riista.feature.gamediary.excel.GameDiaryExcelFeature;
-import fi.riista.feature.gamediary.GameDiaryFeature;
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameDiaryEntryDTO;
+import fi.riista.feature.gamediary.GameDiaryEntryType;
+import fi.riista.feature.gamediary.GameDiaryFeature;
+import fi.riista.feature.gamediary.GameDiaryImageFeature;
+import fi.riista.feature.gamediary.GameDiaryMetadataFeature;
 import fi.riista.feature.gamediary.GameDiaryParametersDTO;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
-import fi.riista.feature.gamediary.observation.metadata.GameSpeciesObservationMetadataDTO;
+import fi.riista.feature.gamediary.excel.GameDiaryExcelFeature;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.gamediary.harvest.HarvestExceptionMapper;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsQuery;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsQueryResponse;
 import fi.riista.feature.gamediary.observation.ObservationDTO;
+import fi.riista.feature.gamediary.observation.metadata.GameSpeciesObservationMetadataDTO;
 import fi.riista.feature.gamediary.observation.metadata.ObservationMetadataDTO;
-import fi.riista.feature.gamediary.PersonRelationshipToGameDiaryEntryDTO;
-import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
-import fi.riista.feature.gamediary.todo.GameDiaryTodoHarvestDTO;
-import fi.riista.feature.gamediary.GameDiaryEntryType;
-import fi.riista.feature.harvestpermit.report.search.HarvestReportPersonSearch;
-import fi.riista.feature.gamediary.srva.SrvaCrudFeature;
-import fi.riista.util.DateUtil;
+import fi.riista.feature.gamediary.search.GameDiarySearchDTO;
+import fi.riista.feature.gamediary.search.GameDiarySearchFeature;
+import fi.riista.util.MediaTypeExtras;
 import fi.riista.util.Patterns;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
-import org.apache.commons.lang.BooleanUtils;
-import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,154 +54,139 @@ public class GameDiaryApiResource {
     private GameDiaryFeature diaryFeature;
 
     @Resource
+    private GameDiarySearchFeature gameDiarySearchFeature;
+
+    @Resource
+    private GameDiaryImageFeature gameDiaryImageFeature;
+
+    @Resource
+    private GameDiaryMetadataFeature gameDiaryMetadataFeature;
+
+    @Resource
     private GameDiaryExcelFeature excelFeature;
 
     @Resource
-    private GameDiaryTodoFeature gameDiaryTodoFeature;
+    private HarvestExceptionMapper harvestExceptionMapper;
 
-    @Resource
-    private SrvaCrudFeature srvaCrudFeature;
-
-    @Resource
-    private HarvestReportPersonSearch harvestReportPersonSearch;
+    @PostMapping
+    public List<GameDiaryEntryDTO> diaryEntries(@Valid @RequestBody GameDiarySearchDTO search) {
+        return gameDiarySearchFeature.listDiaryEntriesForActiveUser(search);
+    }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/parameters", method = RequestMethod.GET)
+    @GetMapping(value = "/parameters")
     public GameDiaryParametersDTO getGameDiaryParameters() {
-        return new GameDiaryParametersDTO(diaryFeature.getGameCategories(), diaryFeature.getGameSpecies());
+        return gameDiaryMetadataFeature.getGameDiaryParameters();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/species/withinMooseHunting", method = RequestMethod.GET)
+    @GetMapping(value = "/species/withinMooseHunting")
     public List<GameSpeciesDTO> getGameSpeciesRegistrableAsObservationsWithinMooseHunting() {
-        return diaryFeature.getGameSpeciesRegistrableAsObservationsWithinMooseHunting();
+        return gameDiaryMetadataFeature.getGameSpeciesRegistrableAsObservationsWithinMooseHunting();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/observation/metadata", method = RequestMethod.GET)
+    @GetMapping(value = "/observation/metadata")
     public ObservationMetadataDTO getObservationMetadata() {
-        return diaryFeature.getObservationFieldMetadata();
+        return gameDiaryMetadataFeature.getObservationFieldMetadata();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/observation/metadata/{gameSpeciesCode:\\d+}", method = RequestMethod.GET)
+    @GetMapping(value = "/observation/metadata/{gameSpeciesCode:\\d+}")
     public GameSpeciesObservationMetadataDTO getObservationMetadata(@PathVariable int gameSpeciesCode) {
-        return diaryFeature.getObservationFieldMetadataForSpecies(gameSpeciesCode);
+        return gameDiaryMetadataFeature.getObservationFieldMetadataForSpecies(gameSpeciesCode);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/observation/{id:\\d+}/relationship", method = RequestMethod.GET)
-    public PersonRelationshipToGameDiaryEntryDTO getRelationshipToObservation(@PathVariable final long id) {
-        return diaryFeature.getRelationshipToGameDiaryEntry(GameDiaryEntryType.OBSERVATION, id);
+    @GetMapping(value = "/harvest/fields")
+    public RequiredHarvestFieldsQueryResponse getHarvestFields(@RequestParam int gameSpeciesCode,
+                                                               @RequestParam boolean withPermit,
+                                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate harvestDate,
+                                                               @RequestParam int longitude,
+                                                               @RequestParam int latitude) {
+        return gameDiaryMetadataFeature.getHarvestFields(new RequiredHarvestFieldsQuery(
+                gameSpeciesCode, harvestDate, new GeoLocation(latitude, longitude), withPermit));
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/harvest/{id:\\d+}/relationship", method = RequestMethod.GET)
-    public PersonRelationshipToGameDiaryEntryDTO getRelationshipToHarvest(@PathVariable final long id) {
-        return diaryFeature.getRelationshipToGameDiaryEntry(GameDiaryEntryType.HARVEST, id);
+    @GetMapping(value = "/harvest/fields/{id:\\d+}")
+    public RequiredHarvestFieldsQueryResponse getHarvestFields(@PathVariable Long id) {
+        return gameDiaryMetadataFeature.getHarvestFields(id);
     }
 
-    @RequestMapping(value = "/harvest", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public HarvestDTO createHarvest(@RequestBody @Valid HarvestDTO dto) {
-        return diaryFeature.createHarvest(dto);
+    @PostMapping(value = "/harvest", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createHarvest(@RequestBody @Valid HarvestDTO dto) {
+        try {
+            return ResponseEntity.ok(diaryFeature.createHarvest(dto));
+        } catch (RuntimeException e) {
+            return harvestExceptionMapper.handleException(e);
+        }
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/harvest/{id:\\d+}", method = RequestMethod.GET)
+    @GetMapping(value = "/harvest/{id:\\d+}")
     public HarvestDTO getHarvest(@PathVariable Long id) {
         return diaryFeature.getHarvest(id);
     }
 
-    @RequestMapping(
-            value = "/harvest/{id:\\d+}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public HarvestDTO updateHarvest(@RequestBody @Valid HarvestDTO dto) {
-        return diaryFeature.updateHarvest(dto);
+    @PutMapping(
+            value = "/harvest/{id:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateHarvest(@RequestBody @Valid HarvestDTO dto) {
+        try {
+            return ResponseEntity.ok(diaryFeature.updateHarvest(dto));
+        } catch (RuntimeException e) {
+            return harvestExceptionMapper.handleException(e);
+        }
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "/harvest/{id:\\d+}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/harvest/{id:\\d+}")
     public void deleteHarvest(@PathVariable Long id) {
         diaryFeature.deleteHarvest(id);
     }
 
-    @RequestMapping(value = "/observation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/observation", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ObservationDTO createObservation(@RequestBody @Valid ObservationDTO dto) {
         return diaryFeature.createObservation(dto);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/observation/{id:\\d+}", method = RequestMethod.GET)
+    @GetMapping(value = "/observation/{id:\\d+}")
     public ObservationDTO getObservation(@PathVariable Long id) {
         return diaryFeature.getObservation(id);
     }
 
-    @RequestMapping(
-            value = "/observation/{id:\\d+}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(
+            value = "/observation/{id:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ObservationDTO updateObservation(@RequestBody @Valid ObservationDTO dto) {
         return diaryFeature.updateObservation(dto);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "/observation/{id:\\d+}", method = RequestMethod.DELETE)
+    @DeleteMapping("/observation/{id:\\d+}")
     public void deleteObservation(@PathVariable Long id) {
         diaryFeature.deleteObservation(id);
     }
 
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(method = RequestMethod.GET)
-    public List<GameDiaryEntryDTO> diaryEntries(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate beginDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate,
-            @RequestParam(required = false) final Boolean reportedForOthers,
-            @RequestParam(required = false) final Boolean srvaEvents) {
-
-        final Interval interval = beginDate.isAfter(endDate)
-                ? DateUtil.createDateInterval(endDate, beginDate)
-                : DateUtil.createDateInterval(beginDate, endDate);
-
-        final List<GameDiaryEntryDTO> dtos = diaryFeature.listDiaryEntriesForActiveUser(
-                interval, BooleanUtils.isTrue(reportedForOthers));
-
-        if (BooleanUtils.isTrue(srvaEvents)) {
-            dtos.addAll(srvaCrudFeature.listSrvaEventsForActiveUser(interval));
-        }
-
-        return dtos;
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/todo", method = RequestMethod.GET)
-    public GameDiaryTodoHarvestDTO todo(@RequestParam(required = false) Long personId) {
-        return gameDiaryTodoFeature.listAllHarvestsRequiringAction(personId);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/accepted/permit/{permitId:\\d+}", method = RequestMethod.GET)
-    public List<HarvestDTO> listHarvestsAcceptedToPermit(@PathVariable Long permitId) {
-        return diaryFeature.listHarvestsAcceptedToPermit(permitId);
-    }
-
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 31536000)
-    @RequestMapping(value = "/image/{imageId:" + Patterns.UUID + "}", method = RequestMethod.GET)
+    @GetMapping("/image/{imageId:" + Patterns.UUID + "}")
     public ResponseEntity<?> getGameDiaryImage(@PathVariable UUID imageId) throws IOException {
-        return diaryFeature.getGameDiaryImageBytes(imageId, false);
+        return gameDiaryImageFeature.getGameDiaryImageBytes(imageId, false);
     }
 
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 31536000)
-    @RequestMapping(
-            value = "/image/{imageId:" + Patterns.UUID + "}/resize/{width:\\d{1,4}}x{height:\\d{1,4}}x{keepProportions:\\d{1}}",
-            method = RequestMethod.GET)
-    public ResponseEntity<?> getGameDiaryImageResized(
-            @PathVariable UUID imageId,
-            @PathVariable int width,
-            @PathVariable int height,
-            @PathVariable boolean keepProportions) throws IOException {
+    @GetMapping("/image/{imageId:" + Patterns.UUID + "}/resize/{width:\\d{1,4}}x{height:\\d{1,4}}x{keepProportions:\\d{1}}")
+    public ResponseEntity<?> getGameDiaryImageResized(@PathVariable UUID imageId,
+                                                      @PathVariable int width,
+                                                      @PathVariable int height,
+                                                      @PathVariable boolean keepProportions) throws IOException {
 
-        return diaryFeature.getGameDiaryImageBytesResized(imageId, width, height, keepProportions);
+        return gameDiaryImageFeature.getGameDiaryImageBytesResized(imageId, width, height, keepProportions);
     }
 
-    @RequestMapping(value = "/image/uploadForHarvest", method = RequestMethod.POST,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/image/uploadForHarvest",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     public String addGameDiaryImageForHarvest(
             @RequestParam("gameDiaryEntryId") long harvestId,
             @RequestParam("file") MultipartFile file,
@@ -208,8 +196,9 @@ public class GameDiaryApiResource {
         return addGameDiaryImageForDiaryEntry(harvestId, GameDiaryEntryType.HARVEST, file, replacedUuid);
     }
 
-    @RequestMapping(value = "/image/uploadForObservation", method = RequestMethod.POST,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/image/uploadForObservation",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     public String addGameDiaryImageForObservation(
             @RequestParam("gameDiaryEntryId") long observationId,
             @RequestParam("file") MultipartFile file,
@@ -219,41 +208,34 @@ public class GameDiaryApiResource {
         return addGameDiaryImageForDiaryEntry(observationId, GameDiaryEntryType.OBSERVATION, file, replacedUuid);
     }
 
-    private String addGameDiaryImageForDiaryEntry(
-            final long diaryEntryId,
-            final GameDiaryEntryType diaryEntryType,
-            final MultipartFile file,
-            final UUID replacedUuid)
-            throws IOException {
+    private String addGameDiaryImageForDiaryEntry(final long diaryEntryId,
+                                                  final GameDiaryEntryType diaryEntryType,
+                                                  final MultipartFile file,
+                                                  final UUID replacedUuid) throws IOException {
 
         final UUID newUuid = UUID.randomUUID();
 
         if (replacedUuid != null) {
-            diaryFeature.replaceImageForDiaryEntry(diaryEntryId, diaryEntryType, replacedUuid, newUuid, file);
+            gameDiaryImageFeature.replaceImageForDiaryEntry(diaryEntryId, diaryEntryType, replacedUuid, newUuid, file);
         } else {
-            diaryFeature.addGameDiaryImageForDiaryEntry(diaryEntryId, diaryEntryType, newUuid, file);
+            gameDiaryImageFeature.addGameDiaryImageForDiaryEntry(diaryEntryId, diaryEntryType, newUuid, file);
         }
 
         return newUuid.toString();
     }
 
-    @RequestMapping(value = "/image/uploadtmp", method = RequestMethod.POST,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/image/uploadtmp",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     public String addTemporaryGameDiaryImage(@RequestParam("file") MultipartFile file) throws IOException {
         final UUID uuid = UUID.randomUUID();
-        diaryFeature.addGameDiaryImageWithoutDiaryEntryAssociation(uuid, file);
+        gameDiaryImageFeature.addGameDiaryImageWithoutDiaryEntryAssociation(uuid, file);
         return uuid.toString();
     }
 
-    @RequestMapping(value = "/checkHunterNumber", method = RequestMethod.POST)
-    public PersonWithHunterNumberDTO checkHunterNumber(@RequestParam("hunterNumber") String hunterNumber) {
-        return harvestReportPersonSearch.findHunterByNumber(hunterNumber);
-    }
-
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/excel", method = RequestMethod.POST)
+    @PostMapping(value = "/excel", produces = MediaTypeExtras.APPLICATION_EXCEL_VALUE)
     public ModelAndView excel() {
         return new ModelAndView(excelFeature.export());
     }
-
 }

@@ -1,46 +1,47 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static fi.riista.util.Asserts.assertEmpty;
+import fi.riista.feature.common.entity.HasID;
+import fi.riista.feature.gamediary.GameGender;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenRepository;
+import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationRepository;
+import fi.riista.feature.gamediary.observation.specimen.GameMarking;
+import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
+import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenRepository;
+import fi.riista.feature.gamediary.observation.specimen.ObservedGameAge;
+import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
+import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
+import fi.riista.util.F;
+import io.vavr.Tuple;
+import io.vavr.Tuple3;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
+import org.junit.Test;
+
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import static fi.riista.test.Asserts.assertEmpty;
 import static fi.riista.util.DateUtil.toDateNullSafe;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
-import fi.riista.feature.EmbeddedDatabaseTest;
-import fi.riista.feature.common.entity.HasID;
-import fi.riista.feature.gamediary.observation.Observation;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
-import fi.riista.feature.gamediary.observation.ObservationRepository;
-import fi.riista.feature.gamediary.harvest.HarvestRepository;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenRepository;
-import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenRepository;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
-import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.util.DateUtil;
-import fi.riista.util.F;
-
-import javaslang.Tuple;
-import javaslang.Tuple3;
-
-import org.joda.time.LocalDate;
-import org.joda.time.LocalTime;
-import org.junit.Test;
-
-import javax.annotation.Resource;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class MooseDataCardImportFeatureTest extends EmbeddedDatabaseTest {
 
@@ -100,14 +101,14 @@ public class MooseDataCardImportFeatureTest extends EmbeddedDatabaseTest {
         final Harvest harvest1 = model().newHarvest(species, author);
         model().newHarvestSpecimen(harvest1);
         final Observation observation1 = model().newObservation(species, author);
-        final ObservationSpecimen specimen2 = model().newObservationSpecimen(observation1);
+        final ObservationSpecimen specimen2 = newObservationSpecimen(observation1);
 
         // Add a harvest and observation with specimens for different author that are not related
         // to any hunting day/group/club.
         final Harvest harvest2 = model().newHarvest(species, model().newPerson());
         model().newHarvestSpecimen(harvest2);
         final Observation observation2 = model().newObservation(species, model().newPerson());
-        final ObservationSpecimen specimen4 = model().newObservationSpecimen(observation2);
+        final ObservationSpecimen specimen4 = newObservationSpecimen(observation2);
 
         onSavedAndAuthenticated(createNewModerator(), () -> {
 
@@ -207,4 +208,12 @@ public class MooseDataCardImportFeatureTest extends EmbeddedDatabaseTest {
         assertTrue(Objects.equals(expectedGroupId, reloadedImport.getGroup().getId()));
     }
 
+    private ObservationSpecimen newObservationSpecimen(final Observation observation) {
+        final ObservationSpecimen specimen = model().newObservationSpecimen(observation);
+        specimen.setAge(some(ObservedGameAge.class));
+        specimen.setGender(some(GameGender.class));
+        specimen.setState(some(ObservedGameState.class));
+        specimen.setMarking(some(GameMarking.class));
+        return specimen;
+    }
 }

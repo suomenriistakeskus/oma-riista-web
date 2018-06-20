@@ -3,6 +3,7 @@ package fi.riista.feature.harvestpermit;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.repository.BaseRepository;
 import fi.riista.feature.error.NotFoundException;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpecies_;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 
@@ -68,13 +69,11 @@ public interface HarvestPermitSpeciesAmountRepository extends BaseRepository<Har
     }
 
     default Optional<HarvestPermitSpeciesAmount> findByHuntingClubGroupPermit(final HuntingClubGroup huntingClubGroup) {
-        if (huntingClubGroup.getHarvestPermit() == null) {
-            return Optional.empty();
-        }
+        final HarvestPermit permit = huntingClubGroup.getHarvestPermit();
+        final GameSpecies species = huntingClubGroup.getSpecies();
 
-        final Long harvestPermitId = huntingClubGroup.getHarvestPermit().getId();
-        final int gameSpeciesOfficialCode = huntingClubGroup.getSpecies().getOfficialCode();
-
-        return findOneByHarvestPermitIdAndSpeciesCode(harvestPermitId, gameSpeciesOfficialCode);
+        return permit == null
+                ? Optional.empty()
+                : findOneByHarvestPermitIdAndSpeciesCode(permit.getId(), species.getOfficialCode());
     }
 }

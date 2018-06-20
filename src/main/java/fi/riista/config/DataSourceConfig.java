@@ -16,6 +16,7 @@ import org.springframework.cloud.aws.core.region.RegionProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
@@ -29,7 +30,7 @@ public class DataSourceConfig {
     public SQLQueryFactory sqlQueryFactory(DataSource dataSource, SQLTemplates templates) {
         final com.querydsl.sql.Configuration configuration = new com.querydsl.sql.Configuration(templates);
         configuration.setExceptionTranslator(new SpringExceptionTranslator());
-        return new SQLQueryFactory(configuration, dataSource);
+        return new SQLQueryFactory(configuration, new TransactionAwareDataSourceProxy(dataSource));
     }
 
     @Configuration

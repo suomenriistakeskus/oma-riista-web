@@ -77,6 +77,11 @@ public class SQLhOrg extends RelationalPathSpatial<SQLhOrg> {
         addMetadata();
     }
 
+    public SQLhOrg(String variable, String schema) {
+        super(SQLhOrg.class, forVariable(variable), schema, "lh_org");
+        addMetadata();
+    }
+
     public SQLhOrg(Path<? extends SQLhOrg> path) {
         super(path.getType(), path.getMetadata(), "public", "lh_org");
         addMetadata();

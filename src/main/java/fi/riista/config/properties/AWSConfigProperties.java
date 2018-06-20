@@ -16,6 +16,12 @@ public class AWSConfigProperties {
     @Value("${file.storage.s3.bucket.diary_image}")
     private String bucketDiaryImages;
 
+    @Value("${ses.bounce.queue}")
+    private String sesBounceQueue;
+
+    @Value("${ses.complaint.queue}")
+    private String sesComplaintQueue;
+
     public boolean isConfigured() {
         return hasText(bucketDefault) && hasText(bucketDiaryImages);
     }
@@ -26,5 +32,13 @@ public class AWSConfigProperties {
 
     public String getBucketDiaryImages() {
         return bucketDiaryImages;
+    }
+
+    public String getSesBounceQueue() {
+        return sesBounceQueue;
+    }
+
+    public String getSesComplaintQueue() {
+        return sesComplaintQueue;
     }
 }

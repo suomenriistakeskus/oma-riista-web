@@ -24,12 +24,13 @@
         </div>
 
         <div class="form-group" show-errors>
-            <label for="nameQuery" class="col-xs-4 control-label">
+            <label for="codeQuery" class="col-xs-4 control-label">
                 <span translate="account.profile.registerClub.searchByCode"></span>
             </label>
 
             <div class="col-xs-8">
                 <input type="text" name="codeQuery" id="codeQuery"
+                       focus-me
                        class="form-control"
                        ng-model="modalCtrl.codeQuery"
                        uib-typeahead="item as modalCtrl.searchResultTitle(item) for item in modalCtrl.searchByCode($viewValue)"

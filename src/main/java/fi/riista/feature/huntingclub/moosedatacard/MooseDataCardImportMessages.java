@@ -1,29 +1,26 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static fi.riista.util.DateUtil.DATE_FORMAT_FINNISH;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.joining;
-
 import fi.riista.feature.common.entity.Has2BeginEndDates;
-import fi.riista.feature.huntingclub.moosedatacard.DateAndLocation;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardLargeCarnivoreObservation;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseCalf;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseFemale;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseMale;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardObservation;
-
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static fi.riista.util.DateUtil.DATE_FORMAT_FINNISH;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.joining;
 
 public final class MooseDataCardImportMessages {
 
@@ -33,8 +30,8 @@ public final class MooseDataCardImportMessages {
         return huntingDayAbandoned(null, "päivämäärä puuttuu");
     }
 
-    public static String huntingDayStartDateNotWithinPermittedSeason(
-            @Nonnull final LocalDate startDate, @Nonnull final Has2BeginEndDates permitSeason) {
+    public static String huntingDayStartDateNotWithinPermittedSeason(@Nonnull final LocalDate startDate,
+                                                                     @Nonnull final Has2BeginEndDates permitSeason) {
 
         Objects.requireNonNull(startDate, "startDate is null");
         Objects.requireNonNull(permitSeason, "permitSeason is null");
@@ -100,8 +97,8 @@ public final class MooseDataCardImportMessages {
         return observationAbandoned(observation, "lajiyksilömääriä ei ole annettu tai niiden summa on nolla");
     }
 
-    public static String observationAbandoned(
-            @Nonnull final DateAndLocation observation, @Nonnull final String reason) {
+    public static String observationAbandoned(@Nonnull final DateAndLocation observation,
+                                              @Nonnull final String reason) {
 
         Objects.requireNonNull(reason, "reason is null");
 
@@ -115,7 +112,7 @@ public final class MooseDataCardImportMessages {
     }
 
     public static String harvestsIgnoredBecauseOfAlreadyExistingHuntingDays(
-            @Nonnull final Map<LocalDate, Integer> datesAndCounts) {
+            @Nonnull final Map<LocalDate, Long> datesAndCounts) {
 
         return "Saaliskirjauksia seuraaville päivämäärille ei otettu huomioon, koska ne liittyvät metsästyspäiviin, " +
                 "joiden tiedot on tallennettu järjestelmään jo aiemmin: " +
@@ -123,7 +120,7 @@ public final class MooseDataCardImportMessages {
     }
 
     public static String observationsIgnoredBecauseOfAlreadyExistingHuntingDays(
-            @Nonnull final Map<LocalDate, Integer> datesAndCounts) {
+            @Nonnull final Map<LocalDate, Long> datesAndCounts) {
 
         return "Havaintokirjauksia seuraaville päivämäärille ei otettu huomioon, koska ne liittyvät " +
                 "metsästyspäiviin, joiden tiedot on tallennettu järjestelmään jo aiemmin: " +
@@ -140,7 +137,7 @@ public final class MooseDataCardImportMessages {
         return transformAndJoin(dates, DATE_FORMATTER::print);
     }
 
-    private static String formatDatesAndCountsAsString(final Map<LocalDate, Integer> datesAndCounts) {
+    private static String formatDatesAndCountsAsString(final Map<LocalDate, Long> datesAndCounts) {
         return transformAndJoin(
                 datesAndCounts.entrySet().stream().sorted(comparing(Map.Entry::getKey)),
                 entry -> String.format("%s%s",
@@ -175,5 +172,4 @@ public final class MooseDataCardImportMessages {
     private MooseDataCardImportMessages() {
         throw new AssertionError();
     }
-
 }

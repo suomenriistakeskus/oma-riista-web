@@ -1,0 +1,178 @@
+<h4 ng-show="$ctrl.hasExtraFields()" translate="gamediary.form.extraFields"></h4>
+
+<div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('huntingMethod')">
+    <label for="huntingMethod" class="control-label col-xs-4">
+        <span translate="gamediary.form.huntingMethod"></span>
+        <span ng-if="$ctrl.isFieldRequired('huntingMethod')"
+              class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-8">
+        <select name="huntingMethod" id="huntingMethod"
+                class="form-control"
+                ng-model="$ctrl.harvest.huntingMethod"
+                ng-options="('gamediary.huntingMethod.' + a | translate) for a in ::$ctrl.getAvailableHuntingMethods()"
+                ng-required="$ctrl.isFieldRequired('huntingMethod')">
+            <option ng-disabled="$ctrl.isFieldRequired('huntingMethod')" value=""></option>
+        </select>
+
+        <p class="help-block has-error"
+           ng-show="$ctrl.form.huntingMethod.$invalid && $ctrl.form.huntingMethod.$touched"
+           ng-messages="$ctrl.form.huntingMethod.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>
+
+<div class="form-group" ng-if="$ctrl.isFieldVisible('reportedWithPhoneCall')">
+    <label class="col-xs-4 control-label">
+        <span translate="gamediary.form.reportedWithPhoneCall"></span>
+        <span ng-if="$ctrl.isFieldRequired('reportedWithPhoneCall')"
+              class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-8">
+        <div class="radio">
+            <label>
+                <input type="radio" name="reportedWithPhoneCall"
+                       ng-model="$ctrl.harvest.reportedWithPhoneCall"
+                       ng-required="$ctrl.isFieldRequired('reportedWithPhoneCall')"
+                       ng-value="true">
+                <span translate="global.yes"></span>
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" name="reportedWithPhoneCall"
+                       ng-model="$ctrl.harvest.reportedWithPhoneCall"
+                       ng-required="$ctrl.isFieldRequired('reportedWithPhoneCall')"
+                       ng-value="false">
+                <span translate="global.no"></span>
+            </label>
+        </div>
+
+        <p class="help-block has-error"
+           ng-show="$ctrl.form.reportedWithPhoneCall.$invalid && $ctrl.form.reportedWithPhoneCall.$touched"
+           ng-messages="$ctrl.form.reportedWithPhoneCall.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>
+
+<div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('feedingPlace')">
+    <label class="col-xs-4 control-label" for="feedingPlace">
+        <span translate="gamediary.form.feedingPlace"></span>
+        <span ng-if="$ctrl.isFieldRequired('feedingPlace')"
+              class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-8">
+        <select name="feedingPlace" id="feedingPlace"
+                class="form-control"
+                ng-model="$ctrl.harvest.feedingPlace"
+                ng-required="$ctrl.isFieldRequired('feedingPlace')">
+            <option ng-disabled="$ctrl.isFieldRequired('feedingPlace')" value=""></option>
+            <option ng-value="true">{{'global.yes' | translate}}</option>
+            <option ng-value="false">{{'global.no' | translate}}</option>
+        </select>
+
+        <p class="help-block has-error"
+           ng-show="$ctrl.form.feedingPlace.$invalid && $ctrl.form.feedingPlace.$touched"
+           ng-messages="$ctrl.form.feedingPlace.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>
+
+<div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('taigaBeanGoose')">
+    <label class="col-xs-4 control-label" for="taigaBeanGoose">
+        <span translate="gamediary.form.taigaBeanGoose"></span>
+        <span ng-if="$ctrl.isFieldRequired('taigaBeanGoose')"
+              class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-8">
+        <select name="taigaBeanGoose" id="taigaBeanGoose"
+                class="form-control"
+                ng-model="$ctrl.harvest.taigaBeanGoose"
+                ng-required="$ctrl.isFieldRequired('taigaBeanGoose')">
+            <option ng-disabled="$ctrl.isFieldRequired('taigaBeanGoose')" value=""></option>
+            <option ng-value="true">{{'global.yes' | translate}}</option>
+            <option ng-value="false">{{'global.no' | translate}}</option>
+        </select>
+
+        <p class="help-block has-error"
+           ng-show="$ctrl.form.taigaBeanGoose.$invalid && $ctrl.form.taigaBeanGoose.$touched"
+           ng-messages="$ctrl.form.taigaBeanGoose.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>
+
+<div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('huntingAreaType')">
+    <label for="huntingAreaType" class="col-xs-4 control-label">
+        <span translate="gamediary.form.huntingAreaType"></span>
+        <span ng-if="$ctrl.isFieldRequired('huntingAreaType')"
+              class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-8">
+        <select name="huntingAreaType" id="huntingAreaType"
+                class="form-control"
+                ng-model="$ctrl.harvest.huntingAreaType"
+                ng-options="('gamediary.huntingAreaType.' + a | translate) for a in ::$ctrl.getAvailableHuntingAreaType()"
+                ng-required="$ctrl.isFieldRequired('huntingAreaType')">
+            <option ng-disabled="$ctrl.isFieldRequired('huntingAreaType')" value=""></option>
+        </select>
+
+        <p class="help-block has-error"
+           ng-show="$ctrl.form.huntingAreaType.$invalid && $ctrl.form.huntingAreaType.$touched"
+           ng-messages="$ctrl.form.huntingAreaType.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>
+
+<div class="form-group" show-errors ng-if="$ctrl.isHuntingPartyRequired()">
+    <label for="huntingParty" class="col-xs-4 control-label">
+        <span translate="gamediary.form.huntingParty"></span>
+        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-8">
+        <input type="text" name="huntingParty" id="huntingParty"
+               class="form-control"
+               required
+               ng-maxlength="255"
+               ng-model="$ctrl.harvest.huntingParty">
+
+        <p class="help-block has-error"
+           ng-show="$ctrl.form.huntingParty.$invalid && $ctrl.form.huntingParty.$touched"
+           ng-messages="$ctrl.form.huntingParty.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>
+
+<div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('huntingAreaSize')">
+    <label for="huntingAreaSize" class="col-xs-4 control-label">
+        <span translate="gamediary.form.huntingAreaSize"></span>
+        <span ng-if="$ctrl.isFieldRequired('huntingAreaSize')"
+              class="glyphicon glyphicon-asterisk text-danger"></span>
+    </label>
+
+    <div class="col-xs-3">
+        <input type="number" name="huntingAreaSize" id="huntingAreaSize"
+               class="form-control"
+               min="0" max="99999999"
+               step="0.1"
+               ng-model="$ctrl.harvest.huntingAreaSize"
+               ng-required="$ctrl.isFieldRequired('huntingAreaSize')">
+
+        <p class="help-block has-error"
+           ng-show="$ctrl.form.huntingAreaSize.$invalid && $ctrl.form.huntingAreaSize.$touched"
+           ng-messages="$ctrl.form.huntingAreaSize.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</div>

@@ -1,12 +1,12 @@
 package fi.riista.feature.huntingclub.group;
 
-import fi.riista.feature.common.dto.DoNotValidate;
 import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
+import fi.riista.validation.DoNotValidate;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.Range;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
+
 
     public static class PermitDTO {
         public static PermitDTO create(final HarvestPermit permit) {

@@ -1195,4 +1195,55 @@
             </column>
         </createTable>
     </changeSet>
+    <changeSet author="initial" id="initial-kiinteisto-nimet">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="kiinteisto_nimet"/>
+            </not>
+        </preConditions>
+        <createTable tableName="kiinteisto_nimet">
+            <column name="tunnus" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="kiinteisto_nimet_pkey"/>
+            </column>
+            <column name="nimi" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="initial" id="initial-valtionmaa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="valtionmaa"/>
+            </not>
+        </preConditions>
+        <createTable tableName="valtionmaa">
+            <column name="gid" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="valtionmaa_pkey"/>
+            </column>
+            <column name="geom" type="GEOMETRY">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="initial" id="initial-zone-area-size">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="zone_area_size"/>
+            </not>
+        </preConditions>
+        <createTable tableName="zone_area_size">
+            <column name="zone_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="zone_area_size_pkey"/>
+            </column>
+            <column name="total_area" type="DOUBLE"/>
+            <column name="water_area" type="DOUBLE"/>
+            <column name="land_area" type="DOUBLE"/>
+            <column name="state_total_area" type="DOUBLE"/>
+            <column name="state_water_area" type="DOUBLE"/>
+            <column name="state_land_area" type="DOUBLE"/>
+            <column name="private_total_area" type="DOUBLE"/>
+            <column name="private_water_area" type="DOUBLE"/>
+            <column name="private_land_area" type="DOUBLE"/>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

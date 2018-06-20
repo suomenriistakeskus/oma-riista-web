@@ -1,0 +1,40 @@
+<div class="modal-header">
+    <h3>Muutostapahtumat</h3>
+</div>
+
+<div class="modal-body">
+    <div class="table-responsive">
+        <table class="table table-condensed table-striped">
+            <thead>
+            <tr>
+                <th>Aika</th>
+                <th>Tekijä</th>
+                <th>Moderaattorin tekemä muutos</th>
+                <th>Saalisilmoituksen tila</th>
+                <th>Muutoksen syy</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="e in ::$ctrl.eventList | orderBy:'-pointOfTime'">
+                <td ng-bind="::e.pointOfTime | date:'d.M.yyyy HH:mm'"></td>
+                <td>
+                    <span ng-bind="::e.firstName"></span>
+                    <span ng-bind="::e.lastName"></span>
+                </td>
+                <td translate="{{::e.moderator ? 'global.yes' : 'global.no'}}"></td>
+                <td>
+                    <span ng-if="::e.harvestReportState"
+                          translate="harvestreport.state.{{::e.harvestReportState}}"></span>
+                </td>
+                <td ng-bind="::e.reasonForChange"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-click="$close()"
+            translate="global.button.close"></button>
+</div>

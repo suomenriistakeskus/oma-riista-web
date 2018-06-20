@@ -16,17 +16,18 @@ import java.util.List;
 
 public class GetPalstaFeatureCollectionQuery {
     private static final String SQL = "SELECT " +
-            " b.palsta_id AS id," +
-            " ST_AsGeoJSON(ST_Transform(b.geom, :crs)) AS geom," +
-            " ST_Area(b.geom) AS area_size," +
-            " b.palsta_tunnus AS tunnus," +
-            " b.is_changed, " +
-            " b.diff_area," +
-            " b.new_palsta_id, " +
-            " b.new_palsta_tunnus" +
-            " FROM zone_palsta b " +
-            " LEFT JOIN palstaalue a ON (a.id = b.palsta_id)" +
-            " WHERE b.zone_id = :zoneId";
+            " a.palsta_id AS id," +
+            " ST_AsGeoJSON(ST_Transform(a.geom, :crs), :precision, 0) AS geom," +
+            " ST_Area(a.geom) AS area_size," +
+            " a.palsta_tunnus AS tunnus," +
+            " b.nimi AS nimi," +
+            " a.is_changed, " +
+            " a.diff_area," +
+            " a.new_palsta_id, " +
+            " a.new_palsta_tunnus" +
+            " FROM zone_palsta a " +
+            " LEFT JOIN kiinteisto_nimet b ON (b.tunnus = a.palsta_tunnus)" +
+            " WHERE a.zone_id = :zoneId";
 
     private final NamedParameterJdbcOperations jdbcOperations;
     private final ObjectMapper objectMapper;
@@ -43,14 +44,17 @@ public class GetPalstaFeatureCollectionQuery {
 
         feature.setId(String.valueOf(rs.getLong("id")));
         feature.setGeometry(GISUtils.parseGeoJSONGeometry(objectMapper, rs.getString("geom")));
-        feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER, PropertyIdentifier.formatPropertyIdentifier(rs.getLong("tunnus")));
+        feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER,
+                PropertyIdentifier.formatPropertyIdentifier(rs.getLong("tunnus")));
+        feature.setProperty(GeoJSONConstants.PROPERTY_NAME, rs.getString("nimi"));
         feature.setProperty(GeoJSONConstants.PROPERTY_SIZE, rs.getDouble("area_size"));
 
         if (rs.getBoolean("is_changed")) {
             feature.setProperty(GeoJSONConstants.PROPERTY_CHANGED, true);
             feature.setProperty(GeoJSONConstants.PROPERTY_SIZE_DIFF, rs.getFloat("diff_area"));
             feature.setProperty(GeoJSONConstants.PROPERTY_PALSTA_NEW_ID, rs.getLong("new_palsta_id"));
-            feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER_NEW, PropertyIdentifier.formatPropertyIdentifier(rs.getLong("new_palsta_tunnus")));
+            feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER_NEW,
+                    PropertyIdentifier.formatPropertyIdentifier(rs.getLong("new_palsta_tunnus")));
         }
 
         return feature;
@@ -59,7 +63,8 @@ public class GetPalstaFeatureCollectionQuery {
     public FeatureCollection execute(final Long zoneId, final GISUtils.SRID srid) {
         final MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("zoneId", zoneId)
-                .addValue("crs", srid.getValue());
+                .addValue("crs", srid.getValue())
+                .addValue("precision", srid.getDecimalPrecision());
 
         final List<Feature> features = jdbcOperations.query(SQL, params, (rs, i) -> mapResultToFeature(rs));
         final FeatureCollection featureCollection = new FeatureCollection();

@@ -1,7 +1,6 @@
 package fi.riista.feature.huntingclub.moosedatacard.converter;
 
 import com.kscs.util.jaxb.Copyable;
-
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
@@ -12,14 +11,11 @@ import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardHarvestValidator;
 import fi.riista.feature.organization.person.Person;
-
-import javaslang.Tuple;
-import javaslang.Tuple2;
-
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.joda.time.LocalTime;
 
 import javax.annotation.Nonnull;
-
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -85,5 +81,4 @@ public abstract class MooseDataCardHarvestConverter<T extends MooseDataCardHarve
         specimen.setFitnessClass(
                 HasMooseDataCardEncoding.getEnumOrNull(GameFitnessClass.class, source.getFitnessClass()));
     }
-
 }

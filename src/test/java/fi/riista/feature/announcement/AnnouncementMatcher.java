@@ -20,7 +20,8 @@ public class AnnouncementMatcher {
                 hasBody(announcement.getBody()),
                 hasSubject(announcement.getSubject()),
                 hasSenderType(announcement.getSenderType()),
-                hasFromOrganisation(announcement.getFromOrganisation())
+                hasFromOrganisation(announcement.getFromOrganisation()),
+                hasVisibleToAll(announcement.isVisibleToAll())
         );
     }
 
@@ -56,6 +57,15 @@ public class AnnouncementMatcher {
             @Override
             protected Map<String, String> featureValueOf(final ListAnnouncementDTO announcement) {
                 return announcement.getFromOrganisation().getName();
+            }
+        };
+    }
+
+    public static Matcher<ListAnnouncementDTO> hasVisibleToAll(final boolean expected) {
+        return new FeatureMatcher<ListAnnouncementDTO, Boolean>(equalTo(expected), "visibleToAll", "visibleToAll") {
+            @Override
+            protected Boolean featureValueOf(final ListAnnouncementDTO announcement) {
+                return announcement.isVisibleToAll();
             }
         };
     }

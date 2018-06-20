@@ -42,35 +42,24 @@ L.Control.GeoJsonLayerControl = L.Control.extend({
 
         var self = this;
         geoJsonLayer.eachLayer(function (layer) {
-            var layerName = self.options.layerToLegendTitle(layer);
-            var layerColor = layer.options.fillColor;
-            var layerIcon = '<span style="display:inline-block;width:12px;height:12px;margin:0 0 -2px 2px;background-color:' + layerColor +' "></span>';
-            var layerHtml = layerIcon + ' ' + layerName;
-
-            self._addLayer(layer, layerHtml);
+            self.addLayer(layer);
         });
     },
 
     onAdd: function (map) {
         this._initLayout();
-        this._update();
         this._map = map;
-        this._addSelectAllItem(this._container.querySelector('.leaflet-control-geojson-list'));
 
-        var self = this;
-
-        this._geoJsonLayer.eachLayer(function (layer) {
-            var zIndex = self._lastZIndex++;
-
-            layer.on('add', function () {
-                if (layer._path) {
-                    layer._path.zIndex = zIndex;
-                }
-            });
-
+        for (var i = 0; i < this._layers.length; i++) {
+            var layer = this._layers[i].layer;
+            layer.zIndex = this._lastZIndex++;
+            layer.on('add remove', this._onLayerChange, this);
+            layer.on('add', this._updateSvgOrder, this);
             layer.addTo(map);
-        });
+        }
 
+        this._update();
+        this._addSelectAllItem(this._container.querySelector('.leaflet-control-geojson-list'));
         this._orderVectorLayers();
 
         return this._container;
@@ -79,6 +68,13 @@ L.Control.GeoJsonLayerControl = L.Control.extend({
     onRemove: function () {
         for (var i = 0; i < this._layers.length; i++) {
             this._layers[i].layer.off('add remove', this._onLayerChange, this);
+            this._layers[i].layer.off('add', this._updateSvgOrder, this);
+        }
+    },
+
+    _updateSvgOrder : function (layer) {
+        if (layer._path) {
+            layer._path.zIndex = layer.zIndex;
         }
     },
 
@@ -126,8 +122,6 @@ L.Control.GeoJsonLayerControl = L.Control.extend({
                 l.removeFrom(map);
             }
         });
-
-        // map.fitBounds(this._geoJsonLayer.getBounds());
     },
 
     _addSelectAllItem: function (container) {
@@ -152,6 +146,16 @@ L.Control.GeoJsonLayerControl = L.Control.extend({
         return label;
     },
 
+    addLayer: function (layer) {
+        var name = this.options.layerToLegendTitle(layer);
+        var layerColor = layer.options.fillColor;
+        var layerIcon = '<span style="display:inline-block;width:12px;height:12px;margin:0 0 -2px 2px;background-color:' + layerColor +' "></span>';
+        var nameHtml = layerIcon + ' ' + name;
+
+        this._addLayer(layer, nameHtml, true);
+        return (this._map) ? this._update() : this;
+    },
+
     // @method removeLayer(layer: Layer): this
     // Remove the given layer from the control.
     removeLayer: function (layer) {
@@ -169,7 +173,7 @@ L.Control.GeoJsonLayerControl = L.Control.extend({
     expand: function () {
         L.DomUtil.addClass(this._container, 'leaflet-control-geojson-expanded');
         this._form.style.height = null;
-        var acceptableHeight = this._map.getSize().y - (this._container.offsetTop + 100);
+        var acceptableHeight = this._map.getSize().y - (this._container.offsetTop + 120);
         if (acceptableHeight < this._form.clientHeight) {
             L.DomUtil.addClass(this._form, 'leaflet-control-geojson-scrollbar');
             this._form.style.height = acceptableHeight + 'px';
@@ -202,9 +206,7 @@ L.Control.GeoJsonLayerControl = L.Control.extend({
         container.setAttribute('aria-haspopup', true);
 
         L.DomEvent.disableClickPropagation(container);
-        if (!L.Browser.touch) {
-            L.DomEvent.disableScrollPropagation(container);
-        }
+        L.DomEvent.disableScrollPropagation(container);
 
         var form = this._form = L.DomUtil.create('form', className + '-list');
 
@@ -244,12 +246,21 @@ L.Control.GeoJsonLayerControl = L.Control.extend({
     },
 
     _addLayer: function (layer, name) {
-        layer.on('add remove', this._onLayerChange, this);
+        if (this._map) {
+            layer.on('add remove', this._onLayerChange, this);
+        }
 
         this._layers.push({
             layer: layer,
             name: name
         });
+
+        this._layers.sort(L.bind(function (a, b) {
+            if (_.isFunction(this.options.sortFunction)) {
+                return this.options.sortFunction(a, b);
+            }
+            return a.name < b.name ? -1 : (b.name < a.name ? 1 : 0);
+        }, this));
     },
 
     _update: function () {

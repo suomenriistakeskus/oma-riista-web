@@ -22,7 +22,7 @@
             </thead>
 
             <tbody>
-            <tr ng-repeat="venue in venues">
+            <tr ng-repeat="venue in venues | orderBy:'name'">
                 <td>
                     <div>{{venue.name | truncateCharacters:50}}</div>
                     <div class="r-contact-address">

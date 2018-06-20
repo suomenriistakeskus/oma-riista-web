@@ -1,0 +1,63 @@
+<h3>Alustat</h3>
+
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th>Kuukausi</th>
+        <th>Android</th>
+        <th>iOS</th>
+        <th>WP</th>
+        <th>Osuudet</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="row in $ctrl.metrics.platform">
+        <td class="col-sm-1"><strong ng-bind="row.key"></strong></td>
+        <td class="col-sm-1">
+            <strong ng-bind="(100.0 * row.android / row.total) | number:1"></strong> %
+            <br/>
+            <span ng-bind="row.android"></span>
+        </td>
+        <td class="col-sm-1">
+            <strong ng-bind="(100.0 * row.ios / row.total) | number:1"></strong> %
+            <br/>
+            <span ng-bind="row.ios"></span>
+        </td>
+        <td class="col-sm-1">
+            <strong ng-bind="(100.0 * row.wp / row.total) | number:1"></strong> %
+            <br/>
+            <span ng-bind="row.wp"></span>
+        </td>
+        <td class="col-sm-8">
+            <uib-progress max="row.total">
+                <uib-bar type="success" value="row.android">
+                    ANDROID
+                </uib-bar>
+                <uib-bar type="info" value="row.ios">
+                    IOS
+                </uib-bar>
+                <uib-bar type="warning" value="row.wp">
+                    WP
+                </uib-bar>
+            </uib-progress>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<h3>Versiot (viimeisen 3kk aikana)</h3>
+
+<table class="table table-bordered table-condensed table-striped">
+    <thead>
+    <tr>
+        <th>Versio</th>
+        <th>Kirjautumisia</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="row in $ctrl.metrics.version">
+        <td class="col-sm-2" ng-bind="row.version"></td>
+        <td class="col-sm-10" ng-bind="row.count"></td>
+    </tr>
+    </tbody>
+</table>

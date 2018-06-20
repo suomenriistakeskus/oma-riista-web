@@ -1,37 +1,37 @@
 package fi.riista.feature.gamediary.mobile;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.fixture.ObservationFixtureMixin;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.VersionedTestExecutionSupport;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.annotation.Resource;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.LOWEST_VERSION_SUPPORTING_XTRA_BEAVER_TYPES;
-import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_CANADIAN_BEAVER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_BEAVER;
+import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.LOWEST_VERSION_SUPPORTING_XTRA_BEAVER_TYPES;
+import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
-import static fi.riista.util.TestUtils.createList;
+import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.test.TestUtils.createList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest
-        implements VersionedTestExecutionSupport<ObservationSpecVersion> {
+        implements ObservationFixtureMixin, VersionedTestExecutionSupport<ObservationSpecVersion> {
 
     @Resource
     private MobileObservationDTOTransformer transformer;
@@ -46,6 +46,34 @@ public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest
         final List<Observation> observations = createList(5, model()::newObservation);
         persistInNewTransaction();
         transformer.apply(observations);
+    }
+
+    @Test
+    public void testSpecimens_isNullWhenAmountIsNull() {
+        forEachVersion(version -> withPerson(person -> {
+            final Observation observation = model().newObservation(person);
+            observation.setAmount(null);
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final MobileObservationDTO dto = transformer.apply(observation, version);
+                assertNull(dto.getAmount());
+                assertNull(dto.getSpecimens());
+            });
+        }));
+    }
+
+    @Test
+    public void testSpecimens_isEmptyWhenAmountIsNotNull() {
+        forEachVersion(version -> withPerson(person -> {
+            final Observation observation = model().newObservation(person);
+            observation.setAmount(1);
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final MobileObservationDTO dto = transformer.apply(observation, version);
+                assertNotNull(dto.getAmount());
+                assertEmpty(dto.getSpecimens());
+            });
+        }));
     }
 
     @Test
@@ -97,14 +125,19 @@ public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest
         assertEquals(DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTime()), dto.getPointOfTime());
         assertEquals(observation.getDescription(), dto.getDescription());
 
-        assertTrue(observation.isAmountEqualTo(dto.getAmount()));
+        assertEquals(observation.getAmount(), dto.getAmount());
         assertEquals(observation.getMooselikeMaleAmount(), dto.getMooselikeMaleAmount());
         assertEquals(observation.getMooselikeFemaleAmount(), dto.getMooselikeFemaleAmount());
+        assertEquals(observation.getMooselikeCalfAmount(), dto.getMooselikeCalfAmount());
         assertEquals(observation.getMooselikeFemale1CalfAmount(), dto.getMooselikeFemale1CalfAmount());
         assertEquals(observation.getMooselikeFemale2CalfsAmount(), dto.getMooselikeFemale2CalfsAmount());
         assertEquals(observation.getMooselikeFemale3CalfsAmount(), dto.getMooselikeFemale3CalfsAmount());
         assertEquals(observation.getMooselikeFemale4CalfsAmount(), dto.getMooselikeFemale4CalfsAmount());
         assertEquals(observation.getMooselikeUnknownSpecimenAmount(), dto.getMooselikeUnknownSpecimenAmount());
-    }
 
+        assertEquals(observation.getVerifiedByCarnivoreAuthority(), dto.getVerifiedByCarnivoreAuthority());
+        assertEquals(observation.getObserverName(), dto.getObserverName());
+        assertEquals(observation.getObserverPhoneNumber(), dto.getObserverPhoneNumber());
+        assertEquals(observation.getOfficialAdditionalInfo(), dto.getOfficialAdditionalInfo());
+    }
 }

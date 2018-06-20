@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_harvest_permit_partner;
-
 CREATE TABLE import_harvest_permit_partner (
   permit_number      CHAR(18) PRIMARY KEY,
   club_official_code VARCHAR(255) NOT NULL

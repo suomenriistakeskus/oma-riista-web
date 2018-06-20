@@ -1,0 +1,95 @@
+.panel-group > .panel-decision + .panel-decision {
+  margin-top: 15px;
+}
+
+.panel-group > .panel-decision > .panel-heading:focus {
+  outline: none;
+}
+
+.panel-decision {
+  .panel-variant(@panel-default-border; @panel-default-text; @panel-default-heading-bg; @panel-default-border);
+
+  .panel-heading {
+    .panel-title {
+      line-height: 28px;
+    }
+
+    .checkbox-inline {
+      padding-top: 4px;
+    }
+  }
+
+  .panel-body {
+    p {
+      margin: 0;
+    }
+
+    p + p {
+      margin-top: 6px;
+    }
+
+    table {
+      margin: 0;
+    }
+
+    table > thead > tr {
+      page-break-inside: avoid !important;
+    }
+
+    table > thead > tr > th {
+      padding: 10px 0 10px;
+      //border-bottom: 1px solid #e7e7e7;
+      text-align: left;
+      color: #333;
+    }
+
+    table > tbody > tr {
+      page-break-inside: avoid !important;
+    }
+
+    table > tbody > tr > th {
+      padding: 3px 10px 3px 0;
+      border-collapse: collapse;
+      //border-top: 1px solid #e7e7e7;
+      //border-bottom: 1px solid #e7e7e7;
+      text-align: left;
+    }
+
+    table > tbody > tr > td {
+      padding: 3px 10px 3px 0;
+      border-collapse: collapse;
+      //border-top: 1px solid #e7e7e7;
+      //border-bottom: 1px solid #e7e7e7;
+    }
+  }
+}
+
+.r-decision-delivery-tabs {
+  margin-bottom: 10px;
+}
+
+.r-decision-delivery-content {
+  height: 500px;
+  max-height: 500px;
+  min-height: 500px;
+  overflow-y: scroll;
+  margin-top: 5px;
+}
+
+.diffWrapper {
+  padding: 9px 12px;
+  height: 520px !important;
+  max-height: 520px !important;
+  min-height: 520px !important;
+  overflow-y: scroll !important;
+  .del {
+    text-decoration: none;
+    color: #b30000;
+    background: #fadad7;
+  }
+  .ins {
+    background: #eaf2c2;
+    color: #406619;
+    text-decoration: none;
+  }
+}

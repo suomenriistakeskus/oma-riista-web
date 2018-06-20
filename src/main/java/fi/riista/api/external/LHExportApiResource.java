@@ -1,7 +1,6 @@
 package fi.riista.api.external;
 
 import fi.riista.config.web.CSVHttpResponse;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.integration.lupahallinta.HarvestReportExportCSVDTO;
 import fi.riista.integration.lupahallinta.HarvestReportExportToLupahallintaFeature;
 import fi.riista.integration.lupahallinta.HarvestReportListCSVResponse;
@@ -12,15 +11,11 @@ import fi.riista.integration.lupahallinta.LupaHallintaExportFeature;
 import fi.riista.integration.lupahallinta.MooselikeHarvestExportToLupahallintaFeature;
 import fi.riista.integration.lupahallinta.club.LHHuntingClubCSVRow;
 import fi.riista.integration.lupahallinta.club.LHMooselikeHarvestsCSVRow;
-import fi.riista.integration.lupahallinta.permitarea.LHHarvestPermitAreaFeature;
-import fi.riista.integration.lupahallinta.permitarea.LHPA_PermitArea;
 import fi.riista.util.MediaTypeExtras;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,13 +39,10 @@ public class LHExportApiResource {
     @Resource
     private MooselikeHarvestExportToLupahallintaFeature mooselikeHarvestExportToLupahallintaFeature;
 
-    @Resource
-    private LHHarvestPermitAreaFeature lhHarvestPermitAreaFeature;
-
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(produces = MediaType.APPLICATION_XML_VALUE)
     public String getLupaHallintaExportData() {
-        return feature.export(OccupationType.lupahallintaExportValues());
+        return feature.export();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -73,31 +65,4 @@ public class LHExportApiResource {
         final List<LHMooselikeHarvestsCSVRow> rows = mooselikeHarvestExportToLupahallintaFeature.exportToCSV(huntingYear);
         return LHMooselikeHarvestsCSVRowResponse.create(rows);
     }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "permitarea/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public LHPA_PermitArea getByExternalId(@PathVariable("id") String id) {
-        return lhHarvestPermitAreaFeature.getByExternalId(id);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "permitarea/{id}/xml", produces = MediaType.APPLICATION_XML_VALUE)
-    public String getByExternalIdXml(@PathVariable("id") String id) {
-        return lhHarvestPermitAreaFeature.getByExternalIdXml(id);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @PostMapping(value = "permitarea/{id}/lock", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public LHPA_PermitArea lock(@PathVariable("id") String id) {
-        lhHarvestPermitAreaFeature.updateLockedStatus(id, true);
-        return lhHarvestPermitAreaFeature.getByExternalId(id);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @PostMapping(value = "permitarea/{id}/unlock", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public LHPA_PermitArea unlock(@PathVariable("id") String id) {
-        lhHarvestPermitAreaFeature.updateLockedStatus(id, false);
-        return lhHarvestPermitAreaFeature.getByExternalId(id);
-    }
-
 }

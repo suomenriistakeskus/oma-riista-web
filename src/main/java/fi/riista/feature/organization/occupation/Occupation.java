@@ -24,6 +24,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 
 import static com.querydsl.core.types.dsl.DateTimeExpression.currentDate;
@@ -61,6 +62,7 @@ public class Occupation extends LifecycleEntity<Long> implements HasBeginAndEndD
     @Column
     private Integer qualificationYear;
 
+    @Size(max = 255)
     @Column(length = 255)
     private String additionalInfo;
 

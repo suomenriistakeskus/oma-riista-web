@@ -13,6 +13,9 @@ import java.sql.Types;
 
 import com.querydsl.sql.spatial.RelationalPathSpatial;
 
+import com.querydsl.spatial.*;
+
+
 
 /**
  * SQOrganisation is a Querydsl query type for SQOrganisation
@@ -26,11 +29,19 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
 
     public final NumberPath<Double> accuracy = createNumber("accuracy", Double.class);
 
+    public final BooleanPath active = createBoolean("active");
+
     public final NumberPath<Long> addressId = createNumber("addressId", Long.class);
 
     public final NumberPath<Double> altitude = createNumber("altitude", Double.class);
 
     public final NumberPath<Double> altitudeAccuracy = createNumber("altitudeAccuracy", Double.class);
+
+    public final StringPath associationRegistryNumber = createString("associationRegistryNumber");
+
+    public final StringPath businessId = createString("businessId");
+
+    public final NumberPath<Long> clubPersonId = createNumber("clubPersonId", Long.class);
 
     public final NumberPath<Integer> consistencyVersion = createNumber("consistencyVersion", Integer.class);
 
@@ -92,25 +103,37 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
 
     public final StringPath poronhoitoalueId = createString("poronhoitoalueId");
 
+    public final StringPath subtype = createString("subtype");
+
     public final com.querydsl.sql.PrimaryKey<SQOrganisation> organisationPkey = createPrimaryKey(organisationId);
 
-    public final com.querydsl.sql.ForeignKey<SQGameSpecies> organisationGameSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
+    public final com.querydsl.sql.ForeignKey<SQHuntingClubSubtype> clubTypeFk = createForeignKey(subtype, "name");
 
     public final com.querydsl.sql.ForeignKey<SQAddress> organisationAddressFk = createForeignKey(addressId, "address_id");
 
+    public final com.querydsl.sql.ForeignKey<SQPerson> clubPersonFk = createForeignKey(clubPersonId, "person_id");
+
     public final com.querydsl.sql.ForeignKey<SQOrganisationType> organisationTypeFk = createForeignKey(organisationType, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestPermit> organisationHarvestPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
-
-    public final com.querydsl.sql.ForeignKey<SQHta> organisationMooseAreaFk = createForeignKey(mooseAreaId, "gid");
+    public final com.querydsl.sql.ForeignKey<SQGameSpecies> organisationGameSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> organisationParentFk = createForeignKey(parentOrganisationId, "organisation_id");
 
+    public final com.querydsl.sql.ForeignKey<SQHta> organisationMooseAreaFk = createForeignKey(mooseAreaId, "gid");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermit> organisationHarvestPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
+
     public final com.querydsl.sql.ForeignKey<SQHuntingClubArea> organisationHuntingClubAreaIdFk = createForeignKey(huntingAreaId, "hunting_club_area_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationPartner> _harvestPermitApplicationPartnerOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationRhy> _harvestPermitApplicationRhyOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> _harvestPermitRhyFk = createInvForeignKey(organisationId, "rhy_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvest> _harvestRhyFk = createInvForeignKey(organisationId, "rhy_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplication> _harvestPermitApplicationRhyFk = createInvForeignKey(organisationId, "rhy_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitRhys> _harvestPermitRhysOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
 
@@ -122,11 +145,13 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
 
     public final com.querydsl.sql.ForeignKey<SQOccupationNomination> _occupationNominationRhyIdFk = createInvForeignKey(organisationId, "rhy_id");
 
-    public final com.querydsl.sql.ForeignKey<SQObservation> _gameObservationRhyFk = createInvForeignKey(organisationId, "rhy_id");
+    public final com.querydsl.sql.ForeignKey<SQGameObservation> _gameObservationRhyFk = createInvForeignKey(organisationId, "rhy_id");
 
     public final com.querydsl.sql.ForeignKey<SQBasicClubHuntingSummary> _basicClubHuntingSummaryClubFk = createInvForeignKey(organisationId, "club_id");
 
     public final com.querydsl.sql.ForeignKey<SQHuntingClubArea> _huntingClubAreaClubFk = createInvForeignKey(organisationId, "club_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitAreaRhy> _harvestPermitAreaRhyRefFk = createInvForeignKey(organisationId, "rhy_id");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> _organisationParentFk = createInvForeignKey(organisationId, "parent_organisation_id");
 
@@ -138,6 +163,10 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
 
     public final com.querydsl.sql.ForeignKey<SQSrvaEvent> _srvaEventRhyFk = createInvForeignKey(organisationId, "rhy_id");
 
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplication> _harvestPermitApplicationHolderFk = createInvForeignKey(organisationId, "permit_holder_id");
+
+    public final com.querydsl.sql.ForeignKey<SQRhyAnnualStatistics> _rhyAnnualStatisticsRhyFk = createInvForeignKey(organisationId, "rhy_id");
+
     public final com.querydsl.sql.ForeignKey<SQGroupObservationRejection> _groupObservationRejectionHuntingClubGroupFk = createInvForeignKey(organisationId, "hunting_club_group_id");
 
     public final com.querydsl.sql.ForeignKey<SQCalendarEvent> _calendarEventOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
@@ -147,6 +176,8 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
     public final com.querydsl.sql.ForeignKey<SQMooseHuntingSummary> _mooseHuntingSummaryClubFk = createInvForeignKey(organisationId, "club_id");
 
     public final com.querydsl.sql.ForeignKey<SQAnnouncementSubscriber> _announcementSubscriberOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitArea> _harvestPermitAreaClubFk = createInvForeignKey(organisationId, "club_id");
 
     public final com.querydsl.sql.ForeignKey<SQGroupHuntingDay> _groupHuntingDayGroupFk = createInvForeignKey(organisationId, "hunting_group_id");
 
@@ -168,6 +199,11 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
         addMetadata();
     }
 
+    public SQOrganisation(String variable, String schema) {
+        super(SQOrganisation.class, forVariable(variable), schema, "organisation");
+        addMetadata();
+    }
+
     public SQOrganisation(Path<? extends SQOrganisation> path) {
         super(path.getType(), path.getMetadata(), "public", "organisation");
         addMetadata();
@@ -180,9 +216,13 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
 
     public void addMetadata() {
         addMetadata(accuracy, ColumnMetadata.named("accuracy").withIndex(19).ofType(Types.DOUBLE).withSize(17).withDigits(17));
+        addMetadata(active, ColumnMetadata.named("active").withIndex(35).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(addressId, ColumnMetadata.named("address_id").withIndex(14).ofType(Types.BIGINT).withSize(19));
         addMetadata(altitude, ColumnMetadata.named("altitude").withIndex(20).ofType(Types.DOUBLE).withSize(17).withDigits(17));
         addMetadata(altitudeAccuracy, ColumnMetadata.named("altitude_accuracy").withIndex(21).ofType(Types.DOUBLE).withSize(17).withDigits(17));
+        addMetadata(associationRegistryNumber, ColumnMetadata.named("association_registry_number").withIndex(39).ofType(Types.VARCHAR).withSize(7));
+        addMetadata(businessId, ColumnMetadata.named("business_id").withIndex(38).ofType(Types.VARCHAR).withSize(9));
+        addMetadata(clubPersonId, ColumnMetadata.named("club_person_id").withIndex(37).ofType(Types.BIGINT).withSize(19));
         addMetadata(consistencyVersion, ColumnMetadata.named("consistency_version").withIndex(3).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(createdByUserId, ColumnMetadata.named("created_by_user_id").withIndex(4).ofType(Types.BIGINT).withSize(19));
         addMetadata(creationTime, ColumnMetadata.named("creation_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
@@ -213,6 +253,7 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
         addMetadata(parentOrganisationId, ColumnMetadata.named("parent_organisation_id").withIndex(10).ofType(Types.BIGINT).withSize(19));
         addMetadata(phoneNumber, ColumnMetadata.named("phone_number").withIndex(16).ofType(Types.VARCHAR).withSize(255));
         addMetadata(poronhoitoalueId, ColumnMetadata.named("poronhoitoalue_id").withIndex(24).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(subtype, ColumnMetadata.named("subtype").withIndex(36).ofType(Types.VARCHAR).withSize(255));
     }
 
 }

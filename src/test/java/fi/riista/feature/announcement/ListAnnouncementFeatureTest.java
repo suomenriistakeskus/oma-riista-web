@@ -1,6 +1,5 @@
 package fi.riista.feature.announcement;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.announcement.show.ListAnnouncementDTO;
 import fi.riista.feature.announcement.show.ListAnnouncementFeature;
@@ -13,6 +12,7 @@ import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
 
@@ -37,6 +37,7 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         public final Person clubContact;
         public final Person groupMember;
         public final Person groupLeader;
+        public final Person nobody;
 
         public ClubFixture(final EntitySupplier model, final Riistanhoitoyhdistys rhy) {
             club = model.newHuntingClub(rhy);
@@ -46,6 +47,7 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
             clubContact = model.newPerson();
             groupMember = model.newPerson();
             groupLeader = model.newPerson();
+            nobody = model.newPerson();
 
             model.newOccupation(club, clubMember, OccupationType.SEURAN_JASEN);
             model.newOccupation(club, groupMember, OccupationType.SEURAN_JASEN);
@@ -61,12 +63,14 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         public final Person coordinator;
         public final Person srva;
         public final Person valvoja;
+        public final Person nobody;
 
         public RhyFixture(final EntitySupplier model, final Riistanhoitoyhdistys rhy) {
             this.rhy = rhy;
             coordinator = model.newPerson();
             srva = model.newPerson();
             valvoja = model.newPerson();
+            nobody = model.newPerson();
 
             model.newOccupation(rhy, coordinator, OccupationType.TOIMINNANOHJAAJA);
             model.newOccupation(rhy, srva, OccupationType.SRVA_YHTEYSHENKILO);
@@ -84,6 +88,12 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
                                             final OccupationType subscriberOccupationType) {
         final Announcement announcement = model().newAnnouncement(fromUser, from, senderType);
         model().newAnnouncementSubscriber(announcement, to, subscriberOccupationType);
+        return announcement;
+    }
+
+    private Announcement createPublicAnnouncement(final Organisation rk, final SystemUser moderator) {
+        final Announcement announcement = model().newAnnouncement(moderator, rk, AnnouncementSenderType.RIISTAKESKUS);
+        announcement.setVisibleToAll(true);
         return announcement;
     }
 
@@ -147,6 +157,7 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertVisible(f.groupMember, f.club, announcement);
         assertVisible(f.groupLeader, f.club, announcement);
         assertNotVisible(r.coordinator, r.rhy);
+        assertNotVisible(f.nobody);
     }
 
     @Test
@@ -165,6 +176,7 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertNotVisible(f.groupMember, f.club);
         assertVisible(f.groupLeader, f.club, announcement);
         assertNotVisible(r.coordinator, r.rhy);
+        assertNotVisible(f.nobody);
     }
 
     @Test
@@ -197,6 +209,9 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         assertVisible(clubMemberBoth, f1.club, a1);
         assertVisible(clubMemberBoth, f2.club, a2);
+
+        assertNotVisible(f1.nobody);
+        assertNotVisible(f2.nobody);
     }
 
     @Test
@@ -215,6 +230,8 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertVisible(f.groupMember, f.club, announcement);
         assertVisible(f.groupLeader, f.club, announcement);
         assertVisible(r.coordinator, r.rhy, announcement);
+        assertNotVisible(f.nobody);
+        assertNotVisible(r.nobody);
     }
 
     @Test
@@ -253,6 +270,11 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         assertNotVisible(r2.coordinator, rhy2);
         assertNotVisible(r2.coordinator);
+
+        assertNotVisible(r1.nobody);
+        assertNotVisible(r2.nobody);
+        assertNotVisible(f1.nobody);
+        assertNotVisible(f2.nobody);
     }
 
     @Test
@@ -271,6 +293,9 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertNotVisible(f.groupMember, f.club);
         assertVisible(f.groupLeader, f.club, announcement);
         assertVisible(r.coordinator, r.rhy, announcement);
+
+        assertNotVisible(f.nobody);
+        assertNotVisible(r.nobody);
     }
 
     @Test
@@ -298,6 +323,9 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertNotVisible(c.clubContact);
         assertNotVisible(c.groupMember);
         assertNotVisible(c.groupLeader);
+
+        assertNotVisible(r.nobody);
+        assertNotVisible(c.nobody);
     }
 
     @Test
@@ -308,7 +336,7 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         final SystemUser moderator = createNewModerator();
 
-        final RhyFixture r1 = new RhyFixture(model(), rhy);
+        final RhyFixture r = new RhyFixture(model(), rhy);
         final ClubFixture c1 = new ClubFixture(model(), rhy);
         final ClubFixture c2 = new ClubFixture(model(), rhy);
 
@@ -327,13 +355,16 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
             assertVisible(c.clubContact, c.club, announcement);
             assertVisible(c.groupMember, c.club, announcement);
             assertVisible(c.groupLeader, c.club, announcement);
+
+            assertNotVisible(c.nobody);
         });
 
-        assertVisible(r1.coordinator, r1.rhy, announcement);
+        assertVisible(r.coordinator, r.rhy, announcement);
 
-        assertVisible(r1.coordinator, announcement);
-        assertNotVisible(r1.srva);
-        assertNotVisible(r1.valvoja);
+        assertVisible(r.coordinator, announcement);
+        assertNotVisible(r.srva);
+        assertNotVisible(r.valvoja);
+        assertNotVisible(r.nobody);
     }
 
     @Test
@@ -344,7 +375,7 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         final SystemUser moderator = createNewModerator();
 
-        final RhyFixture r1 = new RhyFixture(model(), rhy);
+        final RhyFixture r = new RhyFixture(model(), rhy);
         final ClubFixture c1 = new ClubFixture(model(), rhy);
         final ClubFixture c2 = new ClubFixture(model(), rhy);
 
@@ -365,11 +396,12 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
             assertVisible(c.groupLeader, c.club, announcement);
         });
 
-        assertVisible(r1.coordinator, r1.rhy, announcement);
+        assertVisible(r.coordinator, r.rhy, announcement);
 
-        assertVisible(r1.coordinator, announcement);
-        assertNotVisible(r1.srva);
-        assertNotVisible(r1.valvoja);
+        assertVisible(r.coordinator, announcement);
+        assertNotVisible(r.srva);
+        assertNotVisible(r.valvoja);
+        assertNotVisible(r.nobody);
     }
 
     @Test
@@ -406,6 +438,9 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertNotVisible(c.clubContact, c.club);
         assertNotVisible(c.groupMember, c.club);
         assertNotVisible(c.groupLeader, c.club);
+
+        assertNotVisible(c.nobody);
+        assertNotVisible(r.nobody);
     }
 
     @Test
@@ -445,6 +480,8 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         assertNotVisible(r2.valvoja, r2.rhy);
         assertNotVisible(r2.valvoja);
+        assertNotVisible(r1.nobody);
+        assertNotVisible(r2.nobody);
     }
 
     @Test
@@ -483,6 +520,9 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         assertNotVisible(r2.valvoja, r2.rhy);
         assertNotVisible(r2.valvoja);
+
+        assertNotVisible(r1.nobody);
+        assertNotVisible(r2.nobody);
     }
 
     @Test
@@ -514,6 +554,9 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         final Announcement b_club = createAnnouncement(rk, club, moderator,
                 AnnouncementSenderType.RIISTAKESKUS, OccupationType.SEURAN_JASEN);
 
+        // Public announcement
+        final Announcement visibleToAll = createPublicAnnouncement(rk, moderator);
+
         onSavedAndAuthenticated(moderator, () -> {
             // Received
             assertThat(listReceived(rk), empty());
@@ -537,10 +580,78 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
                     isEqualAnnouncement(b_rk),
                     isEqualAnnouncement(b_rka),
                     isEqualAnnouncement(b_rhy),
-                    isEqualAnnouncement(b_club))));
+                    isEqualAnnouncement(b_club),
+                    isEqualAnnouncement(visibleToAll))));
             assertThat(listSent(rka), empty());
             assertThat(listSent(rhy), empty());
             assertThat(listSent(club), empty());
         });
+    }
+
+    @Test
+    public void testModerator_ClubOccupationWithOtherOccupationTypes() {
+        final RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
+        final Riistanhoitoyhdistys rhy1 = model().newRiistanhoitoyhdistys(rka);
+
+        final SystemUser moderator = createNewModerator();
+
+        final RhyFixture r1 = new RhyFixture(model(), rhy1);
+
+        // Additional club occupations
+        final HuntingClub club = model().newHuntingClub(rhy1);
+        model().newOccupation(club, r1.valvoja, OccupationType.SEURAN_YHDYSHENKILO);
+        model().newOccupation(club, r1.srva, OccupationType.SEURAN_YHDYSHENKILO);
+        model().newOccupation(club, r1.coordinator, OccupationType.SEURAN_YHDYSHENKILO);
+
+        final Organisation rk = rka.getParentOrganisation();
+        final Announcement announcement = createAnnouncement(rk, rka, moderator,
+                AnnouncementSenderType.RIISTAKESKUS, OccupationType.METSASTYKSENVALVOJA);
+
+        persistInNewTransaction();
+
+        assertVisible(r1.coordinator, r1.rhy, announcement);
+        assertVisible(r1.coordinator, announcement);
+
+        assertNotVisible(r1.srva, r1.rhy);
+        assertNotVisible(r1.srva);
+
+        assertVisible(r1.valvoja, r1.rhy, announcement);
+        assertVisible(r1.valvoja, announcement);
+    }
+
+    @Test
+    public void testVisibleToAll() {
+        final RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
+        final Organisation rk = rka.getParentOrganisation();
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(rka);
+
+        final SystemUser moderator = createNewModerator();
+
+        final Announcement announcement = createPublicAnnouncement(rk, moderator);
+
+        final RhyFixture r = new RhyFixture(model(), rhy);
+        final ClubFixture c = new ClubFixture(model(), rhy);
+
+        persistInNewTransaction();
+
+        assertVisible(r.coordinator, announcement);
+        assertVisible(r.srva, announcement);
+        assertVisible(r.valvoja, announcement);
+        assertVisible(c.clubMember, announcement);
+        assertVisible(c.clubContact, announcement);
+        assertVisible(c.groupMember, announcement);
+        assertVisible(c.groupLeader, announcement);
+        assertVisible(r.nobody, announcement);
+        assertVisible(c.nobody, announcement);
+
+        assertNotVisible(r.coordinator, r.rhy);
+        assertNotVisible(r.srva, r.rhy);
+        assertNotVisible(r.valvoja, r.rhy);
+        assertNotVisible(c.clubMember, c.club);
+        assertNotVisible(c.clubContact, c.club);
+        assertNotVisible(c.groupMember, c.club);
+        assertNotVisible(c.groupLeader, c.club);
+        assertNotVisible(c.nobody, c.club);
+        assertNotVisible(r.nobody, r.rhy);
     }
 }

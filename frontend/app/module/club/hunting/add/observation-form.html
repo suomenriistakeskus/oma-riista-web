@@ -1,6 +1,6 @@
 <div class="content r-club-sidebar-content">
     <form id="observationForm" name="observationForm" role="form" class="form form-horizontal" r-force-show-errors-check-validity>
-    <fieldset ng-disabled="huntingFinished">
+    <fieldset ng-disabled="huntingFinished || readOnly">
         <h3 ng-if="!entry.id" class="modal-title" translate="gamediary.form.titleAddObservation"></h3>
         <h3 ng-if="entry.id && !huntingFinished" class="modal-title" translate="gamediary.form.titleEditObservation"></h3>
         <h3 ng-if="entry.id && huntingFinished" class="modal-title" translate="gamediary.form.titleViewObservation"></h3>
@@ -9,7 +9,8 @@
 
         <species-select diary-parameters="parameters"
                         available-species="availableSpecies"
-                        diary-entry="entry"></species-select>
+                        diary-entry="entry"
+                        read-only="readOnly"></species-select>
 
         <div class="form-group" ng-if="entry.gameSpeciesCode">
             <div ng-class="{ 'has-error': (!entry.observationType) }">
@@ -51,7 +52,8 @@
         <hunting-day-time-select diary-entry="entry"
                                  create="createHuntingDayForObservation()"
                                  hunting-days="huntingDays"
-                                 hunting-finished="huntingFinished"></hunting-day-time-select>
+                                 hunting-finished="huntingFinished"
+                                 read-only="readOnly"></hunting-day-time-select>
 
         <h4 ng-if="isModerator" translate="harvestreport.form.author"></h4>
 
@@ -59,7 +61,7 @@
 
         <h4 translate="gamediary.form.nameOfObserver"></h4>
 
-        <club-person-select member-list="memberCandidates" person="entry.actorInfo"></club-person-select>
+        <club-person-select member-list="memberCandidates" person="entry.actorInfo" read-only="readOnly"></club-person-select>
 
         <h4 translate="gamediary.form.titleShowSpecimens"></h4>
 
@@ -118,8 +120,37 @@
                                 class="form-control"
                                 ng-model="entry.specimens[0].age"
                                 ng-options="(age | gameAge: entry.gameSpeciesCode) for age in getAvailableGameAges()"
-                                ng-required="isFieldRequired('age')"
                                 ng-required="isFieldRequired('age')"></select>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-if="isFieldVisible('widthOfPaw')" show-errors>
+                    <label for="widthOfPaw" class="control-label">
+                        <span translate="gamediary.form.widthOfPaw"></span>
+                        <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('widthOfPaw')"></small>
+                    </label>
+
+                    <div class="form-control-wrapper">
+                        <select name="widthOfPaw" id="widthOfPaw"
+                                class="form-control"
+                                ng-model="entry.specimens[0].widthOfPaw"
+                                ng-options="n for n in getWidthOfPawOptions()"
+                                ng-required="isFieldRequired('widthOfPaw')"></select>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-if="isFieldVisible('lengthOfPaw')" show-errors>
+                    <label for="lengthOfPaw" class="control-label">
+                        <span translate="gamediary.form.lengthOfPaw"></span>
+                        <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('lengthOfPaw')"></small>
+                    </label>
+
+                    <div class="form-control-wrapper">
+                        <select name="lengthOfPaw" id="lengthOfPaw"
+                                class="form-control"
+                                ng-model="entry.specimens[0].lengthOfPaw"
+                                ng-options="n for n in getLengthOfPawOptions()"
+                                ng-required="isFieldRequired('lengthOfPaw')"></select>
                     </div>
                 </div>
 
@@ -245,6 +276,21 @@
             </div>
         </div>
 
+        <div class="form-group" ng-if="isFieldVisible('mooselikeCalfAmount')" show-errors>
+            <label for="mooselikeCalfAmount" class="control-label">
+                <span translate="gamediary.mooselike.mooselikeCalfAmount"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger" ng-show="isFieldRequired('mooselikeCalfAmount')"></small>
+            </label>
+
+            <div class="form-control-wrapper">
+                <select type="number" name="mooselikeCalfAmount" id="mooselikeCalfAmount"
+                        class="form-control"
+                        ng-model="entry.mooselikeCalfAmount"
+                        ng-options="n for n in [] | range:0:50"
+                        ng-required="isFieldRequired('mooselikeCalfAmount')"></select>
+            </div>
+        </div>
+
         <div class="form-group" ng-if="isFieldVisible('mooselikeUnknownSpecimenAmount')" show-errors>
             <label for="mooselikeUnknownSpecimenAmount" class="control-label">
                 <span translate="gamediary.mooselike.mooselikeUnknownSpecimenAmount"></span>
@@ -280,7 +326,7 @@
 
     <button type="button"
             class="btn btn-primary"
-            ng-disabled="observationForm.$invalid || !isValid()"
+            ng-disabled="observationForm.$invalid || !isValid() || readOnly"
             ng-show="showSave"
             ng-click="save()">
         <span translate="global.button.save"></span>

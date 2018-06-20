@@ -1,17 +1,20 @@
 package fi.riista.sql;
 
-import com.querydsl.core.types.Path;
-import com.querydsl.core.types.PathMetadata;
-import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.NumberPath;
-import com.querydsl.core.types.dsl.StringPath;
-import com.querydsl.sql.ColumnMetadata;
-import com.querydsl.sql.spatial.RelationalPathSpatial;
+import static com.querydsl.core.types.PathMetadataFactory.*;
 
+import com.querydsl.core.types.dsl.*;
+
+import com.querydsl.core.types.PathMetadata;
 import javax.annotation.Generated;
+import com.querydsl.core.types.Path;
+
+import com.querydsl.sql.ColumnMetadata;
 import java.sql.Types;
 
-import static com.querydsl.core.types.PathMetadataFactory.forVariable;
+import com.querydsl.sql.spatial.RelationalPathSpatial;
+
+import com.querydsl.spatial.*;
+
 
 
 /**
@@ -50,13 +53,13 @@ public class SQGameDiaryImage extends RelationalPathSpatial<SQGameDiaryImage> {
 
     public final com.querydsl.sql.PrimaryKey<SQGameDiaryImage> gameDiaryImagePkey = createPrimaryKey(gameDiaryImageId);
 
+    public final com.querydsl.sql.ForeignKey<SQHarvest> gameDiaryImageHarvestFk = createForeignKey(harvestId, "harvest_id");
+
     public final com.querydsl.sql.ForeignKey<SQFileMetadata> gameDiaryImageFileMetadataFk = createForeignKey(fileMetadataId, "file_metadata_uuid");
 
     public final com.querydsl.sql.ForeignKey<SQSrvaEvent> gameDiaryImageSrvaEventFk = createForeignKey(srvaEventId, "srva_event_id");
 
-    public final com.querydsl.sql.ForeignKey<SQHarvest> gameDiaryImageHarvestFk = createForeignKey(harvestId, "harvest_id");
-
-    public final com.querydsl.sql.ForeignKey<SQObservation> gameDiaryImageGameObservationFk = createForeignKey(observationId, "game_observation_id");
+    public final com.querydsl.sql.ForeignKey<SQGameObservation> gameDiaryImageGameObservationFk = createForeignKey(observationId, "game_observation_id");
 
     public SQGameDiaryImage(String variable) {
         super(SQGameDiaryImage.class, forVariable(variable), "public", "game_diary_image");
@@ -65,6 +68,11 @@ public class SQGameDiaryImage extends RelationalPathSpatial<SQGameDiaryImage> {
 
     public SQGameDiaryImage(String variable, String schema, String table) {
         super(SQGameDiaryImage.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQGameDiaryImage(String variable, String schema) {
+        super(SQGameDiaryImage.class, forVariable(variable), schema, "game_diary_image");
         addMetadata();
     }
 

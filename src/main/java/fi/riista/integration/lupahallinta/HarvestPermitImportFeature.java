@@ -6,7 +6,7 @@ import fi.riista.integration.common.entity.Integration;
 import fi.riista.integration.common.repository.IntegrationRepository;
 import fi.riista.integration.lupahallinta.parser.PermitCSVImporter;
 import fi.riista.integration.lupahallinta.parser.PermitCSVLine;
-import javaslang.Tuple3;
+import io.vavr.Tuple3;
 import liquibase.util.csv.opencsv.CSVReader;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;

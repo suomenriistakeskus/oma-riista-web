@@ -1,6 +1,6 @@
 var HtmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'),
     JasmineReporters = require('jasmine-reporters'),
-    SpecReporter = require('jasmine-spec-reporter');
+    SpecReporter = require('jasmine-spec-reporter').SpecReporter;
 
 var specReporter = new SpecReporter({displayStacktrace: true});
 

@@ -5,10 +5,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.Harvest_;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.season.HarvestQuota;
 import fi.riista.feature.harvestpermit.season.HarvestQuota_;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
-import fi.riista.feature.harvestpermit.report.HarvestReport_;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
 import fi.riista.feature.harvestpermit.season.QHarvestSeason;
 import fi.riista.util.DateUtil;
@@ -65,14 +64,14 @@ public class PublicHarvestSeasonFeature {
     private Map<Long, Integer> fetchUsedQuotas() {
         final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         final CriteriaQuery<Tuple> query = builder.createTupleQuery();
-        final Root<HarvestReport> root = query.from(HarvestReport.class);
+        final Root<Harvest> root = query.from(Harvest.class);
 
-        Join<Harvest, HarvestQuota> joinedQuotas = root.join(HarvestReport_.harvests).join(Harvest_.harvestQuota, JoinType.LEFT);
+        Join<Harvest, HarvestQuota> joinedQuotas = root.join(Harvest_.harvestQuota, JoinType.LEFT);
         Path<Long> quotaId = joinedQuotas.get(HarvestQuota_.id);
 
-        Expression<Long> count = builder.count(root.get(HarvestReport_.id));
+        Expression<Long> count = builder.count(root.get(Harvest_.id));
 
-        Predicate onlyApproved = builder.equal(root.get(HarvestReport_.state), HarvestReport.State.APPROVED);
+        Predicate onlyApproved = builder.equal(root.get(Harvest_.harvestReportState), HarvestReportState.APPROVED);
         Predicate quotaNotNull = builder.isNotNull(quotaId);
 
         CriteriaQuery<Tuple> q = query

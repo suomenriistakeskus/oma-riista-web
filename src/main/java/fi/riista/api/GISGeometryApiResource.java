@@ -1,10 +1,10 @@
 package fi.riista.api;
 
 import com.vividsolutions.jts.geom.Geometry;
+import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.GISPoint;
-import fi.riista.feature.gis.WGS84Bounds;
 import fi.riista.feature.gis.kiinteisto.PropertyGeometryLookupFeature;
-import fi.riista.feature.gis.metsahallitus.GISMetsahallitusHirviDTO;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusHirviDTO;
 import fi.riista.feature.gis.metsahallitus.MetsahallitusGeometryLookupFeature;
 import fi.riista.feature.gis.rhy.CoordinateRhyLookupFeature;
 import fi.riista.util.GISUtils;
@@ -72,20 +72,7 @@ public class GISGeometryApiResource {
     @RequestMapping(value = "/property/bounds", method = RequestMethod.GET, produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
     public FeatureCollection propertyBounds(@RequestParam double minLat, @RequestParam double minLng,
                                             @RequestParam double maxLat, @RequestParam double maxLng) {
-        final WGS84Bounds bounds = new WGS84Bounds();
-
-        bounds.setMinLat(minLat);
-        bounds.setMinLng(minLng);
-        bounds.setMaxLat(maxLat);
-        bounds.setMaxLng(maxLng);
-
-        return propertyGeometryLookupFeature.findByBounds(bounds);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/property/dwithin", method = RequestMethod.GET, produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
-    public FeatureCollection propertyDWithin(@RequestParam double lat, @RequestParam double lng, @RequestParam int distance) {
-        return propertyGeometryLookupFeature.findDWithin(GISPoint.create(lat, lng), distance);
+        return propertyGeometryLookupFeature.findByBounds(new GISBounds(minLng, minLat, maxLng, maxLat));
     }
 
     private static ResponseEntity<?> toResponseEntity(final Object data) {
@@ -100,7 +87,7 @@ public class GISGeometryApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/mh/hirvi", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<GISMetsahallitusHirviDTO> listMetsahallitusHirvi(@RequestParam int year) {
+    public List<MetsahallitusHirviDTO> listMetsahallitusHirvi(@RequestParam int year) {
         return metsahallitusGeometryLookupFeature.listHirvi(year);
     }
 

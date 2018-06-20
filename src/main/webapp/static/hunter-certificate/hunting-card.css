@@ -1,0 +1,63 @@
+h1 {
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 18pt;
+    line-height: 22pt;
+    margin: 6pt 0;
+}
+
+h2 {
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 12pt;
+    line-height: 14pt;
+    margin: 6pt 0 2pt;
+}
+
+address {
+    font-size: 10pt;
+    line-height: 12pt;
+}
+
+.qr-code {
+    position: absolute;
+    top: 5cm;
+    right: 5pt;
+    width: 5cm;
+    height: 5cm;
+    overflow: hidden
+}
+
+td.occupation-name {
+    padding: 5pt 0 0;
+    min-width: 350pt;
+}
+
+dl {
+    overflow: auto;
+    width:100%;
+}
+
+dt {
+    float:left;
+    clear: left;
+    width: 5.5cm;
+    padding-bottom:7pt;
+}
+
+dd {
+    float:left;
+    width: 8cm;
+    padding-bottom:7pt;
+    font-weight: bold;
+}
+
+.small-print {
+    font-size: 9pt;
+    line-height: 12pt;
+    margin-bottom: 6pt;
+}
+
+.small-print strong {
+    line-height: 12pt;
+}

@@ -1,6 +1,5 @@
 package fi.riista.feature.gamediary.srva;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.error.NotFoundException;
@@ -8,17 +7,19 @@ import fi.riista.feature.error.RevisionConflictException;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
+import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.test.TestUtils;
 import fi.riista.util.DateUtil;
-import fi.riista.util.TestUtils;
-import org.joda.time.Interval;
+import fi.riista.util.F;
 import org.joda.time.LocalDate;
 import org.junit.Test;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -40,26 +42,6 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
     private SrvaEventRepository srvaEventRepository;
 
     @Test
-    public void testListSrvaEventsForActiveUser() {
-        withPerson(person -> withRhy(rhy -> {
-
-            final int numberOfEvents = nextPositiveIntAtMost(55);
-
-            for (int i = 0; i < numberOfEvents; i++) {
-                model().newSrvaEvent(person, rhy);
-            }
-
-            onSavedAndAuthenticated(createUser(person), () -> {
-                final Interval dateInterval = DateUtil.createDateInterval(DateUtil.today().minusDays(1), DateUtil.today().plusDays(1));
-
-                final List<SrvaEventDTO> srvaEventDTOs = srvaCrudFeature.listSrvaEventsForActiveUser(dateInterval);
-
-                assertEquals(numberOfEvents, srvaEventDTOs.size());
-            });
-        }));
-    }
-
-    @Test
     public void testAddSrvaEvent() {
         withPerson(person -> withRhy(rhy -> {
             final GameSpecies species = model().newGameSpecies();
@@ -68,7 +50,6 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
                 int specimenAmount = 1;
 
                 final SrvaEventDTO inputDto = createSrvaEventDTO(some(SrvaEventNameEnum.class),
-                        some(SrvaEventTypeEnum.class),
                         geoLocation(),
                         species,
                         specimenAmount,
@@ -98,7 +79,6 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private SrvaEventDTO createSrvaEventDTO(final SrvaEventNameEnum eventName,
-                                            final SrvaEventTypeEnum eventType,
                                             final GeoLocation location,
                                             final GameSpecies species,
                                             final int specimenAmount,
@@ -109,7 +89,7 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
         srvaEventDTO.setGeoLocation(location);
         srvaEventDTO.setPointOfTime(DateUtil.localDateTime());
         srvaEventDTO.setEventName(eventName);
-        srvaEventDTO.setEventType(eventType);
+        srvaEventDTO.setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(eventName)));
         srvaEventDTO.setGameSpeciesCode(species.getOfficialCode());
         srvaEventDTO.setTotalSpecimenAmount(specimenAmount);
         srvaEventDTO.setRhyId(rhyId);
@@ -129,7 +109,8 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
             onSavedAndAuthenticated(createUser(person), () -> {
                 final SrvaEventDTO updateDto = getSrvaEventDtoForUpdate(srvaEvent);
 
-                final SrvaEventTypeEnum newEventType = someOtherThan(updateDto.getEventType(), SrvaEventTypeEnum.class);
+                final SrvaEventTypeEnum newEventType = someOtherThan(updateDto.getEventType(),
+                        SrvaEventTypeEnum.getBySrvaEvent(updateDto.getEventName()));
                 updateDto.setEventType(newEventType);
 
                 final SrvaEventDTO outputDto = srvaCrudFeature.updateSrvaEvent(updateDto);
@@ -232,25 +213,6 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testCountUnfinishedSrvaEvents() {
-        withPerson(person -> withRhy(rhy -> {
-
-            model().newOccupation(rhy, person, OccupationType.SRVA_YHTEYSHENKILO);
-            person.setRhyMembership(rhy);
-
-            final List<SrvaEvent> events = createContentForSearchTest(person, rhy);
-
-            final long numberOfUnfinished = events.stream()
-                    .map(SrvaEvent::getState)
-                    .filter(SrvaEventStateEnum.UNFINISHED::equals)
-                    .count();
-
-            onSavedAndAuthenticated(createUser(person),
-                    () -> assertEquals(numberOfUnfinished, srvaCrudFeature.countUnfinishedSrvaEvents(rhy.getId())));
-        }));
-    }
-
-    @Test
     public void testSearchPage() {
         withPerson(person -> {
             final RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
@@ -265,34 +227,18 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
             model().newOccupation(rhy2, person, OccupationType.TOIMINNANOHJAAJA);
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                final PageRequest req = new PageRequest(1, 10);
-
-                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(rhy1.getId(), rhy1.getId());
-                assertSearchPage(eventsRhy1, searchDTO, req);
-
-                searchDTO = getSearchDTOWithAllNamesAndStates(rhy2.getId(), rhy2.getId());
-                assertSearchPage(eventsRhy2, searchDTO, req);
-
-                searchDTO.setStates(Arrays.asList(SrvaEventStateEnum.values()));
-                searchDTO.setEventNames(Collections.singletonList(some(SrvaEventNameEnum.class)));
-                assertSearchPage(eventsRhy2, searchDTO, req);
-
-                searchDTO.setStates(Collections.singletonList(some(SrvaEventStateEnum.class)));
-                searchDTO.setEventNames(Arrays.asList(SrvaEventNameEnum.values()));
-                assertSearchPage(eventsRhy2, searchDTO, req);
-
-                searchDTO.setStates(Arrays.asList(SrvaEventStateEnum.APPROVED, SrvaEventStateEnum.REJECTED));
-                searchDTO.setEventNames(Arrays.asList(SrvaEventNameEnum.ACCIDENT, SrvaEventNameEnum.DEPORTATION));
-                assertSearchPage(eventsRhy2, searchDTO, req);
+                final SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(rhy1, rhy1);
+                for (int i = 0; i < eventsRhy1.size(); i++) {
+                    final Slice<SrvaEventDTO> slice = srvaCrudFeature.searchPage(searchDTO, new PageRequest(i, 1));
+                    assertEquals(1, slice.getNumberOfElements());
+                    final boolean shouldHaveNext = i < eventsRhy1.size() - 1;
+                    assertEquals(shouldHaveNext ? true : false, slice.hasNext());
+                }
+                final Slice<SrvaEventDTO> slice = srvaCrudFeature.searchPage(searchDTO, new PageRequest(eventsRhy1.size(), 1));
+                assertEquals(0, slice.getNumberOfElements());
+                assertFalse(slice.hasNext());
             });
         });
-    }
-
-    private void assertSearchPage(List<SrvaEvent> events, SrvaEventSearchDTO searchDTO, PageRequest req) {
-        Page<SrvaEventDTO> search = srvaCrudFeature.searchPage(searchDTO, req);
-        assertEquals(countByStatesAndNames(events, searchDTO.getStates(), searchDTO.getEventNames()), search.getTotalElements());
-
-        assertEquals(search.getTotalElements(), srvaCrudFeature.searchExcel(searchDTO).size());
     }
 
     @Test
@@ -312,7 +258,7 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy.getId(), rhy2.getId());
+                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy, rhy2);
                 final List<SrvaEventDTO> search = srvaCrudFeature.search(searchDTO);
 
                 assertTrue(search.stream().allMatch(eventDto -> Objects.equals(eventDto.getEventName(), SrvaEventNameEnum.ACCIDENT)));
@@ -321,6 +267,29 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
                         search.size()
                 );
             });
+        });
+    }
+
+    @Test
+    public void testSearchOtherRhy_moderatorView() {
+        final RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
+
+        final Riistanhoitoyhdistys rhy2 = model().newRiistanhoitoyhdistys(rka);
+        createContentForSearchTest(model().newPerson(), rhy2);
+
+        // Some extra data to different rhy
+        final Riistanhoitoyhdistys rhy3 = model().newRiistanhoitoyhdistys(rka);
+        createContentForSearchTest(model().newPerson(), rhy3);
+
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+
+            final SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(null, rhy2);
+            searchDTO.setModeratorView(true);
+
+            final List<SrvaEventDTO> search = srvaCrudFeature.search(searchDTO);
+            assertEquals(
+                    srvaEventRepository.findAllAsList(QSrvaEvent.srvaEvent.rhy.eq(rhy2)).size(),
+                    search.size());
         });
     }
 
@@ -344,8 +313,8 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy.getId(), null);
-                searchDTO.setRkaId(rka2.getId());
+                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy, null);
+                searchDTO.setRkaCode(rka2.getOfficialCode());
                 final List<SrvaEventDTO> search = srvaCrudFeature.search(searchDTO);
 
                 assertTrue(search.stream().allMatch(eventDto -> Objects.equals(eventDto.getEventName(), SrvaEventNameEnum.ACCIDENT)));
@@ -374,13 +343,15 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
 
             //Change data so that there is one event on each RHY that matches by species
             eventsCurrentRhy.get(0).setEventName(SrvaEventNameEnum.DEPORTATION);
+            eventsCurrentRhy.get(0).setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(SrvaEventNameEnum.DEPORTATION)));
             eventsCurrentRhy.get(0).setSpecies(species);
             eventsOtherRhy.get(0).setEventName(SrvaEventNameEnum.ACCIDENT);
+            eventsOtherRhy.get(0).setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(SrvaEventNameEnum.ACCIDENT)));
             eventsOtherRhy.get(0).setSpecies(species);
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy.getId(), null);
+                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy, null);
                 searchDTO.setGameSpeciesCode(species.getOfficialCode());
                 final List<SrvaEventDTO> search = srvaCrudFeature.search(searchDTO);
 
@@ -405,15 +376,17 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
 
             // Change data so that there is one event on each RHY that matches by species
             eventsCurrentRhy.get(0).setEventName(SrvaEventNameEnum.DEPORTATION);
+            eventsCurrentRhy.get(0).setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(SrvaEventNameEnum.DEPORTATION)));
             eventsCurrentRhy.get(0).setSpecies(null);
             eventsCurrentRhy.get(0).setOtherSpeciesDescription("Turtle");
             eventsOtherRhy.get(0).setEventName(SrvaEventNameEnum.ACCIDENT);
+            eventsOtherRhy.get(0).setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(SrvaEventNameEnum.ACCIDENT)));
             eventsOtherRhy.get(0).setSpecies(null);
             eventsOtherRhy.get(0).setOtherSpeciesDescription("Turtle");
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy.getId(), null);
+                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy, null);
                 // In search dto other species is 0
                 searchDTO.setGameSpeciesCode(0);
                 final List<SrvaEventDTO> search = srvaCrudFeature.search(searchDTO);
@@ -437,7 +410,7 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
-                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy.getId(), null);
+                SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy, null);
 
                 searchDTO.setBeginDate(today.minusDays(5));
                 searchDTO.setEndDate(today.minusDays(5));
@@ -454,6 +427,37 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
                 searchDTO.setBeginDate(null);
                 searchDTO.setEndDate(today.minusDays(6));
                 assertEquals(0, srvaCrudFeature.search(searchDTO).size());
+            });
+        }));
+    }
+
+    @Test
+    public void testSearchWithHta() {
+        withPerson(person -> withRhy(currentRhy -> {
+            final LocalDate today = DateUtil.today();
+            model().newOccupation(currentRhy, person, OccupationType.SRVA_YHTEYSHENKILO);
+
+            final List<SrvaEvent> eventsCurrentRhy = createContentForSearchTest(model().newPerson(), currentRhy);
+
+            final SrvaEvent hta1Event = eventsCurrentRhy.get(0);
+            final GISHirvitalousalue hta1 = model().newGISHirvitalousalueContaining(hta1Event.getGeoLocation());
+
+            final SrvaEvent hta2Event = eventsCurrentRhy.get(1);
+            final GISHirvitalousalue hta2 = model().newGISHirvitalousalueContaining(hta2Event.getGeoLocation());
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+
+                final SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(currentRhy, null);
+
+                searchDTO.setHtaCode(hta1.getNumber());
+                final List<SrvaEventDTO> hta1Result = srvaCrudFeature.search(searchDTO);
+                assertEquals(1, hta1Result.size());
+                assertEquals(hta1Event.getId(), hta1Result.get(0).getId());
+
+                searchDTO.setHtaCode(hta2.getNumber());
+                final List<SrvaEventDTO> hta2Result = srvaCrudFeature.search(searchDTO);
+                assertEquals(1, hta2Result.size());
+                assertEquals(hta2Event.getId(), hta2Result.get(0).getId());
             });
         }));
     }
@@ -495,25 +499,17 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private static SrvaEventSearchDTO getSearchDTOWithAllNamesAndStates(final Long currentRhyId, final Long rhyId) {
+    private static SrvaEventSearchDTO getSearchDTOWithAllNamesAndStates(final Riistanhoitoyhdistys currentRhy,
+                                                                        final Riistanhoitoyhdistys rhy) {
         SrvaEventSearchDTO dto = new SrvaEventSearchDTO();
-        dto.setCurrentRhyId(currentRhyId);
-        dto.setRhyId(rhyId);
+        dto.setCurrentRhyId(F.getId(currentRhy));
+        dto.setRhyCode(rhy != null ? rhy.getOfficialCode() : null);
         dto.setStates(Arrays.asList(SrvaEventStateEnum.values()));
         dto.setEventNames(Arrays.asList(SrvaEventNameEnum.values()));
         return dto;
     }
 
     private List<SrvaEvent> createContentForSearchTest(final Person person, final Riistanhoitoyhdistys rhy) {
-        return TestUtils.createList(nextPositiveIntAtMost(50), () -> model().newSrvaEvent(person, rhy));
+        return TestUtils.createList(5, () -> model().newSrvaEvent(person, rhy));
     }
-
-    private static long countByStatesAndNames(
-            final List<SrvaEvent> events, final List<SrvaEventStateEnum> states, final List<SrvaEventNameEnum> names) {
-
-        return events.stream()
-                .filter(srvaEvent -> states.contains(srvaEvent.getState()) && names.contains(srvaEvent.getEventName()))
-                .count();
-    }
-
 }

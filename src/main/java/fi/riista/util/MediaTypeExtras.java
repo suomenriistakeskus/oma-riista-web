@@ -16,6 +16,12 @@ public class MediaTypeExtras {
     public static final String APPLICATION_GEOJSON_VALUE = "application/vnd.geo+json";
     public static final MediaType APPLICATION_GEOJSON = MediaType.parseMediaType(APPLICATION_GEOJSON_VALUE);
 
-    public static final String APPLICATION_EXCEL_VALUE = "application/vnd.ms-excel; charset=UTF-8";
+    public static final String APPLICATION_VECTOR_TILE_VALUE = "application/vnd.mapbox-vector-tile";
+    public static final MediaType APPLICATION_VECTOR_TILE = MediaType.parseMediaType(APPLICATION_VECTOR_TILE_VALUE);
+
+    public static final String APPLICATION_EXCEL_VALUE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     public static final MediaType APPLICATION_EXCEL = MediaType.parseMediaType(APPLICATION_EXCEL_VALUE);
+
+    public static final String APPLICATION_ZIP_VALUE = "application/zip";
+    public static final MediaType APPLICATION_ZIP = MediaType.parseMediaType(APPLICATION_ZIP_VALUE);
 }

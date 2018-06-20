@@ -1,0 +1,43 @@
+<form name="metsahallitusForm" role="form" class="form form-horizontal r-annual-statistics-metsahallitus-form"
+      autocomplete="off"
+      r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="rhy.annualStats.misc.metsahallitus.form.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="smallGameLicensesSoldByMetsahallitus" class="control-label">
+                <span translate="rhy.annualStats.misc.metsahallitus.form.smallGameLicensesSoldByMetsahallitus"></span>
+            </label>
+
+            <div class="form-control-wrapper input-group">
+                <input type="number" name="smallGameLicensesSoldByMetsahallitus" id="smallGameLicensesSoldByMetsahallitus"
+                       min="0" max="99999" step="1"
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.data.smallGameLicensesSoldByMetsahallitus"/>
+
+                <div class="input-group-addon">
+                    <span translate="global.pcs"></span>
+                </div>
+            </div>
+
+            <p class="help-block"
+               ng-show="metsahallitusForm.smallGameLicensesSoldByMetsahallitus.$invalid"
+               translate="global.messages.invalid"></p>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="metsahallitusForm.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

@@ -1,6 +1,8 @@
 package fi.riista.feature.gamediary.observation.specimen;
 
-public enum GameMarking {
+import fi.riista.util.LocalisedEnum;
+
+public enum GameMarking implements LocalisedEnum {
 
     NOT_MARKED,
     COLLAR_OR_RADIO_TRANSMITTER,

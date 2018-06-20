@@ -1,37 +1,34 @@
 package fi.riista.feature.gamediary.observation;
 
-import static fi.riista.util.Asserts.assertEmpty;
-import static fi.riista.util.EqualityHelper.equalIdAndContent;
-import static fi.riista.util.TestUtils.createList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
-import fi.riista.feature.gamediary.observation.Observation;
-import fi.riista.feature.gamediary.observation.ObservationDTO;
-import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenDTO;
+import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
-import fi.riista.feature.gamediary.observation.ObservationDTOTransformer;
+import fi.riista.feature.gamediary.observation.specimen.GameMarking;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
+import fi.riista.feature.gamediary.observation.specimen.ObservedGameAge;
+import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import fi.riista.util.Functions;
-
-import javaslang.Tuple;
-import javaslang.Tuple2;
-
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.annotation.Resource;
-
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+
+import static fi.riista.feature.gamediary.image.GameDiaryImage.getUniqueImageIds;
+import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.test.TestUtils.createList;
+import static fi.riista.util.EqualityHelper.equalIdAndContent;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
 
@@ -46,13 +43,22 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testWithoutCreatingPluralAssociations() {
+    public void testWithoutCollectionAssociations() {
         withPerson(person -> {
 
             final List<Observation> observations = createList(5, () -> {
                 final Observation obs = model().newObservation(person);
                 obs.setWithinMooseHunting(true);
-                return obs.withMooselikeAmounts(1, 2, 3, 4, 5, 6, 7);
+                obs.setMooselikeMaleAmount(1);
+                obs.setMooselikeFemaleAmount(2);
+                obs.setMooselikeCalfAmount(3);
+                obs.setMooselikeFemale1CalfAmount(4);
+                obs.setMooselikeFemale2CalfsAmount(5);
+                obs.setMooselikeFemale3CalfsAmount(6);
+                obs.setMooselikeFemale4CalfsAmount(7);
+                obs.setMooselikeUnknownSpecimenAmount(8);
+                obs.setAmountToSumOfMooselikeAmounts();
+                return obs;
             });
 
             // Generate extra observation that is not included in input and thus should not affect output either.
@@ -81,7 +87,7 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testWithSpecimens() {
+    public void testSpecimens() {
         withPerson(person -> {
 
             final List<Tuple2<Observation, List<ObservationSpecimen>>> pairs =
@@ -104,8 +110,7 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
                     assertNotNull(dto);
                     assertFieldsExcludePluralAssociations(observation, dto);
 
-                    assertTrue(equalIdAndContent(
-                            pairs.get(i)._2, dto.getSpecimens(), ObservationSpecimenDTO.EQUAL_TO_ENTITY));
+                    assertTrue(equalIdAndContent(pairs.get(i)._2, dto.getSpecimens(), dto.specimenOps()::equalContent));
 
                     assertEmpty(dto.getImageIds());
                     assertTrue(dto.isCanEdit());
@@ -115,7 +120,35 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testWithImages() {
+    public void testSpecimens_isNullWhenAmountIsNull() {
+        withPerson(person -> {
+            final Observation observation = model().newObservation(person);
+            observation.setAmount(null);
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final ObservationDTO dto = transformer.apply(observation);
+                assertNull(dto.getAmount());
+                assertNull(dto.getSpecimens());
+            });
+        });
+    }
+
+    @Test
+    public void testSpecimens_isEmptyWhenAmountIsNotNull() {
+        withPerson(person -> {
+            final Observation observation = model().newObservation(person);
+            observation.setAmount(1);
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final ObservationDTO dto = transformer.apply(observation);
+                assertNotNull(dto.getAmount());
+                assertEmpty(dto.getSpecimens());
+            });
+        });
+    }
+
+    @Test
+    public void testImages() {
         withPerson(person -> {
 
             final List<Tuple2<Observation, List<GameDiaryImage>>> pairs =
@@ -135,9 +168,9 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
                     final ObservationDTO dto = dtos.get(i);
 
                     assertNotNull(dto);
-                    assertFieldsExcludePluralAssociations(pairs.get(i)._1(), dto);
+                    assertFieldsExcludePluralAssociations(pairs.get(i)._1, dto);
 
-                    verifyImageIds(pairs.get(i)._2(), dto);
+                    assertThat(dto.getImageIds(), containsInAnyOrder(getUniqueImageIds(pairs.get(i)._2).toArray()));
 
                     assertTrue(dto.isCanEdit());
                 }
@@ -145,9 +178,51 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private static void assertFieldsExcludePluralAssociations(
-            final Observation observation, final ObservationDTO dto) {
+    @Test
+    public void testLargeCarnivoreFields_presentWhenAuthor() {
+        withPerson(person -> {
+            final Observation observation = model().newObservation(person);
+            observation.setInYardDistanceToResidence(99);
+            observation.setVerifiedByCarnivoreAuthority(true);
+            observation.setObserverName("abc");
+            observation.setObserverPhoneNumber(phoneNumber());
+            observation.setOfficialAdditionalInfo("xyz");
 
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final ObservationDTO dto = transformer.apply(observation);
+                assertNotNull(dto.getVerifiedByCarnivoreAuthority());
+                assertNotNull(dto.getObserverName());
+                assertNotNull(dto.getObserverPhoneNumber());
+                assertNotNull(dto.getOfficialAdditionalInfo());
+
+                // Not yet supported.
+                assertNull(dto.getInYardDistanceToResidence());
+            });
+        });
+    }
+
+    @Test
+    public void testLargeCarnivoreFields_absentWhenNotAuthorNorObserver() {
+        withPerson(observer -> {
+            final Observation observation = model().newObservation(observer);
+            observation.setInYardDistanceToResidence(99);
+            observation.setVerifiedByCarnivoreAuthority(true);
+            observation.setObserverName("abc");
+            observation.setObserverPhoneNumber(phoneNumber());
+            observation.setOfficialAdditionalInfo("xyz");
+
+            onSavedAndAuthenticated(createUser(model().newPerson()), () -> {
+                final ObservationDTO dto = transformer.apply(observation);
+                assertNull(dto.getInYardDistanceToResidence());
+                assertNull(dto.getVerifiedByCarnivoreAuthority());
+                assertNull(dto.getObserverName());
+                assertNull(dto.getObserverPhoneNumber());
+                assertNull(dto.getOfficialAdditionalInfo());
+            });
+        });
+    }
+
+    private static void assertFieldsExcludePluralAssociations(final Observation observation, final ObservationDTO dto) {
         // To verify integrity of test fixture.
         assertNotNull(observation.getId());
         assertNotNull(observation.getConsistencyVersion());
@@ -161,41 +236,45 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
         assertEquals(observation.getWithinMooseHunting(), dto.getWithinMooseHunting());
         assertEquals(observation.getDescription(), dto.getDescription());
 
-        assertTrue(observation.isAmountEqualTo(dto.getAmount()));
+        assertEquals(observation.getAmount(), dto.getAmount());
         assertEquals(observation.getMooselikeMaleAmount(), dto.getMooselikeMaleAmount());
         assertEquals(observation.getMooselikeFemaleAmount(), dto.getMooselikeFemaleAmount());
+        assertEquals(observation.getMooselikeCalfAmount(), dto.getMooselikeCalfAmount());
         assertEquals(observation.getMooselikeFemale1CalfAmount(), dto.getMooselikeFemale1CalfAmount());
         assertEquals(observation.getMooselikeFemale2CalfsAmount(), dto.getMooselikeFemale2CalfsAmount());
         assertEquals(observation.getMooselikeFemale3CalfsAmount(), dto.getMooselikeFemale3CalfsAmount());
         assertEquals(observation.getMooselikeFemale4CalfsAmount(), dto.getMooselikeFemale4CalfsAmount());
         assertEquals(observation.getMooselikeUnknownSpecimenAmount(), dto.getMooselikeUnknownSpecimenAmount());
+
+        assertEquals(observation.getVerifiedByCarnivoreAuthority(), dto.getVerifiedByCarnivoreAuthority());
+        assertEquals(observation.getObserverName(), dto.getObserverName());
+        assertEquals(observation.getObserverPhoneNumber(), dto.getObserverPhoneNumber());
+        assertEquals(observation.getOfficialAdditionalInfo(), dto.getOfficialAdditionalInfo());
     }
 
-    private static void verifyImageIds(final Iterable<GameDiaryImage> images, final ObservationDTO dto) {
-        assertEquals(getUniqueImageUuids(images), new HashSet<>(dto.getImageIds()));
-    }
-
-    private static Set<UUID> getUniqueImageUuids(final Iterable<GameDiaryImage> images) {
-        return F.mapNonNullsToSet(images, Functions.idOf(GameDiaryImage::getFileMetadata));
-    }
-
-    private Tuple2<Observation, List<GameDiaryImage>> newObservationWithImages(
-            final int numImages, final Person author) {
+    private Tuple2<Observation, List<GameDiaryImage>> newObservationWithImages(final int numImages,
+                                                                               final Person author) {
 
         final Observation observation = model().newObservation(author);
 
         return Tuple.of(observation, createList(numImages, () -> model().newGameDiaryImage(observation)));
     }
 
-    private Tuple2<Observation, List<ObservationSpecimen>> newObservationWithSpecimens(
-            final int numSpecimens, final Person author) {
+    private Tuple2<Observation, List<ObservationSpecimen>> newObservationWithSpecimens(final int numSpecimens,
+                                                                                       final Person author) {
 
         final Observation observation = model().newObservation(author);
 
         // With one undefined specimen
         observation.setAmount(numSpecimens + 1);
 
-        return Tuple.of(observation, createList(numSpecimens, () -> model().newObservationSpecimen(observation)));
+        return Tuple.of(observation, createList(numSpecimens, () -> {
+            final ObservationSpecimen specimen = model().newObservationSpecimen(observation);
+            specimen.setAge(some(ObservedGameAge.class));
+            specimen.setGender(some(GameGender.class));
+            specimen.setState(some(ObservedGameState.class));
+            specimen.setMarking(some(GameMarking.class));
+            return specimen;
+        }));
     }
-
 }

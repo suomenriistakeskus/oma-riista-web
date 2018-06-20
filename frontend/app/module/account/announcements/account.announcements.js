@@ -32,6 +32,10 @@
                         $ctrl.announcements = result;
                     });
                 };
+
+                $ctrl.$onInit = function () {
+                    $ctrl.loadPage(0);
+                };
             }
         });
 })();

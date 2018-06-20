@@ -1,13 +1,36 @@
 package fi.riista.util;
 
+import com.google.common.collect.ImmutableMap;
+import org.junit.Test;
+
+import javax.annotation.Nullable;
+import java.util.EnumSet;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-
 public class FTest {
+
+    private enum TestEnum {
+        A, B, C;
+    }
+
+    private static class TestEnumHolder {
+        private final TestEnum value;
+
+        TestEnumHolder(@Nullable final TestEnum value) {
+            this.value = value;
+        }
+
+        public TestEnum getValue() {
+            return value;
+        }
+    }
 
     @Test
     public void testFirstNonNull() {
@@ -70,4 +93,53 @@ public class FTest {
         assertTrue(F.allNotNull(obj, Integer.valueOf(2)));
     }
 
+    @Test
+    public void testFilterToEnumSet() {
+        assertEquals(EnumSet.noneOf(TestEnum.class), F.filterToEnumSet(TestEnum.class, t -> false));
+        assertEquals(EnumSet.allOf(TestEnum.class), F.filterToEnumSet(TestEnum.class, t -> true));
+        assertEquals(EnumSet.of(TestEnum.C), F.filterToEnumSet(TestEnum.class, TestEnum.C::equals));
+        assertEquals(EnumSet.of(TestEnum.A, TestEnum.B), F.filterToEnumSet(TestEnum.class, t -> t != TestEnum.C));
+    }
+
+    @Test
+    public void testMax() {
+        final TestEnumHolder holdsA = new TestEnumHolder(TestEnum.A);
+        final TestEnumHolder holdsB = new TestEnumHolder(TestEnum.B);
+        final TestEnumHolder holdsC = new TestEnumHolder(TestEnum.C);
+        final TestEnumHolder holdsNull = new TestEnumHolder(null);
+
+        assertEquals(TestEnum.C, F.max(asList(holdsA, holdsB, holdsC), TestEnumHolder::getValue));
+        assertEquals(TestEnum.A, F.max(asList(holdsA, holdsNull, null), TestEnumHolder::getValue));
+        assertNull(F.max(asList(holdsNull, null), TestEnumHolder::getValue));
+        assertNull(F.max(emptyList(), TestEnumHolder::getValue));
+    }
+
+    @Test
+    public void testNullsafeMax() {
+        final TestEnumHolder holdsA = new TestEnumHolder(TestEnum.A);
+        final TestEnumHolder holdsB = new TestEnumHolder(TestEnum.B);
+        final TestEnumHolder holdsC = new TestEnumHolder(TestEnum.C);
+        final TestEnumHolder holdsNull = new TestEnumHolder(null);
+
+        assertEquals(TestEnum.B, F.nullsafeMax(holdsA, holdsB, TestEnumHolder::getValue));
+        assertEquals(TestEnum.C, F.nullsafeMax(holdsC, holdsA, TestEnumHolder::getValue));
+
+        assertEquals(TestEnum.A, F.nullsafeMax(holdsA, holdsNull, TestEnumHolder::getValue));
+        assertEquals(TestEnum.B, F.nullsafeMax(holdsNull, holdsB, TestEnumHolder::getValue));
+
+        assertEquals(TestEnum.B, F.nullsafeMax(holdsB, null, TestEnumHolder::getValue));
+        assertEquals(TestEnum.C, F.nullsafeMax(null, holdsC, TestEnumHolder::getValue));
+
+        assertNull(F.nullsafeMax(holdsNull, holdsNull, TestEnumHolder::getValue));
+        assertNull(F.nullsafeMax(null, holdsNull, TestEnumHolder::getValue));
+        assertNull(F.nullsafeMax(holdsNull, null, TestEnumHolder::getValue));
+        assertNull(F.nullsafeMax(null, null, TestEnumHolder::getValue));
+    }
+
+    @Test
+    public void testCountByApplication() {
+        final List<String> names = asList("Bob", "Dylan", "James", "Jeff", "Joe", "Leroy");
+
+        assertEquals(ImmutableMap.of(3, 2L, 4, 1L, 5, 3L), F.countByApplication(names.stream(), String::length));
+    }
 }

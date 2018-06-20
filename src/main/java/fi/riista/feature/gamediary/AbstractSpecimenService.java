@@ -1,13 +1,12 @@
 package fi.riista.feature.gamediary;
 
-import com.google.common.base.Preconditions;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.common.repository.BaseRepository;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,8 +28,8 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractSpecimenService.class);
 
-    protected final SingularAttribute<? super ENTITY, PARENT> parentAttribute;
-    protected final String parentClassName;
+    private final SingularAttribute<? super ENTITY, PARENT> parentAttribute;
+    private final String parentClassName;
 
     protected AbstractSpecimenService(@Nonnull final SingularAttribute<? super ENTITY, PARENT> parentAttribute) {
         this.parentAttribute = Objects.requireNonNull(parentAttribute);
@@ -56,6 +55,8 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
 
         final List<ENTITY> ret = createNewSpecimens(parent, filterSpecimensWithContent(dtos), version);
 
+        validateSpecimen(parent, ret);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("{}(id={}): Added {} new specimen(s), set total amount to {}",
                     parentClassName, parent.getId(), ret.size(), totalAmount);
@@ -65,16 +66,12 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
     }
 
     /**
-     *
-     * @param parent
-     *            - Parent object with which the specimens are associated
-     * @param totalAmount
-     *            - Total amount of specimens defined for parent
-     * @param dtos
-     *            - DTO containing data for specimens to be persisted/merged
+     * @param parent      - Parent object with which the specimens are associated
+     * @param totalAmount - Total amount of specimens defined for parent
+     * @param dtos        - DTO containing data for specimens to be persisted/merged
      * @param version
      * @return pair consisting of (1) specimens existing after method call and (2) boolean value
-     *         indicating whether any changes were persisted into database.
+     * indicating whether any changes were persisted into database.
      */
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public Tuple2<List<ENTITY>, Boolean> setSpecimens(
@@ -119,6 +116,8 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
         });
         resultSpecimens.addAll(0, entitiesToBeUpdated);
 
+        validateSpecimen(parent, resultSpecimens);
+
         // To have specimen revisions updated for DTO transformation.
         if (!entitiesToBeUpdated.isEmpty()) {
             getSpecimenRepository().flush();
@@ -145,6 +144,10 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
         return Tuple.of(resultSpecimens, changesDetected);
     }
 
+    protected void validateSpecimen(@Nonnull final PARENT parent, @Nonnull final List<ENTITY> specimenList) {
+
+    }
+
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void deleteAllSpecimens(@Nonnull final PARENT parent) {
         requirePersistedEntity(parent);
@@ -161,7 +164,7 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
         }
     }
 
-    protected List<ENTITY> findExistingSpecimens(final PARENT parent) {
+    private List<ENTITY> findExistingSpecimens(final PARENT parent) {
         return getSpecimenRepository().findAll(equal(parentAttribute, parent));
     }
 
@@ -179,19 +182,14 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
         Objects.requireNonNull(dtos, "dtos is null");
         Objects.requireNonNull(version, "version is null");
 
-        Preconditions.checkArgument(dtos.size() <= totalAmount,
-                "Total specimen amount must not be less than number of items in specimen collection");
+        OutOfBoundsSpecimenAmountException.assertDtoCount(dtos, totalAmount);
     }
 
-    protected PARENT requirePersistedEntity(final PARENT parent) {
-        Objects.requireNonNull(parent);
-
-        if (parent.isNew()) {
+    private void requirePersistedEntity(final PARENT parent) {
+        if (Objects.requireNonNull(parent).isNew()) {
             throw new IllegalArgumentException(
                     String.format("%s object must be persisted prior to being added specimens", parentClassName));
         }
-
-        return parent;
     }
 
     private List<DTO> filterSpecimensWithContent(final Iterable<DTO> dtos) {

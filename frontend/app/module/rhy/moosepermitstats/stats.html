@@ -7,26 +7,12 @@
             <div class="r-rhy-year-species-menu">
                 <r-hunting-year-and-species-selection hunting-years="$ctrl.huntingYears"
                                                       available-species="$ctrl.availableSpecies"
+                                                      preselect-current-hunting-year="true"
                                                       on-hunting-year-or-species-changed="$ctrl.selectHuntingYearAndSpeciesCode(huntingYear, speciesCode)">
                 </r-hunting-year-and-species-selection>
             </div>
-
-            <ul class="nav nav-pills nav-stacked">
-                <li ng-repeat="tab in $ctrl.tabs" ng-class="{ active: $ctrl.isTabSelected(tab) }">
-                    <a ng-click="$ctrl.selectTab(tab)"> {{'rhy.moosePermitStats.buttons.' + tab.type|translate}}</a>
-                </li>
-            </ul>
-
-            <hr class="invisible">
-
-            <div class="form-group">
-                <select name="orgSelect" id="orgSelect"
-                        class="form-control"
-                        ng-model="$ctrl.selectedOrgCode"
-                        ng-change="$ctrl.orgChanged($ctrl.selectedOrgCode)"
-                        ng-options="org.officialCode as org.name for org in $ctrl.selectedTab.organisations">
-                </select>
-            </div>
+            <organisation-select-by-rhy tabs="$ctrl.tabs"
+                                        organisation-changed="$ctrl.orgChanged(type, code)"></organisation-select-by-rhy>
         </form>
 
         <button type="button" ng-click="$ctrl.exportToExcel()" class="btn btn-primary">

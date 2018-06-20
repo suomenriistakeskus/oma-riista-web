@@ -1,25 +1,28 @@
 package fi.riista.feature.announcement.show;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import fi.riista.feature.announcement.QAnnouncement;
 import fi.riista.feature.announcement.QAnnouncementSubscriber;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.util.DateUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ListAnnouncementFilter {
-    private static final Logger LOG = LoggerFactory.getLogger(ListAnnouncementFilter.class);
+import static fi.riista.util.DateUtil.huntingYear;
+import static fi.riista.util.DateUtil.huntingYearBeginDate;
+import static fi.riista.util.DateUtil.toDateNullSafe;
 
+public class ListAnnouncementFilter {
     private final OccupationRepository occupationRepository;
 
     private Person subscriberPerson;
@@ -51,49 +54,51 @@ public class ListAnnouncementFilter {
         return this;
     }
 
-    public ListAnnouncementFilter withCreatedAfterStartOfHuntingYearDate() {
-        return withCreatedAfter(DateUtil.toDateNullSafe(DateUtil.huntingYearBeginDate(
-                DateUtil.getFirstCalendarYearOfCurrentHuntingYear())));
+    public ListAnnouncementFilter withCreatedAfterStartOfPreviousHuntingYearDate() {
+        return withCreatedAfter(toDateNullSafe(huntingYearBeginDate(huntingYear() - 1)));
     }
 
     public Optional<Predicate> buildPredicate() {
-        final QAnnouncement Q_ANNOUNCEMENT = QAnnouncement.announcement;
-        final QAnnouncementSubscriber Q_SUBSCRIBER = QAnnouncementSubscriber.announcementSubscriber;
+        final QAnnouncement MSG = QAnnouncement.announcement;
+        final QAnnouncementSubscriber SUB = QAnnouncementSubscriber.announcementSubscriber;
 
         final BooleanBuilder builder = new BooleanBuilder();
 
         if (this.createdAfter != null) {
-            builder.and(Q_ANNOUNCEMENT.lifecycleFields.creationTime.goe(this.createdAfter));
+            builder.and(MSG.lifecycleFields.creationTime.goe(this.createdAfter));
         }
 
         if (this.fromOrganisation != null) {
-            builder.and(Q_ANNOUNCEMENT.fromOrganisation.eq(this.fromOrganisation));
+            builder.and(MSG.fromOrganisation.eq(this.fromOrganisation));
         }
 
+        final BooleanExpression visibleToAll = MSG.visibleToAll.isTrue();
+
         if (this.subscriberPerson != null) {
-            // Limit visibility based on subscriber role matching to active person occupation
-            final PersonOccupationGraph personOccupationGraph = new PersonOccupationGraph(
-                    occupationRepository.findActiveByPerson(this.subscriberPerson));
+            // Person predicate is missing, if person has no suitable occupations
+            final List<Occupation> activeOccupations = occupationRepository.findActiveByPerson(this.subscriberPerson);
+            final Optional<Predicate> personSubscriberPredicate = new PersonOccupationGraph(activeOccupations)
+                    .withOrganisationFilter(subscriberOrganisation)
+                    .buildPredicate(SUB);
 
-            if (this.subscriberOrganisation != null) {
-                personOccupationGraph.withOrganisationFilter(this.subscriberOrganisation.getAllParentsAndSelf());
-            }
+            if (personSubscriberPredicate.isPresent()) {
+                // Limit visibility based on subscriber role matching to active person occupation
+                final Predicate subscriberExists = subscriberExists(MSG, SUB, personSubscriberPredicate.get());
 
-            // Predicate is missing, if person has no suitable occupations
-            final Optional<Predicate> personPredicate = personOccupationGraph.buildPredicate(Q_SUBSCRIBER);
+                if (this.subscriberOrganisation != null) {
+                    builder.and(subscriberExists);
+                } else {
+                    builder.and(ExpressionUtils.or(subscriberExists, visibleToAll));
+                }
 
-            if (personPredicate.isPresent()) {
-                builder.and(subscriberExists(Q_ANNOUNCEMENT, Q_SUBSCRIBER, personPredicate.get()));
-
+            } else if (this.subscriberOrganisation == null) {
+                builder.and(visibleToAll);
             } else {
-                LOG.error("Person occupation graph is empty");
-
-                // Cannot create empty match expression
                 return Optional.empty();
             }
+
         } else if (this.subscriberOrganisation != null) {
-            builder.and(subscriberExists(Q_ANNOUNCEMENT, Q_SUBSCRIBER,
-                    moderatorPredicate(this.subscriberOrganisation, Q_SUBSCRIBER)));
+            builder.and(subscriberExists(MSG, SUB, moderatorPredicate(this.subscriberOrganisation, SUB)));
         }
 
         return Optional.ofNullable(builder.getValue());
@@ -102,6 +107,7 @@ public class ListAnnouncementFilter {
     private static Predicate subscriberExists(final QAnnouncement announcement,
                                               final QAnnouncementSubscriber subscriber,
                                               final Predicate predicate) {
+        Objects.requireNonNull(predicate, "subscriber predicate is null");
         return JPAExpressions.selectFrom(subscriber)
                 .where(subscriber.announcement.eq(announcement), predicate)
                 .exists();

@@ -1,18 +1,15 @@
 package fi.riista.feature.mail;
 
+import fi.riista.config.properties.MailProperties;
 import fi.riista.feature.mail.delivery.MailDeliveryService;
-import fi.riista.feature.mail.queue.OutgoingMailProvider;
-import org.joda.time.DateTime;
+import fi.riista.feature.mail.queue.MailDeliveryQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class MailServiceImpl implements MailService {
@@ -20,73 +17,36 @@ public class MailServiceImpl implements MailService {
     private static final Logger LOG = LoggerFactory.getLogger(MailServiceImpl.class);
 
     @Resource
-    OutgoingMailProvider<Long> outgoingMailProvider;
+    private MailDeliveryQueue mailDeliveryQueue;
 
     @Resource
-    MailDeliveryService<Long> mailDeliveryService;
+    private MailDeliveryService mailDeliveryService;
 
-    @Value("${mail.enabled}")
-    boolean mailDeliveryEnabled;
-
-    @Value("${mail.address.from}")
-    String fallbackDefaultEmailFromAddress;
+    @Resource
+    private MailProperties mailProperties;
 
     @Override
-    public MailMessageDTO send(final MailMessageDTO.Builder builder) {
-        return sendInternal(builder, false, null);
+    public String getDefaultFromAddress() {
+        return mailProperties.getDefaultFromAddress();
     }
 
     @Override
-    public MailMessageDTO sendLater(final MailMessageDTO.Builder builder,
-                                    final DateTime sendAfterTime) {
-        return sendInternal(builder, false, sendAfterTime);
-    }
-
-    @Override
-    public MailMessageDTO sendImmediate(final MailMessageDTO.Builder builder) {
-        return sendInternal(builder, true, null);
-    }
-
-    private MailMessageDTO sendInternal(final MailMessageDTO.Builder builder,
-                                        final boolean immediate,
-                                        final DateTime sendAfterTime) {
-        final MailMessageDTO messageDTO = builder
-                .withDefaultFrom(fallbackDefaultEmailFromAddress)
-                .build();
-
-        if (mailDeliveryEnabled) {
-            if (immediate) {
-                mailDeliveryService.send(messageDTO);
-            } else {
-                outgoingMailProvider.scheduleForDelivery(messageDTO, Optional.ofNullable(sendAfterTime));
-            }
-        } else {
-            LOG.warn("Mail message was not sent or persisted because mail is disabled. " +
-                    "Message was from: '{}' to: '{}' with subject: '{}' and body:\n{}",
-                    messageDTO.getFrom(), messageDTO.getTo(), messageDTO.getSubject(), messageDTO.getBody());
+    public void send(final MailMessageDTO dto) {
+        if (!mailProperties.isMailDeliveryEnabled()) {
+            LOG.warn("Mail delivery is currently disabled for message with subject '{}'", dto.getSubject());
         }
 
-        return messageDTO;
+        mailDeliveryQueue.scheduleForDelivery(dto);
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processOutgoingMail() {
-        final Map<Long, MailMessageDTO> outgoingBatch = outgoingMailProvider.getOutgoingBatch();
-
-        if (outgoingBatch.isEmpty()) {
+        if (!mailProperties.isMailDeliveryEnabled()) {
             return;
         }
 
-        final Set<Long> failed = new HashSet<>();
-        final Set<Long> successful = new HashSet<>();
-
-        try {
-            mailDeliveryService.sendAll(outgoingBatch, successful, failed);
-
-        } catch (Exception ex) {
-            LOG.error("Sending mail batch failed", ex);
-        }
-
-        outgoingMailProvider.storeDeliveryStatus(successful, failed);
+        new MailMessageDeliveryProcessor(
+                mailDeliveryService, mailDeliveryQueue, mailProperties.getBatchSize()).startDelivery();
     }
 }

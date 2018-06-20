@@ -43,6 +43,11 @@ public class SQGameAntlersType extends RelationalPathSpatial<SQGameAntlersType> 
         addMetadata();
     }
 
+    public SQGameAntlersType(String variable, String schema) {
+        super(SQGameAntlersType.class, forVariable(variable), schema, "game_antlers_type");
+        addMetadata();
+    }
+
     public SQGameAntlersType(Path<? extends SQGameAntlersType> path) {
         super(path.getType(), path.getMetadata(), "public", "game_antlers_type");
         addMetadata();

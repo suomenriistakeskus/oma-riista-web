@@ -23,22 +23,10 @@
 
                     <li class="divider"></li>
 
-                    <li ng-if="$ctrl.canEditAllocations">
-                        <a ng-click="$ctrl.edit({'permit': $ctrl.selectedPermit})">
-                            <span class="fa fa-legal"></span>
-                            <span translate="club.permit.allocation.menuText"></span>
-                        </a>
-                    </li>
                     <li ng-if="$ctrl.viewedClubIsPartner">
                         <a ng-click="$ctrl.editHuntingSummary()">
                             <span class="fa fa-key"></span>
                             <span translate="club.hunting.huntingSummary.menuTitle"></span>
-                        </a>
-                    </li>
-                    <li>
-                        <a ng-click="$ctrl.editMoosePermitHarvestReport()">
-                            <span class="fa fa-eur"></span>
-                            <span translate="club.permit.mooseHarvestReport.menuTitle"></span>
                         </a>
                     </li>
                     <li ng-if="$ctrl.isFinishHuntingByModeratorOverrideVisible">
@@ -55,11 +43,12 @@
             <br>
             <span class="small" ng-bind="$ctrl.selectedPermit.speciesAmount | speciesAmountIntervalTextPlain"></span>
             <br>
-            <span ng-repeat="n in $ctrl.permitNumbers">
-                <span r-download-pdf="$ctrl.getPdfUrl(n.permitNumber)"
-                      uib-tooltip-html="n.text"
-                      tooltip-placement="right"></span>
-            </span>
+            <div ng-repeat="n in $ctrl.permitNumbers"
+                 class="permit-download"
+                 uib-tooltip-html="n.text"
+                 tooltip-placement="right">
+                <r-download-pdf url="$ctrl.getPdfUrl(n.permitNumber)"/>
+            </div>
         </div>
     </div>
 
@@ -89,27 +78,31 @@
         <table class="table">
             <tbody>
             <tr>
-                <td colspan="2">
+                <th class="col-xs-5">
                     <span translate="club.permit.permitHolder"></span>
-                    <span class="pull-right" ng-bind="$ctrl.selectedPermit.permitHolder | rI18nNameFilter"></span>
+                </th>
+                <td class="text-right">
+                    <span ng-bind="$ctrl.selectedPermit.permitHolder | rI18nNameFilter"></span>
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <th>
                     <span translate="club.hunting.species"></span>
-                    <span class="pull-right" ng-bind="$ctrl.selectedPermit.speciesAmount.gameSpecies.name | rI18nNameFilter"></span>
+                </th>
+                <td class="text-right">
+                    <span ng-bind="$ctrl.selectedPermit.speciesAmount.gameSpecies.name | rI18nNameFilter"></span>
                 </td>
             </tr>
             <tr>
-                <td translate="club.permit.originalPermitAmount"></td>
+                <th translate="club.permit.originalPermitAmount"></th>
                 <td class="text-right" ng-bind="$ctrl.originalPermitAmount | number"></td>
             </tr>
             <tr>
-                <td translate="club.permit.amendmentPermitAmount"></td>
+                <th translate="club.permit.amendmentPermitAmount"></th>
                 <td class="text-right" ng-bind="$ctrl.amendmentPermitAmount | number"></td>
             </tr>
             <tr>
-                <td translate="club.permit.permitAmountTotal"></td>
+                <th translate="club.permit.permitAmountTotal"></th>
                 <td class="text-right" ng-bind="$ctrl.permitTotal | number"></td>
             </tr>
             <tr ng-if="$ctrl.permitRestrictionType">
@@ -118,37 +111,42 @@
                     {{'harvestpermit.amount.restriction.' + $ctrl.permitRestrictionType | translate}} {{$ctrl.permitRestrictionAmount | number}}
                 </td>
             </tr>
+            <tr ng-if="$ctrl.restrictionViolated">
+                <th colspan="2" class="text-center alert alert-danger">
+                    <span translate="club.permit.restrictionViolated"></span>
+                </th>
+            </tr>
             <tr>
-                <td translate="club.permit.permitUnallocated"></td>
+                <th translate="club.permit.permitUnallocated"></th>
                 <td class="text-right" ng-bind="$ctrl.permitUnallocated | number"></td>
             </tr>
             <tr>
-                <td translate="club.permit.usedPermitCount"></td>
+                <th translate="club.permit.usedPermitCount"></th>
                 <td class="text-right" ng-bind="$ctrl.usedPermits | number"></td>
             </tr>
             <tr ng-if="$ctrl.notEdiblePermits !== $ctrl.amendmentPermitAmount">
-                <td colspan="2" class="text-center alert alert-danger">
+                <th colspan="2" class="text-center alert alert-danger">
                     <span translate="club.permit.amendmentPermitsDoNotMatchHarvests "></span>
-                </td>
+                </th>
             </tr>
             <tr>
-                <td translate="club.permit.notEdibleCount"></td>
+                <th translate="club.permit.notEdibleCount"></th>
                 <td class="text-right" ng-bind="$ctrl.notEdiblePermits | number"></td>
             </tr>
             <tr ng-if="$ctrl.isHuntingFinished">
-                <td colspan="2" class="text-center alert alert-success">
+                <th colspan="2" class="text-center alert alert-success">
                     <span translate="club.hunting.huntingSummary.status"></span>
-                </td>
+                </th>
             </tr>
             <tr ng-if="$ctrl.isPermitFinished">
-                <td colspan="2" class="text-center alert alert-success">
+                <th colspan="2" class="text-center alert alert-success">
                     <span translate="club.permit.mooseHarvestReport.permitFinished"></span>
-                </td>
+                </th>
             </tr>
             <tr ng-if="$ctrl.isModeratorOverridden">
-                <td colspan="2" class="text-center alert alert-warning">
+                <th colspan="2" class="text-center alert alert-warning">
                     <span translate="reporting.huntingSummary.overridden"></span>
-                </td>
+                </th>
             </tr>
             </tbody>
         </table>

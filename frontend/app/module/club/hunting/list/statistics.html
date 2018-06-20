@@ -1,0 +1,37 @@
+<div class="r-hunting-statistics" ng-if="$ctrl.harvestStats">
+    <header translate="club.hunting.stats.harvestsTitle"></header>
+
+    <table>
+        <tbody>
+        <tr>
+            <th ng-repeat="specimenType in ['MALE_ADULT', 'FEMALE_ADULT', 'MALE_YOUNG', 'FEMALE_YOUNG']">
+                {{ 'club.hunting.specimenAbbrv.' + specimenType | translate }}
+            </th>
+        </tr>
+        <tr>
+            <td ng-repeat="specimenType in ['MALE_ADULT', 'FEMALE_ADULT', 'MALE_YOUNG', 'FEMALE_YOUNG']">
+                {{ ($ctrl.harvestStats['HARVEST_' + specimenType] || 0) }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div ng-if="$ctrl.showObservation">
+        <hr/>
+        <header translate="club.hunting.stats.observationsTitle"></header>
+        <table>
+            <tbody>
+            <tr>
+                <th ng-repeat="key in $ctrl.mooseAmountFields">
+                    {{ 'gamediary.mooselikeAbbrv.' + key | translate }}
+                </th>
+            </tr>
+            <tr>
+                <td class="col-xs-2" ng-repeat="key in $ctrl.mooseAmountFields">
+                    {{ ($ctrl.harvestStats[key] || 0) }}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

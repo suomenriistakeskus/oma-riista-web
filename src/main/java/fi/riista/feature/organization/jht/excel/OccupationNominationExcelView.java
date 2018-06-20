@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.jht.excel;
 
+import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationDTO;
@@ -9,11 +10,8 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
 import fi.riista.util.Locales;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.web.servlet.view.document.AbstractXlsView;
+import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,9 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class OccupationNominationExcelView extends AbstractXlsView {
-
-    private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
+public class OccupationNominationExcelView extends AbstractXlsxView {
 
     private static final String[] HEADERS_FI = {
             "RHY-koodi",
@@ -66,9 +62,9 @@ public class OccupationNominationExcelView extends AbstractXlsView {
     };
 
     private final List<OccupationNominationDTO> results;
-    private final MessageSource messageSource;
-    private final Locale locale;
     private final OccupationNominationSearchDTO searchDTO;
+    private final EnumLocaliser localiser;
+    private final boolean isSwedish;
 
     public OccupationNominationExcelView(final List<OccupationNominationDTO> results,
                                          final OccupationNominationSearchDTO dto,
@@ -76,14 +72,14 @@ public class OccupationNominationExcelView extends AbstractXlsView {
                                          final Locale locale) {
         this.results = results;
         this.searchDTO = dto;
-        this.messageSource = messageSource;
-        this.locale = locale;
+        this.localiser = new EnumLocaliser(messageSource, locale);
+        this.isSwedish = Locales.isSwedish(locale);
     }
 
     private static String createFilename(final String sheetName) {
-        final String timestamp = DATETIME_PATTERN.print(DateUtil.now());
+        final String timestamp = Constants.FILENAME_TS_PATTERN.print(DateUtil.now());
 
-        return sheetName.toLowerCase() + "-" + timestamp + ".xls";
+        return sheetName.toLowerCase() + "-" + timestamp + ".xlsx";
     }
 
     @Override
@@ -91,21 +87,20 @@ public class OccupationNominationExcelView extends AbstractXlsView {
                                       final Workbook workbook,
                                       final HttpServletRequest request,
                                       final HttpServletResponse response) {
-        final EnumLocaliser enumLocaliser = new EnumLocaliser(messageSource, LocaleContextHolder.getLocale());
-        final String sheetName = enumLocaliser.getTranslation(searchDTO.getNominationStatus());
-        final ExcelHelper helper = new ExcelHelper(workbook, sheetName);
 
-        response.setHeader(ContentDispositionUtil.HEADER_NAME,
-                ContentDispositionUtil.encodeAttachmentFilename(createFilename(sheetName)));
+        final String sheetName = localiser.getTranslation(searchDTO.getNominationStatus());
 
-        helper.appendHeaderRow(Locales.isSwedish(locale) ? HEADERS_SV : HEADERS_FI);
+        ContentDispositionUtil.addHeader(response, createFilename(sheetName));
+
+        final ExcelHelper helper = new ExcelHelper(workbook, sheetName)
+                .appendHeaderRow(this.isSwedish ? HEADERS_SV : HEADERS_FI);
 
         for (final OccupationNominationDTO result : this.results) {
             helper.appendRow()
                     .appendTextCell(result.getRhy().getOfficialCode())
                     .appendTextCell(result.getRhy().getNameFI())
-                    .appendTextCell(enumLocaliser.getTranslation(result.getOccupationType()))
-                    .appendTextCell(enumLocaliser.getTranslation(result.getNominationStatus()))
+                    .appendTextCell(localiser.getTranslation(result.getOccupationType()))
+                    .appendTextCell(localiser.getTranslation(result.getNominationStatus()))
                     .appendDateCell(result.getNominationDate())
                     .appendDateCell(result.getDecisionDate())
                     .appendTextCell(result.getModeratorFullName());

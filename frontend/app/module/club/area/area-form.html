@@ -27,6 +27,7 @@
                 <input name="nameFI" id="nameFI" class="form-control"
                        ng-model="area.nameFI"
                        ng-maxlength="255"
+                       focus-me
                        r-copy-on-blur-to-empty-input="nameSV"
                        required>
             </div>
@@ -82,16 +83,6 @@
     <button type="button" class="btn btn-default pull-left"
             ng-click="cancel()"
             translate="global.button.cancel"></button>
-
-    <button type="button" class="btn btn-danger"
-            ng-show="area.id && area.active && !area.attachedToGroup"
-            ng-click="deactivate()"
-            translate="club.area.button.deactivate"></button>
-
-    <button type="button" class="btn btn-danger"
-            ng-show="area.id && !area.active"
-            ng-click="activate()"
-            translate="club.area.button.activate"></button>
 
     <button type="button" class="btn btn-primary"
             ng-click="save()"

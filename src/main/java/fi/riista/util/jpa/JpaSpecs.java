@@ -6,7 +6,7 @@ import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.common.entity.LifecycleEntity_;
 import fi.riista.util.DateUtil;
-import javaslang.Function3;
+import io.vavr.Function3;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
@@ -346,13 +346,26 @@ public final class JpaSpecs {
     }
 
     @Nonnull
-    public static <T extends LifecycleEntity<? extends Serializable>> Specification<T> olderThan(
-            @Nonnull final SingularAttribute<? super T, DateTime> dateAttribute, @Nonnull final DateTime olderThan) {
+    public static <T extends LifecycleEntity<? extends Serializable>> Specification<T> creationTimeBetween(
+            @Nonnull final Date start, @Nonnull final Date end) {
+        Objects.requireNonNull(start);
+        Objects.requireNonNull(end);
+
+        return (root, query, cb) -> {
+            final Path<Date> dateField =
+                    root.get(LifecycleEntity_.lifecycleFields).get(EntityLifecycleFields_.creationTime);
+            return cb.between(dateField, start, end);
+        };
+    }
+
+    @Nonnull
+    public static <T extends LifecycleEntity<? extends Serializable>> Specification<T> dateFieldBefore(
+            @Nonnull final SingularAttribute<? super T, DateTime> dateAttribute, @Nonnull final DateTime before) {
 
         Objects.requireNonNull(dateAttribute, "dateAttribute must not be null");
-        Objects.requireNonNull(olderThan, "olderThan must not be null");
+        Objects.requireNonNull(before, "before must not be null");
 
-        return (root, query, cb) -> cb.lessThan(root.get(dateAttribute), olderThan);
+        return (root, query, cb) -> cb.lessThan(root.get(dateAttribute), before);
     }
 
     @Nonnull

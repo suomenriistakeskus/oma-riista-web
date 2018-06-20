@@ -1,119 +1,124 @@
 package fi.riista.feature.account;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.util.DateUtil;
+import fi.riista.util.F;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 public class AccountRoleDTO {
 
-    public static class ContextDTO {
+    private static final String RHY_ID = "rhyId";
+    private static final String CLUB_ID = "clubId";
+    private static final String NAME_FI = "nameFI";
+    private static final String NAME_SV = "nameSV";
+    private static final String PERSON_ID = "personId";
 
-        private Long personId;
+    public static AccountRoleDTO fromOccupation(@Nonnull final Occupation occ) {
+        Objects.requireNonNull(occ, "occupation must not be null");
 
-        private Long rhyId;
+        final ImmutableMap.Builder<String, Object> contextBuilder = ImmutableMap.builder();
+        Organisation organisation = occ.getOrganisation();
 
-        private Long clubId;
-
-        private String nameFI;
-
-        private String nameSV;
-
-        public Long getPersonId() {
-            return personId;
+        switch (organisation.getOrganisationType()) {
+            case RHY:
+                contextBuilder.put(RHY_ID, organisation.getId());
+                break;
+            case CLUB:
+                contextBuilder.put(CLUB_ID, organisation.getId());
+                break;
+            case CLUBGROUP:
+                organisation = organisation.getParentOrganisation();
+                contextBuilder.put(CLUB_ID, organisation.getId());
+                break;
+            default:
+                break;
         }
 
-        public void setPersonId(Long personId) {
-            this.personId = personId;
-        }
+        contextBuilder.put(NAME_FI, organisation.getNameFinnish());
+        contextBuilder.put(NAME_SV, organisation.getNameSwedish());
 
-        public Long getRhyId() {
-            return rhyId;
-        }
-
-        public void setRhyId(Long rhyId) {
-            this.rhyId = rhyId;
-        }
-
-        public Long getClubId() {
-            return clubId;
-        }
-
-        public void setClubId(Long clubId) {
-            this.clubId = clubId;
-        }
-
-        public String getNameFI() {
-            return nameFI;
-        }
-
-        public void setNameFI(String nameFI) {
-            this.nameFI = nameFI;
-        }
-
-        public String getNameSV() {
-            return nameSV;
-        }
-
-        public void setNameSV(String nameSV) {
-            this.nameSV = nameSV;
-        }
-    }
-
-    private String id;
-
-    private String type;
-
-    private String displayName;
-
-    private final ContextDTO context = new ContextDTO();
-
-    public AccountRoleDTO() {
-    }
-
-    protected AccountRoleDTO(@Nonnull final String idPrefix, @Nonnull final Long id, @Nonnull final Enum<?> type) {
-        final long nonNullId = Objects.requireNonNull(id, idPrefix + " id must not be null");
-        this.id = String.format("%s:%d", idPrefix, nonNullId);
-        this.type = Objects.requireNonNull(type, "type must not be null").name();
+        return new AccountRoleDTO(String.format("occupation:%d", occ.getId()),
+                occ.getOccupationType().name(), occ.getCreationTime(), null, contextBuilder.build());
     }
 
     public static AccountRoleDTO fromUser(@Nonnull final SystemUser user) {
         Objects.requireNonNull(user, "user must not be null");
-        return new AccountRoleDTO("user", user.getId(), user.getRole());
+
+        return new AccountRoleDTO(String.format("user:%d", user.getId()),
+                user.getRole().name(), null, getFullName(user),
+                Collections.singletonMap(PERSON_ID, F.getId(user.getPerson())));
     }
 
-    public static AccountRoleDTO fromOccupation(@Nonnull final Occupation occ) {
-        Objects.requireNonNull(occ, "occupation must not be null");
-        return new AccountRoleDTO("occupation", occ.getId(), occ.getOccupationType());
+    private static String getFullName(final SystemUser user) {
+        return user.getPerson() != null ? user.getPerson().getFullName() : user.getFullName();
+    }
+
+    public static AccountRoleDTO fromPermit(@Nonnull final HarvestPermit permit) {
+        return new AccountRoleDTO(String.format("permit:%d", permit.getId()),
+                "PERMIT", permit.getCreationTime(), null,
+                ImmutableMap.of(
+                        "permitId", permit.getId(),
+                        "permitType", permit.getPermitType(),
+                        "permitTypeCode", permit.getPermitTypeCode(),
+                        "permitNumber", permit.getPermitNumber()));
+    }
+
+    private final String id;
+    private final String type;
+    private final boolean recentlyAdded;
+    private final String displayName;
+    private final Map<String, Object> context;
+
+    private AccountRoleDTO(@Nonnull final String id,
+                           @Nonnull final String type,
+                           final Date creationTime,
+                           final String displayName,
+                           @Nonnull final Map<String, Object> context) {
+        this.id = Objects.requireNonNull(id);
+        this.type = Objects.requireNonNull(type, "type must not be null");
+        this.recentlyAdded = creationTime != null && ageIsLessThanDays(creationTime, Duration.standardDays(30));
+        this.displayName = displayName;
+        this.context = Objects.requireNonNull(context);
+    }
+
+    private boolean ageIsLessThanDays(final Date creationTime, final Duration minDuration) {
+        return new Duration(new DateTime(creationTime), DateUtil.now()).compareTo(minDuration) < 0;
     }
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public boolean isRecentlyAdded() {
+        return recentlyAdded;
     }
 
     public String getDisplayName() {
         return displayName;
     }
 
-    public void setDisplayName(String name) {
-        this.displayName = name;
-    }
-
-    public ContextDTO getContext() {
+    public Map<String, Object> getContext() {
         return context;
     }
 
+    @JsonIgnore
+    public Object getContextValue(final String key) {
+        return context.get(key);
+    }
 }

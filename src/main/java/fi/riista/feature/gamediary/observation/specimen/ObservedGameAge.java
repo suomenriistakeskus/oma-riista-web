@@ -1,6 +1,8 @@
 package fi.riista.feature.gamediary.observation.specimen;
 
-public enum ObservedGameAge {
+import fi.riista.util.LocalisedEnum;
+
+public enum ObservedGameAge implements LocalisedEnum {
 
     ADULT,
     LT1Y, // less than one year old

@@ -6,8 +6,8 @@ import fi.riista.config.HttpClientConfig;
 import fi.riista.config.JPAConfig;
 import fi.riista.config.LiquibaseConfig;
 import fi.riista.config.PapertrailConfig;
+import fi.riista.config.SerializationConfig;
 import fi.riista.feature.RuntimeEnvironmentUtil;
-import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.integration.srva.callring.SrvaUpdateCallRingFeature;
 import fi.riista.integration.srva.callring.TempoApiConfiguration;
 import org.slf4j.Logger;
@@ -18,8 +18,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -28,7 +26,7 @@ import javax.sql.DataSource;
 public class TempoApiCli {
     private static final Logger LOG = LoggerFactory.getLogger(TempoApiCli.class);
 
-    @PropertySource("configuration/application.properties")
+    @PropertySource({"configuration/application.properties", "configuration/aws.properties"})
     @ComponentScan(basePackageClasses = TempoApiConfiguration.class)
     @Import({
             HttpClientConfig.class,
@@ -36,8 +34,8 @@ public class TempoApiCli {
             JPAConfig.class,
             LiquibaseConfig.class,
             PapertrailConfig.class,
-            CustomJacksonObjectMapper.class,
-            RuntimeEnvironmentUtil.class
+            RuntimeEnvironmentUtil.class,
+            SerializationConfig.class
     })
     static class Context {
         @Bean
@@ -48,11 +46,6 @@ public class TempoApiCli {
         @Bean
         public PlatformTransactionManager transactionManager(DataSource dataSource) {
             return new DataSourceTransactionManager(dataSource);
-        }
-
-        @Bean
-        public ClientHttpRequestFactory clientHttpRequestFactory() {
-            return new SimpleClientHttpRequestFactory();
         }
     }
 

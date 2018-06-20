@@ -1,6 +1,8 @@
 package fi.riista.feature.huntingclub.hunting.day;
 
-public enum GroupHuntingMethod {
+import fi.riista.util.LocalisedEnum;
+
+public enum GroupHuntingMethod implements LocalisedEnum {
     // KOIRAN KANSSA:
     // 1 = passilinja, koira ohjaajineen metsässä
     OPTION_1(1, true, "PASSILINJA_KOIRA_OHJAAJINEEN_METSASSA"),

@@ -14,6 +14,7 @@
             <div class="col-xs-4">
                 <select name="member" id="member" class="form-control"
                         ng-model="$ctrl.newMember"
+                        focus-me
                         ng-options="o as $ctrl.getName(o) for o in $ctrl.memberCandidates">
                     <option value=""></option>
                 </select>

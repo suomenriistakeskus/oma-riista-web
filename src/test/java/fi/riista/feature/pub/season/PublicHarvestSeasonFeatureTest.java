@@ -1,15 +1,16 @@
 package fi.riista.feature.pub.season;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
 import fi.riista.feature.harvestpermit.season.HarvestQuota;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,10 +18,9 @@ import org.junit.Test;
 import javax.annotation.Resource;
 import java.util.List;
 
-import static fi.riista.feature.harvestpermit.report.HarvestReport.State.APPROVED;
-import static fi.riista.feature.harvestpermit.report.HarvestReport.State.DELETED;
-import static fi.riista.feature.harvestpermit.report.HarvestReport.State.REJECTED;
-import static fi.riista.feature.harvestpermit.report.HarvestReport.State.SENT_FOR_APPROVAL;
+import static fi.riista.feature.harvestpermit.report.HarvestReportState.APPROVED;
+import static fi.riista.feature.harvestpermit.report.HarvestReportState.REJECTED;
+import static fi.riista.feature.harvestpermit.report.HarvestReportState.SENT_FOR_APPROVAL;
 import static org.junit.Assert.assertEquals;
 
 public class PublicHarvestSeasonFeatureTest extends EmbeddedDatabaseTest {
@@ -93,11 +93,11 @@ public class PublicHarvestSeasonFeatureTest extends EmbeddedDatabaseTest {
         HarvestQuota quota1 = createAreaAndInsertHarvests(season1, APPROVED);
         HarvestQuota quota2 = createAreaAndInsertHarvests(season1, APPROVED, APPROVED);
         HarvestQuota quota3 = createAreaAndInsertHarvests(season1, APPROVED, SENT_FOR_APPROVAL, APPROVED, APPROVED);
-        HarvestQuota quota4 = createAreaAndInsertHarvests(season1, APPROVED, DELETED, APPROVED, SENT_FOR_APPROVAL, APPROVED, DELETED, APPROVED);
+        HarvestQuota quota4 = createAreaAndInsertHarvests(season1, APPROVED, APPROVED, SENT_FOR_APPROVAL, APPROVED, APPROVED);
 
         HarvestSeason season2 = createSeasonActiveNow();
         HarvestQuota quota5 = createAreaAndInsertHarvests(season2, APPROVED, REJECTED);
-        HarvestQuota quota6 = createAreaAndInsertHarvests(season2, DELETED, APPROVED);
+        HarvestQuota quota6 = createAreaAndInsertHarvests(season2, APPROVED);
 
         // season 1 has 4 quotas, used 1,2,3,4
         // season 2 has 2 quotas, used 1,1
@@ -119,8 +119,8 @@ public class PublicHarvestSeasonFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @SafeVarargs
-    private static void assertUsedQuotas(
-            List<PublicHarvestQuotaDTO> quotas, Tuple2<HarvestQuota, Integer>... allQuotasToExpectedUse) {
+    private static void assertUsedQuotas(List<PublicHarvestQuotaDTO> quotas,
+                                         Tuple2<HarvestQuota, Integer>... allQuotasToExpectedUse) {
 
         if (allQuotasToExpectedUse != null) {
             for (Tuple2<HarvestQuota, Integer> quotaToExpectedUse : allQuotasToExpectedUse) {
@@ -149,32 +149,38 @@ public class PublicHarvestSeasonFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private HarvestQuota createAreaAndInsertHarvests(HarvestSeason harvestSeason,
-                                                     HarvestReport.State... harvestStates) {
+                                                     HarvestReportState... harvestStates) {
         HarvestArea harvestArea = model().newHarvestArea(this.rhy);
         HarvestQuota quota = model().newHarvestQuota(harvestSeason, harvestArea, 10);
-        for (HarvestReport.State state : harvestStates) {
+        for (HarvestReportState state : harvestStates) {
             createHarvest(quota, state);
         }
         return quota;
     }
 
-    private void createHarvest(HarvestQuota quota, HarvestReport.State state) {
-        Harvest harvest = model().newHarvest();
-        model().newHarvestReport(harvest, state, quota);
+    private void createHarvest(HarvestQuota quota, HarvestReportState state) {
+        Harvest harvest = model().newHarvest(quota.getHarvestSeason().getSpecies());
+        harvest.setHarvestSeason(quota.getHarvestSeason());
+        harvest.setHarvestQuota(quota);
+        harvest.setHarvestReportState(state);
+        harvest.setHarvestReportAuthor(harvest.getAuthor());
+        harvest.setHarvestReportDate(DateUtil.now());
     }
 
     private HarvestSeason createSeasonActiveNow() {
+        GameSpecies species = model().newGameSpecies();
         LocalDate end = DateUtil.today();
         LocalDate begin = end.minusWeeks(1);
         LocalDate endOfReporting = end.plusWeeks(1);
-        return model().newHarvestSeason(begin, end, endOfReporting);
+        return model().newHarvestSeason(species, begin, end, endOfReporting);
     }
 
     private HarvestSeason createSeasonExpired() {
+        GameSpecies species = model().newGameSpecies();
         LocalDate endOfReporting = DateUtil.today().minusWeeks(1);
         LocalDate begin = endOfReporting.minusWeeks(2);
         LocalDate end = endOfReporting.minusWeeks(1);
-        return model().newHarvestSeason(begin, end, endOfReporting);
+        return model().newHarvestSeason(species, begin, end, endOfReporting);
     }
 
 }

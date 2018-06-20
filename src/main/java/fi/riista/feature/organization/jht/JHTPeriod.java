@@ -37,7 +37,7 @@ public class JHTPeriod {
     }
 
     @AssertTrue
-    public boolean validateBeforeAndEnd() {
+    public boolean isPeriodValid() {
         if (this.beginDate == null || this.endDate == null) {
             return true;
         }
@@ -53,7 +53,7 @@ public class JHTPeriod {
     }
 
     @AssertTrue
-    public boolean validateEndDate() {
+    public boolean isEndDateValid() {
         return this.endDate != null && this.endDate.getMonthOfYear() == 7 && this.endDate.getDayOfMonth() == 31;
     }
 
@@ -63,7 +63,7 @@ public class JHTPeriod {
             this.endDate = DateUtil.huntingYearEndDate(2020);
 
         } else {
-            final int huntingYear = DateUtil.getFirstCalendarYearOfHuntingYearContaining(today);
+            final int huntingYear = DateUtil.huntingYearContaining(today);
 
             this.beginDate = today;
             this.endDate = DateUtil.huntingYearEndDate(huntingYear + 4);

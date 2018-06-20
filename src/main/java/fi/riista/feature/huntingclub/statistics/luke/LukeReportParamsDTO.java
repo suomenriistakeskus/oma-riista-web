@@ -1,21 +1,20 @@
 package fi.riista.feature.huntingclub.statistics.luke;
 
-public class LukeReportParamsDTO {
+import java.util.List;
+import java.util.Map;
 
+public class LukeReportParamsDTO {
+    private final List<Map<String, Object>> params;
     private final boolean clubReportsExist;
 
-    private final LukeReportParams.Organisation[] params;
-
-
     public LukeReportParamsDTO(
-            final boolean clubReportsExist,
-            final LukeReportParams.Organisation[] params) {
-
-        this.clubReportsExist = clubReportsExist;
+            final List<Map<String, Object>> params,
+            final boolean clubReportsExist) {
         this.params = params;
+        this.clubReportsExist = clubReportsExist;
     }
 
-    public LukeReportParams.Organisation[] getParams() {
+    public List<Map<String, Object>> getParams() {
         return params;
     }
 

@@ -1,10 +1,14 @@
 package fi.riista.feature.gamediary;
 
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersionSupport;
+
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
 public abstract class HuntingDiaryEntryDTO extends GameDiaryEntryDTO {
 
+    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
     private int gameSpeciesCode;
 
     public HuntingDiaryEntryDTO(@Nonnull final GameDiaryEntryType type) {

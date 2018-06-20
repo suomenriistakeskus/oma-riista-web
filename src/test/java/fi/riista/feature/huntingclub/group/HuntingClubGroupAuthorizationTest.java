@@ -1,10 +1,10 @@
 package fi.riista.feature.huntingclub.group;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
-import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.account.user.SystemUser.Role;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import static fi.riista.feature.huntingclub.group.HuntingClubGroupAuthorization.Permission.LINK_DIARY_ENTRY_TO_HUNTING_DAY;
@@ -26,24 +26,23 @@ public class HuntingClubGroupAuthorizationTest extends EmbeddedDatabaseTest {
         testGroupMembershipPermissions(OccupationType.RYHMAN_JASEN, false, true, false, false, false);
     }
 
-    private void testGroupMembershipPermissions(
-            final OccupationType occupationType,
-            final boolean canCreate,
-            final boolean canRead,
-            final boolean canUpdate,
-            final boolean canDelete,
-            final boolean canLinkHarvests) {
+    private void testGroupMembershipPermissions(final OccupationType occupationType,
+                                                final boolean canCreate,
+                                                final boolean canRead,
+                                                final boolean canUpdate,
+                                                final boolean canDelete,
+                                                final boolean canLinkHarvests) {
 
         final HuntingClubGroup group = model().newHuntingClubGroup();
         final Person groupMember = model().newHuntingClubGroupMember(group, occupationType).getPerson();
 
-        onSavedAndAuthenticated(createUser(groupMember), tx(() -> {
-            assertHasPermission(canCreate, group, CREATE);
-            assertHasPermission(canRead, group, READ);
-            assertHasPermission(canUpdate, group, UPDATE);
-            assertHasPermission(canDelete, group, DELETE);
-            assertHasPermission(canLinkHarvests, group, LINK_DIARY_ENTRY_TO_HUNTING_DAY);
-        }));
+        onSavedAndAuthenticated(createUser(groupMember), () -> {
+            assertPermission(canCreate, group, CREATE);
+            assertPermission(canRead, group, READ);
+            assertPermission(canUpdate, group, UPDATE);
+            assertPermission(canDelete, group, DELETE);
+            assertPermission(canLinkHarvests, group, LINK_DIARY_ENTRY_TO_HUNTING_DAY);
+        });
     }
 
     @Test
@@ -52,27 +51,26 @@ public class HuntingClubGroupAuthorizationTest extends EmbeddedDatabaseTest {
         final Person clubContact = model().newHuntingClubMember(club, OccupationType.SEURAN_YHDYSHENKILO).getPerson();
         final HuntingClubGroup group = model().newHuntingClubGroup(club);
 
-        onSavedAndAuthenticated(createNewUser("yhdyshenkilo", clubContact), tx(() -> {
+        onSavedAndAuthenticated(createNewUser("yhdyshenkilo", clubContact), () -> {
             assertHasPermissions(group, asList(CREATE, READ, UPDATE, DELETE, LINK_DIARY_ENTRY_TO_HUNTING_DAY));
-        }));
+        });
     }
 
     @Test
     public void testAdminPermissions() {
-        assertModeratorPermissions(SystemUser.Role.ROLE_ADMIN);
+        assertModeratorPermissions(Role.ROLE_ADMIN);
     }
 
     @Test
     public void testModeratorPermissions() {
-        assertModeratorPermissions(SystemUser.Role.ROLE_MODERATOR);
+        assertModeratorPermissions(Role.ROLE_MODERATOR);
     }
 
-    private void assertModeratorPermissions(final SystemUser.Role role) {
+    private void assertModeratorPermissions(final Role role) {
         final HuntingClubGroup group = model().newHuntingClubGroup();
 
-        onSavedAndAuthenticated(createNewUser(role), tx(() -> {
-            assertHasPermissions(
-                    group, asList(CREATE, READ, UPDATE, DELETE, LINK_DIARY_ENTRY_TO_HUNTING_DAY));
-        }));
+        onSavedAndAuthenticated(createNewUser(role), () -> {
+            assertHasPermissions(group, asList(CREATE, READ, UPDATE, DELETE, LINK_DIARY_ENTRY_TO_HUNTING_DAY));
+        });
     }
 }

@@ -35,8 +35,7 @@ public enum EmailTokenType implements PersistableEnum {
     }
 
     public static String generateSecureToken(final BytesKeyGenerator pseudoRandomGenerator) {
-        final String randomString = BaseEncoding.base64Url().encode(pseudoRandomGenerator.generateKey());
-        return cut(randomString, 255);
+        return cut(BaseEncoding.base64Url().omitPadding().encode(pseudoRandomGenerator.generateKey()), 255);
     }
 
     private static String cut(final String s, final int maxLength) {

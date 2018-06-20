@@ -14,6 +14,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.net.URL;
 import java.util.Objects;
 import java.util.UUID;
@@ -47,16 +48,19 @@ public class PersistentFileMetadata extends LifecycleEntity<UUID> {
     @Column(name = "storage_type", nullable = false)
     private StorageType storageType;
 
+    @Size(max = 255)
     @Column(name = "original_file_name")
     private String originalFilename;
 
     @NotBlank
+    @Size(max = 255)
     @Column(name = "content_type", nullable = false)
     private String contentType;
 
     @Column(name = "content_size", nullable = false)
     private long contentSize;
 
+    @Size(max = 255)
     @Column(name = "md5_hash")
     private String md5Hash;
 

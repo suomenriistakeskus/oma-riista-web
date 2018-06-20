@@ -16,13 +16,11 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay_;
 import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportException;
-import fi.riista.feature.storage.FileStorageService;
+import fi.riista.feature.storage.FileDownloadService;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.security.EntityPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -50,7 +48,7 @@ public class MooseDataCardImportFeature {
     private MooseDataCardImportService importService;
 
     @Resource
-    private FileStorageService fileStorageService;
+    private FileDownloadService fileDownloadService;
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -142,14 +140,7 @@ public class MooseDataCardImportFeature {
         final String filename = Optional.ofNullable(fileMetadata.getOriginalFilename())
                 .orElseGet(() -> "Hirvitietokortti." + contentType.replaceAll(".*/", ""));
 
-        final HttpHeaders headers = new HttpHeaders();
-        headers.setContentLength(fileMetadata.getContentSize());
-        headers.setContentType(MediaType.parseMediaType(contentType));
-        headers.setContentDispositionFormData("file", filename);
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(fileStorageService.getBytes(fileMetadata.getId()));
+        return fileDownloadService.download(fileMetadata, filename);
     }
 
     @Transactional

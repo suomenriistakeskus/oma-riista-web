@@ -34,9 +34,7 @@ public class JHTTrainingAuthorization extends AbstractEntityAuthorization<JHTTra
     protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,
                                    @Nonnull final JHTTraining training,
                                    @Nonnull final UserInfo userInfo) {
-        userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
-            collector.addAuthorizationRole(TOIMINNANOHJAAJA, () ->
-                    userAuthorizationHelper.isCoordinatorAnywhere(activePerson));
-        });
+
+        collector.addAuthorizationRole(TOIMINNANOHJAAJA, () -> userAuthorizationHelper.isCoordinatorAnywhere(userInfo));
     }
 }

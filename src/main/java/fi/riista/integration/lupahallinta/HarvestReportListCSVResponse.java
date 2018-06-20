@@ -15,11 +15,11 @@ public class HarvestReportListCSVResponse extends CSVHttpResponse {
     private static final String EMPTY_VALUE = "";
 
     private static final String[] ROW_HEADERS = {
-            "status", "submission_id", "submission_row_count", "reporting_time", "season", "hunter_name",
+            "harvest_license_number", "submission_row_count", "reporting_time", "hunter_name",
             "hunter_first_name", "hunter_last_name", "hunter_address", "hunter_postal_code", "hunter_postal_residence",
-            "hunter_phone", "hunter_email", "hunter_hunting_card", "harvest_license_number", "harvests_as_list",
+            "hunter_phone", "hunter_email", "hunter_hunting_card", "harvests_as_list",
             "submitter_first_name", "submitter_last_name", "submitter_address", "submitter_postal_code",
-            "submitter_postal_residence", "submitter_phone", "submitter_email", "quota_area_id", "quota_area_name",
+            "submitter_postal_residence", "submitter_phone", "submitter_email",
             "rkk_area_id", "rkk_rea_name", "rhy_area_id", "rhy_area_name", "coordinates_collection_method",
             "coordinates_latitude", "coordinates_longitude", "coordinates_accuracy", "hunting_area", "hunting_group",
             "area", "municipality", "village", "property", "register_number", "date", "time", "animal_id",
@@ -53,11 +53,9 @@ public class HarvestReportListCSVResponse extends CSVHttpResponse {
 
     private static String[] createRow(HarvestReportExportCSVDTO dto) {
         final String[] row = {
-                dto.getChangeStatus() != null ? dto.getChangeStatus().getSymbol() : null,
-                dto.getSubmissionId() != null ? Long.toString(dto.getSubmissionId()) : null,
+                dto.getHuntingLicenseNumber(),
                 dto.getSubmissionRowCount() != null ? Integer.toString(dto.getSubmissionRowCount()) : null,
                 dto.getReportingTime() != null ? DTF.print(dto.getReportingTime()) : null,
-                dto.getSeason(),
                 dto.getHunterName(),
                 dto.getHunterFirstName(),
                 dto.getHunterLastName(),
@@ -67,7 +65,6 @@ public class HarvestReportListCSVResponse extends CSVHttpResponse {
                 dto.getHunterPhone(),
                 dto.getHunterEmail(),
                 dto.getHunterHuntingCard(),
-                dto.getHuntingLicenseNumber(),
                 dto.getHuntingLicenseAsList(),
                 dto.getSubmitterFirstName(),
                 dto.getSubmitterLastName(),
@@ -76,8 +73,6 @@ public class HarvestReportListCSVResponse extends CSVHttpResponse {
                 dto.getSubmitterPostalResidence(),
                 dto.getSubmitterPhone(),
                 dto.getSubmitterEmail(),
-                dto.getQuotaAreaId(),
-                dto.getQuotaAreaName(),
                 dto.getRkkAreaId(),
                 dto.getRkkAreaName(),
                 dto.getRhyAreaId(),

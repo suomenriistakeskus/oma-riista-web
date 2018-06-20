@@ -1,7 +1,6 @@
 package fi.riista.validation;
 
 import fi.riista.feature.account.registration.VetumaTransaction;
-
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import javax.validation.ReportAsSingleViolation;
@@ -21,6 +20,8 @@ import static java.lang.annotation.ElementType.PARAMETER;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({FIELD, METHOD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Constraint(validatedBy = {})
+@HasLengthConstrainedByValidator
+@XssSafe
 public @interface VetumaTransactionId {
     String message() default "{fi.riista.validation.VetumaTransactionId.message}";
 

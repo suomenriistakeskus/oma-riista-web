@@ -1,12 +1,12 @@
 package fi.riista.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import fi.riista.config.jackson.CustomJacksonObjectMapper;
+import fi.riista.feature.organization.jht.JHTPeriod;
 import fi.riista.feature.organization.jht.excel.OccupationNominationExcelView;
+import fi.riista.feature.organization.jht.nomination.OccupationNomination;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationCrudFeature;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationDTO;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationSearchDTO;
-import fi.riista.feature.organization.jht.JHTPeriod;
-import fi.riista.feature.organization.jht.nomination.OccupationNomination;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.util.DateUtil;
 import net.rossillo.spring.web.mvc.CacheControl;
@@ -40,7 +40,7 @@ public class OccupationNominationApiResource {
     private OccupationNominationCrudFeature occupationNominationFeature;
 
     @Resource
-    private ObjectMapper objectMapper;
+    private CustomJacksonObjectMapper objectMapper;
 
     @Resource
     private MessageSource messageSource;
@@ -72,12 +72,12 @@ public class OccupationNominationApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/searchExcel", method = RequestMethod.POST)
     public ModelAndView searchExcel(@RequestParam(value = "json") @NotBlank final String jsonData,
-                                    Locale locale) throws IOException {
+                                    final Locale locale) throws IOException {
+
         final OccupationNominationSearchDTO dto = objectMapper.readValue(jsonData, OccupationNominationSearchDTO.class);
         final Page<OccupationNominationDTO> results = occupationNominationFeature.search(dto);
 
-        return new ModelAndView(new OccupationNominationExcelView(
-                results.getContent(), dto, messageSource, locale));
+        return new ModelAndView(new OccupationNominationExcelView(results.getContent(), dto, messageSource, locale));
     }
 
     @ResponseStatus(HttpStatus.CREATED)

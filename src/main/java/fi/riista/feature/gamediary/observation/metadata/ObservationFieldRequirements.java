@@ -1,169 +1,123 @@
 package fi.riista.feature.gamediary.observation.metadata;
 
+import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.common.entity.Required;
-
-import org.springframework.util.ReflectionUtils;
+import fi.riista.feature.gamediary.observation.specimen.GameMarking;
+import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
 
 import javax.annotation.Nonnull;
-
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.util.Collections.emptySet;
+import static fi.riista.feature.common.entity.Required.NO;
+import static fi.riista.feature.common.entity.Required.VOLUNTARY;
+import static fi.riista.feature.common.entity.Required.YES;
 
-public class ObservationFieldRequirements implements Serializable {
+public class ObservationFieldRequirements {
 
-    protected static Field getField(final Object obj, final String fieldName) {
-        final Field field = ReflectionUtils.findField(obj.getClass(), fieldName);
-        if (field == null) {
-            return null;
-        }
-        field.setAccessible(true);
-        return field;
+    // Observation field names
+    public static final String FIELD_WITHIN_MOOSE_HUNTING = "withinMooseHunting";
+    public static final String FIELD_AMOUNT = "amount";
+    public static final String FIELD_MOOSELIKE_MALE_AMOUNT = "mooselikeMaleAmount";
+    public static final String FIELD_MOOSELIKE_FEMALE_AMOUNT = "mooselikeFemaleAmount";
+    public static final String FIELD_MOOSELIKE_CALF_AMOUNT = "mooselikeCalfAmount";
+    public static final String FIELD_MOOSELIKE_FEMALE_1CALF_AMOUNT = "mooselikeFemale1CalfAmount";
+    public static final String FIELD_MOOSELIKE_FEMALE_2CALFS_AMOUNT = "mooselikeFemale2CalfsAmount";
+    public static final String FIELD_MOOSELIKE_FEMALE_3CALFS_AMOUNT = "mooselikeFemale3CalfsAmount";
+    public static final String FIELD_MOOSELIKE_FEMALE_4CALFS_AMOUNT = "mooselikeFemale4CalfsAmount";
+    public static final String FIELD_MOOSELIKE_UNKNOWN_SPECIMEN_AMOUNT = "mooselikeUnknownSpecimenAmount";
+    public static final String FIELD_VERIFIED_BY_CARNIVORE_AUTHORITY = "verifiedByCarnivoreAuthority";
+    public static final String FIELD_OBSERVER_NAME = "observerName";
+    public static final String FIELD_OBSERVER_PHONE_NUMBER = "observerPhoneNumber";
+    public static final String FIELD_OFFICIAL_ADDITIONAL_INFO = "officialAdditionalInfo";
+
+    // Observation specimen field names
+    public static final String FIELD_AGE = "age";
+    public static final String FIELD_GENDER = "gender";
+    public static final String FIELD_WIDTH_OF_PAW = "widthOfPaw";
+    public static final String FIELD_LENGTH_OF_PAW = "lengthOfPaw";
+    public static final String FIELD_STATE = "state";
+    public static final String FIELD_MARKING = "marking";
+
+    public static Map<String, Required> getStaticBaseFields(
+            @Nonnull final ObservationContextSensitiveFields ctxFields) {
+
+        return builderForStaticContextSensitiveBaseFields(ctxFields).build();
     }
 
-    protected static Object getFieldValue(final Object obj, final Field field) {
-        return ReflectionUtils.getField(field, obj);
+    public static Map<String, Required> getStaticBaseFields(
+            @Nonnull final ObservationBaseFields baseFields,
+            @Nonnull final ObservationContextSensitiveFields ctxFields) {
+
+        Objects.requireNonNull(baseFields, "baseFields is null");
+
+        return builderForStaticContextSensitiveBaseFields(ctxFields)
+                .put(FIELD_WITHIN_MOOSE_HUNTING, baseFields.getWithinMooseHunting())
+                .build();
     }
 
-    protected static Object getFieldValue(final Object obj, final String fieldName) {
-        return getFieldValue(obj, getField(obj, fieldName));
+    private static ImmutableMap.Builder<String, Required> builderForStaticContextSensitiveBaseFields(
+            @Nonnull final ObservationContextSensitiveFields ctxFields) {
+
+        Objects.requireNonNull(ctxFields);
+
+        return ImmutableMap.<String, Required> builder()
+                .put(FIELD_MOOSELIKE_MALE_AMOUNT, ctxFields.getMooselikeMaleAmount())
+                .put(FIELD_MOOSELIKE_FEMALE_AMOUNT, ctxFields.getMooselikeFemaleAmount())
+                .put(FIELD_MOOSELIKE_CALF_AMOUNT, ctxFields.getMooselikeCalfAmount())
+                .put(FIELD_MOOSELIKE_FEMALE_1CALF_AMOUNT, ctxFields.getMooselikeFemale1CalfAmount())
+                .put(FIELD_MOOSELIKE_FEMALE_2CALFS_AMOUNT, ctxFields.getMooselikeFemale2CalfsAmount())
+                .put(FIELD_MOOSELIKE_FEMALE_3CALFS_AMOUNT, ctxFields.getMooselikeFemale3CalfsAmount())
+                .put(FIELD_MOOSELIKE_FEMALE_4CALFS_AMOUNT, ctxFields.getMooselikeFemale4CalfsAmount())
+                .put(FIELD_MOOSELIKE_UNKNOWN_SPECIMEN_AMOUNT, ctxFields.getMooselikeUnknownSpecimenAmount());
     }
 
-    protected static String formatSpecimenFieldName(final String fieldName, final int specimenIndex) {
-        return String.format("specimen[%d].%s", specimenIndex, fieldName);
+    public static Map<String, Required> getStaticSpecimenFields(
+            @Nonnull final ObservationContextSensitiveFields ctxFields) {
+
+        Objects.requireNonNull(ctxFields);
+
+        final ImmutableMap.Builder<String, Required> builder = ImmutableMap.<String, Required> builder()
+                .put(FIELD_AGE, ctxFields.getAge())
+                .put(FIELD_GENDER, ctxFields.getGender());
+
+        final Map<ObservedGameState, Required> validGameStates = ctxFields.getValidGameStateRequirements();
+
+        builder.put(FIELD_STATE, validGameStates.isEmpty()
+                ? NO
+                : validGameStates.containsValue(YES) ? YES : VOLUNTARY);
+
+        final Map<GameMarking, Required> validGameMarkings = ctxFields.getValidGameMarkingRequirements();
+
+        builder.put(FIELD_MARKING, validGameMarkings.isEmpty()
+                ? NO
+                : validGameMarkings.containsValue(YES) ? YES : VOLUNTARY);
+
+        return builder.build();
     }
 
-    private final HashMap<String, Required> baseFields = new HashMap<>();
-    private final HashMap<String, Required> specimenFields = new HashMap<>();
+    public static Map<String, DynamicObservationFieldPresence> getDynamicBaseFields(
+           @Nonnull final ObservationContextSensitiveFields ctxFields) {
 
-    public ObservationFieldRequirements(
-            @Nonnull final Set<String> baseFieldNames, @Nonnull final Set<String> specimenFieldNames) {
+        Objects.requireNonNull(ctxFields);
 
-        Objects.requireNonNull(baseFieldNames);
-        Objects.requireNonNull(specimenFieldNames);
-
-        baseFieldNames.forEach(fieldName -> baseFields.put(fieldName, Required.NO));
-        specimenFieldNames.forEach(fieldName -> specimenFields.put(fieldName, Required.NO));
+        return ImmutableMap.<String, DynamicObservationFieldPresence> builder()
+                .put(FIELD_AMOUNT, ctxFields.getAmount())
+                .put(FIELD_VERIFIED_BY_CARNIVORE_AUTHORITY, ctxFields.getVerifiedByCarnivoreAuthority())
+                .put(FIELD_OBSERVER_NAME, ctxFields.getObserverName())
+                .put(FIELD_OBSERVER_PHONE_NUMBER, ctxFields.getObserverPhoneNumber())
+                .put(FIELD_OFFICIAL_ADDITIONAL_INFO, ctxFields.getOfficialAdditionalInfo())
+                .build();
     }
 
-    public void assertAllFieldRequirements(
-            @Nonnull final Object observation, @Nonnull final Optional<List<? extends Object>> specimens) {
+    public static Map<String, DynamicObservationFieldPresence> getDynamicSpecimenFields(
+           @Nonnull final ObservationContextSensitiveFields ctxFields) {
 
-        assertAllFieldRequirements(observation, specimens, emptySet(), emptySet());
+        Objects.requireNonNull(ctxFields);
+
+        return ImmutableMap.<String, DynamicObservationFieldPresence> builder()
+                .put(FIELD_WIDTH_OF_PAW, ctxFields.getWidthOfPaw())
+                .put(FIELD_LENGTH_OF_PAW, ctxFields.getLengthOfPaw())
+                .build();
     }
-
-    public void assertAllFieldRequirements(
-            @Nonnull final Object observation,
-            @Nonnull final Optional<List<? extends Object>> specimens,
-            @Nonnull final Set<String> namesOfExcludedObservationFields,
-            @Nonnull final Set<String> namesOfExcludedSpecimenFields) {
-
-        Objects.requireNonNull(observation);
-        Objects.requireNonNull(specimens);
-        Objects.requireNonNull(namesOfExcludedObservationFields);
-        Objects.requireNonNull(namesOfExcludedSpecimenFields);
-
-        baseFields.forEach((name, requirement) -> {
-            if (!namesOfExcludedObservationFields.contains(name)) {
-                assertBaseFieldValue(observation, name, requirement);
-            }
-        });
-
-        specimens.ifPresent(list -> {
-            final AtomicInteger specimenIndex = new AtomicInteger(0);
-
-            list.forEach(specimen -> specimenFields.forEach((name, requirement) -> {
-                if (!namesOfExcludedSpecimenFields.contains(name)) {
-                    assertSpecimenFieldValue(specimen, specimenIndex.getAndIncrement(), name, requirement);
-                }
-            }));
-        });
-    }
-
-    public void nullifyProhibitedFields(
-            @Nonnull final Object observation,
-            @Nonnull final Optional<List<? extends Object>> specimens,
-            @Nonnull final Set<String> namesOfExcludedObservationFields,
-            @Nonnull final Set<String> namesOfExcludedSpecimenFields) {
-
-        Objects.requireNonNull(observation);
-        Objects.requireNonNull(specimens);
-        Objects.requireNonNull(namesOfExcludedObservationFields);
-        Objects.requireNonNull(namesOfExcludedSpecimenFields);
-
-        baseFields.forEach((name, requirement) -> {
-            if (!namesOfExcludedObservationFields.contains(name)) {
-                nullifyFieldIfProhibited(observation, name, requirement);
-            }
-        });
-
-        specimens.ifPresent(list -> list.forEach(specimen -> specimenFields.forEach((name, requirement) -> {
-            if (!namesOfExcludedSpecimenFields.contains(name)) {
-                nullifyFieldIfProhibited(specimen, name, requirement);
-            }
-        })));
-    }
-
-    // For compacting serialized output.
-    public void removeDenyingFieldRequirements() {
-        for (final Iterator<Map.Entry<String, Required>> it = getBaseFields().entrySet().iterator(); it.hasNext();) {
-            if (it.next().getValue() == Required.NO) {
-                it.remove();
-            }
-        }
-
-        for (final Iterator<Map.Entry<String, Required>> it = getSpecimenFields().entrySet().iterator(); it
-                .hasNext();) {
-
-            if (it.next().getValue() == Required.NO) {
-                it.remove();
-            }
-        }
-    }
-
-    protected void assertBaseFieldValue(final Object observation, final String fieldName, final Required requirement) {
-        requirement.assertValue(getFieldValue(observation, fieldName), fieldName);
-    }
-
-    protected void assertSpecimenFieldValue(
-            final Object specimen, final int specimenIndex, final String fieldName, final Required requirement) {
-
-        requirement.assertValue(getFieldValue(specimen, fieldName), formatSpecimenFieldName(fieldName, specimenIndex));
-    }
-
-    protected void nullifyFieldIfProhibited(final Object object, final String fieldName, final Required requirement) {
-        final Field field = getField(object, fieldName);
-
-        if (!requirement.isAllowedField() && getFieldValue(object, field) != null) {
-            setFieldNull(object, field);
-        }
-    }
-
-    protected void setFieldNull(final Object object, final Field field) {
-        try {
-            field.set(object, null);
-        } catch (final IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // Accessors -->
-
-    public Map<String, Required> getBaseFields() {
-        return baseFields;
-    }
-
-    public Map<String, Required> getSpecimenFields() {
-        return specimenFields;
-    }
-
 }

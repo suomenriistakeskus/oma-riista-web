@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.permit.summary;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -15,11 +16,11 @@ import java.util.Optional;
 @Access(AccessType.FIELD)
 public class SpeciesEstimatedAppearanceWithPiglets implements Serializable {
 
-
     public static SpeciesEstimatedAppearanceWithPiglets revamp(
             @Nullable final SpeciesEstimatedAppearanceWithPiglets appearance) {
+
         return Optional.ofNullable(appearance)
-                .map(SpeciesEstimatedAppearanceWithPiglets::cleanedCopy)
+                .map(SpeciesEstimatedAppearanceWithPiglets::new)
                 .orElse(null);
     }
 
@@ -41,36 +42,28 @@ public class SpeciesEstimatedAppearanceWithPiglets implements Serializable {
     public SpeciesEstimatedAppearanceWithPiglets() {
     }
 
-    public SpeciesEstimatedAppearanceWithPiglets(
-            final Boolean appeared,
-            final TrendOfPopulationGrowth trendOfPopulationGrowth,
-            final Integer estimatedAmountOfSpecimens,
-            final Integer estimatedAmountOfSowWithPiglets) {
+    public SpeciesEstimatedAppearanceWithPiglets(final Boolean appeared,
+                                                 final TrendOfPopulationGrowth trendOfPopulationGrowth,
+                                                 final Integer estimatedAmountOfSpecimens,
+                                                 final Integer estimatedAmountOfSowWithPiglets) {
 
         this.appeared = appeared;
-        this.trendOfPopulationGrowth = trendOfPopulationGrowth;
-        this.estimatedAmountOfSpecimens = estimatedAmountOfSpecimens;
-        this.estimatedAmountOfSowWithPiglets = estimatedAmountOfSowWithPiglets;
+
+        if (!Boolean.FALSE.equals(appeared)) {
+            this.trendOfPopulationGrowth = trendOfPopulationGrowth;
+            this.estimatedAmountOfSpecimens = estimatedAmountOfSpecimens;
+            this.estimatedAmountOfSowWithPiglets = estimatedAmountOfSowWithPiglets;
+        }
+    }
+
+    public SpeciesEstimatedAppearanceWithPiglets(@Nonnull final SpeciesEstimatedAppearanceWithPiglets that) {
+        this(that.appeared, that.trendOfPopulationGrowth, that.estimatedAmountOfSpecimens, that.estimatedAmountOfSowWithPiglets);
     }
 
     @AssertTrue
     public boolean isValid() {
-        return !Boolean.FALSE.equals(appeared) || trendOfPopulationGrowth == null && estimatedAmountOfSpecimens == null && estimatedAmountOfSowWithPiglets == null;
-    }
-
-    public SpeciesEstimatedAppearanceWithPiglets cleanedCopy() {
-        final SpeciesEstimatedAppearanceWithPiglets copy =
-                new SpeciesEstimatedAppearanceWithPiglets(appeared, trendOfPopulationGrowth, estimatedAmountOfSpecimens, estimatedAmountOfSowWithPiglets);
-        copy.cleanState();
-        return copy;
-    }
-
-    private void cleanState() {
-        if (Boolean.FALSE.equals(appeared)) {
-            trendOfPopulationGrowth = null;
-            estimatedAmountOfSpecimens = null;
-            estimatedAmountOfSowWithPiglets = null;
-        }
+        return !Boolean.FALSE.equals(appeared) ||
+                trendOfPopulationGrowth == null && estimatedAmountOfSpecimens == null && estimatedAmountOfSowWithPiglets == null;
     }
 
     // Accessors -->
@@ -103,7 +96,7 @@ public class SpeciesEstimatedAppearanceWithPiglets implements Serializable {
         return estimatedAmountOfSowWithPiglets;
     }
 
-    public void setEstimatedAmountOfSowWithPiglets(Integer estimatedAmountOfSowWithPiglets) {
+    public void setEstimatedAmountOfSowWithPiglets(final Integer estimatedAmountOfSowWithPiglets) {
         this.estimatedAmountOfSowWithPiglets = estimatedAmountOfSowWithPiglets;
     }
 }

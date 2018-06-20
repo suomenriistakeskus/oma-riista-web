@@ -1,16 +1,19 @@
 package fi.riista.feature.gamediary.observation;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.sql.JPASQLQuery;
 import com.querydsl.spatial.GeometryExpression;
+import com.querydsl.spatial.GeometryExpressions;
 import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.SQLTemplates;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.OrganisationType;
-import fi.riista.sql.SQObservation;
+import fi.riista.sql.SQGameObservation;
 import fi.riista.sql.SQGroupHuntingDay;
 import fi.riista.sql.SQGroupObservationRejection;
 import fi.riista.sql.SQHuntingClubArea;
@@ -18,7 +21,7 @@ import fi.riista.sql.SQOccupation;
 import fi.riista.sql.SQOrganisation;
 import fi.riista.sql.SQPerson;
 import fi.riista.sql.SQZone;
-import fi.riista.util.GISUtils;
+import org.geolatte.geom.Geometry;
 import org.joda.time.Interval;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +51,7 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
     public List<Observation> findGroupObservations(
             final HuntingClubGroup huntingClubGroup, final Interval interval) {
 
-        final SQObservation observation = new SQObservation("game_observation");
+        final SQGameObservation observation = new SQGameObservation("game_observation");
         final QObservation observationEntity = new QObservation("game_observation");
 
         final SubQueryExpression<Long> subQuery1 = gameObservationForGroupMemberInsideGroupHuntingArea(huntingClubGroup, interval);
@@ -65,7 +68,8 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
     private static SubQueryExpression<Long> gameObservationForGroupMemberInsideGroupHuntingArea(
             final HuntingClubGroup huntingClubGroup, final Interval interval) {
         /*
-        SELECT o2.game_observation_id
+        SELECT sq.game_observation_id FROM (
+        SELECT DISTINCT a.zone_id, o2.game_observation_id, o2.geom as geom
         FROM occupation groupOcc
         INNER JOIN organisation g ON (g.organisation_id = groupOcc.organisation_id AND g.organisation_type = 'CLUBGROUP')
         INNER JOIN occupation clubOcc ON (clubOcc.deletion_time IS NULL AND clubOcc.person_id = groupOcc.person_id AND clubOcc.organisation_id = g.parent_organisation_id)
@@ -81,9 +85,10 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
           AND o2.group_hunting_day_id IS NULL
           AND o2.within_moose_hunting = true
           AND o2.point_of_time >= :beginTime AND o2.point_of_time < :endTime
-          AND ST_Intersects(z.geom, ST_SetSRID(ST_MakePoint(o2.longitude, o2.latitude), 3067))
+        ) sq JOIN zone z ON z.zone_id = sq.zone_id
+        AND ST_Intersects(z.geom, sq.geom)
         */
-        final SQObservation gameObservation = new SQObservation("o2");
+        final SQGameObservation gameObservation = new SQGameObservation("o2");
         final SQOrganisation group = new SQOrganisation("g");
         final SQOccupation groupOccupation = new SQOccupation("groupOcc");
         final SQOccupation clubOccupation = new SQOccupation("clubOcc");
@@ -97,7 +102,9 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
         final BooleanExpression authorOrObserver = person.personId.eq(gameObservation.authorId)
                 .or(person.personId.eq(gameObservation.observerId));
 
-        return SQLExpressions.select(gameObservation.gameObservationId)
+        final SQLQuery<Tuple> subQuery = SQLExpressions
+                .select(huntingClubArea.zoneId, gameObservation.gameObservationId, gameObservation.geom.as("geom"))
+                .distinct()
                 .from(groupOccupation)
                 .join(group).on(group.organisationId.eq(groupOccupation.organisationId)
                         .and(group.organisationType.eq(OrganisationType.CLUBGROUP.name())))
@@ -105,7 +112,6 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
                         .and(clubOccupation.personId.eq(groupOccupation.personId))
                         .and(clubOccupation.organisationId.eq(group.parentOrganisationId)))
                 .join(huntingClubArea).on(huntingClubArea.huntingClubAreaId.eq(group.huntingAreaId))
-                .join(zone).on(huntingClubArea.zoneId.eq(zone.zoneId))
                 .join(person).on(person.personId.eq(groupOccupation.personId))
                 .join(gameObservation).on(authorOrObserver)
                 .where(groupOccupation.organisationId.eq(huntingClubGroup.getId())
@@ -121,8 +127,17 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
                         .and(gameObservation.pointOfTime.between(
                                 new Timestamp(interval.getStartMillis()),
                                 new Timestamp(interval.getEndMillis())
-                        ))
-                        .and(zone.geom.intersects(getObservationPointGeometry(gameObservation))));
+                        )));
+
+        final PathBuilder<Object[]> sq = new PathBuilder<>(Object[].class, "sq");
+        final PathBuilder<Geometry> sqGeomPath = sq.get("geom", Geometry.class);
+        final GeometryExpression<Geometry> sqGeom = GeometryExpressions.asGeometry(sqGeomPath);
+
+        return SQLExpressions
+                .select(sq.get("game_observation_id", Long.class))
+                .from(subQuery.as("sq"))
+                .join(zone).on(zone.zoneId.eq(sq.get("zone_id", Long.class)))
+                .where(zone.geom.intersects(sqGeom));
     }
 
     private static SubQueryExpression<Long> gameObservationLinkedToGroupHuntingDay(
@@ -135,7 +150,7 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
           FROM group_hunting_day
           WHERE hunting_group_id = :huntingGroupId)
         */
-        final SQObservation gameObservation = new SQObservation("o3");
+        final SQGameObservation gameObservation = new SQGameObservation("o3");
         final SQGroupHuntingDay groupHuntingDay = SQGroupHuntingDay.groupHuntingDay;
 
         final SQLQuery<Long> groupHuntingDayIds = SQLExpressions.selectOne()
@@ -153,9 +168,5 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
         return SQLExpressions.select(rejection.observationId)
                 .from(rejection)
                 .where(rejection.huntingClubGroupId.eq(huntingClubGroup.getId()));
-    }
-
-    private static GeometryExpression<?> getObservationPointGeometry(final SQObservation observation) {
-        return GISUtils.createPointWithDefaultSRID(observation.longitude, observation.latitude);
     }
 }

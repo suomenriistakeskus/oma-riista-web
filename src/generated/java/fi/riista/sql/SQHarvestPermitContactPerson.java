@@ -49,9 +49,9 @@ public class SQHarvestPermitContactPerson extends RelationalPathSpatial<SQHarves
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestPermitContactPerson> harvestPermitContactPersonPkey = createPrimaryKey(harvestPermitContactPersonId);
 
-    public final com.querydsl.sql.ForeignKey<SQPerson> harvestPermitContactPersonPersonFk = createForeignKey(contactPersonId, "person_id");
-
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> harvestPermitContactPersonHarvestPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPerson> harvestPermitContactPersonPersonFk = createForeignKey(contactPersonId, "person_id");
 
     public SQHarvestPermitContactPerson(String variable) {
         super(SQHarvestPermitContactPerson.class, forVariable(variable), "public", "harvest_permit_contact_person");
@@ -60,6 +60,11 @@ public class SQHarvestPermitContactPerson extends RelationalPathSpatial<SQHarves
 
     public SQHarvestPermitContactPerson(String variable, String schema, String table) {
         super(SQHarvestPermitContactPerson.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQHarvestPermitContactPerson(String variable, String schema) {
+        super(SQHarvestPermitContactPerson.class, forVariable(variable), schema, "harvest_permit_contact_person");
         addMetadata();
     }
 

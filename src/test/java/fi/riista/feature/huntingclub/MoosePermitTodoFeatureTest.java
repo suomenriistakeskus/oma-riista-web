@@ -1,14 +1,16 @@
 package fi.riista.feature.huntingclub;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -27,9 +29,22 @@ public class MoosePermitTodoFeatureTest extends EmbeddedDatabaseTest {
     @Resource
     private MoosePermitTodoFeature feature;
 
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
+
     @Before
-    public void setup() {
+    public void createRhy() {
         this.rhy = model().newRiistanhoitoyhdistys();
+    }
+
+    @Before
+    public void disablePermitLockByDate() {
+        harvestPermitLockedByDateService.disableLockingForTests();
+    }
+
+    @After
+    public void enablePermitLockByDate() {
+        harvestPermitLockedByDateService.normalLocking();
     }
 
     // area

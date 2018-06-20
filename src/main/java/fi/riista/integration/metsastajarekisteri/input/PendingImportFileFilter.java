@@ -2,7 +2,6 @@ package fi.riista.integration.metsastajarekisteri.input;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -13,6 +12,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 public final class PendingImportFileFilter {
 
@@ -34,7 +34,7 @@ public final class PendingImportFileFilter {
 
     private final String globExpression;
     private final String completeSuffix;
-    private final Set<PendingImportFile> collectedFiles = Sets.newTreeSet();
+    private final Set<PendingImportFile> collectedFiles = new TreeSet<>();
 
     private PendingImportFileFilter(List<String> validSuffixes, String completeSuffix) {
         if (!StringUtils.hasText(completeSuffix)) {

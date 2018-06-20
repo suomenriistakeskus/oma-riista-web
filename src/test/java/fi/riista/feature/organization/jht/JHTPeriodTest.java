@@ -4,7 +4,7 @@ import fi.riista.feature.organization.jht.JHTPeriod;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
-import static fi.riista.util.TestUtils.ld;
+import static fi.riista.test.TestUtils.ld;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -53,57 +53,57 @@ public class JHTPeriodTest {
     public void testValidPeriodLength() {
         assertTrue(new JHTPeriod(
                 ld(2016, 8, 1),
-                ld(2021, 7, 31)).validateBeforeAndEnd());
+                ld(2021, 7, 31)).isPeriodValid());
 
         assertTrue(new JHTPeriod(
                 ld(2017, 1, 1),
-                ld(2021, 7, 31)).validateBeforeAndEnd());
+                ld(2021, 7, 31)).isPeriodValid());
 
         assertTrue(new JHTPeriod(
                 ld(2017, 8, 1),
-                ld(2022, 7, 31)).validateBeforeAndEnd());
+                ld(2022, 7, 31)).isPeriodValid());
 
         assertTrue(new JHTPeriod(
                 ld(2016, 8, 10),
-                ld(2021, 7, 31)).validateBeforeAndEnd());
+                ld(2021, 7, 31)).isPeriodValid());
     }
 
     @Test
     public void testInvalidPeriodLength_TooLong() {
         assertFalse(new JHTPeriod(
                 ld(2010, 8, 1),
-                ld(2020, 7, 31)).validateBeforeAndEnd());
+                ld(2020, 7, 31)).isPeriodValid());
     }
 
     @Test
     public void testInvalidPeriodLength_TooLong2() {
         assertFalse(new JHTPeriod(
                 ld(2016, 7, 30),
-                ld(2021, 7, 31)).validateBeforeAndEnd());
+                ld(2021, 7, 31)).isPeriodValid());
     }
 
     @Test
     public void testInvalidPeriodLength_TooShort() {
         assertFalse(new JHTPeriod(
                 ld(2020, 8, 1),
-                ld(2021, 7, 31)).validateBeforeAndEnd());
+                ld(2021, 7, 31)).isPeriodValid());
     }
 
     @Test
     public void testInvalidPeriodLength_TooShort2() {
         assertFalse(new JHTPeriod(
                 ld(2017, 8, 1),
-                ld(2021, 7, 31)).validateBeforeAndEnd());
+                ld(2021, 7, 31)).isPeriodValid());
     }
 
     @Test
     public void testEndDate() {
         assertTrue(new JHTPeriod(
                 ld(2016, 8, 1),
-                ld(2021, 7, 31)).validateEndDate());
+                ld(2021, 7, 31)).isEndDateValid());
 
         assertFalse(new JHTPeriod(
                 ld(2016, 8, 1),
-                ld(2021, 7, 30)).validateEndDate());
+                ld(2021, 7, 30)).isEndDateValid());
     }
 }

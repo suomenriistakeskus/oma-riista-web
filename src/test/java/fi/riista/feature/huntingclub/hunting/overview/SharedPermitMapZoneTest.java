@@ -1,6 +1,5 @@
 package fi.riista.feature.huntingclub.hunting.overview;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
@@ -10,7 +9,9 @@ import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class SharedPermitMapZoneTest extends EmbeddedDatabaseTest {
+public class SharedPermitMapZoneTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     @Resource
     private SharedPermitMapFeature sharedPermitMapFeature;
@@ -43,7 +44,7 @@ public class SharedPermitMapZoneTest extends EmbeddedDatabaseTest {
         public SimpleFixture(final EntitySupplier model) {
             final Riistanhoitoyhdistys rhy = model.newRiistanhoitoyhdistys();
 
-            this.huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+            this.huntingYear = DateUtil.huntingYear();
             this.gameSpecies = model.newGameSpecies();
 
             // Permit with club as partner

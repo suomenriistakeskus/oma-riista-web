@@ -33,10 +33,10 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
         });
     })
 
-    .service('MooseHuntingSummaryService', function (MooseHuntingSummaryAreaType, MooseHuntingSummary,
-                                                     MooseHuntingSummaryPopulationGrowthTrend,
-                                                     FormSidebarService, GameDiaryParameters,
-                                                     GameSpeciesCodes) {
+    .service('MooseHuntingSummaryService', function ($translate, FormSidebarService, GameDiaryParameters,
+                                                     GameSpeciesCodes, MooseHuntingSummary,
+                                                     MooseHuntingSummaryAreaType,
+                                                     MooseHuntingSummaryPopulationGrowthTrend) {
 
         var modalOptions = {
             controller: 'MooseHuntingSummaryFormController',
@@ -46,39 +46,37 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
                 areaTypes: function () {
                     return _.values(MooseHuntingSummaryAreaType);
                 },
-                species: function () {
-                    var transformSpecies = function (parameters, gameSpeciesCode, key) {
+                appearedSpecies: function () {
+                    var constructSpecies = function (parameters, gameSpeciesCode, localisationKey) {
                         var retrievedSpecies = _.find(parameters.species, function (species) {
                             return species.code === gameSpeciesCode;
                         });
+
                         return {
-                            key: key,
+                            key: localisationKey,
                             gameSpeciesCode: gameSpeciesCode,
                             name: retrievedSpecies.name || {}
                         };
                     };
 
                     return GameDiaryParameters.query().$promise.then(function (parameters) {
-                        var mooselikeSpecies = [];
-                        var deerCodes = {
-                            fallowDeer: GameSpeciesCodes.FALLOW_DEER,
-                            roeDeer: GameSpeciesCodes.ROE_DEER,
-                            whiteTailedDeer: GameSpeciesCodes.WHITE_TAILED_DEER,
-                            wildForestReindeer: GameSpeciesCodes.WILD_FOREST_REINDEER
-                        };
-                        _.forOwn(deerCodes, function (gameSpeciesCode, key) {
-                            mooselikeSpecies.push(transformSpecies(parameters, gameSpeciesCode, key));
-                        });
-
-                        var wildBoarCode = {wildBoar: GameSpeciesCodes.WILD_BOAR};
-                        var wildBoar;
-                        _.forOwn(wildBoarCode, function (gameSpeciesCode, key) {
-                            wildBoar = transformSpecies(parameters, gameSpeciesCode, key);
-                        });
+                        var mooselike = [
+                            constructSpecies(parameters, GameSpeciesCodes.FALLOW_DEER, 'fallowDeer'),
+                            constructSpecies(parameters, GameSpeciesCodes.ROE_DEER, 'roeDeer'),
+                            constructSpecies(parameters, GameSpeciesCodes.WHITE_TAILED_DEER, 'whiteTailedDeer'),
+                            constructSpecies(parameters, GameSpeciesCodes.WILD_FOREST_REINDEER, 'wildForestReindeer')
+                        ];
 
                         return {
-                            mooselike: mooselikeSpecies,
-                            wildBoar: wildBoar
+                            mooselike: mooselike,
+                            wildBoar: constructSpecies(parameters, GameSpeciesCodes.WILD_BOAR, 'wildBoar'),
+                            beaver: {
+                                key: 'beaver',
+                                gameSpeciesCode: null,
+                                name: {
+                                    fi: $translate.instant('club.hunting.mooseHuntingSummary.beaver')
+                                }
+                            }
                         };
                     });
                 },
@@ -102,6 +100,7 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
                 clubId: clubId,
                 permitId: permitId
             };
+
             return MooseHuntingSummary.findByClubIdAndPermitId(params).$promise
                 .then(function (summary) {
                     return formSidebar.show({id: summary.id, mooseHuntingSummary: summary, speciesAmount: speciesAmount});
@@ -109,30 +108,35 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
         };
     })
 
-    .controller('MooseHuntingSummaryFormController', function ($scope, MooseHuntingSummary, Helpers, areaTypes,
-                                                               mooseHuntingSummary, species, speciesAmount,
-                                                               populationGrowthTrends) {
+    .controller('MooseHuntingSummaryFormController', function ($scope, Helpers, MooseHuntingSummary, appearedSpecies,
+                                                               areaTypes, mooseHuntingSummary, populationGrowthTrends,
+                                                               speciesAmount) {
+
+        var year = Helpers.toMoment(speciesAmount.beginDate, 'YYYY-MM-DD').year();
+        $scope.show2017Fields = year && year >= 2017;
 
         $scope.huntingSummary = mooseHuntingSummary;
         $scope.areaTypes = areaTypes;
         $scope.populationGrowthTrends = populationGrowthTrends;
         $scope.markedUnfinished = false;
-
         $scope.speciesAmount = speciesAmount;
-        $scope.mooselikeSpecies = species.mooselike;
-        $scope.wildBoar = species.wildBoar;
-        var ALL_SPECIES = _.union($scope.mooselikeSpecies, [$scope.wildBoar]);
+        $scope.mooselikeSpecies = appearedSpecies.mooselike;
+        $scope.wildBoar = appearedSpecies.wildBoar;
+        $scope.beaver = appearedSpecies.beaver;
+
+        var nonMooselike = [appearedSpecies.wildBoar];
+        if ($scope.show2017Fields) {
+            nonMooselike.push(appearedSpecies.beaver);
+        }
+        var otherSpecies = _.union(appearedSpecies.mooselike, nonMooselike);
 
         var deerFlyDateFields = ['dateOfFirstDeerFlySeen', 'dateOfLastDeerFlySeen'];
         var otherDeerFlyFields = [
             'numberOfAdultMoosesHavingFlies', 'numberOfYoungMoosesHavingFlies', 'trendOfDeerFlyPopulationGrowth'
         ];
 
-        var mandatoryViewStateDateFields = ['huntingEndDate'];
-        var otherMandatoryFields = ['huntingAreaType'];
-
-        var viewStateDateFields = mandatoryViewStateDateFields.concat(deerFlyDateFields).concat([
-            'mooseHeatBeginDate', 'mooseHeatEndDate', 'mooseFawnBeginDate', 'mooseFawnEndDate'
+        var viewStateDateFields = deerFlyDateFields.concat([
+            'mooseHeatBeginDate', 'mooseHeatEndDate', 'mooseFawnBeginDate', 'mooseFawnEndDate', 'huntingEndDate'
         ]);
 
         var deadMooseCountFields = ['numberOfDrownedMooses', 'numberOfMoosesKilledByBear',
@@ -145,27 +149,22 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
             return species.key + 'Appearance';
         };
 
-        var propertyPathForSpeciesAppeared = function (species) {
-            return getAppearanceKey(species) + '.appeared';
-        };
-
         function createAppearances() {
-            otherMandatoryFields = ['huntingAreaType'];
-            $scope.mooselikeSpeciesAppearances = [];
-            // initialize missing appearances to empty object
-            _.forEach(ALL_SPECIES, function (species) {
+
+            _.forEach(otherSpecies, function (species) {
                 var key = getAppearanceKey(species);
-                $scope.huntingSummary[key] = $scope.huntingSummary[key] || {};
+
+                if (!$scope.huntingSummary[key]) {
+                    $scope.huntingSummary[key] = {};
+                }
             });
-            // create mooselike apprearances
-            _.forEach($scope.mooselikeSpecies, function (species) {
-                var mooselikeAppearance = $scope.huntingSummary[getAppearanceKey(species)];
-                $scope.mooselikeSpeciesAppearances.push(mooselikeAppearance);
-                otherMandatoryFields.push(propertyPathForSpeciesAppeared(species));
+
+            $scope.mooselikeSpeciesAppearances = _.map($scope.mooselikeSpecies, function (species) {
+                return $scope.huntingSummary[getAppearanceKey(species)];
             });
-            // create wild boar appearance
+
             $scope.wildBoarAppearance = $scope.huntingSummary[getAppearanceKey($scope.wildBoar)];
-            otherMandatoryFields.push(propertyPathForSpeciesAppeared($scope.wildBoar));
+            $scope.beaverAppearance = $scope.huntingSummary[getAppearanceKey($scope.beaver)];
         }
         createAppearances();
 
@@ -174,10 +173,14 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
             $scope.viewState[fieldName] = $scope.huntingSummary[fieldName];
         });
 
-        $scope.showPermitAreaSize = function () {
+        $scope.showPermitAreaSize = function (form) {
             var summary = $scope.huntingSummary;
-            var totalHuntingArea = summary.totalHuntingArea;
-            return !_.isFinite(totalHuntingArea) || totalHuntingArea > summary.permitAreaSize;
+            var totalHuntingArea = parseInt(form.totalHuntingArea.$viewValue, 10);
+            var effectiveHuntingArea = parseInt(form.effectiveHuntingArea.$viewValue, 10);
+
+            return !_.isFinite(totalHuntingArea) && !_.isFinite(effectiveHuntingArea) ||
+                totalHuntingArea > summary.permitAreaSize ||
+                effectiveHuntingArea > summary.permitAreaSize;
         };
 
         $scope.getTotalNumberOfDeadMooses = function () {
@@ -215,11 +218,13 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
         };
 
         $scope.getMaxForEffectiveHuntingArea = function () {
-            return $scope.huntingSummary.totalHuntingArea || $scope.huntingSummary.permitAreaSize;
+            var totalHuntingArea = $scope.huntingSummary.totalHuntingArea;
+            return _.isFinite(totalHuntingArea) ? totalHuntingArea : $scope.huntingSummary.permitAreaSize;
         };
 
         $scope.getMaxForRemainingPopulationInEffectiveArea = function () {
-            return $scope.huntingSummary.remainingPopulationInTotalArea || 9999;
+            var remainingPopulationInTotalArea = $scope.huntingSummary.remainingPopulationInTotalArea;
+            return _.isFinite(remainingPopulationInTotalArea) ? remainingPopulationInTotalArea : 9999;
         };
 
         $scope.isHuntingFinished = function () {
@@ -234,62 +239,36 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
             return $scope.isHuntingFinished() && !$scope.huntingSummary.locked;
         };
 
-        $scope.isValid = function (form) {
-            return form.$valid;
+        $scope.isValidExceptMissingFields = function (form) {
+            var errors = form.$error;
+
+            if (_.isEmpty(errors)) {
+                return true;
+            }
+
+            return _.every(_.keys(errors), function (key) {
+                return key === 'required';
+            });
         };
 
-        var allRequiredFieldsPopulated = function () {
+        var isHuntingAreaAndRemainingPopulationDefined = function () {
             var summary = $scope.huntingSummary;
-
-            var getProperties = function (object, propertyPaths) {
-                return _.map(propertyPaths, _.propertyOf(object));
-            };
 
             var isDefined = function (value) {
                 return value !== undefined && value !== null;
             };
 
-            var allDefined = function (collection) {
-                return _.every(collection, isDefined);
-            };
+            var totalAreaDefined = isDefined(summary.totalHuntingArea);
 
-            var isHuntingAreaAndRemainingPopulationDefined = function () {
-                var totalAreaDefined = isDefined(summary.totalHuntingArea);
-
-                return totalAreaDefined && isDefined(summary.remainingPopulationInTotalArea) ||
-                    isDefined(summary.remainingPopulationInEffectiveArea) && (
-                        isDefined(summary.effectiveHuntingArea) ||
-                        totalAreaDefined && isDefined(summary.effectiveHuntingAreaPercentage)
-                    );
-            };
-
-            var conditionallyMandatoryFieldsSatisfied = _.chain(ALL_SPECIES)
-                .filter(function (species) {
-                    return _.property(propertyPathForSpeciesAppeared(species))(summary);
-                })
-                .map(function (species) {
-                    var keys = [
-                        getAppearanceKey(species) + '.trendOfPopulationGrowth',
-                        getAppearanceKey(species) + '.estimatedAmountOfSpecimens'
-                    ];
-                    if (species === $scope.wildBoar) {
-                        keys.push(getAppearanceKey(species) + '.estimatedAmountOfSowWithPiglets');
-                    }
-                    return keys;
-                })
-                .flatten()
-                .map(_.propertyOf(summary))
-                .every(isDefined)
-                .value();
-
-            return allDefined(getProperties($scope.viewState, mandatoryViewStateDateFields)) &&
-                allDefined(getProperties(summary, otherMandatoryFields)) &&
-                isHuntingAreaAndRemainingPopulationDefined() &&
-                conditionallyMandatoryFieldsSatisfied;
+            return totalAreaDefined && isDefined(summary.remainingPopulationInTotalArea) ||
+                isDefined(summary.remainingPopulationInEffectiveArea) && (
+                    isDefined(summary.effectiveHuntingArea) ||
+                    totalAreaDefined && isDefined(summary.effectiveHuntingAreaPercentage)
+                );
         };
 
         $scope.isValidForFinalSubmit = function (form) {
-            return $scope.isValid(form) && allRequiredFieldsPopulated();
+            return form.$valid && isHuntingAreaAndRemainingPopulationDefined();
         };
 
         var prepareForSubmit = function (form, checkFormValidFn) {
@@ -300,6 +279,19 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
             if (!checkFormValidFn(form)) {
                 return;
             }
+
+            // Nullify appearance fields when appeared is set to false.
+            _.forEach(otherSpecies, function (species) {
+                var appearance = $scope.huntingSummary[getAppearanceKey(species)];
+
+                if (!appearance.appeared) {
+                    _.forOwn(appearance, function (value, key) {
+                        if (value !== null && key !== 'appeared') {
+                            appearance[key] = null;
+                        }
+                    });
+                }
+            });
 
             // Convert date fields to correct format.
             _.forEach(viewStateDateFields, function (fieldName) {
@@ -327,7 +319,7 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
         };
 
         $scope.submit = function (form) {
-            prepareForSubmit(form, $scope.isValid);
+            prepareForSubmit(form, $scope.isValidExceptMissingFields);
             $scope.$close($scope.huntingSummary);
         };
 
@@ -341,14 +333,37 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
             $scope.$dismiss('cancel');
         };
     })
+
     .component('rMooseSummaryAppearance', {
         templateUrl: 'harvestpermit/moosepermit/moosesummary/r-moose-summary-appearance.html',
+        require: {
+            parentForm: '^^form'
+        },
         bindings: {
             appearance: '<',
             species: '<',
             populationGrowthTrends: '<',
-            showEstimateOfSowWithPiglets: '<',
             index: '<'
+        },
+        controller: function (GameSpeciesCodes) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                var index = $ctrl.index;
+
+                $ctrl.isBeaver = $ctrl.species.key === 'beaver';
+                $ctrl.isWildBoar = GameSpeciesCodes.isWildBoar($ctrl.species.gameSpeciesCode);
+
+                $ctrl.appearedInputId = 'appeared' + index;
+                $ctrl.trendOfGrowthSelectId = 'trendOfGrowthSelect' + index;
+                $ctrl.estimatedAmountOfSpecimensInputId = 'estimatedAmountOfSpecimens' + index;
+                $ctrl.estimatedAmountOfSowWithPigletsInputId = 'estimatedAmountOfSowWithPiglets' + index;
+                $ctrl.amountOfInhabitedWinterNestsInputId = 'amountOfInhabitedWinterNests' + index;
+                $ctrl.beaverHarvestAmountInputId = 'beaverHarvestAmount' + index;
+                $ctrl.areaOfDamageInputId = 'areaOfDamage' + index;
+                $ctrl.areaOccupiedByWaterInputId = 'areaOccupiedByWater' + index;
+                $ctrl.additionalBeaverInfoInputId = 'additionalBeaverInfo' + index;
+            };
         }
     })
 ;

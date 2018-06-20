@@ -1,14 +1,9 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
+import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.harvest.specimen.GameAntlersType;
 import fi.riista.feature.gamediary.harvest.specimen.GameFitnessClass;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardHuntingDay;
@@ -22,18 +17,23 @@ import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage8;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_1;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_3;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_4;
-import fi.riista.util.DateUtil;
-
 import org.joda.time.LocalDate;
 import org.junit.Test;
+
+import static fi.riista.util.DateUtil.today;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 // A test class for test class
 public class MooseDataCardObjectFactoryTest {
 
     @Test
     public void testNewHuntingDay() {
-        final LocalDate date = DateUtil.today();
+        final LocalDate date = today();
         final MooseDataCardHuntingDay huntingDay = MooseDataCardObjectFactory.newHuntingDay(date);
+
         assertNotNull(huntingDay);
         assertEquals(date, huntingDay.getStartDate());
         assertNotNull(huntingDay.getHuntingTime());
@@ -44,7 +44,7 @@ public class MooseDataCardObjectFactoryTest {
 
     @Test
     public void testNewMooseObservation() {
-        final MooseDataCardObservation observation = MooseDataCardObjectFactory.newMooseObservation();
+        final MooseDataCardObservation observation = MooseDataCardObjectFactory.newMooseObservation(today());
         assertNotNull(observation);
         assertNotNull(observation.getDate());
         assertNotNull(observation.getGeoLocation());
@@ -58,7 +58,7 @@ public class MooseDataCardObjectFactoryTest {
 
     @Test
     public void testNewMooseMale() {
-        final MooseDataCardMooseMale male = MooseDataCardObjectFactory.newMooseMale();
+        final MooseDataCardMooseMale male = MooseDataCardObjectFactory.newMooseMale(today());
         assertNotNull(male);
         assertNotNull(male.getDate());
         assertNotNull(male.getGeoLocation());
@@ -74,7 +74,7 @@ public class MooseDataCardObjectFactoryTest {
 
     @Test
     public void testNewMooseFemale() {
-        final MooseDataCardMooseFemale female = MooseDataCardObjectFactory.newMooseFemale();
+        final MooseDataCardMooseFemale female = MooseDataCardObjectFactory.newMooseFemale(today());
         assertNotNull(female);
         assertNotNull(female.getDate());
         assertNotNull(female.getGeoLocation());
@@ -86,7 +86,7 @@ public class MooseDataCardObjectFactoryTest {
 
     @Test
     public void testNewMooseCalf() {
-        final MooseDataCardMooseCalf calf = MooseDataCardObjectFactory.newMooseCalf();
+        final MooseDataCardMooseCalf calf = MooseDataCardObjectFactory.newMooseCalf(today());
         assertNotNull(calf);
         assertNotNull(calf.getDate());
         assertNotNull(calf.getGeoLocation());
@@ -100,7 +100,7 @@ public class MooseDataCardObjectFactoryTest {
     @Test
     public void testNewLargeCarnivoreObservation() {
         final MooseDataCardLargeCarnivoreObservation observation =
-                MooseDataCardObjectFactory.newLargeCarnivoreObservation();
+                MooseDataCardObjectFactory.newLargeCarnivoreObservation(today());
 
         assertNotNull(observation);
         assertNotNull(observation.getDate());
@@ -178,5 +178,4 @@ public class MooseDataCardObjectFactoryTest {
         assertNotNull(section84.getNumberOfYoungMoosesHavingFlies());
         assertNotNull(section84.getTrendOfDeerFlyPopulationGrowth());
     }
-
 }

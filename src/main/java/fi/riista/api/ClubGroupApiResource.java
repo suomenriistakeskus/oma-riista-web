@@ -1,28 +1,22 @@
 package fi.riista.api;
 
-import fi.riista.config.web.CSVHttpResponse;
-import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
-import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountDTO;
 import fi.riista.feature.huntingclub.copy.HuntingClubGroupCopyDTO;
 import fi.riista.feature.huntingclub.group.GroupPermitFeature;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupCrudFeature;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupDTO;
-import fi.riista.feature.huntingclub.group.excel.GroupMHCsvFeature;
+import fi.riista.feature.huntingclub.group.excel.HuntingClubGroupMemberExportFeature;
+import fi.riista.feature.huntingclub.hunting.GroupHuntingAreaDTO;
 import fi.riista.feature.huntingclub.hunting.GroupHuntingDiaryFeature;
 import fi.riista.feature.huntingclub.hunting.GroupHuntingStatusDTO;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayCrudFeature;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayDTO;
-import fi.riista.feature.huntingclub.hunting.excel.GroupHuntingDaysExcelFeature;
-import fi.riista.feature.huntingclub.hunting.rejection.RejectClubDiaryEntryDTO;
-import fi.riista.util.MediaTypeExtras;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
-import org.geojson.FeatureCollection;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,7 +27,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/club/{clubId:\\d+}/group", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -43,19 +36,13 @@ public class ClubGroupApiResource {
     private HuntingClubGroupCrudFeature crudFeature;
 
     @Resource
-    private GroupHuntingDayCrudFeature groupHuntingDayCrudFeature;
-
-    @Resource
     private GroupPermitFeature groupPermitFeature;
 
     @Resource
     private GroupHuntingDiaryFeature huntingFeature;
 
     @Resource
-    private GroupHuntingDaysExcelFeature groupHuntingDaysExcelFeature;
-
-    @Resource
-    private GroupMHCsvFeature groupExcelFeature;
+    private HuntingClubGroupMemberExportFeature groupExcelFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(method = RequestMethod.GET)
@@ -80,6 +67,7 @@ public class ClubGroupApiResource {
     public List<HuntingClubGroupDTO.PermitDTO> listAvailablePermits(@PathVariable final long clubId,
                                                                     @RequestParam final int gameSpeciesCode,
                                                                     @RequestParam final int huntingYear) {
+
         return groupPermitFeature.listAvailablePermits(clubId, gameSpeciesCode, huntingYear);
     }
 
@@ -116,10 +104,11 @@ public class ClubGroupApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/huntingArea", method = RequestMethod.GET, produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
-    public FeatureCollection huntingAreaGeoJSON(@PathVariable @SuppressWarnings("unused") final long clubId,
-                                                @PathVariable final long id) {
-        return huntingFeature.huntingAreaGeoJSON(id);
+    @RequestMapping(value = "/{id:\\d+}/huntingArea", method = RequestMethod.GET)
+    public ResponseEntity<GroupHuntingAreaDTO> huntingArea(@PathVariable @SuppressWarnings("unused") final long clubId,
+                                                           @PathVariable final long id) {
+        final GroupHuntingAreaDTO dto = huntingFeature.groupHuntingArea(id);
+        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.noContent().build();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -129,55 +118,11 @@ public class ClubGroupApiResource {
         return huntingFeature.getGroupHuntingStatus(id);
     }
 
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/diary", method = RequestMethod.GET)
-    public List<HuntingDiaryEntryDTO> getDiaryOfMembers(@PathVariable @SuppressWarnings("unused") final long clubId,
-                                                        @PathVariable final long id) {
-        return huntingFeature.getDiaryOfGroupMembers(id);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/huntingdays", method = RequestMethod.GET)
-    public List<GroupHuntingDayDTO> getHuntingDays(@PathVariable @SuppressWarnings("unused") final long clubId,
-                                                   @PathVariable final long id) {
-        return groupHuntingDayCrudFeature.findByClubGroup(id);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/rejected", method = RequestMethod.GET)
-    public Map<GameDiaryEntryType, List<Long>> listRejected(@PathVariable @SuppressWarnings("unused") final long clubId,
-                                                            @PathVariable final long id) {
-        return huntingFeature.listRejected(id);
-    }
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "/{groupId:\\d+}/rejectentry", method = RequestMethod.POST)
-    public void rejectEntryFromHuntingGroup(
-            @PathVariable @SuppressWarnings("unused") long clubId,
-            @PathVariable final long groupId,
-            @RequestBody @Validated RejectClubDiaryEntryDTO dto) {
-        dto.setGroupId(groupId);
-
-        huntingFeature.rejectDiaryEntryFromHuntingGroup(dto);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/export-hunting-days", method = RequestMethod.POST)
-    public ModelAndView exportHuntingDays(@PathVariable @SuppressWarnings("unused") final long clubId,
-                                          @PathVariable final long id) {
-
-        return new ModelAndView(groupHuntingDaysExcelFeature.export(id));
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/export-groups",
-            method = RequestMethod.POST,
-            produces = MediaTypeExtras.TEXT_CSV_VALUE)
-    public CSVHttpResponse exportGroups(@PathVariable final long clubId,
-                                        @RequestParam final int year,
-                                        @RequestParam(required = false) final Integer speciesCode) {
-
-        return groupExcelFeature.export(clubId, year, speciesCode);
+    @PostMapping("/export-groups")
+    public ModelAndView exportGroups(@PathVariable final long clubId,
+                                     @RequestParam final int year,
+                                     @RequestParam(required = false) final Integer speciesCode) {
+        return new ModelAndView(groupExcelFeature.export(clubId, year, speciesCode));
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

@@ -2,41 +2,41 @@ package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.feature.common.entity.Required;
+import fi.riista.feature.gamediary.harvest.HarvestReportingType;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class MobileHarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
 
     public static List<MobileHarvestPermitSpeciesAmountDTO> create(
-            @Nonnull final Iterable<HarvestPermitSpeciesAmount> speciesAmounts,
-            @Nonnull final Map<Long, HarvestReportFields> gameSpeciesIdToFields) {
-
-        return F.mapNonNullsToList(speciesAmounts, amount -> {
-            return MobileHarvestPermitSpeciesAmountDTO.create(
-                    amount,
-                    gameSpeciesIdToFields.get(amount.getGameSpecies().getId()));
-        });
+            @Nonnull final Iterable<HarvestPermitSpeciesAmount> speciesAmounts) {
+        return F.mapNonNullsToList(speciesAmounts, MobileHarvestPermitSpeciesAmountDTO::create);
     }
 
-    public static @Nonnull MobileHarvestPermitSpeciesAmountDTO create(
-            @Nonnull final HarvestPermitSpeciesAmount speciesAmount,
-            @Nonnull final HarvestReportFields fields) {
+    @Nonnull
+    public static MobileHarvestPermitSpeciesAmountDTO create(@Nonnull final HarvestPermitSpeciesAmount speciesAmount) {
         Objects.requireNonNull(speciesAmount, "speciesAmount must not be null");
 
-        MobileHarvestPermitSpeciesAmountDTO dto = new MobileHarvestPermitSpeciesAmountDTO();
-        dto.setGameSpeciesCode(speciesAmount.getGameSpecies().getOfficialCode());
+        final int huntingYear = DateUtil.huntingYearContaining(speciesAmount.getBeginDate());
+        final int gameSpeciesCode = speciesAmount.getGameSpecies().getOfficialCode();
+        final RequiredHarvestFields.Specimen specimenRequirements = RequiredHarvestFields.getSpecimenFields(
+                huntingYear, gameSpeciesCode, null, HarvestReportingType.PERMIT);
+
+        final MobileHarvestPermitSpeciesAmountDTO dto = new MobileHarvestPermitSpeciesAmountDTO();
+        dto.setGameSpeciesCode(gameSpeciesCode);
         dto.setAmount(speciesAmount.getAmount());
         dto.copyDatesFrom(speciesAmount);
 
-        dto.setAgeRequired(fields.getAge() == Required.YES);
-        dto.setGenderRequired(fields.getGender() == Required.YES);
-        dto.setWeightRequired(fields.getWeight() == Required.YES);
+        dto.setAgeRequired(specimenRequirements.getAge() == Required.YES);
+        dto.setGenderRequired(specimenRequirements.getGender() == Required.YES);
+        dto.setWeightRequired(specimenRequirements.getWeight() == Required.YES);
+
         return dto;
     }
 

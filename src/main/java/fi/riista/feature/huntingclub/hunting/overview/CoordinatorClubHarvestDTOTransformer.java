@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
+import static fi.riista.util.Collect.idSet;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -35,8 +36,6 @@ public class CoordinatorClubHarvestDTOTransformer extends HarvestDTOTransformerB
     @Nonnull
     @Override
     protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests) {
-        Objects.requireNonNull(harvests, "harvests must not be null");
-
         final Function<Harvest, GameSpecies> harvestToSpecies = getGameDiaryEntryToSpeciesMapping(harvests);
         final Map<Harvest, List<HarvestSpecimen>> groupedSpecimens = getSpecimensGroupedByHarvests(harvests);
         final Function<Harvest, HuntingClub> harvestToHuntingClubMapping = getHarvestToHuntingClubMapping(harvests);
@@ -51,7 +50,7 @@ public class CoordinatorClubHarvestDTOTransformer extends HarvestDTOTransformerB
     }
 
     private Function<Harvest, HuntingClub> getHarvestToHuntingClubMapping(final List<Harvest> harvestList) {
-        final Set<Long> huntingDayIdSet = F.getUniqueIdsAfterTransform(harvestList, Harvest::getHuntingDayOfGroup);
+        final Set<Long> huntingDayIdSet = harvestList.stream().map(Harvest::getHuntingDayOfGroup).collect(idSet());
         final Map<Long, HuntingClub> result = new JPAQuery<>(entityManager)
                 .from(QGroupHuntingDay.groupHuntingDay)
                 .join(QGroupHuntingDay.groupHuntingDay.group, QHuntingClubGroup.huntingClubGroup)
@@ -62,11 +61,10 @@ public class CoordinatorClubHarvestDTOTransformer extends HarvestDTOTransformerB
         return harvest -> result.get(F.getId(harvest.getHuntingDayOfGroup()));
     }
 
-    private static HarvestDTO createDTO(
-            final Harvest harvest,
-            final GameSpecies species,
-            final List<HarvestSpecimen> specimens,
-            final HuntingClub huntingClub) {
+    private static HarvestDTO createDTO(final Harvest harvest,
+                                        final GameSpecies species,
+                                        final List<HarvestSpecimen> specimens,
+                                        final HuntingClub huntingClub) {
 
         final HarvestDTO dto = HarvestDTO.builder()
                 .populateWith(harvest)
@@ -75,9 +73,6 @@ public class CoordinatorClubHarvestDTOTransformer extends HarvestDTOTransformerB
                 .withDescription(null)
                 .withCanEdit(false)
                 .build();
-
-        dto.setReadOnly(true);
-        dto.setReportedForMe(true);
 
         if (huntingClub != null) {
             final HuntingClubDTO clubDTO = new HuntingClubDTO();

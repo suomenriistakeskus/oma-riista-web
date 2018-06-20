@@ -33,6 +33,10 @@ public class HuntingClubArea extends AreaEntity<Long> {
 
     public static final String ID_COLUMN_NAME = "hunting_club_area_id";
 
+    public static int calculateMetsahallitusYear(final int huntingYear, final int latestMetsahallitusYear) {
+        return huntingYear <= latestMetsahallitusYear ? huntingYear : latestMetsahallitusYear;
+    }
+
     private Long id;
 
     @NotNull
@@ -73,6 +77,14 @@ public class HuntingClubArea extends AreaEntity<Long> {
     @Nonnull
     public LocalisedString getNameLocalisation() {
         return LocalisedString.of(nameFinnish, nameSwedish);
+    }
+
+    public boolean isGeometryEmpty() {
+        return this.zone == null || this.zone.isGeometryEmpty();
+    }
+
+    public boolean isMhYearMismatchToHuntingYear() {
+        return huntingYear != metsahallitusYear;
     }
 
     public HuntingClubArea() {

@@ -1,9 +1,9 @@
 package fi.riista.feature.gis.kiinteisto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.riista.feature.gis.geojson.GeoJSONConstants;
-import fi.riista.feature.gis.WGS84Bounds;
+import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.GISPoint;
+import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.util.GISUtils;
 import org.apache.commons.lang.StringUtils;
 import org.geojson.Crs;
@@ -25,7 +25,14 @@ import java.sql.SQLException;
 @Component
 public class GISPropertyGeometryRepository {
 
-    public static final String SELECT_ALL = "SELECT id, tunnus, nimi, ST_Area(a.geom) as area_size, ST_AsGeoJSON(ST_Transform(a.geom, 4326)) AS geom\n";
+    // 5 = Include CRS and bounding box in GeoJSON output, 7 = decimal precision
+    private static final String SELECT_FROM = "SELECT a.id," +
+            " a.tunnus," +
+            " b.nimi as nimi," +
+            " ST_Area(a.geom) as area_size," +
+            " ST_AsGeoJSON(ST_Transform(a.geom, 4326), 7, 5) AS geom" +
+            " FROM palstaalue a" +
+            " LEFT JOIN kiinteisto_nimet b ON (a.tunnus = b.tunnus)";
 
     private NamedParameterJdbcOperations jdbcTemplate;
 
@@ -36,47 +43,30 @@ public class GISPropertyGeometryRepository {
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public FeatureCollection findOne(final Long id) {
-        final String sql = SELECT_ALL +
-                "FROM palstaalue a\n" +
-                "WHERE id = :id";
+        final String sql = SELECT_FROM + " WHERE a.id = :id";
 
         return query(sql, new MapSqlParameterSource().addValue("id", id));
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public FeatureCollection findByPropertyIdentifier(final String propertyIdentifier) {
-        final String sql = SELECT_ALL +
-                "FROM palstaalue a\n" +
-                "WHERE tunnus = :propertyIdentifier";
-
-        return query(sql, new MapSqlParameterSource().addValue("propertyIdentifier", Long.parseLong(propertyIdentifier)));
-    }
-
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public FeatureCollection findDWithin(final GISPoint centerPoint, final int distance) {
-        final String sql = SELECT_ALL +
-                "FROM palstaalue a\n" +
-                "WHERE ST_DWithin(a.geom, ST_GeomFromText(:point, 3067), :distance)";
+        final String sql = SELECT_FROM + " WHERE a.tunnus = :propertyIdentifier";
 
         return query(sql, new MapSqlParameterSource()
-                .addValue("point", centerPoint.toWellKnownText())
-                .addValue("distance", distance));
+                .addValue("propertyIdentifier", Long.parseLong(propertyIdentifier)));
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public FeatureCollection findIntersectingWithPoint(GISPoint gisPoint) {
-        final String sql = SELECT_ALL +
-                "FROM palstaalue a\n" +
-                "WHERE ST_Contains(a.geom, ST_GeomFromText(:point, 3067))";
+        final String sql = SELECT_FROM + " WHERE ST_Contains(a.geom, ST_GeomFromText(:point, 3067))";
 
         return query(sql, new MapSqlParameterSource().addValue("point", gisPoint.toWellKnownText()));
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public FeatureCollection findByBounds(final WGS84Bounds bounds, int maxResults) {
-        final String sql = SELECT_ALL +
-                "FROM palstaalue a" +
-                " WHERE ST_Intersects(a.geom, ST_Transform(ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326), 3067))" +
+    public FeatureCollection findByBounds(final GISBounds bounds, int maxResults) {
+        final String sql = SELECT_FROM + " WHERE ST_Intersects(a.geom, ST_Transform(" +
+                "ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326), 3067))" +
                 " LIMIT :maxResults;";
 
         return query(sql, new MapSqlParameterSource()
@@ -108,8 +98,12 @@ public class GISPropertyGeometryRepository {
 
             feature.setId(String.valueOf(resultSet.getLong("id")));
             feature.setGeometry(GISUtils.parseGeoJSONGeometry(objectMapper, resultSet.getString("geom")));
-            feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER, StringUtils.leftPad(Long.toString(resultSet.getLong("tunnus")), 14, '0'));
+            feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER,
+                    StringUtils.leftPad(Long.toString(resultSet.getLong("tunnus")), 14, '0'));
+            feature.setProperty(GeoJSONConstants.PROPERTY_NAME, resultSet.getString("nimi"));
             feature.setProperty(GeoJSONConstants.PROPERTY_SIZE, resultSet.getDouble("area_size"));
+            feature.setBbox(feature.getGeometry().getBbox());
+            feature.getGeometry().setBbox(null);
 
             return feature;
         }

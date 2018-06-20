@@ -1,12 +1,12 @@
 package fi.riista.feature.huntingclub.members.club;
 
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.members.AbstractClubSpecificOccupationCrudFeatureTest;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.organization.occupation.OccupationDTO;
+import fi.riista.feature.huntingclub.members.AbstractClubSpecificOccupationCrudFeatureTest;
 import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.occupation.OccupationDTO;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.junit.Test;
@@ -15,11 +15,13 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.function.Function;
 
-import static fi.riista.feature.organization.person.ContactInfoShare.ALL_MEMBERS;
-import static fi.riista.feature.organization.person.ContactInfoShare.ONLY_OFFICIALS;
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
+import static fi.riista.feature.organization.person.ContactInfoShare.ALL_MEMBERS;
+import static fi.riista.feature.organization.person.ContactInfoShare.ONLY_OFFICIALS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class HuntingClubMemberCrudFeatureTest extends AbstractClubSpecificOccupationCrudFeatureTest {
 
@@ -125,6 +127,57 @@ public class HuntingClubMemberCrudFeatureTest extends AbstractClubSpecificOccupa
         onSavedAndAuthenticated(createUser(member1.getPerson()), () -> {
             List<OccupationDTO> members = crudFeature.listMembers(club.getId());
             assertEquals(F.getUniqueIds(member1), F.getUniqueIds(members));
+        });
+    }
+
+    @Test
+    public void testUpdateOccupationTypeUpdatesContactPersonCallOrder() {
+        final HuntingClub club = model().newHuntingClub();
+        final Occupation firstContactOccupation = model().newHuntingClubMember(club, SEURAN_YHDYSHENKILO);
+        final Occupation secondContactOccupation = model().newHuntingClubMember(club, SEURAN_YHDYSHENKILO);
+        firstContactOccupation.setCallOrder(0);
+        secondContactOccupation.setCallOrder(null);
+
+        onSavedAndAuthenticated(createUser(firstContactOccupation.getPerson()), () -> {
+            final OccupationDTO clubMembershipUpdated = crudFeature.updateOccupationType(
+                    firstContactOccupation.getId(), SEURAN_JASEN);
+
+            assertNull(clubMembershipUpdated.getCallOrder());
+
+            runInTransaction(() -> {
+                final List<Occupation> activeOccupations = occupationRepository
+                        .findActiveByOrganisationAndOccupationType(club, SEURAN_YHDYSHENKILO);
+                assertEquals(1, activeOccupations.size());
+
+                for (Occupation activeOccupation : activeOccupations) {
+                    assertEquals(secondContactOccupation.getPerson(), activeOccupation.getPerson());
+                    assertNotNull(activeOccupation.getCallOrder());
+                    assertEquals(0, (int) activeOccupation.getCallOrder());
+                }
+            });
+        });
+    }
+
+    @Test
+    public void testDeleteContactPersonUpdatesCallOrder() {
+        final HuntingClub club = model().newHuntingClub();
+        final Occupation firstContactOccupation = model().newHuntingClubMember(club, SEURAN_YHDYSHENKILO);
+        final Occupation secondContactOccupation = model().newHuntingClubMember(club, SEURAN_YHDYSHENKILO);
+        firstContactOccupation.setCallOrder(0);
+        secondContactOccupation.setCallOrder(null);
+
+        onSavedAndAuthenticated(createUser(firstContactOccupation.getPerson()), () -> {
+            crudFeature.delete(firstContactOccupation.getId());
+
+            runInTransaction(() -> {
+                final List<Occupation> activeOccupations = occupationRepository.findActiveByOrganisation(club);
+                assertEquals(1, activeOccupations.size());
+
+                for (Occupation activeOccupation : activeOccupations) {
+                    assertEquals(secondContactOccupation.getPerson(), activeOccupation.getPerson());
+                    assertEquals(0, (int) activeOccupation.getCallOrder());
+                }
+            });
         });
     }
 }

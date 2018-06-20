@@ -13,7 +13,18 @@
                       role="form" class="form"
                       novalidate autocomplete="off">
 
-                    <fieldset>
+                    <fieldset ng-if="$ctrl.adminView">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox"
+                                       ng-change="$ctrl.announcement.visibleToAllChanged()"
+                                       ng-model="$ctrl.announcement.visibleToAll">
+                                <span translate="announcements.form.visibleToAll"></span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset ng-disabled="$ctrl.announcement.visibleToAll">
                         <legend translate="announcements.form.addOccupationType"></legend>
 
                         <div class="form-group">
@@ -32,7 +43,8 @@
 
                     <hr ng-if="$ctrl.showOrganisationSelect()"/>
 
-                    <fieldset ng-if="$ctrl.showOrganisationSelect()">
+                    <fieldset ng-if="$ctrl.showOrganisationSelect()"
+                              ng-disabled="$ctrl.announcement.visibleToAll">
                         <legend translate="announcements.form.addOrganisation"></legend>
 
                         <div class="form-group">
@@ -56,7 +68,8 @@
                 <form name="announcementForm"
                       role="form" class="form"
                       novalidate autocomplete="off">
-                    <div ng-class="{'has-error': $ctrl.occupationTypeMissing()}">
+                    <div ng-if="!$ctrl.announcement.visibleToAll"
+                         ng-class="{'has-error': $ctrl.occupationTypeMissing()}">
                         <label>
                             <span translate="announcements.form.targetOccupations"></span>
                             <span class="glyphicon glyphicon-asterisk text-danger"></span>
@@ -75,7 +88,7 @@
                         </div>
                     </div>
 
-                    <div ng-if="$ctrl.showOrganisationSelect()"
+                    <div ng-if="!$ctrl.announcement.visibleToAll && $ctrl.showOrganisationSelect()"
                          ng-class="{'has-error': $ctrl.organisationMissing()}">
                         <label>
                             <span translate="announcements.form.targetOrganisations"></span>
@@ -104,6 +117,7 @@
                         <input type="text"
                                name="subject" id="subject"
                                class="form-control"
+                               focus-me
                                required
                                ng-minlength="5"
                                ng-maxlength="255"

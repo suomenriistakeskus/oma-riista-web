@@ -1,0 +1,29 @@
+<div class="panel panel-default"
+     ng-if="$ctrl.shootingTests && $ctrl.shootingTests.length">
+    <div class="panel-heading">
+        <div class="h3 panel-title">
+            <span translate="account.profile.shootingTests.listing.title"></span>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <thead>
+                <th translate="account.profile.shootingTests.listing.testType"></th>
+                <th translate="account.profile.shootingTests.listing.validity"></th>
+                <th translate="account.profile.shootingTests.listing.rhy"></th>
+                </thead>
+                <tbody>
+                <tr ng-repeat="shootingTest in ::$ctrl.shootingTests | orderBy:'-begin'">
+                    <td>{{::'shootingTest.type.' + shootingTest.type | translate}}</td>
+                    <td>
+                        {{::(shootingTest.begin | date:'d.M.yyyy')}} - {{::(shootingTest.end | date:'d.M.yyyy')}}
+                        <span ng-if="::shootingTest.expired" class="r-badge-red" translate="account.profile.shootingTests.listing.expired"></span>
+                    </td>
+                    <td ng-bind="::shootingTest.rhyName"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

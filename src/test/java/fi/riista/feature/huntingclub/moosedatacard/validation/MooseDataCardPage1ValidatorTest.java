@@ -1,5 +1,21 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardClubInfo;
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardContactPerson;
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage1;
+import fi.riista.util.DateUtil;
+import fi.riista.util.NumberGenerator;
+import fi.riista.util.NumberSequence;
+import fi.riista.util.ValueGeneratorMixin;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.control.Validation;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.clubCoordinatesOutOfFinland;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.hunterNumberAndSsnMissingForContactPerson;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingClubCodeMismatchBetweenNameAndContentOfXmlFile;
@@ -12,28 +28,9 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.missingClubCoordinates;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.missingPermitNumber;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.permitNumberMismatchBetweenNameAndContentOfXmlFile;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.reportingPeriodBeginDateIsAfterEndDate;
-import static fi.riista.util.DateUtil.today;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardClubInfo;
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardContactPerson;
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage1;
-import fi.riista.util.DateUtil;
-import fi.riista.util.NumberGenerator;
-import fi.riista.util.NumberSequence;
-import fi.riista.util.ValueGeneratorMixin;
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import javaslang.control.Validation;
-import org.joda.time.LocalDate;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
 
@@ -163,19 +160,6 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
     }
 
     @Test
-    public void testInvalidReportingPeriod() {
-        final LocalDate beginDate = today();
-        final LocalDate endDate = beginDate.minusDays(1);
-
-        createInputAndAssertFailure(
-                page -> {
-                    page.setReportingPeriodBeginDate(beginDate);
-                    page.setReportingPeriodEndDate(endDate);
-                },
-                reportingPeriodBeginDateIsAfterEndDate(beginDate, endDate));
-    }
-
-    @Test
     public void testCombinationOfEmptyOrMissingHunterNumberAndSsn() {
         createInputAndAssertFailure(page -> {
             page.getContactPerson().setHunterNumber(null);
@@ -200,34 +184,25 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
 
     @Test
     public void testMultipleErrorsUsingHunterNumber() {
-        final LocalDate beginDate = today();
-        final LocalDate endDate = beginDate.minusDays(1);
-
         createInputAndAssertFailure(true, page -> {
             page.getContactPerson().setHunterNumber(INVALID);
             page.setPermitNumber(INVALID);
             page.setHuntingClubCode(INVALID);
             page.getClubInfo().setHuntingClubCoordinate(INVALID);
-            page.setReportingPeriodBeginDate(beginDate);
-            page.setReportingPeriodEndDate(endDate);
-        }, Arrays.asList(invalidHunterNumber(INVALID), invalidPermitNumber(INVALID), invalidClubCode(INVALID),
-                invalidClubCoordinates(INVALID), reportingPeriodBeginDateIsAfterEndDate(beginDate, endDate)));
+        }, Arrays.asList(
+                invalidHunterNumber(INVALID), invalidPermitNumber(INVALID), invalidClubCode(INVALID),
+                invalidClubCoordinates(INVALID)));
     }
 
     @Test
     public void testMultipleErrorsUsingSsn() {
-        final LocalDate beginDate = today();
-        final LocalDate endDate = beginDate.minusDays(1);
-
         createInputAndAssertFailure(false, page -> {
             page.getContactPerson().setSsn(INVALID);
             page.setPermitNumber(INVALID);
             page.setHuntingClubCode(INVALID);
             page.getClubInfo().setHuntingClubCoordinate(INVALID);
-            page.setReportingPeriodBeginDate(beginDate);
-            page.setReportingPeriodEndDate(endDate);
-        }, Arrays.asList(invalidSsn(), invalidPermitNumber(INVALID), invalidClubCode(INVALID),
-                invalidClubCoordinates(INVALID), reportingPeriodBeginDateIsAfterEndDate(beginDate, endDate)));
+        }, Arrays.asList(
+                invalidSsn(), invalidPermitNumber(INVALID), invalidClubCode(INVALID), invalidClubCoordinates(INVALID)));
     }
 
     private void createInputAndAssertFailure(final Consumer<MooseDataCardPage1> consumer,
@@ -263,7 +238,7 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
     private static Validation<List<String>, MooseDataCardPage1Validation> validate(
             final Tuple2<MooseDataCardPage1, MooseDataCardFilenameValidation> tuple) {
 
-        return tuple.transform(INSTANCE::validate);
+        return tuple.apply(INSTANCE::validate);
     }
 
     private Tuple2<MooseDataCardPage1, MooseDataCardFilenameValidation> newPageAndValidation(
@@ -276,15 +251,11 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
     }
 
     private MooseDataCardPage1 newPage1(final boolean usingHunterNumber) {
-        final LocalDate today = today();
-
         final MooseDataCardPage1 page = new MooseDataCardPage1()
                 .withContactPerson(new MooseDataCardContactPerson())
                 .withPermitNumber(permitNumber())
                 .withHuntingClubCode(CLUB_CODE)
-                .withClubInfo(new MooseDataCardClubInfo().withHuntingClubCoordinate("6822384;310088"))
-                .withReportingPeriodBeginDate(today.minusMonths(3))
-                .withReportingPeriodEndDate(today);
+                .withClubInfo(new MooseDataCardClubInfo().withHuntingClubCoordinate("6822384;310088"));
 
         if (usingHunterNumber) {
             page.getContactPerson().setHunterNumber(hunterNumber());
@@ -298,5 +269,4 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
     private String permitNumber() {
         return permitNumber("001");
     }
-
 }

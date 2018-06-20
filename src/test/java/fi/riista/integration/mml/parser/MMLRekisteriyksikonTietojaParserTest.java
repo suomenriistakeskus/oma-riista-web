@@ -1,11 +1,13 @@
 package fi.riista.integration.mml.parser;
 
 import fi.riista.integration.mml.dto.MMLRekisteriyksikonTietoja;
-import fi.riista.integration.mml.support.WFSUtil;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.InputStream;
 import java.util.List;
 
 import static org.hamcrest.Matchers.empty;
@@ -37,6 +39,12 @@ public class MMLRekisteriyksikonTietojaParserTest {
         ClassPathResource xmlResource = new ClassPathResource("rekisteriyksikonTietoja.xml", getClass());
         assertTrue(xmlResource.exists());
 
-        return WFSUtil.parse(xmlResource.getInputStream());
+        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        final DocumentBuilder builder = dbf.newDocumentBuilder();
+
+        try (final InputStream is = xmlResource.getInputStream()) {
+            return builder.parse(is);
+        }
     }
 }

@@ -86,7 +86,7 @@ public class CheckExternalAuthenticationFeature {
     @Transactional(readOnly = true, noRollbackFor = {AuthenticationException.class, AccessDeniedException.class})
     public ResponseEntity<?> checkAuthentication(final ExternalAuthenticationRequest externalAuthRequest) {
 
-        final UserInfo activeUserInfo = activeUserService.getActiveUserInfo();
+        final UserInfo activeUserInfo = activeUserService.getActiveUserInfoOrNull();
 
         Objects.requireNonNull(activeUserInfo, "no activeUser");
 

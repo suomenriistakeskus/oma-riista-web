@@ -43,6 +43,11 @@ public class SQSrvaEventType extends RelationalPathSpatial<SQSrvaEventType> {
         addMetadata();
     }
 
+    public SQSrvaEventType(String variable, String schema) {
+        super(SQSrvaEventType.class, forVariable(variable), schema, "srva_event_type");
+        addMetadata();
+    }
+
     public SQSrvaEventType(Path<? extends SQSrvaEventType> path) {
         super(path.getType(), path.getMetadata(), "public", "srva_event_type");
         addMetadata();

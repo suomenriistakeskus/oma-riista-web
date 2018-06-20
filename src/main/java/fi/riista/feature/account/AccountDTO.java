@@ -2,12 +2,12 @@ package fi.riista.feature.account;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.common.dto.DoNotValidate;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.address.AddressSource;
 import fi.riista.util.Patterns;
+import fi.riista.validation.DoNotValidate;
 import fi.riista.validation.FinnishHunterNumber;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -42,6 +42,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     private SystemUser.Role role;
 
+    @DoNotValidate
     private List<AccountRoleDTO> accountRoles;
 
     private Long personId;
@@ -118,10 +119,14 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     private boolean denyMagazine;
 
+    @DoNotValidate
     private List<MyOccupationDTO> occupations;
+
+    @DoNotValidate
     private List<MyClubOccupationDTO> clubOccupations;
 
     private boolean enableSrva;
+    private boolean enableShootingTests;
 
     @Override
     public Long getId() {
@@ -147,7 +152,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return username;
     }
 
-    public final void setUsername(String username) {
+    public final void setUsername(final String username) {
         this.username = username;
     }
 
@@ -187,7 +192,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return byName;
     }
 
-    public void setByName(String byName) {
+    public void setByName(final String byName) {
         this.byName = byName;
     }
 
@@ -211,7 +216,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return accountRoles;
     }
 
-    public void setAccountRoles(List<AccountRoleDTO> accountRoles) {
+    public void setAccountRoles(final List<AccountRoleDTO> accountRoles) {
         this.accountRoles = accountRoles;
     }
 
@@ -219,7 +224,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return personId;
     }
 
-    public void setPersonId(Long personId) {
+    public void setPersonId(final Long personId) {
         this.personId = personId;
     }
 
@@ -227,7 +232,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return ssnMasked;
     }
 
-    public void setSsnMasked(String ssnMasked) {
+    public void setSsnMasked(final String ssnMasked) {
         this.ssnMasked = ssnMasked;
     }
 
@@ -235,23 +240,23 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return homeMunicipality;
     }
 
-    public void setHomeMunicipality(String homeMunicipality) {
+    public void setHomeMunicipality(final String homeMunicipality) {
         this.homeMunicipality = homeMunicipality;
-    }
-
-    public void setLanguageCode(String languageCode) {
-        this.languageCode = languageCode;
     }
 
     public String getLanguageCode() {
         return languageCode;
     }
 
+    public void setLanguageCode(final String languageCode) {
+        this.languageCode = languageCode;
+    }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
+    public void setPhoneNumber(final String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
@@ -259,7 +264,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return address;
     }
 
-    public void setAddress(AddressDTO address) {
+    public void setAddress(final AddressDTO address) {
         this.address = address;
     }
 
@@ -267,7 +272,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return addressSource;
     }
 
-    public void setAddressSource(AddressSource addressSource) {
+    public void setAddressSource(final AddressSource addressSource) {
         this.addressSource = addressSource;
     }
 
@@ -275,7 +280,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return mrSyncTime;
     }
 
-    public void setMrSyncTime(DateTime mrSyncTime) {
+    public void setMrSyncTime(final DateTime mrSyncTime) {
         this.mrSyncTime = mrSyncTime;
     }
 
@@ -283,7 +288,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return hunterNumber;
     }
 
-    public void setHunterNumber(String hunterNumber) {
+    public void setHunterNumber(final String hunterNumber) {
         this.hunterNumber = hunterNumber;
     }
 
@@ -291,7 +296,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return rhyMembership;
     }
 
-    public void setRhyMembership(OrganisationNameDTO rhyMembership) {
+    public void setRhyMembership(final OrganisationNameDTO rhyMembership) {
         this.rhyMembership = rhyMembership;
     }
 
@@ -299,7 +304,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return huntingCardStart;
     }
 
-    public void setHuntingCardStart(LocalDate huntingCardStart) {
+    public void setHuntingCardStart(final LocalDate huntingCardStart) {
         this.huntingCardStart = huntingCardStart;
     }
 
@@ -307,7 +312,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return huntingCardEnd;
     }
 
-    public void setHuntingCardEnd(LocalDate huntingCardEnd) {
+    public void setHuntingCardEnd(final LocalDate huntingCardEnd) {
         this.huntingCardEnd = huntingCardEnd;
     }
 
@@ -339,7 +344,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return hunterExamDate;
     }
 
-    public void setHunterExamDate(LocalDate hunterExamDate) {
+    public void setHunterExamDate(final LocalDate hunterExamDate) {
         this.hunterExamDate = hunterExamDate;
     }
 
@@ -347,7 +352,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return hunterExamExpirationDate;
     }
 
-    public void setHunterExamExpirationDate(LocalDate hunterExamExpirationDate) {
+    public void setHunterExamExpirationDate(final LocalDate hunterExamExpirationDate) {
         this.hunterExamExpirationDate = hunterExamExpirationDate;
     }
 
@@ -363,7 +368,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return huntingBanStart;
     }
 
-    public void setHuntingBanStart(LocalDate huntingBanStart) {
+    public void setHuntingBanStart(final LocalDate huntingBanStart) {
         this.huntingBanStart = huntingBanStart;
     }
 
@@ -371,7 +376,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return huntingBanEnd;
     }
 
-    public void setHuntingBanEnd(LocalDate huntingBanEnd) {
+    public void setHuntingBanEnd(final LocalDate huntingBanEnd) {
         this.huntingBanEnd = huntingBanEnd;
     }
 
@@ -387,7 +392,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return magazineLanguageCode;
     }
 
-    public void setMagazineLanguageCode(String magazineLanguageCode) {
+    public void setMagazineLanguageCode(final String magazineLanguageCode) {
         this.magazineLanguageCode = magazineLanguageCode;
     }
 
@@ -395,7 +400,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return denyPost;
     }
 
-    public void setDenyPost(boolean denyPost) {
+    public void setDenyPost(final boolean denyPost) {
         this.denyPost = denyPost;
     }
 
@@ -403,7 +408,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return denyMagazine;
     }
 
-    public void setDenyMagazine(boolean denyMagazine) {
+    public void setDenyMagazine(final boolean denyMagazine) {
         this.denyMagazine = denyMagazine;
     }
 
@@ -411,7 +416,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return occupations;
     }
 
-    public void setOccupations(List<MyOccupationDTO> occupations) {
+    public void setOccupations(final List<MyOccupationDTO> occupations) {
         this.occupations = occupations;
     }
 
@@ -419,16 +424,16 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return clubOccupations;
     }
 
-    public void setClubOccupations(List<MyClubOccupationDTO> clubOccupations) {
+    public void setClubOccupations(final List<MyClubOccupationDTO> clubOccupations) {
         this.clubOccupations = clubOccupations;
-    }
-
-    public void setRegistered(boolean registered) {
-        this.registered = registered;
     }
 
     public boolean isRegistered() {
         return registered;
+    }
+
+    public void setRegistered(final boolean registered) {
+        this.registered = registered;
     }
 
     public boolean isRememberMe() {
@@ -439,12 +444,12 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         this.rememberMe = rememberMe;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public boolean isActive() {
         return active;
+    }
+
+    public void setActive(final boolean active) {
+        this.active = active;
     }
 
     public boolean isAllowPrintCertificate() {
@@ -459,7 +464,15 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         return enableSrva;
     }
 
-    public void setEnableSrva(boolean enableSrva) {
+    public void setEnableSrva(final boolean enableSrva) {
         this.enableSrva = enableSrva;
+    }
+
+    public boolean isEnableShootingTests() {
+        return enableShootingTests;
+    }
+
+    public void setEnableShootingTests(final boolean enableShootingTests) {
+        this.enableShootingTests = enableShootingTests;
     }
 }

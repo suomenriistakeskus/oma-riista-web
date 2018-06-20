@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -13,10 +12,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 public final class ClassUtils {
-
-    private ClassUtils() {
-        throw new AssertionError();
-    }
 
     @Nullable
     public static Class<?> resolveGenericType(@Nonnull final Field field) {
@@ -26,11 +21,12 @@ public final class ClassUtils {
     }
 
     @Nonnull
-    public static Class<?> getTypeArgumentOfSuperClass(
-            @Nonnull final Object object, final Class<?> superClass, final int typeArgumentIndex) {
+    public static Class<?> getTypeArgumentOfSuperClass(@Nonnull final Object object,
+                                                       @Nonnull final Class<?> superClass,
+                                                       final int typeArgumentIndex) {
 
-        Objects.requireNonNull(object, "object must not be null");
-        Objects.requireNonNull(superClass, "superClass must not be null");
+        Objects.requireNonNull(object, "object is null");
+        Objects.requireNonNull(superClass, "superClass is null");
         Preconditions.checkArgument(typeArgumentIndex >= 0, "typeArgumentIndex must not be negative");
 
         final Optional<ParameterizedType> paramType =
@@ -46,19 +42,18 @@ public final class ClassUtils {
         final Type[] typeArguments = paramType.get().getActualTypeArguments();
 
         if (typeArguments.length == 0) {
-            throw new IllegalArgumentException(
-                    "The interface does not have type arguments: " + superClass.getName());
+            throw new IllegalArgumentException("The interface does not have type arguments: " + superClass.getName());
         }
 
         return (Class<?>) typeArguments[typeArgumentIndex];
     }
 
     @Nonnull
-    public static Optional<ParameterizedType> findParameterizedParentTypeOfClass(
-            @Nonnull final Class<?> clazz, @Nonnull final Class<?> expectedType) {
+    public static Optional<ParameterizedType> findParameterizedParentTypeOfClass(@Nonnull final Class<?> clazz,
+                                                                                 @Nonnull final Class<?> expectedType) {
 
-        Objects.requireNonNull(clazz, "clazz must not be null");
-        Objects.requireNonNull(expectedType, "expectedType must not be null");
+        Objects.requireNonNull(clazz, "clazz is null");
+        Objects.requireNonNull(expectedType, "expectedType is null");
 
         final Type genericSuperclass = clazz.getGenericSuperclass();
         final Type[] genericInterfaces = clazz.getGenericInterfaces();
@@ -95,12 +90,23 @@ public final class ClassUtils {
         return Optional.empty();
     }
 
+    public static boolean isRuntimeException(@Nonnull final Class<?> clazz) {
+        return RuntimeException.class.isAssignableFrom(clazz);
+    }
+
+    public static boolean isCheckedException(@Nonnull final Class<?> clazz) {
+        return Exception.class.isAssignableFrom(clazz) && !isRuntimeException(clazz);
+    }
+
     @Nonnull
     public static <T> Optional<T> cast(@Nullable final Object obj, @Nonnull final Class<T> refClass) {
-        Objects.requireNonNull(refClass, "refClass must not be null");
+        Objects.requireNonNull(refClass, "refClass is null");
 
         return Optional.ofNullable(
                 obj != null && refClass.isAssignableFrom(obj.getClass()) ? refClass.cast(obj) : null);
     }
 
+    private ClassUtils() {
+        throw new AssertionError();
+    }
 }

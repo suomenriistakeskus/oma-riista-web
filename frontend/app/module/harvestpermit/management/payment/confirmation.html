@@ -1,0 +1,66 @@
+<h3 translate="payment.summary"></h3>
+
+<p class="text-primary" style="font-weight: 700; font-size: 18px; margin: 25px 0 35px;">
+    <span translate="payment.amount"></span>
+    <span ng-bind="::$ctrl.invoice.amount"></span> &euro;
+</p>
+
+<div class="row">
+    <div class="col-xs-3">
+        <p><strong translate="invoice.info"></strong></p>
+
+        <p style="margin-bottom: 6px">
+            <span translate="invoice.invoiceNumber"></span>:
+            <span ng-bind="::$ctrl.invoice.invoiceNumber"></span>
+        </p>
+        <p style="margin-bottom: 6px">
+            <span translate="global.date"></span>:
+            <span ng-bind="::$ctrl.invoice.invoiceDate | date:'dd.MM.yyyy'"></span>
+        </p>
+    </div>
+
+    <div class="col-xs-3">
+        <p><strong translate="invoice.items"></strong></p>
+
+        <p style="margin-bottom: 6px"><span ng-bind="::$ctrl.invoice.invoiceDescription"></span>,</p>
+        <p style="margin-bottom: 6px"
+           translate="harvestpermit.management.invoiceType.{{::$ctrl.invoice.invoiceType}}"></p>
+    </div>
+
+    <div class="col-xs-3">
+        <p><strong translate="payment.payer"></strong></p>
+
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.from.name"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.from.addressLine1"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.from.addressLine2"></p>
+    </div>
+
+    <div class="col-xs-3">
+        <p><strong translate="payment.payee"></strong></p>
+
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.to.name"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.to.addressLine1"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.to.addressLine2"></p>
+        <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.to.phoneNumber"></p>
+    </div>
+</div>
+
+<hr class="">
+
+<div class="row">
+    <div class="col-xs-6">
+        <button class="btn btn-link"
+                ui-sref="permitmanagement.payment.due">
+            <span translate="harvestpermit.management.cancelPayment"></span>
+        </button>
+    </div>
+
+    <div class="col-xs-6 text-right">
+        <button type="button" class="btn btn-lg btn-primary"
+                ng-click="$ctrl.makePayment()">
+            <span translate="harvestpermit.management.proceedPayment"></span>
+            &nbsp;
+            <span class="fa fa-chevron-right"></span>
+        </button>
+    </div>
+</div>

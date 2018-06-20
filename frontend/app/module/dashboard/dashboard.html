@@ -1,0 +1,86 @@
+<uib-tabset active="active">
+
+    <uib-tab index="0" select="select(0)" heading="Käyttäjät">
+        <div class="fa fa-refresh fa-lg" ng-if="!shouldLoadFirstTab" ng-click="loadFirstTab()"></div>
+
+        <div ng-if="shouldLoadFirstTab && selectedTab === 0">
+            <div class="row">
+                <div class="col-md-5">
+                    <h2>Käyttäjät</h2>
+                    <dashboard-users></dashboard-users>
+                </div>
+                <div class="col-md-6 col-md-offset-1">
+                    <h2>PDF lataukset</h2>
+                    <dashboard-pdf></dashboard-pdf>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-5">
+                    <h2>Seurat</h2>
+                    <dashboard-clubs></dashboard-clubs>
+                </div>
+            </div>
+        </div>
+    </uib-tab>
+
+    <uib-tab index="1" select="select(1)" heading="Hirvi">
+        <div class="row">
+            <div class="col-md-5">
+                <h2>Hirvieläinten metsästys kuluvana metsästysvuonna</h2>
+                <dashboard-mooselike-hunting ng-if="selectedTab === 1"></dashboard-mooselike-hunting>
+            </div>
+        </div>
+    </uib-tab>
+
+    <uib-tab index="2" select="select(2)" heading="Saalis">
+        <div class="row">
+            <div class="col-md-5">
+                <h2>Saaliskirjaukset ja -ilmoitukset</h2>
+                <dashboard-harvest-observations ng-if="selectedTab === 2"></dashboard-harvest-observations>
+            </div>
+
+        </div>
+
+        <hr/>
+        <h2>Poimintatyökalu</h2>
+        <dashboard-harvest-summary></dashboard-harvest-summary>
+    </uib-tab>
+
+    <uib-tab index="3" select="select(3)" heading="Srva">
+        <div class="row">
+            <div class="col-md-5">
+                <h2>SRVA-tapahtumat</h2>
+                <dashboard-srva ng-if="selectedTab === 3"></dashboard-srva>
+            </div>
+        </div>
+    </uib-tab>
+
+    <uib-tab index="4" select="select(4)" heading="Viestit">
+        <div class="row">
+            <div class="col-md-5">
+                <h2>Viestit</h2>
+                <dashboard-announcement ng-if="selectedTab === 4"></dashboard-announcement>
+            </div>
+        </div>
+    </uib-tab>
+
+    <uib-tab index="5" select="select(5)" heading="Mobiili">
+        <h2>Mobiili kirjautumiset</h2>
+        <dashboard-mobile-login ng-if="selectedTab === 5"></dashboard-mobile-login>
+    </uib-tab>
+
+    <uib-tab index="6" select="select(6)" heading="Muut" ng-if="isAdmin()">
+        <h2>Muita toimintoja</h2>
+
+        <dashboard-bulk-button></dashboard-bulk-button>
+        <hr>
+
+        <h2>Hyväksytyt saalisilmoitukset</h2>
+        <dashboard-harvest-reports></dashboard-harvest-reports>
+        <hr>
+
+        <h2>RHY tietojen muokkaukset</h2>
+        <dashboard-rhy></dashboard-rhy>
+    </uib-tab>
+
+</uib-tabset>

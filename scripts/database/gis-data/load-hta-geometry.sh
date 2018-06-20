@@ -17,8 +17,10 @@ else
     echo "Using source file: ${SOURCE_FILE}"
 fi
 
-psql -d "${DATABASE}" -c "DROP TABLE IF EXISTS import_hta;"
+PSQL="psql -q1X -v ON_ERROR_STOP=1 -d ${DATABASE}"
 
-shp2pgsql -c -s 3067 -W UTF-8 -I -D "${SOURCE_FILE}" public.import_hta | psql "${DATABASE}"
+${PSQL} -c "DROP TABLE IF EXISTS import_hta;"
 
-psql -v ON_ERROR_STOP=1 -d "${DATABASE}" -f ./sql/hta.sql
+shp2pgsql -c -s 3067 -W UTF-8 -I -D "${SOURCE_FILE}" public.import_hta | ${PSQL}
+
+${PSQL} -f ./sql/hta.sql

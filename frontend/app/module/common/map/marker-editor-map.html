@@ -1,0 +1,16 @@
+<leaflet id="marker-editor-map"
+         class="r-cursor-pointer r-leaflet-propagate-overlay-click"
+         defaults="$ctrl.mapDefaults"
+         layers="$ctrl.mapDefaults.mmlLayers"
+         controls="$ctrl.mapDefaults.controls"
+         event-broadcast="$ctrl.mapEvents"
+         r-geolocation-center="$ctrl.mapCenter"
+         r-geolocation-marker="$ctrl.geolocation"
+         r-geolocation-keep-marker-center
+         r-geolocation-editable="$ctrl.editable"
+         r-viewport-height
+         width="100%">
+
+    <div ng-transclude></div>
+
+</leaflet>

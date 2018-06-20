@@ -1,13 +1,13 @@
 package fi.riista.feature.huntingclub.group;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.test.rules.HibernateStatisticsAssertions;
 import fi.riista.util.DateUtil;
-import fi.riista.util.jpa.HibernateStatisticsAssertions;
 import org.junit.Test;
 
 import javax.annotation.Resource;

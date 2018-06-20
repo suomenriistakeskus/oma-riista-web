@@ -5,13 +5,14 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceAsyncClientBuilder;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.config.Constants;
-import fi.riista.feature.mail.MailService;
+import fi.riista.config.properties.MailProperties;
 import fi.riista.feature.mail.MailMessageDTO;
+import fi.riista.feature.mail.MailService;
 import fi.riista.feature.mail.MailServiceImpl;
 import fi.riista.feature.mail.delivery.AmazonMailDeliveryServiceImpl;
-import fi.riista.feature.mail.queue.NoopMailProviderImpl;
 import fi.riista.feature.mail.delivery.MailDeliveryService;
-import fi.riista.feature.mail.queue.OutgoingMailProvider;
+import fi.riista.feature.mail.queue.SimpleMailDeliveryQueue;
+import fi.riista.feature.mail.queue.MailDeliveryQueue;
 import org.springframework.cloud.aws.context.config.annotation.EnableContextCredentials;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +33,7 @@ public class AmazonSESTestClient {
         }
 
         @Bean
-        public MailDeliveryService<Long> mailDeliveryService(final AWSCredentialsProvider credentialsProvider) {
+        public MailDeliveryService mailDeliveryService(final AWSCredentialsProvider credentialsProvider) {
             return new AmazonMailDeliveryServiceImpl(AmazonSimpleEmailServiceAsyncClientBuilder.standard()
                     .withRegion(Regions.EU_WEST_1)
                     .withCredentials(credentialsProvider)
@@ -40,13 +41,18 @@ public class AmazonSESTestClient {
         }
 
         @Bean
-        public OutgoingMailProvider<Long> outgoingMailProvider() {
-            return new NoopMailProviderImpl();
+        public MailDeliveryQueue outgoingMailProvider() {
+            return new SimpleMailDeliveryQueue();
         }
 
         @Bean
         public MailService mailService() {
             return new MailServiceImpl();
+        }
+
+        @Bean
+        public MailProperties mailProperties() {
+            return new MailProperties();
         }
     }
 
@@ -64,11 +70,14 @@ public class AmazonSESTestClient {
 
             final MailService bean = ctx.getBean(MailService.class);
 
-            bean.sendImmediate(new MailMessageDTO.Builder()
+            bean.send(MailMessageDTO.builder()
                     .withFrom("noreply@riista.fi")
-                    .withTo("invalid@example.com")
+                    .addRecipient("invalid@example.com")
                     .withSubject("Test mail from Amazon SES")
-                    .withBody("<html><body><h1>Hello from Amazon</h1>></body></html>"));
+                    .appendBody("<html><body><h1>Hello from Amazon</h1></body></html>")
+                    .build());
+
+            bean.processOutgoingMail();
         }
     }
 }

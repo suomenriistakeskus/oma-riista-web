@@ -1,7 +1,6 @@
 package fi.riista.feature.account.registration;
 
 import com.google.common.collect.ImmutableMap;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.mail.token.EmailToken;
@@ -9,6 +8,7 @@ import fi.riista.feature.mail.token.EmailTokenRepository;
 import fi.riista.feature.mail.token.EmailTokenType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;

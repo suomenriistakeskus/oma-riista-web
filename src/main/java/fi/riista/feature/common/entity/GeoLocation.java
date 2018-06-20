@@ -1,7 +1,13 @@
 package fi.riista.feature.common.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+import fi.riista.util.GISUtils;
+import fi.riista.util.LocalisedEnum;
+import fi.riista.util.NumberUtils;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -9,7 +15,6 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Function;
@@ -18,7 +23,7 @@ import java.util.function.Function;
 @Access(AccessType.FIELD)
 public class GeoLocation implements Serializable {
 
-    public enum Source {
+    public enum Source implements LocalisedEnum {
         GPS_DEVICE, MANUAL
     }
 
@@ -54,6 +59,10 @@ public class GeoLocation implements Serializable {
         this.source = source;
     }
 
+    public boolean hasSameLatLng(final GeoLocation other) {
+        return other != null && other.latitude == this.latitude && other.longitude == this.longitude;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(latitude, longitude, source, accuracy, altitude, altitudeAccuracy);
@@ -74,10 +83,10 @@ public class GeoLocation implements Serializable {
 
         return this.latitude == that.latitude
                 && this.longitude == that.longitude
-                && Objects.equals(this.source, that.source)
-                && Objects.equals(this.accuracy, that.accuracy)
-                && Objects.equals(this.altitude, that.altitude)
-                && Objects.equals(this.altitudeAccuracy, that.altitudeAccuracy);
+                && this.source == that.source
+                && NumberUtils.equal(this.accuracy, that.accuracy)
+                && NumberUtils.equal(this.altitude, that.altitude)
+                && NumberUtils.equal(this.altitudeAccuracy, that.altitudeAccuracy);
     }
 
     @Override
@@ -113,8 +122,15 @@ public class GeoLocation implements Serializable {
         return that;
     }
 
+    @JsonIgnore
     public Coordinate toCoordinate() {
         return new Coordinate(longitude, latitude);
+    }
+
+    @JsonIgnore
+    public Point toPointGeometry() {
+        final GeometryFactory geometryFactory = GISUtils.getGeometryFactory(GISUtils.SRID.ETRS_TM35FIN);
+        return geometryFactory.createPoint(toCoordinate());
     }
 
     // Accessors -->
@@ -166,5 +182,4 @@ public class GeoLocation implements Serializable {
     public void setAltitudeAccuracy(final Double altitudeAccuracy) {
         this.altitudeAccuracy = altitudeAccuracy;
     }
-
 }

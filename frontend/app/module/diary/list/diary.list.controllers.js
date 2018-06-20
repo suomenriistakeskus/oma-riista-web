@@ -17,17 +17,6 @@ angular.module('app.diary.list.controllers', ['ngResource'])
 
                         return GameDiaryParameters.query().$promise;
                     },
-                    initialDiaryEntries: function (DiaryEntries, Helpers, parameters, DiaryListViewState, SrvaService) {
-                        if (!parameters) {
-                            return [];
-                        }
-
-                        return DiaryEntries.mine({
-                            beginDate: Helpers.dateToString(DiaryListViewState.beginDate),
-                            endDate: Helpers.dateToString(DiaryListViewState.endDate),
-                            srvaEvents: SrvaService.isEnableSrva()
-                        }).$promise;
-                    },
                     viewState: function (DiaryListViewState, Harvest, Observation, Srva) {
                         var diaryEntry = DiaryListViewState.selectedDiaryEntry;
 
@@ -36,6 +25,7 @@ angular.module('app.diary.list.controllers', ['ngResource'])
                         }
 
                         var repository;
+
                         if (diaryEntry.isHarvest()) {
                             repository = Harvest;
                         } else if (diaryEntry.isSrva()) {
@@ -54,29 +44,30 @@ angular.module('app.diary.list.controllers', ['ngResource'])
             });
     })
 
-    .controller('DiaryListController', function ($scope, $state, $uibModal,
-                                                 MapDefaults, MapState, WGS84, GIS, Markers, Helpers,
-                                                 DiaryListService,
-                                                 DiaryListMarkerService,
-                                                 DiaryListSpeciesService,
-                                                 DiaryEntryService,
-                                                 DiaryEntries,
-                                                 SrvaService,
-                                                 viewState,
-                                                 parameters,
-                                                 initialDiaryEntries,
-                                                 SrvaOtherSpeciesService) {
+    .controller('DiaryListController', function ($scope, Helpers, AccountService, FormPostService,
+                                                 MapDefaults, MapState, MapBounds, WGS84, GIS, Markers,
+                                                 DiaryListService, DiaryListMarkerService, DiaryListSpeciesService,
+                                                 DiaryEntries, DiaryEntryService, SrvaOtherSpeciesService, LocalStorageService,
+                                                 viewState, parameters) {
+
+        $scope.harvestReportInfoVisible = LocalStorageService.getKey('2017-11-16-harvestReportInfoVisibility') !== 'hide';
+        $scope.hideHarvestReportInfo = function () {
+            $scope.harvestReportInfoVisible = false;
+            LocalStorageService.setKey('2017-11-16-harvestReportInfoVisibility', 'hide');
+        };
+
         $scope.state = viewState;
+        $scope.parameters = parameters;
         $scope.mapState = MapState.get();
-        $scope.allEntries = initialDiaryEntries;
+        $scope.allEntries = [];
         $scope.getGameName = parameters.$getGameName;
         $scope.getCategoryName = parameters.$getCategoryName;
-
+        $scope.showEntry = DiaryListService.showSidebar();
         $scope.mapEvents = MapDefaults.getMapBroadcastEvents();
         $scope.mapDefaults = MapDefaults.create();
 
-        $scope.enableSrva = SrvaService.isEnableSrva();
-        if($scope.enableSrva) {
+        $scope.enableSrva = AccountService.isSrvaFeatureEnabled();
+        if ($scope.enableSrva) {
             SrvaOtherSpeciesService.addOtherSpecies(parameters.species);
         }
 
@@ -109,11 +100,7 @@ angular.module('app.diary.list.controllers', ['ngResource'])
 
         // Species filtering
 
-        var filterDiaryEntriesBySpeciesSelection = function () {
-            if ($scope.state.selectedDiaryEntry !== null) {
-                // Make sure active harvest is not filtered out
-                DiaryListSpeciesService.speciesAddedToSelection(parameters, $scope.state.selectedDiaryEntry.gameSpeciesCode);
-            }
+        $scope.filterDiaryEntriesBySpeciesSelection = function () {
             var filteredEntries = DiaryListSpeciesService.filterDiaryEntriesBySpeciesSelection($scope.allEntries);
 
             filteredEntries = _.filter(filteredEntries, function (entry) {
@@ -121,8 +108,6 @@ angular.module('app.diary.list.controllers', ['ngResource'])
                     ($scope.state.showObservation && entry.isObservation()) ||
                     ($scope.state.showSrvaEvent && entry.isSrva());
             });
-
-            $scope.mapState.viewBounds = DiaryListService.getEntryBounds(filteredEntries);
 
             $scope.markers = DiaryListMarkerService.createMarkersForDiaryEntryList(filteredEntries, function (diaryEntry) {
                 $scope.showEntry(diaryEntry);
@@ -139,75 +124,99 @@ angular.module('app.diary.list.controllers', ['ngResource'])
 
             _expandActiveHuntingDayGroup();
 
-            if ($scope.state.selectedDiaryEntry !== null) {
-                // Open sidebar dialog for active harvest
-                $scope.showEntry($scope.state.selectedDiaryEntry);
+            if (!$scope.state.selectedDiaryEntry) {
+                var entryBounds = DiaryListService.getEntryBounds(filteredEntries);
+                MapState.updateMapBounds(entryBounds, MapBounds.getBoundsOfFinland(), true);
             }
         };
 
-        if ($scope.state.selectedDiaryEntry !== null) {
-            // Initially zoom to selected harvest after create or update
-            MapState.updateMapCenter($scope.state.selectedDiaryEntry.geoLocation);
+        function openSelectedDiaryEntry() {
+            var selectedDiaryEntry = $scope.state.selectedDiaryEntry;
+            $scope.state.selectedDiaryEntry = null;
+
+            if (selectedDiaryEntry !== null) {
+                // Make sure active harvest is not filtered out
+                DiaryListSpeciesService.speciesAddedToSelection(parameters, selectedDiaryEntry.gameSpeciesCode);
+
+                // Initially zoom to selected harvest after create or update
+                MapState.updateMapCenter(selectedDiaryEntry.geoLocation);
+
+                // Open sidebar dialog for active harvest
+                $scope.showEntry(selectedDiaryEntry);
+            }
         }
 
-        $scope.deselectAllSpecies = function () {
-            DiaryListSpeciesService.deselectAllSpecies();
-            filterDiaryEntriesBySpeciesSelection();
-        };
-
-        $scope.selectAllSpecies = function () {
-            DiaryListSpeciesService.selectAllSpecies();
-            filterDiaryEntriesBySpeciesSelection();
-        };
-
-        $scope.speciesAddedToSelection = function () {
-            if ($scope.state.lastSelectedSpeciesCode || $scope.state.lastSelectedSpeciesCode === 0) {
-                var speciesCode = $scope.state.lastSelectedSpeciesCode;
-                delete $scope.state.lastSelectedSpeciesCode;
-                DiaryListSpeciesService.speciesAddedToSelection(parameters, speciesCode);
-                filterDiaryEntriesBySpeciesSelection();
+        function searchBackend() {
+            if (!viewState.beginDate || !viewState.endDate) {
+                return;
             }
-        };
 
-        $scope.removeSpeciesFromSelection = function (gameSpeciesCode) {
-            DiaryListSpeciesService.removeSpeciesFromSelection(parameters, gameSpeciesCode);
-            filterDiaryEntriesBySpeciesSelection();
-        };
+            DiaryEntries.search({
+                beginDate: Helpers.dateToString(viewState.beginDate),
+                endDate: Helpers.dateToString(viewState.endDate),
+                includeHarvest: !!viewState.showHarvest,
+                includeObservation: !!viewState.showObservation,
+                includeSrva: !!viewState.showSrvaEvent,
+                onlyReports: !!viewState.onlyReports,
+                onlyTodo: !!viewState.onlyTodo,
+                reportedForOthers: !!viewState.reportedForOthers
 
-        // Actions
-
-        $scope.showEntry = DiaryListService.showSidebar();
-
-        $scope.addHarvest = function () {
-            $state.go('profile.diary.addHarvest');
-        };
-
-        $scope.addObservation = function () {
-            $state.go('profile.diary.addObservation');
-        };
-
-        $scope.addSrva = function () {
-            $state.go('profile.diary.addSrva');
-        };
-
-        $scope.search = function () {
-            var params = {
-                beginDate: Helpers.dateToString($scope.state.beginDate),
-                endDate: Helpers.dateToString($scope.state.endDate),
-                reportedForOthers:  $scope.state.reportedForOthers || false,
-                srvaEvents: $scope.state.showSrvaEvent || false
-            };
-
-            DiaryEntries.mine(params).$promise.then(function (diaryEntries) {
+            }).$promise.then(function (diaryEntries) {
                 $scope.allEntries = diaryEntries;
 
                 DiaryListSpeciesService.updateAllSpecies(parameters, diaryEntries, true);
-                filterDiaryEntriesBySpeciesSelection();
+
+                openSelectedDiaryEntry();
+
+                $scope.filterDiaryEntriesBySpeciesSelection();
             });
+        }
+
+        $scope.$watchGroup([
+            'state.showHarvest', // 0
+            'state.showObservation', // 1
+            'state.showSrvaEvent', // 2
+            'state.reportedForOthers', // 3
+            'state.onlyReports', // 4
+            'state.onlyTodo', // 5
+            'state.beginDate', // 6
+            'state.endDate', // 7
+        ], function (newValues, oldValues) {
+            // Data loaded from backend is up to date ?
+
+            if (angular.equals(newValues[0], oldValues[0]) &&
+                angular.equals(newValues[1], oldValues[1]) &&
+                angular.equals(newValues[2], oldValues[2]) &&
+                angular.equals(newValues[3], oldValues[3]) &&
+                angular.equals(newValues[4], oldValues[4]) &&
+                angular.equals(newValues[5], oldValues[5]) &&
+                angular.equals(newValues[6], oldValues[6]) &&
+                angular.equals(newValues[7], oldValues[7])) {
+                return;
+            }
+
+            searchBackend();
+        });
+
+        // Actions
+
+        $scope.addHarvest = function () {
+            DiaryEntryService.createHarvest();
         };
 
-        var selectAll = $scope.state.allSpecies.length === 0;
-        DiaryListSpeciesService.updateAllSpecies(parameters, $scope.allEntries, selectAll);
+        $scope.addObservation = function () {
+            DiaryEntryService.createObservation();
+        };
 
-        filterDiaryEntriesBySpeciesSelection();
+        $scope.addSrva = function () {
+            DiaryEntryService.createSrvaEvent();
+        };
+
+        $scope.exportExcel = function () {
+            FormPostService.submitFormUsingBlankTarget('/api/v1/gamediary/excel', {});
+        };
+
+        MapState.updateMapBounds(null, MapBounds.getBoundsOfFinland(), false);
+
+        searchBackend();
     });

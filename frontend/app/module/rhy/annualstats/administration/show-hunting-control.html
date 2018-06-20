@@ -1,0 +1,36 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.administration.huntingControl.title'"
+                               last-modified="$ctrl.huntingControl.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr>
+                        <td class="col-xs-8" translate="rhy.annualStats.administration.huntingControl.events"></td>
+                        <td num-pieces="::$ctrl.huntingControl.huntingControlEvents"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-8" translate="rhy.annualStats.administration.huntingControl.customers"></td>
+                        <td num-pieces="::$ctrl.huntingControl.huntingControlCustomers"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-8" translate="rhy.annualStats.administration.huntingControl.proofOrders"></td>
+                        <td num-pieces="::$ctrl.huntingControl.proofOrders"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-8" computed-marker-title="rhy.annualStats.administration.huntingControl.controllers"></td>
+                        <td num-persons="::$ctrl.huntingControl.huntingControllers"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.openEditDialog()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

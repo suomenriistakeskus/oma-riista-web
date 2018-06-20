@@ -67,6 +67,11 @@ public class SQMooseHarvestReport extends RelationalPathSpatial<SQMooseHarvestRe
         addMetadata();
     }
 
+    public SQMooseHarvestReport(String variable, String schema) {
+        super(SQMooseHarvestReport.class, forVariable(variable), schema, "moose_harvest_report");
+        addMetadata();
+    }
+
     public SQMooseHarvestReport(Path<? extends SQMooseHarvestReport> path) {
         super(path.getType(), path.getMetadata(), "public", "moose_harvest_report");
         addMetadata();

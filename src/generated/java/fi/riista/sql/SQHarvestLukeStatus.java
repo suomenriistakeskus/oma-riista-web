@@ -43,6 +43,11 @@ public class SQHarvestLukeStatus extends RelationalPathSpatial<SQHarvestLukeStat
         addMetadata();
     }
 
+    public SQHarvestLukeStatus(String variable, String schema) {
+        super(SQHarvestLukeStatus.class, forVariable(variable), schema, "harvest_luke_status");
+        addMetadata();
+    }
+
     public SQHarvestLukeStatus(Path<? extends SQHarvestLukeStatus> path) {
         super(path.getType(), path.getMetadata(), "public", "harvest_luke_status");
         addMetadata();

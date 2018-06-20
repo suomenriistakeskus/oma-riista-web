@@ -5,7 +5,7 @@ var DiaryPage = function () {
 
     var pageHelper = new PageHelper();
 
-    this.addHarvestButton = element(by.css('.r-gamediary-map-button-area a.btn:nth-child(1)'));
+    this.addHarvestButton = element(by.css('.map-overlay-button-container a.btn:nth-child(1)'));
 
     this.waitForLoad = function () {
         return pageHelper.waitForUrl(/profile\/me\/diary/);

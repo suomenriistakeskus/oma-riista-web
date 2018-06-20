@@ -1,11 +1,12 @@
 package fi.riista.feature.huntingclub.permit.basicsummary;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import java.util.List;
@@ -19,7 +20,7 @@ import static fi.riista.security.EntityPermission.DELETE;
 import static fi.riista.security.EntityPermission.READ;
 import static fi.riista.security.EntityPermission.UPDATE;
 
-public class BasicClubHuntingSummaryAuthorizationTest extends EmbeddedDatabaseTest {
+public class BasicClubHuntingSummaryAuthorizationTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     private static final BiFunction<HarvestPermitSpeciesAmount, HuntingClub, BasicClubHuntingSummary> CREATE_PERMIT_PARTNER =
             (speciesAmount, club) -> new BasicClubHuntingSummary(club, speciesAmount);
@@ -236,12 +237,11 @@ public class BasicClubHuntingSummaryAuthorizationTest extends EmbeddedDatabaseTe
         test(permission, false, createUser, createAuthorizedObject, true);
     }
 
-    private void test(
-            final Enum<?> permission,
-            final boolean expected,
-            final BiFunction<HuntingClub, HuntingClubGroup, SystemUser> createUser,
-            final BiFunction<HarvestPermitSpeciesAmount, HuntingClub, BasicClubHuntingSummary> createAuthorizedObject,
-            final boolean detachClubFromPartnership) {
+    private void test(final Enum<?> permission,
+                      final boolean expected,
+                      final BiFunction<HuntingClub, HuntingClubGroup, SystemUser> createUser,
+                      final BiFunction<HarvestPermitSpeciesAmount, HuntingClub, BasicClubHuntingSummary> createAuthorizedObject,
+                      final boolean detachClubFromPartnership) {
 
         runInTransaction(() -> withMooseHuntingGroupFixture(f -> {
             // It is essential to set this to other than the moose code.
@@ -259,7 +259,8 @@ public class BasicClubHuntingSummaryAuthorizationTest extends EmbeddedDatabaseTe
 
             persistInCurrentlyOpenTransaction();
             authenticate(user);
-            assertHasPermission(expected, obj, permission);
+
+            onCheckingPermission(permission).expect(expected).joinToCurrentTransaction().apply(obj);
         }));
     }
 
@@ -295,5 +296,4 @@ public class BasicClubHuntingSummaryAuthorizationTest extends EmbeddedDatabaseTe
     private List<BiFunction<HuntingClub, HuntingClubGroup, SystemUser>> buildNonModeratorUsers() {
         return clubGroupUserFunctionsBuilder().withAllButAdminAndModerator().build();
     }
-
 }

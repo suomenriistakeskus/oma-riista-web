@@ -5,7 +5,7 @@ import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
-import fi.riista.feature.gamediary.observation.metadata.CanIdentifyObservationContextSensitiveFields;
+import fi.riista.feature.gamediary.observation.metadata.ObservationContext;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay_;
@@ -14,6 +14,7 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.Person_;
 import fi.riista.util.F;
 import fi.riista.util.jpa.CriteriaUtils;
+import fi.riista.validation.PhoneNumber;
 import org.hibernate.validator.constraints.Range;
 import org.joda.time.LocalDateTime;
 
@@ -32,9 +33,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import static fi.riista.util.F.coalesceAsInt;
@@ -42,7 +42,7 @@ import static fi.riista.util.F.coalesceAsInt;
 @Entity
 @Table(name = "game_observation")
 @Access(AccessType.FIELD)
-public class Observation extends GameDiaryEntry implements CanIdentifyObservationContextSensitiveFields {
+public class Observation extends GameDiaryEntry {
 
     public static final int MIN_AMOUNT = 1;
     public static final int MAX_AMOUNT = 999;
@@ -65,6 +65,39 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
     @Column
     private Boolean withinMooseHunting;
 
+    /**
+     * Etäisyys asumuksesta (<= 100 m)
+     */
+    @Range(min = 0, max = 100)
+    @Column
+    private Integer inYardDistanceToResidence;
+
+    /**
+     * Petoyhdyshenkilön maastossa varmentama
+     */
+    @Column
+    private Boolean verifiedByCarnivoreAuthority;
+
+    /**
+     * Havainnontekijän nimi
+     */
+    @Size(max = 255)
+    @Column
+    private String observerName;
+
+    /**
+     * Havainnontekijän puhelinnumero
+     */
+    @PhoneNumber
+    @Column
+    private String observerPhoneNumber;
+
+    /**
+     * Lisätieto suurpedoista Lukelle
+     */
+    @Column(columnDefinition = "text")
+    private String officialAdditionalInfo;
+
     @Range(min = 0, max = 100)
     @Column
     private Integer mooselikeMaleAmount;
@@ -72,6 +105,10 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
     @Range(min = 0, max = 100)
     @Column
     private Integer mooselikeFemaleAmount;
+
+    @Range(min = 0, max = 50)
+    @Column
+    private Integer mooselikeCalfAmount;
 
     /**
      * Amount of groups of one adult female moose with one calf within one game
@@ -105,7 +142,7 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
     @Column(name = "mooselike_female_4_calfs_amount")
     private Integer mooselikeFemale4CalfsAmount;
 
-    @Range(min = 0, max = 100)
+    @Range(min = 0, max = 50)
     @Column
     private Integer mooselikeUnknownSpecimenAmount;
 
@@ -125,12 +162,11 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
         super();
     }
 
-    public Observation(
-            final Person author,
-            final GeoLocation geoLocation,
-            final LocalDateTime pointOfTime,
-            final GameSpecies species,
-            final int amount) {
+    public Observation(final Person author,
+                       final GeoLocation geoLocation,
+                       final LocalDateTime pointOfTime,
+                       final GameSpecies species,
+                       final int amount) {
 
         super(geoLocation, pointOfTime, species, author);
 
@@ -153,13 +189,16 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
         setObserver(person);
     }
 
-    @Override
     public boolean observedWithinMooseHunting() {
-        return Optional.ofNullable(withinMooseHunting).orElse(false);
+        return Boolean.TRUE.equals(withinMooseHunting);
     }
 
-    public boolean isAmountEqualTo(final Integer amount) {
-        return Objects.equals(this.amount, amount);
+    public ObservationContext getObservationContext() {
+        return new ObservationContext(
+                ObservationSpecVersion.MOST_RECENT,
+                getSpecies().getOfficialCode(),
+                observedWithinMooseHunting(),
+                observationType);
     }
 
     @Override
@@ -173,6 +212,12 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
                 .updateInverseCollection(GroupHuntingDay_.observations, this, this.huntingDayOfGroup, newHuntingDay);
     }
 
+    public boolean isAnyLargeCarnivoreFieldPresent() {
+        // XXX: Will need to include inYardDistanceToResidence when large carnivore fields are
+        // enabled in production.
+        return F.anyNonNull(verifiedByCarnivoreAuthority, observerName, observerPhoneNumber, officialAdditionalInfo);
+    }
+
     @AssertTrue
     public boolean isMooselikeAmountPresenceConsistent() {
         return !isAnyMooselikeAmountPresent() || hasMinimumSetOfNonnullAmountsCommonToAllMooselikeSpecies();
@@ -180,48 +225,23 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
 
     public boolean isAnyMooselikeAmountPresent() {
         return F.anyNonNull(
-                mooselikeMaleAmount, mooselikeFemaleAmount, mooselikeFemale1CalfAmount,
+                mooselikeMaleAmount, mooselikeFemaleAmount, mooselikeCalfAmount, mooselikeFemale1CalfAmount,
                 mooselikeFemale2CalfsAmount, mooselikeFemale3CalfsAmount, mooselikeFemale4CalfsAmount,
                 mooselikeUnknownSpecimenAmount);
     }
 
-    public Observation withMooselikeAmounts(
-            final Integer mooselikeMaleAmount,
-            final Integer mooselikeFemaleAmount,
-            final Integer mooselikeFemale1CalfAmount,
-            final Integer mooselikeFemale2CalfsAmount,
-            final Integer mooselikeFemale3CalfsAmount,
-            final Integer mooselikeFemale4CalfsAmount,
-            final Integer mooselikeUnknownSpecimenAmount) {
-
-        setMooselikeMaleAmount(mooselikeMaleAmount);
-        setMooselikeFemaleAmount(mooselikeFemaleAmount);
-        setMooselikeFemale1CalfAmount(mooselikeFemale1CalfAmount);
-        setMooselikeFemale2CalfsAmount(mooselikeFemale2CalfsAmount);
-        setMooselikeFemale3CalfsAmount(mooselikeFemale3CalfsAmount);
-        setMooselikeFemale4CalfsAmount(mooselikeFemale4CalfsAmount);
-        setMooselikeUnknownSpecimenAmount(mooselikeUnknownSpecimenAmount);
-        return this;
-    }
-
-    private void updateAmountToSumOfAllMooselikeAmountsIfPresent() {
-        if (hasMinimumSetOfNonnullAmountsCommonToAllMooselikeSpecies()) {
-            setAmount(getTotalAmountOfMooselikeAmountFields());
-        }
-    }
-
-    private boolean hasMinimumSetOfNonnullAmountsCommonToAllMooselikeSpecies() {
+    public boolean hasMinimumSetOfNonnullAmountsCommonToAllMooselikeSpecies() {
         // The list below includes all mandatory amount fields for moose. Other moose-like species
         // include these as well plus female-with4-calfs-amount.
         return F.allNotNull(
-                mooselikeMaleAmount, mooselikeFemaleAmount, mooselikeFemale1CalfAmount,
-                mooselikeFemale2CalfsAmount, mooselikeFemale3CalfsAmount, mooselikeUnknownSpecimenAmount);
+                mooselikeMaleAmount, mooselikeFemaleAmount, mooselikeFemale1CalfAmount, mooselikeFemale2CalfsAmount,
+                mooselikeFemale3CalfsAmount, mooselikeUnknownSpecimenAmount);
     }
 
-    // Exposed as package-private to allow isolated testing.
-    int getTotalAmountOfMooselikeAmountFields() {
-        return coalesceAsInt(mooselikeMaleAmount, 0)
+    public void setAmountToSumOfMooselikeAmounts() {
+        this.amount = coalesceAsInt(mooselikeMaleAmount, 0)
                 + coalesceAsInt(mooselikeFemaleAmount, 0)
+                + coalesceAsInt(mooselikeCalfAmount, 0)
                 + 2 * coalesceAsInt(mooselikeFemale1CalfAmount, 0)
                 + 3 * coalesceAsInt(mooselikeFemale2CalfsAmount, 0)
                 + 4 * coalesceAsInt(mooselikeFemale3CalfsAmount, 0)
@@ -249,7 +269,6 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
         return observer;
     }
 
-    @Override
     public ObservationType getObservationType() {
         return observationType;
     }
@@ -275,8 +294,48 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
         return withinMooseHunting;
     }
 
+    public Integer getInYardDistanceToResidence() {
+        return inYardDistanceToResidence;
+    }
+
+    public void setInYardDistanceToResidence(final Integer inYardDistanceToResidence) {
+        this.inYardDistanceToResidence = inYardDistanceToResidence;
+    }
+
     public void setWithinMooseHunting(final Boolean withinMooseHunting) {
         this.withinMooseHunting = withinMooseHunting;
+    }
+
+    public Boolean getVerifiedByCarnivoreAuthority() {
+        return verifiedByCarnivoreAuthority;
+    }
+
+    public void setVerifiedByCarnivoreAuthority(final Boolean verifiedByCarnivoreAuthority) {
+        this.verifiedByCarnivoreAuthority = verifiedByCarnivoreAuthority;
+    }
+
+    public String getObserverName() {
+        return observerName;
+    }
+
+    public void setObserverName(final String observerName) {
+        this.observerName = observerName;
+    }
+
+    public String getObserverPhoneNumber() {
+        return observerPhoneNumber;
+    }
+
+    public void setObserverPhoneNumber(final String observerPhoneNumber) {
+        this.observerPhoneNumber = observerPhoneNumber;
+    }
+
+    public String getOfficialAdditionalInfo() {
+        return officialAdditionalInfo;
+    }
+
+    public void setOfficialAdditionalInfo(final String officialAdditionalInfo) {
+        this.officialAdditionalInfo = officialAdditionalInfo;
     }
 
     public Integer getMooselikeMaleAmount() {
@@ -285,7 +344,6 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
 
     public void setMooselikeMaleAmount(final Integer mooselikeMaleAmount) {
         this.mooselikeMaleAmount = mooselikeMaleAmount;
-        updateAmountToSumOfAllMooselikeAmountsIfPresent();
     }
 
     public Integer getMooselikeFemaleAmount() {
@@ -294,7 +352,14 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
 
     public void setMooselikeFemaleAmount(final Integer mooselikeFemaleAmount) {
         this.mooselikeFemaleAmount = mooselikeFemaleAmount;
-        updateAmountToSumOfAllMooselikeAmountsIfPresent();
+    }
+
+    public Integer getMooselikeCalfAmount() {
+        return mooselikeCalfAmount;
+    }
+
+    public void setMooselikeCalfAmount(final Integer mooselikeCalfAmount) {
+        this.mooselikeCalfAmount = mooselikeCalfAmount;
     }
 
     public Integer getMooselikeFemale1CalfAmount() {
@@ -303,7 +368,6 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
 
     public void setMooselikeFemale1CalfAmount(final Integer mooselikeFemale1CalfAmount) {
         this.mooselikeFemale1CalfAmount = mooselikeFemale1CalfAmount;
-        updateAmountToSumOfAllMooselikeAmountsIfPresent();
     }
 
     public Integer getMooselikeFemale2CalfsAmount() {
@@ -312,7 +376,6 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
 
     public void setMooselikeFemale2CalfsAmount(final Integer mooselikeFemale2CalfsAmount) {
         this.mooselikeFemale2CalfsAmount = mooselikeFemale2CalfsAmount;
-        updateAmountToSumOfAllMooselikeAmountsIfPresent();
     }
 
     public Integer getMooselikeFemale3CalfsAmount() {
@@ -321,7 +384,6 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
 
     public void setMooselikeFemale3CalfsAmount(final Integer mooselikeFemale3CalfsAmount) {
         this.mooselikeFemale3CalfsAmount = mooselikeFemale3CalfsAmount;
-        updateAmountToSumOfAllMooselikeAmountsIfPresent();
     }
 
     public Integer getMooselikeFemale4CalfsAmount() {
@@ -330,7 +392,6 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
 
     public void setMooselikeFemale4CalfsAmount(final Integer mooselikeFemale4CalfsAmount) {
         this.mooselikeFemale4CalfsAmount = mooselikeFemale4CalfsAmount;
-        updateAmountToSumOfAllMooselikeAmountsIfPresent();
     }
 
     public Integer getMooselikeUnknownSpecimenAmount() {
@@ -339,7 +400,6 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
 
     public void setMooselikeUnknownSpecimenAmount(final Integer mooselikeUnknownSpecimenAmount) {
         this.mooselikeUnknownSpecimenAmount = mooselikeUnknownSpecimenAmount;
-        updateAmountToSumOfAllMooselikeAmountsIfPresent();
     }
 
     public boolean isFromMobile() {
@@ -349,6 +409,8 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
     public void setFromMobile(final boolean fromMobile) {
         this.fromMobile = fromMobile;
     }
+
+    // Following collection getters exposed in package-private scope only for property introspection.
 
     Set<ObservationSpecimen> getSpecimens() {
         return specimens;
@@ -361,5 +423,4 @@ public class Observation extends GameDiaryEntry implements CanIdentifyObservatio
     Set<ObservationRejection> getGroupRejections() {
         return groupRejections;
     }
-
 }

@@ -1,19 +1,17 @@
 package fi.riista.feature.gamediary.observation.specimen;
 
 import fi.riista.feature.gamediary.AbstractSpecimenServiceTest;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
+import fi.riista.feature.gamediary.observation.metadata.ObservationMetadata;
 import fi.riista.util.jpa.JpaSpecs;
-
 import org.springframework.data.jpa.domain.JpaSort;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -43,61 +41,7 @@ public class ObservationSpecimenServiceTest extends
     protected SpecimenTestOps<Observation, ObservationSpecimen, ObservationSpecimenDTO> getSpecimenTestOps(
             final GameSpecies species, final ObservationSpecVersion version) {
 
-        return new SpecimenTestOps<Observation, ObservationSpecimen, ObservationSpecimenDTO>() {
-
-            @Override
-            public int getMinAmount() {
-                return Observation.MIN_AMOUNT;
-            }
-
-            @Override
-            public int getMaxAmount() {
-                return Observation.MAX_AMOUNT;
-            }
-
-            @Override
-            public ObservationSpecimen createSpecimen(@Nullable final Observation observation) {
-                return model().newObservationSpecimen(observation);
-            }
-
-            @Override
-            public ObservationSpecimenDTO createDTO() {
-                final ObservationSpecimenDTO dto = new ObservationSpecimenDTO();
-                dto.setAge(some(ObservedGameAge.class));
-                dto.setGender(some(GameGender.class));
-                dto.setState(some(ObservedGameState.class));
-                dto.setMarking(some(GameMarking.class));
-                return dto;
-            }
-
-            @Override
-            public ObservationSpecimenDTO transform(@Nonnull final ObservationSpecimen entity) {
-                return ObservationSpecimenDTO.from(entity);
-            }
-
-            @Override
-            public void mutateContent(@Nonnull final ObservationSpecimenDTO dto) {
-                Objects.requireNonNull(dto);
-                dto.setAge(someOtherThan(dto.getAge(), ObservedGameAge.class));
-                dto.setGender(someOtherThan(dto.getGender(), GameGender.class));
-                dto.setState(someOtherThan(dto.getState(), ObservedGameState.class));
-                dto.setMarking(someOtherThan(dto.getMarking(), GameMarking.class));
-            }
-
-            @Override
-            public void clearContent(@Nonnull final ObservationSpecimenDTO dto) {
-                Objects.requireNonNull(dto);
-                dto.clearBusinessFields();
-            }
-
-            @Override
-            public boolean equalContent(
-                    @Nonnull final ObservationSpecimen entity, @Nonnull final ObservationSpecimenDTO dto) {
-
-                Objects.requireNonNull(dto, "dto is null");
-                return dto.isEqualTo(entity, VERSION);
-            }
-        };
+        return new CustomObservationSpecimenOps(species, version);
     }
 
     @Override
@@ -118,4 +62,34 @@ public class ObservationSpecimenServiceTest extends
                 JpaSpecs.equal(ObservationSpecimen_.observation, observation), new JpaSort(ObservationSpecimen_.id));
     }
 
+    private class CustomObservationSpecimenOps extends ObservationMetadata
+            implements SpecimenTestOps<Observation, ObservationSpecimen, ObservationSpecimenDTO> {
+
+        public CustomObservationSpecimenOps(@Nonnull final GameSpecies species,
+                                            @Nonnull final ObservationSpecVersion specVersion) {
+
+            super(model().newObservationBaseFields(species, specVersion),
+                    model().newObservationContextSensitiveFields(species, false, ObservationType.NAKO, specVersion));
+        }
+
+        @Override
+        public ObservationSpecimen createSpecimen(@Nullable final Observation observation) {
+            return model().newObservationSpecimen(observation, getContextSensitiveFields());
+        }
+
+        @Override
+        public ObservationSpecimenDTO createDTO() {
+            return newObservationSpecimenDTO(false);
+        }
+
+        @Override
+        public void mutateContent(@Nonnull final ObservationSpecimenDTO dto) {
+            super.mutateContent(dto, false);
+        }
+
+        @Override
+        public void clearContent(@Nonnull final ObservationSpecimenDTO dto) {
+            Objects.requireNonNull(dto).clearBusinessFields();
+        }
+    }
 }

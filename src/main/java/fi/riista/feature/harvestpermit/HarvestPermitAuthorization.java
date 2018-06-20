@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -28,6 +29,8 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
     public enum Permission {
         LIST_LEADERS,
         UPDATE_ALLOCATIONS,
+        ACCEPT_REJECT_HARVEST,
+        CREATE_REMOVE_HARVEST_REPORT,
         CREATE_REMOVE_MOOSE_HARVEST_REPORT
     }
 
@@ -71,6 +74,16 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
                 Role.CONTACT_PERSON_OF_PERMIT_HOLDER,
                 Role.HUNTING_LEADER_OF_PERMIT_HOLDER);
 
+        allow(Permission.ACCEPT_REJECT_HARVEST,
+                SystemUser.Role.ROLE_ADMIN,
+                SystemUser.Role.ROLE_MODERATOR,
+                Role.CONTACT_PERSON_FOR_PERMIT);
+
+        allow(Permission.CREATE_REMOVE_HARVEST_REPORT,
+                SystemUser.Role.ROLE_ADMIN,
+                SystemUser.Role.ROLE_MODERATOR,
+                Role.CONTACT_PERSON_FOR_PERMIT);
+
         allow(Permission.CREATE_REMOVE_MOOSE_HARVEST_REPORT,
                 SystemUser.Role.ROLE_ADMIN,
                 SystemUser.Role.ROLE_MODERATOR,
@@ -85,7 +98,9 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
                 Role.CONTACT_PERSON_OF_PERMIT_PARTNER,
                 Role.CONTACT_PERSON_OF_PERMIT_HOLDER,
                 Role.HUNTING_LEADER_OF_PERMIT_PARTNER,
-                Role.HUNTING_LEADER_OF_PERMIT_HOLDER);
+                Role.HUNTING_LEADER_OF_PERMIT_HOLDER,
+                Role.PERMIT_RHY_COORDINATOR,
+                Role.PERMIT_RELATED_RHY_COORDINATOR);
     }
 
     @Override
@@ -137,7 +152,7 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
     }
 
     private boolean isContactInPermitPartnerClub(HarvestPermit permit, Person person) {
-        return permit.getPermitPartners() != null && userAuthorizationHelper.hasAnyOfRolesInOrganisations(
+        return !F.isNullOrEmpty(permit.getPermitPartners()) && userAuthorizationHelper.hasAnyOfRolesInOrganisations(
                 permit.getPermitPartners(), person, EnumSet.of(OccupationType.SEURAN_YHDYSHENKILO));
     }
 
@@ -148,7 +163,7 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
     }
 
     private boolean isLeaderInPermitPartnerClubGroup(HarvestPermit permit, Person person) {
-        return permit.getPermitPartners() != null && userAuthorizationHelper.hasAnyOfRolesInOrganisations(
+        return !F.isNullOrEmpty(permit.getPermitPartners()) && userAuthorizationHelper.hasAnyOfRolesInOrganisations(
                 huntingClubGroupRepository.findByPermitAndClubs(permit, permit.getPermitPartners()),
                 person, EnumSet.of(OccupationType.RYHMAN_METSASTYKSENJOHTAJA));
     }
@@ -160,12 +175,12 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
     }
 
     private boolean isMemberOfPermitPartner(HarvestPermit permit, Person person) {
-        return permit.getPermitPartners() != null && userAuthorizationHelper.hasAnyOfRolesInOrganisations(
+        return !F.isNullOrEmpty(permit.getPermitPartners()) && userAuthorizationHelper.hasAnyOfRolesInOrganisations(
                 permit.getPermitPartners(), person,
                 EnumSet.of(OccupationType.SEURAN_JASEN, OccupationType.SEURAN_YHDYSHENKILO));
     }
 
-    private boolean isCoordinator(final Riistanhoitoyhdistys permitRhy, final Set<Harvest> harvests) {
+    private boolean isCoordinator(final Riistanhoitoyhdistys permitRhy, final Collection<Harvest> harvests) {
         final Set<Riistanhoitoyhdistys> rhys = harvests.stream().map(Harvest::getRhy).collect(toSet());
         rhys.add(permitRhy);
         return isCoordinator(rhys);

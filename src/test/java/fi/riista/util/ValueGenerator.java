@@ -5,10 +5,11 @@ import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.validation.FinnishCreditorReferenceValidator;
 import fi.riista.validation.FinnishHuntingPermitNumberValidator;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.iban4j.Iban;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -202,6 +203,10 @@ public final class ValueGenerator {
                 String.format("%s-%s-%s-%s-", year, yearsValid, StringUtils.right(rka, 3), counter);
         final char checksum = FinnishHuntingPermitNumberValidator.calculateChecksum(permitNumberWithoutChecksum);
         return permitNumberWithoutChecksum + checksum;
+    }
+
+    public static Iban iban() {
+        return Iban.random(org.iban4j.CountryCode.FI);
     }
 
     public static CreditorReference creditorReference(@Nonnull final NumberGenerator numberGenerator) {

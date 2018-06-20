@@ -4,22 +4,22 @@ angular.module('app.clubhunting.add', [])
     .config(function ($stateProvider) {
         $stateProvider
             .state('club.hunting.add', {
-                abstract: true,
                 parent: 'club',
-                url: '/hunting/{groupId:[0-9]{1,8}}/{entryId}',
-                template: '<div ui-view></div>',
-                params: {
-                    entryId: {
-                        value: 'new',
-                        squash: false
-                    }
-                },
+                url: '/hunting/entry',
+                templateUrl: 'club/hunting/add/layout.html',
+                controller: 'OpenClubHuntingEntryFormController',
+                controllerAs: '$ctrl',
+                bindToController: true,
+                wideLayout: true,
                 resolve: {
-                    groupId: function ($stateParams) {
-                        return $stateParams.groupId;
+                    selectedItem: function (ClubHuntingActiveEntry) {
+                        return ClubHuntingActiveEntry.reloadSelectedItem();
                     },
-                    huntingDays: function (ClubGroups, clubId, groupId) {
-                        return ClubGroups.huntingDays({id: groupId, clubId: clubId}).$promise;
+                    groupId: function (selectedItem) {
+                        return selectedItem.groupId;
+                    },
+                    huntingDays: function (ClubGroupDiary, groupId) {
+                        return ClubGroupDiary.huntingDays({id: groupId}).$promise;
                     },
                     huntingArea: function (ClubHuntingViewData, ClubGroups, clubId, groupId) {
                         var huntingData = ClubHuntingViewData.get();
@@ -38,100 +38,36 @@ angular.module('app.clubhunting.add', [])
                         });
                     }
                 }
-            })
-            .state('club.hunting.add.harvest', {
-                url: '/harvest?gameSpeciesCode',
-                templateUrl: 'club/hunting/add/layout.html',
-                controller: 'OpenClubHuntingEntryFormController',
-                wideLayout: true,
-                resolve: {
-                    diaryEntry: function ($stateParams, Harvest) {
-                        if ($stateParams.entryId === 'new') {
-                            return Harvest.createTransient({
-                                gameSpeciesCode: $stateParams.gameSpeciesCode
-                            });
-                        } else {
-                            return Harvest.get({id: $stateParams.entryId}).$promise;
-                        }
-                    }
-                }
-            })
-
-            .state('club.hunting.add.observation', {
-                url: '/observation?gameSpeciesCode',
-                templateUrl: 'club/hunting/add/layout.html',
-                controller: 'OpenClubHuntingEntryFormController',
-                wideLayout: true,
-                resolve: {
-                    diaryEntry: function ($stateParams, Observation) {
-                        if ($stateParams.entryId === 'new') {
-                            return Observation.createTransient({
-                                gameSpeciesCode: $stateParams.gameSpeciesCode
-                            });
-                        } else {
-                            return Observation.get({id: $stateParams.entryId}).$promise;
-                        }
-                    }
-                }
             });
     })
 
-    .controller('OpenClubHuntingEntryFormController', function ($scope, $state, $q, offCanvasStack,
-                                                                Helpers, GIS, NotificationService,
-                                                                MapState, MapDefaults, ActiveRoleService,
-                                                                GameDiaryParameters, ClubGroups,
-                                                                DiaryEntrySpecimenFormService,
-                                                                ClubHuntingDayService, ClubHuntingEntryService,
-                                                                ActivePermitsFields, ObservationFieldsMetadata,
-                                                                clubId, groupId, huntingArea, huntingFinished,
-                                                                diaryEntry, huntingDays, memberCandidates) {
-        $scope.diaryEntry = diaryEntry;
-        $scope.mapEvents = MapDefaults.getMapBroadcastEvents(['click']);
-        $scope.mapDefaults = MapDefaults.create();
-        $scope.mapGeoJSON = huntingArea ? {
-            data: huntingArea,
-            onEachFeature: _.noop,
-            style: MapDefaults.getGeoJsonOptions({clickable: false})
-        } : null;
+    .service('ClubHuntingHarvestFields', function ($q, $http) {
+        this.get = function (gameSpeciesCode) {
+            return $http.get('/api/v1/club/group/harvest/fields', {
+                params: {
+                    gameSpeciesCode: gameSpeciesCode
+                }
+            }).then(function (res) {
+                return res.data;
+            });
+        };
+    })
 
-        var mapGeoLocation = MapState.toGeoLocation();
-
-        if (mapGeoLocation) {
-            $scope.geoCenter = mapGeoLocation;
-        } else if (diaryEntry.geoLocation && diaryEntry.geoLocation.latitude) {
-            $scope.geoCenter = diaryEntry.geoLocation;
-        } else {
-            var bbox = _.get(huntingArea, 'features[0].bbox');
-            $scope.geoCenter = GIS.getGeolocationFromGeoJsonBbox(bbox, 10);
-        }
-
-        // This is required to enable form fields normally disabled in gameDiary form
-        $scope.diaryEntry.canEdit = true;
-
-        if (diaryEntry.isObservation()) {
-            diaryEntry.withinMooseHunting = true;
-        }
-
-        // Initialize specimen array to match totalAmount
-        DiaryEntrySpecimenFormService.initAmountAndSpecimens($scope.diaryEntry);
-
-        if (ActiveRoleService.isModerator() && !$scope.diaryEntry.authorInfo) {
-            // Moderator: select primary hunting leader as author if not set
-            diaryEntry.authorInfo = _(memberCandidates)
-                .filter({occupationType: 'RYHMAN_METSASTYKSENJOHTAJA', callOrder: 0})
-                .map('person')
-                .map(_.partialRight(_.pick, ['id', 'hunterNumber']))
-                .first();
-        }
-
-        function openDiaryEntryForm(diaryEntry) {
+    .service('ClubHuntingEntryFormService', function (Helpers, ActiveRoleService, offCanvasStack,
+                                                      GameDiaryParameters, DiaryEntrySpecimenFormService,
+                                                      ObservationFieldsMetadata, ClubHuntingHarvestFields,
+                                                      ClubGroups, ClubHuntingDayService) {
+        this.openDiaryEntryForm = function (item, huntingDays, memberCandidates, huntingFinished) {
+            var diaryEntry = item.diaryEntry;
+            var clubId = item.clubId;
+            var groupId = item.groupId;
             var templateUrl;
             var controller;
             var resolve = {
                 entry: _.constant(diaryEntry),
                 huntingDays: _.constant(huntingDays),
                 memberCandidates: _.constant(memberCandidates),
-                createHuntingDayForEntry: function() {
+                createHuntingDayForEntry: function () {
                     var pointOfTimeAsDate = moment(diaryEntry.pointOfTime, 'YYYY-MM-DD[T]HH:mm');
                     var startDateAsString = Helpers.dateToString(pointOfTimeAsDate, 'YYYY-MM-DD');
 
@@ -146,7 +82,26 @@ angular.module('app.clubhunting.add', [])
                 permitSpeciesAmount: function () {
                     return ClubGroups.permitSpeciesAmount({clubId: clubId, id: groupId}).$promise;
                 }
-        };
+            };
+
+            // This is required to enable form fields normally disabled in game diary form
+            diaryEntry.canEdit = true;
+
+            if (diaryEntry.isObservation()) {
+                diaryEntry.withinMooseHunting = true;
+            }
+
+            // Initialize specimen array to match totalAmount
+            DiaryEntrySpecimenFormService.initAmountAndSpecimens(diaryEntry);
+
+            if (ActiveRoleService.isModerator() && !diaryEntry.authorInfo) {
+                // Moderator: select primary hunting leader as author if not set
+                diaryEntry.authorInfo = _(memberCandidates)
+                    .filter({occupationType: 'RYHMAN_METSASTYKSENJOHTAJA', callOrder: 0})
+                    .map('person')
+                    .map(_.partialRight(_.pick, ['id', 'hunterNumber']))
+                    .first();
+            }
 
             if (diaryEntry.isHarvest()) {
                 templateUrl = 'club/hunting/add/harvest-form.html';
@@ -154,18 +109,7 @@ angular.module('app.clubhunting.add', [])
 
                 angular.extend(resolve, {
                     fields: function () {
-                        if (diaryEntry.gameSpeciesCode && (diaryEntry.permitNumber || diaryEntry.isMoose() || diaryEntry.isPermitBasedDeer())) {
-                            var fieldsQuery = {
-                                date: null,
-                                gameSpeciesCode: diaryEntry.gameSpeciesCode
-                            };
-
-                            return ActivePermitsFields.query(fieldsQuery).$promise.then(function (res) {
-                                return angular.isArray(res) ? _.first(res) : null;
-                            });
-                        }
-
-                        return null;
+                        return ClubHuntingHarvestFields.get(diaryEntry.gameSpeciesCode);
                     }
                 });
             } else if (diaryEntry.isObservation()) {
@@ -181,6 +125,9 @@ angular.module('app.clubhunting.add', [])
                             return ObservationFieldsMetadata.forSpecies({gameSpeciesCode: diaryEntry.gameSpeciesCode}).$promise;
                         }
                         return null;
+                    },
+                    isModerator: function () {
+                        return ActiveRoleService.isModerator();
                     }
                 });
             }
@@ -191,142 +138,161 @@ angular.module('app.clubhunting.add', [])
                 resolve: resolve,
                 largeDialog: false
             }).result;
-        }
-
-        function onSaveSuccessful(diaryEntry) {
-            ClubHuntingEntryService.setSelectedDiaryEntry(clubId, groupId, diaryEntry);
-
-            NotificationService.showDefaultSuccess();
-        }
-
-        openDiaryEntryForm(diaryEntry)
-            .then(function (diaryEntry) {
-                var huntingDayPromise = $q.resolve();
-                if (diaryEntry.isHarvest() && diaryEntry.isPermitBasedDeer()) {
-                    huntingDayPromise = ClubHuntingDayService.getOrCreate(groupId, diaryEntry.pointOfTime)
-                        .then(function (huntingDay) {
-                            diaryEntry.huntingDayId = huntingDay.id;
-                            return diaryEntry;
-                        });
-                }
-                return huntingDayPromise.then(function () {
-                    return diaryEntry.saveOrUpdate().then(
-                        onSaveSuccessful,
-                        NotificationService.showDefaultFailure);
-                });
-
-            }, function (err) {
-                var errorsToIgnore = ['cancel', 'escape', 'delete', 'back'];
-
-                if (!angular.isString(err) || errorsToIgnore.indexOf(err) < 0) {
-                    NotificationService.showDefaultFailure();
-                }
-
-                return $q.reject(err);
-            })
-            .finally(function () {
-                $state.go('club.hunting');
-            });
-    })
-
-    .directive('speciesSelect', function () {
-        return {
-            restrict: 'E',
-            templateUrl: 'club/hunting/add/select-species.html',
-            scope: {
-                diaryParameters: '=',
-                diaryEntry: '=',
-                availableSpecies: '='
-            },
-            controllerAs: 'ctrl',
-            bindToController: true,
-            controller: function () {
-                this.availableSpecies = this.availableSpecies || this.diaryParameters.species;
-                this.getCategoryName = this.diaryParameters.$getCategoryName;
-                this.getGameName = this.diaryParameters.$getGameName;
-                this.isDisabled = function () {
-                    return this.diaryEntry.isHarvest() || !this.diaryEntry.canEdit;
-                };
-            }
         };
     })
 
-    .directive('clubPersonSelect', function (CheckHunterNumber) {
-        return {
-            restrict: 'E',
-            templateUrl: 'club/hunting/add/select-person.html',
-            scope: {
-                memberList: '=',
-                modelValue: '=person'
-            },
-            bindToController: true,
-            controllerAs: '$ctrl',
-            controller: function () {
-                var $ctrl = this;
-                $ctrl.selectedMember = null;
-                $ctrl.searchHunterNumber = null;
-                $ctrl.searchResultNotFound = false;
+    .controller('OpenClubHuntingEntryFormController', function ($q, $state, ClubHuntingActiveEntry,
+                                                                ClubHuntingDayService, ClubHuntingEntryFormService,
+                                                                NotificationService, groupId, huntingArea,
+                                                                huntingDays, huntingFinished, memberCandidates,
+                                                                selectedItem) {
+        var $ctrl = this;
 
-                $ctrl.formatPersonName = function (person) {
-                    return person ? person.lastName + ', ' + person.byName : '';
-                };
+        $ctrl.diaryEntry = selectedItem.diaryEntry;
+        $ctrl.huntingArea = huntingArea;
 
-                $ctrl.isHunterSet = function () {
-                    return isValidPerson($ctrl.modelValue);
-                };
+        ClubHuntingEntryFormService.openDiaryEntryForm(
+            selectedItem, huntingDays, memberCandidates, huntingFinished).then(function (diaryEntry) {
+            var huntingDayPromise = $q.resolve();
 
-                $ctrl.onMemberSelected = function () {
-                    $ctrl.searchHunterNumber = null;
-                    $ctrl.searchResultNotFound = false;
+            if (diaryEntry.isHarvest() && diaryEntry.isPermitBasedDeer()) {
+                huntingDayPromise = ClubHuntingDayService.getOrCreate(groupId, diaryEntry.pointOfTime)
+                    .then(function (huntingDay) {
+                        diaryEntry.huntingDayId = huntingDay.id;
+                        return diaryEntry;
+                    });
+            }
 
-                    if ($ctrl.selectedMember) {
-                        var person = $ctrl.selectedMember.person;
+            return huntingDayPromise.then(function () {
+                return diaryEntry.saveOrUpdate().then(function (savedDiaryEntry) {
+                    selectedItem.diaryEntry = savedDiaryEntry;
+                    NotificationService.showDefaultSuccess();
 
-                        $ctrl.searchHunterNumber = person.hunterNumber;
-                        $ctrl.modelValue = _.pick(person, ['id', 'hunterNumber']);
-                    } else {
-                        $ctrl.modelValue = null;
-                    }
-                };
+                }, function (err) {
+                    return $q.reject(err);
+                });
+            }, function (err) {
+                return $q.reject(err);
+            });
 
-                $ctrl.onHunterNumberSearch = function () {
-                    $ctrl.modelValue = null;
+        }, function (err) {
+            ClubHuntingActiveEntry.clearSelectedItem();
 
-                    if (!$ctrl.searchHunterNumber) {
-                        $ctrl.searchResultNotFound = false;
-                        return;
-                    }
+            var errorsToIgnore = ['cancel', 'escape', 'delete', 'back'];
 
-                    CheckHunterNumber.check($ctrl.searchHunterNumber)
-                        .success(function (person) {
-                            if (isValidPerson(person)) {
-                                $ctrl.searchResultNotFound = false;
-                                $ctrl.modelValue = person;
-                            } else {
-                                $ctrl.searchResultNotFound = true;
-                            }
-                        })
-                        .error(function () {
-                            $ctrl.searchResultNotFound = true;
-                        });
-                };
+            if (!angular.isString(err) || errorsToIgnore.indexOf(err) < 0) {
+                NotificationService.showDefaultFailure();
+            }
 
-                function isValidPerson(person) {
-                    return person && (person.id || person.hunterNumber);
-                }
+            return $q.reject(err);
 
-                if (isValidPerson($ctrl.modelValue)) {
-                    $ctrl.searchHunterNumber = $ctrl.modelValue.hunterNumber;
+        }).finally(function () {
+            $state.go('club.hunting');
+        });
+    })
+
+    .component('speciesSelect', {
+        templateUrl: 'club/hunting/add/select-species.html',
+        bindings: {
+            diaryParameters: '<',
+            diaryEntry: '<',
+            availableSpecies: '<',
+            readOnly: '<'
+        },
+        controller: function () {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.availableSpecies = $ctrl.availableSpecies || $ctrl.diaryParameters.species;
+                $ctrl.getCategoryName = $ctrl.diaryParameters.$getCategoryName;
+                $ctrl.getGameName = $ctrl.diaryParameters.$getGameName;
+                $ctrl.readOnly = !!$ctrl.readOnly;
+            };
+
+            $ctrl.isReadOnly = function () {
+                return !!$ctrl.readOnly || $ctrl.diaryEntry.isHarvest() || !$ctrl.diaryEntry.canEdit;
+            };
+        }
+    })
+
+    .component('clubPersonSelect', {
+        templateUrl: 'club/hunting/add/select-person.html',
+        bindings: {
+            memberList: '<',
+            person: '=',
+            readOnly: '<'
+        },
+        controller: function (PersonSearchService) {
+            var $ctrl = this;
+
+            $ctrl.selectedMember = null;
+            $ctrl.searchHunterNumber = null;
+            $ctrl.searchResultNotFound = false;
+
+            function isValidPerson(person) {
+                return person && (person.id || person.hunterNumber);
+            }
+
+            $ctrl.$onInit = function () {
+                $ctrl.readOnly = !!$ctrl.readOnly;
+
+                if (isValidPerson($ctrl.person)) {
+                    $ctrl.searchHunterNumber = $ctrl.person.hunterNumber;
 
                     $ctrl.selectedMember = _.find($ctrl.memberList, function (m) {
-                        var p1 = $ctrl.modelValue;
+                        var p1 = $ctrl.person;
                         var p2 = m.person;
 
                         return p2.id === p1.id || p2.hunterNumber === p1.hunterNumber;
                     });
                 }
-            }
-        };
+            };
+
+            $ctrl.formatPersonName = function (person) {
+                return person ? person.lastName + ', ' + person.byName : '';
+            };
+
+            $ctrl.isHunterSet = function () {
+                return isValidPerson($ctrl.person);
+            };
+
+            $ctrl.onMemberSelected = function () {
+                $ctrl.searchHunterNumber = null;
+                $ctrl.searchResultNotFound = false;
+
+                if ($ctrl.selectedMember) {
+                    var person = $ctrl.selectedMember.person;
+
+                    $ctrl.searchHunterNumber = person.hunterNumber;
+                    $ctrl.person = _.pick(person, ['id', 'hunterNumber']);
+                } else {
+                    $ctrl.person = null;
+                }
+            };
+
+            $ctrl.onHunterNumberSearch = function () {
+                $ctrl.person = null;
+
+                if (!$ctrl.searchHunterNumber) {
+                    $ctrl.searchResultNotFound = false;
+                    return;
+                }
+
+                PersonSearchService.findByHunterNumber($ctrl.searchHunterNumber)
+                    .then(function (response) {
+                        var person = response.data;
+
+                        if (isValidPerson(person)) {
+                            $ctrl.searchResultNotFound = false;
+                            $ctrl.person = person;
+                        } else {
+                            $ctrl.searchResultNotFound = true;
+                        }
+                    }, function () {
+                        $ctrl.searchResultNotFound = true;
+                    });
+            };
+        }
     })
 
     .directive('timeInsideHuntingDay', function ($parse, Helpers) {
@@ -373,136 +339,136 @@ angular.module('app.clubhunting.add', [])
         };
     })
 
-    .directive('nonMooseDateTimeSelect', function (Helpers) {
-        return {
-            restrict: 'E',
-            require: '^form',
-            templateUrl: 'club/hunting/add/select-date-and-time.html',
-            scope: {diaryEntry: '=', speciesAmount: '='},
-            link: function ($scope, element, attrs, formController) {
-                $scope.parentForm = formController;
-            },
-            controller: function ($scope, HarvestPermitSpeciesAmountService) {
-                $scope.viewState = {
-                    nonMooseDate: null,
-                    time: null
-                };
+    .component('nonMooseDateTimeSelect', {
+        require: {
+            parentForm: '^form'
+        },
+        bindings: {
+            diaryEntry: '<',
+            speciesAmount: '<'
+        },
+        templateUrl: 'club/hunting/add/select-date-and-time.html',
+        controller: function ($scope, HarvestPermitSpeciesAmountService, Helpers) {
+            var $ctrl = this;
+            $ctrl.nonMooseDate = null;
+            $ctrl.time = null;
 
-                if ($scope.diaryEntry.pointOfTime) {
-                    var t = moment($scope.diaryEntry.pointOfTime, 'YYYY-MM-DD[T]HH:mm');
-                    $scope.viewState.time = Helpers.dateToString(t, 'HH:mm');
-                    $scope.viewState.nonMooseDate = Helpers.dateToString(t, 'YYYY-MM-DD');
+            $ctrl.$onInit = function () {
+                if ($ctrl.diaryEntry.pointOfTime) {
+                    var t = moment($ctrl.diaryEntry.pointOfTime, 'YYYY-MM-DD[T]HH:mm');
+                    $ctrl.time = Helpers.dateToString(t, 'HH:mm');
+                    $ctrl.nonMooseDate = Helpers.dateToString(t, 'YYYY-MM-DD');
                 }
+            };
 
-                $scope.isPermitValidOnDate = function () {
-                    var isValid = !$scope.viewState.nonMooseDate || HarvestPermitSpeciesAmountService.isValidDateForSpeciesAmount(
-                            $scope.speciesAmount, $scope.viewState.nonMooseDate);
-                    $scope.parentForm.$setValidity('nonMooseDate', isValid);
-                    return isValid;
-                };
+            $ctrl.isPermitValidOnDate = function () {
+                var isValid = !$ctrl.nonMooseDate || HarvestPermitSpeciesAmountService.isValidDateForSpeciesAmount(
+                        $ctrl.speciesAmount, $ctrl.nonMooseDate);
+                $ctrl.parentForm.$setValidity('nonMooseDate', isValid);
+                return isValid;
+            };
 
+            $scope.$watchGroup(['$ctrl.nonMooseDate', '$ctrl.time'], function (newValues) {
+                var nonMooseDate = newValues[0];
+                var time = newValues[1];
 
-                $scope.$watchGroup(['viewState.nonMooseDate', 'viewState.time'], function (newValues) {
-                    var nonMooseDate = newValues[0];
-                    var time = newValues[1];
-                    if (nonMooseDate && time) {
-                        $scope.diaryEntry.setDateAndTime(nonMooseDate, time);
-                    }
-                });
-            }
-        };
+                if (nonMooseDate && time) {
+                    $ctrl.diaryEntry.setDateAndTime(nonMooseDate, time);
+                }
+            });
+        }
     })
 
-    .directive('huntingDayTimeSelect', function (Helpers) {
-        return {
-            restrict: 'E',
-            require: '^form',
-            templateUrl: 'club/hunting/add/select-day-and-time.html',
-            scope: {
-                huntingDays: '=',
-                diaryEntry: '=',
-                huntingFinished: '=',
-                create: '&'
-            },
-            link: function ($scope, element, attrs, formController) {
-                $scope.parentForm = formController;
-            },
-            controller: function ($scope) {
-                $scope.viewState = {
-                    huntingDay: null,
-                    time: null,
-                    nextDayHunting: false,
-                    huntingFinished: $scope.huntingFinished
-                };
+    .component('huntingDayTimeSelect', {
+        require: {
+            parentForm: '^form'
+        },
+        bindings: {
+            huntingDays: '<',
+            diaryEntry: '<',
+            huntingFinished: '<',
+            create: '&',
+            readOnly: '<'
+        },
+        templateUrl: 'club/hunting/add/select-day-and-time.html',
+        controller: function ($scope, Helpers) {
+            var $ctrl = this;
 
-                function parseDay(str) {
-                    return moment(str, 'YYYY-MM-DD');
-                }
+            $ctrl.huntingDay = null;
+            $ctrl.time = null;
+            $ctrl.nextDayHunting = false;
 
-                if ($scope.diaryEntry.pointOfTime) {
-                    var t = moment($scope.diaryEntry.pointOfTime, 'YYYY-MM-DD[T]HH:mm');
+            function parseDay(str) {
+                return moment(str, 'YYYY-MM-DD');
+            }
 
-                    $scope.viewState.time = Helpers.dateToString(t, 'HH:mm');
+            $ctrl.$onInit = function () {
+                $ctrl.readOnly = !!$ctrl.readOnly;
+
+                if ($ctrl.diaryEntry.pointOfTime) {
+                    var t = moment($ctrl.diaryEntry.pointOfTime, 'YYYY-MM-DD[T]HH:mm');
+
+                    $ctrl.time = Helpers.dateToString(t, 'HH:mm');
                     var entryDay = Helpers.dateToString(t, 'YYYY-MM-DD');
 
-                    if ($scope.diaryEntry.huntingDayId) {
-                        $scope.viewState.huntingDay = _.find($scope.huntingDays, function (d) {
-                            return d.id === $scope.diaryEntry.huntingDayId;
+                    if ($ctrl.diaryEntry.huntingDayId) {
+                        $ctrl.huntingDay = _.find($ctrl.huntingDays, function (d) {
+                            return d.id === $ctrl.diaryEntry.huntingDayId;
                         });
 
-                        if ($scope.viewState.huntingDay && entryDay === $scope.viewState.huntingDay.endDate) {
-                            $scope.viewState.nextDayHunting = true;
+                        if ($ctrl.huntingDay && entryDay === $ctrl.huntingDay.endDate) {
+                            $ctrl.nextDayHunting = true;
                         }
                     } else {
-                        $scope.viewState.huntingDay = _.find($scope.huntingDays, function (d) {
+                        $ctrl.huntingDay = _.find($ctrl.huntingDays, function (d) {
                             return d.startDate === entryDay;
                         });
                     }
                 }
+            };
 
-                $scope.getHuntingDayName = function (huntingDay) {
-                    var day = parseDay(huntingDay.startDate);
-                    var suffix = (huntingDay.startDate === huntingDay.endDate) ? '' : ' ( +1 )';
-                    return Helpers.dateToString(day, 'D.M.YYYY') + suffix;
-                };
+            $ctrl.getHuntingDayName = function (huntingDay) {
+                var day = parseDay(huntingDay.startDate);
+                var suffix = (huntingDay.startDate === huntingDay.endDate) ? '' : ' ( +1 )';
+                return Helpers.dateToString(day, 'D.M.YYYY') + suffix;
+            };
 
-                $scope.addHuntingDay = function () {
-                    $scope.create().then(function (huntingDay) {
-                        $scope.huntingDays.push(huntingDay);
-                        $scope.viewState.huntingDay = huntingDay;
-                    });
-                };
-
-                $scope.showNextDayHunting = function () {
-                    var h = $scope.viewState.huntingDay;
-                    return h && h.startDate && h.startDate !== h.endDate;
-                };
-
-                $scope.$watchGroup(['viewState.huntingDay', 'viewState.time', 'viewState.nextDayHunting'], function (newValues) {
-                    var huntingDay = newValues[0];
-                    var time = newValues[1];
-                    var nextDayHunting = newValues[2];
-
-                    if (huntingDay && time) {
-                        $scope.diaryEntry.huntingDayId = huntingDay.id;
-
-                        if (huntingDay.startDate !== huntingDay.endDate && nextDayHunting) {
-                            var nextDay = parseDay(huntingDay.startDate).add(1, 'day');
-                            $scope.diaryEntry.setDateAndTime(nextDay, time);
-                        } else {
-                            $scope.diaryEntry.setDateAndTime(huntingDay.startDate, time);
-                        }
-                    } else {
-                        $scope.diaryEntry.huntingDayId = null;
-                        $scope.diaryEntry.pointOfTime = null;
-                    }
+            $ctrl.addHuntingDay = function () {
+                $ctrl.create().then(function (huntingDay) {
+                    $ctrl.huntingDays.push(huntingDay);
+                    $ctrl.huntingDay = huntingDay;
                 });
-            }
-        };
+            };
+
+            $ctrl.showNextDayHunting = function () {
+                var h = $ctrl.huntingDay;
+                return h && h.startDate && h.startDate !== h.endDate;
+            };
+
+            $scope.$watchGroup(['$ctrl.huntingDay', '$ctrl.time', '$ctrl.nextDayHunting'], function (newValues) {
+                var huntingDay = newValues[0];
+                var time = newValues[1];
+                var nextDayHunting = newValues[2];
+
+                if (huntingDay && time) {
+                    $ctrl.diaryEntry.huntingDayId = huntingDay.id;
+
+                    if (huntingDay.startDate !== huntingDay.endDate && nextDayHunting) {
+                        var nextDay = parseDay(huntingDay.startDate).add(1, 'day');
+                        $ctrl.diaryEntry.setDateAndTime(nextDay, time);
+                    } else {
+                        $ctrl.diaryEntry.setDateAndTime(huntingDay.startDate, time);
+                    }
+                } else {
+                    $ctrl.diaryEntry.huntingDayId = null;
+                    $ctrl.diaryEntry.pointOfTime = null;
+                }
+            });
+        }
     })
 
     .controller('ClubHarvestFormController', function ($scope, $filter, Helpers, ActiveRoleService,
-                                                       Harvest, ClubHuntingEntryService,
+                                                       Harvest, HarvestFieldsService,
                                                        entry, parameters, fields, huntingDays,
                                                        memberCandidates, createHuntingDayForEntry,
                                                        huntingFinished, permitSpeciesAmount) {
@@ -535,6 +501,7 @@ angular.module('app.clubhunting.add', [])
         };
 
         $scope.save = function () {
+            HarvestFieldsService.removeForbiddenFields(fields, $scope.entry);
             $scope.$close($scope.entry);
         };
 
@@ -574,20 +541,19 @@ angular.module('app.clubhunting.add', [])
 
         $scope.isMeasuredWeightRequired = function () {
             return $scope.mooseGroupSelected &&
-                   isEstimatedAndMeasuredWeightVisible() &&
-                   !_.get($scope.entry, 'specimens[0].weightEstimated', false);
+                isEstimatedAndMeasuredWeightVisible() &&
+                !_.get($scope.entry, 'specimens[0].weightEstimated', false);
         };
     })
 
-    .controller('ClubObservationFormController', function ($scope, DiaryEntryService, DiaryEntrySpecimenFormService,
-                                                           ActiveRoleService, Helpers,
-                                                           DiaryEntryType, ObservationFieldsMetadata,
-                                                           fieldMetadataForObservationSpecies, availableSpecies, entry,
-                                                           huntingDays, memberCandidates, parameters,
-                                                           createHuntingDayForEntry,
-                                                           huntingFinished) {
+    .controller('ClubObservationFormController', function ($scope, MapUtil,
+                                                           DiaryEntrySpecimenFormService,
+                                                           ObservationFieldsMetadata, availableSpecies,
+                                                           fieldMetadataForObservationSpecies,
+                                                           createHuntingDayForEntry, entry, huntingDays,
+                                                           huntingFinished, isModerator, memberCandidates, parameters) {
         $scope.entry = entry;
-        $scope.isModerator = ActiveRoleService.isModerator();
+        $scope.isModerator = isModerator;
         $scope.parameters = parameters;
         $scope.availableSpecies = availableSpecies;
         $scope.huntingDays = huntingDays;
@@ -595,10 +561,13 @@ angular.module('app.clubhunting.add', [])
         $scope.maxSpecimenCount = DiaryEntrySpecimenFormService.getMaxSpecimenCountForObservation();
         $scope.fieldMetadata = fieldMetadataForObservationSpecies;
         $scope.fieldRequirements = null;
-        $scope.huntingFinished = huntingFinished;
-        $scope.showAccept = entry.id && !entry.huntingDayId && !$scope.huntingFinished;
-        $scope.showSave = !$scope.huntingFinished && (!entry.id || entry.huntingDayId);
         $scope.createHuntingDayForObservation = createHuntingDayForEntry;
+        $scope.huntingFinished = huntingFinished;
+        $scope.readOnly = !!entry.updateableOnlyByCarnivoreAuthority;
+
+        var isAlreadyExistingAndNotYetLinked = entry.id && !entry.huntingDayId;
+        $scope.showAccept = !huntingFinished && isAlreadyExistingAndNotYetLinked;
+        $scope.showSave = !huntingFinished && !isAlreadyExistingAndNotYetLinked;
 
         $scope.getAvailableObservationTypes = function () {
             return $scope.fieldMetadata ? $scope.fieldMetadata.getAvailableObservationTypes(true) : [];
@@ -609,15 +578,23 @@ angular.module('app.clubhunting.add', [])
         };
 
         $scope.getAvailableGameAges = function () {
-            return $scope.fieldRequirements ? $scope.fieldRequirements.getAvailableGameAges() : [];
+            return _.result($scope.fieldRequirements, 'getAvailableGameAges', []);
         };
 
         $scope.getAvailableGameStates = function () {
-            return $scope.fieldRequirements ? $scope.fieldRequirements.getAvailableGameStates() : [];
+            return _.result($scope.fieldRequirements, 'getAvailableGameStates', []);
         };
 
         $scope.getAvailableGameMarkings = function () {
-            return $scope.fieldRequirements ? $scope.fieldRequirements.getAvailableGameMarkings() : [];
+            return _.result($scope.fieldRequirements, 'getAvailableGameMarkings', []);
+        };
+
+        $scope.getWidthOfPawOptions = function () {
+            return _.result($scope.fieldRequirements, 'getWidthOfPawOptions', []);
+        };
+
+        $scope.getLengthOfPawOptions = function () {
+            return _.result($scope.fieldRequirements, 'getLengthOfPawOptions', []);
         };
 
         $scope.isFieldRequired = function (fieldName) {
@@ -636,14 +613,10 @@ angular.module('app.clubhunting.add', [])
             return _.isObject(person) && (person.id || person.hunterNumber);
         }
 
-        function isValidGeoLocation(geoLocation) {
-            return _.isObject(geoLocation) && _.isFinite(geoLocation.latitude) && _.isFinite(geoLocation.longitude);
-        }
-
         $scope.isValid = function () {
             return entry.gameSpeciesCode &&
                 entry.observationType &&
-                isValidGeoLocation(entry.geoLocation) &&
+                MapUtil.isValidGeoLocation(entry.geoLocation) &&
                 isValidPerson(entry.actorInfo) &&
                 (isValidPerson(entry.authorInfo) || !$scope.isModerator) &&
                 entry.huntingDayId &&
@@ -660,7 +633,7 @@ angular.module('app.clubhunting.add', [])
                 }
             });
 
-            DiaryEntryService.editSpecimen($scope.entry, parameters, availableFields, $scope.fieldRequirements);
+            DiaryEntrySpecimenFormService.editSpecimen($scope.entry, parameters, availableFields, $scope.fieldRequirements);
         };
 
         $scope.save = function () {
@@ -681,7 +654,7 @@ angular.module('app.clubhunting.add', [])
         };
 
         $scope.isSpecimenEditDisabled = function () {
-            return $scope.entry.totalSpecimenAmount > DiaryEntrySpecimenFormService.MAX_VISIBLE_AMOUNT;
+            return $scope.readOnly || $scope.entry.totalSpecimenAmount > DiaryEntrySpecimenFormService.MAX_VISIBLE_AMOUNT;
         };
 
         $scope.$watch('entry.gameSpeciesCode', function (newValue, oldValue) {

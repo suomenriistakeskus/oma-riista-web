@@ -10,7 +10,6 @@ import fi.riista.feature.gamediary.observation.specimen.ObservedGameAge;
 import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.CriteriaUtils;
-
 import org.hibernate.annotations.OptimisticLock;
 import org.joda.time.DateTime;
 
@@ -29,13 +28,15 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import static fi.riista.feature.common.entity.Required.NO;
+import static fi.riista.feature.common.entity.Required.VOLUNTARY;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -53,7 +54,7 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     private GameSpecies species;
 
     /**
-     * Ilmaisee, onko havaintokirjaus tehty hirvenmetsästyksen yhteydessä
+     * Ilmaisee, onko havaintokonteksti sidottu hirvenmetsästykseen.
      */
     @Column(nullable = false)
     private boolean withinMooseHunting;
@@ -74,12 +75,44 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     private DateTime modificationTime;
 
     /**
-     * Eläinyksilöiden kappalemäärä
+     * Eläinyksilöiden kappalemäärä (havaintokirjaus)
      */
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Required amount = Required.NO;
+    private DynamicObservationFieldPresence amount = DynamicObservationFieldPresence.NO;
+
+    /**
+     * Petoyhdyshenkilön maastossa varmentama (havaintokirjaus)
+     */
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private DynamicObservationFieldPresence verifiedByCarnivoreAuthority = DynamicObservationFieldPresence.NO;
+
+    /**
+     * Petohavainnontekijän nimi (havaintokirjaus)
+     */
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private DynamicObservationFieldPresence observerName = DynamicObservationFieldPresence.NO;
+
+    /**
+     * Petohavainnontekijän puhelinnumero (havaintokirjaus)
+     */
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private DynamicObservationFieldPresence observerPhoneNumber = DynamicObservationFieldPresence.NO;
+
+    /**
+     * Lisätieto suurpedoista Lukelle (havaintokirjaus)
+     */
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private DynamicObservationFieldPresence officialAdditionalInfo = DynamicObservationFieldPresence.NO;
 
     /**
      * Eläinyksilön ikäluokka
@@ -87,7 +120,7 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Required age = Required.NO;
+    private Required age = NO;
 
     /**
      * Ilmaisee, onko "1-2-vuotias" käytössä
@@ -101,110 +134,129 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Required gender = Required.NO;
+    private Required gender = NO;
 
     /**
-     * Eläimen tila: loukkaantunut
+     * Eläinyksilön tila: loukkaantunut
      */
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Required wounded = Required.NO;
+    private Required wounded = NO;
 
     /**
-     * Eläimen tila: kuollut
+     * Eläinyksilön tila: kuollut
      */
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Required dead = Required.NO;
+    private Required dead = NO;
 
     /**
-     * Eläimen tila: haaskalla
+     * Eläinyksilön tila: haaskalla
      */
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Required onCarcass = Required.NO;
+    private Required onCarcass = NO;
 
     /**
-     * Eläimen merkintä: panta / radiolähetin
+     * Eläinyksilön merkintä: panta / radiolähetin
      */
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "collar_or_radio", nullable = false)
-    private Required collarOrRadioTransmitter = Required.NO;
+    private Required collarOrRadioTransmitter = NO;
 
     /**
-     * Eläimen merkintä: jalkarengas / siipimerkki
+     * Eläinyksilön merkintä: jalkarengas / siipimerkki
      */
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "legring_or_wingmark", nullable = false)
-    private Required legRingOrWingMark = Required.NO;
+    private Required legRingOrWingMark = NO;
 
     /**
-     * Eläimen merkintä: korvamerkki
+     * Eläinyksilön merkintä: korvamerkki
      */
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "earmark", nullable = false)
-    private Required earMark = Required.NO;
+    private Required earMark = NO;
+
+    /**
+     * Eläinyksilön etutassun leveys
+     */
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private DynamicObservationFieldPresence widthOfPaw = DynamicObservationFieldPresence.NO;
+
+    /**
+     * Eläinyksilön etutassun pituus
+     */
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private DynamicObservationFieldPresence lengthOfPaw = DynamicObservationFieldPresence.NO;
 
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Required mooselikeMaleAmount = Required.NO;
+    private Required mooselikeMaleAmount = NO;
 
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Required mooselikeFemaleAmount = Required.NO;
+    private Required mooselikeFemaleAmount = NO;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private Required mooselikeCalfAmount = NO;
 
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "mooselike_female_1_calf_amount", nullable = false)
-    private Required mooselikeFemale1CalfAmount = Required.NO;
+    private Required mooselikeFemale1CalfAmount = NO;
 
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "mooselike_female_2_calfs_amount", nullable = false)
-    private Required mooselikeFemale2CalfsAmount = Required.NO;
+    private Required mooselikeFemale2CalfsAmount = NO;
 
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "mooselike_female_3_calfs_amount", nullable = false)
-    private Required mooselikeFemale3CalfsAmount = Required.NO;
+    private Required mooselikeFemale3CalfsAmount = NO;
 
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "mooselike_female_4_calfs_amount", nullable = false)
-    private Required mooselikeFemale4CalfsAmount = Required.NO;
+    private Required mooselikeFemale4CalfsAmount = NO;
 
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Required mooselikeUnknownSpecimenAmount = Required.NO;
+    private Required mooselikeUnknownSpecimenAmount = NO;
 
-    ObservationContextSensitiveFields() {
-        // For Hibernate
+    // Public default constructor needed for tests.
+    public ObservationContextSensitiveFields() {
     }
 
-    public ObservationContextSensitiveFields(
-            final GameSpecies species,
-            final boolean withinMooseHunting,
-            final ObservationType observationType,
-            final int metadataVersion) {
+    public ObservationContextSensitiveFields(final GameSpecies species,
+                                             final boolean withinMooseHunting,
+                                             final ObservationType observationType,
+                                             final int metadataVersion) {
 
         this(species, withinMooseHunting, observationType, metadataVersion, DateUtil.now());
     }
 
-    public ObservationContextSensitiveFields(
-            final GameSpecies species,
-            final boolean withinMooseHunting,
-            final ObservationType observationType,
-            final int metadataVersion,
-            final DateTime creationTime) {
+    public ObservationContextSensitiveFields(final GameSpecies species,
+                                             final boolean withinMooseHunting,
+                                             final ObservationType observationType,
+                                             final int metadataVersion,
+                                             final DateTime creationTime) {
 
         setSpecies(species);
         this.withinMooseHunting = withinMooseHunting;
@@ -216,11 +268,11 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
 
     @AssertTrue
     public boolean isExtendedAgeRangeValidForAgeRequirement() {
-        return age != Required.NO || !extendedAgeRange;
+        return age != NO || !extendedAgeRange;
     }
 
     public EnumSet<ObservedGameAge> getAllowedGameAges() {
-        if (!age.isAllowedField()) {
+        if (age.nullValueRequired()) {
             return EnumSet.noneOf(ObservedGameAge.class);
         }
 
@@ -232,13 +284,13 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     public EnumSet<ObservedGameState> getAllowedGameStates() {
         final List<ObservedGameState> states = new ArrayList<>(5);
 
-        if (wounded.isAllowedField()) {
+        if (wounded.isNonNullValueLegal()) {
             states.add(ObservedGameState.WOUNDED);
         }
-        if (dead.isAllowedField()) {
+        if (dead.isNonNullValueLegal()) {
             states.add(ObservedGameState.DEAD);
         }
-        if (onCarcass.isAllowedField()) {
+        if (onCarcass.isNonNullValueLegal()) {
             states.add(ObservedGameState.CARCASS);
         }
 
@@ -253,13 +305,13 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     public EnumSet<GameMarking> getAllowedGameMarkings() {
         final List<GameMarking> markings = new ArrayList<>(4);
 
-        if (collarOrRadioTransmitter.isAllowedField()) {
+        if (collarOrRadioTransmitter.isNonNullValueLegal()) {
             markings.add(GameMarking.COLLAR_OR_RADIO_TRANSMITTER);
         }
-        if (legRingOrWingMark.isAllowedField()) {
+        if (legRingOrWingMark.isNonNullValueLegal()) {
             markings.add(GameMarking.LEG_RING_OR_WING_TAG);
         }
-        if (earMark.isAllowedField()) {
+        if (earMark.isNonNullValueLegal()) {
             markings.add(GameMarking.EARMARK);
         }
 
@@ -274,21 +326,21 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     public Map<ObservedGameState, Required> getValidGameStateRequirements() {
         final Map<ObservedGameState, Required> states = new HashMap<>();
 
-        if (wounded.isAllowedField()) {
+        if (wounded.isNonNullValueLegal()) {
             states.put(ObservedGameState.WOUNDED, wounded);
         }
 
-        if (onCarcass.isAllowedField()) {
+        if (onCarcass.isNonNullValueLegal()) {
             states.put(ObservedGameState.CARCASS, onCarcass);
         }
 
-        if (dead.isAllowedField()) {
+        if (dead.isNonNullValueLegal()) {
             states.put(ObservedGameState.DEAD, dead);
         }
 
         // HEALTHY and ILL are valid only if at least one of WOUNDED, CARCASS or DEAD is voluntary/required.
         if (!states.isEmpty()) {
-            Stream.of(ObservedGameState.HEALTHY, ObservedGameState.ILL).forEach(v -> states.put(v, Required.VOLUNTARY));
+            Stream.of(ObservedGameState.HEALTHY, ObservedGameState.ILL).forEach(v -> states.put(v, VOLUNTARY));
         }
 
         return states;
@@ -297,24 +349,56 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     public Map<GameMarking, Required> getValidGameMarkingRequirements() {
         final Map<GameMarking, Required> markings = new HashMap<>();
 
-        if (collarOrRadioTransmitter.isAllowedField()) {
+        if (collarOrRadioTransmitter.isNonNullValueLegal()) {
             markings.put(GameMarking.COLLAR_OR_RADIO_TRANSMITTER, collarOrRadioTransmitter);
         }
 
-        if (legRingOrWingMark.isAllowedField()) {
+        if (legRingOrWingMark.isNonNullValueLegal()) {
             markings.put(GameMarking.LEG_RING_OR_WING_TAG, legRingOrWingMark);
         }
 
-        if (earMark.isAllowedField()) {
+        if (earMark.isNonNullValueLegal()) {
             markings.put(GameMarking.EARMARK, earMark);
         }
 
         // NOT_MARKED is valid only if at least one of the previous marking methods is voluntary/required.
         if (!markings.isEmpty()) {
-            markings.put(GameMarking.NOT_MARKED, Required.VOLUNTARY);
+            markings.put(GameMarking.NOT_MARKED, VOLUNTARY);
         }
 
         return markings;
+    }
+
+    public void copyRequirementsTo(final ObservationContextSensitiveFields that) {
+        that.amount = this.amount;
+
+        that.age = this.age;
+        that.extendedAgeRange = this.extendedAgeRange;
+        that.gender = this.gender;
+
+        that.onCarcass = this.onCarcass;
+        that.wounded = this.wounded;
+        that.dead = this.dead;
+
+        that.earMark = this.earMark;
+        that.collarOrRadioTransmitter = this.collarOrRadioTransmitter;
+        that.legRingOrWingMark = this.legRingOrWingMark;
+
+        that.mooselikeMaleAmount = this.mooselikeMaleAmount;
+        that.mooselikeFemaleAmount = this.mooselikeFemaleAmount;
+        that.mooselikeCalfAmount = this.mooselikeCalfAmount;
+        that.mooselikeFemale1CalfAmount = this.mooselikeFemale1CalfAmount;
+        that.mooselikeFemale2CalfsAmount = this.mooselikeFemale2CalfsAmount;
+        that.mooselikeFemale3CalfsAmount = this.mooselikeFemale3CalfsAmount;
+        that.mooselikeFemale4CalfsAmount = this.mooselikeFemale4CalfsAmount;
+        that.mooselikeUnknownSpecimenAmount = this.mooselikeUnknownSpecimenAmount;
+
+        that.verifiedByCarnivoreAuthority = this.verifiedByCarnivoreAuthority;
+        that.observerName = this.observerName;
+        that.observerPhoneNumber = this.observerPhoneNumber;
+        that.officialAdditionalInfo = this.officialAdditionalInfo;
+        that.widthOfPaw = this.widthOfPaw;
+        that.lengthOfPaw = this.lengthOfPaw;
     }
 
     // Accessors -->
@@ -337,7 +421,7 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
         return metadataVersion;
     }
 
-    public void setMetadataVersion(int metadataVersion) {
+    public void setMetadataVersion(final int metadataVersion) {
         this.metadataVersion = metadataVersion;
     }
 
@@ -355,7 +439,7 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
         return withinMooseHunting;
     }
 
-    public void setWithinMooseHunting(boolean withinMooseHunting) {
+    public void setWithinMooseHunting(final boolean withinMooseHunting) {
         this.withinMooseHunting = withinMooseHunting;
     }
 
@@ -375,16 +459,48 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
         return modificationTime;
     }
 
-    public void setModificationTime(DateTime modificationTime) {
+    public void setModificationTime(final DateTime modificationTime) {
         this.modificationTime = modificationTime;
     }
 
-    public Required getAmount() {
+    public DynamicObservationFieldPresence getAmount() {
         return amount;
     }
 
-    public void setAmount(final Required amount) {
+    public void setAmount(final DynamicObservationFieldPresence amount) {
         this.amount = amount;
+    }
+
+    public DynamicObservationFieldPresence getVerifiedByCarnivoreAuthority() {
+        return verifiedByCarnivoreAuthority;
+    }
+
+    public void setVerifiedByCarnivoreAuthority(final DynamicObservationFieldPresence verifiedByCarnivoreAuthority) {
+        this.verifiedByCarnivoreAuthority = verifiedByCarnivoreAuthority;
+    }
+
+    public DynamicObservationFieldPresence getObserverName() {
+        return observerName;
+    }
+
+    public void setObserverName(final DynamicObservationFieldPresence observerName) {
+        this.observerName = observerName;
+    }
+
+    public DynamicObservationFieldPresence getObserverPhoneNumber() {
+        return observerPhoneNumber;
+    }
+
+    public void setObserverPhoneNumber(final DynamicObservationFieldPresence observerPhoneNumber) {
+        this.observerPhoneNumber = observerPhoneNumber;
+    }
+
+    public DynamicObservationFieldPresence getOfficialAdditionalInfo() {
+        return officialAdditionalInfo;
+    }
+
+    public void setOfficialAdditionalInfo(final DynamicObservationFieldPresence officialAdditionalInfo) {
+        this.officialAdditionalInfo = officialAdditionalInfo;
     }
 
     public Required getAge() {
@@ -399,7 +515,7 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
         return extendedAgeRange;
     }
 
-    public void setExtendedAgeRange(boolean extendedAgeRange) {
+    public void setExtendedAgeRange(final boolean extendedAgeRange) {
         this.extendedAgeRange = extendedAgeRange;
     }
 
@@ -459,6 +575,22 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
         this.earMark = earMark;
     }
 
+    public DynamicObservationFieldPresence getWidthOfPaw() {
+        return widthOfPaw;
+    }
+
+    public void setWidthOfPaw(final DynamicObservationFieldPresence widthOfPaw) {
+        this.widthOfPaw = widthOfPaw;
+    }
+
+    public DynamicObservationFieldPresence getLengthOfPaw() {
+        return lengthOfPaw;
+    }
+
+    public void setLengthOfPaw(final DynamicObservationFieldPresence lengthOfPaw) {
+        this.lengthOfPaw = lengthOfPaw;
+    }
+
     public Required getMooselikeMaleAmount() {
         return mooselikeMaleAmount;
     }
@@ -473,6 +605,14 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
 
     public void setMooselikeFemaleAmount(final Required mooselikeFemaleAmount) {
         this.mooselikeFemaleAmount = mooselikeFemaleAmount;
+    }
+
+    public Required getMooselikeCalfAmount() {
+        return mooselikeCalfAmount;
+    }
+
+    public void setMooselikeCalfAmount(final Required mooselikeCalfAmount) {
+        this.mooselikeCalfAmount = mooselikeCalfAmount;
     }
 
     public Required getMooselikeFemale1CalfAmount() {

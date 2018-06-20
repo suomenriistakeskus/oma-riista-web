@@ -1,6 +1,5 @@
 package fi.riista.integration.luke;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -18,7 +17,8 @@ import fi.riista.integration.luke_export.mooselikeharvests.LEM_Amount;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Club;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Permit;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Person;
-import fi.riista.util.Asserts;
+import fi.riista.test.Asserts;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.F;
 import org.joda.time.LocalDate;
 import org.junit.Before;
@@ -54,7 +54,7 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
     public void setUp() {
         apiUser = createNewApiUser(SystemUserPrivilege.EXPORT_LUKE_MOOSE);
         mooseSpecies = model().newGameSpeciesMoose();
-        otherSpecies = model().newGameSpecies();
+        otherSpecies = model().newDeerSubjectToClubHunting();
         rka = model().newRiistakeskuksenAlue();
 
         createPermitsNotExported();
@@ -70,7 +70,7 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
         otherPermit.setPermitHolder(club);
         otherPermit.getPermitPartners().add(club);
 
-        HuntingClubGroup group = model().newHuntingClubGroup(club);
+        HuntingClubGroup group = model().newHuntingClubGroup(club, otherSpecies);
         group.updateHarvestPermit(otherPermit);
     }
 
@@ -95,12 +95,11 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
         // Only permit exists, no partners etc. This should not happen in real life
         HarvestPermit permit = createMoosePermit();
 
-        persistInNewTransaction();
-        authenticate(apiUser);
-
-        List<LEM_Permit> exportDtos = feature.exportMoose(YEAR).getPermits();
-        assertEquals(1, exportDtos.size());
-        runInTransaction(() -> assertPermit(reload(permit), exportDtos));
+        onSavedAndAuthenticated(apiUser, () -> {
+            List<LEM_Permit> exportDtos = feature.exportMoose(YEAR).getPermits();
+            assertEquals(1, exportDtos.size());
+            runInTransaction(() -> assertPermit(reload(permit), exportDtos));
+        });
     }
 
     private HarvestPermit reload(HarvestPermit permit) {

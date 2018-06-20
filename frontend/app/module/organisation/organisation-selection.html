@@ -1,5 +1,5 @@
 <form>
-    <div class="form-group" ng-if="$ctrl.showRk">
+    <div class="form-group" ng-if="$ctrl.showRk || $ctrl.showRka">
         <select class="form-control" name="organisationSelect" id="organisationSelect"
                 ng-model="$ctrl.selectedOrganisationType"
                 ng-change="$ctrl.updateModel()"

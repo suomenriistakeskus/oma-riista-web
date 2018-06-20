@@ -9,9 +9,7 @@ import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.QGameSpecies;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.joda.time.LocalDate;
@@ -28,12 +26,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.EnumSet;
 import java.util.Optional;
-import java.util.Set;
-
-import static java.util.stream.Collectors.summingInt;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -89,6 +84,7 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
     @Column
     private Float restrictionAmount;
 
+    @Valid
     @Embedded
     private CreditorReference creditorReference;
 
@@ -220,20 +216,6 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
                 this.gameSpecies.getOfficialCode() == gameSpeciesCode &&
                 containsDate(date);
     }
-
-    public boolean isEndOfHuntingReportRequired(final Set<HarvestReport> harvestReports) {
-        final EnumSet<HarvestReport.State> states =
-                EnumSet.complementOf(EnumSet.of(HarvestReport.State.DELETED, HarvestReport.State.REJECTED));
-
-        final int cumulatedHarvestAmount = harvestReports.stream()
-                .filter(report -> states.contains(report.getState()))
-                .flatMap(report -> report.getHarvests().stream())
-                .filter(harvest -> harvest.getSpecies().equals(this.gameSpecies))
-                .collect(summingInt(Harvest::getAmount));
-
-        return cumulatedHarvestAmount < amount;
-    }
-
 
     public LocalDate getDueDate() {
         return Optional.ofNullable(F.firstNonNull(getEndDate2(), getEndDate()))

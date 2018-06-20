@@ -5,6 +5,7 @@ import fi.riista.util.F;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 
+import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
@@ -72,15 +73,23 @@ public class MooseHuntingSummaryDTO extends BaseEntityDTO<Long> {
     @Size(max = 255)
     private String causeOfDeath;
 
+    @Valid
     private SpeciesEstimatedAppearance whiteTailedDeerAppearance;
 
+    @Valid
     private SpeciesEstimatedAppearance roeDeerAppearance;
 
+    @Valid
     private SpeciesEstimatedAppearance wildForestReindeerAppearance;
 
+    @Valid
     private SpeciesEstimatedAppearance fallowDeerAppearance;
 
+    @Valid
     private SpeciesEstimatedAppearanceWithPiglets wildBoarAppearance;
+
+    @Valid
+    private BeaverAppearance beaverAppearance;
 
     private LocalDate mooseHeatBeginDate;
 
@@ -103,6 +112,8 @@ public class MooseHuntingSummaryDTO extends BaseEntityDTO<Long> {
     private Integer numberOfYoungMoosesHavingFlies;
 
     private TrendOfPopulationGrowth trendOfDeerFlyPopulationGrowth;
+
+    private Boolean observationPolicyAdhered;
 
     private boolean locked;
 
@@ -361,8 +372,16 @@ public class MooseHuntingSummaryDTO extends BaseEntityDTO<Long> {
         return wildBoarAppearance;
     }
 
-    public void setWildBoarAppearance(SpeciesEstimatedAppearanceWithPiglets wildBoarAppearance) {
+    public void setWildBoarAppearance(final SpeciesEstimatedAppearanceWithPiglets wildBoarAppearance) {
         this.wildBoarAppearance = wildBoarAppearance;
+    }
+
+    public BeaverAppearance getBeaverAppearance() {
+        return beaverAppearance;
+    }
+
+    public void setBeaverAppearance(final BeaverAppearance beaverAppearance) {
+        this.beaverAppearance = beaverAppearance;
     }
 
     public LocalDate getMooseHeatBeginDate() {
@@ -443,6 +462,14 @@ public class MooseHuntingSummaryDTO extends BaseEntityDTO<Long> {
 
     public void setTrendOfDeerFlyPopulationGrowth(final TrendOfPopulationGrowth trendOfDeerFlyPopulationGrowth) {
         this.trendOfDeerFlyPopulationGrowth = trendOfDeerFlyPopulationGrowth;
+    }
+
+    public Boolean getObservationPolicyAdhered() {
+        return observationPolicyAdhered;
+    }
+
+    public void setObservationPolicyAdhered(final Boolean observationPolicyAdhered) {
+        this.observationPolicyAdhered = observationPolicyAdhered;
     }
 
     public boolean isLocked() {

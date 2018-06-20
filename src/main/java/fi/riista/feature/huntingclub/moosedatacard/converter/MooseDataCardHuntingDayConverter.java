@@ -1,30 +1,33 @@
 package fi.riista.feature.huntingclub.moosedatacard.converter;
 
-import static java.util.stream.Collectors.toList;
-
+import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingMethod;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor;
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardHuntingDay;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardHuntingDayField;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardHuntingDayValidator;
-
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardHuntingDay;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
 import javax.annotation.Nonnull;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+
+import static java.util.stream.Collectors.toList;
 
 public class MooseDataCardHuntingDayConverter {
 
     public static final LocalTime DEFAULT_START_TIME_WHEN_ONLY_DATE_GIVEN = new LocalTime(0, 0);
 
-    private final MooseDataCardHuntingDayValidator validator = new MooseDataCardHuntingDayValidator();
+    private final MooseDataCardHuntingDayValidator validator;
+
+    public MooseDataCardHuntingDayConverter(@Nonnull final Has2BeginEndDates permitSeason) {
+        validator = new MooseDataCardHuntingDayValidator(permitSeason);
+    }
 
     /**
      * Converts a hunting day parsed from moose data card into a valid hunting day that can be
@@ -85,5 +88,4 @@ public class MooseDataCardHuntingDayConverter {
             return huntingDay;
         }).collect(toList());
     }
-
 }

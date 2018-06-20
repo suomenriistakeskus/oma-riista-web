@@ -9,7 +9,7 @@ import fi.riista.feature.organization.occupation.OccupationDTO;
 import fi.riista.feature.organization.occupation.OccupationExcelView;
 import fi.riista.feature.organization.occupation.OccupationNotApplicableForOrganisationException;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.person.PersonDTO;
+import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.person.PersonSearchFeature;
 import fi.riista.util.F;
 import fi.riista.util.Localiser;
@@ -20,11 +20,14 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,40 +60,42 @@ public class OccupationApiResource {
     public void occupationNotApplicableForOrganisation() {
     }
 
-    @RequestMapping(value = "/findperson/hunternumber", method = RequestMethod.POST)
-    public PersonDTO findByHunterNumber(@RequestParam String hunterNumber) {
-        return personSearchFeature.findHunterByNumber(hunterNumber);
+    @PostMapping(value = "/findperson/hunternumber")
+    public PersonContactInfoDTO findByHunterNumber(@RequestParam final String hunterNumber) {
+        return personSearchFeature.findPersonContactInfoByHunterNumber(hunterNumber);
     }
 
-    @RequestMapping(value = "/findperson/ssn", method = RequestMethod.POST)
-    public PersonDTO findBySSN(@RequestParam String ssn) {
-        return personSearchFeature.findBySsn(ssn);
+    @PostMapping(value = "/findperson/ssn")
+    public PersonContactInfoDTO findBySSN(@RequestParam final String ssn) {
+        return personSearchFeature.findPersonContactInfoBySsn(ssn);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{orgId:\\d+}/occupation", method = RequestMethod.GET)
-    public List<OccupationDTO> listAllOccupations(@PathVariable Long orgId) {
+    @GetMapping(value = "{orgId:\\d+}/occupation")
+    public List<OccupationDTO> listAllOccupations(@PathVariable final long orgId) {
         return occupationCrudFeature.listOccupations(orgId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{orgId:\\d+}/candidates", method = RequestMethod.GET)
-    public List<PersonDTO> listCandidateForNewOccupation(@PathVariable long orgId) {
-        return occupationCrudFeature.listCandidateForNewOccupation(orgId);
+    @GetMapping(value = "{orgId:\\d+}/candidates")
+    public List<PersonContactInfoDTO> listCandidatesForNewOccupation(@PathVariable final long orgId) {
+        return occupationCrudFeature.listCandidatesForNewOccupation(orgId);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "{orgId:\\d+}/occupation", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public OccupationDTO createOccupation(@RequestBody @Validated OccupationDTO dto, @PathVariable Long orgId) {
+    @PostMapping(value = "{orgId:\\d+}/occupation", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public OccupationDTO createOccupation(@RequestBody @Validated final OccupationDTO dto,
+                                          @PathVariable final long orgId) {
 
         dto.setOrganisationId(orgId);
 
         return occupationCrudFeature.create(dto);
     }
 
-    @RequestMapping(value = "{orgId:\\d+}/occupation/{id:\\d+}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public OccupationDTO updateOccupation(
-            @RequestBody @Validated OccupationDTO dto, @PathVariable Long orgId, @PathVariable Long id) {
+    @PutMapping(value = "{orgId:\\d+}/occupation/{id:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public OccupationDTO updateOccupation(@RequestBody @Validated final OccupationDTO dto,
+                                          @PathVariable final long orgId,
+                                          @PathVariable final long id) {
 
         dto.setId(id);
         dto.setOrganisationId(orgId);
@@ -99,15 +104,15 @@ public class OccupationApiResource {
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "{orgId:\\d+}/occupation/{id:\\d+}", method = RequestMethod.DELETE)
-    public void deleteOccupation(@PathVariable Long id) {
+    @DeleteMapping(value = "{orgId:\\d+}/occupation/{id:\\d+}")
+    public void deleteOccupation(@PathVariable final long id) {
         occupationCrudFeature.delete(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/occupationTypes", method = RequestMethod.GET)
+    @GetMapping(value = "/occupationTypes")
     public Map<OrganisationType, OccupationType[]> getOccupationTypes() {
-        Map<OrganisationType, OccupationType[]> map = Maps.newHashMap();
+        final Map<OrganisationType, OccupationType[]> map = Maps.newHashMap();
         for (OrganisationType orgType : OrganisationType.values()) {
             map.put(orgType, OccupationType.applicableValuesFor(orgType));
         }
@@ -115,8 +120,8 @@ public class OccupationApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "{orgId:\\d+}/occupationTypes", method = RequestMethod.GET)
-    public Map<String, List<OccupationType>> getOccupationTypes(@PathVariable Long orgId) {
+    @GetMapping(value = "{orgId:\\d+}/occupationTypes")
+    public Map<String, List<OccupationType>> getOccupationTypes(@PathVariable final long orgId) {
         final List<OccupationType> allOccupationTypes = occupationCrudFeature.getApplicableOccupationTypes(orgId);
         final List<OccupationType> boardTypes = F.filterToList(allOccupationTypes, OccupationType::isBoardSpecific);
 
@@ -130,9 +135,8 @@ public class OccupationApiResource {
 
     // EXCEL
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/excel/occupations", method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ModelAndView searchExcel(@RequestParam(value = "orgId") long orgId) {
+    @PostMapping(value = "/excel/occupations", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ModelAndView searchExcel(@RequestParam(value = "orgId") final long orgId) {
         final List<OccupationDTO> occupations = occupationCrudFeature.listOccupations(orgId);
         final OrganisationDTO organisation = organisationCrudFeature.read(orgId);
         final Locale locale = LocaleContextHolder.getLocale();
@@ -141,5 +145,4 @@ public class OccupationApiResource {
         return new ModelAndView(new OccupationExcelView(locale, messageSource, organisationName,
                 organisation.getOrganisationType(), occupations));
     }
-
 }

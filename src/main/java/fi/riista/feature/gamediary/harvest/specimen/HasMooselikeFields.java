@@ -1,6 +1,7 @@
 package fi.riista.feature.gamediary.harvest.specimen;
 
 import fi.riista.util.NumberUtils;
+
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
@@ -28,22 +29,11 @@ public interface HasMooselikeFields {
 
     Boolean getNotEdible();
 
-    void setNotEdible(Boolean notEatable);
+    void setNotEdible(Boolean notEdible);
 
     String getAdditionalInfo();
 
     void setAdditionalInfo(String additionalInfo);
-
-    default void copyMooselikeFieldsTo(@Nonnull final HasMooselikeFields that) {
-        Objects.requireNonNull(that);
-        that.setWeightEstimated(getWeightEstimated());
-        that.setWeightMeasured(getWeightMeasured());
-        that.setAntlersWidth(getAntlersWidth());
-        that.setAntlerPointsLeft(getAntlerPointsLeft());
-        that.setAntlerPointsRight(getAntlerPointsRight());
-        that.setNotEdible(getNotEdible());
-        that.setAdditionalInfo(getAdditionalInfo());
-    }
 
     default boolean hasEqualMooselikeFields(@Nonnull final HasMooselikeFields that) {
         Objects.requireNonNull(that);
@@ -66,5 +56,4 @@ public interface HasMooselikeFields {
         setNotEdible(null);
         setAdditionalInfo(null);
     }
-
 }

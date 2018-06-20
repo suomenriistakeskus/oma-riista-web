@@ -31,9 +31,11 @@ public class SQHarvestReportState extends RelationalPathSpatial<SQHarvestReportS
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestReportState> harvestReportStatePk = createPrimaryKey(name);
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestReport> _harvestReportStateFk = createInvForeignKey(name, "state");
+    public final com.querydsl.sql.ForeignKey<SQHarvestChangeHistory> _harvestChangeHistoryStateFk = createInvForeignKey(name, "harvest_report_state");
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestReportStateHistory> _harvestReportStateHistoryStateFk = createInvForeignKey(name, "state");
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermit> _harvestPermitReportStateFk = createInvForeignKey(name, "harvest_report_state");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvest> _harvestHarvestReportStateFk = createInvForeignKey(name, "harvest_report_state");
 
     public SQHarvestReportState(String variable) {
         super(SQHarvestReportState.class, forVariable(variable), "public", "harvest_report_state");
@@ -42,6 +44,11 @@ public class SQHarvestReportState extends RelationalPathSpatial<SQHarvestReportS
 
     public SQHarvestReportState(String variable, String schema, String table) {
         super(SQHarvestReportState.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQHarvestReportState(String variable, String schema) {
+        super(SQHarvestReportState.class, forVariable(variable), schema, "harvest_report_state");
         addMetadata();
     }
 

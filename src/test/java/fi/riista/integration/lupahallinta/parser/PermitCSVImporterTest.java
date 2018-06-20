@@ -19,7 +19,7 @@ import fi.riista.feature.organization.rhy.MergedRhyMapping;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.util.NumberUtils;
-import javaslang.Tuple3;
+import io.vavr.Tuple3;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -321,6 +321,24 @@ public class PermitCSVImporterTest {
 
         assertThat(res._2.get(0), is("Luvansaajaa ei löydy:555"));
         assertThat(res._2.get(1), is("Lupaosakasta ei löydy:666"));
+
+        assertNull(permit);
+    }
+
+    @Test
+    public void testMoosePermitPartnersAreRequired() {
+        mockDefaults("111111-109A");
+
+        when(registerHuntingClubService.findExistingOrCreate(eq("555"))).thenReturn(createClub(1, "555"));
+
+        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+                "111111-109A", "555", "", "2014-1-050-00128-6",
+                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "HIRVIELÄIN",
+                species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "", "1232", "http://invalid/2014-1-050-00999-0", HTA_ID, "221", AREA_SIZE.toString()});
+
+        HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
+
+        assertThat(res._2.get(0), is("Lupatyypille vaaditaan osakkaat"));
 
         assertNull(permit);
     }

@@ -1,22 +1,28 @@
 <nav class="navbar r-subnav-navbar" role="navigation">
     <div class="container">
-        <div class="navbar-collapse collapse" class="in">
+        <div class="navbar-collapse collapse in">
             <ul class="nav navbar-nav r-subnav-nav" ng-show="authenticated">
-                <li ui-sref-active="active"><a ui-sref=".home" translate="admin.menu.main"></a></li>
-                <li active-if-state-includes="reporting.contacts">
-                    <a ui-sref=".contacts.occupation" translate="reporting.menu.contacts"></a>
+                <li active-if-state-includes="reporting.home">
+                    <a ui-sref="reporting.home" translate="admin.menu.main"></a>
                 </li>
-                <li ui-sref-active="active"><a ui-sref="reporting.announcements" translate="announcements.list.title"></a></li>
-                <li ui-sref-active="active"><a ui-sref="reporting.nomination" translate="rhy.menu.jht"></a></li>
-                <li active-if-state-includes="reporting.harvestreport"><a ui-sref=".harvestreport.list" translate="harvestreport.admin.menu"></a></li>
-                <li active-if-state-includes="reporting.harvestpermit,reporting.harvestpermits"><a ui-sref=".harvestpermits" translate="reporting.menu.permits"></a></li>
-                <li ui-sref-active="active"><a ui-sref=".club" translate="reporting.menu.clubs"></a></li>
-                <li active-if-state-includes="reporting.moosedatacard"><a ui-sref="reporting.moosedatacard" translate="reporting.menu.mooseDataCard"></a></li>
+                <li active-if-state-includes="reporting.contacts">
+                    <a ui-sref="reporting.contacts.occupation" translate="reporting.menu.contacts"></a>
+                </li>
+                <li active-if-state-includes="reporting.announcements">
+                    <a ui-sref="reporting.announcements" translate="announcements.list.title"></a>
+                </li>
+                <li active-if-state-includes="reporting.club">
+                    <a ui-sref="reporting.club" translate="reporting.menu.clubs"></a>
+                </li>
+                <li active-if-state-includes="reporting.srvaMap">
+                    <a ui-sref="reporting.srvaMap" translate="rhy.menu.srva"></a>
+                </li>
             </ul>
         </div>
     </div>
 </nav>
-<div class="container">
+
+<div riista-container-css>
     <div growl inline="true"></div>
 
     <div ui-view autoscroll="false"></div>

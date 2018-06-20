@@ -3,16 +3,17 @@ package fi.riista.feature.huntingclub.hunting;
 import com.google.common.collect.Sets;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.gamediary.GameDiaryEntry;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.occupation.QOccupation;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.occupation.QOccupation;
+import fi.riista.feature.organization.person.Person;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,9 @@ public class ClubHuntingStatusService {
     @Resource
     private HuntingClubPermitService huntingClubPermitService;
 
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
+
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public GroupHuntingStatusDTO getGroupStatus(final @Nonnull HuntingClubGroup group) {
         Objects.requireNonNull(group, "group is null");
@@ -53,7 +57,7 @@ public class ClubHuntingStatusService {
             return result;
         }
 
-        result.setCanExportData(true);
+        result.setFromMooseDataCard(group.isFromMooseDataCard());
 
         if (!isGroupHuntingDataLocked(group)) {
             result.setCanCreateHarvest(true);
@@ -93,12 +97,16 @@ public class ClubHuntingStatusService {
             return true;
         }
 
+        if (harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(group.getHarvestPermit(), group.getHuntingYear())) {
+            return true;
+        }
+
         final EnumSet<OccupationType> leaderRoles = EnumSet.of(
                 OccupationType.SEURAN_YHDYSHENKILO,
                 OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
-        final Set<OccupationType> activePersonRoles = findActiveClubAndGroupOccupationTypes(group,
-                activeUserService.getActiveUser().getPerson());
+        final Set<OccupationType> activePersonRoles =
+                findActiveClubAndGroupOccupationTypes(group, activeUserService.requireActiveUser().getPerson());
 
         return Sets.intersection(leaderRoles, activePersonRoles).isEmpty();
     }

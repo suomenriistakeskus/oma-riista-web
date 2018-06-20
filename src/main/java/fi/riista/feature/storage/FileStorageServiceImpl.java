@@ -14,11 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -77,6 +80,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                                             final String originalFilename) throws IOException {
         final FileStorageSpi storage = getStorageOrFallback(fileType.storageType());
 
+        @SuppressWarnings("deprecation")
         final PersistentFileMetadata fileMetadata = metadataRepository.saveAndFlush(
                 PersistentFileMetadata.create(uuid, storage.getType(), contentType, content.length,
                         Hashing.md5().hashBytes(content), originalFilename));
@@ -94,7 +98,8 @@ public class FileStorageServiceImpl implements FileStorageService {
                                             final String contentType,
                                             final String originalFilename) throws IOException {
         final FileStorageSpi storage = getStorageOrFallback(fileType.storageType());
-        final HashCode hash = Files.hash(file, Hashing.md5());
+        @SuppressWarnings("deprecation")
+        final HashCode hash = Files.asByteSource(file).hash(Hashing.md5());
         final PersistentFileMetadata fileMetadata = metadataRepository.saveAndFlush(
                 PersistentFileMetadata.create(uuid, storage.getType(), contentType, file.length(), hash, originalFilename));
 
@@ -121,6 +126,18 @@ public class FileStorageServiceImpl implements FileStorageService {
         try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             fss.retrieveFile(metadata, bos);
             return bos.toByteArray();
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true, rollbackFor = IOException.class)
+    public void downloadTo(final UUID uuid, final Path targetPath) throws IOException {
+        final PersistentFileMetadata metadata = metadataRepository.getOne(uuid);
+        final FileStorageSpi fss = getStorage(metadata.getStorageType());
+
+        try (final FileOutputStream fos = new FileOutputStream(targetPath.toFile());
+             final BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+            fss.retrieveFile(metadata, bos);
         }
     }
 

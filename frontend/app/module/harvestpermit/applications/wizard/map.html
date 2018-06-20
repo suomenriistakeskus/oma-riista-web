@@ -1,0 +1,57 @@
+<div class="row">
+    <div class="col-xs-10 col-xs-offset-1">
+        <div class="alert alert-info">
+            <div class="row">
+                <div class="col-xs-1">
+                    <span class="fa fa-info-circle"></span>
+                </div>
+                <div class="col-xs-11">
+                    <p class="alert-title" translate="harvestpermit.wizard.map.instructionsTitle"></p>
+
+                    <p ng-if="$ctrl.permitArea.freeHunting">
+                        <strong translate="harvestpermit.wizard.map.freeHuntingTitle"></strong>
+                        <br/>
+                        <span translate="harvestpermit.wizard.map.freeHunting"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-10 col-xs-offset-1">
+        <permit-application-area-details permit-area="$ctrl.permitArea"></permit-application-area-details>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-10 col-xs-offset-1">
+        <uib-tabset type="pills" justified="true" active="$ctrl.activeTabIndex">
+            <uib-tab classes="btn-lg" index="0" select="$ctrl.selectTab(0)"
+                     heading="{{'harvestpermit.wizard.map.applicationAreaMap' | translate}}">
+                <div class="alert alert-info" ng-show="!$ctrl.featureCollection">
+                    <span translate="harvestpermit.wizard.map.loading"></span>
+                </div>
+
+                <permit-application-union-map
+                        ng-if="$ctrl.activeTabIndex === 0 && $ctrl.featureCollection"
+                        feature-collection="$ctrl.featureCollection"></permit-application-union-map>
+            </uib-tab>
+
+            <uib-tab classes="btn-lg" index="1" select="$ctrl.selectTab(1)"
+                     heading="{{'harvestpermit.wizard.map.applicationAreaMapByPartners' | translate}}">
+                <div class="alert alert-info" ng-show="!$ctrl.featureCollection">
+                    <span translate="harvestpermit.wizard.map.loading"></span>
+                </div>
+
+                <permit-application-partner-map
+                        ng-if="$ctrl.activeTabIndex === 1 && $ctrl.featureCollection"
+                        feature-collection="$ctrl.featureCollection"></permit-application-partner-map>
+            </uib-tab>
+        </uib-tabset>
+    </div>
+</div>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit()"
+        previous="$ctrl.previous()"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

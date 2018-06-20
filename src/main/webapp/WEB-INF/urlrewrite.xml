@@ -14,16 +14,16 @@
 
     <rule match-type="regex">
         <from>^/privacy_policy$</from>
-        <to type="redirect">/#/privacy_policy</to>
+        <to type="redirect">https://riista.fi/riistahallinto/sahkoinen-asiointi/oma-riista-rekisteriseloste/</to>
     </rule>
 
     <rule match-type="regex">
         <from>^/privacy_policy/sv$</from>
-        <to type="redirect">/#/privacy_policy?lang=sv</to>
+        <to type="redirect">https://riista.fi/sv/viltforvaltningen/elektroniska-tjanster/registerbeskrivningen/</to>
     </rule>
 
     <rule match-type="regex">
         <from>^/privacy_policy/en$</from>
-        <to type="redirect">/#/privacy_policy?lang=en</to>
+        <to type="redirect">https://riista.fi/riistahallinto/sahkoinen-asiointi/oma-riista-rekisteriseloste/</to>
     </rule>
 </urlrewrite>

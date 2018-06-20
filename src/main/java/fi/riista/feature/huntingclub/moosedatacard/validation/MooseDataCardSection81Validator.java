@@ -1,19 +1,7 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.effectiveHuntingAreaLargerThanTotalHuntingArea;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingAreaNotGivenAtAll;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingInEffectiveHuntingAreaGivenButAreaMissing;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingInEffectiveHuntingAreaGreaterThanMoosesRemainingInTotalHuntingArea;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingInTotalHuntingAreaGivenButAreaMissing;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingNotGivenAtAll;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.totalHuntingAreaMissingAndEffectiveHuntingAreaGivenAsPercentageShare;
-import static java.util.Arrays.asList;
-import static javaslang.control.Validation.invalid;
-import static javaslang.control.Validation.valid;
-
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_1;
-import fi.riista.util.ValidationUtils;
-import javaslang.control.Validation;
+import io.vavr.control.Validation;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -21,6 +9,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
+
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.effectiveHuntingAreaLargerThanTotalHuntingArea;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.huntingAreaNotGivenAtAll;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingInEffectiveHuntingAreaGivenButAreaMissing;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingInEffectiveHuntingAreaGreaterThanMoosesRemainingInTotalHuntingArea;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingInTotalHuntingAreaGivenButAreaMissing;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.moosesRemainingNotGivenAtAll;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.totalHuntingAreaMissingAndEffectiveHuntingAreaGivenAsPercentageShare;
+import static fi.riista.util.ValidationUtils.applying;
+import static fi.riista.util.ValidationUtils.flattenErrorsOrElse;
+import static fi.riista.util.ValidationUtils.toValidation;
+import static java.util.Arrays.asList;
 
 public class MooseDataCardSection81Validator {
 
@@ -37,9 +38,11 @@ public class MooseDataCardSection81Validator {
         Objects.requireNonNull(section);
 
         final Validation<List<String>, MooseDataCardSection_8_1> rangeValidations =
-                ValidationUtils.validate(section, RANGE_VALIDATIONS);
+                RANGE_VALIDATIONS.stream().collect(applying(section));
 
-        return ValidationUtils.reduce(rangeValidations, validateCombinatorialPresence(section), (_1, _2) -> section);
+        return Stream
+                .of(rangeValidations, validateCombinatorialPresence(section))
+                .collect(flattenErrorsOrElse(section));
     }
 
     private static Validation<List<String>, MooseDataCardSection_8_1> validateCombinatorialPresence(
@@ -96,7 +99,6 @@ public class MooseDataCardSection81Validator {
                     .ifPresent(validationErrors::add);
         }
 
-        return validationErrors.isEmpty() ? valid(section) : invalid(validationErrors);
+        return toValidation(validationErrors, section);
     }
-
 }

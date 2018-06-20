@@ -1,8 +1,8 @@
 package fi.riista.feature.pub.statistics;
 
 import fi.riista.feature.error.NotFoundException;
-import fi.riista.feature.gamediary.GameDiaryService;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.OrganisationType;
@@ -32,7 +32,7 @@ public class PublicHarvestPivotTableFeature {
     private static final LocalisedString RIISTAKESKUS_NAME = LocalisedString.of("Suomi", "Finland");
 
     @Resource
-    private GameDiaryService gameDiaryService;
+    private GameSpeciesService gameSpeciesService;
 
     @Resource
     private OrganisationRepository organisationRepository;
@@ -51,7 +51,7 @@ public class PublicHarvestPivotTableFeature {
         final List<PivotTableRow> rows = executeCountQuery(
                 DateUtil.createDateInterval(startDate, endDate),
                 Optional.ofNullable(getSpecies(gameAnimalOfficialCode)),
-                Optional.<Organisation> empty());
+                Optional.<Organisation>empty());
 
         final PivotTableRow grandTotal =
                 PivotTableRow.createGrandTotal(rows, Riistakeskus.OFFICIAL_CODE, RIISTAKESKUS_NAME);
@@ -85,7 +85,7 @@ public class PublicHarvestPivotTableFeature {
 
     private GameSpecies getSpecies(final Integer gameAnimalOfficialCode) {
         return gameAnimalOfficialCode != null
-                ? gameDiaryService.getGameSpeciesByOfficialCode(gameAnimalOfficialCode)
+                ? gameSpeciesService.requireByOfficialCode(gameAnimalOfficialCode)
                 : null;
     }
 

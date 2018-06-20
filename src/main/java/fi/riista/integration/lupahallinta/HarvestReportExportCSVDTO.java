@@ -5,19 +5,19 @@ import com.google.common.collect.Lists;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.PropertyIdentifier;
 import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
-import fi.riista.feature.gamediary.harvest.PermittedMethod;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
 import fi.riista.feature.gamediary.harvest.HuntingAreaType;
 import fi.riista.feature.gamediary.harvest.HuntingMethod;
-import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.gamediary.harvest.PermittedMethod;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
+import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.Locales;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
@@ -25,57 +25,41 @@ import org.springframework.context.MessageSource;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * This DTO is used for transfer file as CSV to Lupahallinta
  */
 public class HarvestReportExportCSVDTO {
 
-    public enum ChangeState {
-        CREATED("C"),
-        UPDATED("U"),
-        DELETED("D");
+    public static List<HarvestReportExportCSVDTO> create(final HarvestPermit permit, final MessageSource messageSource) {
+        final List<Harvest> harvests = permit.getHarvests().stream()
+                .filter(h -> h.getStateAcceptedToHarvestPermit().equals(Harvest.StateAcceptedToHarvestPermit.ACCEPTED))
+                .collect(Collectors.toList());
 
-        private final String symbol;
-
-        ChangeState(String d) {
-            this.symbol = d;
-        }
-
-        public String getSymbol() {
-            return symbol;
-        }
-    }
-
-    public static List<HarvestReportExportCSVDTO> create(final HarvestReport report, final MessageSource messageSource) {
-        if (report.getHarvests().isEmpty()) {
+        if (harvests.isEmpty()) {
             HarvestReportExportCSVDTO dto = new HarvestReportExportCSVDTO();
-            dto.submissionId = report.getId();
             dto.submissionRowCount = 1;
-
-            if (!report.isDeleted()) {
-                readSubmitter(report, dto);
-                dto.reportingTime = DateUtil.toLocalDateTimeNullSafe(report.getCreationTime());
-                dto.huntingLicenseNumber = getPermitNumberOrNull(report);
-                dto.amount = 0;
-            }
+            readSubmitter(permit.getHarvestReportAuthor(), dto);
+            dto.reportingTime = DateUtil.toLocalDateTimeNullSafe(permit.getCreationTime());
+            dto.huntingLicenseNumber = permit.getPermitNumber();
+            dto.huntingLicenseAsList = getPermitReportsAsList(permit);
+            dto.amount = 0;
             return Lists.newArrayList(dto);
         }
-        return F.mapNonNullsToList(report.getHarvests(), input -> input == null
-                ? null
-                : create(report, input, messageSource));
+        final int submissionRowCount = harvests.size();
+        return F.mapNonNullsToList(harvests, harvest -> {
+            final HarvestReportExportCSVDTO dto = create(harvest, messageSource);
+            dto.submissionRowCount = submissionRowCount;
+            return dto;
+        });
     }
 
-    public static HarvestReportExportCSVDTO create(HarvestReport report, Harvest harvest, MessageSource messageSource) {
+    public static HarvestReportExportCSVDTO create(final Harvest harvest, final MessageSource messageSource) {
         HarvestReportExportCSVDTO dto = new HarvestReportExportCSVDTO();
 
-        dto.submissionId = report.getId();
-        dto.submissionRowCount = report.getHarvests().isEmpty() ? 1 : report.getHarvests().size();
-        dto.reportingTime = DateUtil.toLocalDateTimeNullSafe(report.getCreationTime());
-
-        if (harvest.getHarvestSeason() != null) {
-            dto.season = harvest.getHarvestSeason().getNameFinnish();
-        }
+        dto.submissionRowCount = 1;
+        dto.reportingTime = DateUtil.toLocalDateTimeNullSafe(harvest.getCreationTime());
 
         final Person hunter = harvest.getActualShooter();
         if (hunter != null) {
@@ -95,15 +79,10 @@ public class HarvestReportExportCSVDTO {
             dto.hunterHuntingCard = hunter.getHunterNumber();
         }
 
-        dto.huntingLicenseNumber = getPermitNumberOrNull(report);
-        dto.huntingLicenseAsList = getPermitReportsAsList(report);
+        dto.huntingLicenseNumber = getPermitNumberOrNull(harvest);
+        dto.huntingLicenseAsList = getPermitReportsAsList(harvest.getHarvestPermit());
 
-        readSubmitter(report, dto);
-
-        if (harvest.getHarvestQuota() != null) {
-            dto.quotaAreaId = harvest.getHarvestQuota().getHarvestArea().getOfficialCode();
-            dto.quotaAreaName = harvest.getHarvestQuota().getHarvestArea().getNameFinnish();
-        }
+        readSubmitter(harvest.getHarvestReportAuthor(), dto);
 
         if (harvest.getRhy() != null) {
             harvest.getRhy().getClosestAncestorOfType(OrganisationType.RKA).ifPresent(rka -> {
@@ -165,8 +144,7 @@ public class HarvestReportExportCSVDTO {
         return dto;
     }
 
-    private static void readSubmitter(HarvestReport report, HarvestReportExportCSVDTO dto) {
-        final Person author = report.getAuthor();
+    private static void readSubmitter(Person author, HarvestReportExportCSVDTO dto) {
         if (author != null) {
             dto.submitterFirstName = author.getByName();
             dto.submitterLastName = author.getLastName();
@@ -183,17 +161,17 @@ public class HarvestReportExportCSVDTO {
         }
     }
 
-    private static String getPermitNumberOrNull(HarvestReport report) {
-        return report.getHarvestPermit() != null ?
-                report.getHarvestPermit().getPermitNumber()
+    private static String getPermitNumberOrNull(Harvest harvest) {
+        return harvest.getHarvestPermit() != null ?
+                harvest.getHarvestPermit().getPermitNumber()
                 : null;
     }
 
-    private static String getPermitReportsAsList(HarvestReport report) {
-        if (report.getHarvestPermit() == null) {
+    private static String getPermitReportsAsList(HarvestPermit permit) {
+        if (permit == null) {
             return "0";
         }
-        return report.getHarvestPermit().isHarvestsAsList() ? "1" : "0";
+        return permit.isHarvestsAsList() ? "1" : "0";
     }
 
     private static String transformSpecimens(Harvest harvest, Function<HarvestSpecimen, String> mapper) {
@@ -259,20 +237,6 @@ public class HarvestReportExportCSVDTO {
         return Tuple.of(methods, descriptions);
     }
 
-    public void setChangeStatus(ChangeState s) {
-        this.changeStatus = s;
-    }
-
-    // (string): Status of the exported report. The allowed  status are:
-    //   C: report exported for the first time;
-    //   U: report has been included in a previous export
-    //      but its information has been updated
-    //   D: report should be removed;
-    private ChangeState changeStatus;
-
-    // (integer): Unique ID of the hunting report
-    private Long submissionId;
-
     // (integer): How many rows are with identical submissionId
     private Integer submissionRowCount;
 
@@ -280,9 +244,6 @@ public class HarvestReportExportCSVDTO {
     // Format: yyyy.mm.dd hh:mm
     // Example: 2013.11.12 13:25
     private LocalDateTime reportingTime;
-
-    // (integer) Hunting season ID
-    private String season;
 
     // (string) Hunters full name (first and last name)
     private String hunterName;
@@ -336,12 +297,6 @@ public class HarvestReportExportCSVDTO {
 
     // (string) E-mail address of the hunter
     private String submitterEmail;
-
-    // (integer) Unique ID of the quota area.
-    private String quotaAreaId;
-
-    // (string) Name of the quota area
-    private String quotaAreaName;
 
     // (integer) Unique ID of the Riistakeskus area.
     private String rkkAreaId;
@@ -475,24 +430,12 @@ public class HarvestReportExportCSVDTO {
     // Textual description of used permitted method.
     private String permittedMethodDescription;
 
-    public ChangeState getChangeStatus() {
-        return changeStatus;
-    }
-
-    public Long getSubmissionId() {
-        return submissionId;
-    }
-
     public Integer getSubmissionRowCount() {
         return submissionRowCount;
     }
 
     public LocalDateTime getReportingTime() {
         return reportingTime;
-    }
-
-    public String getSeason() {
-        return season;
     }
 
     public String getHunterName() {
@@ -557,14 +500,6 @@ public class HarvestReportExportCSVDTO {
 
     public String getSubmitterEmail() {
         return submitterEmail;
-    }
-
-    public String getQuotaAreaId() {
-        return quotaAreaId;
-    }
-
-    public String getQuotaAreaName() {
-        return quotaAreaName;
     }
 
     public String getRkkAreaId() {

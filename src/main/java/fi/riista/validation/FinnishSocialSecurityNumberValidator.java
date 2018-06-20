@@ -10,10 +10,6 @@ import javax.validation.ConstraintValidatorContext;
 public class FinnishSocialSecurityNumberValidator
         implements ConstraintValidator<FinnishSocialSecurityNumber, String> {
 
-    public static boolean isValid(final String input) {
-        return new FinnishSocialSecurityNumberValidator().isValid(input, null);
-    }
-
     private static final char[] CHECKSUM_CHARS = "0123456789ABCDEFHJKLMNPRSTUVWXY".toCharArray();
 
     private boolean checksumVerified;
@@ -33,6 +29,10 @@ public class FinnishSocialSecurityNumberValidator
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        return validate(value, checksumVerified);
+    }
+
+    public static boolean validate(String value, final boolean checksumVerified) {
         if (Strings.isNullOrEmpty(value)) {
             return true;
         }

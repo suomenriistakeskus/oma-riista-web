@@ -1,8 +1,17 @@
 <li uib-dropdown class="r-role-nav">
-    <a uib-dropdown-toggle class="role-title">
-        <span ng-if="$ctrl.selectedRole()" ng-bind="'global.role.' + $ctrl.selectedRole().type | translate"></span>
-        <br/>
-        <strong ng-bind="$ctrl.getRoleDisplayName($ctrl.selectedRole()) | uppercase"></strong>
+    <a uib-dropdown-toggle>
+        <div class="role-logo"
+             ng-if="$ctrl.selectedRole()">
+            <span class="fa fa-fw" ng-class="$ctrl.getRoleLogo($ctrl.selectedRole())"></span>
+        </div>
+
+        <div class="role-title"
+             ng-if="$ctrl.selectedRole()">
+            <span ng-bind="'global.role.' + $ctrl.selectedRole().type | translate"></span>
+            <br/>
+            <strong ng-bind="$ctrl.getRoleDisplayName($ctrl.selectedRole()) | uppercase"></strong>
+        </div>
+
         <b class="caret"></b>
     </a>
 
@@ -10,17 +19,31 @@
         <li ng-repeat="role in $ctrl.roles()"
             ng-click="$ctrl.selectRole(role)"
             ng-class="{'active': $ctrl.isSelectedRole(role)}">
-            <a class="role-title">
-                <span ng-if="role">{{ 'global.role.' + role.type | translate }}</span>
-                <br/>
-                <strong>{{ $ctrl.getRoleDisplayName(role) | uppercase }}</strong>
+            <a>
+                <div class="role-logo">
+                    <span class="fa fa-fw"
+                          ng-class="::$ctrl.getRoleLogo(role)"></span>
+                </div>
+
+                <div class="role-title">
+                    <span translate="global.role.{{::role.type}}"></span>
+                    <br/>
+                    <strong ng-bind="::$ctrl.getRoleDisplayName(role)"></strong>
+                </div>
             </a>
         </li>
+
         <li class="divider"></li>
+
         <li>
             <a ui-sref="logout">
-                <span class="glyphicon glyphicon-log-out"></span>
-                <span translate="global.menu.account.logout"></span>
+                <div class="role-logo" style="top: -2px">
+                    <span class="fa fa-fw fa-sign-out"></span>
+                </div>
+
+                <div class="role-title">
+                    <strong translate="global.menu.account.logout"></strong>
+                </div>
             </a>
         </li>
     </ul>

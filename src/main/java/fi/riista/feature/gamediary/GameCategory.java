@@ -1,8 +1,9 @@
 package fi.riista.feature.gamediary;
 
 import fi.riista.feature.common.entity.HasOfficialCode;
+import fi.riista.util.LocalisedEnum;
 
-public enum GameCategory implements HasOfficialCode {
+public enum GameCategory implements HasOfficialCode, LocalisedEnum {
 
     FOWL(1),
     GAME_MAMMAL(2),
@@ -18,5 +19,4 @@ public enum GameCategory implements HasOfficialCode {
     public int getOfficialCode() {
         return code;
     }
-
 }

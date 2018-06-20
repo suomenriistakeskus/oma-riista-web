@@ -7,10 +7,10 @@
         </a>
     </li>
     <li>
-        <div class="total-pages">
+        <span class="current-page">
             <span translate="global.pager.current"></span>
             <span ng-bind="$ctrl.slice.pageable.page + 1"></span>
-        </div>
+        </span>
     </li>
     <li class="next"
         ng-class="{'disabled': !$ctrl.hasNextPage()}">

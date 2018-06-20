@@ -43,6 +43,11 @@ public class SQCalendarEventType extends RelationalPathSpatial<SQCalendarEventTy
         addMetadata();
     }
 
+    public SQCalendarEventType(String variable, String schema) {
+        super(SQCalendarEventType.class, forVariable(variable), schema, "calendar_event_type");
+        addMetadata();
+    }
+
     public SQCalendarEventType(Path<? extends SQCalendarEventType> path) {
         super(path.getType(), path.getMetadata(), "public", "calendar_event_type");
         addMetadata();

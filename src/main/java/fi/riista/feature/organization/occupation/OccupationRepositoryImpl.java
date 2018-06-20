@@ -1,14 +1,13 @@
 package fi.riista.feature.organization.occupation;
 
-import com.google.common.collect.Iterables;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.common.entity.HasBeginAndEndDate;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.QOrganisation;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.QPerson;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
@@ -16,16 +15,20 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
+import static fi.riista.feature.organization.OrganisationType.RHY;
+import static fi.riista.util.Collect.leastAfterGroupingBy;
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toMap;
+import static java.util.Objects.requireNonNull;
 
 @Repository
 public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
+
+    private static final Comparator<? super Occupation> COORDINATOR_ORDERING = HasBeginAndEndDate.DEFAULT_COMPARATOR;
 
     @Resource
     private JPQLQueryFactory jpqlQueryFactory;
@@ -33,7 +36,7 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
     @Override
     @Transactional(readOnly = true)
     public List<Occupation> findActiveByOrganisation(final Organisation organisation) {
-        Objects.requireNonNull(organisation, "organisation is null");
+        requireNonNull(organisation);
 
         final QOccupation occupation = QOccupation.occupation;
 
@@ -47,7 +50,7 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
     @Override
     @Transactional(readOnly = true)
     public List<Occupation> findActiveByParentOrganisation(final Organisation parentOrganisation) {
-        Objects.requireNonNull(parentOrganisation, "organisation is null");
+        requireNonNull(parentOrganisation);
 
         final QOccupation occupation = QOccupation.occupation;
         final QOrganisation organisation = QOrganisation.organisation;
@@ -65,7 +68,7 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
     @Override
     @Transactional(readOnly = true)
     public Map<Long, Set<Occupation>> findActiveByOccupationTypeGroupByOrganisationId(final OccupationType occupationType) {
-        Objects.requireNonNull(occupationType, "occupationType is null");
+        requireNonNull(occupationType);
 
         final QOccupation occupation = QOccupation.occupation;
 
@@ -90,9 +93,9 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
     public void deleteOccupationInFuture(final Organisation organisation,
                                          final OccupationType occupationType,
                                          final Person person) {
-        Objects.requireNonNull(organisation, "organisation is null");
-        Objects.requireNonNull(occupationType, "occupationType is null");
-        Objects.requireNonNull(person, "person is null");
+        requireNonNull(organisation, "organisation is null");
+        requireNonNull(occupationType, "occupationType is null");
+        requireNonNull(person, "person is null");
 
         final QOccupation occupation = QOccupation.occupation;
 
@@ -123,10 +126,10 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
     @Override
     @Transactional(readOnly = true)
     public boolean alreadyExists(final OccupationDTO dto) {
-        Objects.requireNonNull(dto, "dto is null");
-        Objects.requireNonNull(dto.getOrganisationId(), "organisationId is null");
-        Objects.requireNonNull(dto.getPersonId(), "personId is null");
-        Objects.requireNonNull(dto.getOccupationType(), "occupationType is null");
+        requireNonNull(dto, "dto is null");
+        requireNonNull(dto.getOrganisationId(), "organisationId is null");
+        requireNonNull(dto.getPersonId(), "personId is null");
+        requireNonNull(dto.getOccupationType(), "occupationType is null");
 
         final QOccupation occupation = QOccupation.occupation;
 
@@ -141,9 +144,8 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<Organisation, Occupation> listCoordinators(final List<Organisation> organisations) {
-        final List<Organisation> rhys = F.filterToList(organisations,
-                org -> org.getOrganisationType() == OrganisationType.RHY);
+    public Map<Organisation, Occupation> listCoordinators(final List<? extends Organisation> organisations) {
+        final List<Organisation> rhys = F.filterToList(organisations, org -> org.getOrganisationType() == RHY);
 
         if (rhys.isEmpty()) {
             return emptyMap();
@@ -151,14 +153,13 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
 
         final QOccupation occupation = QOccupation.occupation;
 
-        final List<Occupation> coordinators = jpqlQueryFactory.selectFrom(occupation)
+        return jpqlQueryFactory.selectFrom(occupation)
                 .join(occupation.organisation)
                 .where(occupation.occupationType.eq(OccupationType.TOIMINNANOHJAAJA),
                         occupation.organisation.in(rhys),
                         occupation.validAndNotDeleted())
-                .fetch();
-
-        return F.nullSafeGroupBy(coordinators, Occupation::getOrganisation).entrySet().stream()
-                .collect(toMap(Map.Entry::getKey, e -> Iterables.getFirst(e.getValue(), null)));
+                .fetch()
+                .stream()
+                .collect(leastAfterGroupingBy(Occupation::getOrganisation, COORDINATOR_ORDERING));
     }
 }

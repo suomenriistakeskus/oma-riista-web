@@ -1,57 +1,68 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.diaryEntryMissingDate;
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.harvestDateNotWithinPermittedSeason;
-import static fi.riista.util.DateUtil.today;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import com.kscs.util.jaxb.Copyable;
-
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest;
-import fi.riista.util.Asserts;
-
-import javaslang.control.Validation;
-
+import io.vavr.control.Validation;
 import org.joda.time.LocalDate;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
-
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.diaryEntryMissingDate;
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.harvestDateNotWithinPermittedSeason;
+import static fi.riista.test.Asserts.assertValid;
+import static fi.riista.test.Asserts.assertValidationErrors;
+import static fi.riista.test.TestUtils.ld;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public abstract class MooseDataCardHarvestValidatorTest<T extends MooseDataCardHarvest & Copyable> {
 
     protected static final GeoLocation DEFAULT_COORDINATES = new GeoLocation(1, 1);
 
-    protected abstract MooseDataCardHarvestValidator<T> getValidator(
-            @Nonnull Has2BeginEndDates permitSeason, @Nonnull GeoLocation defaultCoordinates);
+    protected Has2BeginEndDates permitSeason;
 
-    protected abstract T newHarvest();
+    @Before
+    public void setup() {
+        permitSeason = new Has2BeginEndDatesDTO(ld(2015, 9, 1), ld(2015, 12, 31));
+    }
+
+    protected abstract MooseDataCardHarvestValidator<T> getValidator(@Nonnull Has2BeginEndDates season,
+                                                                     @Nonnull GeoLocation defaultCoordinates);
+
+    protected abstract T newHarvest(@Nullable LocalDate date);
+
+    protected T newHarvestWithinSeason() {
+        return newHarvest(permitSeason.getFirstDate());
+    }
 
     @Test
     public void testMissingDate() {
-        final T input = newHarvest();
-        input.setDate(null);
-        Asserts.assertValidationErrors(validate(input, newSeason()), diaryEntryMissingDate(input));
+        final T input = newHarvest(null);
+
+        assertValidationErrors(validate(input), diaryEntryMissingDate(input));
     }
 
     @Test
     public void testDateNotWithinPermittedSeason() {
-        final LocalDate today = today();
+        final T input = newHarvest(permitSeason.getLastDate().plusDays(1));
 
-        final T input = newHarvest();
-        input.setDate(today);
+        assertValidationErrors(validate(input), harvestDateNotWithinPermittedSeason(input, permitSeason));
+    }
 
-        final Has2BeginEndDates permitSeason = newSeason(today.plusDays(1), today.plusDays(2));
+    @Test
+    public void testCorrectionOfWrongHuntingYear() {
+        final LocalDate firstPermitDate = permitSeason.getFirstDate();
+        final T input = newHarvest(firstPermitDate.plusYears(2));
 
-        Asserts.assertValidationErrors(
-                validate(input, permitSeason),
-                harvestDateNotWithinPermittedSeason(input, permitSeason));
+        assertValid(validate(input), output -> assertEquals(firstPermitDate, output.getDate()));
     }
 
     @Test
@@ -65,17 +76,17 @@ public abstract class MooseDataCardHarvestValidatorTest<T extends MooseDataCardH
     }
 
     private void testValidate_expectDefaultCoordinates(final Consumer<T> harvestMutator) {
-        final T input = newHarvest();
+        final T input = newHarvestWithinSeason();
         harvestMutator.accept(input);
-        Asserts.assertValid(
-                validate(input, newSeason()), output -> assertEquals(DEFAULT_COORDINATES, output.getGeoLocation()));
+
+        assertValid(validate(input), output -> assertEquals(DEFAULT_COORDINATES, output.getGeoLocation()));
     }
 
     @Test
     public void testValidCommonFields() {
-        final T input = newHarvest();
+        final T input = newHarvestWithinSeason();
 
-        Asserts.assertValid(validate(input, newSeason()), output -> {
+        assertValid(validate(input), output -> {
             assertEquals(input.getDate(), output.getDate());
             assertEquals(input.getGeoLocation(), output.getGeoLocation());
             assertEquals(input.getWeightEstimated(), output.getWeightEstimated());
@@ -88,13 +99,13 @@ public abstract class MooseDataCardHarvestValidatorTest<T extends MooseDataCardH
 
     @Test
     public void testNonMandatoryCommonFieldsWhenNull() {
-        final T input = newHarvest();
+        final T input = newHarvestWithinSeason();
         input.setWeightEstimated(null);
         input.setWeightMeasured(null);
         input.setFitnessClass(null);
         input.setAdditionalInfo(null);
 
-        Asserts.assertValid(validate(input, newSeason()), output -> {
+        assertValid(validate(input), output -> {
             assertNull(output.getWeightEstimated());
             assertNull(output.getAdditionalInfo());
             assertNull(output.getFitnessClass());
@@ -104,22 +115,13 @@ public abstract class MooseDataCardHarvestValidatorTest<T extends MooseDataCardH
 
     @Test
     public void testIllegalFitnessClass() {
-        final T input = newHarvest();
+        final T input = newHarvestWithinSeason();
         input.setFitnessClass("invalid");
-        Asserts.assertValid(validate(input, newSeason()), output -> assertNull(output.getFitnessClass()));
+
+        assertValid(validate(input), output -> assertNull(output.getFitnessClass()));
     }
 
-    protected static Has2BeginEndDates newSeason() {
-        final LocalDate today = today();
-        return newSeason(today, today.plusYears(1));
-    }
-
-    protected static Has2BeginEndDates newSeason(final LocalDate startDate, final LocalDate endDate) {
-        return new Has2BeginEndDatesDTO(startDate, endDate);
-    }
-
-    protected Validation<List<String>, T> validate(final T input, final Has2BeginEndDates permitSeason) {
+    protected Validation<List<String>, T> validate(final T input) {
         return getValidator(permitSeason, DEFAULT_COORDINATES).validate(input);
     }
-
 }

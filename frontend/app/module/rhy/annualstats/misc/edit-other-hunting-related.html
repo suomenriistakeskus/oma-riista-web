@@ -1,0 +1,43 @@
+<form name="otherHuntingRelatedForm" role="form" class="form form-horizontal r-annual-statistics-wide-label-form"
+      autocomplete="off"
+      r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="rhy.annualStats.misc.otherHuntingRelated.form.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="wolfTerritoryWorkgroupLeads" class="control-label">
+                <span translate="rhy.annualStats.misc.otherHuntingRelated.form.wolfTerritoryWorkgroupLeads"></span>
+            </label>
+
+            <div class="form-control-wrapper input-group">
+                <input type="number" name="wolfTerritoryWorkgroupLeads" id="wolfTerritoryWorkgroupLeads"
+                       min="0" max="999" step="1"
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.data.wolfTerritoryWorkgroupLeads"/>
+
+                <div class="input-group-addon">
+                    <span translate="global.pcs"></span>
+                </div>
+            </div>
+
+            <p class="help-block"
+               ng-show="otherHuntingRelatedForm.wolfTerritoryWorkgroupLeads.$invalid"
+               translate="global.messages.invalid"></p>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="otherHuntingRelatedForm.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

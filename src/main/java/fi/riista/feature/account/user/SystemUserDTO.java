@@ -2,9 +2,9 @@ package fi.riista.feature.account.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import fi.riista.feature.common.dto.XssSafe;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.validation.PhoneNumber;
+import fi.riista.validation.XssSafe;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.SafeHtml;

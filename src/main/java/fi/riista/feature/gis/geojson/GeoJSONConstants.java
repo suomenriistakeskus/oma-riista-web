@@ -18,6 +18,8 @@ public class GeoJSONConstants {
     public static final String PROPERTY_AREA_SIZE = "areaSize";
     public static final String PROPERTY_WATER_AREA_SIZE = "waterAreaSize";
 
+    public static final String PROPERTY_HASH = "hash";
+
     public static final String PROPERTY_CHANGED = "changed";
     public static final String PROPERTY_FIXED = "fixed";
 

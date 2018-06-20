@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('app.clubmap.directives', ['app.map.services'])
+angular.module('app.clubmap.directives', [])
     .directive('mapEditorToolbar', function () {
         function controller() {
             var ctrl = this;
@@ -40,42 +40,42 @@ angular.module('app.clubmap.directives', ['app.map.services'])
             controller: controller
         };
     })
-    .directive('propertyIdentifierList', function () {
+    .service('PropertyIdentifierService', function () {
+        var simplePattern = new RegExp("^\\d{14}$");
+        var formattedPattern = new RegExp("^(\\d{1,3})-(\\d{1,3})-(\\d{1,4})-(\\d{1,4})$");
+
+        this.parseFromString = function (value) {
+            if (simplePattern.test(value)) {
+                return value;
+
+            } else {
+                var parts = formattedPattern.exec(value);
+
+                if (parts && parts.length > 4) {
+                    var padThree = _.partial(_.padLeft, _, 3, '0');
+                    var padFour = _.partial(_.padLeft, _, 4, '0');
+
+                    return [
+                        padThree(parts[1]),
+                        padThree(parts[2]),
+                        padFour(parts[3]),
+                        padFour(parts[4])
+                    ].join('');
+                }
+            }
+
+            return undefined;
+        };
+    })
+    .directive('propertyIdentifierList', function (PropertyIdentifierService) {
         return {
             restrict: 'A',
             priority: 100,
             require: 'ngModel',
             link: function (scope, element, attr, ctrl) {
-                var simplePattern = new RegExp("^\\d{14}$");
-                var formattedPattern = new RegExp("^(\\d{1,3})-(\\d{1,3})-(\\d{1,4})-(\\d{1,4})$");
-
-                function _parseValue(value) {
-                    if (simplePattern.test(value)) {
-                        return value;
-
-                    } else {
-                        var parts = formattedPattern.exec(value);
-
-                        if (parts && parts.length > 4) {
-                            var padThree = _.partial(_.padLeft, _, 3, '0');
-                            var padFour = _.partial(_.padLeft, _, 4, '0');
-
-                            return [
-                                padThree(parts[1]),
-                                padThree(parts[2]),
-                                padFour(parts[3]),
-                                padFour(parts[4])
-                            ].join('');
-                        }
-                    }
-
-                    return undefined;
-                }
-
                 function _parseValues(propertyList) {
-                    var list = _.chain(propertyList).map(_parseValue).compact().value();
-
-                    return list.length !== propertyList.length ? undefined : list;
+                    var list = _.chain(propertyList).map(PropertyIdentifierService.parseFromString).compact().value();
+                    return list.length !== propertyList.length ? undefined : _.uniq(list);
                 }
 
                 var parse = function (viewValue) {
@@ -114,7 +114,7 @@ angular.module('app.clubmap.directives', ['app.map.services'])
         };
     })
 
-    .directive('rGeojsonEditor', function ($window, $timeout,
+    .directive('rGeojsonEditor', function ($window, $timeout, $translate,
                                            UnsavedChangesConfirmationService,
                                            MHAreaService,
                                            GeoJsonEditorExcludedFeatures,
@@ -138,7 +138,15 @@ angular.module('app.clubmap.directives', ['app.map.services'])
                     selectedTool = 'move',
                     lassoTool = L.lasso(),
                     polyLassoTool = L.polyLasso(),
-                    marqueeTool = L.marquee();
+                    marqueeTool = L.marquee(),
+                    legend = L.control.simpleLegend({
+                        legend: {
+                            'green': $translate.instant('club.area.map.legend.realEstate'),
+                            'magenta': $translate.instant('club.area.map.legend.metsahallitus'),
+                            'orange': $translate.instant('club.area.map.legend.changed'),
+                            'blue': $translate.instant('club.area.map.legend.selected')
+                        }
+                    });
 
                 function enableDirtyFlag() {
                     UnsavedChangesConfirmationService.setChanges(true);
@@ -174,6 +182,7 @@ angular.module('app.clubmap.directives', ['app.map.services'])
                 leafletCtrl.getMap().then(function (map) {
                     leafletFeatureGroup.addTo(map);
                     excludedFeatures.addTo(map);
+                    legend.addTo(map);
 
                     map.on('click', onMapClick);
                     map.on('marquee', onMarqueeEvent);
@@ -290,7 +299,7 @@ angular.module('app.clubmap.directives', ['app.map.services'])
                                 var bounds = layer.getBounds();
 
                                 if (bounds && bounds.getNorthEast()) {
-                                    map.fitBounds(bounds);
+                                    map.fitBounds(bounds, {maxZoom: 16});
                                 }
                             });
                         });

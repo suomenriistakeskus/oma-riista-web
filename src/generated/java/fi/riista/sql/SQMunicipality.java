@@ -45,6 +45,11 @@ public class SQMunicipality extends RelationalPathSpatial<SQMunicipality> {
         addMetadata();
     }
 
+    public SQMunicipality(String variable, String schema) {
+        super(SQMunicipality.class, forVariable(variable), schema, "municipality");
+        addMetadata();
+    }
+
     public SQMunicipality(Path<? extends SQMunicipality> path) {
         super(path.getType(), path.getMetadata(), "public", "municipality");
         addMetadata();

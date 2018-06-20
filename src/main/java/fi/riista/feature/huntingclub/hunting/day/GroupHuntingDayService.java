@@ -5,22 +5,19 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
-import fi.riista.feature.gamediary.observation.Observation;
-import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
-import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejection;
-import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejectionRepository;
 import fi.riista.feature.huntingclub.hunting.rejection.HarvestRejection;
 import fi.riista.feature.huntingclub.hunting.rejection.HarvestRejectionRepository;
+import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejection;
+import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejectionRepository;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import org.joda.time.LocalDateTime;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
@@ -33,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static java.util.stream.Collectors.toList;
+import static fi.riista.util.Collect.idList;
 
 @Service
 public class GroupHuntingDayService {
@@ -76,7 +73,7 @@ public class GroupHuntingDayService {
         final GroupHuntingDay huntingDay =
                 requireEntityService.requireHuntingGroupHuntingDay(groupHuntingDayId, permission);
 
-        if (!isEntryPointOfTimeWithinHuntingDay(diaryEntry, huntingDay)) {
+        if (!huntingDay.containsInstant(DateUtil.toLocalDateTimeNullSafe(diaryEntry.getPointOfTime()))) {
             throw new PointOfTimeOutsideOfHuntingDayException();
         }
         if (!isEntryPointOfTimeWithinPermittedDates(diaryEntry, huntingDay.getGroup())) {
@@ -97,18 +94,8 @@ public class GroupHuntingDayService {
         }
     }
 
-    private static boolean isEntryPointOfTimeWithinHuntingDay(
-            final GameDiaryEntry diaryEntry, final GroupHuntingDay huntingDay) {
-
-        final LocalDateTime start = huntingDay.getStartAsLocalDateTime();
-        final LocalDateTime end = huntingDay.getEndAsLocalDateTime();
-        final LocalDateTime t = DateUtil.toLocalDateTimeNullSafe(diaryEntry.getPointOfTime());
-
-        return (t.isEqual(start) || t.isAfter(start)) && (t.isEqual(end) || t.isBefore(end));
-    }
-
-    private boolean isEntryPointOfTimeWithinPermittedDates(
-            final GameDiaryEntry diaryEntry, final HuntingClubGroup group) {
+    private boolean isEntryPointOfTimeWithinPermittedDates(final GameDiaryEntry diaryEntry,
+                                                           final HuntingClubGroup group) {
 
         final HarvestPermitSpeciesAmount hpsa = speciesAmountRepository.getOneByHarvestPermitIdAndSpeciesCode(
                 group.getHarvestPermit().getId(),
@@ -146,10 +133,10 @@ public class GroupHuntingDayService {
         Map<GameDiaryEntryType, List<Long>> map = new HashMap<>();
         map.put(GameDiaryEntryType.HARVEST, harvestRejectionRepository.findByGroup(group).stream()
                 .map(HarvestRejection::getHarvest)
-                .map(Harvest::getId).collect(toList()));
+                .collect(idList()));
         map.put(GameDiaryEntryType.OBSERVATION, observationRejectionRepository.findByGroup(group).stream()
                 .map(ObservationRejection::getObservation)
-                .map(Observation::getId).collect(toList()));
+                .collect(idList()));
         return map;
     }
 

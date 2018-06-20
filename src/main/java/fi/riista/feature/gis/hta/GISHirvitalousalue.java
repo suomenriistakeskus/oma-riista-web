@@ -14,6 +14,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -23,20 +24,24 @@ public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> 
     private Integer id;
 
     @NotNull
+    @Size(max = 255)
     @Column(name = "numero", nullable = false)
     private String number;
 
     @NotNull
+    @Size(max = 255)
     @Column(name = "nimi", nullable = false)
     private String nameFinnish;
 
     @NotNull
-    @Column(name = "nimiLy", nullable = false)
-    private String nameAbbrv;
-
-    @NotNull
+    @Size(max = 255)
     @Column(name = "nimiSe", nullable = false)
     private String nameSwedish;
+
+    @NotNull
+    @Size(max = 255)
+    @Column(name = "nimiLy", nullable = false)
+    private String nameAbbrv;
 
     @NotNull
     @Column(nullable = false)
@@ -78,7 +83,7 @@ public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> 
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
         if (this == that) {
             return true;
         }
@@ -100,7 +105,7 @@ public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> 
         return number;
     }
 
-    public void setNumber(String number) {
+    public void setNumber(final String number) {
         this.number = number;
     }
 
@@ -108,24 +113,24 @@ public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> 
         return nameFinnish;
     }
 
-    public void setNameFinnish(String nameFinnish) {
+    public void setNameFinnish(final String nameFinnish) {
         this.nameFinnish = nameFinnish;
-    }
-
-    public String getNameAbbrv() {
-        return nameAbbrv;
-    }
-
-    public void setNameAbbrv(String nameAbbrv) {
-        this.nameAbbrv = nameAbbrv;
     }
 
     public String getNameSwedish() {
         return nameSwedish;
     }
 
-    public void setNameSwedish(String nameSwedish) {
+    public void setNameSwedish(final String nameSwedish) {
         this.nameSwedish = nameSwedish;
+    }
+
+    public String getNameAbbrv() {
+        return nameAbbrv;
+    }
+
+    public void setNameAbbrv(final String nameAbbrv) {
+        this.nameAbbrv = nameAbbrv;
     }
 
     public Geometry getGeom() {

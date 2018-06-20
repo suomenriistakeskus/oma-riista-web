@@ -1,18 +1,18 @@
 package fi.riista.feature.huntingclub.permit.summary;
 
 import com.google.common.collect.Sets;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportDoneException;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReportDoneException;
 import fi.riista.feature.huntingclub.permit.partner.AllPartnersFinishedHuntingMailFeature;
 import fi.riista.feature.huntingclub.permit.partner.AllPartnersFinishedHuntingMailService;
 import fi.riista.feature.huntingclub.permit.partner.AllPartnersFinishedHuntingMailService.MailData;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.joda.time.LocalDate;
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +30,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest extends EmbeddedDatabaseTest {
+public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest extends EmbeddedDatabaseTest
+        implements HuntingGroupFixtureMixin {
 
     @Resource
     private MooseHuntingSummaryCrudFeature crudFeature;
@@ -75,39 +76,41 @@ public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest exten
                                   final boolean isOtherPartnerMooseHuntingFinished,
                                   final boolean otherPartnerHasMooseHuntingSummary) {
 
-        final Person otherPermitContactPerson = model().newPerson();
-        withMooseHuntingGroupFixture(f -> withHuntingGroupFixture(f.speciesAmount, f2 -> {
+        withPerson(otherPermitContactPerson -> withMooseHuntingGroupFixture(f -> {
             model().newHarvestPermitContactPerson(f.permit, otherPermitContactPerson);
 
-            createHarvest(f.permit, f.group, false);
-            createHarvest(f.permit, f2.group, false);
+            withHuntingGroupFixture(f.speciesAmount, f2 -> {
 
-            if (otherPartnerHasMooseHuntingSummary) {
-                // Intermediary flush needed before persisting MooseHuntingSummary in order to have
-                // harvest_permit_partners table populated required for foreign key constraint.
-                persistInNewTransaction();
-                model().newMooseHuntingSummary(f.permit, f2.club, isOtherPartnerMooseHuntingFinished);
-            }
+                createHarvest(f.permit, f.group, false);
+                createHarvest(f.permit, f2.group, false);
 
-            onSavedAndAuthenticated(createUser(f.clubContact), () -> {
-                final MooseHuntingSummaryDTO dto = new MooseHuntingSummaryDTO();
-                dto.setClubId(f.club.getId());
-                dto.setHarvestPermitId(f.permit.getId());
-                dto.setTotalHuntingArea(123);
-                dto.setRemainingPopulationInTotalArea(456);
-                dto.setHuntingEndDate(today());
-                dto.setHuntingFinished(true);
-
-                crudFeature.create(dto);
-
-                if (expectedIsMailSent) {
-                    final Set<String> emails = Sets.newHashSet(f.clubContact.getEmail(),
-                            f.permit.getOriginalContactPerson().getEmail(), otherPermitContactPerson.getEmail());
-
-                    verify(mockMailService).sendEmailAsync(eq(emails), any());
-                } else {
-                    verifyNoMoreInteractions(mockMailService);
+                if (otherPartnerHasMooseHuntingSummary) {
+                    // Intermediary flush needed before persisting MooseHuntingSummary in order to have
+                    // harvest_permit_partners table populated required for foreign key constraint.
+                    persistInNewTransaction();
+                    model().newMooseHuntingSummary(f.permit, f2.club, isOtherPartnerMooseHuntingFinished);
                 }
+
+                onSavedAndAuthenticated(createUser(f.clubContact), () -> {
+                    final MooseHuntingSummaryDTO dto = new MooseHuntingSummaryDTO();
+                    dto.setClubId(f.club.getId());
+                    dto.setHarvestPermitId(f.permit.getId());
+                    dto.setTotalHuntingArea(123);
+                    dto.setRemainingPopulationInTotalArea(456);
+                    dto.setHuntingEndDate(today());
+                    dto.setHuntingFinished(true);
+
+                    crudFeature.create(dto);
+
+                    if (expectedIsMailSent) {
+                        final Set<String> emails = Sets.newHashSet(f.clubContact.getEmail(),
+                                f.permit.getOriginalContactPerson().getEmail(), otherPermitContactPerson.getEmail());
+
+                        verify(mockMailService).sendEmailAsync(eq(emails), any());
+                    } else {
+                        verifyNoMoreInteractions(mockMailService);
+                    }
+                });
             });
         }));
     }
@@ -123,8 +126,7 @@ public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest exten
     }
 
     private void doTestNotEdibles(final boolean hasNotEdibles) {
-        final Person otherPermitContactPerson = model().newPerson();
-        withMooseHuntingGroupFixture(f -> {
+        withPerson(otherPermitContactPerson -> withMooseHuntingGroupFixture(f -> {
             model().newHarvestPermitContactPerson(f.permit, otherPermitContactPerson);
 
             final HarvestPermit amendmentPermit = model().newHarvestPermit(f.permit);
@@ -154,11 +156,13 @@ public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest exten
                 assertEquals(f.permit.getPermitNumber(), c.getValue().getPermitNumber());
                 assertEquals(hasNotEdibles, !c.getValue().isNokNotEdibles());
             });
-        });
+        }));
     }
 
     private void createHarvest(final HarvestPermit permit, final HuntingClubGroup group, final boolean notEdible) {
-        final Harvest harvest = model().newHarvest(permit, group.getSpecies());
+        final Harvest harvest = model().newHarvest(group.getSpecies());
+        harvest.setRhy(permit.getRhy());
+
         final GroupHuntingDay huntingDay =
                 model().newGroupHuntingDay(group, LocalDate.fromDateFields(harvest.getPointOfTime()));
         harvest.updateHuntingDayOfGroup(huntingDay, null);

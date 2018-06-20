@@ -45,6 +45,11 @@ public class SQSystemUserPrivilege extends RelationalPathSpatial<SQSystemUserPri
         addMetadata();
     }
 
+    public SQSystemUserPrivilege(String variable, String schema) {
+        super(SQSystemUserPrivilege.class, forVariable(variable), schema, "system_user_privilege");
+        addMetadata();
+    }
+
     public SQSystemUserPrivilege(Path<? extends SQSystemUserPrivilege> path) {
         super(path.getType(), path.getMetadata(), "public", "system_user_privilege");
         addMetadata();

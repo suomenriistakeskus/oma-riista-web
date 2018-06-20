@@ -33,6 +33,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Objects;
@@ -73,6 +74,7 @@ public class Organisation extends LifecycleEntity<Long> {
     @Column
     private String email;
 
+    @Size(max = 255)
     @Column
     private String phoneNumber;
 
@@ -100,8 +102,12 @@ public class Organisation extends LifecycleEntity<Long> {
     @Column(unique = true, length = 255)
     private String lhOrganisationId;
 
+    @Valid
     @Embedded
     private GeoLocation geoLocation;
+
+    @Column(nullable = false)
+    private boolean active = true;
 
     @Nonnull
     public LocalisedString getNameLocalisation() {
@@ -256,5 +262,13 @@ public class Organisation extends LifecycleEntity<Long> {
 
     public void setSubOrganisations(Set<Organisation> subOrganisations) {
         this.subOrganisations = subOrganisations;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

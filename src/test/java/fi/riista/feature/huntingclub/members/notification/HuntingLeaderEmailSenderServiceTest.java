@@ -1,7 +1,6 @@
 package fi.riista.feature.huntingclub.members.notification;
 
 import com.google.common.collect.Sets;
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -9,6 +8,8 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static fi.riista.util.Asserts.assertEmpty;
+import static fi.riista.test.Asserts.assertEmpty;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
@@ -110,6 +111,32 @@ public class HuntingLeaderEmailSenderServiceTest extends EmbeddedDatabaseTest {
         doAsserts(rhyAndCoordinator2, clubAndContact2, mailDatas, groupAndMember2_1);
     }
 
+    @Test
+    @Transactional
+    public void testPastHuntingYearGroupsNotSent() {
+        final int currentHuntingYear = DateUtil.huntingYear();
+
+        final RhyAndCoordinator rhyAndCoordinator1 = createRhyAndCoordinator();
+
+        final ClubAndContact clubAndContact = createClubAndContact(rhyAndCoordinator1.rhy);
+
+        final GroupAndMember previousYear = createGroupAndLeader(rhyAndCoordinator1, clubAndContact);
+        previousYear.group.setHuntingYear(currentHuntingYear - 1);
+
+        final GroupAndMember currentYear = createGroupAndLeader(rhyAndCoordinator1, clubAndContact);
+        currentYear.group.setHuntingYear(currentHuntingYear);
+
+        final GroupAndMember nextYearYear = createGroupAndLeader(rhyAndCoordinator1, clubAndContact);
+        nextYearYear.group.setHuntingYear(currentHuntingYear +1);
+
+        persistInCurrentlyOpenTransaction();
+
+        final List<HuntingLeaderEmailSenderService.MailData> mailDatas = doSendMails(previousYear, currentYear, nextYearYear);
+        assertEquals(1, mailDatas.size());
+
+        doAsserts(rhyAndCoordinator1, clubAndContact, mailDatas, currentYear, nextYearYear);
+    }
+
     private List<HuntingLeaderEmailSenderService.MailData> doSendMails(GroupAndMember... members) {
         return service.sendMails(Arrays.stream(members).map(m -> m.member).collect(toList()));
     }
@@ -154,6 +181,8 @@ public class HuntingLeaderEmailSenderServiceTest extends EmbeddedDatabaseTest {
             assertEquals(expected.getCallOrder(), actual.getOrder());
             assertEquals(expected.getPerson().getFullName(), actual.getName());
             assertEquals(expected.getPerson().getHunterNumber(), actual.getHunterNumber());
+            assertEquals(LeaderEmailDto.DATE_FORMAT.print(expected.getModificationTime().getTime()), actual.getDate());
+            assertEquals(expected.getModificationTime(), actual.get_dateForTests());
         }
     }
 
@@ -193,6 +222,7 @@ public class HuntingLeaderEmailSenderServiceTest extends EmbeddedDatabaseTest {
         counter++;
 
         final Occupation occupation = model().newHuntingClubGroupMember(group, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
+        persistInCurrentlyOpenTransaction(); // force modification time be different than creation time
         occupation.setCallOrder(leaderCounter++);
 
         return new GroupAndMember(group, occupation);

@@ -1,46 +1,141 @@
-<pre>
-{{author.firstName}} {{author.lastName}}
-{{author.address.streetAddress}}
-{{author.address.postalCode}} {{author.address.city}}
-Puhelin: {{author.phoneNumber}}
-Sähköposti: {{author.email}}
+<p>
+    {{author.firstName}} {{author.lastName}} <br/>
+    {{author.address.streetAddress}} <br/>
+    {{author.address.postalCode}} {{author.address.city}} <br/>
+    Puhelin: {{author.phoneNumber}} <br/>
+    Sähköposti: {{author.email}}
+</p>
 
-SUOMEN RIISTAKESKUS
-{{#if permit}}
-Luvan numero: {{permit.permitNumber}}
+<h1>SUOMEN RIISTAKESKUS</h1>
+
+{{#if permitNumber}}
+    <h2>Luvan numero: {{permitNumber}}</h2>
 {{/if}}
-ILMOITUS PYYNNIN TULOKSESTA
-{{#if permit}}
-Myönnetyllä luvalla on saatu saalista seuraavasti:
+
+<h2>ILMOITUS PYYNNIN TULOKSESTA</h2>
+
+{{#if permitNumber}}
+    <p>Myönnetyllä luvalla on saatu saalista seuraavasti:</p>
 {{/if}}
-{{toUpperCase species.name.fi}}
 
-Erittely saaliiksi saadusta eläimestä:
-Pyyntiaika: {{timestamp pointOfTime "dd.MM.yyyy HH:mm"}}
-Pyyntipaikan koordinaatit: {{geoLocation.latitude}} {{geoLocation.longitude}} ETRS-TM35FIN
-Kiinteistötunnus: {{propertyIdentifier.delimitedValue}}
-{{#if quotaArea}}Kiintiöalue: {{quotaArea.nameFI}}{{/if}}
-{{#if rka}}Riistakeskuksen alue: {{rka.nameFI}}{{/if}}
-{{#if rhy}}Riistanhoitoyhdistys: {{rhy.nameFI}}{{/if}}
-{{#if huntingAreaType}}Pyyntialue: {{i18n (enumName huntingAreaType) locale="fi"}}{{/if}}
-{{#if huntingParty}}Metsästysseuran/-seurueen alue, jolta saalis saatiin: {{huntingParty}}{{/if}}
-{{#if huntingAreaSize}}Metsästysalueen pinta-ala: {{number huntingAreaSize "#.##" locale="fi"}} ha{{/if}}
-{{#if huntingMethod}}Saalistustapa: {{i18n (enumName huntingMethod) locale="fi"}}{{/if}}
-{{#if reportedWithPhoneCall}}Onko ilmoitettu myös saalispuhelimeen: {{i18n (boolName reportedWithPhoneCall) locale="fi"}}{{/if}}
+<h2>{{toUpperCase species.name.fi}}</h2>
 
-Eläimen tiedot
-{{#if gender}}Sukupuoli: {{i18n (enumName gender) locale="fi"}}{{/if}}
-{{#if age}}Ikä: {{i18n (enumName age) locale="fi"}}{{/if}}
-{{#if weight}}Paino: {{number weight "#.###" locale="fi"}} kg{{/if}}
+<p>Erittely saaliiksi saadusta eläimestä:</p>
 
-Kaataja:
-{{hunter.firstName}} {{hunter.lastName}}
-{{hunter.address.streetAddress}}
-{{hunter.address.postalCode}} {{hunter.address.city}}
+<p>Määrä: {{amount}} kpl</p>
+<p>Pyyntiaika: {{timestamp pointOfTime "dd.MM.yyyy HH:mm"}}</p>
 
-{{#if permit}}Ohje: Tämä vahvistusviesti tulee edelleenlähettää tällaisenaan poliisille ja muille päätöksessä mainituille
-viranomaistahoille viimeistään ensimmäisenä arkipäivänä siitä, kun poikkeusluvassa tarkoitettu riistaeläin
-on tullut pyydystetyksi.{{/if}}
+{{#if geoLocation}}
+    <p>Pyyntipaikan koordinaatit: {{geoLocation.latitude}} {{geoLocation.longitude}} ETRS-TM35FIN</p>
+{{/if}}
 
-(Viestin tunnistetiedot: {{timestamp timestamp "dd.MM.yyyy HH:mm:ss"}}, id={{id}}, revision={{rev}}, state={{state}}, c={{createdByUserId}}, m={{modifiedByUserId}})
-</pre>
+{{#if propertyIdentifier}}
+    <p>Kiinteistötunnus: {{propertyIdentifier.delimitedValue}}</p>
+{{/if}}
+
+{{#if municipality}}
+    <p>Kunta: {{municipality.finnish}}</p>
+{{/if}}
+
+{{#if quotaArea}}
+    <p>Kiintiöalue: {{quotaArea.nameFI}}</p>
+{{/if}}
+
+{{#if rka}}
+    <p>Riistakeskuksen alue: {{rka.nameFI}}</p>
+{{/if}}
+
+{{#if rhy}}
+    <p>Riistanhoitoyhdistys: {{rhy.nameFI}}</p>
+{{/if}}
+
+{{#if huntingAreaType}}
+    <p>Pyyntialue: {{i18n (enumName huntingAreaType) locale="fi"}}</p>
+{{/if}}
+
+{{#if huntingParty}}
+    <p>Metsästysseuran/-seurueen alue, jolta saalis saatiin: {{huntingParty}}</p>
+{{/if}}
+
+{{#if huntingAreaSize}}
+    <p>Metsästysalueen pinta-ala: {{number huntingAreaSize "#.##" locale="fi"}} ha</p>
+{{/if}}
+
+{{#if huntingMethod}}
+    <p>Saalistustapa: {{i18n (enumName huntingMethod) locale="fi"}}</p>
+{{/if}}
+
+{{#if reportedWithPhoneCall}}
+    <p>Onko ilmoitettu myös saalispuhelimeen: {{i18n (boolName reportedWithPhoneCall) locale="fi"}}</p>
+{{/if}}
+
+{{#if feedingPlace}}
+    <p>Onko ammuttu ruokintapaikalla? {{i18n (boolName feedingPlace) locale="fi"}}</p>
+{{/if}}
+
+{{#if taigaBeanGoose}}
+    <p>Onko taigametsähanhi? {{i18n (boolName taigaBeanGoose) locale="fi"}}</p>
+{{/if}}
+
+{{#if specimens}}
+    <p>Tarkemmat tiedot niistä saalisyksilöistä joille tietoja on annettu:</p>
+
+    <table border="1" cellspacing="0" cellpadding="5" width="95%">
+        <thead>
+        <tr>
+            <th>Sukupuoli</th>
+            <th>Ikä</th>
+            <th>Paino (kg)</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{~#each specimens~}}
+            <tr>
+                <td>
+                    {{#if gender}}
+                        {{i18n (enumName gender) locale="fi"}}
+                    {{else}}
+                        -
+                    {{/if}}
+                </td>
+
+                <td>
+                    {{#if age}}
+                        {{i18n (enumName age) locale="fi"}}
+                    {{else}}
+                        -
+                    {{/if}}
+                </td>
+
+                <td>
+                    {{#if weight}}
+                        {{number weight "#.#" locale="fi"}}
+                    {{else}}
+                        -
+                    {{/if}}
+                </td>
+            </tr>
+        {{~/each~}}
+        </tbody>
+    </table>
+{{/if}}
+
+<h2>Kaataja:</h2>
+
+<p>
+    {{hunter.firstName}} {{hunter.lastName}} <br/>
+    {{hunter.address.streetAddress}} <br/>
+    {{hunter.address.postalCode}} {{hunter.address.city}}
+</p>
+
+{{#if permitNumber}}
+    <p>
+        Ohje: Tämä vahvistusviesti tulee edelleenlähettää tällaisenaan poliisille ja muille päätöksessä mainituille
+        viranomaistahoille viimeistään ensimmäisenä arkipäivänä siitä, kun poikkeusluvassa tarkoitettu riistaeläin
+        on tullut pyydystetyksi.
+    </p>
+{{/if}}
+
+<p>
+    (Viestin tunnistetiedot: {{timestamp timestamp "dd.MM.yyyy HH:mm:ss"}}, id={{id}}, revision={{rev}}, state={{state}}, c={{createdByUserId}}, m={{modifiedByUserId}})
+</p>

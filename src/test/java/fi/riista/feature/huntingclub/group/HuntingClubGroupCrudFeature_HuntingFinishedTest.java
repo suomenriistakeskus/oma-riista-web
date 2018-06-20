@@ -1,6 +1,5 @@
 package fi.riista.feature.huntingclub.group;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
@@ -9,6 +8,7 @@ import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import javax.annotation.Resource;
@@ -32,7 +32,7 @@ public class HuntingClubGroupCrudFeature_HuntingFinishedTest extends EmbeddedDat
 
         final HarvestPermit permit = model().newHarvestPermit(rhy);
         final HarvestPermitSpeciesAmount speciesAmount =
-                model().newHarvestPermitSpeciesAmount(permit, model().newGameSpecies());
+                model().newHarvestPermitSpeciesAmount(permit, model().newDeerSubjectToClubHunting());
 
         final HuntingClub club = model().newHuntingClub(rhy);
         permit.getPermitPartners().add(club);
@@ -78,20 +78,16 @@ public class HuntingClubGroupCrudFeature_HuntingFinishedTest extends EmbeddedDat
     @Test(expected = ClubHuntingFinishedException.class)
     public void testUpdate_speciesChangeForbidden() {
         withGroupWithFinishedHunting(group -> {
-            final GameSpecies newSpecies = model().newGameSpecies();
+            final GameSpecies newSpecies = model().newGameSpeciesMoose();
 
-            callUpdateWithChanges(group, dto -> {
-                dto.setGameSpeciesCode(newSpecies.getOfficialCode());
-            });
+            callUpdateWithChanges(group, dto -> dto.setGameSpeciesCode(newSpecies.getOfficialCode()));
         });
     }
 
     @Test(expected = ClubHuntingFinishedException.class)
     public void testUpdate_huntingYearChangeForbidden() {
         withGroupWithFinishedHunting(group -> {
-            callUpdateWithChanges(group, dto -> {
-                dto.setHuntingYear(group.getHuntingYear() + 1);
-            });
+            callUpdateWithChanges(group, dto -> dto.setHuntingYear(group.getHuntingYear() + 1));
         });
     }
 
@@ -104,9 +100,7 @@ public class HuntingClubGroupCrudFeature_HuntingFinishedTest extends EmbeddedDat
             final HuntingClubArea newArea = model().newHuntingClubArea(club);
             group.setHuntingArea(currentArea);
 
-            callUpdateWithChanges(group, dto -> {
-                dto.setHuntingAreaId(newArea.getId());
-            });
+            callUpdateWithChanges(group, dto -> dto.setHuntingAreaId(newArea.getId()));
         });
     }
 
@@ -119,9 +113,7 @@ public class HuntingClubGroupCrudFeature_HuntingFinishedTest extends EmbeddedDat
             final HarvestPermit newPermit = model().newHarvestPermit(rhy);
             model().newHarvestPermitSpeciesAmount(newPermit, group.getSpecies());
 
-            callUpdateWithChanges(group, dto -> {
-                dto.setPermit(HuntingClubGroupDTO.PermitDTO.create(newPermit));
-            });
+            callUpdateWithChanges(group, dto -> dto.setPermit(HuntingClubGroupDTO.PermitDTO.create(newPermit)));
         });
     }
 }

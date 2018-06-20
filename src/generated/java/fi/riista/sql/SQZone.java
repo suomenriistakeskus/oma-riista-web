@@ -1,19 +1,18 @@
 package fi.riista.sql;
 
-import static com.querydsl.core.types.PathMetadataFactory.*;
-
-import com.querydsl.core.types.dsl.*;
-
-import com.querydsl.core.types.PathMetadata;
-import javax.annotation.Generated;
 import com.querydsl.core.types.Path;
-
+import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.spatial.GeometryPath;
 import com.querydsl.sql.ColumnMetadata;
-import java.sql.Types;
-
 import com.querydsl.sql.spatial.RelationalPathSpatial;
 
-import com.querydsl.spatial.*;
+import javax.annotation.Generated;
+import java.sql.Types;
+
+import static com.querydsl.core.types.PathMetadataFactory.forVariable;
 
 
 
@@ -47,11 +46,17 @@ public class SQZone extends RelationalPathSpatial<SQZone> {
 
     public final NumberPath<Long> modifiedByUserId = createNumber("modifiedByUserId", Long.class);
 
+    public final GeometryPath<org.geolatte.geom.Geometry> simpleGeom = createGeometry("simpleGeom", org.geolatte.geom.Geometry.class);
+
     public final StringPath sourceType = createString("sourceType");
 
     public final StringPath uploadFileId = createString("uploadFileId");
 
     public final NumberPath<Double> waterAreaSize = createNumber("waterAreaSize", Double.class);
+
+    public final NumberPath<Double> stateLandAreaSize = createNumber("stateLandAreaSize", Double.class);
+
+    public final NumberPath<Double> privateLandAreaSize = createNumber("privateLandAreaSize", Double.class);
 
     public final NumberPath<Long> zoneId = createNumber("zoneId", Long.class);
 
@@ -62,6 +67,10 @@ public class SQZone extends RelationalPathSpatial<SQZone> {
     public final com.querydsl.sql.ForeignKey<SQZoneFeature> _zoneFeatureZoneIdFk = createInvForeignKey(zoneId, "zone_id");
 
     public final com.querydsl.sql.ForeignKey<SQZoneMhHirvi> _zoneMhHirviZoneFk = createInvForeignKey(zoneId, "zone_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitArea> _harvestPermitAreaZoneFk = createInvForeignKey(zoneId, "zone_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitAreaPartner> _harvestPermitAreaPartnerZoneFk = createInvForeignKey(zoneId, "zone_id");
 
     public final com.querydsl.sql.ForeignKey<SQHuntingClubArea> _huntingClubAreaZoneFk = createInvForeignKey(zoneId, "zone_id");
 
@@ -74,6 +83,11 @@ public class SQZone extends RelationalPathSpatial<SQZone> {
 
     public SQZone(String variable, String schema, String table) {
         super(SQZone.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQZone(String variable, String schema) {
+        super(SQZone.class, forVariable(variable), schema, "zone");
         addMetadata();
     }
 
@@ -98,9 +112,12 @@ public class SQZone extends RelationalPathSpatial<SQZone> {
         addMetadata(geom, ColumnMetadata.named("geom").withIndex(9).ofType(Types.OTHER).withSize(2147483647));
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
+        addMetadata(simpleGeom, ColumnMetadata.named("simple_geom").withIndex(15).ofType(Types.OTHER).withSize(2147483647));
         addMetadata(sourceType, ColumnMetadata.named("source_type").withIndex(10).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(uploadFileId, ColumnMetadata.named("upload_file_id").withIndex(11).ofType(Types.CHAR).withSize(36));
         addMetadata(waterAreaSize, ColumnMetadata.named("water_area_size").withIndex(14).ofType(Types.DOUBLE).withSize(17).withDigits(17).notNull());
+        addMetadata(stateLandAreaSize, ColumnMetadata.named("state_land_area_size").withIndex(16).ofType(Types.DOUBLE).withSize(17).withDigits(17));
+        addMetadata(privateLandAreaSize, ColumnMetadata.named("private_land_area_size").withIndex(16).ofType(Types.DOUBLE).withSize(17).withDigits(17));
         addMetadata(zoneId, ColumnMetadata.named("zone_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
     }
 

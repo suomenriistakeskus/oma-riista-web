@@ -1,6 +1,7 @@
 package fi.riista.feature.gamediary.harvest.specimen;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public interface HasMooseFields extends HasMooselikeFields {
 
@@ -12,16 +13,15 @@ public interface HasMooseFields extends HasMooselikeFields {
 
     void setAntlersType(GameAntlersType antlersType);
 
-    default void copyMooseFieldsTo(@Nonnull final HasMooseFields that) {
-        copyMooselikeFieldsTo(that);
-        that.setFitnessClass(getFitnessClass());
-        that.setAntlersType(getAntlersType());
-    }
+    Boolean getAlone();
+
+    void setAlone(Boolean alone);
 
     default boolean hasEqualMooseFields(@Nonnull final HasMooseFields that) {
         return hasEqualMooselikeFields(that) &&
                 getFitnessClass() == that.getFitnessClass() &&
-                getAntlersType() == that.getAntlersType();
+                getAntlersType() == that.getAntlersType() &&
+                Objects.equals(getAlone(), that.getAlone());
     }
 
     default void clearMooseFields() {
@@ -32,6 +32,6 @@ public interface HasMooseFields extends HasMooselikeFields {
     default void clearMooseOnlyFields() {
         setFitnessClass(null);
         setAntlersType(null);
+        setAlone(null);
     }
-
 }

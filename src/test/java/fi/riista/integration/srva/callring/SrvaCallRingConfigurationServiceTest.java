@@ -1,11 +1,11 @@
 package fi.riista.integration.srva.callring;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.F;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;

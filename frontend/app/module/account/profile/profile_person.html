@@ -8,23 +8,23 @@
             <table class="table table-condensed">
                 <tbody>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.person.ssn"></td>
+                    <th class="col-xs-6" translate="global.person.ssn"></th>
                     <td ng-bind="::$ctrl.profile.ssnMasked"></td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.person.lastName"></td>
+                    <th class="col-xs-6" translate="global.person.lastName"></th>
                     <td ng-bind="::$ctrl.profile.lastName"></td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.person.firstName"></td>
+                    <th class="col-xs-6" translate="global.person.firstName"></th>
                     <td ng-bind="::$ctrl.profile.firstName"></td>
                 </tr>
                 <tr ng-show="::profile.homeMunicipality">
-                    <td class="r-legend col-xs-6" translate="global.person.homeMunicipality"></td>
+                    <th class="col-xs-6" translate="global.person.homeMunicipality"></th>
                     <td ng-bind="::$ctrl.profile.homeMunicipality"></td>
                 </tr>
                 <tr>
-                    <td class="r-legend col-xs-6" translate="global.person.nativeLanguage"></td>
+                    <th class="col-xs-6" translate="global.person.nativeLanguage"></th>
                     <td ng-bind="::($ctrl.profile.languageCode | languageCodeName | lowercase)"></td>
                 </tr>
                 </tbody>

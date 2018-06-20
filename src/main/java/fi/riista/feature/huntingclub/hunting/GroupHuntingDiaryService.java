@@ -1,16 +1,16 @@
 package fi.riista.feature.huntingclub.hunting;
 
-import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
-import fi.riista.feature.gamediary.observation.ObservationDTOTransformer;
 import fi.riista.feature.gamediary.GameDiaryEntryDTO;
-import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.HasHuntingDayId;
 import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
-import fi.riista.feature.gamediary.observation.ObservationDTO;
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.observation.ObservationRepository;
+import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationDTO;
+import fi.riista.feature.gamediary.observation.ObservationDTOTransformer;
+import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.util.DateUtil;
@@ -67,8 +67,8 @@ public class GroupHuntingDiaryService {
         final List<Harvest> groupHarvest = harvestRepository.findGroupHarvest(group, interval);
         final List<Observation> groupObservations = getObservations(group, interval);
 
-        return F.concat(filterResult(group, harvestTransformer.transform(groupHarvest)),
-                filterResult(group, observationTransformer.transform(groupObservations)));
+        return F.concat(filterResult(group, harvestTransformer.apply(groupHarvest)),
+                filterResult(group, observationTransformer.apply(groupObservations)));
     }
 
     private <T extends GameDiaryEntryDTO & HasHuntingDayId> List<T> filterResult(

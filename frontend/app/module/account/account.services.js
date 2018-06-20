@@ -3,11 +3,21 @@
 angular.module('app.account.services', ['ngResource'])
     .factory('Account', function ($resource, CacheFactory) {
         return $resource('/api/v1/account/:id', {"id": "@id"}, {
-            updateOther: {url: '/api/v1/account/other', method: 'PUT'},
-            updateSelf: {url: '/api/v1/account', method: 'PUT'},
+            updateAddress: {
+                method: 'PUT',
+                url: '/api/v1/account/:personId/address',
+                params: {personId: '@personId'}
+            },
+            updateOtherInfo: {
+                method: 'PUT',
+                url: '/api/v1/account/:personId/other',
+                params: {personId: '@personId'}
+            },
             deactivate: {url: '/api/v1/account/deactivate', params: {personId: '@personId'}, method: 'POST'},
-            srvaEnable: {url: '/api/v1/account/srva/enable', method: 'PUT'},
-            srvaDisable: {url: '/api/v1/account/srva/disable', method: 'PUT'},
+            activateSrvaFeature: {url: '/api/v1/account/srva/enable', method: 'PUT'},
+            deactivateSrvaFeature: {url: '/api/v1/account/srva/disable', method: 'PUT'},
+            activateShootingTestFeature: {url: '/api/v1/account/shootingtests/enable', method: 'PUT'},
+            deactivateShootingTestFeature: {url: '/api/v1/account/shootingtests/disable', method: 'PUT'},
             contactShare: {
                 method: 'PUT',
                 url: 'api/v1/account/contactshare'
@@ -27,11 +37,18 @@ angular.module('app.account.services', ['ngResource'])
                 params: {rhyId: '@rhyId'},
                 method: 'GET',
                 cache: CacheFactory.get('accountSrvaTodoCountCache')
+            },
+            shootingTests: {
+                method: 'GET',
+                url: 'api/v1/account/shootingtests',
+                params: {personId: '@personId'},
+                isArray: true
             }
         });
     })
-    .service('AccountService', function ($rootScope, $translate,
-                                         Account, ActiveRoleService, HuntingYearService) {
+    .service('AccountService', function ($rootScope, $translate, Account, ActiveRoleService, AuthenticationService,
+                                         HuntingYearService) {
+
         this.updateRoles = function () {
             return Account.get().$promise.then(function (account) {
                 // Whenever user updates his account and state reload is called, then this is
@@ -48,6 +65,16 @@ angular.module('app.account.services', ['ngResource'])
             } else {
                 return Account.get({id: accountId}).$promise;
             }
+        };
+
+        this.isSrvaFeatureEnabled = function () {
+            var account = AuthenticationService.getAuthentication();
+            return account && !!account.enableSrva;
+        };
+
+        this.isShootingTestFeatureEnabled = function () {
+            var account = AuthenticationService.getAuthentication();
+            return account && !!account.enableShootingTests;
         };
 
         this.getPdfOptions = function (account) {

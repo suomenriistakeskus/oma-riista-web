@@ -10,6 +10,7 @@
     <logger name="com.jolbox.bonecp" level="INFO" />
     <logger name="com.jayway.restassured" level="INFO" />
     <logger name="com.amazonaws" level="INFO"/>
+    <logger name="com.ancientprogramming.fixedformat4j.format" level="INFO"/>
 
     <logger name="fi.riista" level="DEBUG" />
     <logger name="fi.riista.security.authorization" level="INFO" />
@@ -34,6 +35,8 @@
     <logger name="org.springframework.security.access.intercept" level="INFO" />
 
     <logger name="org.apache.http" level="INFO" />
+    <logger name="org.apache.fontbox" level="INFO"/>
+    <logger name="org.apache.pdfbox" level="INFO"/>
     <logger name="org.apache.xml.security" level="INFO"/>
     <logger name="org.hibernate" level="INFO" />
     <logger name="org.hibernate.cfg" level="WARN" />

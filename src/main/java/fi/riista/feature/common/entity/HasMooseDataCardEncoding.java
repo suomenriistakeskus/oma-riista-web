@@ -1,14 +1,13 @@
 package fi.riista.feature.common.entity;
 
 import fi.riista.util.F;
-import javaslang.collection.Stream;
-import javaslang.control.Either;
-import javaslang.control.Option;
+import io.vavr.collection.Stream;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -67,5 +66,4 @@ public interface HasMooseDataCardEncoding<E extends Enum<E>> {
         final String trimmed = StringUtils.trimToNull(value);
         return trimmed != null && Option.of(getMooseDataCardEncoding()).exists(trimmed::equalsIgnoreCase);
     }
-
 }

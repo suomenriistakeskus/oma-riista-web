@@ -1,0 +1,49 @@
+<div ng-if="$ctrl.permits.length === 0" translate="harvestpermit.noPermits" class="alert alert-info"></div>
+
+<table ng-if="$ctrl.permits.length > 0" class="table table-condensed table-striped">
+    <thead>
+    <tr>
+        <th class="col-xs-1"></th>
+        <th class="col-xs-2" translate="harvestpermit.permitNumber"></th>
+        <th class="col-xs-5" translate="harvestpermit.speciesAndAmount"></th>
+        <th class="col-xs-3" translate="harvestpermit.contactPerson"></th>
+        <th class="col-xs-1"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr ng-repeat="permit in $ctrl.permits">
+        <td>
+            <div harvest-report-state-to-class="::permit.harvestReportState"
+                 class="r-harvestreport-state-text"
+                 ng-if="::permit.harvestReportState"
+                 translate="harvestreport.state.{{::permit.harvestReportState}}">
+            </div>
+        </td>
+        <td ng-bind="::permit.permitNumber"></td>
+        <td>
+            <div ng-bind="::permit.permitType"></div>
+            <div ng-repeat="speciesAmount in ::permit.speciesAmounts">
+                <span name-translated="speciesAmount.gameSpecies.name"></span>
+                <span>
+                    <span ng-bind="::speciesAmount.amount"></span>
+                    <span translate="harvestpermit.pcs"></span>
+                </span>
+                <span>{{::(speciesAmount | speciesAmountIntervalText)}}</span>
+            </div>
+        </td>
+        <td>
+            <div ng-repeat="person in permit.contactPersons | orderBy:['lastName', 'firstName']">
+                {{::person.lastName}} {{::person.firstName}} {{::person.hunterNumber}}
+            </div>
+        </td>
+        <td class="text-right">
+            <button class="btn btn-default"
+                    ng-if="$ctrl.showOpenPermit"
+                    ui-sref="permitmanagement.dashboard({permitId:permit.id})">
+                <span translate="global.button.open"></span>
+            </button>
+        </td>
+    </tr>
+    </tbody>
+</table>

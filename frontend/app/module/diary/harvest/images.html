@@ -1,0 +1,36 @@
+<div class="form-group" ng-if="$ctrl.authorOrActor">
+    <label class="col-xs-4 control-label">
+        <span translate="gamediary.form.image"></span>
+    </label>
+
+    <div class="col-xs-8">
+        <a ng-show="!$ctrl.harvest.imageIds || $ctrl.harvest.imageIds.length == 0"
+           ng-click="$ctrl.uploadImage()"
+           class="btn btn-primary">
+            <span class="glyphicon glyphicon-plus"></span> &nbsp;
+            <span translate="gamediary.button.addImage"></span>
+        </a>
+    </div>
+
+    <div class="col-xs-11 col-xs-offset-1">
+        <hr class="invisible"/>
+
+        <div ng-repeat="uuid in $ctrl.harvest.imageIds">
+            <img ng-src="{{$ctrl.getImageUrl(uuid, 100, 100, true)}}">
+
+            <div class="pull-right">
+                <button type="button" class="btn btn-sm  btn-default"
+                        ng-click="$ctrl.changeImage(uuid)">
+                    <span class="glyphicon glyphicon-edit"></span> &nbsp;
+                    <span translate="gamediary.button.changeImage"></span>
+                </button>
+
+                <button type="button" class="btn btn-sm btn-default"
+                        ng-click="$ctrl.removeImage(uuid)">
+                    <span class="glyphicon glyphicon-remove"></span> &nbsp;
+                    <span translate="global.button.delete"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

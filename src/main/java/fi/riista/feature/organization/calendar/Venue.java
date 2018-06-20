@@ -5,7 +5,19 @@ import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.address.Address;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.*;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -30,6 +42,7 @@ public class Venue extends LifecycleEntity<Long> {
     @JoinColumn(unique = true, nullable = false)
     private Address address;
 
+    @Valid
     @Embedded
     private GeoLocation geoLocation;
 

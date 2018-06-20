@@ -37,7 +37,7 @@ public class MobileAnnouncementFeature {
         if (since != null) {
             filter.withCreatedAfter(DateUtil.toDateNullSafe(since));
         } else {
-            filter.withCreatedAfterStartOfHuntingYearDate();
+            filter.withCreatedAfterStartOfPreviousHuntingYearDate();
         }
 
         return filter

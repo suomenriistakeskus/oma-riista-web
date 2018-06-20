@@ -1,46 +1,36 @@
 <nav class="navbar r-subnav-navbar" role="navigation">
     <div class="container">
         <div class="navbar-collapse collapse" class="in">
-            <ul class="nav navbar-nav r-subnav-nav" ng-show="authenticated">
-                <!-- FOR PERSON -->
-                <li ng-show="account.role === 'ROLE_USER'" active-if-state-includes="profile.diary">
+            <ul class="nav navbar-nav r-subnav-nav" ng-if="!$navCtrl.hideNavigation()">
+                <li ng-if="!$navCtrl.isModeratorView()" active-if-state-includes="profile.diary">
                     <a ui-sref="profile.diary({id: 'me'})" translate="account.profile.menu.gameDiary"></a>
                 </li>
 
-                <li ng-show="account.role === 'ROLE_USER'" active-if-state-includes="profile.messages">
+                <li ng-if="!$navCtrl.isModeratorView()" active-if-state-includes="profile.messages">
                     <a ui-sref="profile.messages({id: 'me'})" translate="account.profile.menu.announcements"></a>
                 </li>
 
-                <li ng-show="account.role === 'ROLE_USER'" active-if-state-includes="harvestreport.main">
-                    <a ui-sref="harvestreport.main.todo">
-                        <span translate="account.profile.menu.harvestreports"></span>
-                        <span r-account-todo></span>
+                <li active-if-state-includes="profile.permits,profile.permit,profile.newpermit,profile.permitwizard">
+                    <a ng-click="$navCtrl.openPermits()">
+                        <span translate="harvestreport.menu.permits"></span>
+
+                        <span r-account-todo="'permits'"></span>
                     </a>
                 </li>
 
-                <li ng-show="account.role === 'ROLE_USER'" active-if-state-includes="profile.account,profile.clubconfig">
-                    <a ui-sref="profile.account({id: 'me'})">
+                <li active-if-state-includes="profile.account,profile.clubconfig">
+                    <a ng-click="$navCtrl.openProfile()">
                         <span translate="account.profile.menu.profile"></span>
-                        <span r-account-todo="'invitations'"></span>
-                    </a>
-                </li>
 
-                <!-- FOR MODERATORS -->
-                <li ng-show="account.role !== 'ROLE_USER'" active-if-state-includes="profile.harvestreport">
-                    <a ui-sref="profile.harvestreport.todo">
-                        <span translate="account.profile.menu.harvestreports"></span>
-                    </a>
-                </li>
-
-                <li ng-show="account.role !== 'ROLE_USER'" active-if-state-includes="profile.account">
-                    <a ng-click="moderatorViewCurrentSelectedProfile()">
-                        <span translate="account.profile.menu.profile"></span>
+                        <span ng-if="!$navCtrl.isModeratorView()"
+                              r-account-todo="'invitations'"></span>
                     </a>
                 </li>
             </ul>
         </div>
     </div>
 </nav>
+
 <div riista-container-css>
     <div growl></div>
     <div ui-view autoscroll="false"></div>

@@ -15,39 +15,48 @@
     <spring:eval var="rev" expression="@runtimeEnvironmentUtil.revision"/>
     <spring:eval var="environmentId" expression="@runtimeEnvironmentUtil.environmentId"/>
     <spring:eval var="isProductionEnvironment" expression="@runtimeEnvironmentUtil.productionEnvironment"/>
+    <spring:eval var="sentryDsn" expression="@sentryConfig.sentryDsnPublic"/>
     <c:set var="sourcePrefix" value="${contextPath}/v/${rev}"/>
-    <link rel="stylesheet" href="/v/${styleVersion}/css/app.css">
     <script>
-        WebFontConfig = {
-            google: { families: [ 'Open+Sans:400,700', 'Roboto+Slab:700' ] }
-        };
-
-        (function(d) {
-            var wf = d.createElement('script'), s = d.scripts[0];
-            wf.src = 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js';
-            s.parentNode.insertBefore(wf, s);
-        })(document);
         <%@ include file="/frontend/js/lib/angular-loader.min.js" %>
-        <%@ include file="/frontend/js/lib/script.min.js" %>
-        ;$script([
-            '/v/${vendorAngularVersion}/js/vendor.angular.min.js',
+        <%@ include file="/frontend/js/lib/loadjs.min.js" %>
+        loadjs([
+            'css!https://fonts.googleapis.com/css?family=Open+Sans:300,400,700|Roboto+Slab:700',
+            'css!/v/${styleVersion}/css/app.css',
+            'https://cdn.ravenjs.com/3.20.1/raven.min.js',
             '/v/${vendorOtherVersion}/js/vendor.other.min.js',
-            '/v/${appVersion}/js/app.min.js',
-            '/v/${templatesVersion}/js/templates.js'
-        ], function () {
-            angular.module('app.metadata', [])
-                .constant('environmentId', '${environmentId}')
-                .constant('isProductionEnvironment', ${isProductionEnvironment})
-                .constant('appRevision', '${rev}')
-                .constant('versionUrlPrefix', '${sourcePrefix}');
-            angular.bootstrap(document, ['app'], {
-                strictDi: true
-            });
+            '/v/${vendorAngularVersion}/js/vendor.angular.min.js',
+            '/v/${templatesVersion}/js/templates.js',
+            '/v/${appVersion}/js/app.min.js'
+        ], 'app', {
+            numRetries: 1
+        });
+        loadjs.ready('app', {
+            success: function () {
+                var sentryDsn = '${sentryDsn}';
+
+                if (sentryDsn) {
+                    // configure the SDK as you normally would
+                    Raven.config(sentryDsn).install();
+                }
+
+                Raven.context(function () {
+                    angular.module('app.metadata', [])
+                        .constant('environmentId', '${environmentId}')
+                        .constant('isProductionEnvironment', ${isProductionEnvironment})
+                        .constant('appRevision', '${rev}')
+                        .constant('versionUrlPrefix', '${sourcePrefix}');
+                    angular.bootstrap(document, ['app'], {
+                        strictDi: true
+                    });
+                });
+            }
         });
     </script>
 </head>
 <body>
 <div class="hidden">'Oma riista' on Suomen riistakeskuksen helppokäyttöinen sähköisen asioinnin palvelu metsästäjille ja rhy toiminnanohjaajille.</div>
+<div class="hidden" ng-controller="IdleController"></div>
 <noscript>
     <div class="no-js">
         <div class="well">
@@ -106,25 +115,6 @@
         riista-footer-css
         ng-include="'layout/footer.html'">
 </footer>
-
-<c:if test="${isProductionEnvironment}">
-<!-- BEGIN GA -->
-<script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-51418132-1', 'riista.fi');
-    ga('send', 'pageview');
-
-</script>
-<!-- END GA -->
-
-<!-- BEGIN Snoobi v1.4 -->
-<script type="text/javascript" src="https://eu1.snoobi.com/snoop.php?tili=riista_fi"></script>
-<!-- END Snoobi v1.4 -->
-</c:if>
 
 </body>
 </html>

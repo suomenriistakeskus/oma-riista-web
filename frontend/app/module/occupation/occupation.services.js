@@ -53,8 +53,8 @@ angular.module('app.occupation.services', [])
 
         var current = function (boardTypes, allOccupations) {
             var occupations = _.filter(allOccupations, function (o) {
-                return (o.beginDate === null || localDate(o.beginDate) <= today()) &&
-                    (o.endDate === null || localDate(o.endDate) >= today());
+                return (!o.beginDate|| localDate(o.beginDate) <= today()) &&
+                    (!o.endDate || localDate(o.endDate) >= today());
             });
             var currentOccupations = _.filter(occupations, function (o) {
                 return !isBoard(boardTypes, o.occupationType);

@@ -1,0 +1,75 @@
+<div>
+    <h4 class="text-muted" translate="harvestpermit.mine.permits.title"></h4>
+
+    <div ng-show="!$ctrl.permits || $ctrl.permits.length === 0"
+         class="alert alert-info"
+         translate="harvestpermit.noPermits"></div>
+
+    <uib-accordion close-others="true">
+        <div uib-accordion-group class="panel-default"
+             is-open="permit.isOpen"
+             template-url="common/accordion-group.html"
+             id="permit-{{ ::$index }}"
+             ng-repeat="permit in ::$ctrl.permits track by permit.id">
+
+            <uib-accordion-heading>
+                <div>
+                    <span class="glyphicon"
+                          ng-class="{'glyphicon-chevron-down': permit.isOpen, 'glyphicon-chevron-right': !permit.isOpen}"></span>
+                    <strong ng-bind="::permit.permitNumber"></strong>
+                </div>
+                <div>
+                    <span class="text-muted" ng-bind="::permit.permitType"></span>
+                </div>
+            </uib-accordion-heading>
+
+            <table class="table">
+                <tbody>
+                <tr>
+                    <th class="col-xs-4" translate="harvestpermit.speciesAndAmount"></th>
+                    <td class="col-xs-8">
+                        <div ng-repeat="speciesAmount in ::permit.speciesAmounts">
+                            <span name-translated="speciesAmount.gameSpecies.name"></span>
+                            <span ng-bind="::speciesAmount.amount"></span>
+                            <span translate="harvestpermit.pcs"></span>
+                            <span ng-bind="::speciesAmount | speciesAmountIntervalText"></span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th translate="harvestpermit.contactPerson"></th>
+                    <td>
+                        <div ng-repeat="person in ::permit.contactPersons | orderBy:['lastName', 'byName'] track by person.id">
+                            <span ng-bind="::person.byName"></span>
+                            <span ng-bind="::person.lastName"></span>
+                            <br>
+                            <span ng-bind="::person.hunterNumber"></span>
+                        </div>
+                    </td>
+                </tr>
+                <tr ng-if="false"><!-- TODO this doesn't work for mooselike permits, localisations -->
+                    <th>Saalisilmoituksen tila</th>
+                    <td>
+                        <span ng-if="::(!permit.harvestReportState)">Puuttuu</span>
+                        <span ng-if="::permit.harvestReportState"
+                              translate="harvestreport.state.{{::permit.harvestReportState}}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+
+            <div class="row">
+                <div class="col-xs-6 col-xs-offset-6">
+                    <button type="button" class="btn btn-block btn-info"
+                            ng-click="$ctrl.open(permit)">
+                        <span ng-show="::$ctrl.requiresAction(permit)"
+                              class="text-danger fa fa-exclamation-triangle">
+                        </span>
+                        <span translate="harvestpermit.mine.permits.openManagement"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </uib-accordion>
+</div>

@@ -11,6 +11,20 @@ import java.util.Objects;
 
 public class HarvestPermitContactPersonDTO extends BaseEntityDTO<Long> {
 
+    @Nonnull
+    public static HarvestPermitContactPersonDTO create(@Nonnull final Person person) {
+        Objects.requireNonNull(person, "person must not be null");
+
+        HarvestPermitContactPersonDTO dto = new HarvestPermitContactPersonDTO();
+        DtoUtil.copyBaseFields(person, dto);
+
+        dto.setHunterNumber(person.getHunterNumber());
+        dto.setByName(person.getByName());
+        dto.setLastName(person.getLastName());
+
+        return dto;
+    }
+
     private Long id;
     private Integer rev;
     private boolean canBeDeleted;
@@ -74,25 +88,5 @@ public class HarvestPermitContactPersonDTO extends BaseEntityDTO<Long> {
 
     public void setCanBeDeleted(boolean canBeDeleted) {
         this.canBeDeleted = canBeDeleted;
-    }
-
-    public static @Nonnull HarvestPermitContactPersonDTO createCanBeDeleted(@Nonnull final Person person) {
-        return create(person, true);
-    }
-
-    public static @Nonnull HarvestPermitContactPersonDTO create(@Nonnull final Person person,
-                                                                final Boolean canBeDeleted) {
-        Objects.requireNonNull(person, "person must not be null");
-
-        HarvestPermitContactPersonDTO dto = new HarvestPermitContactPersonDTO();
-        DtoUtil.copyBaseFields(person, dto);
-
-        dto.setHunterNumber(person.getHunterNumber());
-        dto.setByName(person.getByName());
-        dto.setLastName(person.getLastName());
-        if (canBeDeleted != null) {
-            dto.setCanBeDeleted(canBeDeleted);
-        }
-        return dto;
     }
 }

@@ -1,0 +1,84 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.administration.shootingTests.title'"
+                               last-modified="$ctrl.shootingTests.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.administration.shootingTests.allTestEvents"></td>
+                        <td num-pieces="::$ctrl.shootingTests.allShootingTestEvents"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" ng-switch="$ctrl.firearmTestEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.shootingTests.firearmTestEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.shootingTests.firearmTestEvents"></div>
+                        </td>
+                        <td ng-switch="$ctrl.firearmTestEventsOverridden">
+                            <span ng-switch-when="true" num-pieces="::$ctrl.shootingTests.moderatorOverriddenFirearmTestEvents"></span>
+                            <span ng-switch-when="false" num-pieces="::$ctrl.shootingTests.firearmTestEvents"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" ng-switch="$ctrl.bowTestEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.shootingTests.bowTestEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.shootingTests.bowTestEvents"></div>
+                        </td>
+                        <td ng-switch="$ctrl.bowTestEventsOverridden">
+                            <span ng-switch-when="true" num-pieces="::$ctrl.shootingTests.moderatorOverriddenBowTestEvents"></span>
+                            <span ng-switch-when="false" num-pieces="::$ctrl.shootingTests.bowTestEvents"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.administration.shootingTests.allAttempts"></td>
+                        <td num-pieces="$ctrl.countAllShootingTestAttempts()"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.shootingTests.allRoeDeerAttempts"></td>
+                        <td num-pieces="::$ctrl.shootingTests.allRoeDeerAttempts"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.shootingTests.qualifiedRoeDeerAttempts"></td>
+                        <td num-pieces="::$ctrl.shootingTests.qualifiedRoeDeerAttempts"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.shootingTests.allMooseAttempts"></td>
+                        <td num-pieces="::$ctrl.shootingTests.allMooseAttempts"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.shootingTests.qualifiedMooseAttempts"></td>
+                        <td num-pieces="::$ctrl.shootingTests.qualifiedMooseAttempts"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.shootingTests.allBearAttempts"></td>
+                        <td num-pieces="::$ctrl.shootingTests.allBearAttempts"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.shootingTests.qualifiedBearAttempts"></td>
+                        <td num-pieces="::$ctrl.shootingTests.qualifiedBearAttempts"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.shootingTests.allBowAttempts"></td>
+                        <td num-pieces="::$ctrl.shootingTests.allBowAttempts"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.shootingTests.qualifiedBowAttempts"></td>
+                        <td num-pieces="::$ctrl.shootingTests.qualifiedBowAttempts"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.administration.shootingTests.shootingTestOfficials"></td>
+                        <td num-persons="::$ctrl.shootingTests.shootingTestOfficials"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.openEditDialog()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

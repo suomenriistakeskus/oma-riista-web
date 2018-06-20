@@ -1,17 +1,20 @@
 package fi.riista.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.feature.gis.garmin.CGPSMapperAdapter;
 import fi.riista.feature.gis.geojson.FeatureCollectionWithProperties;
+import fi.riista.feature.huntingclub.area.HuntingClubAreaCopyFeature;
 import fi.riista.feature.huntingclub.area.HuntingClubAreaCrudFeature;
 import fi.riista.feature.huntingclub.area.HuntingClubAreaDTO;
+import fi.riista.feature.huntingclub.area.HuntingClubAreaListFeature;
 import fi.riista.feature.huntingclub.area.excel.HuntingClubAreaExcelFeature;
-import fi.riista.feature.huntingclub.area.print.AreaPrintFeature;
-import fi.riista.feature.huntingclub.area.print.AreaPrintRequestDTO;
+import fi.riista.feature.huntingclub.area.print.HuntingClubAreaPrintFeature;
 import fi.riista.feature.huntingclub.area.transfer.HuntingClubAreaExportFeature;
 import fi.riista.feature.huntingclub.area.transfer.HuntingClubAreaImportFeature;
 import fi.riista.feature.huntingclub.area.zone.HuntingClubAreaZoneFeature;
 import fi.riista.feature.huntingclub.copy.HuntingClubAreaCopyDTO;
+import fi.riista.integration.mapexport.MapPdfModel;
+import fi.riista.integration.mapexport.MapPdfParameters;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.MediaTypeExtras;
 import net.rossillo.spring.web.mvc.CacheControl;
@@ -24,11 +27,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -45,12 +50,18 @@ import java.util.Locale;
 import java.util.zip.GZIPInputStream;
 
 @RestController
-@RequestMapping(value = "/api/v1/club/{clubId:\\d+}/area", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/clubarea", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class ClubAreaApiResource {
     private static final Logger LOG = LoggerFactory.getLogger(ClubAreaApiResource.class);
 
     @Resource
+    private HuntingClubAreaListFeature huntingClubAreaListFeature;
+
+    @Resource
     private HuntingClubAreaCrudFeature huntingClubAreaCrudFeature;
+
+    @Resource
+    private HuntingClubAreaCopyFeature huntingClubAreaCopyFeature;
 
     @Resource
     private HuntingClubAreaZoneFeature huntingClubAreaZoneFeature;
@@ -65,82 +76,89 @@ public class ClubAreaApiResource {
     private HuntingClubAreaExcelFeature huntingClubAreaExcelFeature;
 
     @Resource
-    private AreaPrintFeature huntingClubAreaPrintFeature;
+    private HuntingClubAreaPrintFeature huntingClubAreaPrintFeature;
 
     @Resource
     private CGPSMapperAdapter cgpsMapperAdapter;
 
     @Resource
-    private ObjectMapper objectMapper;
+    private CustomJacksonObjectMapper objectMapper;
 
+    @GetMapping
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(method = RequestMethod.GET)
-    public List<HuntingClubAreaDTO> list(@PathVariable long clubId,
+    public List<HuntingClubAreaDTO> list(@RequestParam long clubId,
                                          @RequestParam(required = false) Integer year,
-                                         @RequestParam(defaultValue = "false") boolean activeOnly) {
-        return huntingClubAreaCrudFeature.listByClubAndYear(clubId, year, activeOnly);
+                                         @RequestParam(defaultValue = "false") boolean activeOnly,
+                                         @RequestParam(defaultValue = "false") boolean includeEmpty) {
+        return huntingClubAreaListFeature.listByClubAndYear(clubId, year, activeOnly, includeEmpty);
     }
 
+    @GetMapping(value = "/huntingyears")
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}", method = RequestMethod.GET)
+    public List<Integer> listHuntingYears(@RequestParam long clubId) {
+        return huntingClubAreaListFeature.listHuntingYears(clubId);
+    }
+
+    @GetMapping(value = "/{id:\\d+}")
+    @CacheControl(policy = CachePolicy.NO_CACHE)
     public HuntingClubAreaDTO read(@PathVariable Long id) {
         return huntingClubAreaCrudFeature.read(id);
     }
 
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/huntingyears", method = RequestMethod.GET)
-    public List<Integer> listHuntingYears(@PathVariable Long clubId) {
-        return huntingClubAreaCrudFeature.listHuntingYears(clubId);
-    }
-
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public HuntingClubAreaDTO createArea(@PathVariable Long clubId,
-                                         @RequestBody @Validated HuntingClubAreaDTO dto) {
-
-        dto.setClubId(clubId);
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public HuntingClubAreaDTO createArea(@RequestBody @Validated HuntingClubAreaDTO dto) {
         return huntingClubAreaCrudFeature.create(dto);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/{id:\\d+}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public HuntingClubAreaDTO updateArea(@PathVariable Long clubId,
-                                         @PathVariable Long id,
-                                         @RequestBody @Validated HuntingClubAreaDTO dto) {
-        dto.setClubId(clubId);
+    @PutMapping(value = "/{id:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public HuntingClubAreaDTO updateArea(@PathVariable Long id, @RequestBody @Validated HuntingClubAreaDTO dto) {
         dto.setId(id);
         return huntingClubAreaCrudFeature.update(dto);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/{id:\\d+}/copy", method = RequestMethod.POST)
+    @PostMapping(value = "/{id:\\d+}/activate")
+    public void activate(@PathVariable long id) {
+        huntingClubAreaCrudFeature.setActiveStatus(id, true);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = "/{id:\\d+}/deactivate")
+    public void deactivate(@PathVariable long id) {
+        huntingClubAreaCrudFeature.setActiveStatus(id, false);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = "/{id:\\d+}/copy")
     public HuntingClubAreaDTO copyArea(@PathVariable Long id,
                                        @RequestBody @Valid HuntingClubAreaCopyDTO dto) {
         dto.setId(id);
-        return huntingClubAreaCrudFeature.copy(dto);
+        return huntingClubAreaCopyFeature.copy(dto);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/features", method = RequestMethod.GET, produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
+    @GetMapping(value = "/{id:\\d+}/features", produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
     public FeatureCollection geoJSON(@PathVariable long id) {
         return huntingClubAreaZoneFeature.geoJSON(id);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/{id:\\d+}/features", method = RequestMethod.PUT, produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
+    @PutMapping(value = "/{id:\\d+}/features", produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
     public void updateGeoJSON(@PathVariable long id, @RequestBody @Valid FeatureCollection featureCollection) {
         final long zoneId = huntingClubAreaZoneFeature.updateGeoJSON(id, featureCollection);
         huntingClubAreaZoneFeature.updateAreaSize(zoneId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/combinedFeatures", method = RequestMethod.GET, produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
+    @GetMapping(value = "/{id:\\d+}/combinedFeatures", produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
     public FeatureCollection combinedGeoJSON(@PathVariable long id) {
         return huntingClubAreaZoneFeature.combinedGeoJSON(id);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/{id:\\d+}/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{id:\\d+}/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void importGeojson(@PathVariable long id,
                               @RequestPart("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
@@ -159,19 +177,18 @@ public class ClubAreaApiResource {
         return objectMapper.readValue(inputStream, FeatureCollectionWithProperties.class);
     }
 
-    @RequestMapping(value = "/{id:\\d+}/zip", method = RequestMethod.POST, produces = "application/zip")
-    public ResponseEntity<byte[]> exportCombinedGeojsonZip(@PathVariable final long id,
-                                                           final Locale locale) {
+    @PostMapping(value = "/{id:\\d+}/zip", produces = "application/zip")
+    public ResponseEntity<byte[]> exportCombinedGeojsonZip(@PathVariable final long id, final Locale locale) {
         final byte[] zipFile = huntingClubAreaExportFeature.exportCombinedGeoJsonAsArchive(id, locale);
         final String filename = "club-area-" + id + ".zip";
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .header(ContentDispositionUtil.HEADER_NAME, ContentDispositionUtil.encodeAttachmentFilename(filename))
+                .headers(ContentDispositionUtil.header(filename))
                 .body(zipFile);
     }
 
-    @RequestMapping(value = "/{id:\\d+}/garmin", method = RequestMethod.POST)
+    @PostMapping(value = "/{id:\\d+}/garmin")
     public ResponseEntity<?> exportGarmin(@PathVariable long id) {
         final HuntingClubAreaDTO areaDTO = huntingClubAreaCrudFeature.read(id);
         final FeatureCollection featureCollection = huntingClubAreaExportFeature.exportCombinedGeoJsonForGarmin(id);
@@ -180,13 +197,11 @@ public class ClubAreaApiResource {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(ContentDispositionUtil.HEADER_NAME,
-                        ContentDispositionUtil.encodeAttachmentFilename(filename))
+                .headers(ContentDispositionUtil.header(filename))
                 .body(cgpsMapperAdapter.exportToFile(featureCollection, areaDTO));
     }
 
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/excel/{type}", method = RequestMethod.POST)
+    @PostMapping(value = "/{id:\\d+}/excel/{type}")
     public ModelAndView exportExcel(@PathVariable final long id, @PathVariable final String type) {
         if ("all".equals(type)) {
             return new ModelAndView(huntingClubAreaExcelFeature.exportAll(id));
@@ -198,23 +213,19 @@ public class ClubAreaApiResource {
         throw new IllegalArgumentException("Unknown excel type: " + type);
     }
 
-    @RequestMapping(value = "/{id:\\d+}/print",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @PostMapping(value = "/{id:\\d+}/print", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<?> print(@PathVariable final long id,
-                                   @ModelAttribute @Valid final AreaPrintRequestDTO dto) {
+                                   @ModelAttribute @Valid final MapPdfParameters dto) {
         try {
             final Locale locale = LocaleContextHolder.getLocale();
-            final FeatureCollection featureCollection = huntingClubAreaPrintFeature.exportClubAreaFeatures(id, locale);
-
-            final String filename = huntingClubAreaPrintFeature.getClubAreaExportFileName(id, locale);
-            final byte[] imageData = huntingClubAreaPrintFeature.printGeoJson(dto, featureCollection);
+            final MapPdfModel model = huntingClubAreaPrintFeature.getModel(id, locale);
+            final byte[] imageData = huntingClubAreaPrintFeature.renderPdf(dto, model);
             final MediaType mediaType = MediaTypeExtras.APPLICATION_PDF;
 
             return ResponseEntity.ok()
                     .contentType(mediaType)
                     .contentLength(imageData.length)
-                    .header(ContentDispositionUtil.HEADER_NAME, ContentDispositionUtil.encodeAttachmentFilename(filename))
+                    .headers(ContentDispositionUtil.header(model.getExportFileName()))
                     .body(imageData);
 
         } catch (final Exception ex) {

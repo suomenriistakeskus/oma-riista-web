@@ -25,21 +25,22 @@ angular.module('app.common.services', [])
         var dateTimeToString = function (date, momentFormat) {
             return _dateToString(date, momentFormat || 'YYYY-MM-DD[T]HH:mm');
         };
-        var dateIntervalToString = function(begin, end) {
-            begin = begin ? dateToString(moment(begin), 'D.M.YYYY') : ' ';
-            end = end ? dateToString(moment(end), 'D.M.YYYY') : ' ';
+        var dateIntervalToString = function (begin, end) {
+            begin = begin ? dateToString(toMoment(begin), 'D.M.YYYY') : ' ';
+            end = end ? dateToString(toMoment(end), 'D.M.YYYY') : ' ';
 
             return begin + ' - ' + end;
         };
 
         var dateWithinRange = function (d, begin, end) {
-            begin = begin ? moment(begin) : null;
-            end = end ? moment(end) : null;
-            d = d ? moment(d) : null;
+            begin = begin ? toMoment(begin, 'YYYY-MM-DD') : null;
+            end = end ? toMoment(end, 'YYYY-MM-DD') : null;
+            d = d ? toMoment(d, 'YYYY-MM-DD') : null;
 
             if (!d) {
                 return false;
-            } if (begin && end) {
+            }
+            if (begin && end) {
                 return d.isBetween(begin, end, 'day') || d.isSame(begin, 'day') || d.isSame(end, 'day');
             } else if (begin) {
                 return d.isAfter(begin, 'day') || d.isSame(begin, 'day');
@@ -107,28 +108,30 @@ angular.module('app.common.services', [])
             clear: _.noop
         };
 
-        function resolveStorage() {
-            if (!window.localStorage) {
-                console.log('LocalStorageService no localStorage available, returning no-op storage object');
-                return noopStorage;
-            }
+        function localStorageAvailable() {
+            var key = 'LocalStorageService_testStorage';
+
             try {
-                window.localStorage.setItem('LocalStorageService_testStorage', 1);
-                window.localStorage.removeItem('LocalStorageService_testStorage');
+                window.localStorage.setItem(key, key);
+                window.localStorage.removeItem(key);
+                return true;
+
             } catch (e) {
-                console.log('LocalStorageService localStorage not usable, returning no-op storage object', e);
-                return noopStorage;
+                return false;
             }
-            return window.localStorage;
+        }
+
+        function resolveStorage() {
+            return localStorageAvailable() ? window.localStorage : noopStorage;
         }
 
         var _storage = resolveStorage();
 
-        this.getKey = function(key, value) {
+        this.getKey = function (key) {
             return _storage.getItem(key);
         };
 
-        this.setKey = function(key, value) {
+        this.setKey = function (key, value) {
             if (value) {
                 _storage.setItem(key, value);
             } else {
@@ -160,22 +163,65 @@ angular.module('app.common.services', [])
         };
     })
 
+    .service('HttpGetBlob', function ($http) {
+        function appendTransform(defaults, transform) {
+            defaults = angular.isArray(defaults) ? defaults : [defaults];
+            return defaults.concat(transform);
+        }
+
+        this.get = function (url, responseType) {
+            return $http({
+                method: 'GET',
+                url: url,
+                responseType: responseType || 'text',
+                transformResponse: appendTransform($http.defaults.transformResponse, function (data, headersGetter, status) {
+                    if (status === 200) {
+                        var headers = headersGetter();
+                        var contentType = headers['content-type'] || null;
+
+                        if (!contentType) {
+                            console.log('Content-Type not set in response');
+                        }
+
+                        var blob = new Blob([data], {type: contentType});
+
+                        var filenameRegexp = /.*filename="(.+)"/i;
+                        var filenameMatch = filenameRegexp.exec(headers['content-disposition']);
+
+                        if (angular.isObject(filenameMatch)) {
+                            blob.name = filenameMatch['1'];
+                        }
+
+                        return blob;
+                    }
+
+                    return null;
+                })
+            });
+        };
+    })
+
     .service('FormPostService', function ($cookies) {
-        this.submitFormUsingBlankTarget = function (action, params) {
+        function submitForm(action, params, target, excludeCsrf) {
             var form = document.createElement('form');
             form.setAttribute('method', 'post');
             form.setAttribute('action', action);
-            form.setAttribute('target', '_blank');
+            form.setAttribute('target', target);
             form.style.visibility = 'hidden';
 
-            var csrfField = document.createElement('input');
-            csrfField.setAttribute("type", "hidden");
-            csrfField.setAttribute('name', '_csrf');
-            csrfField.setAttribute('value', $cookies.get('XSRF-TOKEN'));
-            csrfField.style.visibility = 'hidden';
-            form.appendChild(csrfField);
+            if (!excludeCsrf) {
+                var csrfField = document.createElement('input');
+                csrfField.setAttribute("type", "hidden");
+                csrfField.setAttribute('name', '_csrf');
+                csrfField.setAttribute('value', $cookies.get('XSRF-TOKEN'));
+                csrfField.style.visibility = 'hidden';
+                form.appendChild(csrfField);
+            }
 
             _.forOwn(params, function (value, key) {
+                if (value === null || value === '' || angular.isUndefined(value)) {
+                    return;
+                }
                 var fieldElement = document.createElement('input');
                 fieldElement.setAttribute("type", "hidden");
                 fieldElement.setAttribute('name', key);
@@ -186,6 +232,14 @@ angular.module('app.common.services', [])
 
             document.body.appendChild(form);
             form.submit();
+        }
+
+        this.submitFormUsingBlankTarget = function (action, params, excludeCsrf) {
+            submitForm(action, params, '_blank', excludeCsrf);
+        };
+
+        this.submitFormUsingSelfTarget = function (action, params, excludeCsrf) {
+            submitForm(action, params, '_self', excludeCsrf);
         };
     })
 

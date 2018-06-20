@@ -1,13 +1,14 @@
 package fi.riista.feature.huntingclub.members;
 
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.organization.occupation.OccupationDTO;
-import fi.riista.feature.organization.person.ContactInfoShare;
-import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationDTO;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.F;
 import fi.riista.util.ListTransformer;
@@ -34,11 +35,11 @@ public class HuntingClubOccupationDTOTransformer extends ListTransformer<Occupat
             return Collections.emptyList();
         }
 
-        final Person activePerson = activeUserService.getActiveUser().getPerson();
-        final boolean isModerator = activeUserService.isModeratorOrAdmin();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final boolean isModerator = activeUser.isModeratorOrAdmin();
 
         return F.mapNonNullsToList(list, occupation -> {
-            final boolean isLeader = isModerator || isLeader(activePerson, occupation.getOrganisation());
+            final boolean isLeader = isModerator || isLeader(activeUser.getPerson(), occupation.getOrganisation());
             final boolean showContactInformation = checkShowContactInfo(isLeader, occupation);
 
             return OccupationDTO.create(occupation, isLeader, showContactInformation);

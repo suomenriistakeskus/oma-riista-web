@@ -95,25 +95,25 @@ public class SQSrvaEvent extends RelationalPathSpatial<SQSrvaEvent> {
 
     public final com.querydsl.sql.PrimaryKey<SQSrvaEvent> srvaEventPkey = createPrimaryKey(srvaEventId);
 
-    public final com.querydsl.sql.ForeignKey<SQGeolocationSource> srvaEventGeolocationSourceFk = createForeignKey(geolocationSource, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQPerson> srvaEventAuthorFk = createForeignKey(authorId, "person_id");
-
-    public final com.querydsl.sql.ForeignKey<SQSrvaEventName> srvaEventEventFk = createForeignKey(eventName, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQSrvaResultType> srvaEventEventResultFk = createForeignKey(eventResult, "name");
-
     public final com.querydsl.sql.ForeignKey<SQGameSpecies> srvaEventGameSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
 
     public final com.querydsl.sql.ForeignKey<SQPerson> srvaEventApproverAsPersonFk = createForeignKey(approverAsPersonId, "person_id");
 
-    public final com.querydsl.sql.ForeignKey<SQSrvaEventType> srvaEventEventTypeFk = createForeignKey(eventType, "name");
+    public final com.querydsl.sql.ForeignKey<SQGeolocationSource> srvaEventGeolocationSourceFk = createForeignKey(geolocationSource, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQSrvaResultType> srvaEventEventResultFk = createForeignKey(eventResult, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQPerson> srvaEventAuthorFk = createForeignKey(authorId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQSystemUser> srvaEventApproverAsUserFk = createForeignKey(approverAsUserId, "user_id");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> srvaEventRhyFk = createForeignKey(rhyId, "organisation_id");
 
+    public final com.querydsl.sql.ForeignKey<SQSrvaEventType> srvaEventEventTypeFk = createForeignKey(eventType, "name");
+
     public final com.querydsl.sql.ForeignKey<SQSrvaEventState> srvaEventStateFk = createForeignKey(state, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQSystemUser> srvaEventApproverAsUserFk = createForeignKey(approverAsUserId, "user_id");
+    public final com.querydsl.sql.ForeignKey<SQSrvaEventName> srvaEventEventFk = createForeignKey(eventName, "name");
 
     public final com.querydsl.sql.ForeignKey<SQGameDiaryImage> _gameDiaryImageSrvaEventFk = createInvForeignKey(srvaEventId, "srva_event_id");
 
@@ -128,6 +128,11 @@ public class SQSrvaEvent extends RelationalPathSpatial<SQSrvaEvent> {
 
     public SQSrvaEvent(String variable, String schema, String table) {
         super(SQSrvaEvent.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQSrvaEvent(String variable, String schema) {
+        super(SQSrvaEvent.class, forVariable(variable), schema, "srva_event");
         addMetadata();
     }
 

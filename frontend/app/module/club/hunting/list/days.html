@@ -3,15 +3,15 @@
             class="panel-default"
             is-open="day.isOpen"
             template-url="common/accordion-group.html"
-            ng-repeat="day in ctrl.huntingDays | orderBy: ['-startDate']">
+            ng-repeat="day in $ctrl.huntingDays | orderBy: ['-startDate']">
         <uib-accordion-heading>
             <div class="row">
                 <div class="col-xs-5">
-                    <span ng-class="ctrl.getDayToggleClasses(day)"></span>
+                    <span ng-class="$ctrl.getDayToggleClasses(day)"></span>
                     &nbsp;
                     <span ng-bind="::(day.startDate | date:'d.M.yyyy')"></span>
                     <span class="glyphicon glyphicon-asterisk text-danger"
-                          ng-show="ctrl.showHuntingDayAsterisk(day)"></span>
+                          ng-show="$ctrl.showHuntingDayAsterisk(day)"></span>
                 </div>
 
                 <div class="col-xs-5">
@@ -22,20 +22,20 @@
                     </span>
 
                     <span ng-class="{'count-zero': day.totalObservationSpecimenCount === 0}"
-                          ng-show="ctrl.isMooseGroupSelected()"
+                          ng-show="$ctrl.isMooseGroupSelected()"
                           class="harvest-counter">
                         <span ng-bind="::(day.totalObservationSpecimenCount)"></span>
                         <r-binoculars-symbol></r-binoculars-symbol>
                     </span>
                 </div>
 
-                <div class="col-xs-2 text-right" ng-show="day.canEdit && ctrl.isMooseGroupSelected()">
+                <div class="col-xs-2 text-right" ng-show="day.canEdit && $ctrl.isMooseGroupSelected()">
                     <a ng-show="day.id"
-                       ng-click="ctrl.editHuntingDay($event, day)">
+                       ng-click="$ctrl.editHuntingDay($event, day)">
                         <span class="glyphicon glyphicon-edit"></span>
                     </a>
                     <a ng-hide="day.id"
-                       ng-click="ctrl.createHuntingDay($event, day)">
+                       ng-click="$ctrl.createHuntingDay($event, day)">
                         <span class="glyphicon glyphicon-plus-sign"></span>
                     </a>
                 </div>
@@ -43,7 +43,7 @@
         </uib-accordion-heading>
 
         <table>
-            <thead ng-if="day.id && ctrl.isMooseGroupSelected()">
+            <thead ng-if="day.id && $ctrl.isMooseGroupSelected()">
             <tr>
                 <th translate="club.hunting.huntingDay.startTime"></th>
                 <td colspan="2" ng-bind="::(day.startTime | date:'HH:mm')"></td>
@@ -83,7 +83,7 @@
             <tbody>
             <tr ng-repeat="entry in day.gameEntries track by (entry.type + entry.id)"
                 ng-class="{'text-muted': !entry.huntingDayId}">
-                <td colspan="3" ng-click="ctrl.onEntryClick(entry, day)">
+                <td colspan="3" ng-click="$ctrl.onEntryClick(entry, day)">
                     <div class="diary-entry-row">
                         <div>
                             <img ng-src="/static/elainlajikuvat/96x96/{{ ::entry.gameSpeciesCode }}.jpg"
@@ -99,7 +99,7 @@
 
                         <div>
                             <span ng-if="entry.specimens && entry.specimens.length === 1"
-                                  ng-bind="::(ctrl.getSpecimenType(entry.specimens[0]) | translateWithPrefix:'club.hunting.specimenAbbrv.')"></span>
+                                  ng-bind="::($ctrl.getSpecimenType(entry.specimens[0]) | translateWithPrefix:'club.hunting.specimenAbbrv.')"></span>
                         </div>
 
                         <div>
@@ -119,7 +119,7 @@
             <tr ng-show="day.totalHarvestSpecimenCount === 0">
                 <td colspan="3"><span class="count-zero" translate="club.hunting.huntingDay.noHarvests"></span></td>
             </tr>
-            <tr ng-show="day.totalObservationSpecimenCount === 0  && ctrl.isMooseGroupSelected()">
+            <tr ng-show="day.totalObservationSpecimenCount === 0  && $ctrl.isMooseGroupSelected()">
                 <td colspan="3"><span class="count-zero" translate="club.hunting.huntingDay.noObservations"></span></td>
             </tr>
             </tbody>

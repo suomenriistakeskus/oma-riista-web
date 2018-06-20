@@ -7,6 +7,5 @@ SELECT
 FROM harvest_quota hq
   JOIN harvest_area ha ON (ha.harvest_area_id = hq.harvest_area_id)
   JOIN harvest_season hs ON (hs.harvest_season_id = hq.harvest_season_id)
-  JOIN harvest_report_fields hr ON (hs.harvest_report_fields_id = hr.harvest_report_fields_id)
-  JOIN game_species g ON (hr.game_species_id = g.game_species_id)
+  JOIN game_species g ON (hs.game_species_id = g.game_species_id)
 ORDER BY 1, 2, 3, 4;

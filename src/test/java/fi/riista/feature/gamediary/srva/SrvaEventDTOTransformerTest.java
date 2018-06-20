@@ -2,26 +2,25 @@ package fi.riista.feature.gamediary.srva;
 
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
-import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.gamediary.srva.method.SrvaMethod;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.test.rules.HibernateStatisticsAssertions;
 import fi.riista.util.F;
-import fi.riista.util.Functions;
-import fi.riista.util.jpa.HibernateStatisticsAssertions;
-import javaslang.Tuple2;
+import io.vavr.Tuple2;
 import org.junit.Test;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
-import static fi.riista.util.TestUtils.createList;
+import static fi.riista.feature.gamediary.image.GameDiaryImage.getUniqueImageIds;
+import static fi.riista.test.TestUtils.createList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class SrvaEventDTOTransformerTest extends AbstractSrvaEventDTOTransformerTest {
@@ -119,10 +118,7 @@ public class SrvaEventDTOTransformerTest extends AbstractSrvaEventDTOTransformer
                     assertNotNull(dto);
                     assertCommonFields(pairs.get(i)._1, dto);
 
-                    final Set<UUID> uuids =
-                            F.mapNonNullsToSet(pairs.get(i)._2, Functions.idOf(GameDiaryImage::getFileMetadata));
-
-                    assertEquals(uuids, new HashSet<>(dto.getImageIds()));
+                    assertThat(dto.getImageIds(), containsInAnyOrder(getUniqueImageIds(pairs.get(i)._2).toArray()));
 
                     assertCanEdit(dto);
                 }
@@ -161,7 +157,6 @@ public class SrvaEventDTOTransformerTest extends AbstractSrvaEventDTOTransformer
             testCanEdit(author, false, SrvaEventStateEnum.APPROVED, user);
         });
     }
-
 
     @Test
     public void testCanEdit_srvaContact() {

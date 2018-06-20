@@ -34,8 +34,8 @@ public class HuntingClubAreaDTO extends BaseEntityDTO<Long> {
 
         if (zoneWithSize != null) {
             dto.setZoneId(zoneWithSize.getId());
-            dto.setComputedAreaSize(zoneWithSize.getComputedAreaSize());
-            dto.setWaterAreaSize(zoneWithSize.getWaterAreaSize());
+            dto.setComputedAreaSize(zoneWithSize.getSize().getAll().getTotal());
+            dto.setWaterAreaSize(zoneWithSize.getSize().getAll().getWater());
             dto.setSourceType(zoneWithSize.getSourceType());
         } else {
             dto.setWaterAreaSize(0);

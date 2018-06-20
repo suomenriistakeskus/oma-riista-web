@@ -1,0 +1,75 @@
+<div class="form-group">
+    <div class="col-xs-2">
+        <div class="input-group" ng-controller="DatePickerController">
+            <input type="text" name="beginDate" id="beginDate2"
+                   class="form-control r-wider-date-input"
+                   uib-datepicker-popup is-open="isDatePickerOpen"
+                   datepicker-append-to-body="true"
+                   max-date="$ctrl.formDates.end"
+                   ng-model="$ctrl.formDates.begin"/>
+
+            <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+        </div>
+    </div>
+    <div class="col-xs-2">
+        <div class="input-group" ng-controller="DatePickerController">
+            <input type="text" name="endDate" id="endDate2"
+                   class="form-control r-wider-date-input"
+                   uib-datepicker-popup is-open="isDatePickerOpen"
+                   datepicker-append-to-body="true"
+                   min-date="$ctrl.formDates.begin"
+                   ng-model="$ctrl.formDates.end"/>
+
+            <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+        </div>
+    </div>
+    <div class="col-xs-8">
+        <form action="/api/v1/dashboard/rhyedit/excel" method="POST">
+            <span class="btn btn-primary" ng-click="$ctrl.updateResolvedRhyEditMetrics()">Päivitä</span>
+
+            <input type="hidden" name="begin" value="{{$ctrl.postParams.begin}}"/>
+            <input type="hidden" name="end" value="{{$ctrl.postParams.end}}"/>
+            <input type="hidden" spring-csrf-cookie/>
+
+            <button type="submit" class="btn btn-primary" ng-show="$ctrl.resolvedRhyEditMetrics">
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="reporting.common.toExcel"></span>
+            </button>
+
+            <span ng-if="$ctrl.loading" class="fa fa-refresh fa-spin fa-lg"></span>
+        </form>
+    </div>
+</div>
+
+<table class="table table-bordered table-striped table-condensed" ng-show="$ctrl.resolvedRhyEditMetrics">
+    <thead>
+    <tr>
+        <th>Alue-koodi</th>
+        <th>RHY-koodi</th>
+        <th>RHY-nimi</th>
+        <th>Tehtävät toiminnanohjaajat</th>
+        <th>Tehtävät moderaattorit</th>
+        <th>Tapahtumat toiminnanohjaajat</th>
+        <th>Tapahtumat moderaattorit</th>
+    </tr>
+    </thead>
+    <tr ng-repeat="row in $ctrl.resolvedRhyEditMetrics">
+        <td>{{row.areaCode}}</td>
+        <td>{{row.rhyCode}}</td>
+        <td>{{row.rhyName}}</td>
+        <td>{{row.occupations.coordinator.sum}}</td>
+        <td>{{row.occupations.moderator.sum}}</td>
+        <td>{{row.events.coordinator.sum}}</td>
+        <td>{{row.events.moderator.sum}}</td>
+    </tr>
+</table>

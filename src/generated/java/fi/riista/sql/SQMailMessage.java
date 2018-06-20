@@ -33,13 +33,7 @@ public class SQMailMessage extends RelationalPathSpatial<SQMailMessage> {
 
     public final BooleanPath delivered = createBoolean("delivered");
 
-    public final DateTimePath<java.sql.Timestamp> deliveryTime = createDateTime("deliveryTime", java.sql.Timestamp.class);
-
-    public final NumberPath<Integer> failureCounter = createNumber("failureCounter", Integer.class);
-
     public final StringPath fromEmail = createString("fromEmail");
-
-    public final DateTimePath<java.sql.Timestamp> lastAttemptTime = createDateTime("lastAttemptTime", java.sql.Timestamp.class);
 
     public final NumberPath<Long> mailMessageId = createNumber("mailMessageId", Long.class);
 
@@ -49,9 +43,9 @@ public class SQMailMessage extends RelationalPathSpatial<SQMailMessage> {
 
     public final DateTimePath<java.sql.Timestamp> submitTime = createDateTime("submitTime", java.sql.Timestamp.class);
 
-    public final StringPath toEmail = createString("toEmail");
-
     public final com.querydsl.sql.PrimaryKey<SQMailMessage> mailMessagePkey = createPrimaryKey(mailMessageId);
+
+    public final com.querydsl.sql.ForeignKey<SQMailMessageRecipient> _mailMessageRecipientMailMessageFk = createInvForeignKey(mailMessageId, "mail_message_id");
 
     public SQMailMessage(String variable) {
         super(SQMailMessage.class, forVariable(variable), "public", "mail_message");
@@ -60,6 +54,11 @@ public class SQMailMessage extends RelationalPathSpatial<SQMailMessage> {
 
     public SQMailMessage(String variable, String schema, String table) {
         super(SQMailMessage.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQMailMessage(String variable, String schema) {
+        super(SQMailMessage.class, forVariable(variable), schema, "mail_message");
         addMetadata();
     }
 
@@ -74,18 +73,14 @@ public class SQMailMessage extends RelationalPathSpatial<SQMailMessage> {
     }
 
     public void addMetadata() {
-        addMetadata(body, ColumnMetadata.named("body").withIndex(6).ofType(Types.VARCHAR).withSize(2147483647).notNull());
+        addMetadata(body, ColumnMetadata.named("body").withIndex(5).ofType(Types.VARCHAR).withSize(2147483647).notNull());
         addMetadata(consistencyVersion, ColumnMetadata.named("consistency_version").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
-        addMetadata(delivered, ColumnMetadata.named("delivered").withIndex(7).ofType(Types.BIT).withSize(1).notNull());
-        addMetadata(deliveryTime, ColumnMetadata.named("delivery_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(failureCounter, ColumnMetadata.named("failure_counter").withIndex(9).ofType(Types.INTEGER).withSize(10).notNull());
+        addMetadata(delivered, ColumnMetadata.named("delivered").withIndex(6).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(fromEmail, ColumnMetadata.named("from_email").withIndex(3).ofType(Types.VARCHAR).withSize(255).notNull());
-        addMetadata(lastAttemptTime, ColumnMetadata.named("last_attempt_time").withIndex(10).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
         addMetadata(mailMessageId, ColumnMetadata.named("mail_message_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
-        addMetadata(scheduledTime, ColumnMetadata.named("scheduled_time").withIndex(11).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
-        addMetadata(subject, ColumnMetadata.named("subject").withIndex(5).ofType(Types.VARCHAR).withSize(255).notNull());
-        addMetadata(submitTime, ColumnMetadata.named("submit_time").withIndex(12).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
-        addMetadata(toEmail, ColumnMetadata.named("to_email").withIndex(4).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(scheduledTime, ColumnMetadata.named("scheduled_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
+        addMetadata(subject, ColumnMetadata.named("subject").withIndex(4).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(submitTime, ColumnMetadata.named("submit_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
     }
 
 }

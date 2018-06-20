@@ -1,5 +1,6 @@
 package fi.riista.integration.lupahallinta.club;
 
+import com.querydsl.sql.SQLQueryFactory;
 import fi.riista.config.BatchConfig;
 import fi.riista.integration.common.LoggingBatchListener;
 import fi.riista.integration.lupahallinta.support.LupahallintaHttpClient;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Resource;
@@ -43,6 +45,9 @@ public class LHHuntingClubBatchConfig {
 
     @Resource
     private StepBuilderFactory stepBuilderFactory;
+
+    @Resource
+    private SQLQueryFactory sqlQueryFactory;
 
     @Bean(name = JOB_NAME)
     public Job lhClubImportJob(
@@ -96,7 +101,13 @@ public class LHHuntingClubBatchConfig {
     @Bean(name = SYNCHRONIZE_STEP)
     public Step lhClubSynchronizeStep() {
         return stepBuilderFactory.get(SYNCHRONIZE_STEP)
-                .tasklet(new LHHuntingClubSynchronizer(dataSource))
+                .<LHSynchronizeClubItem, LHSynchronizeClubItem>chunk(BatchConfig.BATCH_SIZE)
+                .reader(new LHSynchronizeClubReader(sqlQueryFactory))
+                .writer(new LHSynchronizeClubWriter(dataSource))
+                .faultTolerant()
+                .skipLimit(100)
+                .skip(DataAccessException.class)
+                .listener(new LoggingBatchListener())
                 .build();
     }
 

@@ -18,7 +18,9 @@
                 <select class="form-control"
                         name="eventType" id="eventType"
                         ng-model="event.calendarEventType"
-                        ng-options="('event.type.'+o|translate) for o in eventTypes" required></select>
+                        ng-options="('event.type.'+o|translate) for o in eventTypes"
+                        ng-disabled="event.associatedWithShootingTestEvent"
+                        required></select>
             </div>
         </div>
         <div class="form-group" show-errors>
@@ -31,7 +33,9 @@
                 <select class="form-control"
                         name="venue" id="venue"
                         ng-model="event.venue"
-                        ng-options="o.name for o in venues" required></select>
+                        ng-options="o.name for o in venues"
+                        ng-disabled="event.associatedWithShootingTestEvent"
+                        required></select>
             </div>
         </div>
 
@@ -45,7 +49,9 @@
                 <div class="input-group" ng-controller="DatePickerController">
                     <input type="text" class="form-control"
                            name="date" id="date"
-                           ng-model="event.date" required
+                           ng-model="event.date"
+                           ng-disabled="event.associatedWithShootingTestEvent"
+                           required
                            uib-datepicker-popup is-open="isDatePickerOpen"/>
                     <span class="input-group-btn">
                         <button type="button" class="btn btn-default" tabindex="-1"
@@ -54,6 +60,9 @@
                         </button>
                     </span>
                 </div>
+                <div class="alert alert-danger"
+                     ng-if="isDateRequiredAtLeast7DaysIntoFuture()"
+                     translate="event.form.dateRequiredAtLeast7DaysIntoFuture"></div>
             </div>
         </div>
 
@@ -68,7 +77,9 @@
                     <input type="text" class="form-control"
                            name="beginTime" id="beginTime"
                            finnish-time
-                           ng-model="event.beginTime" required/>
+                           ng-model="event.beginTime"
+                           ng-disabled="event.associatedWithShootingTestEvent"
+                           required/>
                 </div>
             </div>
             <div>
@@ -78,7 +89,8 @@
                     <input type="text" class="form-control"
                            name="endTime" id="endTime"
                            finnish-time
-                           ng-model="event.endTime" />
+                           ng-model="event.endTime"
+                           ng-disabled="event.associatedWithShootingTestEvent"/>
                 </div>
             </div>
         </div>
@@ -109,6 +121,6 @@
 
     <div class="modal-footer">
         <button type="button" class="btn btn-default" ng-click="cancel()" translate="global.button.cancel"></button>
-        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid" translate="global.button.save"></button>
+        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid || isDateInvalid()" translate="global.button.save"></button>
     </div>
 </form>

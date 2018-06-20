@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static fi.riista.feature.organization.occupation.OccupationType.SRVA_YHTEYSHENKILO;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
+import static fi.riista.util.Collect.idList;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.inCollection;
 import static fi.riista.util.jpa.JpaSpecs.notSoftDeleted;
@@ -34,6 +34,7 @@ import static java.util.stream.Collectors.toList;
 
 @Component
 public class SrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<SrvaEventDTO> {
+
     @Resource
     private OccupationRepository occupationRepository;
 
@@ -43,8 +44,6 @@ public class SrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<SrvaEve
     @Nonnull
     @Override
     protected List<SrvaEventDTO> transform(@Nonnull final List<SrvaEvent> srvaEvents) {
-        Objects.requireNonNull(srvaEvents, "srvaEvents cannot be null");
-
         final Function<SrvaEvent, Person> srvaEventToAuthor = getSrvaEventToAuthorMapping(srvaEvents);
         final Function<SrvaEvent, GameSpecies> srvaEventToSpecies = getSrvaEventToSpeciesMapping(srvaEvents);
         final Map<SrvaEvent, List<SrvaSpecimen>> groupedSpecimens = getSpecimensGroupedBySrvaEvent(srvaEvents);
@@ -53,8 +52,9 @@ public class SrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<SrvaEve
         final Function<SrvaEvent, SystemUser> srvaEventToApproverAsUser = getSrvaEventToApproverAsUserMapping(srvaEvents);
         final Function<SrvaEvent, Person> srvaEventToApproverAsPerson = getSrvaEventToApproverAsPersonMapping(srvaEvents);
 
-        final boolean isModeratorOrAdmin = activeUserService.isModeratorOrAdmin();
-        final Person activePerson = activeUserService.getActiveUser().getPerson();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final boolean isModeratorOrAdmin = activeUser.isModeratorOrAdmin();
+        final Person activePerson = activeUser.getPerson();
 
         //List containing all rhyIds where activePerson is SRVA contact person or coordinator
         final List<Long> srvaRoleRhyIds = getSrvaRoleRhyIds(activePerson);
@@ -110,6 +110,7 @@ public class SrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<SrvaEve
                 .and(notSoftDeleted());
 
         return occupationRepository.findAll(specs).stream()
-                .map(occupation -> occupation.getOrganisation().getId()).collect(Collectors.toList());
+                .map(Occupation::getOrganisation)
+                .collect(idList());
     }
 }

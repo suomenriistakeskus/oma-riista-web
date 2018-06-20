@@ -2,138 +2,90 @@ package fi.riista.feature.mail;
 
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import org.springframework.mail.MailParseException;
-import org.springframework.mail.MailPreparationException;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import fi.riista.util.DateUtil;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.springframework.util.StringUtils;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import java.io.IOException;
-import java.util.Date;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.Set;
 
-public final class MailMessageDTO {
+public final class MailMessageDTO implements HasMailMessageFields {
     private final String from;
-    private final String to;
+    private final Set<String> recipients;
     private final String subject;
     private final String body;
-
-    public MailMessageDTO(String from, String to, String subject, String body) {
-        Preconditions.checkArgument(StringUtils.hasText(from), "Mail has no from");
-        Preconditions.checkArgument(StringUtils.hasText(to), "Mail has no to");
-        Preconditions.checkArgument(StringUtils.hasText(subject), "Mail has no subject");
-        Preconditions.checkArgument(StringUtils.hasText(body), "Mail has no body");
-
-        this.from = from;
-        this.to = to;
-        this.subject = subject;
-        this.body = body;
-    }
+    private final DateTime scheduledTime;
 
     public MailMessageDTO(Builder builder) {
-        this(builder.from, builder.to, builder.subject, builder.body);
+        Preconditions.checkArgument(builder.recipients != null && builder.recipients.size() > 0, "recipients is empty");
+        Preconditions.checkArgument(StringUtils.hasText(builder.from), "from is empty");
+        Preconditions.checkArgument(StringUtils.hasText(builder.subject), "subject is empty");
+        Preconditions.checkArgument(StringUtils.hasText(builder.body), "body is empty");
+
+        this.recipients = builder.recipients;
+        this.from = builder.from;
+        this.subject = builder.subject;
+        this.body = builder.body;
+        this.scheduledTime = Objects.requireNonNull(builder.scheduledTime, "scheduledTime is null");
     }
 
-    public void prepareMimeMessage(final MimeMessage mimeMessage) {
-        try {
-            final MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
-
-            messageHelper.setTo(getTo());
-            messageHelper.setFrom(getFrom());
-            messageHelper.setSubject(getSubject());
-            messageHelper.setText(getBody(), true);
-            messageHelper.setValidateAddresses(true);
-            mimeMessage.setSentDate(new Date());
-
-        } catch (MessagingException ex) {
-            throw new MailParseException(ex);
-        } catch (Exception ex) {
-            throw new MailPreparationException(ex);
-        }
+    public Set<String> getRecipients() {
+        return recipients;
     }
 
+    @Override
     public String getFrom() {
         return from;
     }
 
-    public String getTo() {
-        return to;
-    }
-
+    @Override
     public String getSubject() {
         return subject;
     }
 
+    @Override
     public String getBody() {
         return body;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        MailMessageDTO that = (MailMessageDTO) o;
-
-        return body.equals(that.body) && from.equals(that.from) && subject.equals(that.subject) && to.equals(that.to);
+    public DateTime getScheduledTime() {
+        return scheduledTime;
     }
 
-    @Override
-    public int hashCode() {
-        int result = from.hashCode();
-        result = 31 * result + to.hashCode();
-        result = 31 * result + subject.hashCode();
-        result = 31 * result + body.hashCode();
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("from", from)
-                .add("to", to)
-                .add("subject", subject)
-                //.add("body", body)
-                .toString();
+    public static Builder builder() {
+        return new Builder();
     }
 
     public final static class Builder {
         private String from;
-        private String defaultFrom;
-        private String to;
+        private Set<String> recipients = new LinkedHashSet<>();
         private String subject;
         private String body;
+        private DateTime scheduledTime = DateUtil.now();
 
-        public Builder withHandlebarsBody(final Handlebars handlebars,
-                                          final String templateName,
-                                          final Map<String, Object> model) {
-            return compileHandlebarsAndApply(handlebars, templateName, model, this::withBody);
+        private Builder() {
         }
 
         public Builder appendHandlebarsBody(final Handlebars handlebars,
                                             final String templateName,
                                             final Map<String, Object> model) {
-            return compileHandlebarsAndApply(handlebars, templateName, model, this::appendBody);
+            return appendBody(compileHandlebarsAndApply(handlebars, templateName, model));
         }
 
-        private static Builder compileHandlebarsAndApply(final Handlebars handlebars,
-                                                         final String templateName,
-                                                         final Map<String, Object> model,
-                                                         final Function<String, Builder> method) {
+        private static String compileHandlebarsAndApply(final Handlebars handlebars,
+                                                 final String templateName,
+                                                 final Map<String, Object> model) {
             Preconditions.checkArgument(StringUtils.hasText(templateName), "Template name not specified");
 
             final Context context = Context.newBuilder(model).combine(model).build();
             try {
-                return method.apply(handlebars.compile(templateName).apply(context));
+                return handlebars.compile(templateName).apply(context);
             } catch (IOException e) {
                 throw new RuntimeException("Could not render template", e);
 
@@ -142,18 +94,22 @@ public final class MailMessageDTO {
             }
         }
 
+        public Builder addRecipient(String to) {
+            this.recipients.add(Objects.requireNonNull(to).trim().toLowerCase());
+            return this;
+        }
+
+        public Builder withRecipients(Collection<String> to) {
+            Objects.requireNonNull(to).stream()
+                    .map(String::trim)
+                    .map(String::toLowerCase)
+                    .forEach(this.recipients::add);
+
+            return this;
+        }
+
         public Builder withFrom(String from) {
             this.from = from;
-            return this;
-        }
-
-        public Builder withDefaultFrom(String defaultFrom) {
-            this.defaultFrom = defaultFrom;
-            return this;
-        }
-
-        public Builder withTo(String to) {
-            this.to = to;
             return this;
         }
 
@@ -171,16 +127,12 @@ public final class MailMessageDTO {
             return this;
         }
 
-        public Builder withBody(String body) {
-            this.body = body;
+        public Builder withScheduledTimeAfter(Duration duration) {
+            this.scheduledTime = DateUtil.now().plus(duration);
             return this;
         }
 
         public MailMessageDTO build() {
-            if (!StringUtils.hasText(this.from)) {
-                this.from = defaultFrom;
-            }
-
             return new MailMessageDTO(this);
         }
     }

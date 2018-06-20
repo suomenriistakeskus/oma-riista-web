@@ -1,8 +1,8 @@
 package fi.riista.feature.huntingclub.register;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.lupahallinta.LHOrganisation;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import javax.annotation.Resource;

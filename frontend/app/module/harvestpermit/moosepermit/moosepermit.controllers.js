@@ -85,7 +85,6 @@ angular.module('app.moosepermit.controllers', [])
         };
 
         $ctrl.show = createStateTransition(initialState + '.show');
-        $ctrl.edit = createStateTransition(initialState + '.edit');
         $ctrl.map = createStateTransition(initialState + '.map');
         $ctrl.lukereports = createStateTransition(initialState + '.lukereports');
         $ctrl.rhystats = createStateTransition(initialState + '.rhystats');
@@ -125,187 +124,122 @@ angular.module('app.moosepermit.controllers', [])
             }
         }
     })
-    .controller('MoosePermitShowController', function ($scope, $filter, $state,
-                                                       ClubPermits,
-                                                       GameSpeciesCodes,
-                                                       MoosePermitCounterService,
-                                                       ActiveRoleService,
-                                                       NotificationService,
-                                                       permit, edit, todos, initialState, selectedYearAndSpecies) {
+    .controller('MoosePermitShowController', function ($filter, $state,
+                                                       NotificationService, GameSpeciesCodes, ActiveRoleService,
+                                                       MoosePermits, MoosePermitCounterService,
+                                                       permit, todos, initialState, selectedYearAndSpecies) {
 
-        $scope.permit = permit;
-        $scope.todos = todos;
+        var $ctrl = this;
+        $ctrl.$onInit = function () {
+            $ctrl.permit = permit;
+            $ctrl.todos = todos;
 
-        var updateAllocations = function (p) {
+            $ctrl.latestUpdatesByClubId = _.transform($ctrl.permit.statistics, function (result, val, key) {
+                result[key] = val.latestUpdate;
+            });
+
+            $ctrl.fromMooseDataCard = _.transform($ctrl.permit.summaryForPartnersTable, function (result, val, key) {
+                result[key] = val.fromMooseDataCard;
+            });
+
             var i18NFilter = $filter('rI18nNameFilter');
-            $scope.allocations = _.sortBy(p.allocations, function (a) {
+            $ctrl.allocations = _.sortBy($ctrl.permit.allocations, function (a) {
                 return i18NFilter(a.huntingClubName);
             });
-        };
-        updateAllocations($scope.permit);
 
-        var spa = $scope.permit.speciesAmount;
-        $scope.amendmentPermitNumbers = _.keys($scope.permit.amendmentPermits);
-        var amendmentPermitAmount = _.sum(_.values($scope.permit.amendmentPermits));
-        $scope.permitTotal = spa.amount + amendmentPermitAmount;
+            $ctrl.counter = MoosePermitCounterService.create($ctrl.permit, $ctrl.allocations);
 
-        $scope.isCurrentClub = function (allocation) {
-            return allocation.huntingClubId === permit.viewedClubId;
-        };
-
-        $scope.isMoose = function () {
-            return GameSpeciesCodes.isMoose($scope.permit.speciesAmount.gameSpecies.code);
-        };
-
-        $scope.canNavigateToClub = ActiveRoleService.isModerator;
-
-        $scope.navigateToClub = function (row) {
-            $state.go('club.permit.show', {
-                id: row.huntingClubId,
-                permitId: $scope.permit.id,
-                huntingYear: selectedYearAndSpecies.huntingYear,
-                species: selectedYearAndSpecies.species
-            });
-        };
-
-        // calculate
-
-        $scope.floor = _.floor;
-
-        $scope.recalculate = function () {
-            _.each($scope.allocations, function (a) {
-                a.total = (a.adultMales || 0) + (a.adultFemales || 0) + (a.young || 0) / 2;
-            });
-            var aSum = _.sum($scope.allocations, 'total');
-            $scope.permitUnallocated = $scope.permitTotal - aSum;
-            $scope.permitAllocated = aSum;
-        };
-        $scope.recalculate();
-
-        $scope.countHarvestsBy = MoosePermitCounterService.createCountHarvestsBy($scope.permit);
-
-        $scope.countAllocatedBy = function (key) {
-            return _.sum($scope.allocations, key);
-        };
-
-        var countMalePercentage = function (func) {
-            var m = func('adultMales');
-            var f = func('adultFemales');
-            return _.round(100 * m / (m + f)) || 0;
-        };
-
-        var countYoungPercentage = function (func) {
-            var m = func('adultMales');
-            var f = func('adultFemales');
-            var y = func('young');
-            return _.round(100 * y / (m + f + y)) || 0;
-        };
-
-        $scope.malePercentage = function () {
-            return countMalePercentage($scope.countAllocatedBy);
-        };
-
-        $scope.youngPercentage = function () {
-            return countYoungPercentage($scope.countAllocatedBy);
-        };
-
-        $scope.maleHarvestPercentage = function () {
-            return countMalePercentage($scope.countHarvestsBy);
-        };
-
-        $scope.youngHarvestPercentage = function () {
-            return countYoungPercentage($scope.countHarvestsBy);
-        };
-
-        $scope.countSummaryForPartnersTable = function (key) {
-            return _.sum($scope.permit.summaryForPartnersTable, key);
-        };
-
-        $scope.canEditAllocations = _.constant($scope.permit.canEditAllocations);
-        $scope.isEditingAllocations = _.constant(edit);
-        $scope.startEditAllocations = function () {
-            $state.go(initialState + '.edit', {permitId: $scope.permit.id});
-        };
-        $scope.saveAllocations = function () {
-            var params = {
-                permitId: $scope.permit.id,
-                gameSpeciesCode: $scope.permit.speciesAmount.gameSpecies.code
+            $ctrl.isMoose = function () {
+                return GameSpeciesCodes.isMoose($ctrl.permit.speciesAmount.gameSpecies.code);
             };
-            var data = angular.copy($scope.permit.allocations);
 
-            return ClubPermits.updateAllocations(params, data).$promise
-                .then(function () {
-                        NotificationService.showDefaultSuccess();
-                        $state.go(initialState + '.show', {permitId: $scope.permit.id}, {reload: true});
-                    },
-                    NotificationService.showDefaultFailure
-                );
-        };
-        $scope.cancelAllocations = function () {
-            $state.go(initialState + '.show', {permitId: $scope.permit.id});
+            $ctrl.isCurrentClub = function (allocation) {
+                return allocation.huntingClubId === permit.viewedClubId;
+            };
+
+            $ctrl.canNavigateToClub = ActiveRoleService.isModerator;
+
+            $ctrl.navigateToClub = function (row) {
+                $state.go('club.permit.show', {
+                    id: row.huntingClubId,
+                    permitId: $ctrl.permit.id,
+                    huntingYear: selectedYearAndSpecies.huntingYear,
+                    species: selectedYearAndSpecies.species
+                });
+            };
         };
     })
+    .component('moosePermitTableHunting', {
+        templateUrl: 'harvestpermit/moosepermit/show-table-hunting.html',
+        bindings: {
+            latestUpdate: '<',
+            latestUpdatesByClubId: '<',
+            fromMooseDataCard: '<',
+            stats: '<',
+            harvestCounts: '<',
+            allocations: '<',
+            summaryForPartnersTable: '<',
+            counter: '<',
+            todos: '<',
+            isCurrentClub: '&',
+            canNavigateToClub: '<',
+            navigateToClubFn: '&'
+        },
+        controller: function () {
+            var $ctrl = this;
 
-    .controller('MoosePermitLeadersController', function ($scope, leaders) {
-        $scope.leaders = leaders;
-
-        var previousClub = null;
-
-        // Hide repetitive club names
-        for (var i = 0; i < leaders.length; i++) {
-            var club = leaders[i].club;
-            if (previousClub && angular.equals(previousClub, club)) {
-                leaders[i].club = null;
-            }
-            previousClub = club;
+            $ctrl.$onInit = function () {
+                $ctrl.navigateToClub = function (c) {
+                    $ctrl.navigateToClubFn()(c);
+                };
+            };
         }
-
-        $scope.cancel = function () {
-            $scope.$dismiss('cancel');
-        };
     })
+    .component('moosePermitTableIndexes', {
+        templateUrl: 'harvestpermit/moosepermit/show-table-indexes.html',
+        bindings: {
+            totalStats: '<',
+            stats: '<',
+            fromMooseDataCard: '<',
+            allocations: '<',
+            todos: '<',
+            isCurrentClub: '&',
+            canNavigateToClub: '<',
+            navigateToClubFn: '&'
+        },
+        controller: function () {
+            var $ctrl = this;
 
-    .controller('MoosePermitLukeReportsController', function ($scope, LukeUrlService,
-                                                              lukeReportParams, permitId, clubId) {
+            $ctrl.$onInit = function () {
+                $ctrl.navigateToClub = function (c) {
+                    $ctrl.navigateToClubFn()(c);
+                };
+            };
+        }
+    })
+    .component('moosePermitTablePayments', {
+        templateUrl: 'harvestpermit/moosepermit/show-table-payments.html',
+        bindings: {
+            counter: '<',
+            totalPayment: '<',
+            amendmentPermitsMatchHarvests: '<',
+            harvestCounts: '<',
+            payments: '<',
+            fromMooseDataCard: '<',
+            allocations: '<',
+            todos: '<',
+            isCurrentClub: '&',
+            canNavigateToClub: '<',
+            navigateToClubFn: '&'
+        },
+        controller: function () {
+            var $ctrl = this;
 
-        $scope.data = lukeReportParams.params;
-
-        $scope.uiState = {
-            org: $scope.data[0],
-            presentation: $scope.data[0].presentations[0]
-        };
-
-        $scope.isOrgSelected = function (org) {
-            return $scope.uiState.org === org;
-        };
-
-        $scope.selectOrg = function (org) {
-            $scope.uiState.org = org;
-            $scope.uiState.presentation = org.presentations[0];
-        };
-
-        $scope.isPresentationSelected = function (p) {
-            return $scope.uiState.presentation === p;
-        };
-
-        $scope.selectPresentation = function (p) {
-            $scope.uiState.presentation = p;
-        };
-
-        $scope.isPresentationTable = function () {
-            return $scope.uiState.presentation.name === 'TABLE_COMPARISON' || $scope.uiState.presentation.name === 'TABLE_FULL';
-        };
-
-        $scope.url = function (file) {
-            return LukeUrlService.get(permitId, clubId, $scope.uiState.org.name, $scope.uiState.presentation.name, file);
-        };
-
-        $scope.showFilesForSelectedOrg = function () {
-            return $scope.uiState.org.name !== 'CLUB' || lukeReportParams.clubReportsExist;
-        };
-
-        $scope.noFilesForSelectedClub = function () {
-            return !$scope.showFilesForSelectedOrg();
-        };
+            $ctrl.$onInit = function () {
+                $ctrl.navigateToClub = function (c) {
+                    $ctrl.navigateToClubFn()(c);
+                };
+            };
+        }
     })
 ;

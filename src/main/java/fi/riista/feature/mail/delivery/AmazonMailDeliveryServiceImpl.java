@@ -1,9 +1,12 @@
 package fi.riista.feature.mail.delivery;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import com.amazonaws.services.simpleemail.model.GetSendQuotaResult;
 import com.amazonaws.services.simpleemail.model.RawMessage;
 import com.amazonaws.services.simpleemail.model.SendRawEmailRequest;
-import fi.riista.feature.mail.MailMessageDTO;
+import com.google.common.base.Suppliers;
+import com.google.common.util.concurrent.RateLimiter;
+import fi.riista.feature.mail.HasMailMessageFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -16,17 +19,62 @@ import javax.mail.internet.MimeMessage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
-public class AmazonMailDeliveryServiceImpl implements MailDeliveryService<Long>, DisposableBean {
+public class AmazonMailDeliveryServiceImpl implements MailDeliveryService, DisposableBean {
     private static final Logger LOG = LoggerFactory.getLogger(AmazonMailDeliveryServiceImpl.class);
 
+    private static final double FALLBACK_SEND_RATE = 1;
+    private static final double FALLBACK_REMAINING_QUOTA = 1000;
+
+    private final Session session = Session.getInstance(new Properties());
     private final AmazonSimpleEmailService amazonSimpleEmailService;
+    private final RateLimiter rateLimiter;
+    private final Supplier<Double> rateLimitCache;
+    private final Supplier<Double> sendQuotaCache;
 
     public AmazonMailDeliveryServiceImpl(final AmazonSimpleEmailService amazonSimpleEmailService) {
         this.amazonSimpleEmailService = amazonSimpleEmailService;
+        this.rateLimiter = RateLimiter.create(FALLBACK_SEND_RATE);
+        this.rateLimitCache = Suppliers.memoizeWithExpiration(this::getMaxSendRate, 1, TimeUnit.HOURS);
+        this.sendQuotaCache = Suppliers.memoizeWithExpiration(this::getRemainingSendQuota, 5, TimeUnit.MINUTES);
+    }
+
+    private Double getMaxSendRate() {
+        try {
+            return amazonSimpleEmailService.getSendQuota().getMaxSendRate() - 1.0;
+
+        } catch (Exception e) {
+            LOG.error("Could not determine maxSendRate", e);
+
+            return FALLBACK_SEND_RATE;
+        }
+    }
+
+    private double getRemainingSendQuota() {
+        try {
+            final GetSendQuotaResult sendQuota = amazonSimpleEmailService.getSendQuota();
+            final Double sentLast24Hours = sendQuota.getSentLast24Hours();
+            final Double max24HourSend = sendQuota.getMax24HourSend();
+
+            if (max24HourSend <= 0) {
+                // Unlimited quota = -1
+                return Integer.MAX_VALUE;
+            }
+
+            final double remainingQuota = max24HourSend - sentLast24Hours;
+
+            LOG.info("Remaining send quota: {}", remainingQuota);
+
+            return remainingQuota > 0 ? remainingQuota : FALLBACK_REMAINING_QUOTA;
+
+        } catch (Exception e) {
+            LOG.error("Could not determine remaining send quota", e);
+
+            return FALLBACK_REMAINING_QUOTA;
+        }
     }
 
     @Override
@@ -35,40 +83,29 @@ public class AmazonMailDeliveryServiceImpl implements MailDeliveryService<Long>,
     }
 
     @Override
-    public void send(final MailMessageDTO message) {
-        sendMimeMessage(message);
+    public long getRemainingQuota() {
+        return Math.round(sendQuotaCache.get());
     }
 
     @Override
-    public void sendAll(
-            final Map<Long, MailMessageDTO> outgoingBatch,
-            final Set<Long> successfulMessages,
-            final Set<Long> failedMessages) {
+    public void send(final HasMailMessageFields message, final String recipient) {
+        final Double expectedRate = rateLimitCache.get();
 
-        outgoingBatch.forEach((messageId, message) -> {
-            try {
-                sendMimeMessage(message);
-                successfulMessages.add(messageId);
-
-            } catch (Exception e) {
-                LOG.error("Failed sending", e);
-                failedMessages.add(messageId);
-            }
-        });
-    }
-
-    private void sendMimeMessage(final MailMessageDTO mailMessage) {
-        if (mailMessage.getTo().toLowerCase().endsWith("invalid")) {
-            LOG.warn("Not sending mail to invalid email: '{}' with subject: '{}' and body:\n{}",
-                    mailMessage.getTo(), mailMessage.getSubject(), mailMessage.getBody());
-            return;
+        if (Math.abs(rateLimiter.getRate() - expectedRate) > 0.1) {
+            LOG.info("Adjusting send rate to {}", expectedRate);
+            rateLimiter.setRate(expectedRate);
         }
 
-        LOG.info("Attempting delivery using for outgoing email: {}", mailMessage);
+        rateLimiter.acquire();
 
-        final MimeMessage mimeMessage = new MimeMessage(Session.getInstance(new Properties()));
-        mailMessage.prepareMimeMessage(mimeMessage);
-        this.amazonSimpleEmailService.sendRawEmail(new SendRawEmailRequest(createRawMessage(mimeMessage)));
+        this.amazonSimpleEmailService.sendRawEmail(
+                new SendRawEmailRequest(createRawMessage(createMimeMessage(message, recipient))));
+    }
+
+    private MimeMessage createMimeMessage(final HasMailMessageFields msg, final String recipient) {
+        final MimeMessage mimeMessage = new MimeMessage(session);
+        msg.prepareMimeMessage(mimeMessage, recipient);
+        return mimeMessage;
     }
 
     private static RawMessage createRawMessage(final MimeMessage mimeMessage) {

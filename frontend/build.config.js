@@ -44,19 +44,22 @@ module.exports = {
             '../node_modules/leaflet/dist/leaflet.js',
             '../node_modules/leaflet.markercluster/dist/leaflet.markercluster.js',
             '../node_modules/drmonty-leaflet-awesome-markers/js/leaflet.awesome-markers.min.js',
+            './vendor/Leaflet.VectorGrid.bundled.min.js',
+            '../node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.min.js',
+            '../node_modules/proj4/dist/proj4.js',
+            '../node_modules/proj4leaflet/src/proj4leaflet.js',
+            './app/leaflet/leaflet-projection.js',
             './app/leaflet/leaflet-lasso.js',
             './app/leaflet/leaflet-marquee.js',
             './app/leaflet/leaflet-polyline.js',
             './app/leaflet/leaflet-geojson-layers.js',
             './app/leaflet/leaflet-coordinates.js',
-            '../node_modules/proj4/dist/proj4.js',
-            '../node_modules/proj4leaflet/src/proj4leaflet.js',
+            './app/leaflet/leaflet-simple-legend.js',
             '../node_modules/greiner-hormann/dist/greiner-hormann.min.js',
-            '../node_modules/qrcodejs/qrcode.min.js',
-            '../node_modules/rangy/lib/rangy-core.js',
-            '../node_modules/rangy/lib/rangy-selectionsaverestore.js'
+            '../node_modules/qrcodejs/qrcode.min.js'
         ],
         angular: [
+            '../node_modules/es6-promise-polyfill/promise.min.js',
             // Must load jQuery here for angular auto-detection
             '../node_modules/jquery/dist/jquery.min.js',
             '../node_modules/dropzone/dist/min/dropzone.min.js',
@@ -78,6 +81,7 @@ module.exports = {
             '../node_modules/angular-ui-mask/dist/mask.min.js',
             '../node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js',
             '../node_modules/angular-ui-select2/src/select2.js',
+            '../node_modules/ui-select/dist/select.js',
             //'../node_modules/ui-leaflet/dist/ui-leaflet.js',
             './vendor/ui-leaflet.min.js',
             '../node_modules/angular-bootstrap-show-errors/src/showErrors.min.js',
@@ -90,7 +94,11 @@ module.exports = {
             '../node_modules/angular-http-auth/src/http-auth-interceptor.js',
             '../node_modules/angular-dropzone/lib/angular-dropzone.js',
             '../node_modules/ng-idle/angular-idle.min.js',
+            '../node_modules/rangy/lib/rangy-core.js',
+            '../node_modules/rangy/lib/rangy-selectionsaverestore.js',
             '../node_modules/textangular/dist/textAngular.min.js',
+            '../node_modules/diff/dist/diff.min.js',
+            '../node_modules/angular-file-saver/dist/angular-file-saver.bundle.min.js',
             // This must be the last dependency due to packaging issues
             '../node_modules/select2/select2.js'
         ]
@@ -114,7 +122,9 @@ module.exports = {
         ],
         shim: [
             '../node_modules/angular-loader/angular-loader.min.js',
-            '../node_modules/scriptjs/dist/script.min.js'
+            // Old async loader is still required by cached scripts
+            '../node_modules/scriptjs/dist/script.min.js',
+            '../node_modules/loadjs/dist/loadjs.min.js'
         ]
     }
 };

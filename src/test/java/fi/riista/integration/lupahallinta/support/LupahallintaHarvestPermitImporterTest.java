@@ -1,18 +1,18 @@
 package fi.riista.integration.lupahallinta.support;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermit_;
-import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.integration.common.entity.Integration;
 import fi.riista.integration.lupahallinta.HarvestPermitImportException;
 import fi.riista.integration.lupahallinta.HarvestPermitImportFeature;
 import fi.riista.integration.lupahallinta.HarvestPermitImportResultDTO;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -57,7 +57,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
 
         onSavedAndAuthenticated(createNewAdmin(), () -> {
             LupahallintaHttpClient mockClient = createMockClient(header());
-            LupahallintaImportMailHandler mockMailHandler = createMockMailHandler();
+            LupahallintaPermitImportMailHandler mockMailHandler = createMockMailHandler();
             LupahallintaHarvestPermitImporter importer = new LupahallintaHarvestPermitImporter(
                     importFeature, mockClient, mockMailHandler);
 
@@ -85,7 +85,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
             authenticate(admin);
 
             LupahallintaHttpClient mockClient = createMockClient(header());
-            LupahallintaImportMailHandler mockMailHandler = createMockMailHandler();
+            LupahallintaPermitImportMailHandler mockMailHandler = createMockMailHandler();
             LupahallintaHarvestPermitImporter importer = new LupahallintaHarvestPermitImporter(
                     importFeature, mockClient, mockMailHandler);
 
@@ -139,7 +139,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
         onSavedAndAuthenticated(createNewAdmin(), () -> {
             RuntimeException exception = new RuntimeException("http throws this");
             LupahallintaHttpClient mockClient = createMockClient(exception);
-            LupahallintaImportMailHandler mockMailHandler = createMockMailHandler();
+            LupahallintaPermitImportMailHandler mockMailHandler = createMockMailHandler();
             LupahallintaHarvestPermitImporter importer = new LupahallintaHarvestPermitImporter(
                     importFeature, mockClient, mockMailHandler);
 
@@ -157,7 +157,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
 
         onSavedAndAuthenticated(createNewAdmin(), () -> {
             LupahallintaHttpClient mockClient = createMockClient("this;is;incorrect;data;;will;fail;parsing;;;;;;;;;;;;;;");
-            LupahallintaImportMailHandler mockMailHandler = createMockMailHandler();
+            LupahallintaPermitImportMailHandler mockMailHandler = createMockMailHandler();
             LupahallintaHarvestPermitImporter importer = new LupahallintaHarvestPermitImporter(
                     importFeature, mockClient, mockMailHandler);
 
@@ -206,7 +206,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
                 final int amount = 2;
                 LupahallintaHttpClient mockClient = createMockClient(newPermitRow(person, species, amount, rhy, permitNumber, dates));
 
-                LupahallintaImportMailHandler mockMailHandler = createMockMailHandler();
+                LupahallintaPermitImportMailHandler mockMailHandler = createMockMailHandler();
                 LupahallintaHarvestPermitImporter importer = new LupahallintaHarvestPermitImporter(
                         importFeature, mockClient, mockMailHandler);
                 HarvestPermitImportResultDTO result = importer.doImport();
@@ -251,7 +251,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
                 final String dates = formatDate(today, today.plusDays(14));
                 final int amount = 0;
                 LupahallintaHttpClient mockClient = createMockClient(newPermitRow(person, species, amount, rhy, permitNumber, dates));
-                LupahallintaImportMailHandler mockMailHandler = createMockMailHandler();
+                LupahallintaPermitImportMailHandler mockMailHandler = createMockMailHandler();
                 LupahallintaHarvestPermitImporter importer = new LupahallintaHarvestPermitImporter(importFeature, mockClient, mockMailHandler);
 
                 HarvestPermitImportResultDTO result = importer.doImport();
@@ -285,7 +285,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
                 final String permitNumber = permit.getPermitNumber();
                 final int amount = 0;
                 LupahallintaHttpClient mockClient = createMockClient(newPermitRow(person, species, amount, rhy, permitNumber, ""));
-                LupahallintaImportMailHandler mockMailHandler = createMockMailHandler();
+                LupahallintaPermitImportMailHandler mockMailHandler = createMockMailHandler();
                 LupahallintaHarvestPermitImporter importer = new LupahallintaHarvestPermitImporter(importFeature, mockClient, mockMailHandler);
 
                 HarvestPermitImportResultDTO result = importer.doImport();
@@ -366,8 +366,8 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
         return client;
     }
 
-    private static LupahallintaImportMailHandler createMockMailHandler() {
-        return Mockito.mock(LupahallintaImportMailHandler.class);
+    private static LupahallintaPermitImportMailHandler createMockMailHandler() {
+        return Mockito.mock(LupahallintaPermitImportMailHandler.class);
     }
 
     private static void assertNoChanges(HarvestPermitImportResultDTO result) {

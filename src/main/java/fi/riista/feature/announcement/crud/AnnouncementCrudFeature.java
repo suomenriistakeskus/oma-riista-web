@@ -10,8 +10,10 @@ import fi.riista.feature.announcement.AnnouncementRepository;
 import fi.riista.feature.announcement.AnnouncementSenderType;
 import fi.riista.feature.announcement.AnnouncementSubscriber;
 import fi.riista.feature.announcement.AnnouncementSubscriberRepository;
-import fi.riista.feature.announcement.email.AnnouncementEmailResolver;
-import fi.riista.feature.announcement.email.AnnouncementEmailService;
+import fi.riista.feature.announcement.notification.AnnouncementEmailService;
+import fi.riista.feature.announcement.notification.AnnouncementPushNotificationService;
+import fi.riista.feature.announcement.notification.AnnouncementSubscriberPersonResolver;
+import fi.riista.feature.common.CommitHookService;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.OrganisationType;
@@ -21,6 +23,8 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.F;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,12 +35,14 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
 public class AnnouncementCrudFeature {
+    private static final Logger LOG = LoggerFactory.getLogger(AnnouncementCrudFeature.class);
 
     @Resource
     private AnnouncementRepository announcementRepository;
@@ -54,16 +60,22 @@ public class AnnouncementCrudFeature {
     private RequireEntityService requireEntityService;
 
     @Resource
+    private CommitHookService commitHookService;
+
+    @Resource
     private ActiveUserService activeUserService;
 
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
     @Resource
-    private AnnouncementEmailResolver announcementEmailResolver;
+    private AnnouncementSubscriberPersonResolver announcementSubscriberPersonResolver;
 
     @Resource
     private AnnouncementEmailService announcementEmailService;
+
+    @Resource
+    private AnnouncementPushNotificationService announcementPushNotificationService;
 
     public static HashMap<OrganisationType, Set<OccupationType>> listSubscriberOccupationTypes(
             final OrganisationType fromOrganisationType) {
@@ -84,18 +96,17 @@ public class AnnouncementCrudFeature {
     private static Set<OccupationType> getRhyOccupationTypes() {
         return Arrays.stream(OccupationType.values())
                 .filter(o -> o.isApplicableFor(OrganisationType.RHY))
-                .filter(o -> !o.isBoardSpecific())
                 .collect(Collectors.toSet());
     }
 
-    private Optional<AnnouncementSenderType> resolveRoleInOrganisation(final Organisation organisation, final Person person) {
-        if (activeUserService.isModeratorOrAdmin()) {
+    private Optional<AnnouncementSenderType> resolveRoleInOrganisation(final Organisation organisation, final SystemUser activeUser) {
+        if (activeUser.isModeratorOrAdmin()) {
             return Optional.of(AnnouncementSenderType.RIISTAKESKUS);
         }
 
         final EnumSet<OccupationType> includedOccupationTypes = EnumSet.of(OccupationType.TOIMINNANOHJAAJA, OccupationType.SEURAN_YHDYSHENKILO);
 
-        return occupationRepository.findActiveByOrganisationAndPerson(organisation, person).stream()
+        return occupationRepository.findActiveByOrganisationAndPerson(organisation, activeUser.getPerson()).stream()
                 .map(Occupation::getOccupationType)
                 .filter(includedOccupationTypes::contains)
                 .map(occupationType -> occupationType == OccupationType.TOIMINNANOHJAAJA ? AnnouncementSenderType.TOIMINNANOHJAAJA
@@ -107,8 +118,8 @@ public class AnnouncementCrudFeature {
     private Optional<Organisation> resolveFromOrganisation(final AnnouncementDTO dto) {
         final AnnouncementDTO.OrganisationDTO org = dto.getFromOrganisation();
 
-        final Organisation organisation = organisationRepository.findByTypeAndOfficialCode(
-                org.getOrganisationType(), org.getOfficialCode());
+        final Organisation organisation =
+                organisationRepository.findByTypeAndOfficialCode(org.getOrganisationType(), org.getOfficialCode());
 
         if (organisation == null) {
             return Optional.empty();
@@ -134,22 +145,22 @@ public class AnnouncementCrudFeature {
 
     @Transactional
     public void createAnnouncement(final AnnouncementDTO dto) {
-        final SystemUser activeUser = activeUserService.getActiveUser();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
         final Organisation fromOrganisation = resolveFromOrganisation(dto)
                 .orElseThrow(() -> new IllegalStateException("Could not determine from organisation"));
-        final AnnouncementSenderType senderType = resolveRoleInOrganisation(fromOrganisation, activeUser.getPerson())
+        final AnnouncementSenderType senderType = resolveRoleInOrganisation(fromOrganisation, activeUser)
                 .orElseThrow(() -> new IllegalStateException("Could not find organisation role for active user"));
 
-        final Announcement announcement = new Announcement(dto.getSubject(), dto.getBody(),
-                activeUser, fromOrganisation, senderType);
+        final Announcement announcement =
+                new Announcement(dto.getSubject(), dto.getBody(), activeUser, fromOrganisation, senderType);
+        announcement.setVisibleToAll(activeUser.isAdmin() && dto.isVisibleToAll());
+
         final List<AnnouncementSubscriber> subscribers = createSubscribers(dto, announcement);
 
         announcementRepository.save(announcement);
         announcementSubscriberRepository.save(subscribers);
 
-        if (dto.isSendEmail()) {
-            sendEmail(announcement, subscribers);
-        }
+        sendNotifications(announcement.getId(), dto.isSendEmail());
     }
 
     @Transactional(readOnly = true)
@@ -165,8 +176,10 @@ public class AnnouncementCrudFeature {
 
     @Transactional
     public void updateAnnouncement(final AnnouncementDTO dto) {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
         final Announcement announcement = requireEntityService.requireAnnouncement(
                 dto.getId(), EntityPermission.UPDATE);
+        announcement.setVisibleToAll(activeUser.isAdmin() && dto.isVisibleToAll());
         announcementSubscriberRepository.deleteByAnnouncement(announcement);
 
         announcement.setSubject(dto.getSubject());
@@ -176,29 +189,32 @@ public class AnnouncementCrudFeature {
 
         announcementSubscriberRepository.save(subscribers);
 
-        if (dto.isSendEmail()) {
-            sendEmail(announcement, subscribers);
-        }
+        sendNotifications(announcement.getId(), dto.isSendEmail());
     }
 
     @Transactional
     public void removeAnnouncement(final long announcementId) {
-        final Announcement announcement = requireEntityService.requireAnnouncement(
-                announcementId, EntityPermission.DELETE);
+        final Announcement announcement =
+                requireEntityService.requireAnnouncement(announcementId, EntityPermission.DELETE);
 
         announcementSubscriberRepository.deleteByAnnouncement(announcement);
         announcementRepository.delete(announcement);
     }
 
-    private List<AnnouncementSubscriber> createSubscribers(final AnnouncementDTO dto,
-                                                           final Announcement announcement) {
+    private List<AnnouncementSubscriber> createSubscribers(final AnnouncementDTO dto, final Announcement announcement) {
         final Organisation fromOrganisation = announcement.getFromOrganisation();
 
         if (fromOrganisation.getOrganisationType() == OrganisationType.RK) {
             // Only moderator can select target organisations freely
             Preconditions.checkState(activeUserService.isModeratorOrAdmin());
-            Preconditions.checkArgument(!F.isNullOrEmpty(dto.getOccupationTypes()));
-            Preconditions.checkArgument(!F.isNullOrEmpty(dto.getSubscriberOrganisations()));
+
+            if (dto.isVisibleToAll()) {
+                Preconditions.checkArgument(F.isNullOrEmpty(dto.getOccupationTypes()));
+                Preconditions.checkArgument(F.isNullOrEmpty(dto.getSubscriberOrganisations()));
+            } else {
+                Preconditions.checkArgument(!F.isNullOrEmpty(dto.getOccupationTypes()));
+                Preconditions.checkArgument(!F.isNullOrEmpty(dto.getSubscriberOrganisations()));
+            }
 
             final List<AnnouncementSubscriber> result = new LinkedList<>();
 
@@ -221,9 +237,35 @@ public class AnnouncementCrudFeature {
                 .collect(Collectors.toList());
     }
 
-    private void sendEmail(final Announcement announcement, final List<AnnouncementSubscriber> subscribers) {
-        announcementEmailService.sendEmail(announcement, LocaleContextHolder.getLocale(),
-                announcementEmailResolver.collectReceiverEmails(
-                        announcement.getFromOrganisation(), subscribers));
+    private void sendNotifications(final Long announcementId, final boolean sendEmail) {
+        final Locale locale = LocaleContextHolder.getLocale();
+
+        commitHookService.runInTransactionAfterCommit(() -> {
+            final Announcement announcement = announcementRepository.getOne(announcementId);
+            final Organisation fromOrganisation = announcement.getFromOrganisation();
+            final List<AnnouncementSubscriber> subscribers =
+                    announcementSubscriberRepository.findByAnnouncement(announcement);
+
+            if (sendEmail && fromOrganisation.getOrganisationType() == OrganisationType.CLUB) {
+                try {
+                    final Set<String> emails = announcementSubscriberPersonResolver.collectReceiverEmails(subscribers);
+                    announcementEmailService.sendEmail(announcement, locale, emails);
+
+                } catch (Exception e) {
+                    LOG.error("Could not send email for announcement", e);
+                }
+            }
+
+            try {
+                final List<String> pushTokenIds = announcement.isVisibleToAll()
+                        ? announcementSubscriberPersonResolver.collectAllPushTokens()
+                        : announcementSubscriberPersonResolver.collectReceiverPushTokens(subscribers);
+
+                announcementPushNotificationService.sendNotification(announcement, pushTokenIds);
+
+            } catch (Exception e) {
+                LOG.error("Could not send push notification for announcement", e);
+            }
+        });
     }
 }

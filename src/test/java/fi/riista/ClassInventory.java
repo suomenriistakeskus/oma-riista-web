@@ -1,15 +1,9 @@
 package fi.riista;
 
-import static org.reflections.ReflectionUtils.getAll;
-import static org.reflections.ReflectionUtils.getAllMethods;
-import static org.reflections.ReflectionUtils.withAnnotation;
-
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-
 import fi.riista.config.Constants;
 import fi.riista.util.ResourceUtils;
-
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -17,10 +11,13 @@ import javax.annotation.Nullable;
 import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.MappedSuperclass;
-
 import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.Set;
+
+import static org.reflections.ReflectionUtils.getAll;
+import static org.reflections.ReflectionUtils.getAllMethods;
+import static org.reflections.ReflectionUtils.withAnnotation;
 
 public final class ClassInventory {
 
@@ -30,6 +27,12 @@ public final class ClassInventory {
     static {
         MAIN_CLASSES = ResourceUtils.getClasses(Constants.APPLICATION_ROOT_PACKAGE, "/target/classes/");
         TEST_CLASSES = ResourceUtils.getClasses(Constants.APPLICATION_ROOT_PACKAGE, "/target/test-classes/");
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public static Set<Class<?>> getMainClasses() {
+        return getAll(MAIN_CLASSES);
     }
 
     @Nonnull
@@ -54,8 +57,15 @@ public final class ClassInventory {
     }
 
     @Nonnull
-    public static Set<Class<?>> getApiResourceClasses() {
-        return getMainClasses(ClassNamePredicate.endsWith("ApiResource"));
+    public static Set<Class<?>> getEnumClasses() {
+        return getMainClasses(Class::isEnum);
+    }
+
+    @Nonnull
+    public static Set<Class<?>> getPublicApiClasses() {
+        return getMainClasses(Predicates.or(
+                ClassNamePredicate.endsWith("ApiResource"),
+                ClassNamePredicate.endsWith("Controller")));
     }
 
     @Nonnull
@@ -128,5 +138,4 @@ public final class ClassInventory {
 
         boolean apply(@Nullable String className);
     }
-
 }

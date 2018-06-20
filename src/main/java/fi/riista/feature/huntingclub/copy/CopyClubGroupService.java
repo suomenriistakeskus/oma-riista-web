@@ -1,9 +1,11 @@
 package fi.riista.feature.huntingclub.copy;
 
 import com.google.common.base.Preconditions;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.HuntingClubGroupAuthorization;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
@@ -19,6 +21,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -39,10 +42,14 @@ public class CopyClubGroupService {
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public HuntingClubGroup copy(Long originalGroupId, HuntingClubGroupCopyDTO dto) {
-        final HuntingClubGroup originalGroup = requireEntityService.requireHuntingGroup(originalGroupId, EntityPermission.CREATE);
-        final HuntingClubArea huntingArea = requireEntityService.requireHuntingClubArea(dto.getHuntingAreaId(), EntityPermission.READ);
+        final HuntingClubGroup originalGroup = requireEntityService.requireHuntingGroup(originalGroupId,
+                HuntingClubGroupAuthorization.Permission.COPY);
+        final HuntingClubArea huntingArea = requireEntityService.requireHuntingClubArea(dto.getHuntingAreaId(),
+                EntityPermission.READ);
 
-        Preconditions.checkState(Objects.equals(huntingArea.getHuntingYear(), dto.getHuntingYear()), "hunting area year must match with selected year");
+        Preconditions.checkState(Objects.equals(huntingArea.getHuntingYear(), dto.getHuntingYear()),
+                "hunting area year must match with selected year");
+
         return copyGroup(originalGroup, huntingArea);
     }
 
@@ -73,9 +80,12 @@ public class CopyClubGroupService {
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public void copyGroupsHavingArea(HuntingClubArea originalArea, HuntingClubArea area) {
-        final QHuntingClubGroup group = QHuntingClubGroup.huntingClubGroup;
-        huntingClubGroupRepository.findAllAsStream(group.huntingArea.eq(originalArea).and(group.fromMooseDataCard.eq(false)))
-                .forEach(g -> copyGroup(g, area));
+    public void copyGroupsHavingArea(final HuntingClubArea originalArea, final HuntingClubArea area) {
+        final QHuntingClubGroup GROUP = QHuntingClubGroup.huntingClubGroup;
+        final BooleanExpression predicate = GROUP.huntingArea.eq(originalArea).and(GROUP.fromMooseDataCard.eq(false));
+
+        try (final Stream<HuntingClubGroup> stream = huntingClubGroupRepository.findAllAsStream(predicate)) {
+            stream.forEach(g -> copyGroup(g, area));
+        }
     }
 }

@@ -1,9 +1,7 @@
 package fi.riista.feature.account.audit;
 
 import com.google.common.collect.ImmutableMap;
-
 import fi.riista.feature.account.user.ActiveUserService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -11,7 +9,6 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
-
 import java.util.Collections;
 import java.util.Map;
 
@@ -45,21 +42,13 @@ public class AuditService {
     }
 
     private String createLogMessage(String event, Object target, Map<String, Object> extraInfo) {
-        Long userId = getActiveUserId();
         StringBuilder sb = new StringBuilder();
-        add(sb, "userId", userId);
+        add(sb, "userId", activeUserService.getActiveUserIdOrNull());
         add(sb, "event", event);
         add(sb, "target", target);
 
         extraInfo.forEach((key, value) -> add(sb, key, value));
         return sb.toString();
-    }
-
-    private Long getActiveUserId() {
-        if (activeUserService.isAuthenticated()) {
-            return activeUserService.getActiveUserId();
-        }
-        return null;
     }
 
     private static void add(StringBuilder sb, String k, Object v) {

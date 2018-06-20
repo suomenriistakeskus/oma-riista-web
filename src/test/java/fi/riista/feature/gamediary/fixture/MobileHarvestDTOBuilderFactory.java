@@ -1,21 +1,19 @@
 package fi.riista.feature.gamediary.fixture;
 
 import com.google.common.base.Preconditions;
-
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenOpsForTest;
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ValueGeneratorMixin;
 
 import javax.annotation.Nonnull;
-
 import java.util.Objects;
 
-import static fi.riista.util.TestUtils.createList;
+import static fi.riista.test.TestUtils.createList;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
@@ -55,7 +53,10 @@ public interface MobileHarvestDTOBuilderFactory extends ValueGeneratorMixin {
                            @Nonnull final Harvest harvest,
                            @Nonnull final GameSpecies species) {
 
-        return new Builder(specVersion, this).populateWith(harvest).populateWith(species);
+        return new Builder(specVersion, this)
+                .populateWith(harvest)
+                .populateWith(specVersion.supportsHarvestPermitState() ? harvest.getHarvestPermit() : null)
+                .populateWith(species);
     }
 
     default Builder create(@Nonnull final MobileHarvestDTO initial) {
@@ -77,7 +78,8 @@ public interface MobileHarvestDTOBuilderFactory extends ValueGeneratorMixin {
         }
 
         public Builder withSpecimens(final int numSpecimens) {
-            return withSpecimens(createList(numSpecimens, getSpecimenOps()::newHarvestSpecimenDTO));
+            final HarvestSpecimenOpsForTest ops = getSpecimenOps();
+            return withSpecimens(createList(numSpecimens, ops::createDTO));
         }
 
         public Builder mutate() {
@@ -87,7 +89,8 @@ public interface MobileHarvestDTOBuilderFactory extends ValueGeneratorMixin {
         }
 
         public Builder mutateSpecimens() {
-            dto.getSpecimens().forEach(getSpecimenOps()::mutateContent);
+            final HarvestSpecimenOpsForTest ops = getSpecimenOps();
+            dto.getSpecimens().forEach(ops::mutateContent);
             return this;
         }
 
@@ -101,5 +104,4 @@ public interface MobileHarvestDTOBuilderFactory extends ValueGeneratorMixin {
                     dto.getGameSpeciesCode(), dto.getHarvestSpecVersion(), values.getNumberGenerator());
         }
     }
-
 }

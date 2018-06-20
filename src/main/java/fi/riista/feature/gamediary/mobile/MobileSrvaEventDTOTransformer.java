@@ -1,15 +1,15 @@
 package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.gamediary.image.GameDiaryImage;
+import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventDTOTransformerBase;
 import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
-import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
 import fi.riista.feature.gamediary.srva.method.SrvaMethod;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
+import fi.riista.feature.organization.person.Person;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,8 +29,8 @@ public class MobileSrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<M
     // Transactional propagation not mandated since entity associations are not traversed.
     @Transactional(readOnly = true)
     @Nullable
-    public List<MobileSrvaEventDTO> apply(
-            @Nullable final List<SrvaEvent> list, @Nonnull final SrvaEventSpecVersion specVersion) {
+    public List<MobileSrvaEventDTO> apply(@Nullable final List<SrvaEvent> list,
+                                          @Nonnull final SrvaEventSpecVersion specVersion) {
 
         return list == null ? null : transform(list, specVersion);
     }
@@ -38,8 +38,8 @@ public class MobileSrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<M
     // Transactional propagation not mandated since entity associations are not traversed.
     @Transactional(readOnly = true)
     @Nullable
-    public MobileSrvaEventDTO apply(
-            @Nullable final SrvaEvent srvaEvent, @Nonnull final SrvaEventSpecVersion specVersion) {
+    public MobileSrvaEventDTO apply(@Nullable final SrvaEvent srvaEvent,
+                                    @Nonnull final SrvaEventSpecVersion specVersion) {
 
         if (srvaEvent == null) {
             return null;
@@ -61,8 +61,8 @@ public class MobileSrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<M
     }
 
     @Nonnull
-    private List<MobileSrvaEventDTO> transform(
-            @Nonnull final List<SrvaEvent> srvaEvents, @Nonnull final SrvaEventSpecVersion srvaEventSpecVersion) {
+    private List<MobileSrvaEventDTO> transform(@Nonnull final List<SrvaEvent> srvaEvents,
+                                               @Nonnull final SrvaEventSpecVersion srvaEventSpecVersion) {
 
         Objects.requireNonNull(srvaEvents, "srvaEvents cannot be null");
         Objects.requireNonNull(srvaEventSpecVersion, "srvaEventSpecVersion must not be null");
@@ -93,5 +93,4 @@ public class MobileSrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<M
             return dto;
         }).collect(toList());
     }
-
 }

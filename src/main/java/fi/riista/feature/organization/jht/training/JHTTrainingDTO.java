@@ -1,11 +1,11 @@
 package fi.riista.feature.organization.jht.training;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fi.riista.feature.common.dto.DoNotValidate;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.validation.DoNotValidate;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
@@ -165,7 +165,7 @@ public class JHTTrainingDTO extends BaseEntityDTO<Long> {
 
     @JsonIgnore
     @AssertTrue
-    public boolean checkIsValidJhtOccupationType() {
+    public boolean isJhtOccupationTypeValid() {
         return this.occupationType != null && OccupationType.isValidJhtOccupationType(this.occupationType);
     }
 

@@ -1,21 +1,19 @@
 package fi.riista.feature.gamediary.fixture;
 
 import com.google.common.base.Preconditions;
-
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenOpsForTest;
-import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenOpsForTest;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ValueGeneratorMixin;
 
 import javax.annotation.Nonnull;
-
 import java.util.Objects;
 
-import static fi.riista.util.TestUtils.createList;
+import static fi.riista.test.TestUtils.createList;
 import static java.util.Optional.ofNullable;
 
 @FunctionalInterface
@@ -34,8 +32,9 @@ public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
                 .withPointOfTime(DateUtil.localDateTime())
                 .withDescription("description");
 
-        return numIdentifiedSpecimens > 0 ? builder.withAmount(numIdentifiedSpecimens).withSpecimens(
-                numIdentifiedSpecimens) : builder.withAmount(1);
+        return numIdentifiedSpecimens > 0
+                ? builder.withAmount(numIdentifiedSpecimens).withSpecimens(numIdentifiedSpecimens)
+                : builder.withAmount(1);
     }
 
     default Builder create(@Nonnull final Harvest harvest) {
@@ -44,9 +43,10 @@ public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
     }
 
     default Builder create(@Nonnull final Harvest harvest, @Nonnull final GameSpecies species) {
-        return new Builder(this).populateWith(harvest).populateWith(species);
-        //.withAuthorInfo(harvest.getAuthor())
-        //.withActorInfo(harvest.getActualShooter())
+        return new Builder(this)
+                .populateWith(harvest)
+                .populateWith(harvest.getHarvestPermit())
+                .populateWith(species);
     }
 
     default Builder create(@Nonnull final Harvest harvest, final int numIdentifiedSpecimens) {
@@ -85,7 +85,8 @@ public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
         }
 
         public Builder withSpecimens(final int numSpecimens) {
-            return withSpecimens(createList(numSpecimens, getSpecimenOps()::newHarvestSpecimenDTO));
+            final HarvestSpecimenOpsForTest ops = getSpecimenOps();
+            return withSpecimens(createList(numSpecimens, ops::createDTO));
         }
 
         public Builder mutate() {
@@ -94,15 +95,25 @@ public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
                     .withDescription(ofNullable(dto.getDescription()).orElse("") + "CHANGED");
         }
 
+        public Builder mutate(final GroupHuntingDay huntingDay) {
+            final int seconds = values.nextIntBetween(0, huntingDay.calculateHuntingDayDurationInMinutes() - 1);
+            return withGeoLocation(values.geoLocation(GeoLocation.Source.MANUAL))
+                    .withPointOfTime(huntingDay.getStartAsLocalDateTime().plusSeconds(seconds))
+                    .withDescription(ofNullable(dto.getDescription()).orElse("") + "CHANGED");
+        }
+
         public Builder mutateSpecimens() {
-            dto.getSpecimens().forEach(getSpecimenOps()::mutateContent);
+            final HarvestSpecimenOpsForTest ops = getSpecimenOps();
+            dto.getSpecimens().forEach(ops::mutateContent);
             return this;
         }
 
         public Builder linkToHuntingDay(@Nonnull final GroupHuntingDay huntingDay) {
             Objects.requireNonNull(huntingDay);
             dto.setHuntingDayId(huntingDay.getId());
-            dto.setPointOfTime(huntingDay.getStartAsLocalDateTime());
+            if (!huntingDay.containsInstant(dto.getPointOfTime())) {
+                dto.setPointOfTime(huntingDay.getStartAsLocalDateTime());
+            }
             return this;
         }
 
@@ -116,5 +127,4 @@ public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
                     dto.getGameSpeciesCode(), dto.getHarvestSpecVersion(), values.getNumberGenerator());
         }
     }
-
 }

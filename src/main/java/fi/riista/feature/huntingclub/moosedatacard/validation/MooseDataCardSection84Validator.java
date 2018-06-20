@@ -1,19 +1,16 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static javaslang.control.Validation.valid;
-
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_4;
-
-import javaslang.control.Validation;
-
+import io.vavr.control.Validation;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.List;
 import java.util.Objects;
+
+import static io.vavr.control.Validation.valid;
 
 public class MooseDataCardSection84Validator {
 
@@ -62,5 +59,4 @@ public class MooseDataCardSection84Validator {
     private static LocalDate getValidEndDate(@Nullable final LocalDate beginDate, @Nullable final LocalDate endDate) {
         return beginDate != null && endDate != null && endDate.isBefore(beginDate) ? null : endDate;
     }
-
 }

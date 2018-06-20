@@ -5,9 +5,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPQLQuery;
-
 import fi.riista.util.F;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -45,7 +43,7 @@ public class BaseRepositoryImpl<T, ID extends Serializable>
         return toSlice(querydsl.applySorting(page.getSort(), query).fetch(), page);
     }
 
-    private static <S> Slice<S> toSlice(final List<S> results, final Pageable page) {
+    public static <S> Slice<S> toSlice(final List<S> results, final Pageable page) {
         boolean hasNext = false;
         if (results.size() > page.getPageSize()) {
             // Remove the extra element

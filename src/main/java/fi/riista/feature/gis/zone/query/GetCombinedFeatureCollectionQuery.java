@@ -1,67 +1,30 @@
 package fi.riista.feature.gis.zone.query;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.util.GISUtils;
+import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
 import javax.annotation.Nonnull;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
 public class GetCombinedFeatureCollectionQuery {
-
-    public static final String SQL = "WITH d AS (" +
-            " SELECT " +
-            "  zone_id, " +
-            "  ST_Transform(ST_Simplify(geom, :simplify), :crs) geom" +
-            " FROM zone" +
-            " WHERE zone_id IN (:zoneIds)" +
-            "), e AS (" +
-            " SELECT " +
-            "  d.zone_id AS zone_id," +
-            "  d.geom AS geom," +
-            "  ST_XMin(ST_Extent(d.geom)) AS xmin, " +
-            "  ST_YMin(ST_Extent(d.geom)) AS ymin, " +
-            "  ST_XMax(ST_Extent(d.geom)) AS xmax, " +
-            "  ST_YMax(ST_Extent(d.geom)) AS ymax" +
-            " FROM d" +
-            " GROUP BY zone_id, geom" +
-            ") SELECT " +
-            "  e.zone_id AS id," +
-            "  ST_AsGeoJSON(e.geom) AS geom," +
-            "  e.xmin, e.xmax, e.ymin, e.ymax" +
-            " FROM e" +
-            " JOIN zone z ON (e.zone_id = z.zone_id);";
+    public static final String SQL = "SELECT" +
+            " zone_id, ST_AsBinary(ST_Transform(simple_geom, :crs)) AS geom" +
+            " FROM zone WHERE zone_id IN (:zoneIds) AND simple_geom IS NOT NULL";
 
     private final NamedParameterJdbcOperations jdbcOperations;
-    private final ObjectMapper objectMapper;
 
-    public GetCombinedFeatureCollectionQuery(final NamedParameterJdbcOperations jdbcOperations,
-                                             final ObjectMapper objectMapper) {
+    public GetCombinedFeatureCollectionQuery(final NamedParameterJdbcOperations jdbcOperations) {
         this.jdbcOperations = jdbcOperations;
-        this.objectMapper = objectMapper;
     }
 
     @Nonnull
-    private Feature mapResultToFeature(final ResultSet rs) throws SQLException {
-        final Feature feature = new Feature();
-
-        feature.setId(Long.toString(rs.getLong("id")));
-        feature.setGeometry(GISUtils.parseGeoJSONGeometry(objectMapper, rs.getString("geom")));
-        feature.setBbox(new double[]{
-                rs.getDouble("xmin"), rs.getDouble("ymin"),
-                rs.getDouble("xmax"), rs.getDouble("ymax")});
-
-        return feature;
-    }
-
-    @Nonnull
-    public FeatureCollection execute(final Set<Long> zoneIds, final GISUtils.SRID srid, final double simplifyAmount) {
+    public FeatureCollection execute(final Set<Long> zoneIds, final GISUtils.SRID srid) {
         final FeatureCollection featureCollection = new FeatureCollection();
         featureCollection.setCrs(srid.getGeoJsonCrs());
 
@@ -71,10 +34,20 @@ public class GetCombinedFeatureCollectionQuery {
 
         final MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("zoneIds", zoneIds)
-                .addValue("crs", srid.getValue())
-                .addValue("simplify", simplifyAmount);
+                .addValue("crs", srid.getValue());
 
-        final List<Feature> features = jdbcOperations.query(SQL, params, (rs, i) -> mapResultToFeature(rs));
+        final List<Feature> features = jdbcOperations.query(SQL, params, (rs, i) -> {
+            final Geometry geometry = GISUtils.readFromPostgisWkb(rs.getBytes("geom"), srid);
+            final Geometry validGeometry = geometry.isValid() ? geometry : geometry.buffer(0);
+
+            final Feature feature = new Feature();
+
+            feature.setId(Long.toString(rs.getLong("zone_id")));
+            feature.setBbox(GISUtils.getGeoJsonBBox(geometry));
+            feature.setGeometry(PolygonConversionUtil.javaToGeoJSON(validGeometry));
+
+            return feature;
+        });
 
         if (features != null) {
             featureCollection.setFeatures(features);

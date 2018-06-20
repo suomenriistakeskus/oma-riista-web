@@ -1,19 +1,17 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static javaslang.control.Validation.valid;
-
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
 import fi.riista.feature.huntingclub.permit.summary.TrendOfPopulationGrowth;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
-
-import javaslang.control.Validation;
+import io.vavr.control.Validation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.List;
 import java.util.Objects;
+
+import static io.vavr.control.Validation.valid;
 
 public class MooseDataCardPage7MooselikeValidator {
 
@@ -75,6 +73,23 @@ public class MooseDataCardPage7MooselikeValidator {
             result.setTrendOfFallowDeerPopulationGrowth(null);
         }
 
+        if (result.getWildBoarAppeared() != MooseDataCardGameSpeciesAppearance.NO) {
+
+            result.setEstimatedSpecimenAmountOfWildBoar(
+                    MooseDataCardSummaryField.ESTIMATED_AMOUNT_OF_WILD_BOARS.getValidOrNull(page7));
+
+            result.setTrendOfWildBoarPopulationGrowth(
+                    getValidTrendOfPopulationGrowth(page7.getTrendOfWildBoarPopulationGrowth()));
+
+            result.setEstimatedAmountOfSowsWithPiglets(
+                    MooseDataCardSummaryField.ESTIMATED_AMOUNT_OF_SOWS_WITH_PIGLETS.getValidOrNull(page7));
+
+        } else {
+            result.setEstimatedSpecimenAmountOfWildBoar(null);
+            result.setTrendOfWildBoarPopulationGrowth(null);
+            result.setEstimatedAmountOfSowsWithPiglets(null);
+        }
+
         return valid(result);
     }
 
@@ -84,5 +99,4 @@ public class MooseDataCardPage7MooselikeValidator {
                 .map(TrendOfPopulationGrowth::getMooseDataCardEncoding)
                 .orElse(null);
     }
-
 }

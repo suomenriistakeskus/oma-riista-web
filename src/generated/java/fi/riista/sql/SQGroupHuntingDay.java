@@ -13,6 +13,9 @@ import java.sql.Types;
 
 import com.querydsl.sql.spatial.RelationalPathSpatial;
 
+import com.querydsl.spatial.*;
+
+
 
 /**
  * SQGroupHuntingDay is a Querydsl query type for SQGroupHuntingDay
@@ -64,13 +67,13 @@ public class SQGroupHuntingDay extends RelationalPathSpatial<SQGroupHuntingDay> 
 
     public final com.querydsl.sql.PrimaryKey<SQGroupHuntingDay> groupHuntingDayPkey = createPrimaryKey(groupHuntingDayId);
 
-    public final com.querydsl.sql.ForeignKey<SQMooseDataCardImport> groupHuntingDayMooseDataCardImportFk = createForeignKey(mooseDataCardImportId, "moose_data_card_import_id");
-
     public final com.querydsl.sql.ForeignKey<SQOrganisation> groupHuntingDayGroupFk = createForeignKey(huntingGroupId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQMooseDataCardImport> groupHuntingDayMooseDataCardImportFk = createForeignKey(mooseDataCardImportId, "moose_data_card_import_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvest> _harvestGroupHuntingDayFk = createInvForeignKey(groupHuntingDayId, "group_hunting_day_id");
 
-    public final com.querydsl.sql.ForeignKey<SQObservation> _gameObservationGroupHuntingDayFk = createInvForeignKey(groupHuntingDayId, "group_hunting_day_id");
+    public final com.querydsl.sql.ForeignKey<SQGameObservation> _gameObservationGroupHuntingDayFk = createInvForeignKey(groupHuntingDayId, "group_hunting_day_id");
 
     public SQGroupHuntingDay(String variable) {
         super(SQGroupHuntingDay.class, forVariable(variable), "public", "group_hunting_day");
@@ -79,6 +82,11 @@ public class SQGroupHuntingDay extends RelationalPathSpatial<SQGroupHuntingDay> 
 
     public SQGroupHuntingDay(String variable, String schema, String table) {
         super(SQGroupHuntingDay.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQGroupHuntingDay(String variable, String schema) {
+        super(SQGroupHuntingDay.class, forVariable(variable), schema, "group_hunting_day");
         addMetadata();
     }
 

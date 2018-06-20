@@ -52,6 +52,10 @@ public class PropertyIdentifier implements Serializable {
     }
 
     public String getDelimitedValue() {
+        if (this.propertyIdentifier == null || this.propertyIdentifier.length() < 14) {
+            return this.propertyIdentifier;
+        }
+
         return String.format("%s-%s-%s-%s",
                 getKuntanumero(), getSijaintialuenumero(), getRyhmanumero(), getYksikkonumero());
     }

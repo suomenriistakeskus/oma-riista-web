@@ -1,21 +1,23 @@
 package fi.riista.feature.gamediary.harvest;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fi.riista.feature.common.dto.CodesetEntryDTO;
-import fi.riista.feature.common.dto.DoNotValidate;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.HasAuthorAndActor;
 import fi.riista.feature.gamediary.HasHuntingDayId;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.harvestpermit.season.HarvestQuotaDTO;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFieldsDTO;
+import fi.riista.feature.harvestpermit.season.HarvestArea;
+import fi.riista.feature.harvestpermit.season.HarvestAreaDTO;
 import fi.riista.feature.huntingclub.HuntingClubDTO;
-import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import fi.riista.validation.DoNotValidate;
+import fi.riista.validation.XssSafe;
 import org.hibernate.validator.constraints.Range;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDateTime;
@@ -34,40 +36,43 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
     @Valid
     private PersonWithHunterNumberDTO actorInfo;
 
-    private boolean reportedForMe;
-    private boolean authoredByMe;
+    @JsonIgnore
+    private LocalDateTime harvestReportDate;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String harvestReportMemo;
+
     private boolean moderatorOverride;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String moderatorFullName;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String moderatorReasonForChange;
 
     @JsonProperty(value = "totalSpecimenAmount")
     @Range(min = Harvest.MIN_AMOUNT, max = Harvest.MAX_AMOUNT)
     private int amount;
 
-    private boolean readOnly;
-
-    private Long harvestReportId;
-
     @JsonIgnore
     @DoNotValidate
     private CodesetEntryDTO gameSpecies;
 
-    // TODO: This should not be part of HarvestDTO.
-    @Valid
-    private HarvestReportFieldsDTO fields;
-
-    private HuntingAreaType huntingAreaType;
-
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String huntingParty;
-
-    private Double huntingAreaSize;
-
-    private HuntingMethod huntingMethod;
-
-    private Boolean reportedWithPhoneCall;
-
+    @JsonIgnore
     @DoNotValidate
-    private HarvestQuotaDTO harvestQuota;
+    private HarvestAreaDTO harvestArea;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private HarvestLukeStatus lukeStatus;
+
+    @XssSafe
+    @JsonIgnore
+    private String propertyIdentifier;
+
+    @JsonIgnore
     private Long rhyId;
 
     private Long huntingDayId;
@@ -76,14 +81,18 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
     private PermittedMethod permittedMethod;
 
     @DoNotValidate
+    @JsonIgnore
     private HuntingClubDTO huntingClub;
 
     @Valid
+    @JsonIgnore
     private OrganisationNameDTO groupOfHuntingDay;
 
     @Valid
+    @JsonIgnore
     private PersonWithHunterNumberDTO approverToHuntingDay;
 
+    @JsonIgnore
     private LocalDateTime pointOfTimeApprovedToHuntingDay;
 
     public HarvestDTO() {
@@ -126,28 +135,49 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         this.actorInfo = actorInfo;
     }
 
-    public boolean isReportedForMe() {
-        return reportedForMe;
-    }
-
-    public void setReportedForMe(boolean reportedForMe) {
-        this.reportedForMe = reportedForMe;
-    }
-
-    public boolean isAuthoredByMe() {
-        return authoredByMe;
-    }
-
-    public void setAuthoredByMe(boolean authoredByMe) {
-        this.authoredByMe = authoredByMe;
-    }
-
+    @JsonProperty
     public boolean isModeratorOverride() {
         return moderatorOverride;
     }
 
+    @JsonIgnore
     public void setModeratorOverride(final boolean moderatorOverride) {
         this.moderatorOverride = moderatorOverride;
+    }
+
+    @JsonProperty
+    public LocalDateTime getHarvestReportDate() {
+        return harvestReportDate;
+    }
+
+    @JsonIgnore
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public void setHarvestReportDate(final LocalDateTime harvestReportDate) {
+        this.harvestReportDate = harvestReportDate;
+    }
+
+    public String getHarvestReportMemo() {
+        return harvestReportMemo;
+    }
+
+    public void setHarvestReportMemo(final String harvestReportMemo) {
+        this.harvestReportMemo = harvestReportMemo;
+    }
+
+    public String getModeratorReasonForChange() {
+        return moderatorReasonForChange;
+    }
+
+    public void setModeratorReasonForChange(final String moderatorReasonForChange) {
+        this.moderatorReasonForChange = moderatorReasonForChange;
+    }
+
+    public String getModeratorFullName() {
+        return moderatorFullName;
+    }
+
+    public void setModeratorFullName(final String moderatorFullName) {
+        this.moderatorFullName = moderatorFullName;
     }
 
     public int getAmount() {
@@ -158,23 +188,8 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         this.amount = amount;
     }
 
-    public boolean isReadOnly() {
-        return readOnly;
-    }
-
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-
-    public Long getHarvestReportId() {
-        return harvestReportId;
-    }
-
-    public void setHarvestReportId(Long harvestReportId) {
-        this.harvestReportId = harvestReportId;
-    }
-
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public CodesetEntryDTO getGameSpecies() {
         return gameSpecies;
     }
@@ -184,66 +199,43 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         this.gameSpecies = gameSpecies;
     }
 
-    public HarvestReportFieldsDTO getFields() {
-        return fields;
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public HarvestAreaDTO getHarvestArea() {
+        return harvestArea;
     }
 
-    public void setFields(HarvestReportFieldsDTO fields) {
-        this.fields = fields;
+    @JsonIgnore
+    public void setHarvestArea(final HarvestAreaDTO harvestArea) {
+        this.harvestArea = harvestArea;
     }
 
-    public HuntingAreaType getHuntingAreaType() {
-        return huntingAreaType;
+    public HarvestLukeStatus getLukeStatus() {
+        return lukeStatus;
     }
 
-    public void setHuntingAreaType(HuntingAreaType huntingAreaType) {
-        this.huntingAreaType = huntingAreaType;
+    public void setLukeStatus(final HarvestLukeStatus lukeStatus) {
+        this.lukeStatus = lukeStatus;
     }
 
-    public String getHuntingParty() {
-        return huntingParty;
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getPropertyIdentifier() {
+        return propertyIdentifier;
     }
 
-    public void setHuntingParty(String huntingParty) {
-        this.huntingParty = huntingParty;
+    @JsonIgnore
+    public void setPropertyIdentifier(final String propertyIdentifier) {
+        this.propertyIdentifier = propertyIdentifier;
     }
 
-    public Double getHuntingAreaSize() {
-        return huntingAreaSize;
-    }
-
-    public void setHuntingAreaSize(Double huntingAreaSize) {
-        this.huntingAreaSize = huntingAreaSize;
-    }
-
-    public HuntingMethod getHuntingMethod() {
-        return huntingMethod;
-    }
-
-    public void setHuntingMethod(HuntingMethod huntingMethod) {
-        this.huntingMethod = huntingMethod;
-    }
-
-    public Boolean getReportedWithPhoneCall() {
-        return reportedWithPhoneCall;
-    }
-
-    public void setReportedWithPhoneCall(Boolean reportedWithPhoneCall) {
-        this.reportedWithPhoneCall = reportedWithPhoneCall;
-    }
-
-    public HarvestQuotaDTO getHarvestQuota() {
-        return harvestQuota;
-    }
-
-    public void setHarvestQuota(final HarvestQuotaDTO harvestQuota) {
-        this.harvestQuota = harvestQuota;
-    }
-
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Long getRhyId() {
         return rhyId;
     }
 
+    @JsonIgnore
     public void setRhyId(final Long rhyId) {
         this.rhyId = rhyId;
     }
@@ -265,34 +257,47 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         this.permittedMethod = permittedMethod;
     }
 
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public HuntingClubDTO getHuntingClub() {
         return huntingClub;
     }
 
+    @JsonIgnore
     public void setHuntingClub(HuntingClubDTO huntingClub) {
         this.huntingClub = huntingClub;
     }
 
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public OrganisationNameDTO getGroupOfHuntingDay() {
         return groupOfHuntingDay;
     }
 
+    @JsonIgnore
     public void setGroupOfHuntingDay(OrganisationNameDTO groupOfHuntingDay) {
         this.groupOfHuntingDay = groupOfHuntingDay;
     }
 
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public PersonWithHunterNumberDTO getApproverToHuntingDay() {
         return approverToHuntingDay;
     }
 
+    @JsonIgnore
     public void setApproverToHuntingDay(PersonWithHunterNumberDTO approverToHuntingDay) {
         this.approverToHuntingDay = approverToHuntingDay;
     }
 
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public LocalDateTime getPointOfTimeApprovedToHuntingDay() {
         return pointOfTimeApprovedToHuntingDay;
     }
 
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public void setPointOfTimeApprovedToHuntingDay(LocalDateTime pointOfTimeApprovedToHuntingDay) {
         this.pointOfTimeApprovedToHuntingDay = pointOfTimeApprovedToHuntingDay;
     }
@@ -335,6 +340,18 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
             return self();
         }
 
+        public SELF withHarvestArea(@Nullable final HarvestArea harvestArea) {
+            if (harvestArea != null) {
+                dto.setHarvestArea(HarvestAreaDTO.create(harvestArea));
+            }
+            return self();
+        }
+
+        public SELF withModeratorChangeReason(@Nullable final String reason) {
+            dto.setModeratorReasonForChange(reason);
+            return self();
+        }
+
         @Override
         public SELF populateWith(@Nonnull final GameSpecies species) {
             return super.populateWith(species).chain(self -> {
@@ -349,18 +366,17 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
             return super.populateWith(harvest)
                     .withAmount(harvest.getAmount())
                     .chain(self -> {
-                        dto.setHuntingAreaType(harvest.getHuntingAreaType());
-                        dto.setHuntingAreaSize(harvest.getHuntingAreaSize());
-                        dto.setHuntingParty(harvest.getHuntingParty());
-                        dto.setHuntingMethod(harvest.getHuntingMethod());
-                        dto.setReportedWithPhoneCall(harvest.getReportedWithPhoneCall());
                         dto.setPermittedMethod(harvest.getPermittedMethod());
-
+                        dto.setLukeStatus(harvest.getLukeStatus());
+                        dto.setPropertyIdentifier(harvest.getPropertyIdentifier() != null
+                                ? harvest.getPropertyIdentifier().getDelimitedValue() : null);
                         dto.setRhyId(F.getId(harvest.getRhy()));
                         dto.setHuntingDayId(F.getId(harvest.getHuntingDayOfGroup()));
                         dto.setPointOfTimeApprovedToHuntingDay(
                                 DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTimeApprovedToHuntingDay()));
                         dto.setModeratorOverride(harvest.isModeratorOverride());
+                        dto.setHarvestReportDate(harvest.getHarvestReportDate() != null
+                                ? harvest.getHarvestReportDate().toLocalDateTime() : null);
                     });
         }
 
@@ -376,5 +392,4 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
             return this;
         }
     }
-
 }

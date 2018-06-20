@@ -1,34 +1,14 @@
 package fi.riista.feature.gamediary;
 
-import static com.google.common.collect.Lists.partition;
-import static fi.riista.util.Asserts.assertEmpty;
-import static fi.riista.util.Filters.hasAnyIdOf;
-import static fi.riista.util.Filters.idNotAnyOf;
-import static fi.riista.util.Functions.idAndVersion;
-import static fi.riista.util.TestUtils.expectIllegalArgumentException;
-import static fi.riista.util.TestUtils.expectNPE;
-import static fi.riista.util.TestUtils.expectRevisionConflictException;
-import static fi.riista.util.TestUtils.times;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.test.TransactionalTaskExecutor;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.test.TestUtils;
 import fi.riista.util.EqualityHelper;
 import fi.riista.util.F;
-import fi.riista.util.TestUtils;
+import fi.riista.util.TransactionalTaskExecutor;
 import fi.riista.util.TransactionalVersionedTestExecutionSupport;
-
-import javaslang.Tuple2;
-
+import io.vavr.Tuple2;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -42,6 +22,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.google.common.collect.Lists.partition;
+import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.test.TestUtils.expectIllegalArgumentException;
+import static fi.riista.test.TestUtils.expectNPE;
+import static fi.riista.test.TestUtils.expectOutOfBoundsSpecimenAmountException;
+import static fi.riista.test.TestUtils.expectRevisionConflictException;
+import static fi.riista.test.TestUtils.times;
+import static fi.riista.util.Filters.hasAnyIdOf;
+import static fi.riista.util.Filters.idNotAnyOf;
+import static fi.riista.util.Functions.idAndVersion;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry, ENTITY extends BaseEntity<Long>, DTO extends BaseEntityDTO<Long>, VERSION extends GameDiaryEntitySpecVersion>
         extends EmbeddedDatabaseTest implements TransactionalVersionedTestExecutionSupport<VERSION> {
@@ -101,7 +100,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
     @Test
     public void testAddSpecimens_whenTotalAmountTooLow() {
-        testAllVersions(expectIllegalArgumentException(ctx -> {
+        testAllVersions(expectOutOfBoundsSpecimenAmountException(ctx -> {
 
             final int minAmount = ctx.getMinAmount();
             ctx.invokeAdd(minAmount - 1, ctx.createDTOs(minAmount));
@@ -111,7 +110,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
     @Test
     public void testAddSpecimens_whenTotalAmountTooHigh() {
-        testAllVersions(expectIllegalArgumentException(ctx -> {
+        testAllVersions(expectOutOfBoundsSpecimenAmountException(ctx -> {
 
             ctx.invokeAdd(ctx.getMaxAmount() + 1, ctx.createDTOs(1));
 
@@ -120,7 +119,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
     @Test
     public void testAddSpecimens_whenTotalAmountLessThanNumberOfDTOs() {
-        testAllVersions(expectIllegalArgumentException(ctx -> {
+        testAllVersions(expectOutOfBoundsSpecimenAmountException(ctx -> {
 
             final int minAmount = ctx.getMinAmount();
             ctx.invokeAdd(minAmount, ctx.createDTOs(minAmount + 1));
@@ -189,7 +188,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
     @Test
     public void testSetSpecimens_whenTotalAmountTooLow() {
-        testAllVersions(expectIllegalArgumentException(ctx -> {
+        testAllVersions(expectOutOfBoundsSpecimenAmountException(ctx -> {
 
             final int minAmount = ctx.getMinAmount();
             ctx.invokeSet(minAmount - 1, ctx.createDTOs(minAmount));
@@ -199,7 +198,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
     @Test
     public void testSetSpecimens_whenTotalAmountTooHigh() {
-        testAllVersions(expectIllegalArgumentException(ctx -> {
+        testAllVersions(expectOutOfBoundsSpecimenAmountException(ctx -> {
 
             ctx.invokeSet(ctx.getMaxAmount() + 1, ctx.createDTOs(1));
 
@@ -208,7 +207,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
     @Test
     public void testSetSpecimens_whenTotalAmountLessThanNumberOfDTOs() {
-        testAllVersions(expectIllegalArgumentException(ctx -> {
+        testAllVersions(expectOutOfBoundsSpecimenAmountException(ctx -> {
 
             final int minAmount = ctx.getMinAmount();
             ctx.invokeSet(minAmount, ctx.createDTOs(minAmount + 1));
@@ -377,7 +376,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
             final List<DTO> allDtos = ctx.transform(ctx.findExistingSpecimensForParentInInsertionOrder());
 
-            final List<ENTITY> persistedSpecimens = ctx.invokeSet_assertNoChanges(allDtos.size(), allDtos);
+            final List<ENTITY> persistedSpecimens = ctx.invokeSet_expectNoneChanged(allDtos.size(), allDtos);
 
             assertEquals(allDtos.size(), persistedSpecimens.size());
             assertTrue(ctx.equalContent(persistedSpecimens, allDtos));
@@ -438,12 +437,11 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
         return invokeSet(diaryEntry, totalAmount, dtoList, version, true);
     }
 
-    protected List<ENTITY> invokeSet(
-            final PARENT diaryEntry,
-            final int totalAmount,
-            final List<DTO> dtoList,
-            final VERSION version,
-            final boolean changesExpected) {
+    protected List<ENTITY> invokeSet(final PARENT diaryEntry,
+                                     final int totalAmount,
+                                     final List<DTO> dtoList,
+                                     final VERSION version,
+                                     final boolean changesExpected) {
 
         final Tuple2<List<ENTITY>, Boolean> result =
                 getService().setSpecimens(diaryEntry, totalAmount, dtoList, version);
@@ -470,16 +468,16 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
         return parentSupplier -> forEachVersion(version -> with(execution).accept(parentSupplier.get(), version));
     }
 
-    protected Consumer<Supplier<PARENT>> testAllVersionsBefore(
-            final VERSION versionUpperBound, final Consumer<Context> execution) {
+    protected Consumer<Supplier<PARENT>> testAllVersionsBefore(final VERSION versionUpperBound,
+                                                               final Consumer<Context> execution) {
 
         return parentSupplier -> {
             forEachVersionBefore(versionUpperBound, version -> with(execution).accept(parentSupplier.get(), version));
         };
     }
 
-    protected Consumer<Supplier<PARENT>> testAllVersionsStartingFrom(
-            final VERSION minVersion, final Consumer<Context> execution) {
+    protected Consumer<Supplier<PARENT>> testAllVersionsStartingFrom(final VERSION minVersion,
+                                                                     final Consumer<Context> execution) {
 
         return parentSupplier -> {
             forEachVersionStartingFrom(minVersion, version -> with(execution).accept(parentSupplier.get(), version));
@@ -518,21 +516,11 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
         private final VERSION version;
         private final SpecimenTestOps<PARENT, ENTITY, DTO> ops;
 
-        public Context(@Nonnull final PARENT diaryEntry, @Nonnull final VERSION version) {
-            this(Objects.requireNonNull(diaryEntry, "diaryEntry is null"), diaryEntry.getSpecies(), version);
-        }
-
-        public Context(@Nonnull final GameSpecies species, @Nonnull final VERSION version) {
-            this(null, species, version);
-        }
-
-        private Context(
-                @Nullable final PARENT diaryEntry, @Nonnull final GameSpecies species, @Nonnull final VERSION version) {
-
-            this.diaryEntry = diaryEntry;
-            Objects.requireNonNull(species, "species is null");
+        public Context(
+                @Nullable final PARENT diaryEntry, @Nonnull final VERSION version) {
+            this.diaryEntry = Objects.requireNonNull(diaryEntry, "diaryEntry is null");
             this.version = Objects.requireNonNull(version, "version is null");
-            this.ops = getSpecimenTestOps(species, version);
+            this.ops = getSpecimenTestOps(Objects.requireNonNull(diaryEntry.getSpecies(), "species is null"), version);
         }
 
         public PARENT getParent() {
@@ -613,7 +601,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
             return AbstractSpecimenServiceTest.this.invokeSet(requireParent(), totalAmount, dtoList, version, true);
         }
 
-        public List<ENTITY> invokeSet_assertNoChanges(final int totalAmount, final List<DTO> dtoList) {
+        public List<ENTITY> invokeSet_expectNoneChanged(final int totalAmount, final List<DTO> dtoList) {
             return AbstractSpecimenServiceTest.this.invokeSet(requireParent(), totalAmount, dtoList, version, false);
         }
 

@@ -20,9 +20,10 @@ public class MooseDataCardMooseObservationConverter
 
     public MooseDataCardMooseObservationConverter(@Nonnull final GameSpecies mooseSpecies,
                                                   @Nonnull final Person contactPerson,
+                                                  final int huntingYear,
                                                   @Nonnull final GeoLocation defaultCoordinates) {
 
-        super(new MooseDataCardMooseObservationValidator(defaultCoordinates), contactPerson);
+        super(new MooseDataCardMooseObservationValidator(huntingYear, defaultCoordinates), contactPerson);
         this.mooseSpecies = Objects.requireNonNull(mooseSpecies);
     }
 
@@ -30,20 +31,22 @@ public class MooseDataCardMooseObservationConverter
     public Stream<Observation> apply(@Nonnull final MooseDataCardObservation input) {
         return validateToStream(input).map(validInput -> {
 
-            final Observation observation = createObservation(validInput).withMooselikeAmounts(
-                    F.coalesceAsInt(validInput.getAU(), 0),
-                    F.coalesceAsInt(validInput.getN0(), 0),
-                    F.coalesceAsInt(validInput.getN1(), 0),
-                    F.coalesceAsInt(validInput.getN2(), 0),
-                    F.coalesceAsInt(validInput.getN3(), 0),
-                    null,
-                    F.coalesceAsInt(validInput.getT(), 0));
+            final Observation observation = createObservation(validInput);
 
             observation.setSpecies(mooseSpecies);
             observation.setObservationType(ObservationType.NAKO);
 
+            observation.setMooselikeMaleAmount(F.coalesceAsInt(validInput.getAU(), 0));
+            observation.setMooselikeFemaleAmount(F.coalesceAsInt(validInput.getN0(), 0));
+            observation.setMooselikeFemale1CalfAmount(F.coalesceAsInt(validInput.getN1(), 0));
+            observation.setMooselikeFemale2CalfsAmount(F.coalesceAsInt(validInput.getN2(), 0));
+            observation.setMooselikeFemale3CalfsAmount(F.coalesceAsInt(validInput.getN3(), 0));
+            observation.setMooselikeCalfAmount(F.coalesceAsInt(validInput.getY(), 0));
+            observation.setMooselikeUnknownSpecimenAmount(F.coalesceAsInt(validInput.getT(), 0));
+
+            observation.setAmountToSumOfMooselikeAmounts();
+
             return observation;
         });
     }
-
 }

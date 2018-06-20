@@ -1,14 +1,12 @@
 package fi.riista.integration.lupahallinta;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import fi.riista.feature.huntingclub.QHuntingClub;
-import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.address.QAddress;
-import fi.riista.feature.organization.lupahallinta.QLHOrganisation;
-import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.QOrganisation;
+import fi.riista.feature.organization.address.QAddress;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.person.QPerson;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.integration.lupahallinta.club.LHHuntingClubCSVRow;
@@ -41,8 +39,6 @@ public class HuntingClubExportToLupahallintaFeature {
         final QRiistanhoitoyhdistys personRhy = new QRiistanhoitoyhdistys("person_rhy");
         final QOrganisation personRka = new QOrganisation("person_rka");
 
-        final QLHOrganisation lhOrg = QLHOrganisation.lHOrganisation;
-
         final List<Tuple> res = new JPAQuery<>(entityManager)
                 .select(occupation, huntingClub, clubRhy.officialCode, clubRka.officialCode, personRhy.officialCode, personRka.officialCode)
                 .from(occupation)
@@ -53,9 +49,11 @@ public class HuntingClubExportToLupahallintaFeature {
                 .leftJoin(person.mrAddress, address).fetchJoin()
                 .leftJoin(person.rhyMembership, personRhy)
                 .leftJoin(personRhy.parentOrganisation, personRka)
-                .where(occupation.occupationType.eq(OccupationType.SEURAN_YHDYSHENKILO)
-                        .and(occupation.validAndNotDeleted())
-                        .and(huntingClub.officialCode.in(JPAExpressions.select(lhOrg.officialCode).from(lhOrg))))
+                .where(occupation.occupationType.eq(OccupationType.SEURAN_YHDYSHENKILO),
+                        occupation.validAndNotDeleted(),
+                        huntingClub.officialCode.length().eq(7),
+                        huntingClub.officialCode.startsWith("9").not()
+                )
                 // Ordering is relevant:
                 // same club occupations after eachothers,
                 // then the smallest call order first nulls last,

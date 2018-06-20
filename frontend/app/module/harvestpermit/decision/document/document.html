@@ -1,0 +1,155 @@
+<div class="pull-right row" style="width: 500px">
+    <div class="col-xs-6">
+        <span ng-show="$ctrl.reference">Referenssipäätös</span>
+        <strong ng-show="$ctrl.reference" ng-bind="$ctrl.reference.applicationNumber"></strong>
+        <br>
+
+        <a ng-show="$ctrl.decision.status === 'DRAFT'"
+           ng-disabled="!$ctrl.isHandler()"
+           ng-click="$ctrl.changeReference()">
+            <span ng-if="$ctrl.reference">Vaihda referenssi</span>
+            <span ng-if="!$ctrl.reference">Valitse referenssi</span>
+        </a>
+    </div>
+
+    <div class="col-xs-6 text-right">
+        <button type="button" class="btn btn-primary"
+                ng-disabled="!$ctrl.canLockDecision()"
+                ng-show="$ctrl.decision.status === 'DRAFT'"
+                ng-click="$ctrl.lockDecision()">
+            Lukitse
+        </button>
+
+        <button type="button" class="btn btn-danger"
+                ng-show="$ctrl.canUnlockDecision()"
+                ng-click="$ctrl.unlockDecision()">
+            Avaa lukitus
+        </button>
+
+        <button type="button" class="btn btn-info"
+                ng-show="$ctrl.decision.status === 'DRAFT'"
+                ng-click="$ctrl.previewEnabled = !$ctrl.previewEnabled">
+            <span ng-show="!$ctrl.previewEnabled">Esikatselutila</span>
+            <span ng-show="$ctrl.previewEnabled">Muokkaustila</span>
+        </button>
+    </div>
+</div>
+
+<permit-decision-nav-header decision="$ctrl.decision"></permit-decision-nav-header>
+
+<div class="row">
+    <div class="col-xs-3">
+        <permit-decision-document-nav
+                on-focus="$ctrl.focus(sectionId)"
+                publish-date="$ctrl.decision.publishDate"
+                grant-status="$ctrl.decision.grantStatus"
+                complete-status="$ctrl.decision.completeStatus">
+        </permit-decision-document-nav>
+    </div>
+
+    <div class="col-xs-9">
+        <iframe ng-if="$ctrl.previewEnabled" height="700px" width="100%" style="border:0;"
+                ng-src="{{$ctrl.previewUrl()}}"></iframe>
+
+        <div style="height: 700px; overflow-x: hidden; overflow-y: auto; box-sizing: border-box;  padding: 0 20px 610px 20px;"
+             ng-show="!$ctrl.previewEnabled"
+             auto-scroll-to="$ctrl.scrollTo"
+             prefix-id="decision-section-">
+
+            <div id="decision-section-general"
+                 class="panel panel-decision">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="panel-title">
+                                <span class="text-uppercase"
+                                      translate="harvestpermit.decision.sectionId.general"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-1 col-xs-offset-5 text-right">
+                            <a ng-if="::($ctrl.decision.status === 'DRAFT' && $ctrl.isHandler())"
+                               ng-click="$ctrl.editSection('general');">
+                                <span class="fa fa-2x fa-edit text-primary"></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-body">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <th>Julkaisupäivämäärä</th>
+                            <td><span ng-bind="$ctrl.decision.publishDate|date:'dd.MM.yyyy'"></span></td>
+                        </tr>
+                        <tr>
+                            <th>Julkaisuaika</th>
+                            <td><span ng-bind="$ctrl.decision.publishDate|date:'HH:mm'"></span></td>
+                        </tr>
+                        <tr>
+                            <th>Kieli</th>
+                            <td><span ng-bind="$ctrl.decision.locale === 'sv_FI' ? 'ruotsi' : 'suomi'"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div ng-repeat="sectionId in ::$ctrl.sectionIds"
+                 id="decision-section-{{sectionId}}"
+                 class="panel panel-decision"
+                 ng-class="{hidden: !$ctrl.isSectionVisible(sectionId)}">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="panel-title">
+                                <span class="text-uppercase"
+                                      translate="harvestpermit.decision.sectionId.{{::sectionId}}"></span>
+                            </div>
+
+                            <a ng-if="::(sectionId === 'application' && $ctrl.canEditContent('decision'))"
+                               ng-click="$ctrl.createAdjustedAreaAction()">
+                                Luo välitoimenpide hakemuksen korjatulle pinta-alalle
+                            </a>
+                        </div>
+
+                        <div class="col-xs-2 col-xs-offset-2">
+                            <label class="checkbox-inline" ng-if="::$ctrl.canEditContent(sectionId)">
+                                <input type="checkbox"
+                                       ng-change="$ctrl.toggleComplete(sectionId)"
+                                       ng-if="$ctrl.canBeCompleted(sectionId) || $ctrl.decision.completeStatus[sectionId]"
+                                       ng-model="$ctrl.decision.completeStatus[sectionId]">
+
+                                <span class="text-primary"
+                                      ng-show="$ctrl.decision.completeStatus[sectionId]">
+                                    Valmis
+                                </span>
+
+                                <span class="text-warning"
+                                      ng-hide="$ctrl.decision.completeStatus[sectionId]">
+                                    Kesken
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="col-xs-2 text-right">
+                            <a ng-if="::(sectionId === 'application' && $ctrl.canEditContent('decision'))"
+                               ng-click="$ctrl.refreshSection(sectionId)">
+                                <span class="fa fa-2x fa-refresh text-info"></span>
+                            </a>
+                            &nbsp;
+                            <a ng-if="$ctrl.canEditContent(sectionId) && !$ctrl.decision.completeStatus[sectionId]"
+                               ng-click="$ctrl.editSection(sectionId);">
+                                <span class="fa fa-2x fa-edit text-primary"></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div ng-bind-html="$ctrl.getSectionContent(sectionId)"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

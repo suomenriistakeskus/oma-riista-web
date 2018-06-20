@@ -34,15 +34,10 @@
         <hr/>
 
         <div>
-            <p><a ng-click="$ctrl.toggleTermsVisibility()">
-                <span translate="registration.confirmation.termsAndConditions" class="text-right"></span>
-                <span class="glyphicon"
-                      ng-class="{ 'glyphicon-chevron-down': $ctrl.showTermsAndConditions, 'glyphicon-chevron-right': !$ctrl.showTermsAndConditions }"></span>
-            </a></p>
-            <div ng-if="$ctrl.showTermsAndConditions" class="well">
-                <div class="small text-muted"
-                     ng-include="'global.about.termsAndConditionsContentPath' | translate | withVersion"></div>
-            </div>
+            <ul>
+                <li><a href="{{'global.about.termsAndConditionsUrl' | translate}}" translate="global.about.termsAndConditions"></a></li>
+                <li><a href="{{'global.about.privacyPolicyUrl' | translate}}" translate="global.about.privacyPolicy"></a></li>
+            </ul>
         </div>
 
         <hr/>

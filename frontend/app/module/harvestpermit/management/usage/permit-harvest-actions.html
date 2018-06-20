@@ -1,0 +1,22 @@
+<div class="btn-group btn-group-justified" ng-if="$ctrl.canAcceptOrRejectToPermit()">
+    <div class="btn-group">
+        <button type="button" class="btn" harvest-report-state-to-class="'REJECTED'"
+                ng-disabled="!$ctrl.permitStateChangePossible('REJECTED')"
+                ng-click="$ctrl.changeAcceptedToPermit('REJECTED')">
+            <span class="glyphicon glyphicon-thumbs-down"></span>
+            &nbsp;
+            <span translate="gamediary.changeStateToVerbose.REJECTED"></span>
+        </button>
+    </div>
+
+    <div class="btn-group">
+        <button type="button" class="btn" harvest-report-state-to-class="'ACCEPTED'"
+                ng-disabled="!$ctrl.permitStateChangePossible('ACCEPTED')"
+                ng-click="$ctrl.changeAcceptedToPermit('ACCEPTED')">
+            <span class="glyphicon glyphicon-thumbs-up"></span>
+            &nbsp;
+            <span translate="gamediary.changeStateToVerbose.ACCEPTED"></span>
+        </button>
+    </div>
+</div>
+

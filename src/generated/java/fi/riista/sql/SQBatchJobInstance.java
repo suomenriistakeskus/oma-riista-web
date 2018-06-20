@@ -49,6 +49,11 @@ public class SQBatchJobInstance extends RelationalPathSpatial<SQBatchJobInstance
         addMetadata();
     }
 
+    public SQBatchJobInstance(String variable, String schema) {
+        super(SQBatchJobInstance.class, forVariable(variable), schema, "batch_job_instance");
+        addMetadata();
+    }
+
     public SQBatchJobInstance(Path<? extends SQBatchJobInstance> path) {
         super(path.getType(), path.getMetadata(), "public", "batch_job_instance");
         addMetadata();

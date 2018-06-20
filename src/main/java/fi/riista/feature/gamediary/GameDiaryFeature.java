@@ -1,115 +1,98 @@
 package fi.riista.feature.gamediary;
 
+import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.common.entity.HasID;
-import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.observation.Observation;
-import fi.riista.feature.gamediary.observation.metadata.GameSpeciesObservationMetadataDTO;
-import fi.riista.feature.gamediary.harvest.HarvestDTO;
-import fi.riista.feature.gamediary.observation.ObservationDTO;
-import fi.riista.feature.gamediary.observation.metadata.ObservationMetadataDTO;
-import fi.riista.feature.gamediary.image.GameDiaryImage;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.observation.ObservationDTOTransformer;
-import fi.riista.feature.gamediary.observation.metadata.ObservationFieldPresenceValidator;
-import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
-import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
+import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
+import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.harvest.HarvestService;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenService;
+import fi.riista.feature.gamediary.image.GameDiaryImageService;
+import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationCanBeLinkedToHuntingDayOnlyWithinMooseHuntingException;
-import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
+import fi.riista.feature.gamediary.observation.ObservationDTO;
+import fi.riista.feature.gamediary.observation.ObservationDTOTransformer;
+import fi.riista.feature.gamediary.observation.ObservationRepository;
+import fi.riista.feature.gamediary.observation.ObservationService;
+import fi.riista.feature.gamediary.observation.metadata.ObservationFieldValidator;
+import fi.riista.feature.gamediary.observation.metadata.ObservationFieldsMetadataService;
+import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
+import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenService;
+import fi.riista.feature.huntingclub.hunting.ClubHuntingStatusService;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
-import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
-import fi.riista.util.jpa.JpaSpecs;
-import javaslang.Tuple2;
-import org.joda.time.Interval;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
-import static fi.riista.feature.gamediary.GameDiarySpecs.acceptedToPermit;
-import static fi.riista.feature.gamediary.GameDiarySpecs.authorAndRejectedForPermit;
-import static fi.riista.feature.gamediary.GameDiarySpecs.authorButNotObserver;
-import static fi.riista.feature.gamediary.GameDiarySpecs.authorButNotShooter;
-import static fi.riista.feature.gamediary.GameDiarySpecs.authorOrShooterAndHarvestReportRequiredAndMissing;
-import static fi.riista.feature.gamediary.GameDiarySpecs.observer;
-import static fi.riista.feature.gamediary.GameDiarySpecs.permitContactPersonAndProposedToPermit;
-import static fi.riista.feature.gamediary.GameDiarySpecs.shooter;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 
 @Service
-public class GameDiaryFeature extends AbstractGameDiaryFeature {
-
-    private static final HarvestSpecVersion HARVEST_SPEC_VERSION = HarvestSpecVersion.MOST_RECENT;
-    private static final int OBSERVATION_FIELDS_METADATA_VERSION = ObservationSpecVersion.MOST_RECENT.toIntValue();
+public class GameDiaryFeature {
 
     @Resource
-    private GroupHuntingDayService clubHuntingDayService;
+    private HarvestRepository harvestRepository;
+
+    @Resource
+    private HarvestChangeHistoryRepository harvestChangeHistoryRepository;
+
+    @Resource
+    private ObservationRepository observationRepository;
+
+    @Resource
+    private HarvestService harvestService;
+
+    @Resource
+    private ObservationService observationService;
+
+    @Resource
+    private GameDiaryEntryAuthorActorService diaryEntryAuthorActorService;
+
+    @Resource
+    private GameDiaryImageService gameDiaryImageService;
+
+    @Resource
+    private ActiveUserService activeUserService;
+
+    @Resource
+    private RequireEntityService requireEntityService;
+
+    @Resource
+    private HarvestSpecimenService harvestSpecimenService;
+
+    @Resource
+    private ObservationSpecimenService observationSpecimenService;
+
+    @Resource
+    private ObservationFieldsMetadataService observationFieldsMetadataService;
+
+    @Resource
+    private ClubHuntingStatusService clubHuntingStatusService;
+
+    @Resource
+    private UserAuthorizationHelper userAuthorizationHelper;
+
+    @Resource
+    private GroupHuntingDayService groupHuntingDayService;
 
     @Resource
     private HarvestDTOTransformer harvestDtoTransformer;
 
     @Resource
     private ObservationDTOTransformer observationDtoTransformer;
-
-    @Transactional(readOnly = true)
-    public ObservationMetadataDTO getObservationFieldMetadata() {
-        return getObservationFieldMetadata(OBSERVATION_FIELDS_METADATA_VERSION);
-    }
-
-    @Transactional(readOnly = true)
-    public GameSpeciesObservationMetadataDTO getObservationFieldMetadataForSpecies(final int officialCode) {
-        return getObservationFieldMetadataForSpecies(officialCode, OBSERVATION_FIELDS_METADATA_VERSION);
-    }
-
-    @Transactional(readOnly = true)
-    public List<GameDiaryEntryDTO> listDiaryEntriesForActiveUser(final Interval interval,
-                                                                 final boolean reportedForOthers) {
-        final Person person = activeUserService.requireActivePerson();
-
-        final Specification<Harvest> harvestPersonSpec =
-                reportedForOthers ? authorButNotShooter(person) : shooter(person);
-
-        final Specification<Observation> observationPersonSpec =
-                reportedForOthers ? authorButNotObserver(person) : observer(person);
-
-        final List<Harvest> harvests = harvestRepository.findAll(JpaSpecs.and(
-                harvestPersonSpec,
-                JpaSpecs.withinInterval(GameDiaryEntry_.pointOfTime, interval)));
-
-        final List<Observation> observations = observationRepository.findAll(JpaSpecs.and(
-                observationPersonSpec,
-                JpaSpecs.withinInterval(GameDiaryEntry_.pointOfTime, interval)));
-
-        return F.concat(harvestDtoTransformer.apply(harvests), observationDtoTransformer.apply(observations));
-    }
-
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public long countAllHarvestsRequiringAction() {
-        final Person person = activeUserService.requireActivePerson();
-
-        return harvestRepository.count(JpaSpecs.or(
-                authorOrShooterAndHarvestReportRequiredAndMissing(person),
-                authorAndRejectedForPermit(person),
-                permitContactPersonAndProposedToPermit(person)));
-    }
 
     @Transactional(readOnly = true)
     public HarvestDTO getHarvest(final Long id) {
@@ -123,23 +106,22 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
         final Harvest harvest = new Harvest();
         harvest.setFromMobile(false);
 
-        final SystemUser activeUser = activeUserService.getActiveUser();
-        final boolean moderator = activeUser.isModeratorOrAdmin();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
 
-        updateMutableFields(harvest, dto, activeUser, true, moderator, true);
-
-        // Default to manual if geolocation source not explicitly given
-        if (harvest.getGeoLocation().getSource() == null) {
-            harvest.getGeoLocation().setSource(GeoLocation.Source.MANUAL);
-        }
+        final HarvestChangeHistory historyEvent =
+                harvestService.updateMutableFields(harvest, dto, activeUser, true);
 
         activeUserService.assertHasPermission(harvest, EntityPermission.CREATE);
 
         harvestRepository.saveAndFlush(harvest);
 
-        harvestSpecimenService.addSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), HARVEST_SPEC_VERSION);
+        harvestSpecimenService.addSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), HarvestSpecVersion.MOST_RECENT);
 
         dto.getImageIds().forEach(uuid -> gameDiaryImageService.associateGameDiaryEntryWithImage(harvest, uuid));
+
+        if (historyEvent != null) {
+            harvestChangeHistoryRepository.save(historyEvent);
+        }
 
         return harvestDtoTransformer.apply(harvest);
     }
@@ -151,74 +133,33 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
         final Harvest harvest = requireEntityService.requireHarvest(dto.getId(), EntityPermission.UPDATE);
         DtoUtil.assertNoVersionConflict(harvest, dto);
 
-        final SystemUser activeUser = activeUserService.getActiveUser();
+        final SystemUser activeUser = activeUserService.requireActiveUser();
         final Person currentPerson = activeUser.getPerson();
-        final boolean moderator = activeUser.isModeratorOrAdmin();
+        final boolean businessFieldsCanBeUpdated = harvestService.canBusinessFieldsBeUpdated(
+                currentPerson, harvest, null);
 
-        final boolean authorOrShooter = !moderator && harvest.isAuthorOrActor(currentPerson);
-        final boolean businessFieldsCanBeUpdated = canBusinessFieldsBeUpdated(currentPerson, harvest, moderator);
-
-        updateMutableFields(harvest, dto, activeUser, businessFieldsCanBeUpdated, moderator, authorOrShooter);
+        final HarvestChangeHistory historyEvent =
+                harvestService.updateMutableFields(harvest, dto, activeUser, businessFieldsCanBeUpdated);
 
         if (businessFieldsCanBeUpdated) {
-            final Tuple2<?, Boolean> specimenResult =
-                    harvestSpecimenService.setSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), HARVEST_SPEC_VERSION);
+            final boolean anyChangesDetected = harvestSpecimenService
+                    .setSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), HarvestSpecVersion.MOST_RECENT)
+                    .apply((specimens, anyChanges) -> anyChanges);
 
-            if (specimenResult._2) {
+            if (anyChangesDetected) {
                 harvest.forceRevisionUpdate();
             }
         }
 
-        if (authorOrShooter) {
-            updateImages(harvest, dto.getImageIds());
+        if (harvest.isAuthorOrActor(currentPerson)) {
+            gameDiaryImageService.updateImages(harvest, dto.getImageIds());
+        }
+
+        if (historyEvent != null) {
+            harvestChangeHistoryRepository.save(historyEvent);
         }
 
         return harvestDtoTransformer.apply(harvestRepository.saveAndFlush(harvest));
-    }
-
-    private void updateMutableFields(final Harvest harvest,
-                                     final HarvestDTO dto,
-                                     final SystemUser activeUser,
-                                     final boolean businessFieldsCanBeUpdated,
-                                     final boolean moderator,
-                                     final boolean authorOrShooter) {
-        final Person currentPerson = activeUser.getPerson();
-
-        if (businessFieldsCanBeUpdated) {
-            gameDiaryService.setAuthorAndActor(harvest, dto, activeUser);
-
-            final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(dto.getGameSpeciesCode());
-            final Date pointOfTime = DateUtil.toDateNullSafe(dto.getPointOfTime());
-            final GeoLocation location = dto.getGeoLocation();
-
-            harvest.setSpecies(species);
-            harvest.setPointOfTime(pointOfTime);
-            harvest.updateGeoLocation(location, gisQueryService);
-            harvest.setAmount(dto.getAmount());
-            harvest.setPermittedMethod(dto.getPermittedMethod());
-
-            final HarvestReportFields reportFields = Optional.ofNullable(dto.getFields())
-                    .map(HasID::getId)
-                    .filter(Objects::nonNull)
-                    .map(harvestReportFieldsRepository::getOne)
-                    .orElse(null);
-            harvest.setHarvestReportFields(reportFields);
-
-            prepareMutatorForPermitStateAndReportRequirement(dto, species, location, currentPerson, moderator)
-                    .accept(harvest, HARVEST_SPEC_VERSION);
-
-            if (dto.getHuntingDayId() != null) {
-                clubHuntingDayService.linkDiaryEntryToHuntingDay(harvest, dto.getHuntingDayId(), currentPerson);
-            }
-        }
-
-        if (authorOrShooter) {
-            harvest.setDescription(dto.getDescription());
-        }
-
-        if (moderator) {
-            harvest.setModeratorOverride(true);
-        }
     }
 
     @Transactional(readOnly = true)
@@ -230,16 +171,23 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
     public ObservationDTO createObservation(@Nonnull final ObservationDTO dto) {
         Objects.requireNonNull(dto);
 
-        final SystemUser activeUser = activeUserService.getActiveUser();
-        final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(dto.getGameSpeciesCode());
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final boolean isModerator = activeUser.isModeratorOrAdmin();
+        final boolean carnivoreAuthorityGranted =
+                !isModerator && userAuthorizationHelper.isCarnivoreContactPersonAnywhere(dto.getPointOfTime().toLocalDate());
 
-        final ObservationFieldPresenceValidator validator = getObservationFieldsValidator(species);
+        final ObservationFieldValidator validator =
+                observationFieldsMetadataService.getObservationFieldValidator(dto.getObservationContext(), carnivoreAuthorityGranted);
         validator.validate(dto, Optional.ofNullable(dto.getSpecimens()));
 
         final Observation observation = new Observation();
         observation.setFromMobile(false);
 
-        updateMutableFields(observation, species, activeUser, dto, true, true);
+        if (!isModerator) {
+            observation.setDescription(dto.getDescription());
+        }
+
+        updateMutableFields(observation, dto, activeUser, carnivoreAuthorityGranted);
 
         activeUserService.assertHasPermission(observation, EntityPermission.CREATE);
 
@@ -249,10 +197,9 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
                 ? null
                 : observationSpecimenService.addSpecimens(observation, dto.getAmount(), dto.getSpecimens());
 
-        // Validate entity graph after specimens are persisted. Amount field is excluded because in
-        // moose/mooselike-within-moose-hunting cases the field is computed automatically even
-        // though in the REST-API it is actually prohibited (because of separate moose amount
-        // fields are used).
+        // Validate entity graph after specimens are persisted. Amount field is excluded
+        // because in within-moose-hunting cases the field is computed automatically based on
+        // the separate moose amount fields. Therefore the field is prohibited in the REST API.
         validator.validate(observation, Optional.ofNullable(specimens), singleton("amount"), emptySet());
 
         dto.getImageIds().forEach(uuid -> gameDiaryImageService.associateGameDiaryEntryWithImage(observation, uuid));
@@ -265,74 +212,77 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
         Objects.requireNonNull(dto);
 
         final Observation observation = requireEntityService.requireObservation(dto.getId(), EntityPermission.UPDATE);
-        final GameSpecies species = gameDiaryService.getGameSpeciesByOfficialCode(dto.getGameSpeciesCode());
-
-        final ObservationFieldPresenceValidator validator = getObservationFieldsValidator(species);
-        validator.validate(dto, Optional.ofNullable(dto.getSpecimens()));
-
         DtoUtil.assertNoVersionConflict(observation, dto);
 
-        final SystemUser activeUser = activeUserService.getActiveUser();
-        final Person currentPerson = activeUser.getPerson();
-        final boolean moderator = activeUser.isModeratorOrAdmin();
-        final boolean authorOrObserver = !moderator && observation.isAuthorOrActor(currentPerson);
-        final boolean businessFieldsCanBeUpdated = canBusinessFieldsBeUpdated(observation);
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final boolean isModerator = activeUser.isModeratorOrAdmin();
 
-        updateMutableFields(observation, species, activeUser, dto, businessFieldsCanBeUpdated, authorOrObserver);
+        final boolean isCurrentUserActiveCarnivoreContactPerson =
+                !isModerator && userAuthorizationHelper.isCarnivoreContactPersonAnywhere(dto.getPointOfTime().toLocalDate());
 
-        if (businessFieldsCanBeUpdated) {
-            final List<ObservationSpecimen> specimens;
+        final ObservationFieldValidator validator =
+                observationFieldsMetadataService.getObservationFieldValidator(dto.getObservationContext(), isCurrentUserActiveCarnivoreContactPerson);
+        validator.validate(dto, Optional.ofNullable(dto.getSpecimens()));
 
-            if (dto.getAmount() != null) {
-                final Tuple2<List<ObservationSpecimen>, Boolean> specimenResult =
-                        observationSpecimenService.setSpecimens(observation, dto.getAmount(), dto.getSpecimens());
-                specimens = specimenResult._1;
+        final boolean authorOrObserver = !isModerator && observation.isAuthorOrActor(activeUser.getPerson());
+        final boolean observationLockedByClubHunting = clubHuntingStatusService.isDiaryEntryLocked(observation);
 
-                if (specimenResult._2) {
-                    observation.forceRevisionUpdate();
+        if (!observationLockedByClubHunting) {
+            final boolean carnivoreAuthorityGranted = authorOrObserver && isCurrentUserActiveCarnivoreContactPerson;
+
+            updateMutableFields(observation, dto, activeUser, carnivoreAuthorityGranted);
+
+            // Specimens can be updated if observation is not locked by club hunting or carnivore authority.
+            if (carnivoreAuthorityGranted || !observation.isAnyLargeCarnivoreFieldPresent()) {
+                final List<ObservationSpecimen> specimens;
+
+                if (dto.getAmount() != null) {
+                    specimens = observationSpecimenService.setSpecimens(observation, dto.getAmount(), dto.getSpecimens())
+                            .apply((persistedSpecimens, anyChangesDetected) -> {
+                                if (anyChangesDetected) {
+                                    observation.forceRevisionUpdate();
+                                }
+
+                                return persistedSpecimens;
+                            });
+                } else {
+                    specimens = null;
+                    observationSpecimenService.deleteAllSpecimens(observation);
                 }
-            } else {
-                specimens = null;
-                observationSpecimenService.deleteAllSpecimens(observation);
-            }
 
-            // Validate entity graph after specimens are persisted. Amount field is excluded because in
-            // moose/mooselike-within-moose-hunting cases the field is computed automatically even
-            // though in the REST-API it is actually prohibited (because of separate moose amount
-            // fields are used).
-            validator.validate(observation, Optional.ofNullable(specimens), singleton("amount"), emptySet());
-        }
-
-        if (authorOrObserver) {
-            updateImages(observation, dto.getImageIds());
-        }
-
-        return observationDtoTransformer.apply(observationRepository.saveAndFlush(observation));
-    }
-
-    private void updateMutableFields(
-            final Observation observation,
-            final GameSpecies species,
-            final SystemUser activeUser,
-            final ObservationDTO dto,
-            final boolean businessFieldsCanBeUpdated,
-            final boolean authorOrObserver) {
-
-        super.updateMutableFields(observation, species, dto, businessFieldsCanBeUpdated);
-
-        if (businessFieldsCanBeUpdated) {
-            gameDiaryService.setAuthorAndActor(observation, dto, activeUser);
-
-            if (dto.getHuntingDayId() != null) {
-                if (!dto.observedWithinMooseHunting()) {
-                    throw new ObservationCanBeLinkedToHuntingDayOnlyWithinMooseHuntingException();
-                }
-                clubHuntingDayService.linkDiaryEntryToHuntingDay(observation, dto.getHuntingDayId(), activeUser.getPerson());
+                // Validate entity graph after specimens are persisted. Amount field is excluded
+                // because in within-moose-hunting cases the field is computed automatically based on
+                // the separate moose amount fields. Therefore the field is prohibited in the REST API.
+                validator.validate(observation, Optional.ofNullable(specimens), singleton("amount"), emptySet());
             }
         }
 
         if (authorOrObserver) {
             observation.setDescription(dto.getDescription());
+            gameDiaryImageService.updateImages(observation, dto.getImageIds());
+        }
+
+        return observationDtoTransformer.apply(observationRepository.saveAndFlush(observation));
+    }
+
+    private void updateMutableFields(final Observation observation,
+                                     final ObservationDTO dto,
+                                     final SystemUser activeUser,
+                                     final boolean carnivoreAuthorityGranted) {
+
+        final Person currentPerson = activeUser.getPerson();
+
+        // Check whether observation is locked by presence of large carnivore fields.
+        if (carnivoreAuthorityGranted || !observation.isAnyLargeCarnivoreFieldPresent()) {
+            observationService.updateMutableFields(observation, dto, carnivoreAuthorityGranted);
+            diaryEntryAuthorActorService.setAuthorAndActor(observation, dto, activeUser);
+        }
+
+        if (dto.getHuntingDayId() != null) {
+            if (!dto.observedWithinMooseHunting()) {
+                throw new ObservationCanBeLinkedToHuntingDayOnlyWithinMooseHuntingException();
+            }
+            groupHuntingDayService.linkDiaryEntryToHuntingDay(observation, dto.getHuntingDayId(), currentPerson);
         }
 
         if (activeUser.isModeratorOrAdmin()) {
@@ -340,71 +290,20 @@ public class GameDiaryFeature extends AbstractGameDiaryFeature {
         }
     }
 
-    @Transactional(rollbackFor = IOException.class)
-    public void addGameDiaryImageWithoutDiaryEntryAssociation(final UUID imageId, final MultipartFile file)
-            throws IOException {
-
-        // Authorize
-        activeUserService.requireActivePerson();
-
-        gameDiaryImageService.addGameDiaryImageWithoutDiaryEntryAssociation(imageId, file);
+    @Transactional
+    public void deleteHarvest(final long harvestId) {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final Harvest harvest = requireEntityService.requireHarvest(harvestId, EntityPermission.DELETE);
+        harvestSpecimenService.deleteAllSpecimens(harvest);
+        gameDiaryImageService.deleteGameDiaryImages(harvest);
+        harvestService.deleteHarvest(harvest, activeUser);
     }
 
-    @Transactional(rollbackFor = IOException.class)
-    public void replaceImageForDiaryEntry(
-            final long diaryEntryId,
-            final GameDiaryEntryType diaryEntryType,
-            final UUID replacedUuid,
-            final UUID uuid,
-            final MultipartFile file)
-            throws IOException {
-
-        final GameDiaryEntry diaryEntry = diaryEntryType.supply(
-                () -> requireEntityService.requireHarvest(diaryEntryId, EntityPermission.UPDATE),
-                () -> requireEntityService.requireObservation(diaryEntryId, EntityPermission.UPDATE));
-
-        // Remove image which will be replaced.
-
-        final GameDiaryImage toBeReplaced =
-                gameDiaryImageService.getGameDiaryImageForDiaryEntry(replacedUuid, diaryEntry);
-
-        gameDiaryImageService.deleteGameDiaryImage(toBeReplaced);
-
-        // Add new image
-        gameDiaryImageService.addGameDiaryImage(diaryEntry, uuid, file);
+    @Transactional
+    public void deleteObservation(final long observationId) {
+        final Observation observation = requireEntityService.requireObservation(observationId, EntityPermission.DELETE);
+        observationSpecimenService.deleteAllSpecimens(observation);
+        gameDiaryImageService.deleteGameDiaryImages(observation);
+        observationService.deleteObservation(observation);
     }
-
-    @Transactional(readOnly = true)
-    public List<HarvestDTO> listHarvestsAcceptedToPermit(final Long permitId) {
-        final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
-
-        return harvestDtoTransformer.apply(harvestRepository.findAll(acceptedToPermit(permit)));
-    }
-
-    @Transactional(readOnly = true)
-    public PersonRelationshipToGameDiaryEntryDTO getRelationshipToGameDiaryEntry(final GameDiaryEntryType entryType,
-                                                                                 final long entryId) {
-        Objects.requireNonNull(entryType);
-
-        final SystemUser user = activeUserService.getActiveUser();
-        final Person loggedInPerson = user.getPerson();
-
-        if (loggedInPerson == null) {
-            return new PersonRelationshipToGameDiaryEntryDTO();
-        }
-
-        final GameDiaryEntry diaryEntry = entryType.supply(
-                () -> harvestRepository.getOne(entryId),
-                () -> observationRepository.getOne(entryId));
-
-        final boolean isAuthor = diaryEntry.isAuthor(loggedInPerson);
-        final boolean isActor = diaryEntry.isActor(loggedInPerson);
-
-        return new PersonRelationshipToGameDiaryEntryDTO(isAuthor, isActor);
-    }
-
-    private ObservationFieldPresenceValidator getObservationFieldsValidator(final GameSpecies species) {
-        return getObservationFieldsValidator(species, OBSERVATION_FIELDS_METADATA_VERSION);
-    }
-
 }

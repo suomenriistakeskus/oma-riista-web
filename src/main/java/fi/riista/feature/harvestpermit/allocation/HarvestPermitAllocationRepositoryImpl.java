@@ -2,7 +2,6 @@ package fi.riista.feature.harvestpermit.allocation;
 
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.huntingclub.permit.allocation.HuntingClubPermitAllocationDTO;
 import fi.riista.util.LocalisedString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -27,7 +26,7 @@ public class HarvestPermitAllocationRepositoryImpl implements HarvestPermitAlloc
 
     @Override
     @Transactional(readOnly = true)
-    public List<HuntingClubPermitAllocationDTO> getAllocationsIncludeMissingPartnerDTO(final HarvestPermit permit, final GameSpecies species) {
+    public List<MoosePermitAllocationDTO> getAllocationsIncludeMissingPartnerDTO(final HarvestPermit permit, final GameSpecies species) {
         Objects.requireNonNull(permit, "permit is null");
         Objects.requireNonNull(species, "species is null");
 
@@ -61,7 +60,7 @@ public class HarvestPermitAllocationRepositoryImpl implements HarvestPermitAlloc
         queryParams.addValue("speciesCode", species.getOfficialCode());
 
         return jdbcTemplate.query(sql, queryParams, (rs, rowNum) -> {
-            final HuntingClubPermitAllocationDTO dto = new HuntingClubPermitAllocationDTO();
+            final MoosePermitAllocationDTO dto = new MoosePermitAllocationDTO();
             dto.setHuntingClubId(rs.getLong("organisation_id"));
             dto.setHuntingClubName(
                     LocalisedString.of(rs.getString("name_finnish"), rs.getString("name_swedish")).asMap());

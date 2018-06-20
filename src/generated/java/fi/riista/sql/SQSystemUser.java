@@ -63,6 +63,8 @@ public class SQSystemUser extends RelationalPathSpatial<SQSystemUser> {
 
     public final StringPath timezoneId = createString("timezoneId");
 
+    public final StringPath twoFactorAuthentication = createString("twoFactorAuthentication");
+
     public final NumberPath<Long> userId = createNumber("userId", Long.class);
 
     public final StringPath username = createString("username");
@@ -72,6 +74,8 @@ public class SQSystemUser extends RelationalPathSpatial<SQSystemUser> {
     public final com.querydsl.sql.ForeignKey<SQSystemUserRole> systemUserRoleFk = createForeignKey(role, "name");
 
     public final com.querydsl.sql.ForeignKey<SQPerson> systemUserPersonFk = createForeignKey(personId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQTwoFactorAuthenticationMode> systemUserTwoFactorFk = createForeignKey(twoFactorAuthentication, "name");
 
     public final com.querydsl.sql.ForeignKey<SQPersistentRememberMeToken> _persistentTokenUserFk = createInvForeignKey(userId, "user_id");
 
@@ -96,6 +100,11 @@ public class SQSystemUser extends RelationalPathSpatial<SQSystemUser> {
 
     public SQSystemUser(String variable, String schema, String table) {
         super(SQSystemUser.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQSystemUser(String variable, String schema) {
+        super(SQSystemUser.class, forVariable(variable), schema, "system_user");
         addMetadata();
     }
 
@@ -128,6 +137,7 @@ public class SQSystemUser extends RelationalPathSpatial<SQSystemUser> {
         addMetadata(phoneNumber, ColumnMetadata.named("phone_number").withIndex(16).ofType(Types.VARCHAR).withSize(255));
         addMetadata(role, ColumnMetadata.named("role").withIndex(12).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(timezoneId, ColumnMetadata.named("timezone_id").withIndex(18).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(twoFactorAuthentication, ColumnMetadata.named("two_factor_authentication").withIndex(21).ofType(Types.VARCHAR).withSize(255));
         addMetadata(userId, ColumnMetadata.named("user_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(username, ColumnMetadata.named("username").withIndex(10).ofType(Types.VARCHAR).withSize(255).notNull());
     }

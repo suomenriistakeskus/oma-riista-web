@@ -1,6 +1,7 @@
 package fi.riista.feature.gamediary.harvest.specimen;
 
-import fi.riista.feature.gamediary.harvest.HarvestTestUtils.MooselikeFieldsPresence;
+import fi.riista.feature.gamediary.GameAge;
+import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.NumberSequence;
@@ -13,23 +14,20 @@ import org.mockito.Mockito;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.Stream;
 
-import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_EXTENDED_DEER_FIELDS;
-import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_EXTENDED_MOOSE_FIELDS;
-import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.MOST_RECENT;
-import static fi.riista.feature.gamediary.harvest.HarvestTestUtils.assertMooseFieldsNotPresent;
-import static fi.riista.feature.gamediary.harvest.HarvestTestUtils.assertMooseFieldsPresent;
-import static fi.riista.feature.gamediary.harvest.HarvestTestUtils.assertMooseOnlyFieldsNotPresent;
-import static fi.riista.feature.gamediary.harvest.HarvestTestUtils.assertMooselikeFieldsPresent;
-import static fi.riista.feature.gamediary.harvest.HarvestTestUtils.assertPresenceOfMooseFields;
+import static fi.riista.feature.gamediary.GameAge.ADULT;
+import static fi.riista.feature.gamediary.GameAge.YOUNG;
+import static fi.riista.feature.gamediary.GameGender.FEMALE;
+import static fi.riista.feature.gamediary.GameGender.MALE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER;
-import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
+import static fi.riista.feature.gamediary.GameSpecies.isMooseOrDeerRequiringPermitForHunting;
+import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_EXTENDED_DEER_FIELDS;
+import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_EXTENDED_MOOSE_FIELDS;
+import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.MOST_RECENT;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTestExecutionSupport<HarvestSpecVersion> {
@@ -56,19 +54,21 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
     public void testCopyContentToEntity_forSpeciesNotRelevantToExtendedMooselikeFields() {
         forEachVersion(version -> {
 
-            // Populate entity with all moose fields to ensure they are cleared.
-            populateWithMostRecentVersion(specimen, OFFICIAL_CODE_MOOSE);
+            // Populate entity with all moose fields to ensure they are cleared within copying.
+            populateEntity(OFFICIAL_CODE_MOOSE, ADULT, MALE);
 
             // Populate DTO with all moose fields in order to ensure that they are not copied to
             // entity.
-            final HarvestSpecimenDTO dto = newPopulatedDTOUsingMostRecentSpec(OFFICIAL_CODE_MOOSE);
+            final HarvestSpecimenDTO dto = createDTO(OFFICIAL_CODE_MOOSE, ADULT, MALE, MOST_RECENT);
             dto.setWeight(weight());
 
             createOps(OFFICIAL_CODE_BEAR, version).copyContentToEntity(dto, specimen);
 
-            assertCommonFieldsPresent(specimen);
-            assertCommonFieldsEqual(specimen, dto);
-            assertMooseFieldsNotPresent(singletonList(specimen));
+            HarvestSpecimenAssertionBuilder.builder()
+                    .withAgeAndGender(dto.getAge(), dto.getGender())
+                    .weightPresentAndEqualTo(dto.getWeight())
+                    .mooseFieldsAbsent()
+                    .verify(specimen);
         });
     }
 
@@ -76,18 +76,24 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
     public void testCopyContentToEntity_forMoose_withSupportingVersions() {
         forEachVersionStartingFrom(LOWEST_VERSION_SUPPORTING_EXTENDED_MOOSE_FIELDS, version -> {
 
-            final HarvestSpecimenDTO dto = newPopulatedDTOUsingMostRecentSpec(OFFICIAL_CODE_MOOSE);
+            Stream.of(ADULT, YOUNG).forEach(newAge -> Stream.of(MALE, FEMALE).forEach(newGender -> {
 
-            // Populate generic weight field to ensure it is not copied.
-            dto.setWeight(weight());
+                populateEntity(OFFICIAL_CODE_MOOSE, null, null);
 
-            createOps(OFFICIAL_CODE_MOOSE, version).copyContentToEntity(dto, specimen);
+                final HarvestSpecimenDTO dto = createDTO(OFFICIAL_CODE_MOOSE, newAge, newGender, MOST_RECENT);
 
-            assertCommonFieldsPresentExceptWeight(specimen);
-            assertEqualAgeAndGender(specimen, dto);
+                // Populate generic weight field to ensure it is not carried over.
+                dto.setWeight(weight());
 
-            assertMooseFieldsPresent(singletonList(specimen));
-            assertTrue(specimen.hasEqualMooseFields(dto));
+                createOps(OFFICIAL_CODE_MOOSE, version).copyContentToEntity(dto, specimen);
+
+                HarvestSpecimenAssertionBuilder.builder()
+                        .withAgeAndGender(newAge, newGender)
+                        .weightAbsent()
+                        .allMooseFieldsPresent(version)
+                        .mooseFieldsEqualTo(dto, version)
+                        .verify(specimen);
+            }));
         });
     }
 
@@ -95,97 +101,126 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
     public void testCopyContentToEntity_forSomePermitBasedDeer_withSupportingVersions() {
         forEachVersionStartingFrom(LOWEST_VERSION_SUPPORTING_EXTENDED_DEER_FIELDS, version -> {
 
-            // Populate DTO with all moose fields to ensure that only deer-specific fields are
-            // copied.
-            final HarvestSpecimenDTO dto = newPopulatedDTOUsingMostRecentSpec(OFFICIAL_CODE_MOOSE);
+            Stream.of(true, false).forEach(doInitialPopulationWithMooseFields -> {
 
-            // Populate DTO with generic weight field to ensure that it is not copied.
-            dto.setWeight(weight());
+                Stream.of(ADULT, YOUNG).forEach(newAge -> Stream.of(MALE, FEMALE).forEach(newGender -> {
 
-            // Populate entity with all moose fields to ensure that moose-only fields are cleared.
-            populateWithMostRecentVersion(specimen, OFFICIAL_CODE_MOOSE);
+                    if (doInitialPopulationWithMooseFields) {
+                        // Populate entity with all moose fields to ensure that moose-only fields are
+                        // cleared.
+                        populateEntity(OFFICIAL_CODE_MOOSE, ADULT, MALE);
+                    } else {
+                        populateEntity(OFFICIAL_CODE_BEAR, null, null);
+                    }
 
-            createOps(OFFICIAL_CODE_WHITE_TAILED_DEER, version).copyContentToEntity(dto, specimen);
+                    // Populate DTO with all moose fields to ensure that only deer-supported fields
+                    // are copied.
+                    final HarvestSpecimenDTO dto = createDTO(OFFICIAL_CODE_MOOSE, newAge, newGender, MOST_RECENT);
 
-            assertCommonFieldsPresentExceptWeight(specimen);
-            assertEqualAgeAndGender(specimen, dto);
+                    // Populate DTO with generic weight field to ensure that it is not copied.
+                    dto.setWeight(weight());
 
-            final List<HarvestSpecimen> singleton = singletonList(specimen);
-            assertMooselikeFieldsPresent(singleton);
-            assertMooseOnlyFieldsNotPresent(singleton);
+                    createOps(OFFICIAL_CODE_WHITE_TAILED_DEER, version).copyContentToEntity(dto, specimen);
 
-            assertTrue(specimen.hasEqualMooselikeFields(dto));
+                    HarvestSpecimenAssertionBuilder.builder()
+                            .withAgeAndGender(newAge, newGender)
+                            .weightAbsent()
+                            .mooseOnlyFieldsAbsent()
+                            .allMooselikeFieldsPresent()
+                            .mooselikeFieldsEqualTo(dto)
+                            .verify(specimen);
+                }));
+            });
         });
     }
 
     @Test
-    public void testCopyContentToEntity_forMoose_withOldVersions() {
-        testCopyContentToEntity_forMooselikeSpecies_withOldVersions(
+    public void testCopyContentToEntity_forMoose_withOldVersions_handlingOfGenericWeight() {
+        testCopyContentToEntity_forMooselikeSpecies_withOldVersions_handlingOfGenericWeight(
                 OFFICIAL_CODE_MOOSE, LOWEST_VERSION_SUPPORTING_EXTENDED_MOOSE_FIELDS);
     }
 
     @Test
-    public void testCopyContentToEntity_forSomePermitBasedDeer_withOldVersions() {
-        testCopyContentToEntity_forMooselikeSpecies_withOldVersions(
+    public void testCopyContentToEntity_forSomePermitBasedDeer_withOldVersions_handlingOfGenericWeight() {
+        testCopyContentToEntity_forMooselikeSpecies_withOldVersions_handlingOfGenericWeight(
                 OFFICIAL_CODE_WHITE_TAILED_DEER, LOWEST_VERSION_SUPPORTING_EXTENDED_DEER_FIELDS);
     }
 
-    private void testCopyContentToEntity_forMooselikeSpecies_withOldVersions(final int speciesCode,
-                                                                             final HarvestSpecVersion firstVersionToSupport) {
+    private void testCopyContentToEntity_forMooselikeSpecies_withOldVersions_handlingOfGenericWeight(
+            final int speciesCode,
+            final HarvestSpecVersion earliestVersionToTest) {
 
-        forEachVersionBefore(firstVersionToSupport, version -> {
+        forEachVersionBefore(earliestVersionToTest, version -> {
 
-            // Populate generic weight fields to test that it is cleared and that estimatedWeight
-            // is populated instead.
+            // Populate the generic weight field to test that it is cleared and that
+            // estimatedWeight is populated instead.
             specimen.setWeight(0.0);
 
             // Populate with all moose fields to ensure that no moose fields are copied excluding
             // estimated weight.
-            final HarvestSpecimenDTO dto = newPopulatedDTOUsingMostRecentSpec(OFFICIAL_CODE_MOOSE);
+            final HarvestSpecimenDTO dto = createDTO(OFFICIAL_CODE_MOOSE, ADULT, MALE, MOST_RECENT);
             dto.setWeight(weight());
 
             createOps(speciesCode, version).copyContentToEntity(dto, specimen);
 
-            assertCommonFieldsPresentExceptWeight(specimen);
-            assertCommonFieldsEqualAndWeightTranslated(specimen, dto);
-            assertPresenceOfMooseFields(singletonList(specimen), MooselikeFieldsPresence.ESTIMATED_WEIGHT);
+            HarvestSpecimenAssertionBuilder.builder()
+                    .withAgeAndGender(dto.getAge(), dto.getGender())
+                    .weightAbsentButEstimatedWeightPresentAndEqualTo(dto.getWeight())
+                    .mooseFieldsAbsentExceptEstimatedWeight()
+                    .verify(specimen);
         });
     }
 
     @Test
-    public void testCopyContentToEntity_forMoose_withOldVersions_ensureExistingFieldsNotOverridden() {
+    public void testCopyContentToEntity_forMoose_withOldVersions_protectionOfUnsupportedFields() {
         forEachVersionBefore(LOWEST_VERSION_SUPPORTING_EXTENDED_MOOSE_FIELDS, version -> {
 
-            // Populate entity with all moose fields to ensure that they are not changed.
-            populateWithMostRecentVersion(specimen, OFFICIAL_CODE_MOOSE);
+            Stream.of(ADULT, YOUNG).forEach(originalAge -> Stream.of(MALE, FEMALE).forEach(originalGender -> {
 
-            final HarvestSpecimenDTO dto = newPopulatedDTO(OFFICIAL_CODE_MOOSE, version);
+                Stream.of(ADULT, YOUNG).forEach(newAge -> Stream.of(MALE, FEMALE).forEach(newGender -> {
 
-            createOps(OFFICIAL_CODE_MOOSE, version).copyContentToEntity(dto, specimen);
+                    // Populate entity with all moose fields to ensure that they are not changed.
+                    populateEntity(OFFICIAL_CODE_MOOSE, originalAge, originalGender);
 
-            assertCommonFieldsPresentExceptWeight(specimen);
-            assertCommonFieldsEqualAndWeightTranslated(specimen, dto);
-            assertMooseFieldsPresent(singletonList(specimen));
+                    final HarvestSpecimenDTO dto = createDTO(OFFICIAL_CODE_MOOSE, newAge, newGender, version);
+
+                    createOps(OFFICIAL_CODE_MOOSE, version).copyContentToEntity(dto, specimen);
+
+                    HarvestSpecimenAssertionBuilder.builder()
+                            .withAgeAndGender(newAge, newGender)
+                            .weightAbsentButEstimatedWeightPresentAndEqualTo(dto.getWeight())
+                            .mooseFieldsPreserved(originalAge, originalGender, MOST_RECENT)
+                            .verify(specimen);
+                }));
+            }));
         });
     }
 
     @Test
-    public void testCopyContentToEntity_forSomePermitBasedDeer_withOldVersions_ensureExistingFieldsNotOverridden() {
+    public void testCopyContentToEntity_forSomePermitBasedDeer_withOldVersions_protectionOfUnsupportedFields() {
         forEachVersionBefore(LOWEST_VERSION_SUPPORTING_EXTENDED_DEER_FIELDS, version -> {
 
-            // Populate entity with all moose fields to ensure that they are not changed.
-            populateWithMostRecentVersion(specimen, OFFICIAL_CODE_WHITE_TAILED_DEER);
+            Stream.of(ADULT, YOUNG).forEach(originalAge -> Stream.of(MALE, FEMALE).forEach(originalGender -> {
 
-            final HarvestSpecimenDTO dto = newPopulatedDTO(OFFICIAL_CODE_WHITE_TAILED_DEER, version);
+                Stream.of(ADULT, YOUNG).forEach(newAge -> Stream.of(MALE, FEMALE).forEach(newGender -> {
 
-            createOps(OFFICIAL_CODE_WHITE_TAILED_DEER, version).copyContentToEntity(dto, specimen);
+                    // Populate entity with all mooselike fields to ensure that they are not
+                    // changed.
+                    populateEntity(OFFICIAL_CODE_WHITE_TAILED_DEER, originalAge, originalGender);
 
-            assertCommonFieldsPresentExceptWeight(specimen);
-            assertCommonFieldsEqualAndWeightTranslated(specimen, dto);
+                    final HarvestSpecimenDTO dto =
+                            createDTO(OFFICIAL_CODE_WHITE_TAILED_DEER, newAge, newGender, version);
 
-            final List<HarvestSpecimen> singleton = singletonList(specimen);
-            assertMooselikeFieldsPresent(singleton);
-            assertMooseOnlyFieldsNotPresent(singleton);
+                    createOps(OFFICIAL_CODE_WHITE_TAILED_DEER, version).copyContentToEntity(dto, specimen);
+
+                    HarvestSpecimenAssertionBuilder.builder()
+                            .withAgeAndGender(newAge, newGender)
+                            .weightAbsentButEstimatedWeightPresentAndEqualTo(dto.getWeight())
+                            .mooseOnlyFieldsAbsent()
+                            .mooselikeFieldsPreserved(originalAge, originalGender)
+                            .verify(specimen);
+                }));
+            }));
         });
     }
 
@@ -194,17 +229,19 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
         forEachVersion(version -> {
 
             // Populate entity with all moose fields to ensure they are cleared.
-            populateWithMostRecentVersion(specimen, OFFICIAL_CODE_MOOSE);
+            populateEntity(OFFICIAL_CODE_MOOSE, ADULT, MALE);
             specimen.setWeight(weight());
 
             // Populate DTO with all moose fields in order to ensure that they are cleared.
-            final HarvestSpecimenDTO dto = newPopulatedDTOUsingMostRecentSpec(OFFICIAL_CODE_MOOSE);
+            final HarvestSpecimenDTO dto = createDTO(OFFICIAL_CODE_MOOSE, ADULT, MALE, MOST_RECENT);
 
             createOps(OFFICIAL_CODE_BEAR, version).copyContentToDTO(specimen, dto);
 
-            assertCommonFieldsPresent(dto);
-            assertCommonFieldsEqual(specimen, dto);
-            assertMooseFieldsNotPresent(singletonList(dto));
+            HarvestSpecimenAssertionBuilder.builder()
+                    .withAgeAndGender(specimen.getAge(), specimen.getGender())
+                    .weightPresentAndEqualTo(specimen.getWeight())
+                    .mooseFieldsAbsent()
+                    .verify(dto);
         });
     }
 
@@ -212,18 +249,24 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
     public void testCopyContentToDTO_forMoose_withSupportingVersions() {
         forEachVersionStartingFrom(LOWEST_VERSION_SUPPORTING_EXTENDED_MOOSE_FIELDS, version -> {
 
-            final HarvestSpecimenDTO dto = new HarvestSpecimenDTO();
-            populateWithMostRecentVersion(specimen, OFFICIAL_CODE_MOOSE);
+            Stream.of(ADULT, YOUNG).forEach(age -> Stream.of(MALE, FEMALE).forEach(gender -> {
 
-            // Populate weight to ensure that it is not copied.
-            specimen.setWeight(weight());
+                populateEntity(OFFICIAL_CODE_MOOSE, age, gender);
 
-            createOps(OFFICIAL_CODE_MOOSE, version).copyContentToDTO(specimen, dto);
+                // Populate weight to ensure that it is not copied.
+                specimen.setWeight(weight());
 
-            assertCommonFieldsPresentExceptWeight(dto);
-            assertEqualAgeAndGender(specimen, dto);
-            assertMooseFieldsPresent(singletonList(dto));
-            assertTrue(specimen.hasEqualMooseFields(dto));
+                final HarvestSpecimenDTO dto = new HarvestSpecimenDTO();
+
+                createOps(OFFICIAL_CODE_MOOSE, version).copyContentToDTO(specimen, dto);
+
+                HarvestSpecimenAssertionBuilder.builder()
+                        .withAgeAndGender(age, gender)
+                        .weightAbsent()
+                        .allMooseFieldsPresent(version)
+                        .mooseFieldsEqualTo(specimen, version)
+                        .verify(dto);
+            }));
         });
     }
 
@@ -231,26 +274,28 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
     public void testCopyContentToDTO_forSomePermitBasedDeer_withSupportingVersions() {
         forEachVersionStartingFrom(LOWEST_VERSION_SUPPORTING_EXTENDED_DEER_FIELDS, version -> {
 
-            // Populate entity with all moose fields to ensure that only deer-specific fields are
-            // copied.
-            populateWithMostRecentVersion(specimen, OFFICIAL_CODE_MOOSE);
+            Stream.of(ADULT, YOUNG).forEach(age -> Stream.of(MALE, FEMALE).forEach(gender -> {
 
-            // Populate DTO with all moose fields to ensure that moose-only fields are cleared.
-            final HarvestSpecimenDTO dto = newPopulatedDTOUsingMostRecentSpec(OFFICIAL_CODE_MOOSE);
+                // Populate entity with moose fields to ensure that only deer-specific fields are
+                // copied.
+                populateEntity(OFFICIAL_CODE_MOOSE, age, gender);
 
-            // Populate entity with weight to ensure that it is not copied.
-            specimen.setWeight(weight());
+                // Populate entity with weight to ensure that it is not copied.
+                specimen.setWeight(weight());
 
-            createOps(OFFICIAL_CODE_WHITE_TAILED_DEER, version).copyContentToDTO(specimen, dto);
+                // Populate DTO with all moose fields to ensure that moose-only fields are cleared.
+                final HarvestSpecimenDTO dto = createDTO(OFFICIAL_CODE_MOOSE, ADULT, MALE, MOST_RECENT);
 
-            assertCommonFieldsPresentExceptWeight(dto);
-            assertEqualAgeAndGender(specimen, dto);
+                createOps(OFFICIAL_CODE_WHITE_TAILED_DEER, version).copyContentToDTO(specimen, dto);
 
-            final List<HarvestSpecimenDTO> singleton = singletonList(dto);
-            assertMooselikeFieldsPresent(singleton);
-            assertMooseOnlyFieldsNotPresent(singleton);
-
-            assertTrue(specimen.hasEqualMooselikeFields(dto));
+                HarvestSpecimenAssertionBuilder.builder()
+                        .withAgeAndGender(age, gender)
+                        .weightAbsent()
+                        .allMooselikeFieldsPresent()
+                        .mooselikeFieldsEqualTo(specimen)
+                        .mooseOnlyFieldsAbsent()
+                        .verify(dto);
+            }));
         });
     }
 
@@ -278,32 +323,36 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
                 OFFICIAL_CODE_WHITE_TAILED_DEER, LOWEST_VERSION_SUPPORTING_EXTENDED_DEER_FIELDS, true);
     }
 
-    private void testCopyContentToDTO_forMooselikeSpecies_withOldVersions(final int speciesCode,
-                                                                          final HarvestSpecVersion firstVersionToSupport,
-                                                                          final boolean testFallbackToGenericWeightOnEstimatedWeightMissing) {
+    private void testCopyContentToDTO_forMooselikeSpecies_withOldVersions(
+            final int speciesCode,
+            final HarvestSpecVersion firstVersionToSupport,
+            final boolean testFallbackToGenericWeightOnEstimatedWeightMissing) {
+
         forEachVersionBefore(firstVersionToSupport, version -> {
 
-            // Populate entity with all moose fields to ensure that no moose fields are copied.
-            populateWithMostRecentVersion(specimen, speciesCode);
+            Stream.of(ADULT, YOUNG).forEach(age -> Stream.of(MALE, FEMALE).forEach(gender -> {
 
-            if (testFallbackToGenericWeightOnEstimatedWeightMissing) {
-                specimen.setWeight(specimen.getWeightEstimated());
-                specimen.setWeightEstimated(null);
-            }
+                // Populate entity with moose fields to ensure that no moose fields are copied.
+                populateEntity(speciesCode, age, gender);
 
-            // Populate DTO with all moose fields to ensure that they are cleared.
-            final HarvestSpecimenDTO dto = newPopulatedDTOUsingMostRecentSpec(OFFICIAL_CODE_MOOSE);
+                if (testFallbackToGenericWeightOnEstimatedWeightMissing) {
+                    specimen.setWeight(specimen.getWeightEstimated());
+                    specimen.setWeightEstimated(null);
+                }
 
-            createOps(speciesCode, version).copyContentToDTO(specimen, dto);
+                // Populate DTO with all moose fields to ensure that they are cleared.
+                final HarvestSpecimenDTO dto = createDTO(OFFICIAL_CODE_MOOSE, ADULT, MALE, MOST_RECENT);
 
-            assertCommonFieldsPresent(dto);
-            assertMooseFieldsNotPresent(singletonList(dto));
+                createOps(speciesCode, version).copyContentToDTO(specimen, dto);
 
-            if (testFallbackToGenericWeightOnEstimatedWeightMissing) {
-                assertCommonFieldsEqual(specimen, dto);
-            } else {
-                assertCommonFieldsEqualAndWeightTranslated(specimen, dto);
-            }
+                HarvestSpecimenAssertionBuilder.builder()
+                        .withAgeAndGender(age, gender)
+                        .weightPresentAndEqualTo(testFallbackToGenericWeightOnEstimatedWeightMissing
+                                ? specimen.getWeight()
+                                : specimen.getWeightEstimated())
+                        .mooseFieldsAbsent()
+                        .verify(dto);
+            }));
         });
     }
 
@@ -325,7 +374,7 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
     private void testEqualContent(final int speciesCode) {
         forEachVersion(version -> {
 
-            populateWithMostRecentVersion(specimen, speciesCode);
+            populateEntity(speciesCode, ADULT, MALE);
 
             final HarvestSpecimenOpsForTest opsUnderTest = createOps(speciesCode, version);
 
@@ -334,7 +383,7 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
 
             assertTrue("Should be equal after field copying", opsUnderTest.equalContent(specimen, dto));
 
-            opsUnderTest.populateMooseFields(dto);
+            opsUnderTest.populateMooseFields(dto, ADULT, MALE);
 
             if (opsUnderTest.supportsExtendedMooselikeFields()) {
                 assertFalse("Should not be equal because of difference between mooselike fields",
@@ -344,7 +393,7 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
                         opsUnderTest.equalContent(specimen, dto));
             }
 
-            opsUnderTest.mutateContent(dto, true);
+            opsUnderTest.mutateContent(dto, !isMooseOrDeerRequiringPermitForHunting(speciesCode));
             assertFalse("Should not be equal because all business fields are different between the objects",
                     opsUnderTest.equalContent(specimen, dto));
         });
@@ -369,64 +418,20 @@ public class HarvestSpecimenOpsTest implements ValueGeneratorMixin, VersionedTes
         });
     }
 
-    private void populateWithMostRecentVersion(final HarvestSpecimen entity, final int speciesCode) {
-        createMostRecentOps(speciesCode).mutateContent(entity, true);
+    private void populateEntity(final int speciesCode, final GameAge age, final GameGender gender) {
+        specimen.clearMooseFields();
+        createOps(speciesCode, MOST_RECENT).mutateContent(specimen, age, gender);
     }
 
-    private HarvestSpecimenDTO newPopulatedDTOUsingMostRecentSpec(final int speciesCode) {
-        return newPopulatedDTO(speciesCode, MOST_RECENT);
-    }
+    private HarvestSpecimenDTO createDTO(final int speciesCode,
+                                         final GameAge age,
+                                         final GameGender gender,
+                                         final HarvestSpecVersion version) {
 
-    private HarvestSpecimenDTO newPopulatedDTO(final int speciesCode, final HarvestSpecVersion version) {
-        return createOps(speciesCode, version).newHarvestSpecimenDTO(true);
-    }
-
-    private HarvestSpecimenOpsForTest createMostRecentOps(final int speciesCode) {
-        return createOps(speciesCode, MOST_RECENT);
+        return createOps(speciesCode, version).createDTO(age, gender);
     }
 
     private HarvestSpecimenOpsForTest createOps(final int speciesCode, final HarvestSpecVersion version) {
         return new HarvestSpecimenOpsForTest(speciesCode, version, getNumberGenerator());
     }
-
-    private static void assertCommonFieldsPresent(final HarvestSpecimen specimen) {
-        assertNotNull(specimen.getAge());
-        assertNotNull(specimen.getGender());
-        assertNotNull(specimen.getWeight());
-    }
-
-    private static void assertCommonFieldsPresentExceptWeight(final HarvestSpecimen specimen) {
-        assertNotNull(specimen.getAge());
-        assertNotNull(specimen.getGender());
-        assertNull(specimen.getWeight());
-    }
-
-    private static void assertCommonFieldsPresent(final HarvestSpecimenDTO specimen) {
-        assertNotNull(specimen.getAge());
-        assertNotNull(specimen.getGender());
-        assertNotNull(specimen.getWeight());
-    }
-
-    private static void assertCommonFieldsPresentExceptWeight(final HarvestSpecimenDTO specimen) {
-        assertNotNull(specimen.getAge());
-        assertNotNull(specimen.getGender());
-        assertNull(specimen.getWeight());
-    }
-
-    private static void assertEqualAgeAndGender(final HarvestSpecimen entity, final HarvestSpecimenDTO dto) {
-        assertEquals(entity.getAge(), dto.getAge());
-        assertEquals(entity.getGender(), dto.getGender());
-    }
-
-    private static void assertCommonFieldsEqual(final HarvestSpecimen entity, final HarvestSpecimenDTO dto) {
-        assertEqualAgeAndGender(entity, dto);
-        assertEquals(entity.getWeight(), dto.getWeight());
-    }
-
-    private static void assertCommonFieldsEqualAndWeightTranslated(final HarvestSpecimen entity,
-                                                                   final HarvestSpecimenDTO dto) {
-        assertEqualAgeAndGender(entity, dto);
-        assertEquals(entity.getWeightEstimated(), dto.getWeight());
-    }
-
 }

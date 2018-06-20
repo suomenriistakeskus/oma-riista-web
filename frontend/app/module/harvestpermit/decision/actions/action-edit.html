@@ -1,0 +1,113 @@
+<form name="form" role="form" class="form" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title">Välitoimenpide</h3>
+    </div>
+
+    <div class="modal-body row">
+        <div class="col-xs-4">
+            <div class="form-group" show-errors>
+                <label for="date">Ajankohta</label>
+
+                <div class="input-group r-dropdown-align-right"
+                     ng-controller="DatePickerController">
+
+                    <input type="text" name="date" id="date"
+                           class="form-control"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           date-between-min-max
+                           ng-model="$ctrl.selectedAction.date"
+                           ng-model-options="{ updateOn: 'blur' }"
+                           required
+                           max-date="today()">
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+                <p class="help-block has-error"
+                   ng-show="form.date.$invalid && form.date.$touched"
+                   ng-messages="form.date.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="time">Aika</label>
+
+                <input type="text" name="time" id="time"
+                       class="form-control"
+                       finnish-date-time-in-past="$ctrl.selectedAction.date"
+                       ng-model="$ctrl.selectedAction.time"
+                       required>
+                <p class="help-block has-error"
+                   ng-show="form.time.$invalid && form.time.$touched"
+                   ng-messages="form.time.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="actionType">Välitoimenpiteen tyyppi</label>
+                <select name="actionType" id="actionType"
+                        class="form-control"
+                        ng-model="$ctrl.selectedAction.actionType"
+                        ng-options="a as (('harvestpermit.decision.action.actionType.' + a) | translate) for a in $ctrl.actionTypes"
+                        required
+                        ie10-optgroup-fix>
+                    <option value=""></option>
+                </select>
+            </div>
+            <div class="form-group" show-errors>
+                <label for="type">Yhteydenottotapa</label>
+                <select name="type" id="type"
+                        class="form-control"
+                        ng-model="$ctrl.selectedAction.communicationType"
+                        ng-options="a as (('harvestpermit.decision.action.communicationType.' + a) | translate) for a in $ctrl.communicationTypes"
+                        ie10-optgroup-fix>
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-xs-8">
+            <div class="form-group" show-errors>
+                <label for="text">Sisältö</label>
+                <textarea name="text" id="text" class="form-control" rows="6"
+                          required
+                          ng-model="$ctrl.selectedAction.text"
+                          minlength="5"></textarea>
+                <p class="help-block has-error"
+                   ng-show="form.text.$invalid"
+                   ng-messages="form.text.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="decisionText">Päätöksellä näkyvä teksti</label>
+                <textarea name="decisionText" id="decisionText" class="form-control" rows="6"
+                          ng-model="$ctrl.selectedAction.decisionText"></textarea>
+                <p class="help-block has-error"
+                   ng-show="form.decisionText.$invalid"
+                   ng-messages="form.decisionText.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

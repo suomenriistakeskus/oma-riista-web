@@ -1,15 +1,16 @@
 package fi.riista.feature.gamediary;
 
 import com.google.common.base.Preconditions;
+import com.vividsolutions.jts.geom.Point;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
-import fi.riista.feature.gis.GISQueryService;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.DateUtil;
-
+import org.hibernate.annotations.Type;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 
@@ -21,11 +22,13 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
-
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,9 +37,16 @@ import java.util.Optional;
 @Access(value = AccessType.FIELD)
 public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
 
+    @Valid
     @NotNull
     @Embedded
     protected GeoLocation geoLocation;
+
+    // Geometry for GIS index. Updated using JPA lifecycle hooks. No accessor on purpose to avoid confusion.
+    @NotNull
+    @Column(nullable = false)
+    @Type(type = "org.hibernate.spatial.GeometryType")
+    private Point geom;
 
     @NotNull
     @Temporal(TemporalType.TIMESTAMP)
@@ -77,15 +87,30 @@ public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
     @Column
     protected Date pointOfTimeApprovedToHuntingDay;
 
+    @PrePersist
+    @PreUpdate
+    private void updatePointGeometry() {
+        if (this.geoLocation == null) {
+            this.geom = null;
+
+        } else {
+            final Point newGeom = this.geoLocation.toPointGeometry();
+
+            if (this.geom == null || !newGeom.equalsExact(this.geom)) {
+                // Skip update to prevent increasing consistency_version
+                this.geom = newGeom;
+            }
+        }
+    }
+
     public GameDiaryEntry() {
         super();
     }
 
-    public GameDiaryEntry(
-            final GeoLocation geoLocation,
-            final LocalDateTime pointOfTime,
-            final GameSpecies species,
-            final Person author) {
+    public GameDiaryEntry(final GeoLocation geoLocation,
+                          final LocalDateTime pointOfTime,
+                          final GameSpecies species,
+                          final Person author) {
 
         this.geoLocation = geoLocation;
         this.pointOfTime = pointOfTime.toDate();
@@ -109,11 +134,6 @@ public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
         return geoLocation != null && geoLocation.getSource() != null;
     }
 
-    public void updateGeoLocation(final GeoLocation geoLocation, final GISQueryService gisQueryService) {
-        setRhy(geoLocation == null ? null : gisQueryService.findRhyByLocation(geoLocation));
-        this.geoLocation = geoLocation;
-    }
-
     protected abstract void updateAuthorInverseCollection(Person newAuthor);
 
     protected abstract void updateHuntingDayOfGroupInverseCollection(GroupHuntingDay newHuntingDay);
@@ -126,6 +146,10 @@ public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
     public boolean isActor(final Person person) {
         final Person actor = getActor();
         return person != null && actor != null && Objects.equals(person.getId(), actor.getId());
+    }
+
+    public boolean isAuthorOrActor(final SystemUser user) {
+        return user != null && user.getPerson() != null && isAuthorOrActor(user.getPerson());
     }
 
     public boolean isAuthorOrActor(final Person person) {
@@ -147,8 +171,8 @@ public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
         return geoLocation;
     }
 
-    public void setGeoLocation(final GeoLocation geoLocation) {
-        this.geoLocation = geoLocation;
+    public void setGeoLocation(final GeoLocation value) {
+        this.geoLocation = value;
     }
 
     public Date getPointOfTime() {

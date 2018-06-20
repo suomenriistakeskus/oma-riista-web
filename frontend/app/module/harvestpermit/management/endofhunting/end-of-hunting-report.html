@@ -1,0 +1,80 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="harvestpermit.management.endOfHunting.normalTitle"></h3>
+</div>
+
+<div class="modal-body" style="min-height: 350px;">
+    <h5 ng-show="::$ctrl.report.harvestReportState">
+        <span translate="harvestpermit.harvestReportDoneInfo"></span>
+    </h5>
+
+    <div ng-if="!$ctrl.hasHarvests" class="alert alert-warning" translate="harvestpermit.noHarvests"></div>
+
+    <permit-species-amount-usage species-amounts="$ctrl.report.speciesAmounts"></permit-species-amount-usage>
+
+    <hr ng-if="$ctrl.hasHarvests"/>
+
+    <div class="table-responsive" ng-if="$ctrl.hasHarvests">
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="col-xs-2" translate="harvestpermit.pointOfTime"></th>
+                <th class="col-xs-2" translate="harvestpermit.gameInfo"></th>
+                <th class="col-xs-3" translate="harvestreport.form.author"></th>
+                <th class="col-xs-3" translate="harvestreport.form.hunter"></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr ng-repeat="harvest in $ctrl.report.harvests track by harvest.id">
+                <td class="col-xs-2" ng-bind="::harvest.pointOfTime | date:'d.M.yyyy HH:mm'"></td>
+                <td class="col-xs-2">
+                    <span name-translated="harvest.gameSpecies.name"></span>
+                    <span ng-bind="::harvest.totalSpecimenAmount"></span>
+                    <span translate="harvestpermit.pcs"></span>
+                </td>
+                <td class="col-xs-3">
+                    <span ng-bind="::harvest.authorInfo.byName"></span>
+                    <span ng-bind="::harvest.authorInfo.lastName"></span>
+                </td>
+                <td class="col-xs-3">
+                    <span ng-bind="::harvest.actorInfo.byName"></span>
+                    <span ng-bind="::harvest.actorInfo.lastName"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <!-- CANCEL -->
+    <button type="button" class="btn btn-default"
+            ng-click="$close()">
+        <span translate="global.button.cancel"></span>
+    </button>
+
+    <!-- ACCEPT -->
+    <button type="button" class="btn r-harvestreport-approved"
+            ng-show="$ctrl.report.actions.accept"
+            ng-disabled="$ctrl.report.harvestReportState === 'APPROVED'"
+            ng-click="$ctrl.accept()">
+        <span class="glyphicon glyphicon-thumbs-up"></span> &nbsp;
+        <span translate="harvestreport.button.changeStateTo.APPROVED"></span>
+    </button>
+
+    <!-- CREATE -->
+    <button type="button" class="btn btn-primary"
+            ng-show="$ctrl.report.actions.create"
+            ng-click="$ctrl.create()">
+        <span translate="harvestpermit.management.endOfHunting.createButton"></span>
+    </button>
+
+    <!-- REMOVE -->
+    <button type="button" class="btn btn-warning"
+            ng-show="$ctrl.report.actions.remove"
+            ng-confirm-click
+            ng-confirm-click-action="$ctrl.remove()">
+        <span translate="harvestpermit.management.endOfHunting.removeButton"></span>
+    </button>
+</div>

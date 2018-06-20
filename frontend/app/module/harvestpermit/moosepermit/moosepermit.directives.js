@@ -15,19 +15,23 @@
             controllerAs: '$ctrl',
             template: '<span ng-if="$ctrl.showTodo()" uib-tooltip="{{$ctrl.tooltipTxt}}" tooltip-placement="right" class="text-danger fa fa-exclamation-triangle">&nbsp;</span>',
             controller: function ($scope, $translate) {
-                this.showTodo = function () {
-                    return this.todo.todo;
+                var $ctrl = this;
+
+                $ctrl.showTodo = function () {
+                    return $ctrl.todo.todo;
                 };
 
-                var keys = [
-                    this.todo.areaMissing ? 'club.permit.todo.area' : null,
-                    this.todo.groupMissing ? 'club.permit.todo.group' : null,
-                    this.todo.groupPermitMissing ? 'club.permit.todo.groupPermit' : null,
-                    this.todo.groupLeaderMissing ? 'club.permit.todo.groupLeader' : null
-                ];
-                var str = _(keys).filter().map($translate.instant).join(', ');
+                $ctrl.$onInit = function () {
+                    var keys = [
+                        $ctrl.todo.areaMissing ? 'club.permit.todo.area' : null,
+                        $ctrl.todo.groupMissing ? 'club.permit.todo.group' : null,
+                        $ctrl.todo.groupPermitMissing ? 'club.permit.todo.groupPermit' : null,
+                        $ctrl.todo.groupLeaderMissing ? 'club.permit.todo.groupLeader' : null
+                    ];
+                    var str = _(keys).filter().map($translate.instant).join(', ');
 
-                this.tooltipTxt = $translate.instant('club.permit.todo.prefix') + ' ' + str;
+                    $ctrl.tooltipTxt = $translate.instant('club.permit.todo.prefix') + ' ' + str;
+                };
             }
         };
     }
@@ -52,20 +56,19 @@
     }
 
     function MoosePermitListDetailsController($scope, $state, $translate, ActiveRoleService, DeerHuntingSummaryService,
-                                              GameSpeciesCodes, MooseHarvestReportService, MooseHuntingSummaryService,
-                                              MoosePermitPdfUrl) {
+                                              GameSpeciesCodes, MooseHuntingSummaryService, MoosePermitPdfUrl) {
         var $ctrl = this;
 
-        $ctrl.isModerator = ActiveRoleService.isModerator();
-
-        $ctrl.show = $scope.showFunc();
-        $ctrl.edit = $scope.editFunc();
-        $ctrl.map = $scope.mapFunc();
-        $ctrl.lukereports = $scope.lukereportsFunc();
-        $ctrl.leaders = $scope.leadersFunc();
-        $ctrl.rhystats = $scope.rhystatsFunc();
-
-        $ctrl.getPdfUrl = MoosePermitPdfUrl.get;
+        $ctrl.$onInit = function () {
+            $ctrl.isModerator = ActiveRoleService.isModerator();
+            $ctrl.show = $scope.showFunc();
+            $ctrl.edit = $scope.editFunc();
+            $ctrl.map = $scope.mapFunc();
+            $ctrl.lukereports = $scope.lukereportsFunc();
+            $ctrl.leaders = $scope.leadersFunc();
+            $ctrl.rhystats = $scope.rhystatsFunc();
+            $ctrl.getPdfUrl = MoosePermitPdfUrl.get;
+        };
 
         $ctrl.isActive = function () {
             return _.any(arguments, _.partial(_.endsWith, $state.current.name, _, undefined));
@@ -99,17 +102,13 @@
                 }
             };
 
+            // FIXME: Cleanup and remove dependency on mooseHarvestReport ?
             $ctrl.isHuntingFinished = permit.huntingFinished && (!permit.mooseHarvestReport || !permit.mooseHarvestReport.moderatorOverride);
             $ctrl.isPermitFinished = permit.mooseHarvestReport;
             $ctrl.isModeratorOverridden = permit.mooseHarvestReport && permit.mooseHarvestReport.moderatorOverride || permit.huntingFinishedByModeration;
             $ctrl.isFinishHuntingByModeratorOverrideVisible = $ctrl.isModerator && (!permit.mooseHarvestReport || permit.mooseHarvestReport.moderatorOverride);
             $ctrl.listLeadersButtonVisible = permit.listLeadersButtonVisible;
 
-            $ctrl.editMoosePermitHarvestReport = function () {
-                MooseHarvestReportService.editMoosePermitHarvestReport(permit, species).finally(reload);
-            };
-
-            $ctrl.canEditAllocations = permit.canEditAllocations;
             $ctrl.viewedClubIsPartner = permit.viewedClubIsPartner;
 
             $ctrl.originalPermitAmount = spa.amount;
@@ -120,7 +119,7 @@
             $ctrl.permitUnallocated = permit.unallocated;
             $ctrl.usedPermits = permit.used;
             $ctrl.notEdiblePermits = permit.notEdible;
-
+            $ctrl.restrictionViolated = permit.restrictionViolated;
             $ctrl.permitNumbers = collectPermitNumbers(permit);
         });
 

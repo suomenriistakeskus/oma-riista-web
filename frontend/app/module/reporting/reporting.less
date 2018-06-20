@@ -2,54 +2,6 @@
   margin-bottom: 5px;
 }
 
-.dropzone {
-  background: white;
-  border: 2px dashed @brand-primary;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  padding: 54px;
-
-  .dz-message {
-    font-size: 18px;
-    font-weight: 400;
-  }
-
-  .dz-preview {
-    width: 155px;
-
-    .dz-image {
-      width: 155px;
-    }
-
-    .dz-details {
-      padding: 1em 1em;
-
-      .dz-filename {
-        font-size: 12px;
-        height: 70px;
-        white-space: normal;
-      }
-
-      .dz-size {
-        font-size: 14px;
-      }
-    }
-
-    &.dz-processing > .dz-progress {
-      visibility: visible;
-    }
-    &:not(.dz-processing) > .dz-progress {
-      visibility: hidden;
-    }
-
-    &.dz-processing, &.dz-success, &.dz-error, &.dz-complete {
-        > .dz-remove {
-          visibility: hidden;
-        }
-    }
-  }
-}
-
 .r-moose-data-card-uploads {
   > ul {
     .list-unstyled();

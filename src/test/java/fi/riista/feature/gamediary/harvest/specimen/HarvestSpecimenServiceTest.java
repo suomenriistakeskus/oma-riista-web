@@ -4,12 +4,15 @@ import fi.riista.feature.gamediary.AbstractSpecimenServiceTest;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.OutOfBoundsSpecimenAmountException;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
-import javaslang.Lazy;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Lazy;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -29,10 +32,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_EXTENDED_MOOSE_FIELDS;
+import static fi.riista.test.TestUtils.expectMultipleSpecimenNotAllowedException;
+import static fi.riista.test.TestUtils.wrapExceptionExpectation;
 import static fi.riista.util.DateUtil.today;
 import static fi.riista.util.EqualityHelper.equalIdAndContent;
-import static fi.riista.util.TestUtils.expectIllegalArgumentException;
-import static fi.riista.util.TestUtils.wrapExceptionExpectation;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +49,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class HarvestSpecimenServiceTest
-        extends AbstractSpecimenServiceTest<Harvest, HarvestSpecimen, HarvestSpecimenDTO, HarvestSpecVersion> {
+        extends AbstractSpecimenServiceTest<Harvest, HarvestSpecimen, HarvestSpecimenDTO, HarvestSpecVersion>
+        implements HuntingGroupFixtureMixin {
 
     @Resource
     private HarvestSpecimenRepository repository;
@@ -167,7 +172,7 @@ public class HarvestSpecimenServiceTest
 
     @Test
     public void testAddSpecimens_whenSpeciesForbidsMultipleSpecimens() {
-        testAllVersions(expectIllegalArgumentException(ctx -> {
+        testAllVersions(expectMultipleSpecimenNotAllowedException(ctx -> {
 
             ctx.invokeAdd(2, ctx.createDTOs(2));
 
@@ -176,12 +181,12 @@ public class HarvestSpecimenServiceTest
 
     @Test
     public void testAddSpecimens_whenMandatorySpecimenFieldsMissingWithinClubHunting() {
-        testAllVersions(wrapExceptionExpectation(MandatoryHarvestSpecimenFieldMissingWithinClubHuntingException.class,
+        testAllVersions(wrapExceptionExpectation(HarvestSpecimenValidationException.class,
                 ctx -> {
 
                     final HarvestSpecimenDTO dto = ctx.createDTO();
 
-                    // Failure expected to be caused by missing antler points.
+                    // Failure expected to be caused by (at least of) missing antler points.
                     dto.setAge(GameAge.ADULT);
                     dto.setGender(GameGender.MALE);
                     dto.setAntlerPointsRight(null);
@@ -189,21 +194,19 @@ public class HarvestSpecimenServiceTest
                     ctx.invokeAdd(1, Collections.singletonList(dto));
 
                 })).accept(() -> {
-                    final HuntingGroupFixture f = new HuntingGroupFixture(model());
-                    final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, today());
+            final HuntingGroupFixture f = new HuntingGroupFixture(model());
+            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, today());
+            final Harvest harvest = model().newHarvest(f.species, f.clubContact, huntingDay.getStartDate());
+            harvest.updateHuntingDayOfGroup(huntingDay, null);
 
-                    final Harvest harvest = model().newHarvest(f.species, f.clubContact, huntingDay.getStartDate());
-                    harvest.updateHuntingDayOfGroup(huntingDay, null);
-
-                    persistInCurrentlyOpenTransaction();
-
-                    return harvest;
-                });
+            persistInCurrentlyOpenTransaction();
+            return harvest;
+        });
     }
 
     @Test
     public void testSetSpecimens_whenSpeciesForbidsMultipleSpecimens() {
-        testAllVersions(expectIllegalArgumentException(ctx -> {
+        testAllVersions(expectMultipleSpecimenNotAllowedException(ctx -> {
 
             ctx.invokeSet(2, ctx.createDTOs(2));
 
@@ -212,8 +215,8 @@ public class HarvestSpecimenServiceTest
 
     @Test
     public void testSetSpecimens_whenMandatorySpecimenFieldsMissingWithinClubHunting() {
-        testAllVersions(wrapExceptionExpectation(MandatoryHarvestSpecimenFieldMissingWithinClubHuntingException.class,
-                ctx -> {
+        testAllVersionsStartingFrom(LOWEST_VERSION_SUPPORTING_EXTENDED_MOOSE_FIELDS,
+                wrapExceptionExpectation(HarvestSpecimenValidationException.class, ctx -> {
 
                     final HarvestSpecimen specimen = ctx.createSpecimen();
                     persistInCurrentlyOpenTransaction();
@@ -226,16 +229,42 @@ public class HarvestSpecimenServiceTest
                     ctx.invokeSet(1, Collections.singletonList(dto));
 
                 })).accept(() -> {
-                    final HuntingGroupFixture f = new HuntingGroupFixture(model());
-                    final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, today());
+            final HuntingGroupFixture f = new HuntingGroupFixture(model());
+            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, today());
 
-                    final Harvest harvest = model().newHarvest(f.species, f.clubContact, huntingDay.getStartDate());
-                    harvest.updateHuntingDayOfGroup(huntingDay, null);
+            final Harvest harvest = model().newHarvest(f.species, f.clubContact, huntingDay.getStartDate());
+            harvest.updateHuntingDayOfGroup(huntingDay, null);
 
-                    return harvest;
-                });
+            return harvest;
+        });
     }
 
+    @Test
+    public void testSetSpecimens_whenExtendedMooseFieldsNotSupported() {
+        testAllVersionsBefore(LOWEST_VERSION_SUPPORTING_EXTENDED_MOOSE_FIELDS, ctx -> {
+
+            final HarvestSpecimen specimen = ctx.createSpecimen();
+            persistInCurrentlyOpenTransaction();
+
+            final HarvestSpecimenDTO dto = ctx.transform(specimen);
+
+            // Actually following two assignments are NOOP but are anyway left here to make it
+            // clear that DTO fields are not in sync with entity fields.
+            dto.setWeightEstimated(null);
+            dto.setWeightMeasured(null);
+
+            ctx.invokeSet_expectNoneChanged(1, Collections.singletonList(dto));
+
+        }).accept(() -> {
+            final HuntingGroupFixture f = new HuntingGroupFixture(model());
+            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, today());
+
+            final Harvest harvest = model().newHarvest(f.species, f.clubContact, huntingDay.getStartDate());
+            harvest.updateHuntingDayOfGroup(huntingDay, null);
+
+            return harvest;
+        });
+    }
 
     @Test(expected = IllegalArgumentException.class)
     @Transactional
@@ -243,7 +272,7 @@ public class HarvestSpecimenServiceTest
         getService().limitSpecimens(newParent(), 1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = OutOfBoundsSpecimenAmountException.class)
     @Transactional
     public void testLimitSpecimens_whenGivenLimitIsLowerThanMinimumAllowedSpecimenAmount() {
 
@@ -252,7 +281,7 @@ public class HarvestSpecimenServiceTest
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = OutOfBoundsSpecimenAmountException.class)
     @Transactional
     public void testLimitSpecimens_whenGivenLimitIsHigherThanMaximumAllowedSpecimenAmount() {
 
@@ -261,7 +290,7 @@ public class HarvestSpecimenServiceTest
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = MultipleSpecimenNotAllowedException.class)
     @Transactional
     public void testLimitSpecimens_whenSpeciesForbidsMultipleSpecimens() {
         withLatestVersion(ctx -> {
@@ -284,7 +313,7 @@ public class HarvestSpecimenServiceTest
             final List<HarvestSpecimen> specimensAfter = ctx.findExistingSpecimensForParentInInsertionOrder();
 
             assertEquals(specimensBefore.size(), specimensAfter.size());
-            assertTrue(equalIdAndContent(specimensBefore, specimensAfter, HarvestSpecimen::hasEqualContent));
+            assertTrue(equalIdAndContent(specimensBefore, specimensAfter, HarvestSpecimen::hasEqualBusinessFields));
 
         }).accept(newParent());
     }
@@ -309,7 +338,7 @@ public class HarvestSpecimenServiceTest
             assertTrue(equalIdAndContent(
                     specimensBefore.stream().limit(numNewSpecimens).collect(toList()),
                     specimensAfter,
-                    HarvestSpecimen::hasEqualContent));
+                    HarvestSpecimen::hasEqualBusinessFields));
 
         }).accept(newParent());
     }
@@ -329,12 +358,7 @@ public class HarvestSpecimenServiceTest
 
         @Override
         public HarvestSpecimen createSpecimen(@Nullable final Harvest harvest) {
-            return model().newHarvestSpecimen(harvest, this);
-        }
-
-        @Override
-        public HarvestSpecimenDTO createDTO() {
-            return newHarvestSpecimenDTO();
+            return model().newHarvestSpecimen(harvest);
         }
 
         @Override
@@ -348,5 +372,4 @@ public class HarvestSpecimenServiceTest
             dto.clearBusinessFields();
         }
     }
-
 }

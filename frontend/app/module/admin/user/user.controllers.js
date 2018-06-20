@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('app.user.controllers', [])
+angular.module('app.admin.user.controllers', [])
     .config(function ($stateProvider) {
         $stateProvider
             .state('admin.users_base', {

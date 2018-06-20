@@ -1,16 +1,16 @@
 package fi.riista.feature.gamediary.harvest;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import fi.riista.feature.gamediary.GameDiaryEntryAuthorizationTest;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.HarvestAuthorization.Permission;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.security.EntityPermission;
 import org.junit.Test;
 
-import java.util.EnumSet;
+import java.util.stream.Stream;
 
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static fi.riista.feature.gamediary.harvest.HarvestAuthorization.Permission.LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.DELETE;
@@ -19,9 +19,8 @@ import static fi.riista.security.EntityPermission.UPDATE;
 
 public class HarvestAuthorizationTest extends GameDiaryEntryAuthorizationTest<Harvest> {
 
-    private static final ImmutableSet<Enum<?>> ALL_PERMS = Sets.union(
-            EnumSet.allOf(Permission.class), ImmutableSet.of(CREATE, READ, UPDATE, DELETE))
-            .immutableCopy();
+    private static final ImmutableSet<Enum<?>> ALL_PERMS =
+            Stream.of(CREATE, READ, UPDATE, DELETE, LINK_HARVEST_TO_HUNTING_DAY_OF_GROUP).collect(toImmutableSet());
 
     @Test
     public void testActorPermissions() {
@@ -29,9 +28,7 @@ public class HarvestAuthorizationTest extends GameDiaryEntryAuthorizationTest<Ha
             final Harvest harvest = create();
             harvest.setActualShooter(author);
 
-            onSavedAndAuthenticated(
-                    createUser(author),
-                    tx(() -> assertPermissions(harvest, EnumSet.of(CREATE, READ, UPDATE, DELETE))));
+            onSavedAndAuthenticated(createUser(author), () -> assertPermissions(harvest, EntityPermission.crud()));
         });
     }
 
@@ -59,5 +56,4 @@ public class HarvestAuthorizationTest extends GameDiaryEntryAuthorizationTest<Ha
     protected void addGroupRejection(final HuntingClubGroup group, final Harvest harvest) {
         model().newHarvestRejection(group, harvest);
     }
-
 }

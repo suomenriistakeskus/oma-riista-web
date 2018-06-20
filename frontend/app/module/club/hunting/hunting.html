@@ -2,120 +2,79 @@
     <riista-sidebar-collapse></riista-sidebar-collapse>
 
     <div class="left-column">
-        <uib-tabset type="pills" justified="true" active="uiState.activeTabIndex">
+        <uib-tabset type="pills" justified="true" active="$ctrl.activeTabIndex">
             <uib-tab classes="btn-lg" index="0">
                 <uib-tab-heading>
-                    <span class="count">{{ harvestStats.entryCount || 0 }}</span>
+                    <span class="count">{{ $ctrl.filteredDiary.length || 0 }}</span>
                     <span translate="club.hunting.tabHeaders.filters"></span><br/>
                 </uib-tab-heading>
 
                 <div class="wrapper">
-                    <div club-hunting-filters on-change="onFilterChange(huntingDays, diary, stats)"></div>
+                    <club-hunting-filters
+                            on-filter-change="$ctrl.onFilterChange(filter)"></club-hunting-filters>
 
-                    <div class="r-hunting-statistics" ng-show="harvestStats">
-                        <header translate="club.hunting.stats.harvestsTitle"></header>
-
-                        <table>
-                            <tbody>
-                            <tr>
-                                <th ng-repeat="specimenType in ['MALE_ADULT', 'FEMALE_ADULT', 'MALE_YOUNG', 'FEMALE_YOUNG']">
-                                    {{ 'club.hunting.specimenAbbrv.' + specimenType | translate }}
-                                </th>
-                            </tr>
-                            <tr>
-                                <td ng-repeat="specimenType in ['MALE_ADULT', 'FEMALE_ADULT', 'MALE_YOUNG', 'FEMALE_YOUNG']">
-                                    {{ (harvestStats['HARVEST_' + specimenType] || 0) }}
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-
-                        <div ng-if="mooseGroupSelected">
-                            <hr/>
-                            <header translate="club.hunting.stats.observationsTitle"></header>
-                            <table>
-                                <tbody>
-                                <tr>
-                                    <th ng-repeat="key in mooseAmountFields">
-                                        {{ 'gamediary.mooselikeAbbrv.' + key | translate }}
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td class="col-xs-2" ng-repeat="key in mooseAmountFields">
-                                        {{ (harvestStats[key] || 0) }}
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </uib-tab>
-
-            <uib-tab classes="btn-lg" index="1">
-                <uib-tab-heading>
-                    <span class="count">{{ filteredHuntingDays.length }}</span>
-                    <span translate="club.hunting.tabHeaders.huntingDays"></span><br/>
-                </uib-tab-heading>
-
-                <div class="wrapper">
-                    <div class="btn-group btn-group-justified buttons"
-                         ng-show="isExportVisible()">
-                        <a class="btn btn-info" ng-click="exportHuntingDays()">
+                    <div class="btn-group btn-group-justified buttons">
+                        <a class="btn btn-info" ng-click="$ctrl.exportToExcel()">
                             <span class="glyphicon glyphicon-export"></span>
                             &nbsp;
                             <span translate="club.hunting.huntingDay.exportToExcel"></span>
                         </a>
                     </div>
-                </div>
 
-                <div club-hunting-list="filteredHuntingDays"
-                     select-entry="selectEntry(diaryEntry, huntingDay)"
-                     create-day="createHuntingDay(startDateAsString)"
-                     edit-day="editHuntingDay(id)"></div>
+                    <club-hunting-statistics
+                            diary="$ctrl.filteredDiary"
+                            show-observation="$ctrl.mooseGroupSelected">
+                    </club-hunting-statistics>
+                </div>
+            </uib-tab>
+
+            <uib-tab classes="btn-lg" index="1">
+                <uib-tab-heading>
+                    <span class="count">{{ $ctrl.filteredHuntingDays.length }}</span>
+                    <span translate="club.hunting.tabHeaders.huntingDays"></span><br/>
+                </uib-tab-heading>
+
+                <club-hunting-list
+                        hunting-days="$ctrl.filteredHuntingDays"
+                        on-select-entry="$ctrl.selectEntry(diaryEntry, huntingDay)"
+                        on-create-hunting-day="$ctrl.createHuntingDay(startDateAsString)"
+                        on-edit-hunting-day="$ctrl.editHuntingDay(id)">
+                </club-hunting-list>
             </uib-tab>
         </uib-tabset>
     </div>
 
     <div class="main-column">
-        <div class="r-gamediary-map-button-area">
+        <div class="map-overlay-button-container">
             <button type="button"
-                    ng-click="createHuntingDay(null)"
-                    ng-show="isCreateHuntingDayVisible()"
+                    ng-click="$ctrl.createHuntingDay(null)"
+                    ng-show="$ctrl.isCreateHuntingDayVisible()"
                     class="btn btn-primary">
                 <span class="glyphicon glyphicon-calendar"></span>
                 &nbsp;
                 <span translate="club.hunting.createHuntingDay"></span>
             </button>
             <button type="button"
-                    ng-click="addObservation()"
-                    ng-show="isAddObservationVisible()"
+                    ng-click="$ctrl.addObservation()"
+                    ng-show="$ctrl.isAddObservationVisible()"
                     class="btn btn-primary">
                 <span r-binoculars-symbol></span>&nbsp;
                 <span translate="gamediary.button.addObservation"></span>
             </button>
             <button type="button"
-                    ng-click="addHarvest()"
-                    ng-show="isAddHarvestVisible()"
+                    ng-click="$ctrl.addHarvest()"
+                    ng-show="$ctrl.isAddHarvestVisible()"
                     class="btn btn-primary">
                 <span class="fa fa-crosshairs"></span>&nbsp;
                 <span translate="gamediary.button.addHarvest"></span>
             </button>
         </div>
 
-        <leaflet class="r-cursor-pointer"
-                 id="clubHuntingMap"
-                 defaults="mapDefaults"
-                 layers="mapDefaults.mmlLayers"
-                 controls="mapDefaults.controls"
-                 lf-center="mapState.center"
-                 bounds="mapState.viewBounds"
-                 event-broadcast="mapEvents"
-                 geojson="mapGeoJSON"
-                 geojson-watch-options="mapDefaults.geojsonWatchOptions"
-                 r-viewport-height
-                 width="100%">
-            <marker-cluster id="huntingGroupMarkers" leaflet-markers="markers" />
-        </leaflet>
+        <club-hunting-map diary="$ctrl.filteredDiary"
+                          hunting-area="$ctrl.huntingData.huntingArea"
+                          default-bounds="$ctrl.rhyBounds"
+                          force-bounds-calculation="$ctrl.forceBoundsCalculation"
+                          on-marker-click="$ctrl.selectEntryById(type, id)">
+        </club-hunting-map>
     </div>
 </div>

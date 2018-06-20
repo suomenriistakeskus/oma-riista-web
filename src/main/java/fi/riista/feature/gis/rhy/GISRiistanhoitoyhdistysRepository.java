@@ -1,12 +1,13 @@
 package fi.riista.feature.gis.rhy;
 
 import fi.riista.config.properties.DataSourceProperties;
-import fi.riista.feature.gis.WGS84Bounds;
+import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.GISPoint;
 import fi.riista.util.GISUtils.SRID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -28,6 +29,7 @@ public class GISRiistanhoitoyhdistysRepository {
     }
 
     // Return RHY area information by filtering areas containing given Point
+    @Transactional(readOnly = true)
     public List<GISRiistanhoitoyhdistys> queryByPoint(final GISPoint gisPoint) {
         Objects.requireNonNull(gisPoint);
         Objects.requireNonNull(gisPoint.getLatitude());
@@ -54,18 +56,20 @@ public class GISRiistanhoitoyhdistysRepository {
         });
     }
 
+    @Transactional(readOnly = true)
     public List<String> queryRhyGeoJSON(final String officialCode, final SRID srid) {
-        final String sql = "SELECT ST_AsGeoJSON(ST_Transform(geom, ?)) AS geojson FROM rhy WHERE id=?;\n";
-        return jdbcTemplate.query(
-                sql, new Object[]{srid.value, officialCode}, (rs, rowNum) -> rs.getString("geojson"));
+        final String sql = "SELECT ST_AsGeoJSON(ST_Transform(geom, ?), ?, 0) AS geojson FROM rhy WHERE id=?;\n";
+        final Object[] params = {srid.value, srid.getDecimalPrecision(), officialCode};
+        return jdbcTemplate.query(sql, params, (rs, rowNum) -> rs.getString("geojson"));
     }
 
-    public List<WGS84Bounds> queryRhyBounds(final String officialCode) {
+    @Transactional(readOnly = true)
+    public List<GISBounds> queryRhyBounds(final String officialCode) {
         final String sql = "WITH extent AS (SELECT ST_Extent(ST_Transform(geom, ?)) AS e FROM rhy WHERE id=?)\n" +
                 "SELECT ST_XMin(e) AS xmin, ST_YMin(e) AS ymin, ST_XMax(e) AS xmax, ST_YMax(e) AS ymax FROM extent;";
 
         return jdbcTemplate.query(sql, new Object[]{SRID.WGS84.value, officialCode}, (rs, rowNum) -> {
-            final WGS84Bounds b = new WGS84Bounds();
+            final GISBounds b = new GISBounds();
             b.setMinLng(rs.getDouble("xmin"));
             b.setMinLat(rs.getDouble("ymin"));
             b.setMaxLng(rs.getDouble("xmax"));

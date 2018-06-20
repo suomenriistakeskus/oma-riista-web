@@ -1,0 +1,38 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="rhy.annualStats.srva.accident.title"></h3>
+    </div>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.srva.accident.all"></td>
+                        <td num-pieces="::$ctrl.srva.accident.all"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.srva.accident.traffic"></td>
+                        <td num-pieces="::$ctrl.srva.trafficAccidents"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.srva.accident.railway"></td>
+                        <td num-pieces="::$ctrl.srva.railwayAccidents"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.srva.accident.other"></td>
+                        <td num-pieces="::$ctrl.srva.otherAccidents"></td>
+                    </tr>
+                    <tr ng-repeat="species in ::$ctrl.speciesList">
+                        <td class="col-xs-9">
+                            <span>{{species.name | rI18nNameFilter | capitalize}}</span>
+                            &nbsp;
+                            <span class="fa fa-bar-chart"></span>
+                        </td>
+                        <td num-pieces="::species.amount"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

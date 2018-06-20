@@ -51,6 +51,7 @@ public class AccountActivityMessage extends BaseEntity<Long> {
     @Column(length = 39)
     private String ipAddress;
 
+    @Size(max = 255)
     @Column
     private String username;
 

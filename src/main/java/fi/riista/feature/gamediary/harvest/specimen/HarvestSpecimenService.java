@@ -1,13 +1,14 @@
 package fi.riista.feature.gamediary.harvest.specimen;
 
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.AbstractSpecimenService;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.OutOfBoundsSpecimenAmountException;
+import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-
-import javaslang.Tuple2;
-
+import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -57,27 +57,44 @@ public class HarvestSpecimenService
                                                 @Nonnull final HarvestSpecVersion version) {
 
         Objects.requireNonNull(harvest, "harvest is null");
-        return new HarvestSpecimenOps(harvest.getSpecies(), version);
+        final GameSpecies gameSpecies = Objects.requireNonNull(harvest.getSpecies(), "species is null");
+        return new HarvestSpecimenOps(gameSpecies.getOfficialCode(), version);
     }
 
     @Override
     protected BiConsumer<HarvestSpecimenDTO, HarvestSpecimen> getSpecimenFieldCopier(
             @Nonnull final Harvest harvest, @Nonnull final HarvestSpecVersion version) {
+        return getSpecimenOps(harvest, version)::copyContentToEntity;
+    }
 
-        final BiConsumer<HarvestSpecimenDTO, HarvestSpecimen> delegate =
-                getSpecimenOps(harvest, version)::copyContentToEntity;
+    @Override
+    protected void validateSpecimen(@Nonnull final Harvest harvest, @Nonnull final List<HarvestSpecimen> specimenList) {
+        final int huntingYear = DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate());
+        final int speciesCode = harvest.getSpecies().getOfficialCode();
+        final boolean associatedWithHuntingDay = harvest.getHuntingDayOfGroup() != null;
+        final RequiredHarvestFields.Specimen specimenFieldRequirements = RequiredHarvestFields.getSpecimenFields(
+                huntingYear, speciesCode, harvest.getHuntingMethod(), harvest.resolveReportingType());
 
-        return delegate.andThen((dto, entity) -> {
-            if (harvest.getHuntingDayOfGroup() != null) {
-                entity.checkAllMandatoryFieldsPresentWithinClubHunting(harvest.getSpecies().getOfficialCode());
-            }
-        });
+        for (final HarvestSpecimen specimen : specimenList) {
+            new HarvestSpecimenValidator(specimenFieldRequirements, specimen, speciesCode, associatedWithHuntingDay)
+                    .validateAll()
+                    .throwOnErrors();
+        }
+
+        // Can not be empty if any specimen fields is required
+        if (specimenList.isEmpty()) {
+            final HarvestSpecimen emptySpecimen = new HarvestSpecimen();
+
+            new HarvestSpecimenValidator(specimenFieldRequirements, emptySpecimen, speciesCode, associatedWithHuntingDay)
+                    .validateAll()
+                    .throwOnErrors();
+        }
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public List<HarvestSpecimen> limitSpecimens(@Nonnull final Harvest harvest, final int limit) {
 
-        // limitSpecimens is not actually dependent on spec-version so use the most recent value always.
+        // limitSpecimens is actually not dependent on spec-version so use the most recent value always.
         checkParameters(harvest, limit, Collections.emptyList(), HarvestSpecVersion.MOST_RECENT);
 
         final List<HarvestSpecimen> existingSpecimens = findExistingSpecimensInInsertionOrder(harvest);
@@ -109,27 +126,8 @@ public class HarvestSpecimenService
                                    final HarvestSpecVersion specVersion) {
 
         super.checkParameters(harvest, totalAmount, dtos, specVersion);
-        assertSpecimenAmountWithinBounds(totalAmount);
-        assertMultipleSpecimenConstraint(harvest, totalAmount);
-    }
 
-    private static void assertSpecimenAmountWithinBounds(final int totalAmount) {
-        if (totalAmount < Harvest.MIN_AMOUNT || totalAmount > Harvest.MAX_AMOUNT) {
-            throw new IllegalArgumentException(String.format(
-                    "Total amount of harvest specimens must be between %d and %d",
-                    Harvest.MIN_AMOUNT, Harvest.MAX_AMOUNT));
-        }
+        OutOfBoundsSpecimenAmountException.assertHarvestSpecimenAmountWithinBounds(totalAmount);
+        MultipleSpecimenNotAllowedException.assertHarvestMultipleSpecimenConstraint(harvest.getSpecies(), totalAmount);
     }
-
-    private static void assertMultipleSpecimenConstraint(final Harvest harvest, final int totalAmount) {
-        if (totalAmount > 1 && !harvest.getSpecies().isMultipleSpecimenAllowedOnHarvest()) {
-            final GameSpecies species = harvest.getSpecies();
-            final String errMsg = String.format(
-                    "Multiple harvest specimens not allowed for species: %s (%s)",
-                    species.getNameFinnish(),
-                    species.getOfficialCode());
-            throw new IllegalArgumentException(errMsg);
-        }
-    }
-
 }

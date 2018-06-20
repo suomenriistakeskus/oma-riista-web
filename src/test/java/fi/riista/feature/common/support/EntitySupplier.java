@@ -6,9 +6,7 @@ import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementSenderType;
 import fi.riista.feature.announcement.AnnouncementSubscriber;
-import fi.riista.feature.common.entity.BicEntity;
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.common.entity.IbanEntity;
 import fi.riista.feature.common.entity.Municipality;
 import fi.riista.feature.common.entity.Required;
 import fi.riista.feature.gamediary.GameAge;
@@ -21,13 +19,14 @@ import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenOpsForTest;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
+import fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence;
 import fi.riista.feature.gamediary.observation.metadata.ObservationBaseFields;
 import fi.riista.feature.gamediary.observation.metadata.ObservationContextSensitiveFields;
 import fi.riista.feature.gamediary.observation.metadata.ObservationMetadata;
 import fi.riista.feature.gamediary.observation.specimen.GameMarking;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
-import fi.riista.feature.gamediary.observation.specimen.ObservedGameAge;
 import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
@@ -39,17 +38,12 @@ import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.zone.GISZone;
+import fi.riista.feature.gis.zone.TotalLandWaterSizeDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitContactPerson;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.allocation.HarvestPermitAllocation;
-import fi.riista.feature.harvestpermit.area.HarvestPermitArea;
-import fi.riista.feature.harvestpermit.area.HarvestPermitAreaHta;
-import fi.riista.feature.harvestpermit.area.HarvestPermitAreaPartner;
-import fi.riista.feature.harvestpermit.area.HarvestPermitAreaRhy;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFields;
-import fi.riista.feature.harvestpermit.report.state.HarvestReportStateHistory;
+import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReport;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
 import fi.riista.feature.harvestpermit.season.HarvestQuota;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
@@ -65,7 +59,6 @@ import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitat
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
 import fi.riista.feature.huntingclub.permit.HasHarvestCountsForPermit;
 import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
-import fi.riista.feature.huntingclub.permit.harvestreport.MooseHarvestReport;
 import fi.riista.feature.huntingclub.permit.summary.AreaSizeAndRemainingPopulation;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingAreaType;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
@@ -87,6 +80,17 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics;
+import fi.riista.feature.permit.area.HarvestPermitArea;
+import fi.riista.feature.permit.area.hta.HarvestPermitAreaHta;
+import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartner;
+import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhy;
+import fi.riista.feature.shootingtest.ShootingTestAttempt;
+import fi.riista.feature.shootingtest.ShootingTestAttemptResult;
+import fi.riista.feature.shootingtest.ShootingTestEvent;
+import fi.riista.feature.shootingtest.ShootingTestOfficial;
+import fi.riista.feature.shootingtest.ShootingTestParticipant;
+import fi.riista.feature.shootingtest.ShootingTestType;
 import fi.riista.feature.storage.backend.db.PersistentFileContent;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.feature.storage.metadata.StorageType;
@@ -97,6 +101,8 @@ import fi.riista.util.MediaTypeExtras;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.ValueGenerator;
 import fi.riista.util.ValueGeneratorMixin;
+import io.vavr.Tuple2;
+import org.iban4j.Bic;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 import org.joda.time.DateTime;
@@ -108,18 +114,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static fi.riista.feature.gamediary.GameSpecies.isMooseOrDeerRequiringPermitForHunting;
+import static fi.riista.util.DateUtil.currentYear;
 import static fi.riista.util.DateUtil.localDateTime;
 import static fi.riista.util.DateUtil.today;
-import static java.util.Optional.ofNullable;
 
 /**
  * This class can be used to create @Entity annotated objects or graphs for test code.
@@ -271,6 +277,10 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return newRiistanhoitoyhdistys(newRiistakeskuksenAlue());
     }
 
+    public Occupation newOccupation(Organisation org, Person person) {
+        return newOccupation(org, person, some(OccupationType.getApplicableTypes(org.getOrganisationType())));
+    }
+
     public Occupation newOccupation(Organisation org, Person person, OccupationType type) {
         return newOccupation(org, person, type, null, null);
     }
@@ -309,7 +319,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public GameSpecies newGameSpecies(int officialCode) {
-        GameSpecies species = newGameSpecies();
+        GameSpecies species = newGameSpecies(false);
         species.setOfficialCode(officialCode);
         return species;
     }
@@ -331,6 +341,21 @@ public class EntitySupplier implements ValueGeneratorMixin {
                 newGameSpecies(GameSpecies.OFFICIAL_CODE_MOOSE, GameCategory.GAME_MAMMAL, "hirvi", "älg", "moose");
         species.setMultipleSpecimenAllowedOnHarvest(false);
         return species;
+    }
+
+    public GameSpecies newDeerSubjectToClubHunting() {
+        final GameSpecies species = newGameSpecies(
+                GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER,
+                GameCategory.GAME_MAMMAL,
+                "valkohäntäpeura",
+                "vitsvanshjort",
+                "white-tailed deer");
+        species.setMultipleSpecimenAllowedOnHarvest(false);
+        return species;
+    }
+
+    public GameSpecies newGameSpeciesNotSubjectToClubHunting() {
+        return newGameSpecies(GameSpecies.OFFICIAL_CODE_ROE_DEER);
     }
 
     public HarvestPermit newHarvestPermit() {
@@ -441,7 +466,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
             HarvestPermit permit, GameSpecies species, float amount) {
 
         return newHarvestPermitSpeciesAmount(
-                permit, species, DateUtil.getFirstCalendarYearOfCurrentHuntingYear(), amount);
+                permit, species, DateUtil.huntingYear(), amount);
     }
 
     public HarvestPermitSpeciesAmount newHarvestPermitSpeciesAmount(
@@ -476,8 +501,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
     /**
      * PERSIST BEFORE CALLING THIS!
      * <p>
-     *     If you do not persist before calling this, then persist will fail to:<br>
-     *     Referential integrity constraint violation: "FK_MOOSE_HUNTING_SUMMARY_HARVEST_PERMIT_PARTNERS: PUBLIC.MOOSE_HUNTING_SUMMARY FOREIGN KEY(HARVEST_PERMIT_ID, CLUB_ID) REFERENCES PUBLIC.HARVEST_PERMIT_PARTNERS(HARVEST_PERMIT_ID, ORGANISATION_ID)
+     * If you do not persist before calling this, then persist will fail to:<br>
+     * Referential integrity constraint violation: "FK_MOOSE_HUNTING_SUMMARY_HARVEST_PERMIT_PARTNERS: PUBLIC.MOOSE_HUNTING_SUMMARY FOREIGN KEY(HARVEST_PERMIT_ID, CLUB_ID) REFERENCES PUBLIC.HARVEST_PERMIT_PARTNERS(HARVEST_PERMIT_ID, ORGANISATION_ID)
      * </p>
      * <p>moose_hunting_summary table has foreign key to harvest_permit_partners table.
      * Hibernate has no knowledge of this, therefore it will arrange flushing in a way that moose_hunting_summary is
@@ -533,6 +558,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
 
         summary.setHuntingEndDate(today);
         summary.setHuntingFinished(huntingFinished);
+        summary.setObservationPolicyAdhered(true);
 
         return add(summary);
     }
@@ -553,8 +579,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(summary);
     }
 
-    public BasicClubHuntingSummary newModeratedBasicHuntingSummary(
-            HarvestPermitSpeciesAmount speciesAmount, HuntingClub club) {
+    public BasicClubHuntingSummary newModeratedBasicHuntingSummary(HarvestPermitSpeciesAmount speciesAmount,
+                                                                   HuntingClub club) {
 
         BasicClubHuntingSummary summary = newBasicHuntingSummary(speciesAmount, club, true);
 
@@ -589,7 +615,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public HarvestPermitArea newHarvestPermitArea(HuntingClub club) {
-        return newHarvestPermitArea(club, DateUtil.getFirstCalendarYearOfCurrentHuntingYear(), add(new GISZone()));
+        return newHarvestPermitArea(club, DateUtil.huntingYear(), add(new GISZone()));
     }
 
     public HarvestPermitArea newHarvestPermitArea(HuntingClub club, int huntingYear, GISZone zone) {
@@ -612,8 +638,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
 
     public HarvestPermitAreaRhy newHarvestPermitAreaRhy(
             HarvestPermitArea area, Riistanhoitoyhdistys rhy, double areaSize) {
-
-        return add(new HarvestPermitAreaRhy(area, rhy, areaSize));
+        final TotalLandWaterSizeDTO dto = new TotalLandWaterSizeDTO(areaSize, areaSize, 0);
+        return add(new HarvestPermitAreaRhy(area, rhy, dto, dto, dto));
     }
 
     public HarvestPermitAreaHta newHarvestPermitAreaHta(
@@ -638,23 +664,37 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return newHarvest(newGameSpecies(), author, author, location, localDateTime(), 1);
     }
 
-    public Harvest newHarvest(HarvestPermit permit) {
-        Harvest harvest = newHarvest();
-        harvest.setHarvestPermit(permit);
-        harvest.setRhy(permit.getRhy());
-        permit.addHarvest(harvest);
+    public Harvest newHarvest(GameSpecies species) {
+        Person hunter = newPerson();
+        return newHarvest(species, hunter, hunter);
+    }
+
+    public Harvest newHarvest(Person author, HarvestPermit permit, GameSpecies species) {
+        Harvest harvest = newHarvest(species, author, author);
+
+        if (permit != null) {
+            harvest.setHarvestPermit(permit);
+            harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.PROPOSED);
+            harvest.setRhy(permit.getRhy());
+
+            permit.addHarvest(harvest);
+        }
+
         return harvest;
     }
 
     public Harvest newHarvest(HarvestPermit permit, GameSpecies species) {
-        Harvest harvest = newHarvest(permit);
-        harvest.setSpecies(species);
-        return harvest;
-    }
+        Harvest harvest = newHarvest(species);
 
-    public Harvest newHarvest(GameSpecies species) {
-        Person hunter = newPerson();
-        return newHarvest(species, hunter, hunter);
+        if (permit != null) {
+            harvest.setHarvestPermit(permit);
+            harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.PROPOSED);
+            harvest.setRhy(permit.getRhy());
+
+            permit.addHarvest(harvest);
+        }
+
+        return harvest;
     }
 
     public Harvest newHarvest(GameSpecies species, Person hunter) {
@@ -745,7 +785,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public Harvest newHarvest(GameSpecies species, Person author, Person hunter, GeoLocation geoLocation,
-                               LocalDateTime pointOfTime, int amount) {
+                              LocalDateTime pointOfTime, int amount) {
 
         Harvest harvest = new Harvest(author, geoLocation, pointOfTime, species, amount);
         if (hunter != null) {
@@ -757,27 +797,15 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public HarvestSpecimen newHarvestSpecimen(Harvest harvest) {
-        return newHarvestSpecimen(harvest, HarvestSpecVersion.MOST_RECENT);
-    }
-
-    public HarvestSpecimen newHarvestSpecimen(Harvest harvest, HarvestSpecVersion version) {
         final int gameSpeciesCode = harvest != null && harvest.getSpecies() != null
                 ? harvest.getSpecies().getOfficialCode()
                 : serial();
 
-        return newHarvestSpecimen(
-                harvest, new HarvestSpecimenOpsForTest(gameSpeciesCode, version, getNumberGenerator()));
-    }
+        final HarvestSpecimenOpsForTest specimenOps =
+                new HarvestSpecimenOpsForTest(gameSpeciesCode, HarvestSpecVersion.MOST_RECENT, getNumberGenerator());
 
-    public HarvestSpecimen newHarvestSpecimen(Harvest harvest, HarvestSpecimenOpsForTest specimenOps) {
-        Optional.ofNullable(harvest).map(Harvest::getSpecies).ifPresent(species -> {
-            Preconditions.checkArgument(species.getOfficialCode() == specimenOps.getGameSpeciesCode(),
-                    "Game species code mismatch while generating harvest specimen");
-        });
-
-        final boolean allowUnknownAgeAndGender = !GameSpecies.isMoose(specimenOps.getGameSpeciesCode());
         final HarvestSpecimen specimen = new HarvestSpecimen(harvest);
-        specimenOps.mutateContent(specimen, allowUnknownAgeAndGender);
+        specimenOps.mutateContent(specimen, !isMooseOrDeerRequiringPermitForHunting(gameSpeciesCode));
         return add(specimen);
     }
 
@@ -790,12 +818,45 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public ObservationSpecimen newObservationSpecimen(Observation obs) {
-        ObservationSpecimen specimen = new ObservationSpecimen(obs);
-        specimen.setAge(some(ObservedGameAge.class));
-        specimen.setGender(some(GameGender.class));
-        specimen.setState(some(ObservedGameState.class));
-        specimen.setMarking(some(GameMarking.class));
-        return add(specimen);
+        return add(new ObservationSpecimen(obs));
+    }
+
+    public ObservationSpecimen newObservationSpecimen(Observation obs, ObservationContextSensitiveFields ctxFields) {
+        ObservationSpecimen specimen = newObservationSpecimen(obs);
+
+        if (ctxFields.getGender().isNonNullValueLegal()) {
+            specimen.setGender(some(GameGender.class));
+        }
+
+        if (ctxFields.getAge().isNonNullValueLegal()) {
+            specimen.setAge(some(ctxFields.getAllowedGameAges()));
+        }
+
+        final EnumSet<ObservedGameState> validStates = ctxFields.getAllowedGameStates();
+
+        if (!validStates.isEmpty()) {
+            specimen.setState(some(validStates));
+        }
+
+        final EnumSet<GameMarking> validMarkings = ctxFields.getAllowedGameMarkings();
+
+        if (!validMarkings.isEmpty()) {
+            specimen.setMarking(some(validMarkings));
+        }
+
+        return specimen;
+    }
+
+    public ObservationSpecimen newObservationSpecimen(
+            Observation obs, ObservationMetadata metadata, boolean carnivoreAuthority) {
+
+        ObservationSpecimen specimen = newObservationSpecimen(obs, metadata.getContextSensitiveFields());
+
+        Tuple2<Double, Double> widthAndLength = metadata.generateWidthAndLengthOfPaw(carnivoreAuthority);
+        specimen.setWidthOfPaw(widthAndLength._1);
+        specimen.setLengthOfPaw(widthAndLength._2);
+
+        return specimen;
     }
 
     public GameDiaryImage newGameDiaryImage(Harvest harvest) {
@@ -831,18 +892,6 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(pfm);
     }
 
-    public HarvestReportFields newHarvestReportFields(GameSpecies species, boolean usedWithPermit) {
-        return newHarvestReportFields("HarvestReportFields-" + serial(), species, usedWithPermit);
-    }
-
-    public HarvestReportFields newHarvestReportFields(String name, GameSpecies species, boolean usedWithPermit) {
-        return add(new HarvestReportFields(name, species, usedWithPermit));
-    }
-
-    public HarvestArea newHarvestArea() {
-        return newHarvestArea(newRiistanhoitoyhdistys());
-    }
-
     public HarvestArea newHarvestArea(Riistanhoitoyhdistys rhy) {
         String name = "HarvestArea-" + serial();
         return newHarvestArea(HarvestArea.HarvestAreaType.PORONHOITOALUE, name, name, Sets.newHashSet(rhy));
@@ -854,91 +903,21 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(new HarvestArea(harvestAreaType, nameFi, nameSv, rhys));
     }
 
-    public HarvestSeason newHarvestSeason(LocalDate seasonBegin) {
-        final LocalDate seasonEnd = seasonBegin.plusYears(1);
-        final LocalDate reportingDeadline = seasonEnd.plusMonths(1);
-
-        return newHarvestSeason(seasonBegin, seasonEnd, reportingDeadline);
+    public HarvestSeason newHarvestSeason(GameSpecies species) {
+        final String name = "HarvestSeason-" + serial();
+        final LocalDate begin = DateUtil.today();
+        return add(new HarvestSeason(name, name, species, begin, begin.plusDays(1), today().plusDays(1)));
     }
 
-    public HarvestSeason newHarvestSeason(LocalDate beginDate, LocalDate endDate, LocalDate endOfReportingDate) {
+    public HarvestSeason newHarvestSeason(GameSpecies species, LocalDate beginDate, LocalDate endDate,
+                                          LocalDate endOfReportingDate) {
         String name = "HarvestSeason-" + serial();
-        return newHarvestSeason(name, name, beginDate, endDate, endOfReportingDate);
-    }
-
-    public HarvestSeason newHarvestSeason(
-            String nameFi, String nameSv, LocalDate beginDate, LocalDate endDate, LocalDate endOfReportingDate) {
-
-        return newHarvestSeason(
-                nameFi, nameSv, newHarvestReportFields(newGameSpecies(), false), beginDate, endDate, endOfReportingDate);
-    }
-
-    public HarvestSeason newHarvestSeason(
-            String nameFi,
-            String nameSv,
-            HarvestReportFields fields,
-            LocalDate beginDate,
-            LocalDate endDate,
-            LocalDate endOfReportingDate) {
-
-        return add(new HarvestSeason(nameFi, nameSv, fields, beginDate, endDate, endOfReportingDate));
+        return add(new HarvestSeason(name, name, species, beginDate, endDate, endOfReportingDate));
     }
 
     public HarvestQuota newHarvestQuota(HarvestSeason harvestSeason, HarvestArea harvestArea, int quota) {
         HarvestQuota q = new HarvestQuota(harvestSeason, harvestArea, quota);
         return add(q);
-    }
-
-    public HarvestReport newHarvestReport_endOfHunting(HarvestPermit permit, HarvestReport.State state) {
-        return newHarvestReport_endOfHunting(permit, state, newPerson());
-    }
-
-    public HarvestReport newHarvestReport_endOfHunting(HarvestPermit permit, HarvestReport.State state, Person author) {
-        HarvestReport report = add(new HarvestReport());
-
-        report.setHarvestPermit(permit);
-        permit.setEndOfHuntingReport(report);
-
-        report.setState(state);
-        report.getStateHistory().add(new HarvestReportStateHistory(report, state));
-        report.setAuthor(author);
-        return report;
-    }
-
-    public HarvestReport newHarvestReport(Harvest harvest, HarvestReport.State state) {
-        return newHarvestReport(newHarvestReportFields(harvest.getSpecies(), false), state, harvest);
-    }
-
-    public HarvestReport newHarvestReport(Harvest harvest, HarvestReport.State state, HarvestQuota quota) {
-        HarvestReport r = newHarvestReport(quota.getHarvestSeason().getFields(), state, harvest);
-        harvest.setHarvestSeason(quota.getHarvestSeason());
-        harvest.setHarvestQuota(quota);
-        return r;
-    }
-
-    public HarvestReport newHarvestReport(HarvestReportFields fields, HarvestReport.State state, Harvest harvest) {
-
-        // Do queueing first because a HarvestReportStateHistory object is created later which references
-        // the report instance.
-        HarvestReport report = add(new HarvestReport());
-
-        harvest.setHarvestReport(report);
-        // we add here harvest to report, otherwise all tests should refresh their report entity from database
-        report.addHarvest(harvest);
-
-        if (harvest.getHarvestPermit() != null) {
-            report.setHarvestPermit(harvest.getHarvestPermit());
-        }
-
-        harvest.setHarvestReportFields(fields);
-
-        report.setState(state);
-        report.getStateHistory().add(new HarvestReportStateHistory(report, state));
-
-        report.setDescription(harvest.getDescription());
-        report.setAuthor(harvest.getAuthor());
-
-        return report;
     }
 
     public Observation newObservation() {
@@ -978,11 +957,12 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public Observation newObservation(Person observer, ObservationMetadata metadata) {
-        return newObservation(observer, metadata, o -> {});
+        return newObservation(observer, metadata, o -> {
+        });
     }
 
-    public Observation newObservation(Person observer, ObservationMetadata metadata, Integer amount) {
-        return newObservation(observer, metadata, o -> o.setAmount(amount));
+    public Observation newObservation(Person observer, ObservationMetadata metadata, boolean carnivoreAuthority) {
+        return newObservation(observer, metadata, o -> decorateObservation(o, metadata, carnivoreAuthority));
     }
 
     public Observation newObservation(Person observer, GroupHuntingDay huntingDay) {
@@ -1028,36 +1008,59 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(observation);
     }
 
-    private Observation newObservation(
-            Person observer, ObservationMetadata metadata, Consumer<Observation> decorator) {
-
+    private Observation newObservation(Person observer, ObservationMetadata metadata, Consumer<Observation> decorator) {
         Objects.requireNonNull(metadata);
 
         final Observation observation = newObservation(metadata.getSpecies(), observer);
         observation.setWithinMooseHunting(metadata.getWithinMooseHunting());
         observation.setObservationType(metadata.getObservationType());
+        observation.setAmount(metadata.isAmountRequired() ? 1 : null);
 
-        final Required amountReq = metadata.getAmount();
-        observation.setAmount(amountReq.nonNullValueRequired() ? 1 : null);
+        final ObservationContextSensitiveFields ctxFields = metadata.getContextSensitiveFields();
+
+        if (ctxFields.getMooselikeMaleAmount().isNonNullValueLegal()) {
+            observation.setMooselikeMaleAmount(nextPositiveIntAtMost(50));
+        }
+        if (ctxFields.getMooselikeFemaleAmount().isNonNullValueLegal()) {
+            observation.setMooselikeFemaleAmount(nextPositiveIntAtMost(50));
+        }
+        if (ctxFields.getMooselikeCalfAmount().isNonNullValueLegal()) {
+            observation.setMooselikeCalfAmount(nextPositiveIntAtMost(50));
+        }
+        if (ctxFields.getMooselikeFemale1CalfAmount().isNonNullValueLegal()) {
+            observation.setMooselikeFemale1CalfAmount(nextPositiveIntAtMost(50));
+        }
+        if (ctxFields.getMooselikeFemale2CalfsAmount().isNonNullValueLegal()) {
+            observation.setMooselikeFemale2CalfsAmount(nextPositiveIntAtMost(50));
+        }
+        if (ctxFields.getMooselikeFemale3CalfsAmount().isNonNullValueLegal()) {
+            observation.setMooselikeFemale3CalfsAmount(nextPositiveIntAtMost(50));
+        }
+        if (ctxFields.getMooselikeFemale4CalfsAmount().isNonNullValueLegal()) {
+            observation.setMooselikeFemale4CalfsAmount(nextPositiveIntAtMost(50));
+        }
+        if (ctxFields.getMooselikeUnknownSpecimenAmount().isNonNullValueLegal()) {
+            observation.setMooselikeUnknownSpecimenAmount(nextPositiveIntAtMost(50));
+        }
+
+        // TODO Currently setting non-null amount contradicts with metadata settings. This will be
+        // fixed soon in a subsequent changeset.
+        if (observation.hasMinimumSetOfNonnullAmountsCommonToAllMooselikeSpecies()) {
+            observation.setAmountToSumOfMooselikeAmounts();
+        }
 
         decorator.accept(observation);
-
-        if (observation.getAmount() != null) {
-            Preconditions.checkArgument(observation.getAmount() > 0, "amount must be positive");
-            Preconditions.checkArgument(amountReq.isAllowedField(), "amount field not allowed by metadata");
-        } else {
-            Preconditions.checkArgument(!amountReq.nonNullValueRequired(), "amount field is required by metadata");
-        }
 
         return observation;
     }
 
     public Observation newMobileObservation(Person observer, ObservationMetadata metadata) {
-        return newMobileObservation(observer, metadata, o -> {});
+        return newMobileObservation(observer, metadata, o -> {
+        });
     }
 
-    public Observation newMobileObservation(Person observer, ObservationMetadata metadata, Integer amount) {
-        return newMobileObservation(observer, metadata, o -> o.setAmount(amount));
+    public Observation newMobileObservation(Person observer, ObservationMetadata metadata, boolean carnivoreAuthority) {
+        return newMobileObservation(observer, metadata, o -> decorateObservation(o, metadata, carnivoreAuthority));
     }
 
     public Observation newMobileObservation(Person observer, ObservationMetadata metadata, LocalDate date) {
@@ -1066,9 +1069,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
         });
     }
 
-    public Observation newMobileObservation(
-            Person observer, ObservationMetadata metadata, GroupHuntingDay huntingDay) {
-
+    public Observation newMobileObservation(Person observer, ObservationMetadata metadata, GroupHuntingDay huntingDay) {
         return newMobileObservation(observer, metadata, huntingDay, null);
     }
 
@@ -1088,6 +1089,25 @@ public class EntitySupplier implements ValueGeneratorMixin {
             o.setMobileClientRefId((long) serial());
             o.getGeoLocation().setSource(GeoLocation.Source.GPS_DEVICE);
         }));
+    }
+
+    private void decorateObservation(
+            Observation observation, ObservationMetadata metadata, boolean carnivoreAuthority) {
+
+        final ObservationContextSensitiveFields ctxFields = metadata.getContextSensitiveFields();
+
+        if (ctxFields.getVerifiedByCarnivoreAuthority().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+            observation.setVerifiedByCarnivoreAuthority(someBoolean());
+        }
+        if (ctxFields.getObserverName().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+            observation.setObserverName("observerName-" + nextPositiveInt());
+        }
+        if (ctxFields.getObserverPhoneNumber().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+            observation.setObserverPhoneNumber(phoneNumber());
+        }
+        if (ctxFields.getOfficialAdditionalInfo().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+            observation.setOfficialAdditionalInfo("officialAdditionalInfo-" + nextPositiveInt());
+        }
     }
 
     public HuntingClubMemberInvitation newHuntingClubInvitation(HuntingClub club) {
@@ -1110,7 +1130,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public HuntingClub newHuntingClub(Riistanhoitoyhdistys rhy, String nameFi, String nameSv) {
-        return add(new HuntingClub(rhy, nameFi, nameSv));
+        return add(new HuntingClub(rhy, nameFi, nameSv, zeroPaddedNumber(7)));
     }
 
     public Occupation newHuntingClubMember(HuntingClub club, OccupationType type) {
@@ -1130,7 +1150,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public HuntingClubGroup newHuntingClubGroup(HuntingClub club, GameSpecies species) {
-        return newHuntingClubGroup(club, species, DateUtil.getFirstCalendarYearOfCurrentHuntingYear());
+        return newHuntingClubGroup(club, species, DateUtil.huntingYear());
     }
 
     public HuntingClubGroup newHuntingClubGroup(HuntingClub club, HarvestPermitSpeciesAmount speciesAmount) {
@@ -1213,7 +1233,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public HuntingClubArea newHuntingClubArea(HuntingClub club) {
-        return newHuntingClubArea(club, "Area", "AreaSV", DateUtil.getFirstCalendarYearOfCurrentHuntingYear());
+        return newHuntingClubArea(club, "Area", "AreaSV", DateUtil.huntingYear());
     }
 
     public HuntingClubArea newHuntingClubArea(HuntingClub club, GISZone zone) {
@@ -1280,6 +1300,10 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public GISHirvitalousalue newGISHirvitalousalue() {
+        return newGISHirvitalousalueContaining(new GeoLocation(0, 0));
+    }
+
+    public GISHirvitalousalue newGISHirvitalousalueContaining(final GeoLocation geoLocation) {
         final int serial = serial() % 1_000_000;
         final String formattedNumber = htaNumber();
 
@@ -1288,7 +1312,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
                         "fooFI" + serial,
                         "foo" + serial,
                         "fooSV" + serial,
-                        ValueGenerator.geometryContaining(new GeoLocation(0, 0)));
+                        ValueGenerator.geometryContaining(geoLocation));
         hta.setId(serial);
         return add(hta);
     }
@@ -1305,38 +1329,65 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(new Venue(address, name));
     }
 
-    public CalendarEvent newCalendarEvent(
-            Organisation organisation,
-            Venue venue,
-            CalendarEventType eventType,
-            Date date,
-            LocalTime beginTime,
-            String name,
-            String description) {
-
-        return add(new CalendarEvent(organisation, venue, eventType, date, beginTime, name, description));
+    public CalendarEvent newCalendarEvent(CalendarEventType eventType) {
+        return newCalendarEvent(newRiistanhoitoyhdistys(), eventType);
     }
 
-    public ObservationBaseFields newObservationBaseFields(GameSpecies species, int metadataVersion) {
-        return newObservationBaseFields(species, Required.VOLUNTARY, metadataVersion);
+    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys rhy) {
+        return newCalendarEvent(rhy, some(CalendarEventType.class));
     }
 
-    public ObservationBaseFields newObservationBaseFields(
-            GameSpecies species, Required withinMooseHunting, int metadataVersion) {
+    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys rhy, CalendarEventType eventType) {
+        return newCalendarEvent(rhy, eventType, today());
+    }
 
-        ObservationBaseFields baseFields = new ObservationBaseFields(species, metadataVersion);
+    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys rhy, CalendarEventType eventType, LocalDate date) {
+        return newCalendarEvent(rhy, eventType, date, newVenue());
+    }
+
+    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys rhy, boolean isShootingTestEvent, LocalDate date) {
+        CalendarEventType eventType = some(CalendarEventType.getTypes(isShootingTestEvent));
+        return newCalendarEvent(rhy, eventType, date, newVenue());
+    }
+
+    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys organisation,
+                                          CalendarEventType eventType,
+                                          LocalDate date,
+                                          Venue venue) {
+
+        LocalTime beginTime = new LocalTime(18, 0);
+        LocalTime endTime = beginTime.plusHours(3);
+
+        CalendarEvent event =
+                new CalendarEvent(organisation, venue, eventType, date.toDate(), beginTime, "name", "description");
+        event.setEndTime(endTime);
+
+        return add(event);
+    }
+
+    public ObservationBaseFields newObservationBaseFields(GameSpecies species, ObservationSpecVersion specVersion) {
+        return newObservationBaseFields(species, Required.VOLUNTARY, specVersion);
+    }
+
+    public ObservationBaseFields newObservationBaseFields(GameSpecies species,
+                                                          Required withinMooseHunting,
+                                                          ObservationSpecVersion specVersion) {
+
+        ObservationBaseFields baseFields = new ObservationBaseFields(species, specVersion.getMetadataVersion());
         baseFields.setWithinMooseHunting(withinMooseHunting);
         return add(baseFields);
     }
 
-    public ObservationContextSensitiveFields newObservationContextSensitiveFields(
-            GameSpecies species, boolean withinMooseHunting, ObservationType observationType, int metadataVersion) {
+    public ObservationContextSensitiveFields newObservationContextSensitiveFields(GameSpecies species,
+                                                                                  boolean withinMooseHunting,
+                                                                                  ObservationType observationType,
+                                                                                  ObservationSpecVersion specVersion) {
 
-        final ObservationContextSensitiveFields fields =
-                new ObservationContextSensitiveFields(species, withinMooseHunting, observationType, metadataVersion);
+        final ObservationContextSensitiveFields fields = new ObservationContextSensitiveFields(
+                species, withinMooseHunting, observationType, specVersion.getMetadataVersion());
 
         fields.setExtendedAgeRange(true);
-        fields.setAmount(Required.YES);
+        fields.setAmount(DynamicObservationFieldPresence.YES);
         fields.setGender(Required.VOLUNTARY);
         fields.setAge(Required.VOLUNTARY);
         fields.setWounded(Required.VOLUNTARY);
@@ -1345,6 +1396,14 @@ public class EntitySupplier implements ValueGeneratorMixin {
         fields.setCollarOrRadioTransmitter(Required.VOLUNTARY);
         fields.setLegRingOrWingMark(Required.VOLUNTARY);
         fields.setEarMark(Required.VOLUNTARY);
+
+        if (specVersion.supportsLargeCarnivoreFields()) {
+            fields.setWidthOfPaw(DynamicObservationFieldPresence.VOLUNTARY);
+
+            if (species.isLargeCarnivore()) {
+                fields.setLengthOfPaw(DynamicObservationFieldPresence.VOLUNTARY_CARNIVORE_AUTHORITY);
+            }
+        }
 
         return add(fields);
     }
@@ -1372,9 +1431,9 @@ public class EntitySupplier implements ValueGeneratorMixin {
     public SrvaEvent newSrvaEvent(Person author, GameSpecies species, Riistanhoitoyhdistys rhy) {
         final SrvaEvent srvaEventEntity = new SrvaEvent();
         srvaEventEntity.setEventName(some(SrvaEventNameEnum.class));
-        srvaEventEntity.setEventType(some(SrvaEventTypeEnum.class));
+        srvaEventEntity.setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(srvaEventEntity.getEventName())));
         srvaEventEntity.setGeoLocation(geoLocation());
-        srvaEventEntity.setPointOfTime(new Date());
+        srvaEventEntity.setPointOfTime(DateUtil.now().toDate());
         srvaEventEntity.setSpecies(species);
         srvaEventEntity.setTotalSpecimenAmount(1);
         srvaEventEntity.setAuthor(author);
@@ -1424,8 +1483,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
         MooselikePrice p = new MooselikePrice();
         p.setHuntingYear(year);
         p.setGameSpecies(species);
-        p.setIban(new IbanEntity(Iban.random(CountryCode.FI).toFormattedString()));
-        p.setBic(new BicEntity("OKOYFIHH"));
+        p.setIban(Iban.random(CountryCode.FI));
+        p.setBic(Bic.valueOf("OKOYFIHH"));
         p.setRecipientName("money or nothing");
         p.setAdultPrice(adultPrice);
         p.setYoungPrice(youngPrice);
@@ -1481,18 +1540,77 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(i);
     }
 
-    // Result objects is not a JPA entity but a wrapper class holding two objects actually
-    // constituting complete metadata for an observation instance.
-    public ObservationMetadata newObservationMetadata(GameSpecies species,
-                                                      final int metadataVersion,
-                                                      Boolean withinMooseHunting,
-                                                      ObservationType observationType) {
+    public ShootingTestEvent newShootingTestEvent() {
+        return newShootingTestEvent(newCalendarEvent(some(CalendarEventType.shootingTestTypes())));
+    }
 
-        return new ObservationMetadata(
-                newObservationBaseFields(
-                        species, withinMooseHunting != null ? Required.YES : Required.NO, metadataVersion),
-                newObservationContextSensitiveFields(
-                        species, ofNullable(withinMooseHunting).orElse(false), observationType, metadataVersion));
+    public ShootingTestEvent newShootingTestEvent(Riistanhoitoyhdistys rhy) {
+        return newShootingTestEvent(rhy, some(CalendarEventType.shootingTestTypes()));
+    }
+
+    public ShootingTestEvent newShootingTestEvent(Riistanhoitoyhdistys rhy, CalendarEventType calendarEventType) {
+        Preconditions.checkArgument(calendarEventType.isShootingTest(), "event type not related to shooting tests");
+        return newShootingTestEvent(newCalendarEvent(rhy, calendarEventType));
+    }
+
+    public ShootingTestEvent newShootingTestEvent(Riistanhoitoyhdistys rhy, LocalDate date) {
+        return newShootingTestEvent(newCalendarEvent(rhy, CalendarEventType.AMPUMAKOE, date));
+    }
+
+    public ShootingTestEvent newShootingTestEvent(CalendarEvent calendarEvent) {
+        return add(new ShootingTestEvent(calendarEvent));
+    }
+
+    public ShootingTestOfficial newShootingTestOfficial(ShootingTestEvent event, Person person) {
+        Organisation rhy = event.getCalendarEvent().getOrganisation();
+        return add(new ShootingTestOfficial(event, newOccupation(rhy, person, OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA)));
+    }
+
+    public ShootingTestParticipant newShootingTestParticipant() {
+        return newShootingTestParticipant(newShootingTestEvent());
+    }
+
+    public ShootingTestParticipant newShootingTestParticipant(ShootingTestEvent event) {
+        return newShootingTestParticipant(event, newPerson());
+    }
+
+    public ShootingTestParticipant newShootingTestParticipant(ShootingTestEvent event, Person person) {
+        return add(new ShootingTestParticipant(event, person));
+    }
+
+    public ShootingTestAttempt newShootingTestAttempt() {
+        return newShootingTestAttempt(newShootingTestParticipant(), ShootingTestAttemptResult.QUALIFIED);
+    }
+
+    public ShootingTestAttempt newShootingTestAttempt(ShootingTestParticipant participant) {
+        return newShootingTestAttempt(participant, some(ShootingTestAttemptResult.class));
+    }
+
+    public ShootingTestAttempt newShootingTestAttempt(ShootingTestParticipant participant, ShootingTestType type) {
+        return newShootingTestAttempt(participant, type, ShootingTestAttemptResult.QUALIFIED);
+    }
+
+    public ShootingTestAttempt newShootingTestAttempt(ShootingTestParticipant participant,
+                                                      ShootingTestAttemptResult result) {
+
+        return newShootingTestAttempt(participant, ShootingTestType.MOOSE, result);
+    }
+
+    public ShootingTestAttempt newShootingTestAttempt(final ShootingTestParticipant participant,
+                                                      final ShootingTestType type,
+                                                      final ShootingTestAttemptResult result) {
+
+        final int hits = result == ShootingTestAttemptResult.QUALIFIED ? type.getNumberOfHitsToQualify() : 0;
+        return add(new ShootingTestAttempt(participant, type, result, hits, null));
+    }
+
+    public RhyAnnualStatistics newRhyAnnualStatistics(Riistanhoitoyhdistys rhy) {
+        return newRhyAnnualStatistics(rhy, currentYear());
+    }
+
+    public RhyAnnualStatistics newRhyAnnualStatistics(Riistanhoitoyhdistys rhy, int year) {
+        final RhyAnnualStatistics entity = new RhyAnnualStatistics(rhy, year);
+        return add(entity);
     }
 
     protected <T extends Persistable<?>> T add(@Nonnull final T object) {
@@ -1530,5 +1648,4 @@ public class EntitySupplier implements ValueGeneratorMixin {
 
         return basename + "-" + serial();
     }
-
 }

@@ -3,6 +3,8 @@ package fi.riista.api.external;
 import fi.riista.feature.huntingclub.area.transfer.HuntingClubAreaExportFeature;
 import fi.riista.integration.gis.ExternalHuntingClubAreaExportRequest;
 import fi.riista.util.MediaTypeExtras;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +17,10 @@ import org.springframework.web.context.request.WebRequest;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
-import static org.hibernate.jpa.internal.QueryImpl.LOG;
-
 @RestController
 public class ExternalHuntingClubAreaExportController {
+    private static final Logger LOG = LoggerFactory.getLogger(ExternalHuntingClubAreaExportController.class);
+
     @Resource
     private HuntingClubAreaExportFeature huntingClubAreaExportFeature;
 

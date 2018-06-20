@@ -2,26 +2,23 @@ package fi.riista.feature.gamediary.observation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import fi.riista.feature.common.dto.CodesetEntryDTO;
-import fi.riista.feature.common.dto.DoNotValidate;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.HasAuthorAndActor;
 import fi.riista.feature.gamediary.HasHuntingDayId;
-import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.Person;
-
+import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import fi.riista.validation.DoNotValidate;
 import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
-
 import java.util.Objects;
 
 public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndActor, HasHuntingDayId {
@@ -49,6 +46,9 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
     private PersonWithHunterNumberDTO approverToHuntingDay;
 
     private LocalDateTime pointOfTimeApprovedToHuntingDay;
+
+    @JsonIgnore
+    private boolean updateableOnlyByCarnivoreAuthority;
 
     @AssertTrue
     public boolean isHuntingDayIdConsistentWithWithinMooseHunting() {
@@ -119,7 +119,7 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
         return groupOfHuntingDay;
     }
 
-    public void setGroupOfHuntingDay(OrganisationNameDTO groupOfHuntingDay) {
+    public void setGroupOfHuntingDay(final OrganisationNameDTO groupOfHuntingDay) {
         this.groupOfHuntingDay = groupOfHuntingDay;
     }
 
@@ -127,7 +127,7 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
         return approverToHuntingDay;
     }
 
-    public void setApproverToHuntingDay(PersonWithHunterNumberDTO approverToHuntingDay) {
+    public void setApproverToHuntingDay(final PersonWithHunterNumberDTO approverToHuntingDay) {
         this.approverToHuntingDay = approverToHuntingDay;
     }
 
@@ -135,8 +135,18 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
         return pointOfTimeApprovedToHuntingDay;
     }
 
-    public void setPointOfTimeApprovedToHuntingDay(LocalDateTime pointOfTimeApprovedToHuntingDay) {
+    public void setPointOfTimeApprovedToHuntingDay(final LocalDateTime pointOfTimeApprovedToHuntingDay) {
         this.pointOfTimeApprovedToHuntingDay = pointOfTimeApprovedToHuntingDay;
+    }
+
+    @JsonProperty
+    public boolean isUpdateableOnlyByCarnivoreAuthority() {
+        return updateableOnlyByCarnivoreAuthority;
+    }
+
+    @JsonIgnore
+    public void setUpdateableOnlyByCarnivoreAuthority(final boolean updateableOnlyByCarnivoreAuthority) {
+        this.updateableOnlyByCarnivoreAuthority = updateableOnlyByCarnivoreAuthority;
     }
 
     // Builder -->
@@ -185,14 +195,15 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
         // ASSOCIATIONS MUST NOT BE TRAVERSED IN THIS METHOD (except for identifiers that are
         // part of Observation itself).
         @Override
-        public SELF populateWith(@Nonnull final Observation observation) {
-            return super.populateWith(observation)
+        public SELF populateWith(@Nonnull final Observation observation, final boolean populateLargeCarnivoreFields) {
+            return super.populateWith(observation, populateLargeCarnivoreFields)
                     .chain(self -> {
                         dto.setRhyId(F.getId(observation.getRhy()));
                         dto.setModeratorOverride(observation.isModeratorOverride());
                         dto.setHuntingDayId(F.getId(observation.getHuntingDayOfGroup()));
                         dto.setPointOfTimeApprovedToHuntingDay(
                                 DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTimeApprovedToHuntingDay()));
+                        dto.setUpdateableOnlyByCarnivoreAuthority(observation.isAnyLargeCarnivoreFieldPresent());
                     });
         }
 
@@ -208,5 +219,4 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
             return this;
         }
     }
-
 }

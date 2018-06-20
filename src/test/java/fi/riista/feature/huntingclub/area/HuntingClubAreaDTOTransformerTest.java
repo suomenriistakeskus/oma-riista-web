@@ -1,14 +1,14 @@
 package fi.riista.feature.huntingclub.area;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZone.SourceType;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import javaslang.Tuple;
-import javaslang.Tuple4;
+import fi.riista.test.EmbeddedDatabaseTest;
+import io.vavr.Tuple;
+import io.vavr.Tuple4;
 import org.junit.Test;
 
 import javax.annotation.Resource;
@@ -112,5 +112,4 @@ public class HuntingClubAreaDTOTransformerTest extends EmbeddedDatabaseTest {
             }));
         });
     }
-
 }

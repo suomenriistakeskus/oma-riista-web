@@ -1,0 +1,32 @@
+<uib-tabset type="pills" class="shooting-test-tabset" active="$ctrl.activeTabIndex">
+    <uib-tab classes="shooting-test-tab" index="0" select="$ctrl.selectTab(0)">
+        <uib-tab-heading>
+            <span translate="shootingTest.tabs.overview"></span>
+        </uib-tab-heading>
+    </uib-tab>
+
+    <uib-tab classes="shooting-test-tab" index="1" select="$ctrl.selectTab(1)" disable="!$ctrl.event.isOpen()">
+        <uib-tab-heading>
+            <span translate="shootingTest.tabs.registration"></span>
+        </uib-tab-heading>
+    </uib-tab>
+
+    <uib-tab classes="shooting-test-tab" index="2" select="$ctrl.selectTab(2)" disable="!$ctrl.event.isOpen()">
+        <uib-tab-heading>
+            <span translate="shootingTest.tabs.participants"></span>
+            <span class="shooting-test-tab-count-badge"
+                  ng-if="$ctrl.event.numberOfParticipantsWithNoAttempts > 0"
+                  ng-bind="$ctrl.event.numberOfParticipantsWithNoAttempts"></span>
+        </uib-tab-heading>
+    </uib-tab>
+
+    <uib-tab classes="shooting-test-tab" index="3" select="$ctrl.selectTab(3)" disable="!$ctrl.event.isOpened()">
+        <uib-tab-heading>
+            <span translate="shootingTest.tabs.payments"></span>
+            <span class="shooting-test-tab-count-badge"
+                  ng-if="$ctrl.event.numberOfCompletedParticipants < $ctrl.event.numberOfAllParticipants">
+                {{$ctrl.event.numberOfAllParticipants - $ctrl.event.numberOfCompletedParticipants}}
+            </span>
+        </uib-tab-heading>
+    </uib-tab>
+</uib-tabset>

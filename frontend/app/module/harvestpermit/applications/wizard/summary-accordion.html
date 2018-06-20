@@ -1,0 +1,265 @@
+<uib-accordion close-others="true">
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.a"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.a"></span>
+                        <span translate="harvestpermit.wizard.summary.summaryTitle"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-6 text-right">
+                    <div class="panel-title" translate="harvestpermit.wizard.summary.permitType.{{$ctrl.application.permitTypeCode}}"></div>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <table class="table">
+            <tbody>
+            <tr>
+                <th class="col-xs-3" translate="harvestpermit.wizard.summary.permitTypeTitle"></th>
+                <td translate="harvestpermit.wizard.summary.permitType.{{$ctrl.application.permitTypeCode}}"></td>
+            </tr>
+            <tr>
+                <th translate="harvestpermit.wizard.applicant.contactPerson"></th>
+                <td>
+                    <permit-application-wizard-contact-person
+                            person="$ctrl.application.contactPerson"></permit-application-wizard-contact-person>
+                </td>
+            </tr>
+            <tr>
+                <th translate="harvestpermit.wizard.applicant.permitHolder"></th>
+                <td>
+                    <permit-application-wizard-applicant-type
+                            subtype="$ctrl.application.permitHolder.subtype"></permit-application-wizard-applicant-type>
+                </td>
+            </tr>
+            <tr>
+                <th></th>
+                <td>
+                    <div ng-if="$ctrl.application.permitHolder">
+                        <span ng-bind="$ctrl.application.permitHolder.officialCode"></span>
+                        -
+                        <span ng-bind="$ctrl.application.permitHolder|rI18nNameFilter"></span>
+                    </div>
+
+                    <div ng-if="!$ctrl.application.permitHolder">
+                        <permit-application-wizard-contact-person
+                                person="$ctrl.application.contactPerson"></permit-application-wizard-contact-person>
+                    </div>
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.b"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.b"></span>
+                        <span translate="harvestpermit.wizard.navigation.species"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-6 text-right">
+                    <div class="panel-title">
+                        <div ng-repeat="spa in ::$ctrl.application.speciesAmounts track by spa.gameSpeciesCode">
+                            <span ng-bind="::$ctrl.getSpeciesName(spa.gameSpeciesCode)"></span>
+                            <span ng-bind="::spa.amount"></span>
+                            <span translate="global.pcs"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th class="col-xs-2"></th>
+                    <th class="col-xs-2" translate="harvestpermit.wizard.species.table.headerSpecies"></th>
+                    <th class="col-xs-1" translate="harvestpermit.wizard.species.table.headerAmount"></th>
+                    <th translate="harvestpermit.wizard.species.description"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="spa in ::$ctrl.application.speciesAmounts track by spa.gameSpeciesCode">
+                    <td>
+                        <img ng-src="/static/elainlajikuvat/96x96/{{::spa.gameSpeciesCode}}.jpg"
+                             width="48" height="48"/>
+                    </td>
+                    <td>
+                        <strong ng-bind="::$ctrl.getSpeciesName(spa.gameSpeciesCode)"></strong>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control no-spinner"
+                               readonly
+                               ng-value="spa.amount" step="0.5">
+                    </td>
+                    <td>
+                        <span ng-bind="::spa.description"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.c"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.c"></span>
+                        <span translate="harvestpermit.wizard.navigation.partners"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-3 text-right">
+                    <span class="panel-title">
+                        <span ng-bind="::$ctrl.application.permitPartners.length"></span>
+                        <span translate="global.pcs"></span>
+                    </span>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th class="col-md-2" translate="harvestpermit.application.partnerList.customerId"></th>
+                    <th class="col-md-4" translate="harvestpermit.application.partnerList.partnerName"></th>
+                    <th class="col-md-6" translate="harvestpermit.application.partnerList.contactPerson"></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr ng-repeat="p in $ctrl.application.permitPartners track by p.id">
+                    <td ng-bind="::p.officialCode"></td>
+                    <td>
+                        <span name-translated="::p"></span>
+                    </td>
+                    <td>
+                        <span ng-bind="::$ctrl.contactPersonsStr(p.contactPersons)"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.d"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.d"></span>
+                        <span translate="harvestpermit.wizard.navigation.map"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-3 text-right">
+                    <span class="panel-title">
+                        <span ng-bind="::$ctrl.permitArea.size.all.land | prettyAreaSize:0"></span>
+                    </span>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <permit-application-area-details permit-area="$ctrl.permitArea"></permit-application-area-details>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.e"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.e"></span>
+                        <span translate="harvestpermit.wizard.navigation.attachments"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-3 text-right">
+                    <span class="panel-title">
+                        <span ng-bind="::$ctrl.getAttachmentCount()"></span>
+                        <span translate="global.pcs"></span>
+                    </span>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <h5 translate="harvestpermit.wizard.attachments.areaPermit"></h5>
+
+        <permit-application-attachment-list attachment-type="'MH_AREA_PERMIT'"
+                                            attachments="$ctrl.application.attachments"
+                                            attachment-config="$ctrl.attachmentConfig">
+        </permit-application-attachment-list>
+
+        <h5 translate="harvestpermit.wizard.attachments.shooterList"></h5>
+
+        <permit-application-attachment-list attachment-type="'SHOOTER_LIST'"
+                                            attachments="$ctrl.application.attachments"
+                                            attachment-config="$ctrl.attachmentConfig">
+        </permit-application-attachment-list>
+
+        <div ng-if="$ctrl.application.shooterOnlyClub">
+            <h5 translate="harvestpermit.wizard.attachments.shooterCount"></h5>
+
+            <div class="row">
+                <div class="col-xs-8">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td translate="harvestpermit.wizard.shooterCount.onlyClub"></td>
+                            <td class="text-right">
+                                <span ng-bind="$ctrl.application.shooterOnlyClub"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td translate="harvestpermit.wizard.shooterCount.otherClubPassive"></td>
+                            <td class="text-right">
+                                <span ng-bind="$ctrl.application.shooterOtherClubPassive"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td translate="harvestpermit.wizard.shooterCount.otherClubActive"></td>
+                            <td class="text-right">
+                                <span ng-bind="$ctrl.application.shooterOtherClubActive"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td translate="harvestpermit.wizard.shooterCount.total"></td>
+                            <td class="text-right">
+                                <span ng-bind="$ctrl.application.shooterOnlyClub + $ctrl.application.shooterOtherClubPassive"></span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <h5 translate="harvestpermit.wizard.attachments.otherList"></h5>
+
+        <permit-application-attachment-list attachment-type="'OTHER'"
+                                            attachments="$ctrl.application.attachments"
+                                            attachment-config="$ctrl.attachmentConfig">
+        </permit-application-attachment-list>
+    </div>
+</uib-accordion>

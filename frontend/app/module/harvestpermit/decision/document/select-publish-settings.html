@@ -1,0 +1,94 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title">Julkaisuasetukset</h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group">
+            <label class="col-xs-4 control-label">
+                <span>Kieli</span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-8">
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default form-control-static"
+                           ng-repeat="a in $ctrl.localeOptions"
+                           ng-model="$ctrl.locale"
+                           uib-btn-radio="a.code">
+
+                        <span class="text-primary fa fa-check" ng-show="$ctrl.locale === a.code"></span>
+                        &nbsp;
+                        <span ng-bind="a.name"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" show-errors>
+            <label for="publishDate" class="col-xs-4 control-label">
+                <span>Julkaisu päivämäärä</span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-4">
+                <div class="input-group"
+                     ng-controller="DatePickerController">
+
+                    <input type="text" name="publishDate" id="publishDate"
+                           class="form-control"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           ng-model="$ctrl.publishDate"
+                           date-between-min-max
+                           min-date="today()"
+                           required>
+                    <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+                </div>
+
+                <p class="help-block has-error"
+                   ng-show="form.publishDate.$invalid"
+                   ng-messages="form.publishDate.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="publishTime" class="col-xs-4 control-label">
+                <span>Kellonaika</span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-4">
+                <input type="text" name="publishTime" id="publishTime"
+                       class="form-control"
+                       finnish-time
+                       ng-model="$ctrl.publishTime"
+                       required>
+
+                <p class="help-block has-error"
+                   ng-show="form.publishTime.$invalid"
+                   ng-messages="form.publishTime.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

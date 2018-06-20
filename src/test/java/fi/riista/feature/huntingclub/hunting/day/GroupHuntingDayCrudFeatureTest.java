@@ -1,13 +1,14 @@
 package fi.riista.feature.huntingclub.hunting.day;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
-import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
+import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
+import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.joda.time.LocalTime;
 import org.junit.Test;
-
 import org.springframework.security.access.AccessDeniedException;
+
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-public class GroupHuntingDayCrudFeatureTest extends EmbeddedDatabaseTest {
+public class GroupHuntingDayCrudFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     private enum PermissionTestScheme {
 

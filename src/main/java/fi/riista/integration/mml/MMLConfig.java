@@ -25,13 +25,16 @@ public class MMLConfig {
     @Value("${wfs.mml.password}")
     private String password;
 
-    @Bean
-    public MMLWebFeatureServiceRequestTemplate requestTemplate(MMLProperties mmlProperties) {
-        return new MMLWebFeatureServiceRequestTemplate(mmlProperties, requestFactory);
+    @Value("${wfs.building.uri}")
+    private String buildingUri;
+
+    @Bean("propertyWFS")
+    public MMLWebFeatureServiceRequestTemplate requestTemplateForProperties() {
+        return MMLWebFeatureServiceRequestTemplate.createWithAuthentication(uri, username, password, requestFactory);
     }
 
-    @Bean
-    public MMLProperties mmlProperties() {
-        return new MMLProperties(uri, username, password);
+    @Bean("buildingWFS")
+    public MMLWebFeatureServiceRequestTemplate requestTemplateForBuildings() {
+        return MMLWebFeatureServiceRequestTemplate.create(buildingUri, requestFactory);
     }
 }

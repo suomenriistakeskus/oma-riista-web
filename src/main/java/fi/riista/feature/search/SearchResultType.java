@@ -4,5 +4,6 @@ public enum SearchResultType {
     ORG,
     RHY,
     CLUB,
-    PERSON
+    PERSON,
+    PERMIT
 }

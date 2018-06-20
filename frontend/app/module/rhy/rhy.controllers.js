@@ -10,13 +10,35 @@ angular.module('app.rhy.controllers', [])
                 resolve: {
                     orgId: function ($stateParams) {
                         return _.parseInt($stateParams.id);
+                    },
+                    rhyId: function (orgId) {
+                        return orgId;
+                    },
+                    // FIXME when shooting test pilot is over, this can be removed
+                    showPilotShootingTestMenu: function (Rhys, orgId) {
+                        return Rhys.getPublicInfo({id: orgId}).$promise.then(function (rhy) {
+                            return ['602', '459', '666', '161', '163', '106', '108', '110', '112', '114', '472', '101', '105', '113', '211', '121'].indexOf(rhy.officialCode) !== -1;
+                        });
                     }
+                },
+                controllerAs: '$ctrl',
+                controller: function (ActiveRoleService, showPilotShootingTestMenu) {
+                    this.coordinatorView = ActiveRoleService.isCoordinator() || ActiveRoleService.isModerator();
+                    this.shootingTestOfficialView = ActiveRoleService.isShootingTestOfficial();
+
+                    this.showPilotShootingTestMenu = showPilotShootingTestMenu;
                 }
             })
             .state('rhy.show', {
                 url: '/show',
                 templateUrl: 'rhy/show.html',
                 controller: 'RhyShowController',
+                onEnter: function (SrvaEventMapSearchParametersService,
+                                   SrvaEventListSearchParametersService) {
+                    // Make sure search parameters are not persisted when moderator changes RHY
+                    SrvaEventMapSearchParametersService.pop();
+                    SrvaEventListSearchParametersService.pop();
+                },
                 resolve: {
                     rhy: function (Rhys, orgId) {
                         return Rhys.get({id: orgId}).$promise;
@@ -80,58 +102,22 @@ angular.module('app.rhy.controllers', [])
                 templateUrl: 'event/venue_list.html',
                 controller: 'VenueListController'
             })
-            .state('rhy.harvestreports', {
-                url: '/harvestreports',
-                templateUrl: 'rhy/harvestreports.html',
-                controller: 'RhyHarvestReportListController',
-                resolve: {
-                    fieldsAndSeasons: function (HarvestReportFieldsAndSeasons) {
-                        return HarvestReportFieldsAndSeasons.validsForAllSeasonsAndPermits();
-                    },
-                    rhy: function (Rhys, orgId) {
-                        return Rhys.get({id: orgId}).$promise;
-                    },
-                    rhyBounds: function (rhy, GIS) {
-                        return GIS.getRhyBounds(rhy.officialCode);
-                    },
-                    rhyGeometry: function (rhy, GIS) {
-                        return GIS.getRhyGeom(rhy.officialCode).then(function (response) {
-                            var rhyExteriorGeometry = {
-                                type: "FeatureCollection",
-                                features: [
-                                    {
-                                        type: "Feature",
-                                        id: rhy.id,
-                                        properties: {name: rhy.nameFI},
-                                        geometry: {
-                                            type: "MultiPolygon",
-                                            coordinates: [[[[-180, -180], [180, 0], [180, 180], [0, 180], [-180, -180]], response.data.coordinates[0][0]]]
-                                        }
-                                    }
-                                ]
-                            };
-
-                            return {
-                                data: rhyExteriorGeometry,
-                                style: {fillColor: "#A080B0", weight: 2, opacity: 0, color: 'none', fillOpacity: 0.45}
-                            };
-                        });
-                    },
-                    gameDiaryParameters: function (GameDiaryParameters) {
-                        return GameDiaryParameters.query().$promise;
-                    },
-                    harvestReportLocalityResolver: function (HarvestReportLocalityResolver) {
-                        return HarvestReportLocalityResolver.get();
-                    }
-                }
-            })
             .state('rhy.permits', {
                 url: '/permits',
-                templateUrl: 'rhy/permits.html',
-                controller: 'RhyPermitListController',
+                templateUrl: 'harvestpermit/search/search-permits.html',
+                controller: 'PermitSearchController',
+                controllerAs: '$ctrl',
                 resolve: {
-                    species: function (HarvestPermits) {
-                        return HarvestPermits.species().$promise;
+                    species: function (GameDiaryParameters) {
+                        return GameDiaryParameters.query().$promise.then(function (params) {
+                            return params.species;
+                        });
+                    },
+                    permitTypes: function (HarvestPermits) {
+                        return HarvestPermits.permitTypes().$promise;
+                    },
+                    areas: function (Areas) {
+                        return Areas.query().$promise;
                     }
                 }
             })
@@ -149,7 +135,12 @@ angular.module('app.rhy.controllers', [])
                 url: '/list',
                 templateUrl: 'srva/srva-events.html',
                 controller: 'SrvaEventListController',
-                controllerAs: '$ctrl'
+                controllerAs: '$ctrl',
+                resolve: {
+                    initialRhy: function (Rhys, orgId) {
+                        return Rhys.getPublicInfo({id: orgId}).$promise;
+                    }
+                }
             })
             .state('rhy.srva.map', {
                 url: '/map',
@@ -158,8 +149,12 @@ angular.module('app.rhy.controllers', [])
                 controller: 'SrvaEventMapController',
                 controllerAs: '$ctrl',
                 resolve: {
-                    areas: function (Areas) {
-                        return Areas.query().$promise;
+                    moderatorView: _.constant(false),
+                    initialRhy: function (Rhys, orgId) {
+                        return Rhys.getPublicInfo({id: orgId}).$promise;
+                    },
+                    tabs: function (Rhys, orgId) {
+                        return Rhys.searchParamOrganisations({id: orgId}).$promise;
                     }
                 }
             })
@@ -205,49 +200,37 @@ angular.module('app.rhy.controllers', [])
                 wideLayout: true,
                 templateUrl: 'harvestpermit/moosepermit/show.html',
                 controller: 'MoosePermitShowController',
+                controllerAs: '$ctrl',
                 resolve: {
                     permitId: function ($stateParams, MoosePermitSelection) {
                         return MoosePermitSelection.updateSelectedPermitId($stateParams);
                     },
-                    permit: function (HarvestPermits, permitId, selectedYearAndSpecies) {
-                        return HarvestPermits.moosePermit({permitId: permitId, species: selectedYearAndSpecies.species}).$promise;
+                    permit: function (MoosePermits, permitId, selectedYearAndSpecies) {
+                        return MoosePermits.get({
+                            permitId: permitId,
+                            species: selectedYearAndSpecies.species
+                        }).$promise;
                     },
-                    todos: function (HarvestPermits, permitId, selectedYearAndSpecies) {
-                        return HarvestPermits.listTodos({permitId: permitId, speciesCode: selectedYearAndSpecies.species}).$promise;
-                    },
-                    edit: _.constant(false)
-                }
-            })
-            .state('rhy.moosepermit.edit', {
-                url: '/{permitId:[0-9]{1,8}}/edit',
-                wideLayout: true,
-                templateUrl: 'harvestpermit/moosepermit/show.html',
-                controller: 'MoosePermitShowController',
-                resolve: {
-                    permitId: function ($stateParams, MoosePermitSelection) {
-                        return MoosePermitSelection.updateSelectedPermitId($stateParams);
-                    },
-                    permit: function (HarvestPermits, permitId, selectedYearAndSpecies) {
-                        return HarvestPermits.moosePermit({permitId: permitId, species: selectedYearAndSpecies.species}).$promise;
-                    },
-                    todos: function (HarvestPermits, permitId, selectedYearAndSpecies) {
-                        return HarvestPermits.listTodos({permitId: permitId, speciesCode: selectedYearAndSpecies.species}).$promise;
-                    },
-                    edit: _.constant(true)
+                    todos: function (MoosePermits, permitId, selectedYearAndSpecies) {
+                        return MoosePermits.listTodos({
+                            permitId: permitId,
+                            speciesCode: selectedYearAndSpecies.species
+                        }).$promise;
+                    }
                 }
             })
             .state('rhy.moosepermit.lukereports', {
                 url: '/{permitId:[0-9]{1,8}}/luke-reports',
                 wideLayout: true,
-                templateUrl: 'harvestpermit/moosepermit/luke-reports.html',
+                templateUrl: 'harvestpermit/moosepermit/luke/luke-reports.html',
                 controller: 'MoosePermitLukeReportsController',
                 resolve: {
                     permitId: function ($stateParams, MoosePermitSelection) {
                         return MoosePermitSelection.updateSelectedPermitId($stateParams);
                     },
                     clubId: _.constant(null),
-                    lukeReportParams: function (HarvestPermits, permitId) {
-                        return HarvestPermits.lukeReportParams({permitId: permitId}).$promise;
+                    lukeReportParams: function (MoosePermits, permitId) {
+                        return MoosePermits.lukeReportParams({permitId: permitId}).$promise;
                     }
                 }
             })
@@ -271,16 +254,16 @@ angular.module('app.rhy.controllers', [])
                             gameSpeciesCode: selectedYearAndSpecies.species
                         }).$promise;
                     },
-                    featureCollection: function (HarvestPermits, permitId, selectedYearAndSpecies) {
-                        return HarvestPermits.permitMapFeatures({
+                    featureCollection: function (MoosePermits, permitId, selectedYearAndSpecies) {
+                        return MoosePermits.partnerAreaFeatures({
                             permitId: permitId,
                             huntingYear: selectedYearAndSpecies.huntingYear,
                             gameSpeciesCode: selectedYearAndSpecies.species
                         }).$promise;
                     },
-                    mapBounds: function (GIS, featureCollection, rhy) {
-                        var bounds = GIS.getBoundsFromGeoJsonFeatureCollection(featureCollection);
-                        return bounds || GIS.getRhyBounds(rhy.officialCode);
+                    mapBounds: function (MapBounds, featureCollection, rhy) {
+                        var bounds = MapBounds.getBoundsFromGeoJsonFeatureCollection(featureCollection);
+                        return bounds || MapBounds.getRhyBounds(rhy.officialCode);
                     }
                 }
             })
@@ -297,21 +280,49 @@ angular.module('app.rhy.controllers', [])
                     permitId: function ($stateParams, MoosePermitSelection) {
                         return MoosePermitSelection.updateSelectedPermitId($stateParams);
                     },
-                    statistics: function (HarvestPermits, permitId, selectedYearAndSpecies) {
+                    statistics: function (MoosePermits, permitId, selectedYearAndSpecies) {
                         var params = {permitId: permitId, speciesCode: selectedYearAndSpecies.species};
-                        return HarvestPermits.moosePermitRhyStats(params).$promise;
+                        return MoosePermits.rhyStatistics(params).$promise;
+                    }
+                }
+            })
+            .state('rhy.moosepermitapplications', {
+                url: '/moosepermitapplications?applicationId&tab&year&species',
+                templateUrl: 'rhy/applications/rhy-application-layout.html',
+                controllerAs: '$ctrl',
+                controller: 'RhyApplicationsController',
+                wideLayout: true,
+                reloadOnSearch: false,
+                params: {
+                    tab: null,
+                    species: null,
+                    year: null,
+                    applicationId: null
+                },
+                resolve: {
+                    diaryParameters: function (GameDiaryParameters) {
+                        return GameDiaryParameters.query().$promise;
+                    },
+                    availableSpecies: function (MooselikeSpecies) {
+                        return MooselikeSpecies.getPermitBased();
+                    },
+                    rhy: function (Rhys, orgId) {
+                        return Rhys.get({id: orgId}).$promise;
+                    },
+                    selectedRhyOfficialCode: function (rhy) {
+                        return rhy.officialCode;
                     }
                 }
             });
     })
 
     .controller('RhyShowController',
-        function ($scope, $state, $uibModal, rhy, NotificationService, MapDefaults, GIS) {
+        function ($scope, $state, $uibModal, rhy, NotificationService, MapDefaults, MapBounds, MapState, GIS) {
             $scope.data = rhy;
             $scope.mapDefaults = MapDefaults.create();
             $scope.center = {};
 
-            GIS.getRhyBounds(rhy.officialCode).then(function (bounds) {
+            MapBounds.getRhyBounds(rhy.officialCode).then(function (bounds) {
                 $scope.bounds = bounds;
             });
 
@@ -416,237 +427,32 @@ angular.module('app.rhy.controllers', [])
             return [email + validDomain];
         };
     })
-    .controller('RhyHarvestReportListController',
-        function ($scope, $translate,
-                  HarvestReports, HarvestReportService, HarvestReportSearch,
-                  GIS, MapDefaults, Helpers, HuntingYearService, Markers,
-                  rhyBounds, rhyGeometry,
-                  fieldsAndSeasons, orgId, gameDiaryParameters, harvestReportLocalityResolver) {
-            $scope.fieldsAndSeasons = fieldsAndSeasons;
-            $scope.getHuntingArea = harvestReportLocalityResolver.getHuntingArea;
-            $scope.getAreaName = harvestReportLocalityResolver.getAreaName;
-            $scope.getRhyName = harvestReportLocalityResolver.getRhyName;
+    .component('organisationSelectByRhy', {
+        templateUrl: 'rhy/organisation-select-by-rhy.html',
+        bindings: {
+            tabs: '<',
+            organisationChanged: '&'
+        },
+        controller: function () {
+            var $ctrl = this;
 
-            $scope.states = {'PROPOSED': false, 'SENT_FOR_APPROVAL': false, 'REJECTED': false, 'APPROVED': true};
-
-            $scope.dates = {
-                beginDate: HuntingYearService.getBeginDateStr(),
-                endDate: HuntingYearService.getEndDateStr()
+            $ctrl.$onInit = function () {
+                $ctrl.selectTab(_.first($ctrl.tabs));
             };
 
-            $scope.mapDefaults = MapDefaults.create({
-                dragging: true,
-                scrollWheelZoom: false
-            });
-            $scope.mapEvents = MapDefaults.getMapBroadcastEvents();
-            $scope.mapCenter = {};
-            $scope.bounds = $scope.rhyBounds = rhyBounds;
-            $scope.rhyGeometry = rhyGeometry;
-            $scope.harvestReports = {};
-            $scope.markers = {};
+            $ctrl.selectedOrgCode = null;
+            $ctrl.selectedTab = null;
 
-            var getSelectedStates = function () {
-                return _.filter(_.keys($scope.states), function (key) {
-                    return $scope.states[key];
-                });
-            };
-            var canSearch = function () {
-                return getSelectedStates().length > 0;
-            };
-            $scope.canSearch = canSearch;
-
-            $scope.search = function () {
-                if (!canSearch()) {
-                    return;
-                }
-                var getNullableId = function (v) {
-                    return v ? v.id : null;
-                };
-                var s = $scope.selectedFieldOrSeason || {};
-                var params = {
-                    beginDate: Helpers.dateToString($scope.dates.beginDate),
-                    endDate: Helpers.dateToString($scope.dates.endDate),
-                    fieldsId: getNullableId(s.fields),
-                    rhyId: orgId,
-                    states: getSelectedStates(),
-                    permitNumber: $scope.permitNumberSearch
-                };
-
-                // Fill-in form submit data for Excel export file generation
-                $scope.postData = angular.toJson(params);
-
-                HarvestReportSearch.findAllForRhy(params).then(function (response) {
-                    $scope.harvestReports = response.data;
-                });
+            $ctrl.orgChanged = function () {
+                $ctrl.organisationChanged({'type': $ctrl.selectedTab.type, 'code': $ctrl.selectedOrgCode});
             };
 
-            $scope.fieldOrSeasonChanged = function () {
-                var season = $scope.selectedFieldOrSeason.season;
-                if (season) {
-                    $scope.dates.beginDate = season.beginDate;
-                    $scope.dates.endDate = season.endDate2 ? season.endDate2 : season.endDate;
-                } else {
-                    $scope.dates.beginDate = HuntingYearService.getBeginDateStr();
-                    $scope.dates.endDate = HuntingYearService.getEndDateStr();
-                }
-            };
-
-            var markerDefaults = {
-                draggable: false,
-                icon: {
-                    type: 'awesomeMarker',
-                    prefix: 'fa', // font-awesome
-                    icon: 'crosshairs'
-                },
-                compileMessage: true,
-                groupOption: {
-                    // Options to pass for leaflet.markercluster plugin
-
-                    //disableClusteringAtZoom: 13,
-                    showCoverageOnHover: true
-                },
-                group: 'HarvestReports',
-                popupOptions: {
-                    // Options to pass for Leaflet popup message (L.popup)
-
-                    //keepInView: true,
-                    maxWidth: 400
-                }
-            };
-
-            $scope.show = function (harvestReport) {
-                HarvestReportService.edit(angular.copy(harvestReport));
-            };
-
-            var findByFieldValue = function (objects, fieldName, value) {
-                return _.find(objects, function (obj) {
-                    return obj[fieldName] === value;
-                });
-            };
-
-            $scope.showHarvestReportById = function (id) {
-                $scope.show(findByFieldValue($scope.harvestReports, 'id', id));
-            };
-
-            var popupMessageFieldsFunction = function (harvestReports) {
-                return function (harvestReportId) {
-                    var harvestReport, jsDate, localizedGeolocation, localizedGameName;
-
-                    if (harvestReports && harvestReportId) {
-                        harvestReport = findByFieldValue(harvestReports, 'id', harvestReportId);
-
-                        if (harvestReport) {
-                            if (harvestReport.pointOfTime) {
-                                jsDate = moment(harvestReport.pointOfTime).toDate();
-                            }
-
-                            if (harvestReport.geoLocation && harvestReport.geoLocation.longitude) {
-                                localizedGeolocation = $translate.instant('global.geoLocation.coordinatesText', harvestReport.geoLocation);
-                            }
-
-                            localizedGameName = gameDiaryParameters.$getGameName(harvestReport.gameSpeciesCode);
-                        }
-                    }
-
-                    return [
-                        {name: 'species', value: localizedGameName},
-                        {name: 'date', value: Helpers.dateToString(jsDate, 'D.M.YYYY')},
-                        {name: 'time', value: Helpers.dateToString(jsDate, 'HH:mm')},
-                        {name: 'coordinates', value: localizedGeolocation}
-                    ];
-                };
-            };
-
-            $scope.$watch('harvestReports', function (newReports, oldReports) {
-                var getPopupMessageFields = popupMessageFieldsFunction(newReports);
-
-                var getPopupMessageButtons = function (harvestReportId) {
-                    return [
-                        {name: 'doOpen', handlerExpr: 'showHarvestReportById(' + harvestReportId + ')'}
-                    ];
-                };
-
-                var createMarkerData = function (harvestReport) {
-                    if (harvestReport.harvestsAsList) {
-                        return _.map(harvestReport.harvests, function (harvest) {
-                            return {
-                                id: harvestReport.id,
-                                etrsCoordinates: harvest.geoLocation,
-                                icon: {
-                                    markerColor: Markers.getColorForHarvestReportState(harvestReport.state)
-                                },
-                                popupMessageFields: function () {
-                                    var jsDate = moment(harvest.pointOfTime).toDate();
-                                    return [
-                                        {
-                                            name: 'species',
-                                            value: gameDiaryParameters.$getGameName(harvest.gameSpeciesCode)
-                                        },
-                                        {name: 'date', value: Helpers.dateToString(jsDate, 'D.M.YYYY')},
-                                        {name: 'time', value: Helpers.dateToString(jsDate, 'HH:mm')},
-                                        {
-                                            name: 'coordinates',
-                                            value: $translate.instant('global.geoLocation.coordinatesText', harvest.geoLocation)
-                                        }
-                                    ];
-                                },
-                                popupMessageButtons: getPopupMessageButtons,
-                                getMessageScope: function () {
-                                    return $scope;
-                                }
-                            };
-                        });
-                    }
-                    return [{
-                        id: harvestReport.id,
-                        etrsCoordinates: harvestReport.geoLocation,
-                        icon: {
-                            markerColor: Markers.getColorForHarvestReportState(harvestReport.state)
-                        },
-                        popupMessageFields: getPopupMessageFields,
-                        popupMessageButtons: getPopupMessageButtons,
-                        getMessageScope: function () {
-                            return $scope;
-                        }
-                    }];
-                };
-
-                var markers = Markers.transformToLeafletMarkerData(newReports, markerDefaults, createMarkerData);
-
-                var latLngFunc = function (marker) {
-                    return {
-                        lat: marker.lat,
-                        lng: marker.lng
-                    };
-                };
-                $scope.bounds = GIS.getBounds(markers, latLngFunc, $scope.rhyBounds);
-
-                $scope.markers = markers;
-            });
-        })
-
-    .controller('RhyPermitListController',
-        function ($scope, $translate, HarvestPermits, orgId, species) {
-            $scope.allSpecies = species;
-
-            $scope.speciesSortProperty = 'name.' + $translate.use();
-
-            $scope.search = function () {
-                var params = {};
-                params.permitNumber = $scope.permitNumber;
-                params.year = $scope.year;
-                params.rhyId = orgId;
-                if ($scope.species) {
-                    params.speciesCode = $scope.species.code;
-                }
-                HarvestPermits.rhySearch(params).$promise.then(function (data) {
-                    $scope.permits = data;
-                });
-            };
-
-            $scope.canSearch = function () {
-                return $scope.species || $scope.permitNumber || $scope.year;
+            $ctrl.selectTab = function (tab) {
+                $ctrl.selectedTab = tab;
+                var code = _.get(_.find(tab.organisations, 'selected'), 'officialCode');
+                $ctrl.selectedOrgCode = code;
+                $ctrl.organisationChanged({'type': $ctrl.selectedTab.type, 'code': code});
             };
         }
-    )
+    })
 ;

@@ -3,9 +3,9 @@
         <form>
             <select name="huntingYearSelection" id="huntingYearSelection"
                     class="form-control"
-                    ng-model="searchModel.huntingYear"
-                    ng-options="h.year as h.name for h in huntingYears">
-                <option disabled value="">{{'club.hunting.selectHuntingYear' | translate}}</option>
+                    ng-model="searchModel.year"
+                    ng-change="yearChanged()"
+                    ng-options="y for y in years">
             </select>
         </form>
     </div>

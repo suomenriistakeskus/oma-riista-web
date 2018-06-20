@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static fi.riista.util.Collect.idSet;
 import static fi.riista.util.jpa.JpaSpecs.fetch;
 import static fi.riista.util.jpa.JpaSpecs.inCollection;
 import static java.util.stream.Collectors.toList;
@@ -92,13 +93,13 @@ public class PublicOccupationSearchFeature {
         }
 
         // Fetch persons, organisations and their addresses into 1st level cache of JPA entity manager.
-        final Set<Long> personIds = F.getUniqueIdsAfterTransform(resultOccupations, Occupation::getPerson);
+        final Set<Long> personIds = resultOccupations.stream().map(Occupation::getPerson).collect(idSet());
         personRepository.findAll(Specifications
                 .where(inCollection(Person_.id, personIds))
                 .and(fetch(Person_.mrAddress, JoinType.LEFT))
                 .and(fetch(Person_.otherAddress, JoinType.LEFT)));
 
-        final Set<Long> organisationIds = F.getUniqueIdsAfterTransform(resultOccupations, Occupation::getOrganisation);
+        final Set<Long> organisationIds = resultOccupations.stream().map(Occupation::getOrganisation).collect(idSet());
         final List<Organisation> resultOrganisations = organisationRepository.findAll(Specifications
                 .where(inCollection(Organisation_.id, organisationIds))
                 .and(fetch(Organisation_.address, JoinType.LEFT)));
@@ -155,7 +156,7 @@ public class PublicOccupationSearchFeature {
         // Use EnumSet for correct ordering
         return EnumSet.of(OrganisationType.RHY, OrganisationType.RK, OrganisationType.VRN, OrganisationType.ARN,
                 OrganisationType.RKA).stream()
-                .flatMap(orgType -> OccupationType.getListOfApplicableTypes(orgType).stream()
+                .flatMap(orgType -> OccupationType.getApplicableTypes(orgType).stream()
                         .map(occType -> dtoFactory.create(occType, orgType)))
                 .collect(toList());
     }

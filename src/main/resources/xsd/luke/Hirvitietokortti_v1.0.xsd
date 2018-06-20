@@ -59,12 +59,18 @@
         </xsd:sequence>
     </xsd:group>
 
+    <xsd:simpleType name="DayAndMonth">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="([0-3]?[0-9]{1}\.[0-1]?[0-9]{1}\.)?"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
     <!--
          Customization: This group is extracted as a separate entity and included where needed.
     -->
     <xsd:group name="DateAndLocationType">
         <xsd:sequence>
-            <xsd:element name="_Päivämäärä" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Päivämäärä" type="DayAndMonth" minOccurs="1" maxOccurs="1"/>
             <xsd:group ref="ETRS_TM35FIN_CoordinateType"/>
         </xsd:sequence>
     </xsd:group>
@@ -121,8 +127,6 @@
             <xsd:element name="_1.1" type="_1.1Type" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_1.2" type="_1.2Type" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Asiakasnumero" type="xsd:string" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="_Ilmoitus_on_ajalta_1" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="_Ilmoitus_on_ajalta_2" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Pyyntilupa" type="xsd:string" minOccurs="1" maxOccurs="1"/>
         </xsd:sequence>
         <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
@@ -130,7 +134,7 @@
 
     <xsd:complexType name="_Metsästyspäivien_olosuhdetiedotType">
         <xsd:sequence>
-            <xsd:element name="_Päivämäärä" type="xsd:date" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Päivämäärä" type="DayAndMonth" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Metsästysaika" type="xsd:float" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Lumen_syvyys" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Metsästystapa" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
@@ -165,6 +169,7 @@
             <xsd:element name="_N2" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_N3" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_T" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Y" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
         </xsd:sequence>
         <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
     </xsd:complexType>
@@ -242,6 +247,7 @@
             <xsd:group ref="MooseHarvestBasicInfoType"/>
             <xsd:element name="_Sukupuoli" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             <xsd:group ref="MooseHarvestConditionType"/>
+            <xsd:element name="_Yksinäinen_vasa" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
         </xsd:sequence>
         <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
     </xsd:complexType>
@@ -321,6 +327,10 @@
             <xsd:element name="_Esiintyminen3" type="_EsiintyminenType" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_MuutoksetExport3" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Arvio_yksilömäärästä3" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Esiintyminen4" type="_EsiintyminenType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_MuutoksetExport4" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Arvio_yksilömäärästä4" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Arvio_porsaallisten_emakoiden_määrästä" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
         </xsd:sequence>
         <xsd:anyAttribute namespace="http://www.abbyy.com/FlexiCapture/Schemas/Export/AdditionalFormData.xsd"/>
     </xsd:complexType>
@@ -352,8 +362,8 @@
     <xsd:complexType name="_8.1Type">
         <xsd:sequence>
             <xsd:element name="_Metsästysalueen_kokonaispinta-ala" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="_Metsästykseen_käytetyn_alueen_koko" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="_Metsästykseen_käytetyn_alueen_koko_2" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästykseen_käytetyn_alueen_pinta-ala" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Metsästykseen_käytetyn_alueen_pinta-ala_2" type="xsd:double" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Koko_metsästysalueelle_jäi_hirviä_yhteensä" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Metsästykseen_käytetylle_alueelle_jäi_hirviä_yhteensä" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Metsästysalueemme_on" type="_Metsästysalueemme_onType" minOccurs="1" maxOccurs="1"/>
@@ -368,11 +378,11 @@
             <xsd:element name="_Aikuiset_naaraat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Urosvasat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Naarasvasat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="_Ihmisravinnoksi_kelpaamattom_aikuiset" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="_Ihmisravinnoksi_kelpaamattom_vasat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Maksettava_120" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Maksettava_50" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ihmisravinnoksi_kelpaamattom_aikuiset" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Vähennä_120" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="_Ihmisravinnoksi_kelpaamattom_vasat" type="xsd:int" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Vähennä_50" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
             <xsd:element name="_Yhteensä_maksettavaa" type="xsd:decimal" nillable="true" minOccurs="1" maxOccurs="1"/>
         </xsd:sequence>

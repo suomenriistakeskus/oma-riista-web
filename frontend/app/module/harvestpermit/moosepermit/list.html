@@ -14,7 +14,7 @@
                 ng-model="$ctrl.selectedYearAndSpecies.species"
                 ng-options="s.code as (s.name | rI18nNameFilter) for s in $ctrl.speciesOptions"
                 ng-change="$ctrl.reloadState()">
-            <option disabled value="">{{'harvestpermit.title.selectSpecies' | translate}}</option>
+            <option disabled value="">{{'global.selectSpecies' | translate}}</option>
         </select>
     </div>
 </div>

@@ -3,30 +3,18 @@ package fi.riista.feature.account.user;
 import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.account.password.ChangePasswordService;
-import fi.riista.feature.common.entity.EntityAuditFields;
-import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.security.UserInfo;
 import fi.riista.util.DtoUtil;
-import fi.riista.util.F;
-import fi.riista.util.jpa.JpaSpecs;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import static fi.riista.util.jpa.JpaSpecs.inCollection;
-import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Component
 public class UserCrudFeature extends AbstractCrudFeature<Long, SystemUser, SystemUserDTO> {
@@ -85,8 +73,9 @@ public class UserCrudFeature extends AbstractCrudFeature<Long, SystemUser, Syste
 
     @Override
     protected void updateEntity(SystemUser user, SystemUserDTO dto) {
-        final UserInfo activeUserInfo = activeUserService.getActiveUserInfo();
+        final UserInfo activeUserInfo = activeUserService.getActiveUserInfoOrNull();
 
+        // FIXME Potential NPE
         if (activeUserInfo.isAdmin()) {
             if (user.isNew()) {
                 user.setUsername(dto.getUsername());
@@ -118,19 +107,4 @@ public class UserCrudFeature extends AbstractCrudFeature<Long, SystemUser, Syste
             }
         }
     }
-
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-    public Map<Long, SystemUser> getModeratorCreatorsGroupedById(
-            final Iterable<? extends LifecycleEntity<? extends Long>> lifecycleEntities) {
-
-        final Set<Long> creatorIds = F.mapNonNullsToSet(lifecycleEntities, entity -> Optional.ofNullable(entity)
-                .map(LifecycleEntity::getAuditFields)
-                .map(EntityAuditFields::getCreatedByUserId)
-                .orElse(null));
-
-        return F.indexById(userRepository.findAll(where(
-                inCollection(SystemUser_.id, creatorIds))
-                .and(JpaSpecs.inCollection(SystemUser_.role, EnumSet.of(SystemUser.Role.ROLE_ADMIN, SystemUser.Role.ROLE_MODERATOR)))));
-    }
-
 }

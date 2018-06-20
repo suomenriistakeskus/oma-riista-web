@@ -47,6 +47,11 @@ public class SQSpringSessionAttributes extends RelationalPathSpatial<SQSpringSes
         addMetadata();
     }
 
+    public SQSpringSessionAttributes(String variable, String schema) {
+        super(SQSpringSessionAttributes.class, forVariable(variable), schema, "spring_session_attributes");
+        addMetadata();
+    }
+
     public SQSpringSessionAttributes(Path<? extends SQSpringSessionAttributes> path) {
         super(path.getType(), path.getMetadata(), "public", "spring_session_attributes");
         addMetadata();

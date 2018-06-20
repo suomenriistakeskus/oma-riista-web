@@ -8,8 +8,8 @@
                     abstract: true,
                     template: '<ui-view autoscroll="false"/>',
                     resolve: {
-                        rhyBounds: function (GIS, club) {
-                            return GIS.getRhyBounds(club.rhy.officialCode);
+                        rhyBounds: function (MapBounds, club) {
+                            return MapBounds.getRhyBounds(club.rhy.officialCode);
                         }
                     }
                 })
@@ -33,36 +33,43 @@
                         preloadedHuntingYears: function (ClubAreaListService, clubId) {
                             return ClubAreaListService.listHuntingYears(clubId);
                         },
-                        preselectedArea: function (ClubAreas, selectedAreaId, clubId) {
-                            return selectedAreaId ? ClubAreas.get({clubId: clubId, id: selectedAreaId}).$promise : null;
+                        preselectedArea: function (ClubAreas, selectedAreaId) {
+                            return selectedAreaId ? ClubAreas.get({id: selectedAreaId}).$promise : null;
                         },
                         showDeactive: function (preselectedArea) {
                             return preselectedArea && !preselectedArea.active;
                         },
-                        huntingYear: function (preselectedArea) {
-                            return preselectedArea ? preselectedArea.huntingYear : null;
+                        huntingYear: function (preselectedArea, preloadedHuntingYears) {
+                            if (preselectedArea) {
+                                return preselectedArea.huntingYear;
+                            }
+                            var currentYear = new Date().getFullYear();
+                            if (_.some(preloadedHuntingYears, 'year', currentYear) || _.isEmpty(preloadedHuntingYears)) {
+                                return currentYear;
+                            }
+                            return _.max(_.pluck(preloadedHuntingYears, 'year'));
                         }
                     }
                 });
         })
 
         .factory('ClubAreas', function ($resource) {
-            return $resource('api/v1/club/:clubId/area/:id', {"clubId": "@clubId", "id": "@id"}, {
-                query: {method: 'GET', params: {year: "@year"}, isArray: true},
-                get: {method: 'GET'},
+            var apiPrefix = 'api/v1/clubarea/:id';
+
+            return $resource(apiPrefix, {"id": "@id"}, {
                 update: {method: 'PUT'},
                 huntingYears: {
                     method: 'GET',
-                    url: 'api/v1/club/:clubId/area/huntingyears',
+                    url: apiPrefix + '/huntingyears',
                     isArray: true
                 },
                 getFeatures: {
                     method: 'GET',
-                    url: 'api/v1/club/:clubId/area/:id/features'
+                    url: apiPrefix + '/features'
                 },
                 updateFeatures: {
                     method: 'PUT',
-                    url: 'api/v1/club/:clubId/area/:id/features',
+                    url: apiPrefix + '/features',
                     transformRequest: function (req, headers) {
                         delete req.clubId;
                         delete req.id;
@@ -72,33 +79,21 @@
                 },
                 combinedFeatures: {
                     method: 'GET',
-                    url: 'api/v1/club/:clubId/area/:id/combinedFeatures'
+                    url: apiPrefix + '/combinedFeatures'
+                },
+                activate: {
+                    method: 'POST',
+                    url: apiPrefix + '/activate'
+                },
+                deactivate: {
+                    method: 'POST',
+                    url: apiPrefix + '/deactivate'
                 },
                 copy: {
                     method: 'POST',
-                    url: 'api/v1/club/:clubId/area/:id/copy'
+                    url: apiPrefix + '/copy'
                 }
             });
-        })
-
-        .component('rClubAreaCategorySelection', {
-            templateUrl: 'club/area/r-club-area-category-selection.html',
-            bindings: {
-                activeTabIndex: '<'
-            },
-            controller: function ($state, $stateParams) {
-                var $ctrl = this;
-
-                var clubId = $stateParams.id;
-
-                $ctrl.transitionToAreaList = function () {
-                    $state.go('club.area.list', {clubId: clubId});
-                };
-
-                $ctrl.transitionToAreaProposals = function () {
-                    $state.go('club.area.proposals', {clubId: clubId});
-                };
-            }
         })
 
         .service('ClubAreaListService', function ($filter, ClubAreas, HuntingYearService) {
@@ -112,7 +107,8 @@
                 return ClubAreas.query({
                     clubId: clubId,
                     activeOnly: activeOnly,
-                    year: huntingYear || HuntingYearService.getCurrent()
+                    year: huntingYear || HuntingYearService.getCurrent(),
+                    includeEmpty: true
 
                 }).$promise.then(function (areas) {
                     var i18n = $filter('rI18nNameFilter');
@@ -130,7 +126,7 @@
             };
         })
 
-        .controller('ClubAreaListController', function ($location, $scope,
+        .controller('ClubAreaListController', function ($location, $scope, HuntingYearService,
                                                         ClubAreas, ClubAreaFormSidebar, ClubAreaListService,
                                                         club, clubId, selectedAreaId, huntingYear, showDeactive,
                                                         rhyBounds, preloadedHuntingYears) {
@@ -139,6 +135,7 @@
             $ctrl.areas = [];
             $ctrl.selectedAreaId = selectedAreaId;
             $ctrl.canCreateArea = club.canEdit;
+            $ctrl.canEditArea = club.canEdit;
 
             $ctrl.huntingYears = preloadedHuntingYears;
             $ctrl.selectedYear = huntingYear;
@@ -151,7 +148,7 @@
             };
 
             $ctrl.createArea = function () {
-                ClubAreaFormSidebar.addClubArea(clubId).then(function (area) {
+                ClubAreaFormSidebar.addClubArea(clubId, $ctrl.selectedYear).then(function (area) {
                     $scope.$emit('areaChanged', area);
                 });
             };
@@ -161,6 +158,12 @@
                     $ctrl.areas = areas;
                     focusSelectedArea();
                 });
+            };
+
+            var currentHuntingYear = HuntingYearService.getCurrent();
+
+            $ctrl.showUpdateWarning = function () {
+                return $ctrl.selectedYear && $ctrl.selectedYear  < currentHuntingYear;
             };
 
             $scope.$on('areaChanged', function (e, area) {
@@ -198,7 +201,7 @@
 
                 $location.search({areaId: area.id});
 
-                ClubAreas.combinedFeatures({clubId: clubId, id: area.id}).$promise.then(function (featureCollection) {
+                ClubAreas.combinedFeatures({id: area.id}).$promise.then(function (featureCollection) {
                     $ctrl.featureCollection = featureCollection;
                 });
             }
@@ -259,8 +262,8 @@
             bindings: {
                 area: '<'
             },
-            controller: function ($q, $scope, $window, FormPostService, ActiveRoleService,
-                                  ClubAreaFormSidebar, ClubAreaCopyModal, ClubAreaImportModal, AreaPrintModal) {
+            controller: function ($q, $scope, $window, FormPostService, ActiveRoleService, ClubAreas,
+                                  ClubAreaFormSidebar, ClubAreaCopyModal, ClubAreaImportModal, MapPdfModal) {
                 var $ctrl = this;
 
                 $ctrl.isContactPerson = function () {
@@ -284,7 +287,7 @@
                 };
 
                 $ctrl.printArea = function () {
-                    AreaPrintModal.printArea('/api/v1/club/' + $ctrl.area.clubId + '/area/' + $ctrl.area.id + '/print');
+                    MapPdfModal.printArea('/api/v1/clubarea/' + $ctrl.area.id + '/print');
                 };
 
                 $ctrl.exportExcel = function (type) {
@@ -303,8 +306,28 @@
                     $window.open(exportBaseUri() + '/zip');
                 };
 
+                $ctrl.activate = function () {
+                    ClubAreas.activate({id: $ctrl.area.id}).$promise.then(function () {
+                        notifyAreaChange($ctrl.area);
+                    });
+                };
+
+                $ctrl.deactivate = function () {
+                    ClubAreas.deactivate({id: $ctrl.area.id}).$promise.then(function () {
+                        notifyAreaChange($ctrl.area);
+                    });
+                };
+
+                $ctrl.canActivate = function () {
+                    return $ctrl.isContactPerson() && !$ctrl.area.active;
+                };
+
+                $ctrl.canDeactivate = function () {
+                    return $ctrl.isContactPerson() && $ctrl.area.active && !$ctrl.area.attachedToGroup;
+                };
+
                 function exportBaseUri() {
-                    return '/api/v1/club/' + $ctrl.area.clubId + '/area/' + $ctrl.area.id;
+                    return '/api/v1/clubarea/' + $ctrl.area.id;
                 }
 
                 $ctrl.isLocalArea = function () {
@@ -312,7 +335,7 @@
                 };
 
                 $ctrl.isAreaWithGeometry = function () {
-                    return $ctrl.area && $ctrl.area.zoneId;
+                    return $ctrl.area && $ctrl.area.zoneId && $ctrl.area.computedAreaSize > 0;
                 };
 
                 $ctrl.isLocalAreaWithGeometry = function () {
@@ -321,8 +344,58 @@
             }
         })
 
-        .service('ClubAreaFormSidebar', function (FormSidebarService, GameDiaryParameters, HuntingYearService,
-                                                  ClubAreas) {
+        .component('clubAreaListMap', {
+            templateUrl: 'club/area/area-map.html',
+            bindings: {
+                initialViewBounds: '<',
+                featureCollection: '<'
+            },
+            controller: function ($filter, $translate, MapDefaults, MapState, MapBounds) {
+                var $ctrl = this;
+                $ctrl.mapDefaults = MapDefaults.create();
+                $ctrl.mapEvents = MapDefaults.getMapBroadcastEvents();
+                $ctrl.mapState = MapState.get();
+                $ctrl.geojson = null;
+
+                $ctrl.$onInit = function () {
+                    setFeatureCollection($ctrl.featureCollection);
+                };
+
+                $ctrl.$onChanges = function (c) {
+                    if (c.featureCollection) {
+                        setFeatureCollection(c.featureCollection.currentValue);
+                    }
+                };
+
+                function setFeatureCollection(featureCollection) {
+                    var prettyAreaSize = $filter('prettyAreaSize');
+                    var geometriesIncluded = featureCollection &&
+                        _(featureCollection.features).map('geometry').some(_.isObject);
+
+                    if (geometriesIncluded) {
+                        $ctrl.geojson = {
+                            data: featureCollection,
+                            style: MapDefaults.getGeoJsonOptions(),
+                            onEachFeature: function (feature, layer) {
+                                var areaSize = _.get(feature, 'properties.areaSize');
+
+                                if (areaSize) {
+                                    layer.bindPopup($translate.instant('global.map.areaSize') + ': ' + prettyAreaSize(areaSize));
+                                }
+                            }
+                        };
+                        var bounds = MapBounds.getBoundsFromGeoJsonFeatureCollection(featureCollection);
+                        MapState.updateMapBounds(bounds, $ctrl.initialViewBounds, true);
+
+                    } else {
+                        $ctrl.geojson = null;
+                        MapState.updateMapBounds(null, $ctrl.initialViewBounds, true);
+                    }
+                }
+            }
+        })
+
+        .service('ClubAreaFormSidebar', function (FormSidebarService, GameDiaryParameters, ClubAreas) {
             var formSidebar = FormSidebarService.create({
                 templateUrl: 'club/area/area-form.html',
                 controller: 'ClubAreaFormSidebarController',
@@ -336,11 +409,11 @@
                 return {area: _.constant(parameters.area)};
             });
 
-            this.addClubArea = function (clubId) {
+            this.addClubArea = function (clubId, huntingYear) {
                 return formSidebar.show({
                     area: {
                         clubId: clubId,
-                        huntingYear: HuntingYearService.getCurrent()
+                        huntingYear: huntingYear
                     }
                 });
             };
@@ -348,7 +421,7 @@
             this.editClubArea = function (area) {
                 return formSidebar.show({
                     id: area.id,
-                    area: ClubAreas.get({clubId: area.clubId, id: area.id}).$promise
+                    area: ClubAreas.get({id: area.id}).$promise
                 });
             };
         })
@@ -374,49 +447,6 @@
             };
 
             $scope.cancel = $scope.$dismiss;
-
-            $scope.activate = function () {
-                $scope.area.active = true;
-                $scope.$close($scope.area);
-            };
-
-            $scope.deactivate = function () {
-                $scope.area.active = false;
-                $scope.$close($scope.area);
-            };
-        })
-
-        .service('AreaPrintModal', function ($uibModal, FormPostService) {
-            this.printArea = function (url) {
-                return $uibModal.open({
-                    controller: ModalController,
-                    templateUrl: 'club/area/area-print.html',
-                    controllerAs: '$ctrl',
-                    bindToController: true,
-                    resolve: {
-                        url: _.constant(url)
-                    }
-                });
-            };
-
-            function ModalController($uibModalInstance, url) {
-                var $ctrl = this;
-
-                $ctrl.request = {
-                    paperSize: 'A4',
-                    paperDpi: '300',
-                    paperOrientation: 'PORTRAIT'
-                };
-
-                $ctrl.save = function () {
-                    $uibModalInstance.close();
-                    FormPostService.submitFormUsingBlankTarget(url, $ctrl.request);
-                };
-
-                $ctrl.cancel = function () {
-                    $uibModalInstance.dismiss();
-                };
-            }
         })
 
         .service('ClubAreaCopyModal', function ($uibModal, ClubAreas, HuntingYearService) {
@@ -430,7 +460,7 @@
                         area: _.constant(area)
                     }
                 }).result.then(function (res) {
-                    return ClubAreas.copy({clubId: area.clubId, id: res.id}, res).$promise;
+                    return ClubAreas.copy({id: res.id}, res).$promise;
                 });
             };
 
@@ -465,7 +495,6 @@
                         controllerAs: '$ctrl',
                         bindToController: true,
                         resolve: {
-                            clubId: _.constant(area.clubId),
                             areaId: _.constant(area.id)
                         }
                     }).result.then(function () {
@@ -489,10 +518,10 @@
                 return dialogs.confirm(dialogTitle, dialogMessage).result;
             }
 
-            function ModalController($uibModalInstance, clubId, areaId) {
+            function ModalController($uibModalInstance, areaId) {
                 var $ctrl = this;
 
-                $ctrl.url = '/api/v1/club/' + clubId + '/area/' + areaId + '/import';
+                $ctrl.url = '/api/v1/clubarea/' + areaId + '/import';
                 $ctrl.uploadButtonVisible = true;
                 $ctrl.uploadInProgress = false;
 

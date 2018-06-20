@@ -2,25 +2,18 @@ package fi.riista.feature.harvestpermit;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import fi.riista.feature.common.repository.BaseRepository;
-import fi.riista.feature.common.repository.NativeQueries;
-import fi.riista.feature.huntingclub.permit.MooselikeHuntingYearDTO;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import fi.riista.feature.harvestpermit.list.MooselikeHuntingYearDTO;
+import fi.riista.feature.permit.decision.PermitDecision;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface HarvestPermitRepository extends BaseRepository<HarvestPermit, Long> {
 
     HarvestPermit findByPermitNumber(String permitNumber);
 
-    Page<HarvestPermit> findByRhy(Riistanhoitoyhdistys rhy, Pageable page);
-
-    @Query(value = NativeQueries.COUNT_PERMITS_REQUIRING_ACTION, nativeQuery = true)
-    long countPermitsRequiringAction(@Param("personId") long personId);
+    List<HarvestPermit> findByPermitDecision(PermitDecision permitDecision);
 
     default List<HarvestPermit> listRhyPermitsByHuntingYearAndSpecies(long rhyId, int huntingYear, int gameSpeciesCode) {
         final QHarvestPermit permit = QHarvestPermit.harvestPermit;
@@ -31,11 +24,13 @@ public interface HarvestPermitRepository extends BaseRepository<HarvestPermit, L
                 .and(spa.matchesSpeciesAndHuntingYear(permit, gameSpeciesCode, huntingYear)));
     }
 
-    default List<MooselikeHuntingYearDTO> listRhyMooselikeHuntingYears(long rhyId) {
+    default List<MooselikeHuntingYearDTO> listRhyMooselikeHuntingYears(final long rhyId) {
         final QHarvestPermit permit = QHarvestPermit.harvestPermit;
         final BooleanExpression predicate = permit.isMooselikePermit().and(permit.hasRhyOrRelatedRhy(rhyId));
 
-        return MooselikeHuntingYearDTO.create(
-                findAllAsStream(predicate).map(HarvestPermit::getSpeciesAmounts).flatMap(Collection::stream));
+        try (final Stream<HarvestPermit> stream = findAllAsStream(predicate)) {
+            return MooselikeHuntingYearDTO.create(
+                    stream.map(HarvestPermit::getSpeciesAmounts).flatMap(Collection::stream));
+        }
     }
 }

@@ -13,6 +13,9 @@ import java.sql.Types;
 
 import com.querydsl.sql.spatial.RelationalPathSpatial;
 
+import com.querydsl.spatial.*;
+
+
 
 /**
  * SQGroupObservationRejection is a Querydsl query type for SQGroupObservationRejection
@@ -46,7 +49,7 @@ public class SQGroupObservationRejection extends RelationalPathSpatial<SQGroupOb
 
     public final com.querydsl.sql.PrimaryKey<SQGroupObservationRejection> groupObservationRejectionPkey = createPrimaryKey(groupObservationRejectionId);
 
-    public final com.querydsl.sql.ForeignKey<SQObservation> groupObservationRejectionGameObservationFk = createForeignKey(observationId, "game_observation_id");
+    public final com.querydsl.sql.ForeignKey<SQGameObservation> groupObservationRejectionGameObservationFk = createForeignKey(observationId, "game_observation_id");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> groupObservationRejectionHuntingClubGroupFk = createForeignKey(huntingClubGroupId, "organisation_id");
 
@@ -57,6 +60,11 @@ public class SQGroupObservationRejection extends RelationalPathSpatial<SQGroupOb
 
     public SQGroupObservationRejection(String variable, String schema, String table) {
         super(SQGroupObservationRejection.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQGroupObservationRejection(String variable, String schema) {
+        super(SQGroupObservationRejection.class, forVariable(variable), schema, "group_observation_rejection");
         addMetadata();
     }
 

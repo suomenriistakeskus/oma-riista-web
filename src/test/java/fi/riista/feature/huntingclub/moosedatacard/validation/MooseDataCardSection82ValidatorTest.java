@@ -1,5 +1,12 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
+import fi.riista.test.Asserts;
+import org.junit.Test;
+
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newHarvestAmounts;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newSection82;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.adultFemaleHarvestCountMismatch;
@@ -9,17 +16,10 @@ import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCar
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.youngFemaleHarvestCountMismatch;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.youngMaleHarvestCountMismatch;
 import static fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardSection82Validator.validate;
-import static fi.riista.util.Asserts.assertNumericFieldValidationErrors;
-import static fi.riista.util.Asserts.assertValidationErrors;
+import static fi.riista.test.Asserts.assertNumericFieldValidationErrors;
+import static fi.riista.test.Asserts.assertValidationErrors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
-import fi.riista.util.Asserts;
-import org.junit.Test;
-
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class MooseDataCardSection82ValidatorTest {
 
@@ -48,7 +48,7 @@ public class MooseDataCardSection82ValidatorTest {
                 .map4(illegalMutation)
                 .map5(illegalMutation)
                 .map6(illegalMutation)
-                .transform(MooseDataCardCalculatedHarvestAmounts::new);
+                .apply(MooseDataCardCalculatedHarvestAmounts::new);
 
         assertNumericFieldValidationErrors(newSection82(harvestAmounts), s -> validate(s, harvestAmounts), Stream.of(
                 MooseDataCardSummaryField.ADULT_MALE_AMOUNT,
@@ -71,7 +71,7 @@ public class MooseDataCardSection82ValidatorTest {
                 .map4(mutation)
                 .map5(mutation)
                 .map6(mutation)
-                .transform(MooseDataCardCalculatedHarvestAmounts::new);
+                .apply(MooseDataCardCalculatedHarvestAmounts::new);
 
         assertValidationErrors(validate(section, harvestAmounts),
                 adultMaleHarvestCountMismatch(section.getNumberOfAdultMales(), harvestAmounts.numberOfAdultMales),
@@ -83,5 +83,4 @@ public class MooseDataCardSection82ValidatorTest {
                 nonEdibleYoungHarvestCountMismatch(
                         section.getTotalNumberOfNonEdibleYoungs(), harvestAmounts.totalNumberOfNonEdibleYoungs));
     }
-
 }

@@ -12,14 +12,12 @@ import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseFemale;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardMooseMale;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardObservation;
 import fi.riista.feature.huntingclub.moosedatacard.validation.NumericFieldMeta;
-
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Objects;
 import java.util.Optional;
 
@@ -124,17 +122,6 @@ public final class MooseDataCardImportFailureReasons {
     @Nonnull
     public static String hunterNumberAndSsnMissingForContactPerson() {
         return "Hirvitietokortin yhteyshenkilölle ei ole annettu metsästäjänumeroa eikä henkilötunnusta";
-    }
-
-    @Nonnull
-    public static String reportingPeriodBeginDateIsAfterEndDate(
-            @Nonnull final LocalDate beginDate, @Nonnull final LocalDate endDate) {
-
-        Objects.requireNonNull(beginDate, "beginDate is null");
-        Objects.requireNonNull(endDate, "endDate is null");
-
-        return String.format("Hirvitietokortin raportointijakson alkamispäivä %s on päättymispäivän %s jälkeen",
-                DATE_FORMATTER.print(beginDate), DATE_FORMATTER.print(endDate));
     }
 
     @Nonnull

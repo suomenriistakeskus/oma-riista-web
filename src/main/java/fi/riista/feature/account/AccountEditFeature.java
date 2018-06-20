@@ -12,7 +12,6 @@ import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonAuthorization;
 import fi.riista.security.EntityPermission;
-import fi.riista.security.authentication.CustomSpringSessionRememberMeServices;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.session.FindByIndexNameSessionRepository;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -44,89 +42,90 @@ public class AccountEditFeature {
     private AccountAuditService accountAuditService;
 
     @Resource
-    private AccountRoleService roleService;
-
-    @Resource
     private AuditService auditService;
 
     @Resource
     private FindByIndexNameSessionRepository<? extends Session> sessionRepository;
 
-    @Transactional(readOnly = true)
-    public AccountDTO getActiveAccount(final HttpServletRequest request) {
-        final SystemUser activeUser = activeUserService.getActiveUser();
-        final boolean isRememberMe = CustomSpringSessionRememberMeServices.isRememberMeActive(request);
+    @Transactional
+    public void updateAddress(final AccountAddressDTO dto) {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
 
-        return AccountDTOBuilder.create()
-                .withRememberMe(isRememberMe)
-                .withUser(activeUser)
-                .withRoles(roleService.getRoles(activeUser)).build();
+        if (activeUser.getPerson() != null) {
+            auditService.log("updateActiveAccount", activeUser.getPerson());
+
+            updateAddress(dto, activeUser.getPerson());
+        }
     }
 
     @Transactional
-    public void updateActiveAccount(AccountDTO dto) {
-        final SystemUser activeUser = activeUserService.getActiveUser();
+    public void updateAddress(final AccountAddressDTO dto, final long personId) {
+        final Person person = requireEntityService.requirePerson(personId, EntityPermission.UPDATE);
 
-        if (dto.getLocale() != null) {
-            activeUser.setLocale(dto.getLocale());
-        }
-
-        if (dto.getTimeZone() != null) {
-            activeUser.setTimeZone(dto.getTimeZone());
-        }
-
-        if (activeUser.getRole().isNormalUser()) {
-            updatePerson(dto, activeUser.getPerson());
-        }
-
-        auditService.log("updateActiveAccount", activeUser.getPerson());
-    }
-
-    @Transactional
-    public void updateOtherUserAccount(final AccountDTO dto) {
-        final Person person = requireEntityService.requirePerson(dto.getPersonId(), EntityPermission.UPDATE);
-        updatePerson(dto, person);
         auditService.log("updateOtherUserAccount", person);
+
+        updateAddress(dto, person);
     }
 
-    private static void updatePerson(final AccountDTO dto, final Person person) {
-        if (person == null) {
-            return;
+    private static void updateAddress(final AccountAddressDTO dto, final Person person) {
+        if (!person.isAddressEditable()) {
+            throw new IllegalStateException("Address is read-only");
         }
 
+        if (person.getOtherAddress() == null) {
+            person.setOtherAddress(new Address());
+        }
+
+        person.getOtherAddress().setStreetAddress(dto.getStreetAddress());
+        person.getOtherAddress().setCity(dto.getCity());
+        person.getOtherAddress().setPostalCode(dto.getPostalCode());
+        person.getOtherAddress().setCountry(dto.getCountry());
+    }
+
+    @Transactional
+    public void updateOtherInfo(final AccountOtherInfoDTO dto) {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+
+        if (activeUser.getPerson() != null) {
+            auditService.log("updateActiveAccount", activeUser.getPerson());
+
+            updateOtherInfo(dto, activeUser.getPerson());
+        }
+    }
+
+    @Transactional
+    public void updateOtherInfo(final AccountOtherInfoDTO dto, final long personId) {
+        final Person person = requireEntityService.requirePerson(personId, EntityPermission.UPDATE);
+
+        auditService.log("updateOtherUserAccount", person);
+
+        updateOtherInfo(dto, person);
+    }
+
+    private static void updateOtherInfo(final AccountOtherInfoDTO dto, final Person person) {
         if (StringUtils.isNotBlank(dto.getByName())) {
             person.setByName(dto.getByName());
         }
+
         if (!person.isRegistered() && StringUtils.isNotBlank(dto.getEmail())) {
             person.setEmail(dto.getEmail());
         }
+
         if (StringUtils.isNotBlank(dto.getPhoneNumber())) {
             person.setPhoneNumber(dto.getPhoneNumber());
-        }
-
-        if (person.isAddressEditable() && dto.getAddress() != null) {
-            if (person.getOtherAddress() == null) {
-                person.setOtherAddress(new Address());
-            }
-
-            person.getOtherAddress().setStreetAddress(dto.getAddress().getStreetAddress());
-            person.getOtherAddress().setCity(dto.getAddress().getCity());
-            person.getOtherAddress().setPostalCode(dto.getAddress().getPostalCode());
-            person.getOtherAddress().setCountry(dto.getAddress().getCountry());
         }
     }
 
     @Transactional
     public void changeActiveUserPassword(final ChangePasswordDTO dto) {
-        final SystemUser user = activeUserService.getActiveUser();
+        final SystemUser user = activeUserService.requireActiveUser();
 
         if (user.getRole().isNormalUser() || user.getRole().isModeratorOrAdmin()) {
             changePasswordService.setUserPassword(user, dto.getPassword());
         }
 
         // Log account activity
-        accountAuditService.auditUserEvent(user, activeUserService.getAuthentication(),
-                AccountActivityMessage.ActivityType.PASSWORD_CHANGE, null);
+        accountAuditService.auditActiveUserEvent(AccountActivityMessage.ActivityType.PASSWORD_CHANGE, null);
     }
 
     @Transactional
@@ -150,13 +149,26 @@ public class AccountEditFeature {
     }
 
     @Transactional
-    public void updateSrvaEnabled(boolean enableSrva) {
+    public void toggleActivationOfSrvaFeature(final boolean enableSrva) {
         final Person person = activeUserService.requireActivePerson();
         person.setEnableSrva(enableSrva);
+
         if (enableSrva) {
-            auditService.log("SRVA activated", person);
+            auditService.log("SRVA feature activated", person);
         } else {
-            auditService.log("SRVA deativated", person);
+            auditService.log("SRVA feature deactivated", person);
+        }
+    }
+
+    @Transactional
+    public void toggleActivationOfShootingTestFeature(final boolean enableShootingTests) {
+        final Person person = activeUserService.requireActivePerson();
+        person.setEnableShootingTests(enableShootingTests);
+
+        if (enableShootingTests) {
+            auditService.log("Shooting test supervisor feature activated", person);
+        } else {
+            auditService.log("Shooting test supervisor feature deactivated", person);
         }
     }
 }

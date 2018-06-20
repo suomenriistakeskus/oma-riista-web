@@ -10,7 +10,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AbstractAuthenticationEvent;
 import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
-import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
@@ -58,9 +57,7 @@ public class AuthenticationAuditEventListener implements ApplicationListener<Abs
 
     private void storeLogMessage(final AbstractAuthenticationEvent event) {
         try {
-            if (event instanceof InteractiveAuthenticationSuccessEvent) {
-                accountAuditService.auditLoginSuccessEvent(InteractiveAuthenticationSuccessEvent.class.cast(event));
-            } else if (event instanceof AuthenticationSuccessEvent) {
+            if (event instanceof AuthenticationSuccessEvent) {
                 accountAuditService.auditLoginSuccessEvent(AuthenticationSuccessEvent.class.cast(event));
             } else if (event instanceof AbstractAuthenticationFailureEvent) {
                 accountAuditService.auditLoginFailureEvent(AbstractAuthenticationFailureEvent.class.cast(event));

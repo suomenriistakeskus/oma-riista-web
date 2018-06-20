@@ -8,15 +8,20 @@ import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.spatial.GeometryExpression;
 import com.querydsl.spatial.GeometryExpressions;
+import com.vividsolutions.jts.algorithm.CGAlgorithms;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Polygonal;
 import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.geom.util.GeometryEditor;
 import com.vividsolutions.jts.index.strtree.STRtree;
-import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKBReader;
 import fi.riista.feature.common.entity.GeoLocation;
-import javaslang.Tuple2;
+import io.vavr.Tuple2;
 import org.geojson.Crs;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
@@ -31,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static com.querydsl.core.types.dsl.Expressions.constant;
@@ -54,6 +60,13 @@ public final class GISUtils {
 
         public int getValue() {
             return value;
+        }
+
+        // https://en.wikipedia.org/wiki/Decimal_degrees
+        public int getDecimalPrecision() {
+            // WGS84 + 7 decimal precision = 0.5 cm accuracy
+            // TM35 + 3 decimal precision = 0.1 cm accuracy
+            return this == SRID.WGS84 ? 7 : 3;
         }
 
         public Crs getGeoJsonCrs() {
@@ -92,7 +105,10 @@ public final class GISUtils {
             .build(new CacheLoader<SRID, GeometryFactory>() {
                 @Override
                 public GeometryFactory load(@Nullable final SRID srid) {
-                    return new GeometryFactory(new PrecisionModel(), srid == null ? 0 : srid.value);
+                    final PrecisionModel precisionModel = srid != null
+                            ? new PrecisionModel(Math.pow(10.0, srid.getDecimalPrecision()))
+                            : new PrecisionModel();
+                    return new GeometryFactory(precisionModel, srid == null ? 0 : srid.value);
                 }
             });
 
@@ -103,6 +119,26 @@ public final class GISUtils {
         } catch (final ExecutionException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Geometry readFromPostgisWkb(final byte[] wkb, final GISUtils.SRID srid) {
+        final GeometryFactory geometryFactory = getGeometryFactory(srid);
+        final WKBReader wkbReader = new WKBReader(geometryFactory);
+
+        try {
+            return wkbReader.read(wkb);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static double[] getGeoJsonBBox(final Geometry geometry) {
+        return Optional.ofNullable(geometry)
+                .filter(g -> g instanceof Polygonal && !g.isEmpty())
+                .map(Geometry::getEnvelopeInternal)
+                .filter(envelope -> !envelope.isNull())
+                .map(e -> new double[]{e.getMinX(), e.getMinY(), e.getMaxX(), e.getMaxY()})
+                .orElse(null);
     }
 
     public static Geometry polygonUnion(final FeatureCollection features, final GISUtils.SRID srid) {
@@ -117,16 +153,17 @@ public final class GISUtils {
     }
 
     public static Geometry computeUnionFaster(final List<Geometry> geomList) {
+        if (geomList.isEmpty()) {
+            return null;
+        }
         return unionTree(createSTRTreeIndex(geomList));
     }
 
     private static List createSTRTreeIndex(final List<Geometry> geomList) {
         final STRtree index = new STRtree(16);
 
-        final PrecisionModel pm = new PrecisionModel(1000000);
         for (final Geometry item : geomList) {
-            final Geometry g = GeometryPrecisionReducer.reduce(item, pm);
-            index.insert(g.getEnvelopeInternal(), g);
+            index.insert(item.getEnvelopeInternal(), item);
         }
 
         return index.itemsTree();
@@ -152,18 +189,49 @@ public final class GISUtils {
         return factory.buildGeometry(geomList).buffer(0);
     }
 
+    public static Geometry filterPolygonsByMinimumAreaSize(final Geometry union,
+                                                           final double minimumExteriorSize,
+                                                           final double minimumInteriorSize) {
+        return new GeometryEditor().edit(union, (geometry, factory) -> {
+            if (!(geometry instanceof Polygon)) {
+                return geometry;
+            }
+
+            final Polygon polygon = (Polygon) geometry;
+            final LinearRing shell = (LinearRing) polygon.getExteriorRing();
+            final double exteriorAreaSize = Math.abs(CGAlgorithms.signedArea(shell.getCoordinateSequence()));
+
+            if (exteriorAreaSize < minimumExteriorSize) {
+                return null;
+            }
+
+            final ArrayList<LinearRing> holes = new ArrayList<>(polygon.getNumInteriorRing());
+
+            for (int i = 0; i < polygon.getNumInteriorRing(); i++) {
+                final LinearRing hole = (LinearRing) polygon.getInteriorRingN(i);
+
+                final double holeAreaSize = Math.abs(CGAlgorithms.signedArea(hole.getCoordinateSequence()));
+
+                if (holeAreaSize >= minimumInteriorSize) {
+                    holes.add(hole);
+                }
+            }
+
+            return factory.createPolygon(shell, holes.toArray(new LinearRing[]{}));
+        });
+    }
+
     @Nonnull
-    public static Polygon createPolygon(
-            @Nonnull final GeoLocation location, @Nonnull final Iterable<Tuple2<Integer, Integer>> offsets) {
+    public static Polygon createPolygon(@Nonnull final GeoLocation location,
+                                        @Nonnull final Iterable<Tuple2<Integer, Integer>> offsets) {
 
         return createPolygon(location, offsets, SRID.ETRS_TM35FIN);
     }
 
     @Nonnull
-    public static Polygon createPolygon(
-            @Nonnull final GeoLocation location,
-            @Nonnull final Iterable<Tuple2<Integer, Integer>> offsets,
-            @Nonnull final SRID srid) {
+    public static Polygon createPolygon(@Nonnull final GeoLocation location,
+                                        @Nonnull final Iterable<Tuple2<Integer, Integer>> offsets,
+                                        @Nonnull final SRID srid) {
 
         Objects.requireNonNull(location, "location must not be null");
         Objects.requireNonNull(offsets, "offsets must not be null");
@@ -171,7 +239,7 @@ public final class GISUtils {
 
         final List<Coordinate> coordinateList = F.stream(offsets)
                 .filter(Objects::nonNull)
-                .map(pair -> pair.transform(location::move))
+                .map(pair -> pair.apply(location::move))
                 .map(GeoLocation.TO_COORDINATE)
                 .collect(toList());
 
@@ -191,8 +259,8 @@ public final class GISUtils {
         return getGeometryFactory(srid).createPolygon(coordinates);
     }
 
-    public static GeoJsonObject parseGeoJSONGeometry(
-            @Nonnull final ObjectMapper objectMapper, @Nonnull final String geometry) {
+    public static GeoJsonObject parseGeoJSONGeometry(@Nonnull final ObjectMapper objectMapper,
+                                                     @Nonnull final String geometry) {
 
         if (StringUtils.hasText(geometry)) {
             try {
@@ -228,5 +296,4 @@ public final class GISUtils {
     private GISUtils() {
         throw new AssertionError();
     }
-
 }

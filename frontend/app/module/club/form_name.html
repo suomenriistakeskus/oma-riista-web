@@ -1,0 +1,66 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" ng-submit="$ctrl.save()" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="club.main.general.titleEdit"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="nameFI" class="col-xs-4 control-label">
+                <span translate="club.main.general.nameFI"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input name="nameFI" id="nameFI" class="form-control"
+                       ng-model="$ctrl.club.nameFI"
+                       unique-club-name
+                       club-id="$ctrl.club.id"
+                       ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                       r-copy-on-blur-to-empty-input="nameSV"
+                       minlength="5"
+                       maxlength="255"
+                       required>
+
+                <p class="help-block"
+                   ng-show="form.nameFI.$error.validClubName"
+                   translate="club.main.general.duplicateName"></p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="nameSV" class="col-xs-4 control-label">
+                <span translate="club.main.general.nameSV"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input name="nameSV" id="nameSV" class="form-control"
+                       ng-model="$ctrl.club.nameSV"
+                       unique-club-name
+                       club-id="$ctrl.club.id"
+                       ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                       r-copy-on-blur-to-empty-input="nameFI"
+                       minlength="5"
+                       maxlength="255"
+                       required>
+
+                <p class="help-block"
+                   ng-show="form.nameSV.$error.validClubName"
+                   translate="club.main.general.duplicateName"></p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="form.$invalid"
+                translate="global.button.ok"></button>
+    </div>
+</form>

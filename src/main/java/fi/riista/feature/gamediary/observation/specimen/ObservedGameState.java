@@ -1,6 +1,8 @@
 package fi.riista.feature.gamediary.observation.specimen;
 
-public enum ObservedGameState {
+import fi.riista.util.LocalisedEnum;
+
+public enum ObservedGameState implements LocalisedEnum {
 
     HEALTHY,
     ILL,

@@ -45,6 +45,11 @@ public class SQZoneMhHirvi extends RelationalPathSpatial<SQZoneMhHirvi> {
         addMetadata();
     }
 
+    public SQZoneMhHirvi(String variable, String schema) {
+        super(SQZoneMhHirvi.class, forVariable(variable), schema, "zone_mh_hirvi");
+        addMetadata();
+    }
+
     public SQZoneMhHirvi(Path<? extends SQZoneMhHirvi> path) {
         super(path.getType(), path.getMetadata(), "public", "zone_mh_hirvi");
         addMetadata();

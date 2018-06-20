@@ -1,0 +1,132 @@
+<div class="row">
+    <div class="col-xs-6">
+        <table class="table table-condensed table-striped">
+            <tbody>
+            <tr>
+                <th class="col-xs-6" translate="club.permit.mooseHarvestReport.paymentRecipientName"></th>
+                <td class="col-xs-6" ng-bind="$ctrl.totalPayment.recipientName"></td>
+            </tr>
+            <tr>
+                <th class="col-xs-6" translate="payment.iban"></th>
+                <td class="col-xs-6" ng-bind="$ctrl.totalPayment.iban"></td>
+            </tr>
+            <tr>
+                <th class="col-xs-6" translate="payment.bic"></th>
+                <td class="col-xs-6" ng-bind="$ctrl.totalPayment.bic"></td>
+            </tr>
+            <tr>
+                <th class="col-xs-6" translate="payment.creditorReference"></th>
+                <td class="col-xs-6" ng-bind="$ctrl.totalPayment.creditorReference"></td>
+            </tr>
+            <tr>
+                <th class="col-xs-6" translate="payment.dueDate"></th>
+                <td class="col-xs-6" ng-bind="$ctrl.totalPayment.dueDate | date:'d.M.yyyy'"></td>
+            </tr>
+            <tr>
+                <th class="col-xs-6" translate="club.permit.mooseHarvestReport.totalPayment"></th>
+                <td class="col-xs-6"><span ng-bind="$ctrl.totalPayment.totalPayment"></span> &euro;</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-xs-6">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.toggle()">
+            <span translate="club.permit.mooseHarvestReport.priceBreakdown.title"></span>
+            <span class="glyphicon" ng-class="$ctrl.getToggleClasses()"></span>
+        </button>
+
+        <div class="table-responsive" uib-collapse="!$ctrl.showPriceBreakdown">
+            <table class="table table-condensed">
+                <tr>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.adults"></td>
+                    <td class="text-right" ng-bind="$ctrl.totalPayment.adultsCount"></td>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.notEdibleAdults"></td>
+                    <td class="text-right" ng-bind="$ctrl.totalPayment.adultsNotEdibleCount"></td>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.adultsToBePaid"></td>
+                    <td class="text-right"
+                        ng-bind="$ctrl.totalPayment.adultsCount - $ctrl.totalPayment.adultsNotEdibleCount"></td>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.adultPrice"></td>
+                    <td class="text-right" ng-bind="$ctrl.totalPayment.adultPrice"></td>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.eurPerPcs"></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="text-uppercase"
+                        translate="club.permit.mooseHarvestReport.priceBreakdown.adultsPayment"></td>
+                    <td></td>
+                    <td></td>
+                    <td class="text-right"><strong ng-bind="$ctrl.totalPayment.adultsPayment"></strong></td>
+                    <td><strong translate="club.permit.mooseHarvestReport.priceBreakdown.eur"></strong></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.young"></td>
+                    <td class="text-right" ng-bind="$ctrl.totalPayment.youngCount"></td>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.notEdibleYoung"></td>
+                    <td class="text-right" ng-bind="$ctrl.totalPayment.youngNotEdibleCount"></td>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.youngToBePaid"></td>
+                    <td class="text-right"
+                        ng-bind="$ctrl.totalPayment.youngCount - $ctrl.totalPayment.youngNotEdibleCount"></td>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.pcs"></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.youngPrice"></td>
+                    <td class="text-right" ng-bind="$ctrl.totalPayment.youngPrice"></td>
+                    <td translate="club.permit.mooseHarvestReport.priceBreakdown.eurPerPcs"></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="text-uppercase"
+                        translate="club.permit.mooseHarvestReport.priceBreakdown.youngPayment"></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td class="text-right"><strong ng-bind="$ctrl.totalPayment.youngPayment"></strong></td>
+                    <td><strong translate="club.permit.mooseHarvestReport.priceBreakdown.eur"></strong></td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="text-uppercase text-right">
+                        <strong translate="club.permit.mooseHarvestReport.priceBreakdown.sumOfPayments"></strong>
+                    </td>
+                    <td class="text-right"><strong ng-bind="$ctrl.totalPayment.totalPayment"></strong></td>
+                    <td><strong translate="club.permit.mooseHarvestReport.priceBreakdown.eur"></strong></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

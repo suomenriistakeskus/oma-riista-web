@@ -1,11 +1,12 @@
 package fi.riista.feature.organization.occupation;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
 import fi.riista.feature.organization.address.AddressDTO;
-import fi.riista.feature.organization.person.PersonDTO;
 import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -14,29 +15,31 @@ import org.joda.time.LocalDateTime;
 
 import javax.validation.Valid;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEndDate {
 
-    public static OccupationDTO create(final Occupation occupation, final boolean showRegistered, final boolean showContactInformation) {
+    public static OccupationDTO create(final Occupation occupation, final boolean showPersonInfo, final boolean showContactInformation) {
         final OccupationDTO dto = createDto(occupation);
 
         dto.setPersonId(occupation.getPerson().getId());
-        dto.setPerson(createPersonDTO(occupation, showContactInformation));
-        dto.setCreationTime(DateUtil.toLocalDateTimeNullSafe(occupation.getCreationTime()));
-        if (showRegistered) {
-            dto.getPerson().setRegistered(occupation.getPerson().isRegistered());
-        }
+        dto.setPerson(createPersonDTO(occupation, showPersonInfo, showContactInformation));
+        dto.setModificationTime(DateUtil.toLocalDateTimeNullSafe(occupation.getModificationTime()));
         if (showContactInformation) {
             dto.setContactInfoShare(occupation.getContactInfoShare());
         }
         return dto;
     }
 
-    private static PersonDTO createPersonDTO(final Occupation occupation, final boolean showContactInformation) {
-        final PersonDTO personDTO = new PersonDTO();
-        Person person = occupation.getPerson();
+    private static PersonContactInfoDTO createPersonDTO(final Occupation occupation, final boolean showPersonInfo, final boolean showContactInformation) {
+        final PersonContactInfoDTO personDTO = new PersonContactInfoDTO();
+        final Person person = occupation.getPerson();
         personDTO.setByName(person.getByName());
         personDTO.setLastName(person.getLastName());
         personDTO.setHunterNumber(person.getHunterNumber());
+        if (showPersonInfo) {
+            personDTO.setRegistered(occupation.getPerson().isRegistered());
+            personDTO.setAdult(occupation.getPerson().isAdult());
+        }
         if (showContactInformation) {
             personDTO.setEmail(person.getEmail());
             personDTO.setPhoneNumber(person.getPhoneNumber());
@@ -49,7 +52,7 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
         final OccupationDTO dto = createDto(occupation);
 
         final Person person = occupation.getPerson();
-        dto.setPerson(PersonDTO.create(person));
+        dto.setPerson(PersonContactInfoDTO.create(person));
         dto.setAdditionalInfo(occupation.getAdditionalInfo());
 
         if (dto.getPerson().getAddress() != null) {
@@ -86,11 +89,11 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
     private String additionalInfo;
 
     @Valid
-    private PersonDTO person;
+    private PersonContactInfoDTO person;
 
     private ContactInfoShare contactInfoShare;
 
-    private LocalDateTime creationTime;
+    private LocalDateTime modificationTime;
 
     @Override
     public Long getId() {
@@ -170,11 +173,11 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
         this.additionalInfo = additionalInfo;
     }
 
-    public PersonDTO getPerson() {
+    public PersonContactInfoDTO getPerson() {
         return person;
     }
 
-    public void setPerson(PersonDTO person) {
+    public void setPerson(PersonContactInfoDTO person) {
         this.person = person;
     }
 
@@ -186,11 +189,11 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
         this.contactInfoShare = contactInfoShare;
     }
 
-    public LocalDateTime getCreationTime() {
-        return creationTime;
+    public LocalDateTime getModificationTime() {
+        return modificationTime;
     }
 
-    public void setCreationTime(LocalDateTime creationTime) {
-        this.creationTime = creationTime;
+    public void setModificationTime(LocalDateTime modificationTime) {
+        this.modificationTime = modificationTime;
     }
 }

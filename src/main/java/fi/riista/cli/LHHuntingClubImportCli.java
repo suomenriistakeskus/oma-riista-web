@@ -4,8 +4,8 @@ import fi.riista.config.BatchConfig;
 import fi.riista.config.Constants;
 import fi.riista.config.DataSourceConfig;
 import fi.riista.config.LiquibaseConfig;
+import fi.riista.config.SerializationConfig;
 import fi.riista.feature.RuntimeEnvironmentUtil;
-import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.integration.lupahallinta.LupahallintaImportConfig;
 import fi.riista.integration.lupahallinta.club.LHHuntingClubBatchConfig;
 import fi.riista.integration.lupahallinta.support.LupahallintaHttpClient;
@@ -28,11 +28,13 @@ import javax.sql.DataSource;
 public class LHHuntingClubImportCli {
     private static final Logger LOG = LoggerFactory.getLogger(LHHuntingClubImportCli.class);
 
-    @PropertySource("configuration/application.properties")
+    @PropertySource("classpath:configuration/application.properties")
+    @PropertySource("classpath:configuration/aws.properties")
     @ComponentScan(basePackageClasses = LHHuntingClubBatchConfig.class)
-    @Import({DataSourceConfig.class, BatchConfig.class, LiquibaseConfig.class,
-            CustomJacksonObjectMapper.class, RuntimeEnvironmentUtil.class,
-            LupahallintaHttpClient.class, LupahallintaImportConfig.class})
+    @Import({
+            DataSourceConfig.class, BatchConfig.class, LiquibaseConfig.class, RuntimeEnvironmentUtil.class,
+            SerializationConfig.class, LupahallintaHttpClient.class, LupahallintaImportConfig.class
+    })
     static class LHHuntingClubCmdContext {
         @Bean
         public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {

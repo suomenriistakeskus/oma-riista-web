@@ -1,24 +1,22 @@
 package fi.riista.feature.gamediary.srva;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
+import fi.riista.feature.gamediary.srva.method.SrvaMethod;
+import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
+import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
+import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.gamediary.srva.SrvaEventDTOBase;
-import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
-import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
-import fi.riista.feature.gamediary.srva.SrvaEvent;
-import fi.riista.feature.gamediary.srva.method.SrvaMethod;
-import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
-import javaslang.Tuple;
-import javaslang.Tuple2;
-
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.junit.Before;
+
 import java.util.List;
 
-import static fi.riista.util.TestUtils.createList;
+import static fi.riista.test.TestUtils.createList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

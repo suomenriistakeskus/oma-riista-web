@@ -1,12 +1,12 @@
 package fi.riista.feature.announcement;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.announcement.crud.AnnouncementDTO;
 import fi.riista.feature.announcement.crud.AnnouncementCrudFeature;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import javax.annotation.Resource;

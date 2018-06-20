@@ -1,11 +1,10 @@
 package fi.riista.security;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.person.Person;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -19,11 +18,14 @@ import org.springframework.util.Assert;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkState;
+import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
+import static java.util.Objects.requireNonNull;
+
 /**
- * User Info is serializable version of User domain object stored
+ * UserInfo is a serializable version of User domain object stored
  * in SecurityContextHolder during request processing.
  */
 public class UserInfo extends org.springframework.security.core.userdetails.User {
@@ -39,19 +41,21 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
     private final SystemUser.TwoFactorAuthenticationMode twoFactorAuthentication;
 
     public static UserInfo extractFrom(final Authentication authentication) {
-        Objects.requireNonNull(authentication, "No authentication available");
-        Preconditions.checkState(authentication.isAuthenticated(), "User is not authenticated");
-        Objects.requireNonNull(authentication.getPrincipal(), "No principal for authentication");
+        requireNonNull(authentication, "No authentication available");
+        checkState(authentication.isAuthenticated(), "User is not authenticated");
 
-        if (authentication.getPrincipal() instanceof UserInfo) {
-            return UserInfo.class.cast(authentication.getPrincipal());
+        final Object principal = authentication.getPrincipal(); 
+        requireNonNull(principal, "No principal for authentication");
+
+        if (principal instanceof UserInfo) {
+            return UserInfo.class.cast(principal);
         }
         throw new IllegalStateException("Authenticate user principal type is unknown: "
-                + authentication.getPrincipal().getClass().getSimpleName());
+                + principal.getClass().getSimpleName());
     }
 
     public static UserInfo extractFrom(final UserDetails userDetails) {
-        Objects.requireNonNull(userDetails, "No userDetails");
+        requireNonNull(userDetails, "No userDetails");
         if (userDetails instanceof UserInfo) {
             return UserInfo.class.cast(userDetails);
         }
@@ -65,7 +69,7 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
                 return -2L;
 
             } else if (authentication.getPrincipal() instanceof UserInfo) {
-                final Long userId = UserInfo.extractFrom(authentication).getUserId();
+                final Long userId = extractFrom(authentication).getUserId();
 
                 // This check is needed when database is empty and there exists no
                 // users at all initially.
@@ -90,9 +94,7 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
         private boolean coordinator;
         private SystemUser.TwoFactorAuthenticationMode twoFactorAuthentication;
 
-        public UserInfoBuilder(final String username,
-                               final Long userId,
-                               final SystemUser.Role role) {
+        public UserInfoBuilder(final String username, final Long userId, final SystemUser.Role role) {
             this.username = username;
             this.userId = userId;
             this.role = role;
@@ -105,9 +107,7 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
             this.username = user.getUsername();
             this.password = user.getHashedPassword();
             this.userId = user.getId();
-            this.phoneNumber = user.getPerson() != null
-                    ? user.getPerson().getPhoneNumber()
-                    : user.getPhoneNumber();
+            this.phoneNumber = user.getPerson() != null ? user.getPerson().getPhoneNumber() : user.getPhoneNumber();
             this.ipWhiteList = user.getIpWhiteList();
             this.active = user.isActive();
             this.role = user.getRole();
@@ -116,19 +116,21 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
             this.twoFactorAuthentication = user.getTwoFactorAuthentication();
         }
 
-        public UserInfoBuilder withOccupations(SystemUser user, OccupationRepository occupationRepository) {
-            if (user.getPerson() != null) {
-                this.coordinator = occupationRepository.countActiveOccupationByTypeAndPerson(
-                        user.getPerson(), EnumSet.of(OccupationType.TOIMINNANOHJAAJA)) > 0;
+        public UserInfoBuilder withOccupations(final SystemUser user, final OccupationRepository occupationRepository) {
+            final Person person = user.getPerson(); 
+            if (person != null) {
+                this.coordinator =
+                        occupationRepository.countActiveByTypeAndPerson(person, EnumSet.of(TOIMINNANOHJAAJA)) > 0;
             }
-
             return this;
         }
 
         private List<GrantedAuthority> getAuthorities() {
-            return role == null ? Collections.emptyList()
-                    : coordinator ? AuthorityUtils.createAuthorityList(role.name(), ROLE_COORDINATOR)
-                    : AuthorityUtils.createAuthorityList(role.name());
+            return role == null
+                    ? Collections.emptyList()
+                    : coordinator
+                            ? AuthorityUtils.createAuthorityList(role.name(), ROLE_COORDINATOR)
+                            : AuthorityUtils.createAuthorityList(role.name());
         }
 
         public Authentication createAuthentication() {
@@ -136,7 +138,7 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
         }
 
         public UserInfo createUserInfo() {
-            Assert.hasText(this.username);
+            Assert.hasText(this.username, "username is empty");
             return new UserInfo(this);
         }
     }
@@ -144,8 +146,9 @@ public class UserInfo extends org.springframework.security.core.userdetails.User
     private UserInfo(final UserInfoBuilder builder) {
         super(builder.username, builder.password, builder.active, builder.active, builder.active,
                 builder.active, builder.getAuthorities());
-        this.role = Objects.requireNonNull(builder.role);
-        this.privileges = Objects.requireNonNull(builder.privileges);
+
+        this.role = requireNonNull(builder.role);
+        this.privileges = requireNonNull(builder.privileges);
         this.userId = builder.userId;
         this.phoneNumber = builder.phoneNumber;
         this.ipWhiteList = builder.ipWhiteList;

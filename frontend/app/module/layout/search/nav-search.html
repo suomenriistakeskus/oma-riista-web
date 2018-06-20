@@ -4,7 +4,35 @@
        ng-click="$ctrl.activeSearchClicked()">
         <span>{{$ctrl.activeSearch.title || ('global.menu.search' | translate)}}</span>
     </a>
-    <input type="hidden"
-           ui-select2="$ctrl.select2Options"
-           ng-model="$ctrl.searchModel">
+
+    <ui-select ng-model="$ctrl.searchModel"
+               theme="select2"
+               on-select="$ctrl.doSelect()">
+
+        <ui-select-match>
+            <span ng-bind="$ctrl.searchModel.description"></span>
+        </ui-select-match>
+
+        <ui-select-choices repeat="item in $ctrl.searchResults"
+                           group-by="'categoryTranslated'"
+                           minimum-input-length="3"
+                           refresh-delay="300"
+                           refresh="$ctrl.doSearch($select.search)">
+            <span ng-bind="item.description"></span>
+        </ui-select-choices>
+
+        <ui-select-no-choice>
+            <div ng-show="!$ctrl.searching">
+                <div ng-show="$ctrl.inputTooShort($select.search)"
+                     translate="search.formatInputTooShort"
+                     translate-values="{count: 3 - $select.search.length}"></div>
+                <div ng-show="!$ctrl.inputTooShort($select.search)"
+                     translate="search.formatNoMatches"></div>
+            </div>
+            <div ng-show="$ctrl.searching">
+                <span class="fa fa-spinner fa-spin"></span>
+                <span translate="search.formatSearching"></span>
+            </div>
+        </ui-select-no-choice>
+    </ui-select>
 </li>

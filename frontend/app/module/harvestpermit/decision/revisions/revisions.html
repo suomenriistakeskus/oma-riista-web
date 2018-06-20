@@ -1,0 +1,309 @@
+<permit-decision-nav-header decision="$ctrl.decision"></permit-decision-nav-header>
+
+<div class="alert alert-info" ng-if="$ctrl.activeRevision === null">
+    Päätöstä ei ole vielä lukittu.
+</div>
+
+<div ng-if="$ctrl.activeRevision !== null">
+    <div class="row">
+        <div class="col-xs-1">
+            <h4 style="margin-top: 6px">
+                Päätös
+            </h4>
+        </div>
+
+        <div class="col-xs-5">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-xs-6">
+                        <select name="activeRevision" id="activeRevision" class="form-control"
+                                ng-model="$ctrl.activeRevision"
+                                ng-options="rev as (rev.lockedDate | date:'d.M.yyyy klo HH:mm') + (rev.latest ? ' - uusin' : '') for rev in $ctrl.revisions">
+                        </select>
+                    </div>
+                    <div class="col-xs-6">
+                        <button class="btn btn-block btn-primary"
+                                ng-click="$ctrl.downloadPdf($ctrl.activeRevision.id)">
+                            <span class="fa fa-lg fa-file-pdf-o"></span>
+                            &nbsp;
+                            Lataa päätös
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-xs-6 text-right">
+            <button class="btn btn-default"
+                    ng-show="$ctrl.decision.harvestPermitId"
+                    ng-click="$ctrl.moveToPermit()">
+                Siirry lupaan
+                <span class="fa fa-fw fa-chevron-right"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="well" style="font-size: 15px; padding: 40px 20px 15px;">
+        <div class="row">
+            <div class="col-xs-4">
+                <permit-decision-revision-state-icon
+                        icon-type="lock"
+                        icon-enabled="true">
+                </permit-decision-revision-state-icon>
+
+                <div style="margin-left: 75px;">
+                    <p>
+                        <strong>Lukittu</strong>
+                    </p>
+
+                    <p class="text-muted" style="line-height: 1.5em">
+                        <span ng-bind="$ctrl.activeRevision.lockedDate | date:'d.M.yyyy HH:mm'"></span>
+                        <br>
+                        <span ng-bind="$ctrl.activeRevision.lockedByUsername"></span>
+                    </p>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <permit-decision-revision-state-icon
+                        icon-type="calendar"
+                        icon-enabled="$ctrl.activeRevision.publishDate">
+                </permit-decision-revision-state-icon>
+
+                <div style="margin-left: 75px;">
+                    <p>
+                        <strong ng-show="$ctrl.activeRevision.publishDate">Julkaistu</strong>
+                        <strong class="text-muted" ng-hide="$ctrl.activeRevision.publishDate">Julkaisu</strong>
+                    </p>
+
+                    <p class="text-muted">
+                        <span ng-hide="$ctrl.activeRevision.publishDate"
+                              ng-bind="$ctrl.activeRevision.scheduledPublishDate | date:'d.M.yyyy HH:mm'"></span>
+                        <span ng-show="$ctrl.activeRevision.publishDate"
+                              ng-bind="$ctrl.activeRevision.publishDate | date:'d.M.yyyy HH:mm'"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-xs-4" ng-if="$ctrl.activeRevision.postalByMail">
+                <permit-decision-revision-state-icon
+                        icon-type="envelope"
+                        icon-enabled="$ctrl.activeRevision.postedByMailDate">
+                </permit-decision-revision-state-icon>
+
+                <div style="margin-left: 75px;">
+                    <p>
+                        <strong ng-show="$ctrl.activeRevision.postedByMailDate">Postitettu</strong>
+                        <strong ng-hide="$ctrl.activeRevision.postedByMailDate" class="text-muted">Postitus</strong>
+                    </p>
+
+                    <p class="text-muted" ng-show="$ctrl.activeRevision.postedByMailDate">
+                        <span ng-bind="$ctrl.activeRevision.postedByMailDate | date:'d.M.yyyy HH:mm'"></span>
+                        <br>
+                        <span ng-bind="$ctrl.activeRevision.postedByMailUsername"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4>Päätöksen liitteet</h4>
+
+    <div class="well"
+         ng-if="!$ctrl.activeRevision.attachments || $ctrl.activeRevision.attachments.length === 0">
+        Ei liitteitä
+    </div>
+
+    <p ng-repeat="a in $ctrl.activeRevision.attachments track by a.id">
+        <a ng-click="$ctrl.downloadAttachment(a)">
+            <span class="fa fa-lg fa-fw fa-file-pdf-o"></span>
+            &nbsp;
+            <span ng-bind="a.description"></span>
+        </a>
+    </p>
+
+    <hr>
+
+    <div class="row">
+        <div class="col-xs-6">
+            <h4>Maksut</h4>
+        </div>
+
+        <div class="col-xs-6 text-right">
+            <button class="btn btn-default"
+                    ng-disabled="!$ctrl.decision.applicationNumber"
+                    ng-click="$ctrl.moveToInvoices()">
+                Siirry laskuihin
+                <span class="fa fa-fw fa-chevron-right"></span>
+            </button>
+        </div>
+    </div>
+
+    <div ng-if="$ctrl.activeRevision.postalByMail">
+        <div ng-switch="$ctrl.canDownloadDecisionInvoice()">
+            <p ng-switch-when="true">
+                <a ng-click="$ctrl.downloadProcessingInvoice()">
+                    <span class="fa fa-lg fa-fw fa-file-pdf-o text-primary"></span>
+                    &nbsp;
+                    Lataa käsittelymaksu
+                </a>
+            </p>
+            <p ng-switch-default class="text-danger">
+                <span class="fa fa-lg fa-fw fa-file-pdf-o text-primary"></span>
+                &nbsp;
+                Käsittelymaksua ei ole vielä muodostettu, koska päätöstä ei ole julkaistu
+            </p>
+        </div>
+
+        <p ng-repeat="gameSpeciesCode in $ctrl.mooselikeSpeciesCodes track by gameSpeciesCode">
+            <a ng-click="$ctrl.downloadHarvestInvoice(gameSpeciesCode)">
+                <span class="fa fa-lg fa-fw fa-file-pdf-o text-primary"></span>
+                &nbsp;
+                Lataa pyyntilupamaksu
+                (<span ng-bind="::$ctrl.getSpeciesName(gameSpeciesCode)"></span>)
+            </a>
+        </p>
+    </div>
+
+    <div class="well" ng-if="!$ctrl.activeRevision.postalByMail">
+        <div class="row">
+            <div class="col-xs-1">
+                <span class="fa fa-4x fa-at text-primary"></span>
+            </div>
+            <div class="col-xs-11">
+                <p>
+                    <strong>Sähköisesti</strong>
+                </p>
+
+                <p class="text-muted">
+                    Maksulomakkeet eivät ole ladattavissa, koska hakemuksessa on valittu sähköinen toimitustapa.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4>Toimitustapa</h4>
+
+    <div class="well" ng-if="!$ctrl.activeRevision.postalByMail">
+        <div class="row">
+            <div class="col-xs-1">
+                <span class="fa fa-4x fa-at text-primary"></span>
+            </div>
+            <div class="col-xs-11">
+                <p>
+                    <strong>Sähköisesti</strong>
+                </p>
+
+                <p class="text-muted">
+                    Päätös on luvansaajan ladattavissa Oma Riista -palvelussa.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="well" ng-if="$ctrl.activeRevision.postalByMail">
+        <div class="row">
+            <div class="col-xs-1">
+                <span class="fa fa-4x fa-fw fa-envelope text-primary"></span>
+            </div>
+
+            <div class="col-xs-7">
+                <p>
+                    <strong>Postitoimitus</strong>
+                </p>
+
+                <p class="text-muted" style="margin-top: 20px;">
+                    Kun toimitat päätöksen postilla, niin kuittaa se painikkeesta postitetuksi.
+                </p>
+            </div>
+            <div class="col-xs-4 text-right">
+                <p><br></p>
+
+                <div class="btn-group pull-right" style="margin-left: 20px">
+                    <label class="btn btn-default form-control-static"
+                           ng-model="$ctrl.activeRevision.posted"
+                           ng-change="$ctrl.togglePosted($ctrl.activeRevision.posted)"
+                           ng-disabled="!$ctrl.activeRevision.canTogglePosted"
+                           uib-btn-radio="false">
+                            <span class="text-muted fa fa-check"
+                                  ng-class="{invisible: $ctrl.activeRevision.posted}"></span>
+                        &nbsp;
+                    </label>
+                    <label class="btn btn-default form-control-static"
+                           ng-model="$ctrl.activeRevision.posted"
+                           ng-change="$ctrl.togglePosted($ctrl.activeRevision.posted)"
+                           ng-disabled="!$ctrl.activeRevision.canTogglePosted"
+                           uib-btn-radio="true">
+                            <span class="text-primary fa fa-check"
+                                  ng-class="{invisible: !$ctrl.activeRevision.posted}"></span>
+                        &nbsp;
+                    </label>
+                </div>
+
+                <p ng-if="!$ctrl.activeRevision.posted" class="form-control-static">
+                    <strong>Ei postitettu</strong>
+                </p>
+
+                <p ng-if="$ctrl.activeRevision.posted" class="form-control-static">
+                    <strong class="text-primary">
+                        <span>Postitettu</span>
+                    </strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4>Luvan yhteyshenkilö</h4>
+
+    <div class="table-responsive">
+        <table class="table table-condensed">
+            <thead>
+            <tr>
+                <th class="col-xs-4">Nimi</th>
+                <th class="col-xs-4">Sähköposti</th>
+                <th class="col-xs-4">Lähetetty</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="r in $ctrl.filterReceivers('CONTACT_PERSON') track by r.id">
+                <td ng-bind="r.name"></td>
+                <td>
+                    <span ng-if="r.email" ng-bind="r.email"></span>
+                    <span ng-if="!r.email">Postitoimitus</span>
+                </td>
+                <td>
+                    <span ng-if="r.email" ng-bind="r.sentDate | date:'d.M.yyyy HH:mm'"></span>
+                    <span ng-if="!r.email">Postitoimitus</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr>
+
+    <h4>Tiedoksi</h4>
+
+    <div class="table-responsive">
+        <table class="table table-condensed">
+            <thead>
+            <tr>
+                <th class="col-xs-4">Nimi</th>
+                <th class="col-xs-4">Sähköposti</th>
+                <th class="col-xs-4">Lähetetty</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="r in $ctrl.filterReceivers('OTHER') track by r.id">
+                <td ng-bind="r.name"></td>
+                <td ng-bind="r.email"></td>
+                <td ng-bind="r.sentDate | date:'d.M.yyyy HH:mm'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

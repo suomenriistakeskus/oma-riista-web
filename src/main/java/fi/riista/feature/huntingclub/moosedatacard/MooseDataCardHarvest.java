@@ -1,15 +1,13 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static com.google.common.base.Strings.emptyToNull;
-
 import fi.riista.util.F;
-
-import javaslang.control.Try;
+import io.vavr.control.Try;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Optional;
+
+import static com.google.common.base.Strings.emptyToNull;
 
 public interface MooseDataCardHarvest extends DateAndLocation {
 
@@ -65,5 +63,4 @@ public interface MooseDataCardHarvest extends DateAndLocation {
     default Integer getFitnessClassAsInteger() {
         return findFitnessClassAsInteger().orElse(null);
     }
-
 }

@@ -16,11 +16,11 @@ public class LupahallintaHarvestPermitImporter {
 
     private final HarvestPermitImportFeature harvestPermitImportFeature;
     private final LupahallintaHttpClient lupahallintaHttpClient;
-    private final LupahallintaImportMailHandler mailHandler;
+    private final LupahallintaPermitImportMailHandler mailHandler;
 
     public LupahallintaHarvestPermitImporter(HarvestPermitImportFeature harvestPermitImportFeature,
                                              LupahallintaHttpClient lupahallintaHttpClient,
-                                             LupahallintaImportMailHandler mailHandler) {
+                                             LupahallintaPermitImportMailHandler mailHandler) {
         this.harvestPermitImportFeature = harvestPermitImportFeature;
         this.lupahallintaHttpClient = lupahallintaHttpClient;
         this.mailHandler = mailHandler;

@@ -33,8 +33,6 @@ import fi.riista.sql.SQHarvestPermitSpeciesAmount;
 import fi.riista.sql.SQMooseHuntingSummary;
 import fi.riista.sql.SQOrganisation;
 import fi.riista.util.F;
-import javaslang.Tuple;
-import javaslang.collection.HashMap;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -170,7 +168,7 @@ public class HuntingClubPermitService {
         // Moose summaries are fetched only if species code is set to moose.
         final Stream<MooseHuntingSummary> mooseSummaries = GameSpecies.isMoose(speciesCode)
                 ? mooseHuntingSummaryRepo.findByHarvestPermit(permit).stream()
-                        .filter(mooseSummary -> !basicSummaryByClubId.containsKey(mooseSummary.getClub().getId()))
+                .filter(mooseSummary -> !basicSummaryByClubId.containsKey(mooseSummary.getClub().getId()))
                 : Stream.empty();
 
         final Stream<? extends HuntingEndStatus> endStatuses = Stream.concat(basicSummaries.stream(), mooseSummaries);
@@ -226,7 +224,7 @@ public class HuntingClubPermitService {
         final Coalesce<Integer> remainingPopulationInEffectiveArea = basicSummary.remainingPopulationInEffectiveArea
                 .coalesce(mooseSummary.moosesRemainingInEffectiveHuntingArea);
 
-        final Map<Long, ClubHuntingSummaryBasicInfoDTO> results = HashMap.ofEntries(sqlQueryFactory
+        final List<ClubHuntingSummaryBasicInfoDTO> list = sqlQueryFactory
                 .from(harvestPermit)
                 .innerJoin(harvestPermit._harvestPermitSpeciesAmountPermitFk, speciesAmount)
                 .innerJoin(speciesAmount.harvestPermitSpeciesAmountGameSpeciesFk, gameSpecies).on(
@@ -278,10 +276,12 @@ public class HuntingClubPermitService {
                     dto.setRemainingPopulationInTotalArea(tuple.get(remainingPopulationInTotalArea));
                     dto.setRemainingPopulationInEffectiveArea(tuple.get(remainingPopulationInEffectiveArea));
 
-                    return Tuple.of(clubId, dto);
+                    return dto;
                 })
-                .collect(toList()))
-                .toJavaMap();
+                .collect(toList());
+
+        final Map<Long, ClubHuntingSummaryBasicInfoDTO> results =
+                F.index(list, ClubHuntingSummaryBasicInfoDTO::getClubId);
 
         // Need to decorate results as the predicate for basic summary (that should be part of the
         // left-join in the above query) is included as where predicate (stemming from JPQL
@@ -356,16 +356,32 @@ public class HuntingClubPermitService {
         queryParams.addValue("clubIds", clubIds);
 
         final List<HuntingClubPermitCountDTO> res =
-                jdbcTemplate.query(sql, queryParams, (rs, rowNum) -> new HuntingClubPermitCountDTO(
-                        rs.getLong("organisation_id"),
+                jdbcTemplate.query(sql, queryParams, (rs, rowNum) -> {
+                    final long organisationId = rs.getLong("organisation_id");
 
-                        rs.getInt("adult_males"),
-                        rs.getInt("adult_females"),
-                        rs.getInt("young_males"),
-                        rs.getInt("young_females"),
+                    final int adultMales = rs.getInt("adult_males");
+                    final int adultFemales = rs.getInt("adult_females");
+                    final int youngMales = rs.getInt("young_males");
+                    final int youngFemales = rs.getInt("young_females");
 
-                        rs.getInt("adult_males_not_edible") + rs.getInt("adult_females_not_edible"),
-                        rs.getInt("young_males_not_edible") + rs.getInt("young_females_not_edible")));
+                    final int adultMalesNotEdible = rs.getInt("adult_males_not_edible");
+                    final int adultFemalesNotEdible = rs.getInt("adult_females_not_edible");
+                    final int youngMalesNotEdible = rs.getInt("young_males_not_edible");
+                    final int youngFemalesNotEdible = rs.getInt("young_females_not_edible");
+
+                    return new HuntingClubPermitCountDTO(
+                            organisationId,
+                            adultMales,
+                            adultFemales,
+                            youngMales,
+                            youngFemales,
+                            adultMalesNotEdible + adultFemalesNotEdible,
+                            youngMalesNotEdible + youngFemalesNotEdible,
+                            adultMalesNotEdible,
+                            adultFemalesNotEdible,
+                            youngMalesNotEdible,
+                            youngFemalesNotEdible);
+                });
 
         final Map<Long, HuntingClubPermitCountDTO> map = F.index(res, HuntingClubPermitCountDTO::getHuntingClubId);
 

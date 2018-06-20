@@ -1,15 +1,21 @@
 package fi.riista.feature.organization.occupation.search;
 
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.occupation.OccupationType;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.SafeHtml;
 
 public class OccupationContactSearchDTO {
 
     @NotEmpty // this is required, it's used if nothing else is specified
     private OrganisationType organisationType;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String areaCode;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String rhyCode;
+
     private OccupationType occupationType;
 
     public OrganisationType getOrganisationType() {

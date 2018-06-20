@@ -1,22 +1,23 @@
 package com.nsftele.tempo.api;
 
-import com.nsftele.tempo.model.Languages;
+import com.nsftele.tempo.model.Language;
 import feign.Headers;
 import feign.RequestLine;
 
+import java.util.List;
 
-public interface LanguageApi {
+
+public interface LanguageApi  {
 
 
   /**
    * List languages
    * Lists supported languages
-   * @return Languages
+   * @return List&lt;Language&gt;
    */
   @RequestLine("GET /language.json")
   @Headers({
-    "Content-type: application/json",
     "Accept: application/json",
   })
-  Languages getLanguages();
+  List<Language> getLanguages();
 }

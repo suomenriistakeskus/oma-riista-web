@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_mooselike_price;
-
 CREATE TABLE import_mooselike_price (
   hunting_year               INT           NOT NULL,
   game_species_official_code INT           NOT NULL,

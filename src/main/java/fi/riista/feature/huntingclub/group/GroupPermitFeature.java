@@ -1,12 +1,13 @@
 package fi.riista.feature.huntingclub.group;
 
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.harvestpermit.HarvestPermitSpecs;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermit_;
+import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpecs;
+import fi.riista.feature.harvestpermit.HarvestPermit_;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.jpa.JpaSubQuery;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class GroupPermitFeature {
@@ -28,6 +30,9 @@ public class GroupPermitFeature {
 
     @Resource
     private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
+
+    @Resource
+    private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
 
     @Transactional(readOnly = true)
     public HarvestPermitSpeciesAmountDTO getGroupPermitSpeciesAmount(final long huntingClubGroupId) {
@@ -44,8 +49,11 @@ public class GroupPermitFeature {
                                                                     final int huntingYear) {
         final HuntingClub huntingClub = requireEntityService.requireHuntingClub(clubId, EntityPermission.READ);
 
-        final List<HarvestPermit> permits = harvestPermitRepository.findAll(spec(
-                huntingClub, huntingYear, gameSpeciesCode));
+        final List<HarvestPermit> permits = harvestPermitRepository
+                .findAll(spec(huntingClub, huntingYear, gameSpeciesCode))
+                .stream()
+                .filter(p -> !harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(p, huntingYear))
+                .collect(Collectors.toList());
 
         return HuntingClubGroupDTO.PermitDTO.create(permits);
     }

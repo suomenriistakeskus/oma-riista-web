@@ -1,9 +1,6 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.numericFieldNotInValidRange;
-
 import com.google.common.collect.Range;
-
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_1;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
@@ -11,9 +8,10 @@ import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_3;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_4;
 
 import javax.annotation.Nonnull;
-
 import java.util.Objects;
 import java.util.function.Function;
+
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.numericFieldNotInValidRange;
 
 public abstract class MooseDataCardSummaryField<T, N extends Number & Comparable<N>> extends NumericFieldMeta<T, N> {
 
@@ -36,6 +34,16 @@ public abstract class MooseDataCardSummaryField<T, N extends Number & Comparable
             create("Kuusipeurojen arvioitu yksilömäärä (kohta 7.2)",
                     0,
                     MooseDataCardPage7::getEstimatedSpecimenAmountOfFallowDeer);
+
+    public static final MooseDataCardSummaryField<MooseDataCardPage7, Integer> ESTIMATED_AMOUNT_OF_WILD_BOARS =
+            create("Villisikojen arvioitu yksilömäärä (kohta 7.2)",
+                    0,
+                    MooseDataCardPage7::getEstimatedSpecimenAmountOfWildBoar);
+
+    public static final MooseDataCardSummaryField<MooseDataCardPage7, Integer> ESTIMATED_AMOUNT_OF_SOWS_WITH_PIGLETS =
+            create("Porsaallisten emakoiden arvioitu yksilömäärä (kohta 7.2)",
+                    0,
+                    MooseDataCardPage7::getEstimatedAmountOfSowsWithPiglets);
 
     public static final MooseDataCardSummaryField<MooseDataCardSection_8_1, Double> TOTAL_HUNTING_AREA =
             create("Metsästysalueen kokonaispinta-ala (kohta 8.1)", 0.0, MooseDataCardSection_8_1::getTotalHuntingArea);

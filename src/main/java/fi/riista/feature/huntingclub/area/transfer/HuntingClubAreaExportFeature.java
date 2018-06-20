@@ -7,8 +7,8 @@ import fi.riista.feature.account.audit.AuditService;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.feature.gis.zone.AreaEntity;
 import fi.riista.feature.gis.zone.GISZoneRepository;
-import fi.riista.feature.harvestpermit.area.HarvestPermitArea;
-import fi.riista.feature.harvestpermit.area.HarvestPermitAreaRepository;
+import fi.riista.feature.permit.area.HarvestPermitArea;
+import fi.riista.feature.permit.area.HarvestPermitAreaRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.area.HuntingClubAreaRepository;
@@ -17,9 +17,11 @@ import fi.riista.integration.gis.ExternalHuntingClubAreaExportRequest;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import fi.riista.util.GISUtils;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.MediaTypeExtras;
-import javaslang.control.Either;
+import fi.riista.util.RandomStringUtil;
+import io.vavr.control.Either;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
@@ -79,8 +81,12 @@ public class HuntingClubAreaExportFeature {
     @Transactional(readOnly = true)
     public ResponseEntity<?> exportCombinedGeoJson(final ExternalHuntingClubAreaExportRequest body,
                                                    final WebRequest request) {
-
         final String externalId = body.getExternalId().toUpperCase();
+
+        if (externalId.length() < RandomStringUtil.EXTERNAL_ID_LENGTH) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
         final Optional<Either<HuntingClubArea, HarvestPermitArea>> areaOpt = resolveArea(externalId);
         final AreaEntity<Long> baseEntity = areaOpt.map(F::reduceToCommonBase).orElse(null);
 
@@ -182,7 +188,8 @@ public class HuntingClubAreaExportFeature {
     }
 
     private FeatureCollection toFeatureCollection(final AreaEntity<?> area) {
-        return area.computeCombinedFeatures(zoneRepository, 1)
+        return area.getZoneIdSet()
+                .map(zoneIds -> zoneRepository.getCombinedFeatures(zoneIds, GISUtils.SRID.WGS84))
                 .orElseThrow(MissingHuntingClubAreaGeometryException::new);
     }
 
@@ -190,14 +197,17 @@ public class HuntingClubAreaExportFeature {
                                                               final HuntingClub club,
                                                               final int huntingYear) {
 
-        return area.computeCombinedFeatures(zoneRepository, 1)
+        return area.getZoneIdSet()
+                .map(zoneIds -> zoneRepository.getCombinedFeatures(zoneIds, GISUtils.SRID.WGS84))
                 .map(featureCollection -> {
                     final Date saveDate = area.getLatestCombinedModificationTime();
                     final DateTime saveDateTime = new DateTime(saveDate).withZone(DateTimeZone.UTC);
 
                     for (final Feature feature : featureCollection) {
                         feature.setId(null);
-                        feature.setProperty(GeoJSONConstants.PROPERTY_CLUB_NAME, club.getNameLocalisation());
+                        if (club != null) {
+                            feature.setProperty(GeoJSONConstants.PROPERTY_CLUB_NAME, club.getNameLocalisation());
+                        }
                         feature.setProperty(GeoJSONConstants.PROPERTY_AREA_NAME, area.getNameLocalisation());
                         feature.setProperty(GeoJSONConstants.PROPERTY_AREA_SIZE, Math.round(area.getZone().getComputedAreaSize()));
                         feature.setProperty(GeoJSONConstants.PROPERTY_WATER_AREA_SIZE, Math.round(area.getZone().getWaterAreaSize()));

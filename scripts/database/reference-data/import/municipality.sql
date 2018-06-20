@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS import_municipality;
-
 CREATE TABLE import_municipality (
   official_code CHAR(3) PRIMARY KEY,
   name_finnish  VARCHAR(255) NOT NULL,

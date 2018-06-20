@@ -1,45 +1,44 @@
 package fi.riista.feature.harvestpermit.season;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
-import fi.riista.feature.harvestpermit.report.fields.HarvestReportFieldsDTO;
-import fi.riista.util.DtoUtil;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.util.F;
-import org.hibernate.validator.constraints.SafeHtml;
+import fi.riista.validation.DoNotValidate;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
-import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
-public class HarvestSeasonDTO extends BaseEntityDTO<Long> implements Has2BeginEndDates {
-
+public class HarvestSeasonDTO implements Has2BeginEndDates {
     @Nonnull
-    public static HarvestSeasonDTO create(final @Nonnull HarvestSeason season) {
-        final HarvestSeasonDTO dto = new HarvestSeasonDTO();
-        DtoUtil.copyBaseFields(season, dto);
+    public static HarvestSeasonDTO createWithSpeciesAndQuotas(final @Nonnull HarvestSeason season) {
+        final HarvestSeasonDTO dto = create(season);
 
-        dto.setNameFI(season.getNameFinnish());
-        dto.setNameSV(season.getNameSwedish());
-        dto.setFields(HarvestReportFieldsDTO.create(season.getFields()));
-        dto.copyDatesFrom(season);
-        dto.setEndOfReportingDate(season.getEndOfReportingDate());
-        dto.setEndOfReportingDate2(season.getEndOfReportingDate2());
+        dto.setSpecies(GameSpeciesDTO.create(season.getSpecies()));
         dto.setQuotas(F.mapNonNullsToList(season.getQuotas(), HarvestQuotaDTO::create));
 
         return dto;
     }
 
+    @Nonnull
+    public static HarvestSeasonDTO create(final @Nonnull HarvestSeason season) {
+        final HarvestSeasonDTO dto = new HarvestSeasonDTO();
+        dto.setId(season.getId());
+        dto.setName(season.getNameLocalisation().asMap());
+        dto.copyDatesFrom(season);
+        dto.setEndOfReportingDate(season.getEndOfReportingDate());
+        dto.setEndOfReportingDate2(season.getEndOfReportingDate2());
+
+        return dto;
+    }
+
     private Long id;
-    private Integer rev;
 
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String nameFI;
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String nameSV;
+    private Map<String, String> name;
 
-    @Valid
-    private HarvestReportFieldsDTO fields;
+    @DoNotValidate
+    private GameSpeciesDTO species;
 
     private LocalDate beginDate;
     private LocalDate endDate;
@@ -51,48 +50,28 @@ public class HarvestSeasonDTO extends BaseEntityDTO<Long> implements Has2BeginEn
 
     private List<HarvestQuotaDTO> quotas;
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long id) {
         this.id = id;
     }
 
-    @Override
-    public Integer getRev() {
-        return rev;
+    public Map<String, String> getName() {
+        return name;
     }
 
-    @Override
-    public void setRev(Integer rev) {
-        this.rev = rev;
+    public void setName(final Map<String, String> name) {
+        this.name = name;
     }
 
-    public void setNameFI(String nameFI) {
-        this.nameFI = nameFI;
+    public GameSpeciesDTO getSpecies() {
+        return species;
     }
 
-    public String getNameFI() {
-        return nameFI;
-    }
-
-    public void setNameSV(String nameSV) {
-        this.nameSV = nameSV;
-    }
-
-    public String getNameSV() {
-        return nameSV;
-    }
-
-    public void setFields(HarvestReportFieldsDTO fields) {
-        this.fields = fields;
-    }
-
-    public HarvestReportFieldsDTO getFields() {
-        return fields;
+    public void setSpecies(final GameSpeciesDTO species) {
+        this.species = species;
     }
 
     @Override

@@ -36,7 +36,7 @@ public class MetsastajaRekisteriController {
         try {
             LOG.info("Preparing upload filename={} username={}",
                     multiPart.getOriginalFilename(),
-                    activeUserService.getActiveUserInfo().getUsername());
+                    activeUserService.getActiveUsernameOrNull());
 
             final PendingImportFile pendingImportFile = innofactorImportRunner.prepareUpload(multiPart);
 

@@ -9,18 +9,26 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Component
-@Transactional
 public class MetsahallitusGeometryLookupFeature {
+
     @Resource
-    private GISMetsahallitusRepository metsahallitusHirviRepository;
+    private MetsahallitusHirviRepository metsahallitusHirviRepository;
+
+    @Resource
+    private MetsahallitusPienriistaRepository metsahallitusPienriistaRepository;
 
     @Transactional(readOnly = true)
-    public List<GISMetsahallitusHirviDTO> listHirvi(final int year) {
-        return metsahallitusHirviRepository.listHirvi(year);
+    public List<MetsahallitusHirviDTO> listHirvi(final int year) {
+        return metsahallitusHirviRepository.findAll(year);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MetsahallitusPienriistaDTO> listPienriista(final int year) {
+        return metsahallitusPienriistaRepository.findAll(year);
     }
 
     @Transactional(readOnly = true)
     public Feature getHirviFeature(final int id) {
-        return metsahallitusHirviRepository.getHirviFeature(id, GISUtils.SRID.WGS84);
+        return metsahallitusHirviRepository.findFeature(id, GISUtils.SRID.WGS84);
     }
 }

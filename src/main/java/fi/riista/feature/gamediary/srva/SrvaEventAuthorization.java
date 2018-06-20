@@ -2,7 +2,6 @@ package fi.riista.feature.gamediary.srva;
 
 import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.account.user.UserRepository;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
 import fi.riista.security.authorization.AbstractEntityAuthorization;
@@ -40,25 +39,21 @@ public class SrvaEventAuthorization extends AbstractEntityAuthorization<SrvaEven
     }
 
     @Override
-    protected void authorizeTarget(@Nonnull AuthorizationTokenCollector collector,
-                                   @Nonnull SrvaEvent srvaEvent,
-                                   @Nonnull UserInfo userInfo) {
+    protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,
+                                   @Nonnull final SrvaEvent srvaEvent,
+                                   @Nonnull final UserInfo userInfo) {
 
-        final Person authenticatedPerson = getAuthenticatedPerson(userInfo);
+        userAuthorizationHelper.getPerson(userInfo).ifPresent(person -> {
 
-        collector.addAuthorizationRole(Role.AUTHOR,
-                () -> Objects.equals(authenticatedPerson, srvaEvent.getAuthor()));
+            collector.addAuthorizationRole(Role.AUTHOR, () -> Objects.equals(person, srvaEvent.getAuthor()));
 
-        collector.addAuthorizationRole(Role.RHY_COORDINATOR,
-                () -> userAuthorizationHelper.isCoordinator(srvaEvent.getRhy(), userInfo) ||
-                        srvaEvent.isAccident() && userAuthorizationHelper.isCoordinatorAnywhere(userInfo));
+            collector.addAuthorizationRole(Role.RHY_COORDINATOR,
+                    () -> userAuthorizationHelper.isCoordinator(srvaEvent.getRhy(), person) ||
+                            srvaEvent.isAccident() && userAuthorizationHelper.isCoordinatorAnywhere(person));
 
-        collector.addAuthorizationRole(Role.RHY_SRVA_CONTACT_PERSON,
-                () -> userAuthorizationHelper.isSrvaContactPerson(srvaEvent.getRhy(), userInfo) ||
-                        srvaEvent.isAccident() && userAuthorizationHelper.isSrvaContactPersonAnywhere(userInfo));
-    }
-
-    private Person getAuthenticatedPerson(final UserInfo userInfo) {
-        return userInfo.getUserId() != null ? userRepository.getOne(userInfo.getUserId()).getPerson() : null;
+            collector.addAuthorizationRole(Role.RHY_SRVA_CONTACT_PERSON,
+                    () -> userAuthorizationHelper.isSrvaContactPerson(srvaEvent.getRhy(), person) ||
+                            srvaEvent.isAccident() && userAuthorizationHelper.isSrvaContactPersonAnywhere(person));
+        });
     }
 }

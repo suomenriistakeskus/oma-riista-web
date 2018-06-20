@@ -1,29 +1,37 @@
 package fi.riista.feature.harvestpermit;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.annotations.QueryDelegate;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.harvestpermit.report.HasHarvestReportState;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.util.F;
+import fi.riista.util.LocalisedString;
 import fi.riista.validation.FinnishHuntingPermitNumber;
 import org.hibernate.validator.constraints.URL;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -33,20 +41,20 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
 @Access(AccessType.FIELD)
-public class HarvestPermit extends LifecycleEntity<Long> {
+public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestReportState {
 
     public static final String ID_COLUMN_NAME = "harvest_permit_id";
 
@@ -61,6 +69,7 @@ public class HarvestPermit extends LifecycleEntity<Long> {
 
     public static final String MOOSELIKE_PERMIT_TYPE = "100";
     public static final String MOOSELIKE_AMENDMENT_PERMIT_TYPE = "190";
+    public static final LocalisedString MOOSELIKE_PERMIT_NAME = LocalisedString.of("Hirvieläinten pyyntilupa", "Jaktlicens för hjortdjur");
 
     private static final Set<String> RESOLVE_PERMIT_HOLDER_AND_PARTNER = Collections.singleton(MOOSELIKE_PERMIT_TYPE);
 
@@ -84,6 +93,14 @@ public class HarvestPermit extends LifecycleEntity<Long> {
         return MOOSELIKE_AMENDMENT_PERMIT_TYPE.equals(permitTypeCode);
     }
 
+    public static LocalDate getDefaultMooselikeBeginDate(final int huntingYear) {
+        return new LocalDate(huntingYear, 9, 1);
+    }
+
+    public static LocalDate getDefaultMooselikeEndDate(final int huntingYear) {
+        return new LocalDate(huntingYear + 1, 1, 15);
+    }
+
     private Long id;
 
     @FinnishHuntingPermitNumber
@@ -94,6 +111,9 @@ public class HarvestPermit extends LifecycleEntity<Long> {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Person originalContactPerson;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private PermitDecision permitDecision;
 
     /**
      * RHY johon lupa on myönnetty
@@ -113,16 +133,13 @@ public class HarvestPermit extends LifecycleEntity<Long> {
     private String permitTypeCode;
 
     @OneToMany(mappedBy = "harvestPermit", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<HarvestPermitSpeciesAmount> speciesAmounts = Lists.newLinkedList();
+    private List<HarvestPermitSpeciesAmount> speciesAmounts = new LinkedList<>();
 
     @OneToMany(mappedBy = "harvestPermit", orphanRemoval = true, cascade = CascadeType.ALL)
-    private Set<HarvestPermitContactPerson> contactPersons = new HashSet<>();
+    private List<HarvestPermitContactPerson> contactPersons = new LinkedList<>();
 
     @OneToMany(mappedBy = "harvestPermit")
-    private Set<HarvestReport> harvestReports = new HashSet<>();
-
-    @OneToMany(mappedBy = "harvestPermit")
-    private Set<Harvest> harvests = new HashSet<>();
+    private List<Harvest> harvests = new LinkedList<>();
 
     @Size(max = 255)
     @Column
@@ -134,9 +151,18 @@ public class HarvestPermit extends LifecycleEntity<Long> {
     @Column(nullable = false, updatable = false)
     private boolean harvestsAsList;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
-    private HarvestReport endOfHuntingReport;
+    @Column
+    @Enumerated(EnumType.STRING)
+    private HarvestReportState harvestReportState;
+
+    @Column
+    private DateTime harvestReportDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Person harvestReportAuthor;
+
+    @Column
+    private Boolean harvestReportModeratorOverride;
 
     @OneToMany(mappedBy = "harvestPermit")
     private Set<MooseHuntingSummary> mooseHuntingSummaries;
@@ -182,31 +208,73 @@ public class HarvestPermit extends LifecycleEntity<Long> {
     @Column
     private Integer permitAreaSize;
 
-    // Helpers -->
-
-    public Optional<HarvestPermitSpeciesAmount> findSpeciesAmount(final int gameSpeciesCode, final LocalDate date) {
-        return getSpeciesAmounts().stream()
-                .filter(spa -> Objects.requireNonNull(spa).matches(gameSpeciesCode, date))
-                .findFirst();
+    @AssertTrue
+    public boolean isHarvestReportFieldsConsistent() {
+        return F.allNull(this.harvestReportAuthor, this.harvestReportState, this.harvestReportDate, this.harvestReportModeratorOverride) ||
+                F.allNotNull(this.harvestReportAuthor, this.harvestReportState, this.harvestReportDate, this.harvestReportModeratorOverride);
     }
 
-    public boolean isUnavailable() {
-        return endOfHuntingReport != null;
+    // Helpers -->
+
+    public boolean hasSpeciesAmount(final int gameSpeciesCode, final LocalDate date) {
+        return getSpeciesAmounts().stream().anyMatch(spa -> spa.matches(gameSpeciesCode, date));
     }
 
     public boolean isPermittedMethodAllowed() {
         return PERMITTED_METHOD_ALLOWED.contains(permitTypeCode);
     }
 
-    public Set<HarvestReport> getUndeletedHarvestReports() {
-        return harvestReports == null ? Collections.emptySet() : harvestReports.stream()
-                .filter(report -> report.getState() != HarvestReport.State.DELETED)
-                .collect(Collectors.toSet());
+    @Nonnull
+    public Harvest.StateAcceptedToHarvestPermit getStateAcceptedToPermit(@Nullable final Person currentPerson) {
+        if (isHarvestReportApproved() || isHarvestReportRejected()) {
+            // no-one can add harvest for permit when report has been approved or rejected
+            return Harvest.StateAcceptedToHarvestPermit.REJECTED;
+        }
+
+        if (isHarvestReportSentForApproval()) {
+            // only moderator can add harvest to permit with report sent for approval
+            return currentPerson == null
+                    ? Harvest.StateAcceptedToHarvestPermit.ACCEPTED
+                    : Harvest.StateAcceptedToHarvestPermit.REJECTED;
+        }
+
+        // accept harvest for permit automatically as permit contact person or moderator
+        return currentPerson == null || hasContactPerson(currentPerson)
+                ? Harvest.StateAcceptedToHarvestPermit.ACCEPTED
+                : Harvest.StateAcceptedToHarvestPermit.PROPOSED;
     }
 
-    public boolean isEndOfHuntingReportRequired() {
-        return endOfHuntingReport == null && getSpeciesAmounts().stream().anyMatch(
-                spa -> Objects.requireNonNull(spa).isEndOfHuntingReportRequired(getUndeletedHarvestReports()));
+    public List<Harvest> getAcceptedHarvestForEndOfHuntingReport() {
+        return this.harvests.stream()
+                .filter(h -> !h.isHarvestReportRejected() && h.isAcceptedToHarvestPermit())
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasHarvestProposedToPermit() {
+        return this.harvests.stream().anyMatch(h -> h.getStateAcceptedToHarvestPermit() == Harvest.StateAcceptedToHarvestPermit.PROPOSED);
+    }
+
+    public boolean isHarvestReportAllowed() {
+        return !isMooselikePermitType() && !isAmendmentPermit();
+    }
+
+    public boolean canAddHarvest(final SystemUser activeUser) {
+        return !isHarvestReportDone() &&
+                (activeUser.isModeratorOrAdmin() || hasContactPerson(activeUser.getPerson()));
+    }
+
+    public boolean canCreateEndOfHuntingReport(final SystemUser activeUser) {
+        return !isHarvestReportDone() && !hasHarvestProposedToPermit() &&
+                (activeUser.isModeratorOrAdmin() || hasContactPerson(activeUser.getPerson()));
+    }
+
+    public boolean canRemoveEndOfHuntingReport(final SystemUser activeUser) {
+        return isHarvestReportDone() &&
+                (activeUser.isModeratorOrAdmin() || (!isHarvestReportApproved() && hasContactPerson(activeUser.getPerson())));
+    }
+
+    public boolean canAcceptOrRejectEndOfHuntingReport(final SystemUser activeUser) {
+        return isHarvestReportDone() && activeUser.isModeratorOrAdmin();
     }
 
     public boolean isMooselikePermitType() {
@@ -235,7 +303,7 @@ public class HarvestPermit extends LifecycleEntity<Long> {
     }
 
     public boolean hasContactPerson(Person person) {
-        if (originalContactPerson.equals(person)) {
+        if (originalContactPerson != null && originalContactPerson.equals(person)) {
             return true;
         }
         for (HarvestPermitContactPerson cp : contactPersons) {
@@ -272,6 +340,11 @@ public class HarvestPermit extends LifecycleEntity<Long> {
         return permit.permitTypeCode.eq(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
     }
 
+    @QueryDelegate(HarvestPermit.class)
+    public static BooleanExpression isMooselikeOrAmendmentPermit(QHarvestPermit permit) {
+        return permit.permitTypeCode.in(MOOSELIKE_PERMIT_TYPE, MOOSELIKE_AMENDMENT_PERMIT_TYPE);
+    }
+
     // Accessors -->
 
     @Id
@@ -304,6 +377,14 @@ public class HarvestPermit extends LifecycleEntity<Long> {
         this.originalContactPerson = originalContactPerson;
     }
 
+    public PermitDecision getPermitDecision() {
+        return permitDecision;
+    }
+
+    public void setPermitDecision(final PermitDecision permitDecision) {
+        this.permitDecision = permitDecision;
+    }
+
     public Riistanhoitoyhdistys getRhy() {
         return rhy;
     }
@@ -332,27 +413,15 @@ public class HarvestPermit extends LifecycleEntity<Long> {
         return speciesAmounts;
     }
 
-    public void setSpeciesAmounts(List<HarvestPermitSpeciesAmount> speciesAmounts) {
-        this.speciesAmounts = speciesAmounts;
-    }
-
-    public Set<HarvestPermitContactPerson> getContactPersons() {
+    public List<HarvestPermitContactPerson> getContactPersons() {
         return contactPersons;
     }
 
-    public void setContactPersons(Set<HarvestPermitContactPerson> contactPersons) {
-        this.contactPersons = contactPersons;
-    }
-
-    public void setHarvestReports(Set<HarvestReport> harvestReports) {
-        this.harvestReports = harvestReports;
-    }
-
-    public Set<Harvest> getHarvests() {
+    public List<Harvest> getHarvests() {
         return harvests;
     }
 
-    public void setHarvests(Set<Harvest> harvests) {
+    void setHarvests(final List<Harvest> harvests) {
         this.harvests = harvests;
     }
 
@@ -380,12 +449,37 @@ public class HarvestPermit extends LifecycleEntity<Long> {
         this.harvestsAsList = harvestsAsList;
     }
 
-    public HarvestReport getEndOfHuntingReport() {
-        return endOfHuntingReport;
+    @Override
+    public HarvestReportState getHarvestReportState() {
+        return harvestReportState;
     }
 
-    public void setEndOfHuntingReport(HarvestReport endOfHuntingReport) {
-        this.endOfHuntingReport = endOfHuntingReport;
+    public void setHarvestReportState(final HarvestReportState harvestReportState) {
+        this.harvestReportState = harvestReportState;
+    }
+
+    public Person getHarvestReportAuthor() {
+        return harvestReportAuthor;
+    }
+
+    public void setHarvestReportAuthor(final Person harvestReportAuthor) {
+        this.harvestReportAuthor = harvestReportAuthor;
+    }
+
+    public DateTime getHarvestReportDate() {
+        return harvestReportDate;
+    }
+
+    public void setHarvestReportDate(final DateTime harvestReportDate) {
+        this.harvestReportDate = harvestReportDate;
+    }
+
+    public Boolean getHarvestReportModeratorOverride() {
+        return harvestReportModeratorOverride;
+    }
+
+    public void setHarvestReportModeratorOverride(final Boolean harvestReportModeratorOverride) {
+        this.harvestReportModeratorOverride = harvestReportModeratorOverride;
     }
 
     public HuntingClub getPermitHolder() {

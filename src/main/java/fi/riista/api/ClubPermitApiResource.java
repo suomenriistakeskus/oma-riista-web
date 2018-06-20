@@ -1,16 +1,18 @@
 package fi.riista.api;
 
 import fi.riista.feature.gamediary.GameSpeciesDTO;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitFeature;
+import fi.riista.feature.harvestpermit.HarvestPermitDetailsFeature;
+import fi.riista.feature.harvestpermit.list.HarvestPermitListFeature;
+import fi.riista.feature.harvestpermit.list.MooselikeHuntingYearDTO;
+import fi.riista.feature.harvestpermit.list.MooselikePermitListDTO;
+import fi.riista.feature.huntingclub.MoosePermitTodoFeature;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTO;
-import fi.riista.feature.huntingclub.permit.MooselikeHuntingYearDTO;
-import fi.riista.feature.huntingclub.permit.MooselikePermitListingDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,37 +20,50 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/v1/club/{clubId:\\d+}/permit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping("/api/v1/club/{clubId:\\d+}/permit")
 public class ClubPermitApiResource {
 
     @Resource
-    private HuntingClubPermitFeature feature;
+    private HarvestPermitDetailsFeature harvestPermitDetailsFeature;
+
+    @Resource
+    private HarvestPermitListFeature harvestPermitListFeature;
+
+    @Resource
+    private MoosePermitTodoFeature moosePermitTodoFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(method = RequestMethod.GET)
-    public List<MooselikePermitListingDTO> listPermits(@PathVariable long clubId,
-                                                       @RequestParam int year,
-                                                       @RequestParam int species) {
-        return feature.listPermits(clubId, year, species);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "species", method = RequestMethod.GET)
+    @GetMapping(value = "/species", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<GameSpeciesDTO> listPermitSpecies(@PathVariable long clubId) {
-        return feature.listPermitSpecies(clubId);
+        return harvestPermitListFeature.listClubPermitSpecies(clubId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{permitId:\\d+}", method = RequestMethod.GET)
+    @GetMapping(value = "/huntingyears", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public List<MooselikeHuntingYearDTO> listHuntingYears(@PathVariable long clubId) {
+        return harvestPermitListFeature.listClubPermitHuntingYears(clubId);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping
+    public List<MooselikePermitListDTO> listPermits(@PathVariable long clubId,
+                                                    @RequestParam int year,
+                                                    @RequestParam int species) {
+        return harvestPermitListFeature.listClubPermits(clubId, year, species);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{permitId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public HuntingClubPermitDTO get(@PathVariable long clubId,
                                     @PathVariable long permitId,
                                     @RequestParam int species) {
-        return feature.getPermit(clubId, permitId, species);
+        return harvestPermitDetailsFeature.getClubPermit(clubId, permitId, species);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/huntingyears", method = RequestMethod.GET)
-    public List<MooselikeHuntingYearDTO> listHuntingYears(@PathVariable long clubId) {
-        return feature.listHuntingYears(clubId);
+    @GetMapping(value = "/todo", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public MoosePermitTodoFeature.TodoDto listMoosePermitTodosForClub(@PathVariable long clubId,
+                                                                      @RequestParam int year) {
+        return moosePermitTodoFeature.listTodosForClub(clubId, year);
     }
 }

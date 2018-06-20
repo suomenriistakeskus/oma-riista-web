@@ -1,37 +1,39 @@
 package fi.riista.feature.huntingclub.area;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
-import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
-
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
+
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
+import static fi.riista.security.EntityPermission.READ;
 
 public class HuntingClubAreaAuthorizationTest extends EmbeddedDatabaseTest {
 
     @Test
-    public void test() {
-        final HuntingClub club = model().newHuntingClub();
-        final Person member1 = model().newHuntingClubMember(club, OccupationType.SEURAN_JASEN).getPerson();
-        final Person member2 = model().newHuntingClubMember(club, OccupationType.SEURAN_YHDYSHENKILO).getPerson();
-        final HuntingClubArea area = model().newHuntingClubArea(club);
+    public void testMember() {
+        withPerson(person -> {
 
-        final SystemUser jasen = createNewUser("jasen", member1);
-        final SystemUser yhdyshenkilo = createNewUser("yhdyshenkilo", member2);
+            final HuntingClub club = model().newHuntingClub();
+            final HuntingClubArea area = model().newHuntingClubArea(club);
 
-        persistInNewTransaction();
+            model().newOccupation(club, person, SEURAN_JASEN);
 
-        runInTransaction(() -> {
-            authenticate(jasen);
-            assertHasPermission(area, EntityPermission.READ);
+            onSavedAndAuthenticated(createUser(person), () -> assertHasPermission(area, READ));
+        });
+    }
 
-            authenticate(yhdyshenkilo);
-            assertHasPermission(area, EntityPermission.CREATE);
-            assertHasPermission(area, EntityPermission.READ);
-            assertHasPermission(area, EntityPermission.UPDATE);
-            assertHasPermission(area, EntityPermission.DELETE);
+    @Test
+    public void testClubContact() {
+        withPerson(person -> {
+
+            final HuntingClub club = model().newHuntingClub();
+            final HuntingClubArea area = model().newHuntingClubArea(club);
+
+            model().newOccupation(club, person, SEURAN_YHDYSHENKILO);
+
+            onSavedAndAuthenticated(createUser(person), () -> assertHasPermissions(area, EntityPermission.crud()));
         });
     }
 }

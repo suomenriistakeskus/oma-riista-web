@@ -55,6 +55,11 @@ public class SQPersistentRememberMeToken extends RelationalPathSpatial<SQPersist
         addMetadata();
     }
 
+    public SQPersistentRememberMeToken(String variable, String schema) {
+        super(SQPersistentRememberMeToken.class, forVariable(variable), schema, "persistent_remember_me_token");
+        addMetadata();
+    }
+
     public SQPersistentRememberMeToken(Path<? extends SQPersistentRememberMeToken> path) {
         super(path.getType(), path.getMetadata(), "public", "persistent_remember_me_token");
         addMetadata();

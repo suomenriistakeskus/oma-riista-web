@@ -16,6 +16,6 @@ public class VenueSearchFeature {
     @Transactional(readOnly = true)
     public Page<VenueDTO> searchVenue(String searchTerm, Pageable page) {
         final Page<Venue> venues = venueRepository.searchByName(searchTerm, page);
-        return DtoUtil.toDTO(venues, page, VenueDTO::create);
+        return DtoUtil.toDTO(venues, page, venue -> VenueDTO.create(venue, venue.getAddress()));
     }
 }

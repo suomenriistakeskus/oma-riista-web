@@ -1,23 +1,24 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
+import io.vavr.Tuple;
+import io.vavr.Tuple6;
+import io.vavr.control.Validation;
+
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.adultFemaleHarvestCountMismatch;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.adultMaleHarvestCountMismatch;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.nonEdibleAdultHarvestCountMismatch;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.nonEdibleYoungHarvestCountMismatch;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.youngFemaleHarvestCountMismatch;
 import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons.youngMaleHarvestCountMismatch;
-
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_2;
-import fi.riista.util.ValidationUtils;
-import javaslang.Tuple;
-import javaslang.Tuple6;
-import javaslang.control.Validation;
-
-import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import static fi.riista.util.ValidationUtils.applying;
+import static java.util.Arrays.asList;
 
 public class MooseDataCardCalculatedHarvestAmounts {
 
@@ -27,6 +28,14 @@ public class MooseDataCardCalculatedHarvestAmounts {
     public final int numberOfYoungFemales;
     public final int totalNumberOfNonEdibleAdults;
     public final int totalNumberOfNonEdibleYoungs;
+
+    private final List<Function<MooseDataCardSection_8_2, Validation<String, ?>>> VALIDATION_FUNCTIONS = asList(
+            this::validateAdultMaleAmount,
+            this::validateAdultFemaleAmount,
+            this::validateYoungMaleAmount,
+            this::validateYoungFemaleAmount,
+            this::validateNonEdibleAdultAmount,
+            this::validateNonEdibleYoungAmount);
 
     public MooseDataCardCalculatedHarvestAmounts(final int numberOfAdultMales,
                                                  final int numberOfAdultFemales,
@@ -55,14 +64,7 @@ public class MooseDataCardCalculatedHarvestAmounts {
 
     public Validation<List<String>, MooseDataCardSection_8_2> validate(@Nonnull final MooseDataCardSection_8_2 section) {
         Objects.requireNonNull(section);
-
-        return ValidationUtils.validate(section, Arrays.asList(
-                this::validateAdultMaleAmount,
-                this::validateAdultFemaleAmount,
-                this::validateYoungMaleAmount,
-                this::validateYoungFemaleAmount,
-                this::validateNonEdibleAdultAmount,
-                this::validateNonEdibleYoungAmount));
+        return VALIDATION_FUNCTIONS.stream().collect(applying(section));
     }
 
     private Validation<String, Optional<Integer>> validateAdultMaleAmount(final MooseDataCardSection_8_2 section) {

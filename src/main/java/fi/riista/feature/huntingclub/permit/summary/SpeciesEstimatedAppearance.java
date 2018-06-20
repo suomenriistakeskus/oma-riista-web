@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.permit.summary;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -17,7 +18,7 @@ public class SpeciesEstimatedAppearance implements Serializable {
 
     public static SpeciesEstimatedAppearance revamp(@Nullable final SpeciesEstimatedAppearance appearance) {
         return Optional.ofNullable(appearance)
-                .map(SpeciesEstimatedAppearance::cleanedCopy)
+                .map(SpeciesEstimatedAppearance::new)
                 .orElse(null);
     }
 
@@ -35,33 +36,25 @@ public class SpeciesEstimatedAppearance implements Serializable {
     public SpeciesEstimatedAppearance() {
     }
 
-    public SpeciesEstimatedAppearance(
-            final Boolean appeared,
-            final TrendOfPopulationGrowth trendOfPopulationGrowth,
-            final Integer estimatedAmountOfSpecimens) {
+    public SpeciesEstimatedAppearance(final Boolean appeared,
+                                      final TrendOfPopulationGrowth trendOfPopulationGrowth,
+                                      final Integer estimatedAmountOfSpecimens) {
 
         this.appeared = appeared;
-        this.trendOfPopulationGrowth = trendOfPopulationGrowth;
-        this.estimatedAmountOfSpecimens = estimatedAmountOfSpecimens;
+
+        if (!Boolean.FALSE.equals(appeared)) {
+            this.trendOfPopulationGrowth = trendOfPopulationGrowth;
+            this.estimatedAmountOfSpecimens = estimatedAmountOfSpecimens;
+        }
+    }
+
+    public SpeciesEstimatedAppearance(@Nonnull final SpeciesEstimatedAppearance that) {
+        this(that.appeared, that.trendOfPopulationGrowth, that.estimatedAmountOfSpecimens);
     }
 
     @AssertTrue
     public boolean isValid() {
         return !Boolean.FALSE.equals(appeared) || trendOfPopulationGrowth == null && estimatedAmountOfSpecimens == null;
-    }
-
-    public SpeciesEstimatedAppearance cleanedCopy() {
-        final SpeciesEstimatedAppearance copy =
-                new SpeciesEstimatedAppearance(appeared, trendOfPopulationGrowth, estimatedAmountOfSpecimens);
-        copy.cleanState();
-        return copy;
-    }
-
-    private void cleanState() {
-        if (Boolean.FALSE.equals(appeared)) {
-            trendOfPopulationGrowth = null;
-            estimatedAmountOfSpecimens = null;
-        }
     }
 
     // Accessors -->
@@ -89,5 +82,4 @@ public class SpeciesEstimatedAppearance implements Serializable {
     public void setEstimatedAmountOfSpecimens(final Integer estimatedAmountOfSpecimens) {
         this.estimatedAmountOfSpecimens = estimatedAmountOfSpecimens;
     }
-
 }

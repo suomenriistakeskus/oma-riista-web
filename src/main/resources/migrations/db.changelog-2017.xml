@@ -340,4 +340,2579 @@
             <column name="status"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="2017-03-13-unique-username-lowercase" author="vincit-kyostihe" dbms="postgresql">
+        <dropUniqueConstraint tableName="system_user" constraintName="uk_system_user_username"/>
+        <sql><![CDATA[
+            CREATE UNIQUE INDEX uk_system_user_username_lowercase ON system_user (LOWER(username) text_pattern_ops);
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-02-21-harvest-permit-application" author="vincit-terova">
+        <createTable tableName="harvest_permit_application">
+            <column autoIncrement="true" name="harvest_permit_application_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_application_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="permit_number" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_harvest_permit_application_permit_number"/>
+            </column>
+            <column name="permit_holder_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_harvest_permit_application_holder"/>
+            </column>
+            <column name="printing_url" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="area_id" type="BIGINT">
+                <constraints references="harvest_permit_area(harvest_permit_area_id)"
+                             foreignKeyName="fk_harvest_permit_application_area"/>
+            </column>
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_harvest_permit_application_rhy"/>
+            </column>
+            <column name="lh_sync_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="parsing_info" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2017-02-21-harvest-permit-application-partner" author="vincit-terova">
+        <createTable tableName="harvest_permit_application_partner">
+            <column name="harvest_permit_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_harvest_permit_application_partner_application"/>
+            </column>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_harvest_permit_application_partner_organisation"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="harvest_permit_application_partner" columnNames="harvest_permit_application_id, organisation_id"/>
+    </changeSet>
+
+    <changeSet id="2017-02-21-harvest-permit-application-rhy" author="vincit-terova">
+        <createTable tableName="harvest_permit_application_rhy">
+            <column name="harvest_permit_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_harvest_permit_application_rhy_application"/>
+            </column>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_harvest_permit_application_rhy_organisation"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="harvest_permit_application_rhy" columnNames="harvest_permit_application_id, organisation_id"/>
+    </changeSet>
+
+    <changeSet id="2017-02-21-harvest-permit-application-attachment" author="vincit-terova">
+        <createTable tableName="harvest_permit_application_attachment">
+            <column autoIncrement="true" name="harvest_permit_application_attachment_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_application_attachment_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="harvest_permit_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_harvest_permit_application_attachment_application"/>
+
+            </column>
+            <column name="url" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2017-02-21-add-integration-for-lh-permit-applications" author="vincit-terova">
+        <insert tableName="integration">
+            <column name="integration_id" value="lh_mooselike_permit_application_import" />
+        </insert>
+    </changeSet>
+
+    <changeSet id="2017-02-21-add-indexes" author="vincit-terova">
+        <createIndex tableName="hunting_club_area" indexName="ndx_hunting_club_area_club_id">
+            <column name="club_id"/>
+        </createIndex>
+
+        <createIndex tableName="harvest_permit_area" indexName="ndx_harvest_permit_area_club_id">
+            <column name="club_id"/>
+        </createIndex>
+
+        <createIndex tableName="harvest_permit_area_partner" indexName="ndx_harvest_permit_area_partner_source_area_id">
+            <column name="source_area_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-03-22-add-mobile-client-device" author="vincit-kyostihe">
+        <createTable tableName="mobile_client_device">
+            <column autoIncrement="true" name="mobile_client_device_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="mobile_client_device_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="push_token" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_mobile_client_device_push_token"/>
+            </column>
+            <column name="platform" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="device_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_version" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="person_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="person(person_id)"
+                             foreignKeyName="fk_mobile_client_device_person_id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2017-03-24-add-harvest_permit_application-area-size-column" author="vincit-terova">
+        <addColumn tableName="harvest_permit_application">
+            <column name="area_size" type="INTEGER">
+                <constraints nullable="false"></constraints>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-03-24-harvest-permit-application-attachment-add-columns" author="vincit-terova">
+        <addColumn tableName="harvest_permit_application_attachment">
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="attachment_type" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <createTable tableName="harvest_permit_application_attachment_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="harvest_permit_application_attachment_type">
+            <column name="name" value="SHOOTER_LIST"/>
+        </insert>
+        <insert tableName="harvest_permit_application_attachment_type">
+            <column name="name" value="MH_AREA_PERMIT"/>
+        </insert>
+        <insert tableName="harvest_permit_application_attachment_type">
+            <column name="name" value="OTHER"/>
+        </insert>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_application_attachment"
+                                 baseColumnNames="attachment_type"
+                                 constraintName="fk_harvest_permit_application_attachment_type"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="harvest_permit_application_attachment_type"
+                                 referencedColumnNames="name"/>
+
+        <addNotNullConstraint tableName="harvest_permit_application_attachment"
+                              columnName="name"
+                              columnDataType="VARCHAR(255)"/>
+
+        <addNotNullConstraint tableName="harvest_permit_application_attachment"
+                              columnName="attachment_type"
+                              columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <changeSet id="2017-04-19-harvest-permit-application-conflicts" author="vincit-kyostihe">
+        <createTable tableName="harvest_permit_application_conflict">
+            <column autoIncrement="true" name="harvest_permit_application_conflict_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_application_conflict_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="first_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_harvest_permit_application_conflict_first"/>
+            </column>
+            <column name="second_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_harvest_permit_application_conflict_second"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2017-04-19-harvest-permit-application-conflict-palsta" author="vincit-kyostihe">
+        <createTable tableName="harvest_permit_application_conflict_palsta">
+            <column autoIncrement="true" name="harvest_permit_application_conflict_palsta_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_application_conflict_palsta_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="first_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_harvest_permit_application_conflict_palsta_first"/>
+            </column>
+            <column name="second_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_harvest_permit_application_conflict_palsta_second"/>
+            </column>
+            <column name="palsta_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="palsta_tunnus" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="palsta_nimi" type="VARCHAR(255)"/>
+            <column name="metsahallitus" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conflict_area_size" type="DOUBLE" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2017-05-04-harvest-permit-application-index" author="vincit-kyostihe">
+        <createIndex tableName="harvest_permit_application_conflict"
+                     indexName="ndx_harvest_permit_application_conflict">
+            <column name="first_application_id"/>
+        </createIndex>
+        <createIndex tableName="harvest_permit_application_conflict_palsta"
+                     indexName="ndx_harvest_permit_application_conflict_palsta">
+            <column name="first_application_id"/>
+            <column name="second_application_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-04-20-harvest-permit-application-species" author="vincit-terova">
+        <createTable tableName="harvest_permit_application_species">
+            <column name="harvest_permit_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_harvest_permit_application_species_application"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="game_species(game_species_id)"
+                             foreignKeyName="fk_harvest_permit_application_species_species"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="harvest_permit_application_species" columnNames="harvest_permit_application_id, game_species_id"/>
+    </changeSet>
+
+    <changeSet id="2017-04-20-harvest-permit-application-status" author="vincit-terova">
+        <createTable tableName="harvest_permit_application_status">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="harvest_permit_application_status">
+            <column name="name" value="ACTIVE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_status">
+            <column name="name" value="CANCELLED"/>
+        </insert>
+
+        <addColumn tableName="harvest_permit_application">
+            <column name="status" type="VARCHAR(255)" />
+        </addColumn>
+
+        <sql>UPDATE harvest_permit_application SET status = 'ACTIVE'</sql>
+
+        <addNotNullConstraint tableName="harvest_permit_application"
+                              columnName="status"
+                              columnDataType="VARCHAR(255)"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_application"
+                                 baseColumnNames="status"
+                                 constraintName="fk_harvest_permit_application_status"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="harvest_permit_application_status"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="2017-05-11-add-conflict-processing-elapsed-time" author="vincit-terova">
+        <addColumn tableName="harvest_permit_application_conflict">
+            <column name="processing_seconds" type="BIGINT"/>
+            <column name="processing_palsta_seconds" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-04-27-add-mooselike_calf_amount-into-observation" author="vincit-jarkkoka">
+        <addColumn tableName="game_observation">
+            <column name="mooselike_calf_amount" type="INT"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_mooselike_calf_amount_range
+                    CHECK (mooselike_calf_amount between 0 and 50);
+
+                -- Redefine max amount of unknown specimens.
+                ALTER TABLE game_observation DROP CONSTRAINT ck_game_observation_mooselike_unknown_specimen_amount_range;
+                ALTER TABLE game_observation ADD CONSTRAINT  ck_game_observation_mooselike_unknown_specimen_amount_range
+                    CHECK (mooselike_unknown_specimen_amount between 0 and 50);
+
+                ALTER TABLE game_observation DROP CONSTRAINT ck_game_observation_mooselike_amounts_nullability;
+                ALTER TABLE game_observation ADD CONSTRAINT  ck_game_observation_mooselike_amounts_nullability CHECK (
+                    (
+                        coalesce(mooselike_male_amount,
+                                 mooselike_female_amount,
+                                 mooselike_female_1_calf_amount,
+                                 mooselike_female_2_calfs_amount,
+                                 mooselike_female_3_calfs_amount,
+                                 mooselike_female_4_calfs_amount,
+                                 mooselike_calf_amount,
+                                 mooselike_unknown_specimen_amount) IS null
+                    ) OR (
+                        within_moose_hunting = true
+
+                        -- Minimum set of non-null fields
+                        AND mooselike_male_amount IS NOT null
+                        AND mooselike_female_amount IS NOT null
+                        AND mooselike_female_1_calf_amount IS NOT null
+                        AND mooselike_female_2_calfs_amount IS NOT null
+                        AND mooselike_female_3_calfs_amount IS NOT null
+                        AND mooselike_unknown_specimen_amount IS NOT null
+                    )
+                );
+
+                ALTER TABLE game_observation DROP CONSTRAINT ck_game_observation_mooselike_amounts_integrity;
+                ALTER TABLE game_observation ADD CONSTRAINT  ck_game_observation_mooselike_amounts_integrity CHECK (
+                    -- Need to check nullness of only one amount component because other check constraints
+                    -- guarantee nullness of other amount fields.
+                    mooselike_male_amount IS null
+
+                    OR amount =
+                        coalesce(mooselike_male_amount, 0) +
+                        coalesce(mooselike_female_amount, 0) +
+                        coalesce(mooselike_calf_amount, 0) +
+                        2 * coalesce(mooselike_female_1_calf_amount, 0) +
+                        3 * coalesce(mooselike_female_2_calfs_amount, 0) +
+                        4 * coalesce(mooselike_female_3_calfs_amount, 0) +
+                        5 * coalesce(mooselike_female_4_calfs_amount, 0) +
+                        coalesce(mooselike_unknown_specimen_amount, 0)
+                );
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-05-02-create-new-observation-metadata-set" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                -- Duplicate observation_base_fields for metadata version 3.
+
+                INSERT INTO observation_base_fields (game_species_id, metadata_version, within_moose_hunting)
+                SELECT game_species_id, 3, within_moose_hunting
+                FROM observation_base_fields
+                WHERE metadata_version = 2
+                ORDER BY game_species_id ASC;
+
+                -- Duplicate observation_context_sensitive_fields for metadata version 3.
+
+                INSERT INTO observation_context_sensitive_fields (
+                    metadata_version, game_species_id, within_moose_hunting, observation_type,
+                    amount, age, extended_age_range, gender,
+                    wounded, dead, on_carcass,
+                    collar_or_radio, legring_or_wingmark, earmark,
+                    mooselike_male_amount,
+                    mooselike_female_amount,
+                    mooselike_female_1_calf_amount,
+                    mooselike_female_2_calfs_amount,
+                    mooselike_female_3_calfs_amount,
+                    mooselike_female_4_calfs_amount,
+                    mooselike_unknown_specimen_amount)
+                SELECT 3, game_species_id, within_moose_hunting, observation_type,
+                    amount, age, extended_age_range, gender,
+                    wounded, dead, on_carcass,
+                    collar_or_radio, legring_or_wingmark, earmark,
+                    mooselike_male_amount,
+                    mooselike_female_amount,
+                    mooselike_female_1_calf_amount,
+                    mooselike_female_2_calfs_amount,
+                    mooselike_female_3_calfs_amount,
+                    mooselike_female_4_calfs_amount,
+                    mooselike_unknown_specimen_amount
+                FROM observation_context_sensitive_fields
+                WHERE metadata_version = 2
+                ORDER BY game_species_id ASC, observation_type ASC, within_moose_hunting ASC;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-04-27-add-mooselike_calf_amount-into-observation_context_sensitive_fields" author="vincit-jarkkoka">
+        <addColumn tableName="observation_context_sensitive_fields">
+            <column name="mooselike_calf_amount" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"
+                             references="required(name)"
+                             foreignKeyName="fk_observation_ctx_fields_mooselike_calf_amount"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-05-02-update-obseration-metadata-with-mooselike_calf_amount" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                UPDATE observation_context_sensitive_fields
+                SET mooselike_calf_amount = 'YES'
+                WHERE
+                    metadata_version = 3
+                    AND within_moose_hunting = true
+                    AND game_species_id = (SELECT game_species_id FROM game_species WHERE official_code = 47503)
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-05-10-add-alone-into-harvest_specimen" author="vincit-jarkkoka">
+        <addColumn tableName="harvest_specimen">
+            <column name="alone" type="BOOLEAN"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-05-18-mobile-login-event" author="vincit-kyostihe">
+        <createTable tableName="mobile_login_event">
+            <column autoIncrement="true" name="mobile_login_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="mobile_login_event_pkey"/>
+            </column>
+            <column name="login_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="platform" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="software_version" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="device_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="mobile_login_event" indexName="ndx_mobile_login_event_login_time">
+            <column name="login_time"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-05-22-update-observation-metadata-for-birds" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                UPDATE observation_context_sensitive_fields
+                SET amount = 'YES',
+                    age = 'VOLUNTARY'
+                WHERE
+                    observation_type IN ('NAKO', 'AANI', 'RIISTAKAMERA', 'KOIRAN_RIISTATYO')
+                    AND game_species_id IN (
+                      SELECT game_species_id
+                      FROM game_species
+                      WHERE category IN ('FOWL', 'UNPROTECTED')
+
+                        -- Wild cat is the only non-bird species within 'fowl' and 'unprotected' categories.
+                        AND official_code <> 53004
+                    );
+
+                UPDATE observation_context_sensitive_fields
+                SET amount = 'YES',
+                    age = 'VOLUNTARY',
+                    gender = 'VOLUNTARY'
+                WHERE
+                    observation_type IN ('NAKO', 'AANI', 'RIISTAKAMERA', 'KOIRAN_RIISTATYO')
+                    AND game_species_id IN (
+                      SELECT game_species_id FROM game_species WHERE official_code IN (26360, 26366, 26388)
+                    );
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-05-05-organisation-active" author="vincit-terova">
+        <addColumn tableName="organisation">
+            <column name="active" type="BOOLEAN" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-05-22-add-new-observation-types" author="vincit-jarkkoka">
+        <insert tableName="observation_type">
+            <column name="name" value="HAKOMAMANTY"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="KUUSISEKOTTEINEN_METSA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="LEPPAKUUSIMETSA_TAI_KOIVUKUUSIMETSA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="POIKUEYMPARISTO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="RUOKAILUKOIVIKKO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="RUOKAILUPAJUKKO_TAI_KOIVIKKO"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="SUON_REUNAMETSA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="VAIHTELEVARAKENTEINEN_LEHTIPUUSEKOTTEINEN_METSA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="VAIHTELEVARAKENTEINEN_MANTYSEKOTTEINEN_METSA"/>
+        </insert>
+        <insert tableName="observation_type">
+            <column name="name" value="VAIHTELEVARAKENTEINEN_MUSTIKKAMETSA"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2017-05-22-assign-new-observation-types-to-species" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                INSERT INTO observation_context_sensitive_fields (metadata_version, game_species_id, observation_type)
+                SELECT 3, game_species_id, 'JALKI'
+                FROM game_species
+                WHERE official_code IN (26921, 26926, 26928, 26931)
+                ORDER BY game_species_id ASC;
+
+                INSERT INTO observation_context_sensitive_fields (
+                    metadata_version, game_species_id, observation_type, amount, age, gender
+                )
+                SELECT 3, game_species_id, 'POIKUEYMPARISTO', 'YES', 'VOLUNTARY', 'VOLUNTARY'
+                FROM game_species
+                WHERE official_code IN (26921, 26926, 26928, 26931)
+                ORDER BY game_species_id ASC;
+
+                INSERT INTO observation_context_sensitive_fields (metadata_version, game_species_id, observation_type)
+                SELECT 3, game_species_id, otype
+                FROM game_species, (
+                  SELECT 'VAIHTELEVARAKENTEINEN_MUSTIKKAMETSA' AS otype
+                  UNION SELECT 'VAIHTELEVARAKENTEINEN_MANTYSEKOTTEINEN_METSA' AS otype
+                  UNION SELECT 'HAKOMAMANTY' AS otype
+                ) t
+                WHERE official_code = 26928
+                ORDER BY otype ASC;
+
+                INSERT INTO observation_context_sensitive_fields (metadata_version, game_species_id, observation_type)
+                SELECT 3, game_species_id, otype
+                FROM game_species, (
+                  SELECT 'VAIHTELEVARAKENTEINEN_MUSTIKKAMETSA' AS otype
+                  UNION SELECT 'VAIHTELEVARAKENTEINEN_LEHTIPUUSEKOTTEINEN_METSA' AS otype
+                  UNION SELECT 'RUOKAILUKOIVIKKO' AS otype
+                ) t
+                WHERE official_code = 26926
+                ORDER BY otype ASC;
+
+                INSERT INTO observation_context_sensitive_fields (metadata_version, game_species_id, observation_type)
+                SELECT 3, game_species_id, otype
+                FROM game_species, (
+                  SELECT 'VAIHTELEVARAKENTEINEN_MUSTIKKAMETSA' AS otype
+                  UNION SELECT 'VAIHTELEVARAKENTEINEN_LEHTIPUUSEKOTTEINEN_METSA' AS otype
+                  UNION SELECT 'LEPPAKUUSIMETSA_TAI_KOIVUKUUSIMETSA' AS otype
+                ) t
+                WHERE official_code = 26931
+                ORDER BY otype ASC;
+
+                INSERT INTO observation_context_sensitive_fields (metadata_version, game_species_id, observation_type)
+                SELECT 3, game_species_id, otype
+                FROM game_species, (
+                  SELECT 'KUUSISEKOTTEINEN_METSA' AS otype
+                  UNION SELECT 'SUON_REUNAMETSA' AS otype
+                  UNION SELECT 'RUOKAILUPAJUKKO_TAI_KOIVIKKO' AS otype
+                ) t
+                WHERE official_code = 26921
+                ORDER BY otype ASC;
+
+                UPDATE observation_context_sensitive_fields
+                SET amount = 'YES',
+                    age = 'VOLUNTARY',
+                    gender = 'VOLUNTARY'
+                WHERE
+                    metadata_version = 3
+                    AND observation_type = 'SOIDIN'
+                    AND game_species_id IN (SELECT game_species_id FROM game_species WHERE official_code IN (26921, 26926, 26928, 26931));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-05-29-compute-simplified-geometry" author="vincit-kyostihe" dbms="postgresql">
+        <createProcedure><![CDATA[
+            SELECT AddGeometryColumn('public', 'zone', 'simple_geom', 4326, 'MULTIPOLYGON', 2);
+
+            CREATE OR REPLACE FUNCTION update_zone_simple_geom()
+            RETURNS TRIGGER AS $$
+            BEGIN
+              NEW.simple_geom = ST_Multi(ST_Transform(ST_SimplifyPreserveTopology(ST_SnapToGrid(NEW.geom, 1), 1), 4326));
+              RETURN NEW;
+            END
+            $$ LANGUAGE 'plpgsql';
+
+            CREATE TRIGGER update_zone_simple_geom_trigger
+            BEFORE INSERT OR UPDATE ON zone
+            FOR EACH ROW EXECUTE PROCEDURE update_zone_simple_geom();
+        ]]></createProcedure>
+    </changeSet>
+
+    <changeSet id="2017-05-29-add-table-mh-permit" author="vincit-terova">
+        <createTable tableName="mh_permit">
+            <column autoIncrement="true" name="mh_permit_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="mh_permit_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="person_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="person(person_id)"
+                             foreignKeyName="fk_mh_permit_person"/>
+            </column>
+            <column name="permit_identifier" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="permit_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permit_type_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permit_type_english" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="permit_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permit_name_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permit_name_english" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="area_number" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="area_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="area_name_swedish" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="area_name_english" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="begin_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="url" type="VARCHAR(255)"/>
+        </createTable>
+        <createIndex tableName="mh_permit" indexName="ndx_mh_permit_person_permit_identifier" unique="true">
+            <column name="person_id"/>
+            <column name="permit_identifier"/>
+        </createIndex>
+        <createIndex tableName="mh_permit" indexName="ndx_mh_permit_permit_identifier">
+            <column name="permit_identifier"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-06-13-add-observation_policy_adhered-to-moose_hunting_summary" author="vincit-jarkkoka">
+        <addColumn tableName="moose_hunting_summary">
+            <column name="observation_policy_adhered" type="BOOLEAN"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-03-28-add-dynamic_observation_field_presence-table" author="vincit-jarkkoka">
+        <createTable tableName="dynamic_observation_field_presence">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="dynamic_observation_field_presence">
+            <column name="name" value="YES"/>
+        </insert>
+        <insert tableName="dynamic_observation_field_presence">
+            <column name="name" value="NO"/>
+        </insert>
+        <insert tableName="dynamic_observation_field_presence">
+            <column name="name" value="VOLUNTARY"/>
+        </insert>
+        <insert tableName="dynamic_observation_field_presence">
+            <column name="name" value="VOLUNTARY_CARNIVORE_AUTHORITY"/>
+        </insert>
+
+        <!-- Replace foreign key constraints for observation_context_sensitive_fields table -->
+
+        <dropForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                  constraintName="fk_observation_context_sensitive_fields_amount"/>
+
+        <addForeignKeyConstraint baseTableName="observation_context_sensitive_fields"
+                                 baseColumnNames="amount"
+                                 constraintName="fk_observation_ctx_fields_amount"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedTableName="dynamic_observation_field_presence"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="2017-02-22-introduce-new-observation-metadata-fields" author="vincit-jarkkoka">
+        <addColumn tableName="observation_context_sensitive_fields">
+            <column name="verified_by_carnivore_authority" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"
+                             references="dynamic_observation_field_presence(name)"
+                             foreignKeyName="fk_observation_ctx_fields_verified_by_carnivore_authority"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="observation_context_sensitive_fields">
+            <column name="official_additional_info" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"
+                             references="dynamic_observation_field_presence(name)"
+                             foreignKeyName="fk_observation_ctx_fields_official_additional_info"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="observation_context_sensitive_fields">
+            <column name="observer_name" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"
+                             references="dynamic_observation_field_presence(name)"
+                             foreignKeyName="fk_observation_ctx_fields_observer_name"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="observation_context_sensitive_fields">
+            <column name="observer_phone_number" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"
+                             references="dynamic_observation_field_presence(name)"
+                             foreignKeyName="fk_observation_ctx_fields_observer_phone_number"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="observation_context_sensitive_fields">
+            <column name="width_of_paw" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"
+                             references="dynamic_observation_field_presence(name)"
+                             foreignKeyName="fk_observation_ctx_fields_width_of_paw"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="observation_context_sensitive_fields">
+            <column name="length_of_paw" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"
+                             references="dynamic_observation_field_presence(name)"
+                             foreignKeyName="fk_observation_ctx_fields_length_of_paw"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-02-23-add-new-observation-fields-for-large-carnivores" author="vincit-jarkkoka">
+        <addColumn tableName="game_observation">
+            <column name="verified_by_carnivore_authority" type="BOOLEAN"/>
+        </addColumn>
+        <addColumn tableName="game_observation">
+            <column name="observer_name" type="VARCHAR(255)"/>
+        </addColumn>
+        <addColumn tableName="game_observation">
+            <column name="observer_phone_number" type="VARCHAR(255)"/>
+        </addColumn>
+        <addColumn tableName="game_observation">
+            <column name="official_additional_info" type="TEXT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-02-23-add-new-observation-specimen-fields-for-large-carnivores" author="vincit-jarkkoka">
+        <addColumn tableName="observation_specimen">
+            <column name="width_of_paw" type="DECIMAL(3,1)"/>
+        </addColumn>
+        <addColumn tableName="observation_specimen">
+            <column name="length_of_paw" type="DECIMAL(3,1)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-02-23-add-constraints-for-carnivore-specific-observation-specimen-fields" author="vincit-jarkkoka">
+        <sql>
+            <![CDATA[
+                ALTER TABLE observation_specimen ADD CONSTRAINT ck_observation_specimen_width_of_paw_range
+                  CHECK (width_of_paw BETWEEN 4.0 AND 20.0);
+
+                ALTER TABLE observation_specimen ADD CONSTRAINT ck_observation_specimen_length_of_paw_range
+                  CHECK (length_of_paw BETWEEN 4.0 AND 15.0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-05-02-create-new-observation-metadata-because-of-new-large-carnivore-fields" author="vincit-jarkkoka" dbms="postgresql">
+        <sql>
+            <![CDATA[
+                -- Expecting metadata for version 3 already exists.
+
+                UPDATE observation_context_sensitive_fields
+                SET width_of_paw = 'VOLUNTARY'
+                WHERE
+                    metadata_version = 3
+                    AND game_species_id IN (SELECT game_species_id FROM game_species WHERE official_code IN (46549, 46615, 47212, 47348))
+                    AND observation_type = 'JALKI';
+
+                UPDATE observation_context_sensitive_fields
+                SET length_of_paw = 'VOLUNTARY'
+                WHERE
+                    metadata_version = 3
+                    AND game_species_id IN (SELECT game_species_id FROM game_species WHERE official_code IN (46549, 46615))
+                    AND observation_type = 'JALKI';
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-04-12-add-distance-to-residence-into-observation" author="vincit-jarkkoka">
+        <addColumn tableName="game_observation">
+            <column name="in_yard_distance_to_residence" type="INTEGER"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_in_yard_distance_to_residence_range
+                  CHECK (in_yard_distance_to_residence BETWEEN 0 AND 100);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-06-27-add-feeding-place-harvest-report-field" author="vincit-kyostihe">
+        <addColumn tableName="harvest">
+            <column name="feeding_place" type="BOOLEAN"/>
+        </addColumn>
+
+        <addColumn tableName="harvest_report_fields">
+            <column name="feeding_place" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"
+                             references="required(name)"
+                             foreignKeyName="fk_harvest_report_fields_feeding_place"/>
+            </column>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                UPDATE harvest_report_fields
+                SET feeding_place = 'VOLUNTARY'
+                WHERE game_species_id=(SELECT game_species_id FROM game_species WHERE official_code=47926);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-06-20-add-mail-message-recipients" author="vincit-kyostihe">
+        <createTable tableName="mail_message_recipient">
+            <column autoIncrement="true" name="mail_message_recipient_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="mail_message_recipient_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mail_message_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="mail_message(mail_message_id)"
+                             foreignKeyName="fk_mail_message_recipient_mail_message"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delivery_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="failure_counter" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql><![CDATA[
+        INSERT INTO mail_message_recipient (mail_message_id, email, delivery_time, failure_counter)
+        SELECT mail_message_id, to_email, delivery_time, failure_counter FROM mail_message;
+        ]]></sql>
+
+        <dropIndex tableName="mail_message" indexName="ndx_mail_message"/>
+        <dropColumn tableName="mail_message" columnName="to_email"/>
+        <dropColumn tableName="mail_message" columnName="delivery_time"/>
+        <dropColumn tableName="mail_message" columnName="last_attempt_time"/>
+        <dropColumn tableName="mail_message" columnName="failure_counter"/>
+
+        <createIndex tableName="mail_message" indexName="ndx_mail_message_delivered">
+            <column name="delivered"/>
+        </createIndex>
+
+        <createIndex tableName="mail_message_recipient" indexName="ndx_mail_message_recipient_mail_message">
+            <column name="mail_message_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-07-12-improve-simple-geom-triggers" author="vincit-kyostihe" dbms="postgresql">
+        <createProcedure><![CDATA[
+DROP TRIGGER IF EXISTS update_zone_simple_geom_trigger ON zone;
+DROP TRIGGER IF EXISTS update_zone_simple_geom_update_trigger ON zone;
+DROP TRIGGER IF EXISTS update_zone_simple_geom_insert_trigger ON zone;
+
+CREATE TRIGGER update_zone_simple_geom_update_trigger
+BEFORE UPDATE ON zone
+FOR EACH ROW
+WHEN (OLD.geom IS DISTINCT FROM NEW.geom)
+EXECUTE PROCEDURE update_zone_simple_geom();
+
+CREATE TRIGGER update_zone_simple_geom_insert_trigger
+BEFORE INSERT ON zone
+FOR EACH ROW
+WHEN (NEW.geom IS NOT NULL)
+EXECUTE PROCEDURE update_zone_simple_geom();
+        ]]></createProcedure>
+    </changeSet>
+
+    <changeSet id="2017-07-17-announcement-visible-to-all" author="vincit-kyostihe">
+        <addColumn tableName="announcement">
+            <column name="visible_to_all" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-06-29-add-new-fields-to-moose_hunting_summary" author="vincit-jarkkoka">
+        <addColumn tableName="moose_hunting_summary">
+            <column name="beaver_appeared" type="BOOLEAN"/>
+            <column name="beaver_population_growth" type="CHAR(1)"/>
+            <column name="beaver_amount_of_inhabited_winter_nests" type="INT"/>
+            <column name="beaver_harvest_amount" type="INT"/>
+            <column name="beaver_area_of_damage" type="INT"/>
+            <column name="beaver_area_occupied_by_water" type="INT"/>
+            <column name="beaver_additional_info" type="TEXT"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE moose_hunting_summary ADD CONSTRAINT ck_beaver_population_growth
+                    CHECK (beaver_population_growth IN ('I', 'U', 'D'));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-08-11-add-calendar-event-type-jousiammuntakoe" author="vincit-terova">
+        <insert tableName="calendar_event_type">
+            <column name="name" value="JOUSIAMPUMAKOE"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2017-08-11-add-enable_shooting_tests-to-person" author="vincit-jarkkoka">
+        <addColumn tableName="person">
+            <column name="enable_shooting_tests" type="BOOLEAN"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-08-15-add-shooting-test-event" author="vincit-terova">
+        <createTable tableName="shooting_test_event">
+            <column autoIncrement="true" name="shooting_test_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="shooting_test_event_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="calendar_event_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="calendar_event(calendar_event_id)"
+                             foreignKeyName="fk_shooting_test_event_calendar_event"/>
+            </column>
+            <column name="locked_time" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+        <createIndex tableName="shooting_test_event" indexName="ndx_shooting_test_event_uniq" unique="true">
+            <column name="calendar_event_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-08-15-add-shooting-test-official" author="vincit-terova">
+        <createTable tableName="shooting_test_official">
+            <column autoIncrement="true" name="shooting_test_official_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="shooting_test_official_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="shooting_test_event_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="shooting_test_event(shooting_test_event_id)"
+                             foreignKeyName="fk_shooting_test_official_shooting_test_event"/>
+            </column>
+            <column name="occupation_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="occupation(occupation_id)"
+                             foreignKeyName="fk_shooting_test_official_occupation"/>
+            </column>
+        </createTable>
+        <createIndex tableName="shooting_test_official" indexName="ndx_shooting_test_official_uniq" unique="true">
+            <column name="shooting_test_event_id"/>
+            <column name="occupation_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-08-16-add-shooting-test-participant" author="vincit-terova">
+        <createTable tableName="shooting_test_participant">
+            <column autoIncrement="true" name="shooting_test_participant_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="shooting_test_participant_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="shooting_test_event_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="shooting_test_event(shooting_test_event_id)"
+                             foreignKeyName="fk_shooting_test_participant_shooting_test_event"/>
+            </column>
+            <column name="person_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="person(person_id)"
+                             foreignKeyName="fk_shooting_test_participant_person"/>
+            </column>
+            <column name="moose_test_intended" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bear_test_intended" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deer_test_intended" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bow_test_intended" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="shooting_test_participant" indexName="ndx_shooting_test_participant_uniq" unique="true">
+            <column name="shooting_test_event_id"/>
+            <column name="person_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-08-16-add-shooting-test-attempt" author="vincit-terova">
+        <createTable tableName="shooting_test_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+        <insert tableName="shooting_test_type">
+            <column name="name" value="MOOSE"/>
+        </insert>
+        <insert tableName="shooting_test_type">
+            <column name="name" value="BEAR"/>
+        </insert>
+        <insert tableName="shooting_test_type">
+            <column name="name" value="ROE_DEER"/>
+        </insert>
+        <insert tableName="shooting_test_type">
+            <column name="name" value="BOW"/>
+        </insert>
+
+        <createTable tableName="shooting_test_attempt_result">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+        <insert tableName="shooting_test_attempt_result">
+            <column name="name" value="QUALIFIED"/>
+        </insert>
+        <insert tableName="shooting_test_attempt_result">
+            <column name="name" value="UNQUALIFIED"/>
+        </insert>
+        <insert tableName="shooting_test_attempt_result">
+            <column name="name" value="TIMED_OUT"/>
+        </insert>
+        <insert tableName="shooting_test_attempt_result">
+            <column name="name" value="REBATED"/>
+        </insert>
+
+        <createTable tableName="shooting_test_attempt">
+            <column autoIncrement="true" name="shooting_test_attempt_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="shooting_test_attempt_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="participant_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="shooting_test_participant(shooting_test_participant_id)"
+                             foreignKeyName="fk_shooting_test_attempt_participant"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="shooting_test_type(name)"
+                             foreignKeyName="fk_shooting_test_attempt_type"/>
+            </column>
+            <column name="result" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="shooting_test_attempt_result(name)"
+                             foreignKeyName="fk_shooting_test_attempt_result"/>
+            </column>
+            <column name="hits" type="INT"/>
+            <column name="note" type="TEXT"/>
+        </createTable>
+        <createIndex tableName="shooting_test_attempt" indexName="ndx_shooting_test_attempt_participant">
+            <column name="participant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-08-18-add-payment-fields" author="vincit-terova">
+        <addColumn tableName="shooting_test_participant">
+            <column name="total_due_amount" type="NUMERIC(6,2)"/>
+            <column name="paid_amount" type="NUMERIC(6,2)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-08-25-add-registration_time-into-shooting_test_participant" author="vincit-jarkkoka">
+        <addColumn tableName="shooting_test_participant">
+            <column name="registration_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="completed" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-09-07-add-harvest-sub-species-code" author="vincit-kyostihe">
+        <addColumn tableName="harvest">
+            <column name="sub_species_code" type="INT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-09-06-add-taiga-bean-goose-harvest-report-field" author="vincit-kyostihe">
+        <addColumn tableName="harvest_report_fields">
+            <column name="taiga_bean_goose" type="VARCHAR(255)" defaultValue="NO">
+                <constraints nullable="false"
+                             references="required(name)"
+                             foreignKeyName="fk_harvest_report_fields_taiga_bean_goose"/>
+            </column>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                UPDATE harvest_report_fields
+                SET taiga_bean_goose = 'VOLUNTARY'
+                WHERE game_species_id=(SELECT game_species_id FROM game_species WHERE official_code=26287);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-09-04-remove-harvest-season-fields" author="vincit-kyostihe">
+        <addColumn tableName="harvest_season">
+            <column name="game_species_id" type="BIGINT">
+                <constraints references="game_species(game_species_id)"
+                             foreignKeyName="fk_harvest_season_game_species"/>
+            </column>
+        </addColumn>
+        <sql><![CDATA[
+            UPDATE harvest_season SET game_species_id = (
+                SELECT game_species_id
+                FROM harvest_report_fields
+                WHERE harvest_season.harvest_report_fields_id = harvest_report_fields.harvest_report_fields_id
+            );
+        ]]></sql>
+        <addNotNullConstraint tableName="harvest_season" columnName="game_species_id" columnDataType="BIGINT"/>
+        <dropColumn tableName="harvest_season" columnName="harvest_report_fields_id"/>
+        <dropColumn tableName="harvest" columnName="harvest_report_fields_id"/>
+        <dropTable tableName="harvest_report_fields"/>
+    </changeSet>
+
+    <changeSet id="2016-09-25-remove-harvest-report" author="vincit-kyostihe">
+        <addColumn tableName="harvest">
+            <column name="harvest_report_state" type="VARCHAR(255)">
+                <constraints references="harvest_report_state(name)" foreignKeyName="fk_harvest_harvest_report_state"/>
+            </column>
+            <column name="harvest_report_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="harvest_report_author_id" type="BIGINT">
+                <constraints references="person(person_id)" foreignKeyName="fk_harvest_harvest_report_author"/>
+            </column>
+            <column name="harvest_report_memo" type="TEXT"/>
+        </addColumn>
+
+        <addColumn tableName="harvest_permit">
+            <column name="harvest_report_state" type="VARCHAR(255)">
+                <constraints references="harvest_report_state(name)" foreignKeyName="fk_harvest_permit_report_state"/>
+            </column>
+            <column name="harvest_report_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="harvest_report_author_id" type="BIGINT">
+                <constraints references="person(person_id)" foreignKeyName="fk_harvest_permit_report_author"/>
+            </column>
+            <column name="harvest_report_moderator_override" type="BOOLEAN"/>
+        </addColumn>
+
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE harvest SET harvest_report_state = hr.state,
+            harvest_report_author_id = hr.author_id,
+            harvest_report_date = hr.creation_time,
+            harvest_report_memo = hr.description
+            FROM harvest_report hr
+            WHERE harvest.harvest_report_id IS NOT NULL
+            AND hr.harvest_report_id = harvest.harvest_report_id;
+        ]]></sql>
+
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE harvest_permit SET harvest_report_state = hr.state,
+            harvest_report_author_id = hr.author_id,
+            harvest_report_date = hr.creation_time,
+            harvest_report_moderator_override = su.role IS NOT NULL AND (su.role = 'ROLE_MODERATOR' OR su.role = 'ROLE_ADMIN')
+            FROM harvest_report hr
+            LEFT JOIN system_user su ON (su.user_id = hr.created_by_user_id)
+            WHERE harvest_permit.end_of_hunting_report_id IS NOT NULL
+            AND hr.harvest_report_id = harvest_permit.end_of_hunting_report_id;
+        ]]></sql>
+
+        <sql><![CDATA[
+            ALTER TABLE harvest ADD CONSTRAINT ck_harvest_report_fields_null_check CHECK (
+            (
+            harvest_report_state IS NULL AND
+            harvest_report_author_id IS NULL AND
+            harvest_report_date IS NULL
+            ) OR (
+            harvest_report_state IS NOT NULL AND
+            harvest_report_author_id IS NOT NULL AND
+            harvest_report_date IS NOT NULL
+            ));
+
+            ALTER TABLE harvest_permit ADD CONSTRAINT ck_harvest_permit_report_fields_null_check CHECK (
+            (
+            harvest_report_state IS NULL AND
+            harvest_report_author_id IS NULL AND
+            harvest_report_date IS NULL AND
+            harvest_report_moderator_override IS NULL
+            ) OR (
+            harvest_report_state IS NOT NULL AND
+            harvest_report_author_id IS NOT NULL AND
+            harvest_report_date IS NOT NULL AND
+            harvest_report_moderator_override IS NOT NULL
+            ));
+        ]]></sql>
+
+        <createTable tableName="harvest_change_history">
+            <column autoIncrement="true" name="harvest_change_history_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_change_history_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="harvest_id" type="BIGINT">
+                <constraints nullable="false" references="harvest(harvest_id)"
+                             foreignKeyName="fk_harvest_change_history_harvest"/>
+            </column>
+            <column name="point_of_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT"/>
+            <column name="harvest_report_state" type="VARCHAR(255)">
+                <constraints references="harvest_report_state(name)"
+                             foreignKeyName="fk_harvest_change_history_state"/>
+            </column>
+            <column name="reason_for_change" type="TEXT"/>
+        </createTable>
+
+        <sql dbms="postgresql"><![CDATA[
+        INSERT INTO harvest_change_history (harvest_id, point_of_time, user_id, harvest_report_state, reason_for_change)
+        SELECT
+        harvest.harvest_id,
+        harvest_report_state_history.creation_time,
+        harvest_report_state_history.created_by_user_id,
+        harvest_report_state_history.state,
+        harvest_report_state_history.message
+        FROM harvest
+        LEFT JOIN harvest_permit USING (harvest_permit_id)
+        INNER JOIN harvest_report USING (harvest_report_id)
+        INNER JOIN harvest_report_state_history USING (harvest_report_id)
+        WHERE harvest_permit.harvest_permit_id IS NULL
+        OR harvest_permit.end_of_hunting_report_id IS NULL
+        OR harvest_permit.end_of_hunting_report_id <> harvest_report.harvest_report_id
+        ORDER BY harvest_report_state_history_id ASC;
+        ]]></sql>
+
+        <createIndex tableName="harvest_change_history" indexName="ndx_harvest_change_history_harvest">
+            <column name="harvest_id"/>
+        </createIndex>
+
+        <dropColumn tableName="harvest_permit" columnName="end_of_hunting_report_id"/>
+        <dropColumn tableName="harvest" columnName="harvest_report_id"/>
+        <dropTable tableName="harvest_report_state_history"/>
+        <dropTable tableName="harvest_report"/>
+
+        <sql splitStatements="false" dbms="postgresql"><![CDATA[
+            DROP FUNCTION harvest_report_state_check();
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-10-02-complete-non-list-permits" author="vincit-terova" dbms="postgresql">
+        <sql><![CDATA[
+        UPDATE harvest_permit
+        SET harvest_report_state = 'APPROVED',
+          harvest_report_author_id = original_contact_person_id,
+          harvest_report_date = now(),
+          harvest_report_moderator_override = TRUE
+        FROM
+          (SELECT
+             hp.permit_number, g.name_finnish, hpsa.amount, count(*)
+           FROM harvest h
+             JOIN game_species g USING (game_species_id)
+             JOIN harvest_permit hp USING (harvest_permit_id)
+             JOIN harvest_permit_species_amount hpsa USING (harvest_permit_id, game_species_id)
+           WHERE h.harvest_report_state = 'APPROVED'
+                 AND hp.harvests_as_list = FALSE
+                 AND hp.harvest_report_state IS NULL
+                 AND hp.permit_type_code NOT IN ('100', '190')
+           GROUP BY hp.permit_number, g.name_finnish, hpsa.amount
+           HAVING count(*) >= hpsa.amount) pp
+        WHERE harvest_permit.permit_number IN (pp.permit_number)
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-10-04-remove-harvest-report-soft-delete" author="vincit-kyostihe">
+        <sql><![CDATA[
+        UPDATE harvest
+        SET harvest_report_state = null,
+          harvest_report_author_id = null,
+          harvest_report_date = null
+        WHERE harvest_report_state = 'DELETED';
+
+        UPDATE harvest_permit
+        SET harvest_report_state = null,
+          harvest_report_author_id = null,
+          harvest_report_date = null,
+          harvest_report_moderator_override = null
+        WHERE harvest_report_state = 'DELETED';
+
+        UPDATE harvest_change_history
+        SET harvest_report_state = null
+        WHERE harvest_report_state = 'DELETED';
+        ]]>
+
+            DELETE FROM harvest_report_state WHERE name = 'DELETED';
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-10-05-remove-harvest-report-proposed-state" author="vincit-kyostihe">
+        <sql><![CDATA[
+        UPDATE harvest
+        SET harvest_report_state = null,
+          harvest_report_author_id = null,
+          harvest_report_date = null,
+          state_accepted_to_harvest_permit = 'PROPOSED'
+        WHERE harvest_report_state = 'PROPOSED';
+
+        UPDATE harvest_permit
+        SET harvest_report_state = null,
+          harvest_report_author_id = null,
+          harvest_report_date = null,
+          harvest_report_moderator_override = null
+        WHERE harvest_report_state = 'PROPOSED';
+
+        UPDATE harvest_change_history
+        SET harvest_report_state = null
+        WHERE harvest_report_state = 'PROPOSED';
+
+        DELETE FROM harvest_report_state WHERE name = 'PROPOSED';
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-10-11-add-harvest-report-state-index" author="vincit-kyostihe">
+        <createIndex tableName="harvest" indexName="ndx_harvest_harvest_report_state">
+            <column name="harvest_report_state"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-10-11-check-no-permit-with-hunting-day" author="vincit-kyostihe">
+        <sql><![CDATA[
+        UPDATE harvest SET harvest_permit_id = NULL, state_accepted_to_harvest_permit = NULL
+        WHERE group_hunting_day_id IS NOT NULL AND harvest_permit_id IS NOT NULL;
+
+        ALTER TABLE harvest ADD CONSTRAINT ck_harvest_no_permit_with_group_hunting_day CHECK (
+        harvest_permit_id IS NULL OR group_hunting_day_id IS NULL);
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-10-11-check-no-permit-without-accepted-state" author="vincit-kyostihe">
+        <sql><![CDATA[
+        UPDATE harvest
+        SET state_accepted_to_harvest_permit = NULL
+        WHERE harvest_permit_id IS NULL
+        AND state_accepted_to_harvest_permit IS NOT NULL;
+
+        UPDATE harvest
+        SET state_accepted_to_harvest_permit = 'ACCEPTED'
+        WHERE harvest_permit_id IS NOT NULL
+        AND state_accepted_to_harvest_permit IS NULL
+        AND harvest_report_state IS NOT NULL;
+
+        UPDATE harvest
+        SET state_accepted_to_harvest_permit = 'PROPOSED'
+        WHERE harvest_permit_id IS NOT NULL
+        AND state_accepted_to_harvest_permit IS NULL;
+
+        ALTER TABLE harvest ADD CONSTRAINT ck_harvest_permit_requires_accepted_state CHECK (
+        (harvest_permit_id IS NULL AND state_accepted_to_harvest_permit IS NULL) OR
+        (harvest_permit_id IS NOT NULL AND state_accepted_to_harvest_permit IS NOT NULL));
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-10-18-report-for-permit-requires-accepted-state" author="vincit-kyostihe">
+        <sql><![CDATA[
+            ALTER TABLE harvest ADD CONSTRAINT ck_harvest_report_requires_permit_accepted_state CHECK (
+            harvest_permit_id IS NULL OR harvest_report_state IS NULL OR state_accepted_to_harvest_permit = 'ACCEPTED');
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-10-20-season-harvest-constraint" author="vincit-kyostihe">
+        <sql><![CDATA[
+            UPDATE harvest SET harvest_season_id = NULL, harvest_quota_id = NULL
+            WHERE harvest_report_state IS NULL AND (
+                harvest_season_id IS NOT NULL OR harvest_quota_id IS NOT NULL
+            );
+
+            ALTER TABLE harvest ADD CONSTRAINT ck_season_harvest_valid CHECK (
+            harvest_season_id IS NULL AND harvest_quota_id IS NULL
+            OR (
+            harvest_season_id IS NOT NULL AND harvest_report_state IS NOT NULL AND
+            harvest_permit_id IS NULL AND group_hunting_day_id IS NULL
+            ));
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-30-club_subtype" author="vincit-terova">
+        <createTable tableName="hunting_club_subtype">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="hunting_club_subtype">
+            <column name="name" value="PERSON"/>
+        </insert>
+        <insert tableName="hunting_club_subtype">
+            <column name="name" value="BUSINESS"/>
+        </insert>
+        <insert tableName="hunting_club_subtype">
+            <column name="name" value="RY"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2017-11-30-club-type" author="vincit-terova">
+        <addColumn tableName="organisation">
+            <column name="subtype" type="VARCHAR(255)">
+                <constraints references="hunting_club_subtype(name)"
+                             foreignKeyName="fk_club_type"/>
+            </column>
+            <column name="club_person_id" type="BIGINT">
+                <constraints references="person(person_id)"
+                             foreignKeyName="fk_club_person"/>
+            </column>
+            <column name="business_id" type="VARCHAR(9)"></column>
+            <column name="association_registry_number" type="VARCHAR(7)"></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-11-17-club-type-constraints" author="vincit-terova" dbms="postgresql">
+        <sql><![CDATA[
+            ALTER TABLE organisation ADD CONSTRAINT ck_club_type CHECK (
+            organisation_type <> 'CLUB' OR (
+                subtype = 'PERSON' AND business_id IS NULL AND association_registry_number IS NULL
+                OR subtype = 'BUSINESS' AND club_person_id IS NULL AND association_registry_number IS NULL
+                OR subtype = 'RY' AND club_person_id IS NULL AND business_id IS NULL
+            ));
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-08-add-rhy_annual_report" author="vincit-jarkkoka">
+        <createTable tableName="rhy_annual_report">
+            <column autoIncrement="true" name="rhy_annual_report_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="rhy_annual_report_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_rhy_annual_report_rhy"/>
+            </column>
+            <column name="year" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="rhy_annual_report" indexName="ndx_rhy_annual_report_rhy_year" unique="true">
+            <column name="rhy_id"/>
+            <column name="year"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-11-16-add-locked-time-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="locked_time" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-11-16-add-hunter-exam-data-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="hunter_exam_events" type="INT"/>
+            <column name="passed_hunter_exams" type="INT"/>
+            <column name="failed_hunter_exams" type="INT"/>
+            <column name="hunter_exam_officials" type="INT"/>
+            <column name="hunter_exams_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunter_exam_events
+                  CHECK (hunter_exam_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_passed_hunter_exams
+                  CHECK (passed_hunter_exams >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_failed_hunter_exams
+                  CHECK (failed_hunter_exams >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunter_exam_officials
+                  CHECK (hunter_exam_officials >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-22-add-hunting-control-data-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="hunting_control_events" type="INT"/>
+            <column name="hunting_control_customers" type="INT"/>
+            <column name="proof_orders" type="INT"/>
+            <column name="hunting_controllers" type="INT"/>
+            <column name="hunting_control_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunting_control_events
+                  CHECK (hunting_control_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunting_control_customers
+                  CHECK (hunting_control_customers >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_proof_orders
+                  CHECK (proof_orders >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunting_controllers
+                  CHECK (hunting_controllers >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-23-add-game-damage-data-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="damage_inspection_locations" type="INT"/>
+            <column name="damage_inspection_expenses" type="NUMERIC(9,2)"/>
+            <column name="damaging_mooselike_animals" type="INT"/>
+            <column name="damaging_carnivore_animals" type="INT"/>
+            <column name="game_damage_inspectors" type="INT"/>
+            <column name="game_damage_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_damage_inspection_locations
+                  CHECK (damage_inspection_locations >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_damage_inspection_expenses
+                  CHECK (damage_inspection_expenses >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_damaging_mooselike_animals
+                  CHECK (damaging_mooselike_animals >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_damaging_carnivore_animals
+                  CHECK (damaging_carnivore_animals >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_game_damage_inspectors
+                  CHECK (game_damage_inspectors >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-23-add-shooting-test-data-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="firearm_test_events" type="INT"/>
+            <column name="bow_test_events" type="INT"/>
+            <column name="all_moose_attempts" type="INT"/>
+            <column name="qualified_moose_attempts" type="INT"/>
+            <column name="all_bear_attempts" type="INT"/>
+            <column name="qualified_bear_attempts" type="INT"/>
+            <column name="all_roe_deer_attempts" type="INT"/>
+            <column name="qualified_roe_deer_attempts" type="INT"/>
+            <column name="all_bow_attempts" type="INT"/>
+            <column name="qualified_bow_attempts" type="INT"/>
+            <column name="shooting_test_officials" type="INT"/>
+            <column name="shooting_tests_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_firearm_test_events
+                  CHECK (firearm_test_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_bow_test_events
+                  CHECK (bow_test_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_all_moose_attempts
+                  CHECK (all_moose_attempts >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_qualified_moose_attempts
+                  CHECK (qualified_moose_attempts >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_all_bear_attempts
+                  CHECK (all_bear_attempts >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_qualified_bear_attempts
+                  CHECK (qualified_bear_attempts >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_all_roe_deer_attempts
+                  CHECK (all_roe_deer_attempts >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_qualified_roe_deer_attempts
+                  CHECK (qualified_roe_deer_attempts >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_all_bow_attempts
+                  CHECK (all_bow_attempts >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_qualified_bow_attempts
+                  CHECK (qualified_bow_attempts >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_shooting_test_officials
+                  CHECK (shooting_test_officials >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-27-add-other-admin-data-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="granted_recreational_shooting_certificates" type="INT"/>
+            <column name="mutual_ack_shooting_certificates" type="INT"/>
+            <column name="other_admin_data_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_granted_recreational_shooting_certificates
+                  CHECK (granted_recreational_shooting_certificates >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_mutual_ack_shooting_certificates
+                  CHECK (mutual_ack_shooting_certificates >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-28-add-add-jht-trainings-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="jht_shooting_test_training_events" type="INT"/>
+            <column name="jht_shooting_test_training_participants" type="INT"/>
+            <column name="jht_hunter_exam_training_events" type="INT"/>
+            <column name="jht_hunter_exam_training_participants" type="INT"/>
+            <column name="jht_game_damage_training_events" type="INT"/>
+            <column name="jht_game_damage_training_participants" type="INT"/>
+            <column name="jht_hunting_control_training_events" type="INT"/>
+            <column name="jht_hunting_control_training_participants" type="INT"/>
+            <column name="jht_trainings_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_jht_shooting_test_training_events
+                  CHECK (jht_shooting_test_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_jht_shooting_test_training_participants
+                  CHECK (jht_shooting_test_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_jht_hunter_exam_training_events
+                  CHECK (jht_hunter_exam_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_jht_hunter_exam_training_participants
+                  CHECK (jht_hunter_exam_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_jht_game_damage_training_events
+                  CHECK (jht_game_damage_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_jht_game_damage_training_participants
+                  CHECK (jht_game_damage_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_jht_hunting_control_training_events
+                  CHECK (jht_hunting_control_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_jht_hunting_control_training_participants
+                  CHECK (jht_hunting_control_training_participants >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-28-add-state-aid-trainings-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="mooselike_hunting_training_events" type="INT"/>
+            <column name="mooselike_hunting_training_participants" type="INT"/>
+            <column name="carnivore_hunting_training_events" type="INT"/>
+            <column name="carnivore_hunting_training_participants" type="INT"/>
+            <column name="carnivore_hunting_leader_training_events" type="INT"/>
+            <column name="carnivore_hunting_leader_training_participants" type="INT"/>
+            <column name="srva_training_events" type="INT"/>
+            <column name="srva_training_participants" type="INT"/>
+            <column name="carnivore_contact_person_training_events" type="INT"/>
+            <column name="carnivore_contact_person_training_participants" type="INT"/>
+            <column name="state_aid_hunter_trainings_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_mooselike_hunting_training_events
+                  CHECK (mooselike_hunting_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_mooselike_hunting_training_participants
+                  CHECK (mooselike_hunting_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_carnivore_hunting_training_events
+                  CHECK (carnivore_hunting_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_carnivore_hunting_training_participants
+                  CHECK (carnivore_hunting_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_carnivore_hunting_leader_training_events
+                  CHECK (carnivore_hunting_leader_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_carnivore_hunting_leader_training_participants
+                  CHECK (carnivore_hunting_leader_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_training_events
+                  CHECK (srva_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_training_participants
+                  CHECK (srva_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_carnivore_contact_person_training_events
+                  CHECK (carnivore_contact_person_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_carnivore_contact_person_training_participants
+                  CHECK (carnivore_contact_person_training_participants >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <!-- Not merged into previous changeset because it was already deployed into a test environment. -->
+    <changeSet id="2017-11-29-add-more-state-aid-training-fields-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="mooselike_hunting_leader_training_events" type="INT"/>
+            <column name="mooselike_hunting_leader_training_participants" type="INT"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_mooselike_hunting_leader_training_events
+                  CHECK (mooselike_hunting_leader_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_mooselike_hunting_leader_training_participants
+                  CHECK (mooselike_hunting_leader_training_participants >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-29-add-non-state-aid-trainings-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="small_carnivore_hunting_training_events" type="INT"/>
+            <column name="small_carnivore_hunting_training_participants" type="INT"/>
+            <column name="game_counting_training_events" type="INT"/>
+            <column name="game_counting_training_participants" type="INT"/>
+            <column name="game_population_management_training_events" type="INT"/>
+            <column name="game_population_management_training_participants" type="INT"/>
+            <column name="game_environmental_care_training_events" type="INT" />
+            <column name="game_environmental_care_training_participants" type="INT"/>
+            <column name="other_gamekeeping_training_events" type="INT"/>
+            <column name="other_gamekeeping_training_participants" type="INT"/>
+            <column name="other_shooting_training_events" type="INT"/>
+            <column name="other_shooting_training_participants" type="INT"/>
+            <column name="tracker_training_events" type="INT"/>
+            <column name="tracker_training_participants" type="INT"/>
+            <column name="hunter_trainings_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_small_carnivore_hunting_training_events
+                  CHECK (small_carnivore_hunting_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_small_carnivore_hunting_training_participants
+                  CHECK (small_carnivore_hunting_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_game_counting_training_events
+                  CHECK (game_counting_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_game_counting_training_participants
+                  CHECK (game_counting_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_game_population_management_training_events
+                  CHECK (game_population_management_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_game_population_management_training_participants
+                  CHECK (game_population_management_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_game_environmental_care_training_events
+                  CHECK (game_environmental_care_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_game_environmental_care_training_participants
+                  CHECK (game_environmental_care_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_other_gamekeeping_training_events
+                  CHECK (other_gamekeeping_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_other_gamekeeping_training_participants
+                  CHECK (other_gamekeeping_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_other_shooting_training_events
+                  CHECK (other_shooting_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_other_other_shooting_training_participants
+                  CHECK (other_shooting_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_tracker_training_events
+                  CHECK (tracker_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_tracker_training_participants
+                  CHECK (tracker_training_participants >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-11-30-add-other-trainings-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="school_training_events" type="INT"/>
+            <column name="school_training_participants" type="INT"/>
+            <column name="college_training_events" type="INT"/>
+            <column name="college_training_participants" type="INT"/>
+            <column name="other_youth_targeted_training_events" type="INT"/>
+            <column name="other_youth_targeted_training_participants" type="INT"/>
+            <column name="other_training_events" type="INT" />
+            <column name="other_training_participants" type="INT"/>
+            <column name="accident_prevention_training_events" type="INT"/>
+            <column name="accident_prevention_training_participants" type="INT"/>
+            <column name="other_training_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_school_training_events
+                  CHECK (school_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_school_training_participants
+                  CHECK (school_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_college_training_events
+                  CHECK (college_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_college_training_participants
+                  CHECK (college_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_other_youth_targeted_training_events
+                  CHECK (other_youth_targeted_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_other_youth_targeted_training_participants
+                  CHECK (other_youth_targeted_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_other_training_events
+                  CHECK (other_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_other_training_participants
+                  CHECK (other_training_participants >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_accident_prevention_training_events
+                  CHECK (accident_prevention_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_accident_prevention_training_participants
+                  CHECK (accident_prevention_training_participants >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-01-add-hunter-exam-preparation-trainings-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="hunter_exam_preparation_training_events" type="INT"/>
+            <column name="hunter_exam_preparation_training_participants" type="INT"/>
+            <column name="hunter_exam_preparation_training_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunter_exam_preparation_training_events
+                  CHECK (hunter_exam_preparation_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunter_exam_preparation_training_participants
+                  CHECK (hunter_exam_preparation_training_participants >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <!-- Not merged into previous changeset because it was already deployed into a test environment. -->
+    <changeSet id="2017-12-03-rename-hunter-exam-fields-in-rhy_annual_report" author="vincit-jarkkoka">
+        <renameColumn tableName="rhy_annual_report"
+                      oldColumnName="hunter_exam_preparation_training_events"
+                      newColumnName="hunter_exam_training_events"/>
+
+        <renameColumn tableName="rhy_annual_report"
+                      oldColumnName="hunter_exam_preparation_training_participants"
+                      newColumnName="hunter_exam_training_participants"/>
+
+        <renameColumn tableName="rhy_annual_report"
+                      oldColumnName="hunter_exam_preparation_training_last_modified"
+                      newColumnName="hunter_exam_training_last_modified"/>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report DROP CONSTRAINT ck_rhy_annual_report_hunter_exam_preparation_training_events;
+                ALTER TABLE rhy_annual_report DROP CONSTRAINT ck_rhy_annual_report_hunter_exam_preparation_training_participants;
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunter_exam_training_events
+                  CHECK (hunter_exam_training_events >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunter_exam_training_participants
+                  CHECK (hunter_exam_training_participants >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-04-add-hunting-party-statistics-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="hunting_clubs" type="INT"/>
+            <column name="hunting_groups" type="INT"/>
+            <column name="harvest_permit_application_partners" type="INT"/>
+            <column name="hunting_parties_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunting_clubs
+                  CHECK (hunting_clubs >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_hunting_groups
+                  CHECK (hunting_groups >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_harvest_permit_application_partners
+                  CHECK (harvest_permit_application_partners >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-04-add-communication-statistics-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="interviews" type="INT"/>
+            <column name="announcements" type="INT"/>
+            <column name="omariista_announcements" type="INT"/>
+            <column name="some_info" type="TEXT"/>
+            <column name="communication_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_interviews
+                  CHECK (interviews >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_announcements
+                  CHECK (announcements >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_omariista_announcements
+                  CHECK (omariista_announcements >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-05-add-shooting-ranges-to-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="moose_ranges" type="INT"/>
+            <column name="shotgun_ranges" type="INT"/>
+            <column name="rifle_ranges" type="INT"/>
+            <column name="other_shooting_ranges" type="INT"/>
+            <column name="shooting_ranges_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_moose_ranges
+                  CHECK (moose_ranges >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_shotgun_ranges
+                  CHECK (shotgun_ranges >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_rifle_ranges
+                  CHECK (rifle_ranges >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_other_shooting_ranges
+                  CHECK (other_shooting_ranges >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-05-add-srva-fields-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="srva_moose_accidents" type="INT"/>
+            <column name="srva_moose_deportations" type="INT"/>
+            <column name="srva_moose_injuries" type="INT"/>
+
+            <column name="srva_white_tailed_deer_accidents" type="INT"/>
+            <column name="srva_white_tailed_deer_deportations" type="INT"/>
+            <column name="srva_white_tailed_deer_injuries" type="INT"/>
+
+            <column name="srva_roe_deer_accidents" type="INT"/>
+            <column name="srva_roe_deer_deportations" type="INT"/>
+            <column name="srva_roe_deer_injuries" type="INT"/>
+
+            <column name="srva_wild_forest_reindeer_accidents" type="INT"/>
+            <column name="srva_wild_forest_reindeer_deportations" type="INT"/>
+            <column name="srva_wild_forest_reindeer_injuries" type="INT"/>
+
+            <column name="srva_fallow_deer_accidents" type="INT"/>
+            <column name="srva_fallow_deer_deportations" type="INT"/>
+            <column name="srva_fallow_deer_injuries" type="INT"/>
+
+            <column name="srva_wild_boar_accidents" type="INT"/>
+            <column name="srva_wild_boar_deportations" type="INT"/>
+            <column name="srva_wild_boar_injuries" type="INT"/>
+
+            <column name="srva_lynx_accidents" type="INT"/>
+            <column name="srva_lynx_deportations" type="INT"/>
+            <column name="srva_lynx_injuries" type="INT"/>
+
+            <column name="srva_bear_accidents" type="INT"/>
+            <column name="srva_bear_deportations" type="INT"/>
+            <column name="srva_bear_injuries" type="INT"/>
+
+            <column name="srva_wolf_accidents" type="INT"/>
+            <column name="srva_wolf_deportations" type="INT"/>
+            <column name="srva_wolf_injuries" type="INT"/>
+
+            <column name="srva_wolverine_accidents" type="INT"/>
+            <column name="srva_wolverine_deportations" type="INT"/>
+            <column name="srva_wolverine_injuries" type="INT"/>
+
+            <column name="srva_total_work_hours" type="INT"/>
+            <column name="srva_participants" type="INT"/>
+            <column name="srva_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_moose_accidents
+                  CHECK (srva_moose_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_moose_deportations
+                  CHECK (srva_moose_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_moose_injuries
+                  CHECK (srva_moose_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_white_tailed_deer_accidents
+                  CHECK (srva_white_tailed_deer_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_white_tailed_deer_deportations
+                  CHECK (srva_white_tailed_deer_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_white_tailed_deer_injuries
+                  CHECK (srva_white_tailed_deer_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_roe_deer_accidents
+                  CHECK (srva_roe_deer_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_roe_deer_deportations
+                  CHECK (srva_roe_deer_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_roe_deer_injuries
+                  CHECK (srva_roe_deer_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wild_forest_reindeer_accidents
+                  CHECK (srva_wild_forest_reindeer_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wild_forest_reindeer_deportations
+                  CHECK (srva_wild_forest_reindeer_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wild_forest_reindeer_injuries
+                  CHECK (srva_wild_forest_reindeer_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_fallow_deer_accidents
+                  CHECK (srva_fallow_deer_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_fallow_deer_deportations
+                  CHECK (srva_fallow_deer_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_fallow_deer_injuries
+                  CHECK (srva_fallow_deer_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wild_boar_accidents
+                  CHECK (srva_wild_boar_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wild_boar_deportations
+                  CHECK (srva_wild_boar_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wild_boar_injuries
+                  CHECK (srva_wild_boar_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_lynx_accidents
+                  CHECK (srva_lynx_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_lynx_deportations
+                  CHECK (srva_lynx_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_lynx_injuries
+                  CHECK (srva_lynx_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_bear_accidents
+                  CHECK (srva_bear_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_bear_deportations
+                  CHECK (srva_bear_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_bear_injuries
+                  CHECK (srva_bear_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wolf_accidents
+                  CHECK (srva_wolf_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wolf_deportations
+                  CHECK (srva_wolf_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wolf_injuries
+                  CHECK (srva_wolf_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wolverine_accidents
+                  CHECK (srva_wolverine_accidents >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wolverine_deportations
+                  CHECK (srva_wolverine_deportations >= 0);
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_wolverine_injuries
+                  CHECK (srva_wolverine_injuries >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_total_work_hours
+                  CHECK (srva_total_work_hours >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_participants
+                  CHECK (srva_participants >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-07-change-game-damage-fields-of-rhy_annual_report" author="vincit-jarkkoka">
+        <dropColumn tableName="rhy_annual_report" columnName="damage_inspection_locations"/>
+        <dropColumn tableName="rhy_annual_report" columnName="damage_inspection_expenses"/>
+        <dropColumn tableName="rhy_annual_report" columnName="damaging_mooselike_animals"/>
+        <dropColumn tableName="rhy_annual_report" columnName="damaging_carnivore_animals"/>
+
+        <addColumn tableName="rhy_annual_report">
+            <column name="mooselike_damage_inspection_locations" type="INT"/>
+            <column name="mooselike_damage_inspection_expenses" type="NUMERIC(9,2)"/>
+
+            <column name="large_carnivore_damage_inspection_locations" type="INT"/>
+            <column name="large_carnivore_damage_inspection_expenses" type="NUMERIC(9,2)"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_mooselike_damage_inspection_locations
+                  CHECK (mooselike_damage_inspection_locations >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_mooselike_damage_inspection_expenses
+                  CHECK (mooselike_damage_inspection_expenses >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_large_carnivore_damage_inspection_locations
+                  CHECK (large_carnivore_damage_inspection_locations >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_large_carnivore_damage_inspection_expenses
+                  CHECK (large_carnivore_damage_inspection_expenses >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-08-add-luke-stats-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="luke_winter_game_triangles" type="INT"/>
+            <column name="luke_summer_game_triangles" type="INT"/>
+            <column name="luke_field_triangles" type="INT"/>
+            <column name="luke_water_birds" type="INT"/>
+            <column name="luke_game_calculations_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_luke_winter_game_triangles
+                  CHECK (luke_winter_game_triangles >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_luke_summer_game_triangles
+                  CHECK (luke_summer_game_triangles >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_luke_field_triangles
+                  CHECK (luke_field_triangles >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_luke_water_birds
+                  CHECK (luke_water_birds >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-11-add-other-misc-stats-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="mh_small_game_sold_licenses" type="INT"/>
+            <column name="wolf_territory_workgroup_leads" type="INT"/>
+            <column name="other_misc_last_modified" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_mh_small_game_sold_licenses
+                  CHECK (mh_small_game_sold_licenses >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_wolf_territory_workgroup_leads
+                  CHECK (wolf_territory_workgroup_leads >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-12-remove-srva_last_modified-field-from-rhy_annual_report" author="vincit-jarkkoka">
+        <dropColumn tableName="rhy_annual_report" columnName="srva_last_modified"/>
+    </changeSet>
+
+    <changeSet id="2017-12-14-add-member-count-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="rhy_members" type="INT"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_rhy_members
+                  CHECK (rhy_members >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-19-add-two-new-fields-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="home_page" type="VARCHAR(255)"/>
+            <column name="info" type="TEXT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-12-18-refactor-misc-data-of-rhy_annual_report" author="vincit-jarkkoka">
+        <dropColumn tableName="rhy_annual_report" columnName="hunting_clubs"/>
+        <dropColumn tableName="rhy_annual_report" columnName="hunting_groups"/>
+
+        <renameColumn tableName="rhy_annual_report"
+                      oldColumnName="hunting_parties_last_modified"
+                      newColumnName="other_hunting_related_last_modified"/>
+
+        <renameColumn tableName="rhy_annual_report"
+                      oldColumnName="other_misc_last_modified"
+                      newColumnName="mh_last_modified"/>
+    </changeSet>
+
+    <changeSet id="2017-12-19-rename-one-timestamp-in-rhy_annual_report" author="vincit-jarkkoka">
+        <renameColumn tableName="rhy_annual_report"
+                      oldColumnName="hunter_trainings_last_modified"
+                      newColumnName="other_hunter_trainings_last_modified"/>
+    </changeSet>
+
+    <changeSet id="2017-12-15-add-iban-and-land_area_size-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="iban" type="CHAR(18)"/>
+            <column name="operational_land_area_size" type="INT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-12-27-add-more-srva-fields-into-rhy_annual_report" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_report">
+            <column name="srva_traffic_accidents" type="INT"/>
+            <column name="srva_railway_accidents" type="INT"/>
+            <column name="srva_other_accidents" type="INT"/>
+        </addColumn>
+
+        <sql>
+            <![CDATA[
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_traffic_accidents
+                  CHECK (srva_traffic_accidents >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_railway_accidents
+                  CHECK (srva_railway_accidents >= 0);
+
+                ALTER TABLE rhy_annual_report ADD CONSTRAINT ck_rhy_annual_report_srva_other_accidents
+                  CHECK (srva_other_accidents >= 0);
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-28-index-rhy-foreign-key-in-srva_event" author="vincit-jarkkoka">
+        <createIndex tableName="srva_event" indexName="ndx_srva_event_rhy">
+            <column name="rhy_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2017-11-27-harvest-permit-application-status-draft" author="vincit-terova">
+        <insert tableName="harvest_permit_application_status">
+            <column name="name" value="DRAFT"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2017-11-27-harvest-permit-application-contact-person" author="vincit-terova">
+        <addColumn tableName="harvest_permit_application">
+            <column name="contact_person_id" type="BIGINT">
+                <constraints references="person(person_id)"
+                             foreignKeyName="fk_harvest_permit_application_contact_person"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-11-27-harvest-permit-application-allow-nulls" author="vincit-terova">
+        <dropNotNullConstraint tableName="harvest_permit_application" columnName="permit_number" columnDataType="VARCHAR(255)"/>
+        <dropNotNullConstraint tableName="harvest_permit_application" columnName="permit_holder_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="harvest_permit_application" columnName="printing_url" columnDataType="TEXT"/>
+        <dropNotNullConstraint tableName="harvest_permit_application" columnName="area_size" columnDataType="INTEGER"/>
+        <dropNotNullConstraint tableName="harvest_permit_application" columnName="rhy_id" columnDataType="BIGINT"/>
+    </changeSet>
+
+    <changeSet id="2017-11-28-harvest-permit-application-type" author="vincit-terova">
+        <addColumn tableName="harvest_permit_application">
+            <column name="permit_type_code" type="VARCHAR(3)"/>
+        </addColumn>
+        <sql><![CDATA[
+            UPDATE harvest_permit_application SET permit_type_code='100';
+        ]]>
+        </sql>
+        <addNotNullConstraint tableName="harvest_permit_application"
+                              columnName="permit_type_code"
+                              columnDataType="VARCHAR(3)"/>
+    </changeSet>
+
+    <changeSet id="2017-11-30-harvest-permit-area-allow-nulls" author="vincit-kyostihe">
+        <dropNotNullConstraint tableName="harvest_permit_area" columnName="club_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="harvest_permit_area" columnName="name_finnish" columnDataType="VARCHAR(255)"/>
+        <dropNotNullConstraint tableName="harvest_permit_area" columnName="name_swedish" columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <changeSet id="2017-12-04-add-permit-application-species-amounts" author="vincit-kyostihe">
+        <createTable tableName="harvest_permit_application_species_amount">
+            <column autoIncrement="true" name="harvest_permit_application_species_amount_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_application_species_amount_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="harvest_permit_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_harvest_permit_application_species_amount_application"/>
+            </column>
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="game_species(game_species_id)"
+                             foreignKeyName="fk_harvest_permit_application_species_amount_species"/>
+            </column>
+            <column name="amount" type="DECIMAL(6,1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+        </createTable>
+
+        <sql dbms="postgresql"><![CDATA[
+            INSERT INTO harvest_permit_application_species_amount (harvest_permit_application_id, game_species_id, amount)
+            SELECT harvest_permit_application_id, game_species_id, 0 FROM harvest_permit_application_species;
+        ]]>
+        </sql>
+
+        <dropTable tableName="harvest_permit_application_species"/>
+    </changeSet>
+
+    <changeSet id="2017-12-07-add-local-application-attachment-storage" author="vincit-kyostihe">
+        <dropNotNullConstraint tableName="harvest_permit_application_attachment" columnName="url" columnDataType="TEXT"/>
+
+        <addColumn tableName="harvest_permit_application_attachment">
+            <column name="attachment_metadata_id" type="CHAR(36)">
+                <constraints references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_harvest_permit_application_attachment_metadata"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-12-18-add-state-area-size" author="vincit-kyostihe">
+        <addColumn tableName="harvest_permit_application">
+            <column name="state_area_size" type="INTEGER"/>
+        </addColumn>
+        <addColumn tableName="zone">
+            <column name="state_area_size" type="DOUBLE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-12-18-harvest_permit_application_number" author="vincit-terova">
+        <createSequence sequenceName="seq_harvest_permit_application_number" startValue="10000"/>
+        <addColumn tableName="harvest_permit_application">
+            <column name="application_number" type="INT"/>
+        </addColumn>
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE harvest_permit_application SET application_number = SUBSTRING(permit_number, 12, 5)::INT
+            WHERE status <> 'DRAFT';
+        ]]></sql>
+        <sql><![CDATA[
+            ALTER TABLE harvest_permit_application ADD CONSTRAINT harvest_permit_application_application_number_check
+            CHECK (status = 'DRAFT' OR application_number IS NOT NULL);
+
+            ALTER TABLE harvest_permit_application ADD CONSTRAINT harvest_permit_application_permit_number_check
+            CHECK (status = 'DRAFT' OR permit_number IS NOT NULL);
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2017-12-21-harvest_permit_application_name" author="vincit-kyostihe">
+        <addColumn tableName="harvest_permit_application">
+            <column name="application_name" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-12-21-harvest_permit_application_shooter_counts" author="vincit-kyostihe">
+        <addColumn tableName="harvest_permit_application">
+            <column name="shooter_only_club" type="INT"/>
+            <column name="shooter_other_club_passive" type="INT"/>
+            <column name="shooter_other_club_active" type="INT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-12-29-add-state-and-private-land-area-size" author="vincit-kyostihe">
+        <dropColumn tableName="zone" columnName="state_area_size"/>
+        <dropColumn tableName="harvest_permit_application" columnName="state_area_size"/>
+
+        <addColumn tableName="harvest_permit_application">
+            <column name="state_land_area_size" type="INT"/>
+            <column name="private_land_area_size" type="INT"/>
+        </addColumn>
+
+        <addColumn tableName="zone">
+            <column name="state_land_area_size" type="DOUBLE"/>
+            <column name="private_land_area_size" type="DOUBLE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2017-12-29-harvest_permit_application_additional_data" author="vincit-terova">
+        <addColumn tableName="harvest_permit_application">
+            <column name="email1" type="VARCHAR(255)"/>
+            <column name="email2" type="VARCHAR(255)"/>
+            <column name="delivery_by_mail" type="BOOLEAN"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

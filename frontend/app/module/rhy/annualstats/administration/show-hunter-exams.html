@@ -1,0 +1,46 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.administration.hunterExam.title'"
+                               last-modified="$ctrl.hunterExams.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr>
+                        <td class="col-xs-9" ng-switch="$ctrl.hunterExamEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.hunterExam.events"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.hunterExam.events"></div>
+                        </td>
+                        <td ng-switch="$ctrl.hunterExamEventsOverridden">
+                            <span ng-switch-when="true" num-pieces="::$ctrl.hunterExams.moderatorOverriddenHunterExamEvents"></span>
+                            <span ng-switch-when="false" num-pieces="::$ctrl.hunterExams.hunterExamEvents"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.administration.hunterExam.all"></td>
+                        <td num-pieces="::([$ctrl.hunterExams.passedHunterExams, $ctrl.hunterExams.failedHunterExams] | sumFinite)"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.hunterExam.passed"></td>
+                        <td num-pieces="::$ctrl.hunterExams.passedHunterExams"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.administration.hunterExam.failed"></td>
+                        <td num-pieces="::$ctrl.hunterExams.failedHunterExams"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.administration.hunterExam.officials"></td>
+                        <td num-persons="::$ctrl.hunterExams.hunterExamOfficials"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.openEditDialog()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,111 @@
+<hr class="invisible"/>
+
+<form id="personSearchForm" name="personSearchForm" role="form" class="form form-horizontal" r-force-show-errors-check-validity>
+    <div class="form-group" show-errors>
+        <label for="findByHunterNumber" class="col-xs-3 control-label">
+            <span translate="global.person.hunterNumber"></span>
+        </label>
+
+        <div class="col-xs-3">
+            <input type="text" name="findByHunterNumber" id="findByHunterNumber"
+                   class="form-control"
+                   ng-model="$ctrl.hunterNumber"
+                   ng-disabled="$ctrl.isRegistrationDisallowed()"
+                   valid-hunter-number
+                   maxlength="8"
+                   autocomplete=off>
+        </div>
+
+        <div class="col-xs-5">
+            <button type="button" class="btn btn-primary"
+                    ng-click="$ctrl.findPersonByHunterNumber()"
+                    ng-disabled="!$ctrl.hunterNumber"
+                    translate="shootingTest.registration.button.findPerson"></button>
+        </div>
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-xs-9 col-xs-offset-3 text-danger" ng-show="$ctrl.error">
+        <span translate="shootingTest.registration.personNotFound"></span>
+    </div>
+
+    <div class="col-xs-9 col-xs-offset-3" ng-if="$ctrl.searchResult">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <span>{{$ctrl.searchResult.lastName}} {{$ctrl.searchResult.firstName}}</span>
+            </div>
+
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <dl>
+                            <dt translate="global.person.dateOfBirth"></dt>
+                            <dd>{{$ctrl.searchResult.dateOfBirth | date:'d.M.yyyy'}}</dd>
+                        </dl>
+                    </div>
+                    <div class="col-sm-6">
+                        <dl>
+                            <dt translate="global.person.hunterNumber"></dt>
+                            <dd>{{$ctrl.searchResult.hunterNumber}}</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="alert alert-{{$ctrl.getStatusNotificationClass()}}">
+                    <span translate="{{ 'shootingTest.registration.status.' + $ctrl.searchResult.registrationStatus }}"></span>
+                </div>
+
+                <h4 class="text-center" translate="shootingTest.registration.selectTestType"></h4>
+
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default"
+                           ng-model="$ctrl.selectedShootingTestTypes.bearTestIntended"
+                           ng-disabled="$ctrl.isRegistrationDisallowed()"
+                           uib-btn-checkbox>
+                        <span ng-if="$ctrl.selectedShootingTestTypes.bearTestIntended" class="glyphicon glyphicon-check"></span>
+                        <span translate="shootingTest.type.BEAR"></span>
+                    </label>
+                    <label class="btn btn-default"
+                           ng-model="$ctrl.selectedShootingTestTypes.mooseTestIntended"
+                           ng-disabled="$ctrl.isRegistrationDisallowed()"
+                           uib-btn-checkbox>
+                        <span ng-if="$ctrl.selectedShootingTestTypes.mooseTestIntended" class="glyphicon glyphicon-check"></span>
+                        <span translate="shootingTest.type.MOOSE"></span>
+                    </label>
+                    <label class="btn btn-default"
+                           ng-model="$ctrl.selectedShootingTestTypes.roeDeerTestIntended"
+                           ng-disabled="$ctrl.isRegistrationDisallowed()"
+                           uib-btn-checkbox>
+                        <span ng-if="$ctrl.selectedShootingTestTypes.roeDeerTestIntended" class="glyphicon glyphicon-check"></span>
+                        <span translate="shootingTest.type.ROE_DEER"></span>
+                    </label>
+                    <label class="btn btn-default"
+                           ng-model="$ctrl.selectedShootingTestTypes.bowTestIntended"
+                           ng-disabled="$ctrl.isRegistrationDisallowed()"
+                           uib-btn-checkbox>
+                        <span ng-if="$ctrl.selectedShootingTestTypes.bowTestIntended" class="glyphicon glyphicon-check"></span>
+                        <span translate="shootingTest.type.BOW"></span>
+                    </label>
+                </div>
+            </div>
+
+            <br/>
+
+            <div class="panel-footer">
+                <div class="text-right">
+                    <div class="buttons">
+                        <button type="button" class="btn btn-default"
+                                ng-click="$ctrl.cancel()"
+                                translate="shootingTest.registration.button.cancel"></button>
+                        &nbsp;
+                        <button type="button" class="btn btn-primary"
+                                ng-click="$ctrl.addParticipant()"
+                                ng-disabled="$ctrl.isRegistrationDisallowed()"
+                                translate="shootingTest.registration.button.addParticipant"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

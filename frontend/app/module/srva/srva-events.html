@@ -68,42 +68,31 @@
     </div>
 </div>
 
-<div class="col-xs-12">
+<div class="col-xs-12 srva-events-search-buttons">
     <div class="col-xs-6">
-        <a ng-click="$ctrl.search(true)" class="btn btn-primary">
+        <a class="btn btn-default" ng-click="$ctrl.exportSrva()">
             <span class="glyphicon glyphicon-search"></span> &nbsp;
-            <span translate="gamediary.button.search"></span>
+            <span translate="reporting.common.toExcel"></span>
         </a>
     </div>
 
     <div class="col-xs-6">
-        <div class="form-group pull-right">
-            <a class="btn btn-primary" ng-click="$ctrl.exportSrva()">
+        <div class="form-group text-right">
+            <a ng-click="$ctrl.search(true)" class="btn btn-primary">
                 <span class="glyphicon glyphicon-search"></span> &nbsp;
-                <span translate="reporting.common.toExcel"></span>
+                <span translate="gamediary.button.search"></span>
             </a>
         </div>
     </div>
 </div>
 
-<div ng-show="$ctrl.srvaEvents.length <= 0" class="col-xs-12 well" style="margin-top: 20px">
+<div ng-show="$ctrl.results.content.length <= 0" class="col-xs-12 well" style="margin-top: 20px">
     <h5 translate="gamediary.search.noresults"></h5>
 </div>
 
-<div ng-show="$ctrl.srvaEvents.length > 0" class="col-xs-12">
-    <div class="col-md-9 text-center">
-        <ul uib-pagination
-            ng-model="$ctrl.pager.page"
-            ng-change="$ctrl.search(false)"
-            total-items="$ctrl.pager.total"
-            items-per-page="$ctrl.pager.pageSize"
-            rotate="true"
-            max-size="8"
-            boundary-links="true"
-            previous-text="{{'global.pager.previous' | translate}}"
-            next-text="{{'global.pager.next' | translate}}"
-            first-text="{{'global.pager.first' | translate}}"
-            last-text="{{'global.pager.last' | translate}}"></ul>
+<div ng-show="$ctrl.results.content.length > 0" class="col-xs-12">
+    <div class="text-center">
+        <slice-pager slice="$ctrl.results" load-page="$ctrl.loadPage(page)"></slice-pager>
     </div>
 
     <table class="table table-condensed">
@@ -122,20 +111,20 @@
 
 
         <!-- Summary row-->
-        <tr ng-repeat-start="entry in $ctrl.srvaEvents track by entry.id">
+        <tr ng-repeat-start="entry in $ctrl.results.content track by entry.id">
             <td>
                 <div ng-if="entry.state === 'UNFINISHED'"
-                     class="r-harvestreport-state-text r-report-permit-row-state"
+                     class="r-harvestreport-state-text"
                      harvest-report-state-to-class="'PROPOSED'">
                     <span translate="{{'srva.state.' + entry.state}}"></span>
                 </div>
                 <div ng-if="entry.state === 'REJECTED'"
-                     class="r-harvestreport-state-text r-report-permit-row-state"
+                     class="r-harvestreport-state-text"
                      harvest-report-state-to-class="'{{entry.state}}'">
                     <span translate="{{'srva.state.' + entry.state}}"></span>
                 </div>
                 <div ng-if="entry.state === 'APPROVED'"
-                     class="r-harvestreport-state-text r-report-permit-row-state"
+                     class="r-harvestreport-state-text"
                      harvest-report-state-to-class="'{{entry.state}}'">
                     <span translate="{{'srva.state.' + entry.state}}"></span>
                 </div>
@@ -213,7 +202,7 @@
                         <span>{{ entry.approverInfo.firstName }} {{ entry.approverInfo.lastName }}</span>
                     </div>
 
-                    <h5 translate="srva.form.result"></h5>
+                    <h5 translate="global.result"></h5>
                     <div ng-if="entry.eventResult">
                         <span translate="{{ 'srva.result.' + entry.eventResult }}"></span>
                     </div>

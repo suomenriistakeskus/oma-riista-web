@@ -1,0 +1,285 @@
+'use strict';
+
+angular.module('app.dashboard', [])
+    .component('dashboard', {
+        templateUrl: 'dashboard/dashboard.html',
+        controller: function ($scope, ActiveRoleService) {
+            $scope.selectedTab = null;
+            $scope.shouldLoadFirstTab = false;
+
+            $scope.select = function (i) {
+                $scope.selectedTab = i;
+            };
+
+            $scope.loadFirstTab = function () {
+                $scope.shouldLoadFirstTab = true;
+            };
+
+            $scope.isAdmin = function () {
+                return ActiveRoleService.isAdmin();
+            };
+        }
+    })
+    .component('dashboardUsers', {
+        templateUrl: 'dashboard/users.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/dashboard/users').get();
+            };
+        }
+    })
+    .component('dashboardClubs', {
+        templateUrl: 'dashboard/clubs.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/dashboard/clubs').get();
+            };
+        }
+    })
+    .component('dashboardPdf', {
+        templateUrl: 'dashboard/pdf.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/dashboard/pdf').get();
+            };
+        }
+    })
+    .component('dashboardAnnouncement', {
+        templateUrl: 'dashboard/announcement.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/dashboard/announcement').get();
+            };
+        }
+    })
+    .component('dashboardMobileLogin', {
+        templateUrl: 'dashboard/mobile_login.html',
+        controller: function ($http) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $http.get('/api/v1/dashboard/mobile').then(function (response) {
+                    $ctrl.metrics = response.data;
+
+                    _.each($ctrl.metrics.platform, function (row) {
+                        row.total = row.android + row.ios + row.wp;
+                    });
+                });
+            };
+        }
+    })
+    .component('dashboardMooselikeHunting', {
+        templateUrl: 'dashboard/mooselike_hunting.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/dashboard/moosehunting').get();
+            };
+        }
+    })
+    .component('dashboardHarvestObservations', {
+        templateUrl: 'dashboard/harvests_observations.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/dashboard/harvests_observations').get();
+            };
+        }
+
+    })
+    .component('dashboardSrva', {
+        templateUrl: 'dashboard/srva.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/dashboard/srva').get();
+            };
+        }
+
+    })
+    .component('dashboardBulkButton', {
+        templateUrl: 'dashboard/bulk-button.html',
+        controller: function ($uibModal) {
+            var $ctrl = this;
+            $ctrl.openEmailDialog = function () {
+                $uibModal.open({
+                    templateUrl: 'dashboard/bulk_send_email.html',
+                    controller: 'AdminBulkEmailDialogController',
+                    size: 'lg'
+                });
+            };
+        }
+    })
+    .component('dashboardHarvestSummary', {
+        templateUrl: 'dashboard/harvest_summary.html',
+        controller: function (FormPostService, HuntingYearService, Helpers, GameDiaryParameters) {
+            var $ctrl = this;
+
+            GameDiaryParameters.query().$promise.then(function (parameters) {
+                $ctrl.availableSpecies = parameters.species;
+            });
+
+            $ctrl.$onInit = function () {
+                var huntingYear = HuntingYearService.getCurrent();
+                $ctrl.begin = HuntingYearService.getBeginDateStr(huntingYear);
+                $ctrl.end = HuntingYearService.getEndDateStr(huntingYear);
+                $ctrl.harvestReportOnly = false;
+            };
+
+            $ctrl.selectSpeciesCode = function (gameSpeciesCode) {
+                $ctrl.gameSpeciesCode = gameSpeciesCode;
+            };
+
+            $ctrl.exportExcel = function () {
+                var organisationType = $ctrl.rhyCode ? 'RHY' : $ctrl.areaCode ? 'RKA' : 'RK';
+                var officialCode = $ctrl.rhyCode || $ctrl.areaCode;
+
+                FormPostService.submitFormUsingBlankTarget('api/v1/dashboard/harvestSummary', {
+                    harvestReportOnly: $ctrl.harvestReportOnly,
+                    beginDate: Helpers.dateToString($ctrl.begin),
+                    endDate: Helpers.dateToString($ctrl.end),
+                    speciesCode: $ctrl.filterSpecies ? $ctrl.gameSpeciesCode : null,
+                    organisationType: organisationType,
+                    officialCode: officialCode
+                });
+            };
+        }
+    })
+    .controller('AdminBulkEmailDialogController',
+        function ($scope, $uibModalInstance, $http, NotificationService, TranslatedBlockUI) {
+            var _generateConfirmationCode = function () {
+                return (new Date()).getTime().toString().slice(-5);
+            };
+
+            var _resetConfirmationCode = function () {
+                $scope.message.confirmation = _generateConfirmationCode();
+                $scope.message.userConfirmation = null;
+            };
+
+            $scope.message = {
+                // Random confirmation code ...
+                confirmation: _generateConfirmationCode(),
+                // ... repeated by the user to verify intention.
+                userConfirmation: null,
+                body: null,
+                subject: null
+            };
+
+            _resetConfirmationCode();
+
+            $scope.confirmationMatches = function () {
+                return $scope.message.confirmation === $scope.message.userConfirmation;
+            };
+
+            $scope.SEND_TO = {test: 'test', all: 'all', clubContacts: 'clubContacts'};
+
+            $scope.viewState = {
+                sendTo: $scope.SEND_TO.test,
+                testRecipient: 'oma@riista.fi'
+            };
+
+            $scope.sendEmail = function () {
+                if ($scope.viewState.sendTo !== $scope.SEND_TO.test) {
+                    var url;
+                    if ($scope.viewState.sendTo === $scope.SEND_TO.all) {
+                        url = '/api/v1/admin/sendBulkMail';
+                    } else if ($scope.viewState.sendTo === $scope.SEND_TO.clubContacts) {
+                        url = '/api/v1/admin/sendBulkMailToClubContacts';
+                    } else {
+                        throw 'Invalid value for viewState.sendTo:' + $scope.viewState.sendTo;
+                    }
+                    // sending the real bulk mail, close dialog and send
+                    $uibModalInstance.close();
+                    return _send(url, $scope.message);
+                }
+            };
+
+            $scope.sendTestEmail = function () {
+                if ($scope.viewState.sendTo === $scope.SEND_TO.test) {
+                    // sending the test mail, keep dialog open and send
+                    var testData = angular.copy($scope.message);
+                    testData.testRecipient = $scope.viewState.testRecipient;
+                    return _send('/api/v1/admin/sendTestBulkMail/', testData).then(_resetConfirmationCode);
+                }
+            };
+
+            function _send(url, data) {
+                TranslatedBlockUI.start("global.block.wait");
+
+                return $http({
+                    url: url,
+                    method: 'POST',
+                    data: data
+                }).then(function () {
+                    NotificationService.showMessage("Viestien lähetys tehty.", "success");
+                }, function () {
+                    NotificationService.showMessage("Viestien lähetys epäonnistui", "error");
+                }).finally(function () {
+                    TranslatedBlockUI.stop();
+                });
+            }
+        })
+    .component('dashboardHarvestReports', {
+        templateUrl: 'dashboard/harvestreports.html',
+        controller: function ($http) {
+            var $ctrl = this;
+            $ctrl.loading = false;
+            $ctrl.formDates = {};
+            $ctrl.postParams = {harvest: null, rhy: null};
+
+            var createPostParams = function () {
+                var params = {};
+                if ($ctrl.formDates.begin) {
+                    params.begin = moment($ctrl.formDates.begin).format('YYYY-MM-DD');
+                }
+                if ($ctrl.formDates.end) {
+                    params.end = moment($ctrl.formDates.end).format('YYYY-MM-DD');
+                }
+                $ctrl.postParams = params;
+                return params;
+            };
+
+            $ctrl.updateResolvedHarvestReportMetrics = function () {
+                $ctrl.loading = true;
+                $http.get('/api/v1/dashboard/harvestreport', {params: createPostParams()})
+                    .then(function (result) {
+                        $ctrl.resolvedHarvestReportMetrics = result.data;
+                        $ctrl.loading = false;
+                    });
+            };
+        }
+    })
+    .component('dashboardRhy', {
+        templateUrl: 'dashboard/rhy.html',
+        controller: function ($http) {
+            var $ctrl = this;
+            $ctrl.loading = false;
+            $ctrl.formDates = {};
+            $ctrl.postParams = {};
+
+            var createPostParams = function () {
+                var params = {};
+                if ($ctrl.formDates.begin) {
+                    params.begin = moment($ctrl.formDates.begin).format('YYYY-MM-DD');
+                }
+                if ($ctrl.formDates.end) {
+                    params.end = moment($ctrl.formDates.end).format('YYYY-MM-DD');
+                }
+                $ctrl.postParams = params;
+                return params;
+            };
+
+            $ctrl.updateResolvedRhyEditMetrics = function () {
+                $ctrl.loading = true;
+                $http.get('/api/v1/dashboard/rhyedit', {params: createPostParams()})
+                    .then(function (result) {
+                        $ctrl.resolvedRhyEditMetrics = result.data;
+                        $ctrl.loading = false;
+                    });
+            };
+        }
+    })
+;

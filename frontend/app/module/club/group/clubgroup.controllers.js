@@ -9,8 +9,8 @@ angular.module('app.clubgroup.controllers', ['ui.router', 'app.clubgroup.service
                 templateUrl: 'club/group/layout.html',
                 controller: 'ClubGroupListController',
                 params: {
-                    year: undefined,
-                    species: undefined
+                    year: null,
+                    species: null
                 },
                 resolve: {
                     groups: function (ClubGroups, clubId) {
@@ -201,20 +201,23 @@ angular.module('app.clubgroup.controllers', ['ui.router', 'app.clubgroup.service
         };
 
         $scope.canCopy = function () {
-            return canEditNonMooseDataCard() && isClubContactOrModerator();
+            return !$scope.group.fromMooseDataCard && ($scope.isModerator || ActiveRoleService.isClubContact());
         };
 
         $scope.copy = function () {
             ClubGroupService.copy(group)
                 .then(function (newGroup) {
-                    //Tässä on jokin ongelma, sivupalkki ei päivity vaikka uusi ryhmä tuleekin valituksi
-                    $state.go('club.groups.group', {groupId: newGroup.id, year: newGroup.year}, {reload: true});
+                    $state.go('club.groups.group', {
+                        groupId: newGroup.id,
+                        species: newGroup.gameSpeciesCode,
+                        year: newGroup.huntingYear
+                    }, {reload: true});
                     NotificationService.showDefaultSuccess();
                 });
         };
 
         $scope.canEdit = function () {
-            return canEditNonMooseDataCard();
+            return $scope.group.canEdit;
         };
 
         $scope.edit = function () {
@@ -226,7 +229,8 @@ angular.module('app.clubgroup.controllers', ['ui.router', 'app.clubgroup.service
         };
 
         $scope.canDelete = function () {
-            return canEditNonMooseDataCard() && !$scope.group.huntingDaysExist && isClubContactOrModerator();
+            return !$scope.group.huntingDaysExist &&
+                ($scope.isModerator || $scope.group.canEdit) && !nonDeletedMooseDataCardImportExists();
         };
 
         $scope.delete = function () {
@@ -236,11 +240,9 @@ angular.module('app.clubgroup.controllers', ['ui.router', 'app.clubgroup.service
             }, NotificationService.showDefaultFailure);
         };
 
-        function canEditNonMooseDataCard() {
-            return $scope.group.canEdit && !$scope.group.fromMooseDataCard;
-        }
-
-        function isClubContactOrModerator() {
-            return ActiveRoleService.isClubContact() || ActiveRoleService.isModerator();
+        function nonDeletedMooseDataCardImportExists() {
+            return _.some($scope.mooseDataCardImports, function (mooseDataCardImport) {
+                return !mooseDataCardImport.revocationTimestamp;
+            });
         }
     });

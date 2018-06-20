@@ -31,40 +31,37 @@ public class PublicBearReportFeature {
     public static final int MIN_YEAR = 2014;
 
     private final static String SQL = "SELECT" +
-            " ST_AsGeoJSON(ST_SetSRID(ST_MakePoint(h.longitude, h.latitude), 3067)) AS geom," +
+            " ST_AsGeoJSON(h.geom) AS geom," +
             " to_char(h.point_of_time, 'DD.MM.YYYY') AS day," +
             " hs.gender," +
             " ha.name_finnish AS area_fi, ha.name_swedish AS area_sv," +
             " mun.name_finnish AS municipality_fi, mun.name_swedish AS municipality_sv," +
             " hp.permit_type_code as permit_type_code" +
             " FROM harvest h" +
-            " JOIN harvest_report hr ON (hr.harvest_report_id = h.harvest_report_id)" +
             " JOIN harvest_specimen hs on (hs.harvest_id = h.harvest_id)" +
             " LEFT JOIN harvest_quota hq ON (hq.harvest_quota_id=h.harvest_quota_id)" +
             " LEFT JOIN harvest_area ha ON (ha.harvest_area_id=hq.harvest_area_id)" +
             " LEFT JOIN municipality mun ON (mun.official_code=h.municipality_code)" +
             " LEFT JOIN harvest_permit hp ON hp.harvest_permit_id=h.harvest_permit_id" +
-            " WHERE hr.state = 'APPROVED' AND h.amount = 1" +
+            " WHERE h.harvest_report_state = 'APPROVED' AND h.amount = 1" +
             " AND h.point_of_time >= :beginTime" +
             " AND h.point_of_time < :endTime" +
             " AND h.game_species_id = (SELECT game_species_id FROM game_species WHERE official_code = 47348)" +
             " AND (hp.permit_type_code IS NULL OR hp.permit_type_code IN ('202', '207'))" +
-            " ORDER BY hr.creation_time ASC;";
+            " ORDER BY h.harvest_report_date ASC;";
 
     private static final String SQL_USED_QUOTA = "SELECT ha.name_finnish AS area_fi," +
             " hq.quota AS quota," +
-            " count(hr.harvest_report_id) AS used," +
+            " count(h.harvest_id) AS used," +
             " (:currentDate BETWEEN hs.begin_date AND hs.end_date) AS season_ongoing" +
             " FROM harvest_quota hq" +
             "  JOIN harvest_area ha ON ha.harvest_area_id=hq.harvest_area_id" +
             "  JOIN harvest_season hs ON hq.harvest_season_id=hs.harvest_season_id" +
-            "  JOIN harvest_report_fields hf ON hf.harvest_report_fields_id=hs.harvest_report_fields_id" +
             "  LEFT JOIN harvest h ON h.harvest_quota_id=hq.harvest_quota_id" +
-            "  LEFT JOIN harvest_report hr ON hr.harvest_report_id=h.harvest_report_id" +
-            " WHERE hf.game_species_id=(SELECT game_species_id FROM game_species WHERE official_code = 47348)" +
+            " WHERE hs.game_species_id=(SELECT game_species_id FROM game_species WHERE official_code = 47348)" +
             "  AND hs.begin_date >= :beginTime" +
             "  AND hs.end_date < :endTime" +
-            "  AND (hr.harvest_report_id IS NULL OR (hr.state = 'APPROVED' AND h.amount = 1))" +
+            "  AND (h.harvest_id IS NULL OR (h.harvest_report_state = 'APPROVED' AND h.amount = 1))" +
             "  GROUP BY hs.name_finnish, ha.name_finnish, hq.quota, hs.begin_date, hs.end_date" +
             "  ORDER BY ha.name_finnish;";
 

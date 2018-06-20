@@ -5,17 +5,22 @@ window.RiistaWidget = (function() {
         return L.latLngBounds(southWest, northEast);
     }
 
-    function _crs() {
-        return new L.Proj.CRS.TMS(
-            'EPSG:3067', '+proj=utm +zone=35 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
-            [-548576, 6291456, 1548576, 8388608], {
-                origin: [0, 0],
-                resolutions: [
-                    8192, 4096, 2048, 1024, 512, 256, 128,64, 32, 16, 8, 4, 2, 1
-                ]
-            }
-        );
-    }
+    L.CRS.EPSG3067 = new L.Proj.CRS('EPSG:3067',
+        '+proj=utm +zone=35 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+        {
+            origin: [-548576, 6291456],
+            bounds: L.bounds([-548576, 6291456], [1548576, 8388608]),
+            resolutions: [
+                8192, 4096, 2048, 1024, 512, 256,
+                128, 64, 32, 16, 8, 4, 2, 1, 0.5,
+                0.25, 0.125, 0.0625, 0.03125, 0.015625
+            ]
+        }
+    );
+    // Temporary fix for L.Scale control.
+    // see https://github.com/kartena/Proj4Leaflet/issues/109
+    L.CRS.EPSG3067.distance = L.CRS.Earth.distance;
+    L.CRS.EPSG3067.R = 6378137;
 
     L.TileLayer.Riista = L.TileLayer.extend({
         options: {
@@ -27,7 +32,7 @@ window.RiistaWidget = (function() {
 
         initialize: function (options) {
             L.setOptions(this, options);
-            var url = "https://d3gayxdfvljt82.cloudfront.net/tms/1.0.0/maasto_kiint/EPSG_3067/{z}/{x}/{y}.png";
+            var url = "https://kartta.riista.fi/tms/1.0.0/maasto_kiint/EPSG_3067/{z}/{x}/{y}.png";
             L.TileLayer.prototype.initialize.call(this, url, options);
         }
     });
@@ -131,11 +136,18 @@ window.RiistaWidget = (function() {
         this.renderTable();
 
         var self = this;
-        function refreshTable() {
-            self.renderTable();
-        }
 
-        this.map.on('viewreset', refreshTable).on('dragend', refreshTable);
+        this.map.on('viewreset', function () {
+            self.renderTable();
+        });
+
+        this.map.on('dragend', function () {
+            self.renderTable();
+        });
+
+        this.map.on('zoomend', function () {
+            self.renderTable();
+        });
     };
 
     RiistaWidget.prototype.processData = function(data) {
@@ -195,12 +207,12 @@ window.RiistaWidget = (function() {
 
     RiistaWidget.prototype.createMap = function(mapId) {
         var map = new L.map(mapId, {
-            crs: _crs(),
+            crs: L.CRS.EPSG3067,
             continuousWorld: true,
             worldCopyJump: false,
             minZoom: 2,
             maxZoom: 10,
-            zoomAnimation: false,
+            zoomAnimation: true,
             zoomControl: false
         });
 
@@ -215,8 +227,8 @@ window.RiistaWidget = (function() {
         var popupOpts = {
             minWidth: 600,
             maxWidth: 800,
-            keepInView: true,
-            closeButton: false
+            keepInView: false,
+            closeButton: true
         };
         var geoJsonLayer = L.Proj.geoJson(self.geojson, {
             onEachFeature: function (feature, layer) {
@@ -226,6 +238,9 @@ window.RiistaWidget = (function() {
         });
 
         this.map.addLayer(new L.MarkerClusterGroup({
+            animate: false,
+            spiderfyOnMaxZoom: false,
+            disableClusteringAtZoom: 5,
             showCoverageOnHover: false
         }).addLayer(geoJsonLayer));
 

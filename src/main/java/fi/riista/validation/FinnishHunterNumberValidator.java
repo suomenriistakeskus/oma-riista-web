@@ -12,10 +12,6 @@ import java.util.regex.Pattern;
  * Checksum is calculated just as finnish creditor reference (suomalainen viitenumero).
  */
 public class FinnishHunterNumberValidator implements ConstraintValidator<FinnishHunterNumber, String> {
-    public static boolean isValid(final String input) {
-        return new FinnishHunterNumberValidator().isValid(input, null);
-    }
-
     private static final Pattern REGEX_PATTERN = Pattern.compile("[1-9][0-9]{7}");
     private static final int VALID_LENGTH = 8;
 

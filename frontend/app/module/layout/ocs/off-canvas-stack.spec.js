@@ -2,9 +2,8 @@ describe('Off canvas dialog stack', function() {
 
     beforeEach(module('sprout.off-canvas-stack'));
     beforeEach(module('templates'));
-    //beforeEach(module('off-canvas-stack/ocs.container.tpl.html'));
 
-    var $rootScope, $scope, $compile, jq, OffCanvasStack, OffCanvasDialogStacks;
+    var $rootScope, $scope, $compile, $q, jq, OffCanvasStack, OffCanvasDialogStacks;
 
     beforeEach(
         inject(function($templateCache) {
@@ -40,6 +39,7 @@ describe('Off canvas dialog stack', function() {
             $rootScope = $injector.get('$rootScope');
             $scope = $rootScope.$new();
             $compile = $injector.get('$compile');
+            $q = $injector.get('$q');
 
             OffCanvasStack = $injector.get('offCanvasStack');
             OffCanvasDialogStacks = $injector.get('_offCanvasDialogStacks');
@@ -258,7 +258,7 @@ describe('Off canvas dialog stack', function() {
                 templateUrl: 'ocs.test.template2.html',
                 resolve: {
                     tehMessage: function () {
-                        return $q.when('you wont be getting teh bestest msg');
+                        return $q.reject('you wont be getting teh bestest msg');
                     }
                 },
                 controller: function ($scope, tehMessage) {

@@ -3,7 +3,6 @@ package fi.riista.feature.huntingclub.statistics;
 import com.google.common.collect.Sets;
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
 
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static fi.riista.util.NumberUtils.sum;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
 
@@ -86,12 +86,12 @@ public class HuntingClubStatistics {
         organisation.setNameFI(name.getFinnish());
         organisation.setNameSV(name.getSwedish());
 
-        final int countAll = F.sum(result, HuntingClubStatisticsRow::getCountAll);
-        final int countRegistered = F.sum(result, HuntingClubStatisticsRow::getCountRegistered);
-        final int countAreaDefined = F.sum(result, HuntingClubStatisticsRow::getCountAreaDefined);
-        final int countMemberInvited = F.sum(result, HuntingClubStatisticsRow::getCountMemberInvited);
-        final int countGroupCreated = F.sum(result, HuntingClubStatisticsRow::getCountGroupCreated);
-        final int countGroupLeaderSelect = F.sum(result, HuntingClubStatisticsRow::getCountGroupLeaderSelect);
+        final int countAll = sum(result, HuntingClubStatisticsRow::getCountAll);
+        final int countRegistered = sum(result, HuntingClubStatisticsRow::getCountRegistered);
+        final int countAreaDefined = sum(result, HuntingClubStatisticsRow::getCountAreaDefined);
+        final int countMemberInvited = sum(result, HuntingClubStatisticsRow::getCountMemberInvited);
+        final int countGroupCreated = sum(result, HuntingClubStatisticsRow::getCountGroupCreated);
+        final int countGroupLeaderSelect = sum(result, HuntingClubStatisticsRow::getCountGroupLeaderSelect);
 
         final HuntingClubStatisticsRow total = new HuntingClubStatisticsRow(organisation,
                 countAll,

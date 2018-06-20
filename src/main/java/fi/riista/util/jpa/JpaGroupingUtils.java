@@ -1,15 +1,9 @@
 package fi.riista.util.jpa;
 
-import static fi.riista.util.Functions.forMap;
-import static fi.riista.util.jpa.JpaSpecs.inCollection;
-import static fi.riista.util.jpa.JpaSpecs.inIdCollection;
-
 import com.google.common.collect.Iterables;
-
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.util.F;
 import fi.riista.util.Functions;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.domain.Specifications;
@@ -18,7 +12,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.metamodel.SingularAttribute;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,44 +21,46 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static fi.riista.util.Collect.nullSafeGroupingBy;
+import static fi.riista.util.Collect.nullSafeGroupingByIdOf;
+import static fi.riista.util.Functions.forMap;
+import static fi.riista.util.jpa.JpaSpecs.inCollection;
+import static fi.riista.util.jpa.JpaSpecs.inIdCollection;
+
 public final class JpaGroupingUtils {
 
     @Nonnull
-    public static <T, U> Map<T, List<U>> groupRelations(
-            @Nonnull final Collection<? extends T> objects,
-            @Nonnull final SingularAttribute<? super U, T> singularAttribute,
-            @Nonnull final JpaSpecificationExecutor<U> repository) {
+    public static <T, U> Map<T, List<U>> groupRelations(@Nonnull final Collection<? extends T> objects,
+                                                        @Nonnull final SingularAttribute<? super U, T> singularAttribute,
+                                                        @Nonnull final JpaSpecificationExecutor<U> repository) {
 
         return groupRelations(objects, singularAttribute, repository, null, null);
     }
 
     @Nonnull
-    public static <T, U> Map<T, List<U>> groupRelations(
-            @Nonnull final Collection<? extends T> objects,
-            @Nonnull final SingularAttribute<? super U, T> singularAttribute,
-            @Nonnull final JpaSpecificationExecutor<U> repository,
-            @Nullable final Specification<U> constraint) {
+    public static <T, U> Map<T, List<U>> groupRelations(@Nonnull final Collection<? extends T> objects,
+                                                        @Nonnull final SingularAttribute<? super U, T> singularAttribute,
+                                                        @Nonnull final JpaSpecificationExecutor<U> repository,
+                                                        @Nullable final Specification<U> constraint) {
 
         return groupRelations(objects, singularAttribute, repository, constraint, null);
     }
 
     @Nonnull
-    public static <T, U> Map<T, List<U>> groupRelations(
-            @Nonnull final Collection<? extends T> objects,
-            @Nonnull final SingularAttribute<? super U, T> singularAttribute,
-            @Nonnull final JpaSpecificationExecutor<U> repository,
-            @Nullable final Sort sortCriteria) {
+    public static <T, U> Map<T, List<U>> groupRelations(@Nonnull final Collection<? extends T> objects,
+                                                        @Nonnull final SingularAttribute<? super U, T> singularAttribute,
+                                                        @Nonnull final JpaSpecificationExecutor<U> repository,
+                                                        @Nullable final Sort sortCriteria) {
 
         return groupRelations(objects, singularAttribute, repository, null, sortCriteria);
     }
 
     @Nonnull
-    public static <T, U> Map<T, List<U>> groupRelations(
-            @Nonnull final Collection<? extends T> objects,
-            @Nonnull final SingularAttribute<? super U, T> singularAttribute,
-            @Nonnull final JpaSpecificationExecutor<U> repository,
-            @Nullable final Specification<U> constraint,
-            @Nullable final Sort sortCriteria) {
+    public static <T, U> Map<T, List<U>> groupRelations(@Nonnull final Collection<? extends T> objects,
+                                                        @Nonnull final SingularAttribute<? super U, T> singularAttribute,
+                                                        @Nonnull final JpaSpecificationExecutor<U> repository,
+                                                        @Nullable final Specification<U> constraint,
+                                                        @Nullable final Sort sortCriteria) {
 
         final Specification<U> inSpec = inCollection(singularAttribute, objects);
 
@@ -165,13 +160,12 @@ public final class JpaGroupingUtils {
         return groupRelationsInternal(ids, inSpec, repository, idFunction, constraint, sortCriteria);
     }
 
-    private static <T, U, V> Map<V, List<U>> groupRelationsInternal(
-            @Nonnull final Collection<? extends T> objects,
-            @Nonnull final Specification<U> inSpec,
-            @Nonnull final JpaSpecificationExecutor<U> repository,
-            @Nonnull final Function<? super U, ? extends V> keyMapper,
-            @Nullable final Specification<U> constraint,
-            @Nullable final Sort sortCriteria) {
+    private static <T, U, V> Map<V, List<U>> groupRelationsInternal(@Nonnull final Collection<? extends T> objects,
+                                                                    @Nonnull final Specification<U> inSpec,
+                                                                    @Nonnull final JpaSpecificationExecutor<U> repository,
+                                                                    @Nonnull final Function<? super U, V> keyMapper,
+                                                                    @Nullable final Specification<U> constraint,
+                                                                    @Nullable final Sort sortCriteria) {
 
         Objects.requireNonNull(objects, "objects must not be null");
         Objects.requireNonNull(inSpec, "inSpec must not be null");
@@ -185,8 +179,10 @@ public final class JpaGroupingUtils {
                 constraint == null ? inSpec : Specifications.where(inSpec).and(constraint);
 
         final List<U> list = sortCriteria != null
-                ? repository.findAll(compoundSpec, sortCriteria) : repository.findAll(compoundSpec);
-        return F.nullSafeGroupBy(list, keyMapper);
+                ? repository.findAll(compoundSpec, sortCriteria)
+                : repository.findAll(compoundSpec);
+
+        return list.stream().collect(nullSafeGroupingBy(keyMapper));
     }
 
     public static <ID extends Serializable, T extends HasID<ID>, U> Function<T, List<U>> createInverseMappingFunction(
@@ -225,7 +221,7 @@ public final class JpaGroupingUtils {
         }
 
         final Map<ID, List<U>> index =
-                F.groupByIdAfterTransform(relatedObjects, CriteriaUtils.jpaProperty(singularAttribute));
+                relatedObjects.stream().collect(nullSafeGroupingByIdOf(CriteriaUtils.jpaProperty(singularAttribute)));
 
         final Function<ID, List<U>> indexFunc =
                 letFunctionThrowExceptionOnEmptyResult ? forMap(index) : forMap(index, null);
@@ -236,5 +232,4 @@ public final class JpaGroupingUtils {
     private JpaGroupingUtils() {
         throw new AssertionError();
     }
-
 }

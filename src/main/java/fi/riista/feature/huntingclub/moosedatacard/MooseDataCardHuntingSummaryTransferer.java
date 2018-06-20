@@ -11,6 +11,7 @@ import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummaryRepository;
 import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary_;
 import fi.riista.feature.huntingclub.permit.summary.SpeciesEstimatedAppearance;
+import fi.riista.feature.huntingclub.permit.summary.SpeciesEstimatedAppearanceWithPiglets;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
@@ -18,8 +19,8 @@ import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage8;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_1;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_3;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_4;
-import javaslang.control.Try;
-import javaslang.control.Validation;
+import io.vavr.control.Try;
+import io.vavr.control.Validation;
 import org.joda.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.domain.Specifications;
@@ -33,6 +34,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.convertAppearance;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.convertTrendOfPopulationGrowth;
+import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor.convertTrendOfPopulationGrowthOfFlyDeer;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 
 @Component
@@ -41,15 +45,13 @@ public class MooseDataCardHuntingSummaryTransferer {
     @Resource
     private MooseHuntingSummaryRepository summaryRepo;
 
-    // Return existing MooseHuntingSummary or newly-created if any data is available to be
+    // Return existing MooseHuntingSummary or newly-created one if any data was (available to be)
     // transferred.
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Try<Optional<MooseHuntingSummary>> upsertHuntingSummaryData(
-            @Nonnull final MooseDataCard mooseDataCard,
-            @Nonnull final HuntingClub club,
-            @Nonnull final HarvestPermit permit) {
+    public Try<Optional<MooseHuntingSummary>> upsertHuntingSummaryData(@Nonnull final MooseDataCard mooseDataCard,
+                                                                       @Nonnull final HuntingClub club,
+                                                                       @Nonnull final HarvestPermit permit) {
 
-        Objects.requireNonNull(mooseDataCard, "mooseDataCard is null");
         Objects.requireNonNull(club, "club is null");
         Objects.requireNonNull(permit, "permit is null");
 
@@ -57,13 +59,14 @@ public class MooseDataCardHuntingSummaryTransferer {
                 .where(equal(MooseHuntingSummary_.club, club))
                 .and(equal(MooseHuntingSummary_.harvestPermit, permit));
 
-        return Try.of(() -> Optional.ofNullable(summaryRepo.findOne(summaryFindSpec)))
+        return Try.of(() -> summaryRepo.findOne(summaryFindSpec))
+                .map(Optional::ofNullable)
                 .filter(Optional::isPresent)
                 .recover(noSuchElementEx -> {
 
                     // No existing MooseHuntingSummary found, create one if relevant data available.
 
-                    return MooseDataCardExtractor.hasAnySummaryData(mooseDataCard)
+                    return MooseDataCardExtractor.isSummaryDataPresent(mooseDataCard)
                             ? Optional.of(new MooseHuntingSummary(club, permit))
                             : Optional.empty();
                 })
@@ -74,14 +77,11 @@ public class MooseDataCardHuntingSummaryTransferer {
     }
 
     // Exposed publicly for isolated testing.
-    public void transferSummaryData(
-            @Nonnull final MooseDataCard mooseDataCard, @Nonnull final MooseHuntingSummary summary) {
+    public void transferSummaryData(@Nonnull final MooseDataCard mooseDataCard,
+                                    @Nonnull final MooseHuntingSummary summary) {
 
         Objects.requireNonNull(mooseDataCard, "mooseDataCard is null");
         Objects.requireNonNull(summary, "summary is null");
-
-        summary.setBeginDate(mooseDataCard.getPage1().getReportingPeriodBeginDate());
-        summary.setEndDate(mooseDataCard.getPage1().getReportingPeriodEndDate());
 
         MooseDataCardExtractor.findFirstPage7ContainingHuntingSummaryData(mooseDataCard)
                 .ifPresent(page7 -> transferMooselikeSummaryOfPage7(page7, summary));
@@ -90,8 +90,8 @@ public class MooseDataCardHuntingSummaryTransferer {
                 .ifPresent(page8 -> transferPage8(page8, summary));
     }
 
-    private static void transferMooselikeSummaryOfPage7(
-            final MooseDataCardPage7 page7, final MooseHuntingSummary summary) {
+    private static void transferMooselikeSummaryOfPage7(final MooseDataCardPage7 page7,
+                                                        final MooseHuntingSummary summary) {
 
         MooseDataCardPage7MooselikeValidator.validate(page7).peek(validPage7 -> {
 
@@ -114,6 +114,12 @@ public class MooseDataCardHuntingSummaryTransferer {
                     validPage7.getFallowDeerAppeared(),
                     validPage7.getTrendOfFallowDeerPopulationGrowth(),
                     validPage7.getEstimatedSpecimenAmountOfFallowDeer()));
+
+            summary.setWildBoarAppearance(new SpeciesEstimatedAppearanceWithPiglets(
+                    convertAppearance(validPage7.getWildBoarAppeared()),
+                    convertTrendOfPopulationGrowth(validPage7.getTrendOfWildBoarPopulationGrowth()),
+                    validPage7.getEstimatedSpecimenAmountOfWildBoar(),
+                    validPage7.getEstimatedAmountOfSowsWithPiglets()));
         });
     }
 
@@ -123,13 +129,13 @@ public class MooseDataCardHuntingSummaryTransferer {
             final Integer estimatedAmountOfSpecimens) {
 
         return new SpeciesEstimatedAppearance(
-                MooseDataCardExtractor.convertDeerFlyAppearance(speciesAppearance),
-                MooseDataCardExtractor.convertTrendOfPopulationGrowthOfMooselikeSpecies(trend),
+                convertAppearance(speciesAppearance),
+                convertTrendOfPopulationGrowth(trend),
                 estimatedAmountOfSpecimens);
     }
 
-    private static void transferPage8(
-            @Nonnull final MooseDataCardPage8 page8, @Nonnull final MooseHuntingSummary summary) {
+    private static void transferPage8(@Nonnull final MooseDataCardPage8 page8,
+                                      @Nonnull final MooseHuntingSummary summary) {
 
         Stream.of(page8.getSection_8_1())
                 .filter(Objects::nonNull)
@@ -157,8 +163,8 @@ public class MooseDataCardHuntingSummaryTransferer {
         summary.setHuntingFinished(huntingEndDate != null);
     }
 
-    private static void transferSection(
-            @Nonnull final MooseDataCardSection_8_1 input, @Nonnull final MooseHuntingSummary summary) {
+    private static void transferSection(@Nonnull final MooseDataCardSection_8_1 input,
+                                        @Nonnull final MooseHuntingSummary summary) {
 
         final AreaSizeAndRemainingPopulation areaAndPopulation = new AreaSizeAndRemainingPopulation()
                 .withTotalHuntingArea(
@@ -182,8 +188,8 @@ public class MooseDataCardHuntingSummaryTransferer {
         summary.setHuntingAreaType(MooseDataCardExtractor.convertMooseHuntingAreaType(input.getHuntingAreaType()));
     }
 
-    private static void transferSection(
-            @Nonnull final MooseDataCardSection_8_3 input, @Nonnull final MooseHuntingSummary summary) {
+    private static void transferSection(@Nonnull final MooseDataCardSection_8_3 input,
+                                        @Nonnull final MooseHuntingSummary summary) {
 
         summary.setNumberOfDrownedMooses(input.getNumberOfDrownedMooses());
         summary.setNumberOfMoosesKilledByBear(input.getNumberOfMoosesKilledByBear());
@@ -196,22 +202,21 @@ public class MooseDataCardHuntingSummaryTransferer {
         summary.setCauseOfDeath(input.getExplanationForOtherReason());
     }
 
-    private static void transferSection(
-            @Nonnull final MooseDataCardSection_8_4 input, @Nonnull final MooseHuntingSummary summary) {
+    private static void transferSection(@Nonnull final MooseDataCardSection_8_4 input,
+                                        @Nonnull final MooseHuntingSummary summary) {
 
         summary.setMooseHeatBeginDate(input.getMooseHeatBeginDate());
         summary.setMooseHeatEndDate(input.getMooseHeatEndDate());
         summary.setMooseFawnBeginDate(input.getMooseFawnBeginDate());
         summary.setMooseFawnEndDate(input.getMooseFawnEndDate());
 
-        summary.setDeerFliesAppeared(MooseDataCardExtractor.convertDeerFlyAppearance(input.getDeerFlyAppearead()));
+        summary.setDeerFliesAppeared(convertAppearance(input.getDeerFlyAppearead()));
 
         summary.setDateOfFirstDeerFlySeen(input.getDateOfFirstDeerFlySeen());
         summary.setDateOfLastDeerFlySeen(input.getDateOfLastDeerFlySeen());
         summary.setNumberOfAdultMoosesHavingFlies(input.getNumberOfAdultMoosesHavingFlies());
         summary.setNumberOfYoungMoosesHavingFlies(input.getNumberOfYoungMoosesHavingFlies());
         summary.setTrendOfDeerFlyPopulationGrowth(
-                MooseDataCardExtractor.convertTrendOfPopulationGrowth(input.getTrendOfDeerFlyPopulationGrowth()));
+                convertTrendOfPopulationGrowthOfFlyDeer(input.getTrendOfDeerFlyPopulationGrowth()));
     }
-
 }

@@ -1,0 +1,84 @@
+<div class="rhy-sidebar-layout">
+    <div class="left-column" auto-scroll-to="$ctrl.scrollToIndex" prefix-id="application-id-">
+        <button type="button" class="btn btn-success"
+                ng-click="$ctrl.goBack()">
+            <span class="glyphicon glyphicon-arrow-left"></span>
+            <span translate="harvestpermit.application.conflictResolution.clickToReturn"></span>
+        </button>
+
+        <div class="table-responsive">
+            <table class="table">
+                <tbody>
+                <tr>
+                    <th>
+                        <span translate="harvestpermit.application.conflictResolution.firstApplication"></span>
+                    </th>
+                    <td>
+                        <strong ng-bind="::$ctrl.firstApplication.applicationNumber"></strong>
+                        <br/>
+                        <span ng-if="$ctrl.firstApplication.permitHolder"
+                              ng-bind="::$ctrl.firstApplication.permitHolder|rI18nNameFilter"></span>
+                        <span ng-if="!$ctrl.firstApplication.permitHolder">
+                            <span ng-bind="::$ctrl.firstApplication.contactPerson.lastName"></span>
+                            <span ng-bind="::$ctrl.firstApplication.contactPerson.byName"></span>
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <span translate="harvestpermit.application.conflictResolution.secondApplication"></span>
+                    </th>
+                    <td>
+                        <strong ng-bind="::$ctrl.secondApplication.applicationNumber"></strong>
+                        <br/>
+                        <span ng-if="$ctrl.secondApplication.permitHolder"
+                              ng-bind="::$ctrl.secondApplication.permitHolder|rI18nNameFilter"></span>
+                        <span ng-if="!$ctrl.secondApplication.permitHolder">
+                            <span ng-bind="::$ctrl.secondApplication.contactPerson.lastName"></span>
+                            <span ng-bind="::$ctrl.secondApplication.contactPerson.byName"></span>
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <table class="table table-condensed" style="table-layout: fixed">
+            <tbody>
+            <tr id="application-id-{{ ::$index }}"
+                ng-repeat="conflict in ::$ctrl.pairwiseConflicts track by conflict.palstaId">
+                <td class="col-xs-1">
+                    <span class="glyphicon glyphicon-chevron-right text-info"
+                          ng-show="conflict.selected"></span>
+                </td>
+                <td class="col-xs-7">
+                    <a ng-click="$ctrl.showPalsta(conflict)"
+                       ng-bind="::conflict.palstaTunnus | formatPropertyIdentifier"></a>
+
+                    <span ng-show="::conflict.metsahallitus"
+                          ng-class="{'strong': conflict.isOpen}"
+                          uib-tooltip="Metsähallituksen alue"
+                          class="glyphicon glyphicon-tree-conifer text-primary"></span>
+                    <br/>
+                    <a ng-click="$ctrl.showPalsta(conflict)"
+                       ng-bind="::conflict.palstaNimi"></a>
+                </td>
+                <td class="col-xs-4">
+                    <strong ng-bind="::conflict.areaSize | prettyAreaSize"></strong>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="main-column">
+        <harvest-permit-application-conflict-map
+                on-map-click="$ctrl.onMapClick(latlng)"
+                on-feature-click="$ctrl.onFeatureClick(feature)"
+                focus-selected="$ctrl.focusSelected"
+                first-application-id="$ctrl.firstApplicationId"
+                second-application-id="$ctrl.secondApplicationId"
+                palsta-feature-collection="$ctrl.palstaFeatureCollection">
+        </harvest-permit-application-conflict-map>
+    </div>
+</div>

@@ -13,6 +13,9 @@ import java.sql.Types;
 
 import com.querydsl.sql.spatial.RelationalPathSpatial;
 
+import com.querydsl.spatial.*;
+
+
 
 /**
  * SQObservationType is a Querydsl query type for SQObservationType
@@ -30,7 +33,7 @@ public class SQObservationType extends RelationalPathSpatial<SQObservationType> 
 
     public final com.querydsl.sql.ForeignKey<SQObservationContextSensitiveFields> _observationContextSensitiveFieldsObservationTypeFk = createInvForeignKey(name, "observation_type");
 
-    public final com.querydsl.sql.ForeignKey<SQObservation> _gameObservationObservationTypeFk = createInvForeignKey(name, "observation_type");
+    public final com.querydsl.sql.ForeignKey<SQGameObservation> _gameObservationObservationTypeFk = createInvForeignKey(name, "observation_type");
 
     public SQObservationType(String variable) {
         super(SQObservationType.class, forVariable(variable), "public", "observation_type");
@@ -39,6 +42,11 @@ public class SQObservationType extends RelationalPathSpatial<SQObservationType> 
 
     public SQObservationType(String variable, String schema, String table) {
         super(SQObservationType.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQObservationType(String variable, String schema) {
+        super(SQObservationType.class, forVariable(variable), schema, "observation_type");
         addMetadata();
     }
 

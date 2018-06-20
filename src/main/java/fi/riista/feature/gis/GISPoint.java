@@ -3,7 +3,6 @@ package fi.riista.feature.gis;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.integration.mml.support.WFSUtil;
 
 import java.io.Serializable;
 
@@ -37,9 +36,8 @@ public class GISPoint implements Serializable {
         return getLongitude() + " " + getLatitude();
     }
 
-    public String toGmlPoint() {
-        return "<gml:Point srsName=\"" + WFSUtil.SRS_NAME + "\">" + "<gml:pos>" +
-                toPointString() + "</gml:pos></gml:Point>";
+    public String toGmlPoint(final String srsName) {
+        return "<gml:Point srsName=\"" + srsName + "\">" + "<gml:pos>" + toPointString() + "</gml:pos></gml:Point>";
     }
 
     public int getLatitude() {

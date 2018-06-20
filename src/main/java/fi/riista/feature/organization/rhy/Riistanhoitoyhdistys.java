@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.rhy;
 
+import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
@@ -10,11 +11,20 @@ import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.validation.constraints.Size;
+import java.util.Set;
 
 @Entity
 @Access(value = AccessType.FIELD)
 @DiscriminatorValue("RHY")
 public class Riistanhoitoyhdistys extends Organisation {
+
+    public static final String RHY_OFFICIAL_CODE_HELSINKI = "602";
+
+    private static final Set<String> FREE_HUNTING_MUNICIPALITY = ImmutableSet.copyOf(new String[]{
+            "701", "702", "703", "704", "705", "706", "707", "708", "201", "202", "203", "204", "205", "206", "207",
+            "208", "209", "210", "211", "212", "213", "214", "215", "216", "217", "218", "219", "220", "262", "271",
+            "279", "282"
+    });
 
     @Size(max = 255)
     @Column
@@ -70,5 +80,9 @@ public class Riistanhoitoyhdistys extends Organisation {
 
     public void setAtCoast(Boolean atCoast) {
         this.atCoast = atCoast;
+    }
+
+    public boolean isFreeHuntingMunicipality() {
+        return FREE_HUNTING_MUNICIPALITY.contains(getOfficialCode());
     }
 }

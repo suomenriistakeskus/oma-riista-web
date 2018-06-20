@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.jht.excel;
 
+import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.jht.training.JHTTrainingDTO;
@@ -8,11 +9,8 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
 import fi.riista.util.Locales;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.web.servlet.view.document.AbstractXlsView;
+import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,9 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class JHTTrainingExcelView extends AbstractXlsView {
-
-    private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
+public class JHTTrainingExcelView extends AbstractXlsxView {
 
     private static final String[] HEADERS_FI = {
             "Tehtävä",
@@ -55,20 +51,21 @@ public class JHTTrainingExcelView extends AbstractXlsView {
     };
 
     private final List<JHTTrainingDTO> results;
-    private final MessageSource messageSource;
-    private final Locale locale;
+    private final EnumLocaliser localiser;
+    private final boolean isSwedish;
 
     public JHTTrainingExcelView(final List<JHTTrainingDTO> results,
                                 final MessageSource messageSource,
                                 final Locale locale) {
+
         this.results = results;
-        this.messageSource = messageSource;
-        this.locale = locale;
+        this.localiser = new EnumLocaliser(messageSource, locale);
+        this.isSwedish = Locales.isSwedish(locale);
     }
 
     private static String createFilename() {
-        final String timestamp = DATETIME_PATTERN.print(DateUtil.now());
-        return "koulutukset-" + timestamp + ".xls";
+        final String timestamp = Constants.FILENAME_TS_PATTERN.print(DateUtil.now());
+        return "koulutukset-" + timestamp + ".xlsx";
     }
 
     @Override
@@ -76,18 +73,16 @@ public class JHTTrainingExcelView extends AbstractXlsView {
                                       final Workbook workbook,
                                       final HttpServletRequest request,
                                       final HttpServletResponse response) {
-        final EnumLocaliser enumLocaliser = new EnumLocaliser(messageSource, LocaleContextHolder.getLocale());
-        final ExcelHelper helper = new ExcelHelper(workbook, "koulutukset");
 
-        response.setHeader(ContentDispositionUtil.HEADER_NAME,
-                ContentDispositionUtil.encodeAttachmentFilename(createFilename()));
+        ContentDispositionUtil.addHeader(response, createFilename());
 
-        helper.appendHeaderRow(Locales.isSwedish(locale) ? HEADERS_SV : HEADERS_FI);
+        final ExcelHelper helper = new ExcelHelper(workbook, "koulutukset")
+                .appendHeaderRow(this.isSwedish ? HEADERS_SV : HEADERS_FI);
 
         for (final JHTTrainingDTO result : this.results) {
             helper.appendRow()
-                    .appendTextCell(enumLocaliser.getTranslation(result.getOccupationType()))
-                    .appendTextCell(enumLocaliser.getTranslation(result.getTrainingType()))
+                    .appendTextCell(localiser.getTranslation(result.getOccupationType()))
+                    .appendTextCell(localiser.getTranslation(result.getTrainingType()))
                     .appendDateCell(result.getTrainingDate())
                     .appendTextCell(result.getTrainingLocation());
 

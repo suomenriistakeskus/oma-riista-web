@@ -6,7 +6,7 @@ import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.common.repository.MunicipalityRepository;
 import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.integration.vtj.VtjConfig;
-import fi.riista.util.MockitoFactoryBean;
+import fi.riista.test.MockitoFactoryBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

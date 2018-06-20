@@ -1,0 +1,159 @@
+<div ng-show="::($ctrl.harvestList.length === 0)">
+    <hr class="invisible">
+    <div class="alert alert-info" translate="harvestpermit.noHarvests"></div>
+</div>
+
+<div ng-show="::($ctrl.harvestList.length > 0)" class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th class="col-xs-2"></th>
+            <th class="col-xs-2" translate="harvestpermit.pointOfTime"></th>
+            <th class="col-xs-2" translate="harvestreport.admin.reportDate"></th>
+            <th class="col-xs-1" translate="harvestpermit.gameInfo"></th>
+            <th class="col-xs-2" translate="harvestreport.form.author"></th>
+            <th class="col-xs-2" translate="harvestreport.form.hunter"></th>
+            <th class="col-xs-1"></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr ng-repeat-start="harvest in ::$ctrl.harvestList track by harvest.id">
+
+            <td>
+                <a class="btn btn-block" disabled harvest-report-state-to-class="$ctrl.buttonStateColor(harvest)">
+                    <span translate="{{$ctrl.translationKey(harvest)}}"></span>
+                </a>
+            </td>
+
+            <td>
+                <span ng-bind="::harvest.pointOfTime | date:'d.M.yyyy HH:mm'"></span>
+            </td>
+
+            <td>
+                <span ng-bind="::(harvest.harvestReportDate | date:'d.M.yyyy HH:mm')"></span>
+                <br/>
+                <div class="r-badge-red" ng-show="::(harvest.harvestReportDeltaHours <= 24)">
+                    <span translate="harvestreport.admin.new" translate-values="harvest"></span>
+                </div>
+            </td>
+
+            <td>
+                <div name-translated="::harvest.gameSpecies.name"></div>
+
+                <div ng-if="::harvest.totalSpecimenAmount > 1">
+                    <span ng-bind="::harvest.totalSpecimenAmount"></span>
+                    <span translate="harvestpermit.pcs"></span>
+                </div>
+
+                <div ng-if="::(harvest.totalSpecimenAmount == 1 && harvest.specimens.length && harvest.specimens.length == 1)">
+                    <span ng-if="harvest.specimens[0].gender"
+                          ng-bind="'harvestreport.gender.'+ harvest.specimens[0].gender | translate"></span>
+                    <br/>
+                    <span ng-if="harvest.specimens[0].age"
+                          ng-bind="'harvestreport.age.' + harvest.specimens[0].age | translate"></span>
+                </div>
+            </td>
+
+            <td>
+                <span ng-bind="::harvest.authorInfo.byName"></span>
+                <span ng-bind="::harvest.authorInfo.lastName"></span>
+                <br ng-if="::harvest.moderatorFullName"/>
+                <small ng-if="::harvest.moderatorFullName">
+                    <span translate="harvestreport.form.creator"></span>: {{harvest.moderatorFullName}}
+                </small>
+            </td>
+
+            <td>
+                <span ng-bind="::harvest.actorInfo.byName"></span>
+                <span ng-bind="::harvest.actorInfo.lastName"></span>
+            </td>
+
+            <td class="text-right">
+                <button type="button"
+                        class="btn btn-primary btn-block"
+                        ng-click="$ctrl.toggleHarvest(harvest)">
+                    <span ng-if="!harvest.toggle" translate="global.button.open"></span>
+                    <span ng-if="harvest.toggle" translate="global.button.close"></span>
+                </button>
+            </td>
+        </tr>
+
+        <tr ng-repeat-end ng-if="harvest.toggle">
+            <td colspan="3">
+                <leaflet id="diary-map-show"
+                         defaults="$ctrl.mapDefaults"
+                         layers="$ctrl.mapDefaults.mmlLayers"
+                         controls="$ctrl.mapDefaults.controls"
+                         r-geolocation-center="harvest.geoLocation"
+                         r-geolocation-marker="harvest.geoLocation"
+                         default-zoom="11"
+                         height="300px">
+                </leaflet>
+            </td>
+
+            <td colspan="4">
+                <div class="well well-sm">
+                    <div class="row">
+                        <div class="col-xs-12 text-right">
+                            <harvest-report-state-transitions
+                                    ng-if="::$ctrl.showHarvestReportStateTransitions()"
+                                    on-state-change="$ctrl.harvestReportStateChanged(harvest, state)"
+                                    harvest="harvest"></harvest-report-state-transitions>
+
+                            <harvest-permit-harvest-state-actions
+                                    harvest="harvest"
+                                    permit="$ctrl.permit"></harvest-permit-harvest-state-actions>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h5 translate="gamediary.form.location"></h5>
+                        <p translate="global.geoLocation.coordinatesText"
+                           translate-values="harvest.geoLocation"></p>
+                    </div>
+
+                    <div ng-if="::harvest.propertyIdentifier">
+                        <h5 translate="gamediary.form.propertyIdentifier"></h5>
+                        <span ng-bind="::(harvest.propertyIdentifier | formatPropertyIdentifier)"></span>
+                    </div>
+
+                    <div ng-if="::harvest.permittedMethod">
+                        <h5 translate="gamediary.form.withPermittedMethod"></h5>
+                        <ul>
+                            <li ng-if="::harvest.permittedMethod.tapeRecorders">
+                                <span translate="permittedMethod.TAPE_RECORDERS"></span>
+                            </li>
+                            <li ng-if="::harvest.permittedMethod.traps">
+                                <span translate="permittedMethod.TRAPS"></span>
+                            </li>
+                            <li ng-if="::harvest.permittedMethod.other">
+                                <span translate="permittedMethod.OTHER"></span>:
+                                <span ng-bind="::harvest.permittedMethod.description"></span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div ng-if="::harvest.harvestReportMemo">
+                        <h5 translate="gamediary.form.moderatorDescription"></h5>
+                        <span ng-bind="::harvest.harvestReportMemo"></span>
+                    </div>
+
+                    <r-show-entry-specimens entry="harvest"></r-show-entry-specimens>
+
+                    <div class="row">
+                        <div class="col-xs-12 text-right">
+                            <button class="btn btn-primary"
+                                    ng-if="$ctrl.canEditHarvest(harvest)"
+                                    ng-click="$ctrl.editHarvest(harvest)">
+                                <span class="glyphicon glyphicon-edit"></span>
+                                <span translate="global.button.edit"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

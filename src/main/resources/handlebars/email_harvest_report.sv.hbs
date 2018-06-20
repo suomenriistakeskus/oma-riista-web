@@ -1,45 +1,140 @@
-<pre>
-{{author.firstName}} {{author.lastName}}
-{{author.address.streetAddress}}
-{{author.address.postalCode}} {{author.address.city}}
-Telefon: {{author.phoneNumber}}
-E-post: {{author.email}}
+<p>
+    {{author.firstName}} {{author.lastName}} <br/>
+    {{author.address.streetAddress}} <br/>
+    {{author.address.postalCode}} {{author.address.city}} <br/>
+    Telefon: {{author.phoneNumber}} <br/>
+    E-post: {{author.email}}
+</p>
 
-FINLANDS VILTCENTRAL
-{{#if permit}}
-Dispens nummer: {{permit.permitNumber}}
+<h2>FINLANDS VILTCENTRAL</h2>
+
+{{#if permitNumber}}
+    <h2>Dispens nummer: {{permitNumber}}</h2>
 {{/if}}
-MEDDELANDE OM JAKTENS RESULTAT
-{{#if permit}}
-Med beviljad dispens har byte erhållits enligt följande:
+
+<h2>MEDDELANDE OM JAKTENS RESULTAT</h2>
+
+{{#if permitNumber}}
+    <p>Med beviljad dispens har byte erhållits enligt följande:</p>
 {{/if}}
-{{toUpperCase species.name.sv}}
 
-Specifikation av djuret som erhållits som byte:
-Fångsttid: {{timestamp pointOfTime "dd.MM.yyyy HH:mm"}}
-Fångstplatsens koordinater: {{geoLocation.latitude}} {{geoLocation.longitude}} ETRS-TM35FIN
-Fastighetsbetecking: {{propertyIdentifier.delimitedValue}}
-{{#if quotaArea}}Kvotområde: {{quotaArea.nameSV}}{{/if}}
-{{#if rka}}Viltcentralens område: {{rka.nameSV}}{{/if}}
-{{#if rhy}}Jaktvårdsförening: {{rhy.nameSV}}{{/if}}
-{{#if huntingAreaType}}Fångstområde: {{i18n (enumName huntingAreaType) locale="sv"}}{{/if}}
-{{#if huntingParty}}Jaktföreningens/-sällskapets område, där bytet erhållits: {{huntingParty}}{{/if}}
-{{#if huntingAreaSize}}Jaktföreningens/-sällskapets område, där bytet erhölls: {{number huntingAreaSize "#.##" locale="sv"}} ha{{/if}}
-{{#if huntingMethod}}Jaktmetod: {{i18n (enumName huntingMethod) locale="sv"}}{{/if}}
-{{#if reportedWithPhoneCall}}Har ni anmält till bytestelefon också? {{i18n (boolName reportedWithPhoneCall) locale="sv"}}{{/if}}
+<h2>{{toUpperCase species.name.sv}}</h2>
 
-Uppgifter om djuret
-{{#if gender}}Kön: {{i18n (enumName gender) locale="sv"}}{{/if}}
-{{#if age}}Ålder: {{i18n (enumName age) locale="sv"}}{{/if}}
-{{#if weight}}Vikt: {{number weight "#.###" locale="sv"}} kg{{/if}}
+<p>Specifikation av djuret som erhållits som byte:</p>
 
-Fälld av:
-{{hunter.firstName}} {{hunter.lastName}}
-{{hunter.address.streetAddress}}
-{{hunter.address.postalCode}} {{hunter.address.city}}
+<p>Mängd: {{amount}} st.</p>
+<p>Fångsttid: {{timestamp pointOfTime "dd.MM.yyyy HH:mm"}}</p>
 
-{{#if permit}}Anvisning: Detta bekräftelsemeddelande ska som sådant sändas vidare till polisen och för övriga myndigheter nämnda i
-dispensen senast den första vardagen efter, det att i dispensen avsett vilt har fällts.{{/if}}
+{{#if geoLocation}}
+    <p>Fångstplatsens koordinater: {{geoLocation.latitude}} {{geoLocation.longitude}} ETRS-TM35FIN</p>
+{{/if}}
 
-(Meddelandets identifikationsuppgifter: {{timestamp timestamp "dd.MM.yyyy HH:mm:ss"}}, id={{id}}, revision={{rev}}, state={{state}}, c={{createdByUserId}}, m={{modifiedByUserId}})
-</pre>
+{{#if propertyIdentifier}}
+    <p>Fastighetsbetecking: {{propertyIdentifier.delimitedValue}}</p>
+{{/if}}
+
+{{#if municipality}}
+    <p>Kommun: {{municipality.swedish}}</p>
+{{/if}}
+
+{{#if quotaArea}}
+    <p>Kvotområde: {{quotaArea.nameSV}}</p>
+{{/if}}
+
+{{#if rka}}
+    <p>Viltcentralens område: {{rka.nameSV}}</p>
+{{/if}}
+
+{{#if rhy}}
+    <p>Jaktvårdsförening: {{rhy.nameSV}}</p>
+{{/if}}
+
+{{#if huntingAreaType}}
+    <p>Fångstområde: {{i18n (enumName huntingAreaType) locale="sv"}}</p>
+{{/if}}
+
+{{#if huntingParty}}
+    <p>Jaktföreningens/-sällskapets område, där bytet erhållits: {{huntingParty}}</p>
+{{/if}}
+
+{{#if huntingAreaSize}}
+    <p>Jaktföreningens/-sällskapets område, där bytet erhölls: {{number huntingAreaSize "#.##" locale="sv"}}  ha</p>
+{{/if}}
+
+{{#if huntingMethod}}
+    <p>Jaktmetod: {{i18n (enumName huntingMethod) locale="sv"}}</p>
+{{/if}}
+
+{{#if reportedWithPhoneCall}}
+    <p>Har ni anmält till bytestelefon också? {{i18n (boolName reportedWithPhoneCall) locale="sv"}}</p>
+{{/if}}
+
+{{#if feedingPlace}}
+    <p>Har den skjutits vid en utfodringsplats? {{i18n (boolName feedingPlace) locale="sv"}}</p>
+{{/if}}
+
+{{#if taigaBeanGoose}}
+    <p>Är det en taigasädgås? {{i18n (boolName taigaBeanGoose) locale="sv"}}</p>
+{{/if}}
+
+{{~#if specimens}}
+    <p>Noggrannare uppgifter om de bytesindivider för vilka uppgifter har getts:</p>
+
+    <table border="1" cellspacing="0" cellpadding="5" width="95%">
+        <thead>
+        <tr>
+            <th>Kön</th>
+            <th>Ålder</th>
+            <th>Vikt (kg)</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{~#each specimens~}}
+            <tr>
+                <td>
+                    {{#if gender}}
+                        {{i18n (enumName gender) locale="sv"}}
+                    {{else}}
+                        -
+                    {{/if}}
+                </td>
+
+                <td>
+                    {{#if age}}
+                        {{i18n (enumName age) locale="sv"}}
+                    {{else}}
+                        -
+                    {{/if}}
+                </td>
+
+                <td>
+                    {{#if weight}}
+                        {{number weight "#.#" locale="sv"}}
+                    {{else}}
+                        -
+                    {{/if}}
+                </td>
+            </tr>
+        {{~/each~}}
+        </tbody>
+    </table>
+{{/if}}
+
+<h2>Fälld av:</h2>
+
+<p>
+    {{hunter.firstName}} {{hunter.lastName}} <br/>
+    {{hunter.address.streetAddress}} <br/>
+    {{hunter.address.postalCode}} {{hunter.address.city}}
+</p>
+
+{{#if permitNumber}}
+    <p>
+        Anvisning: Detta bekräftelsemeddelande ska som sådant sändas vidare till polisen och för övriga myndigheter
+        nämnda i dispensen senast den första vardagen efter, det att i dispensen avsett vilt har fällts.
+    </p>
+{{/if}}
+
+<p>
+    (Meddelandets identifikationsuppgifter: {{timestamp timestamp "dd.MM.yyyy HH:mm:ss"}}, id={{id}}, revision={{rev}}, state={{state}}, c={{createdByUserId}}, m={{modifiedByUserId}})
+</p>

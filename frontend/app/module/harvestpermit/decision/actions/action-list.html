@@ -1,0 +1,60 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title">Muokkaa välitoimenpiteitä</h3>
+</div>
+
+<div class="modal-body">
+    <div class="row">
+        <div class="col-xs-12 text-right">
+            <button class="btn btn-primary" ng-click="$ctrl.add()">
+                <span class="glyphicon glyphicon-plus"></span>
+                <span>Lisää välitoimenpide</span>
+            </button>
+        </div>
+    </div>
+
+    <hr class="invisible"/>
+
+    <div class="table-responsive" style="max-height: 400px;">
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="col-xs-1">Ajankohta</th>
+                <th class="col-xs-2">Tyyppi</th>
+                <th class="col-xs-3">Sisältö</th>
+                <th class="col-xs-3">Päätösteksti</th>
+                <th class="col-xs-1"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="action in $ctrl.actions">
+                <td ng-bind="::action.pointOfTime | date:'d.M.yyyy HH:mm'"></td>
+                <td>
+                    <span ng-bind="::('harvestpermit.decision.action.actionType.' + action.actionType) | translate"></span>
+                    <span ng-if="action.communicationType">/</span>
+                    <span ng-if="action.communicationType"
+                          ng-bind="::('harvestpermit.decision.action.communicationType.' + action.communicationType) | translate"></span>
+                </td>
+                <td ng-bind="::(action.text | truncateCharacters:64)"></td>
+                <td ng-bind="::(action.decisionText | truncateCharacters:64)"></td>
+                <td class="text-right">
+                    <a ng-click="$ctrl.edit(action)">
+                        <span class="text-primary fa fa-2x fa-edit"></span>
+                    </a>
+                    &nbsp;
+                    <a ng-confirm-click
+                       ng-confirm-click-action="$ctrl.remove(action)">
+                        <span class="text-danger fa fa-2x fa-remove"></span>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary"
+            ng-click="$ctrl.close()"
+            translate="global.button.close"></button>
+</div>

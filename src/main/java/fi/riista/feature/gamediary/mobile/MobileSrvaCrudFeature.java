@@ -7,10 +7,15 @@ import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.gamediary.srva.AbstractSrvaCrudFeature;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
+import fi.riista.feature.gamediary.srva.SrvaEvent_;
+import fi.riista.feature.gamediary.srva.SrvaSpecs;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
+import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,7 +50,12 @@ public class MobileSrvaCrudFeature extends AbstractSrvaCrudFeature<MobileSrvaEve
 
     @Transactional(readOnly = true)
     public List<MobileSrvaEventDTO> listSrvaEventsForActiveUser(@Nonnull final SrvaEventSpecVersion srvaEventSpecVersion) {
-        return mobileSrvaEventDTOTransformer.apply(getSrvaEventsForActiveUser(null), srvaEventSpecVersion);
+        final Person person = activeUserService.requireActivePerson();
+        final Specifications<SrvaEvent> specs = Specifications.where(SrvaSpecs.author(person));
+        final JpaSort sort = new JpaSort(Sort.Direction.DESC, SrvaEvent_.pointOfTime, SrvaEvent_.id);
+        final List<SrvaEvent> events = getRepository().findAll(specs, sort);
+
+        return mobileSrvaEventDTOTransformer.apply(events, srvaEventSpecVersion);
     }
 
     @Transactional

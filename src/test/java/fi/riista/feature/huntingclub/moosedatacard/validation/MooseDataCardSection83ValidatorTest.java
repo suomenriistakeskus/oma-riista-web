@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_8_3;
-import fi.riista.util.Asserts;
+import fi.riista.test.Asserts;
 import org.junit.Test;
 
 import java.util.stream.Stream;

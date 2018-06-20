@@ -1,18 +1,46 @@
 'use strict';
 
 angular.module('app.layout.directives', [])
-    .directive('focusMe', function ($timeout, $parse) {
+    .directive('focusMe', function ($timeout) {
         return {
             link: function (scope, element, attrs) {
-                var model = $parse(attrs.focusMe);
-                scope.$watch(model, function (value) {
-                    if (value === true) {
-                        $timeout(function () {
-                            element[0].focus();
-                        });
-                    }
+                $timeout(function () {
+                    element[0].focus();
                 });
             }
+        };
+    })
+
+    .directive('autoScrollTo', function () {
+        return function (scope, element, attrs) {
+            var firstScroll = true;
+
+            scope.$watch(attrs.autoScrollTo, function (value) {
+                var $ = angular.element;
+
+                if (value !== undefined && value !== null) {// if (value) won't scroll when value=0
+                    var parentElement = $(element);
+                    var childElementId = "#" + attrs.prefixId + value;
+                    var childElement = $(childElementId, parentElement);
+
+                    if (!childElement.length) {
+                        console.warn('Could not find element with id', childElementId);
+                        return;
+                    }
+
+                    var childPos = childElement.position();
+                    var parentPos = parentElement.position();
+                    var parentScrollTop = parentElement.scrollTop();
+                    var pos = childPos.top + parentScrollTop - parentPos.top;
+
+                    if (firstScroll) {
+                        parentElement.animate({scrollTop: pos}, 0);
+                        firstScroll = false;
+                    } else {
+                        parentElement.animate({scrollTop: pos}, 300);
+                    }
+                }
+            });
         };
     })
 
@@ -38,7 +66,8 @@ angular.module('app.layout.directives', [])
             restrict: 'A',
             controller: function ($scope, $element) {
                 $scope.$on('$stateChangeSuccess', function () {
-                    if ($state.current.wideLayout === true) {
+                    if ($state.current.wideLayout === true ||
+                        $state.current.hideFooter === true) {
                         $element.addClass('active');
                     } else {
                         $element.removeClass('active');
@@ -145,24 +174,26 @@ angular.module('app.layout.directives', [])
     .directive('riistaModalClose', function () {
         return {
             restrict: 'A',
-            template: '<button type="button" class="btn btn-info pull-right" aria-hidden="true" ng-click="$dismiss(\'cancel\')">' +
-            '<span class="glyphicon glyphicon-eject"></span>&nbsp;&nbsp;&nbsp;' +
-            '<span translate="global.button.close">Sulje</span></button>',
+            template: '<a class="btn-modal-close" aria-hidden="true" ng-click="$dismiss(\'cancel\')">' +
+            '<span class="fa fa-close"></span></a>',
             replace: true
         };
     })
 
 
-    .directive('activeIfStateIncludes', function ($state) {
+    .directive('activeIfStateIncludes', function ($state, $timeout) {
         return {
             restrict: 'A',
-            link: function (scope, element, attrs) {
+            link: function ($scope, element, attrs) {
                 var activeStates = attrs.activeIfStateIncludes.split(',');
 
-                scope.$on('$stateChangeSuccess', function () {
+                $scope.$on('$stateChangeSuccess', updateActiveState);
+                $timeout(updateActiveState, 0);
+
+                function updateActiveState() {
                     var active = false;
                     for (var i = 0; i < activeStates.length; i++) {
-                        if ($state.includes(activeStates[i])) {
+                        if ($state.includes(activeStates[i].trim())) {
                             active = true;
                         }
                     }
@@ -171,7 +202,7 @@ angular.module('app.layout.directives', [])
                     } else {
                         element.removeClass('active');
                     }
-                });
+                }
             }
         };
     });

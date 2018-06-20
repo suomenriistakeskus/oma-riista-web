@@ -1,8 +1,12 @@
 package fi.riista.config;
 
+import fi.riista.api.external.PaytrailController;
+import fi.riista.api.mobile.MobileVersionApiResource;
 import fi.riista.api.pub.AccountRegistrationApiResource;
 import fi.riista.api.pub.HealthCheckController;
+import fi.riista.api.pub.PasswordResetApiResource;
 import fi.riista.config.properties.SecurityConfigurationProperties;
+import fi.riista.config.web.SentryUserContextFilter;
 import fi.riista.security.aop.CustomWebSecurityExpressionHandler;
 import fi.riista.security.audit.LogoutAuditEventListener;
 import fi.riista.security.authentication.CustomAuthenticationFailureHandler;
@@ -24,6 +28,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -67,6 +72,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
             AccountRegistrationApiResource.URI_SEND_EMAIL,
             AccountRegistrationApiResource.URI_FROM_EMAIL,
+            PasswordResetApiResource.URI_SEND_MAIL,
+            PasswordResetApiResource.URI_VERIFY_TOKEN,
+            PasswordResetApiResource.URI_RESET_PASSWORD,
 
             // SAML attribute consumer service is protected using TRID parameter
             "/saml/acs",
@@ -80,6 +88,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String[] SKIP_CSRF_COOKIE_GENERATION = {
             HealthCheckController.URI_HEALTH_CHECK,
+            PaytrailController.NOTIFY_PATH,
             PATTERN_EXPORT_API,
             PATTERN_IMPORT_API,
             PATTERN_ANONYMOUS_API,
@@ -151,6 +160,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         final CsrfCookieGeneratorFilter csrfFilter = new CsrfCookieGeneratorFilter(SKIP_CSRF_COOKIE_GENERATION);
         httpSecurity.addFilterAfter(csrfFilter, SessionManagementFilter.class);
 
+        final SentryUserContextFilter sentryFilter = new SentryUserContextFilter();
+        httpSecurity.addFilterBefore(sentryFilter, AnonymousAuthenticationFilter.class);
+
         httpSecurity
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.NEVER)
@@ -175,6 +187,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
 
                 .headers()
+                .frameOptions().sameOrigin()
                 .cacheControl().disable()
                 .and()
 
@@ -202,7 +215,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/v1/register/**",
                         "/saml/login",
                         "/saml/acs",
+                        "/api/mobile/v2/area/vector/**",
 
+                        PaytrailController.NOTIFY_PATH,
+                        MobileVersionApiResource.LATEST_RELEASE_URL,
                         HealthCheckController.URI_HEALTH_CHECK,
                         PATTERN_ANONYMOUS_API
                 ).permitAll()

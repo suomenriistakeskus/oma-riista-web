@@ -2,21 +2,40 @@
 
 angular.module('app.club.services', [])
     .factory('Clubs', function ($resource) {
-        return $resource('api/v1/club/:id', {"id": "@id"}, {
+        return $resource('api/v1/club/:id', {'id': '@id'}, {
             'get': {method: 'GET'},
             'update': {method: 'PUT'},
             'updateLocation': {url: 'api/v1/club/:id/location', method: 'PUT'},
+            'updateActive': {
+                url: 'api/v1/club/:id/active/:active',
+                method: 'PUT',
+                params: {'id': '@id', 'active': '@active'}
+            },
             'harvestSummary': {url: 'api/v1/club/:id/harvestsummary', method: 'GET'}
         });
     })
-    .service('ClubService', function ($q, $uibModal, Clubs) {
+    .service('ChangeClubNameModal', function ($q, $uibModal, Clubs) {
+        function ModalController($uibModalInstance, club) {
+            var $ctrl = this;
+            $ctrl.club = club;
+
+            $ctrl.save = function () {
+                $uibModalInstance.close($ctrl.club);
+            };
+
+            $ctrl.cancel = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+        }
+
         function showModal(club) {
             var modalInstance = $uibModal.open({
-                templateUrl: 'club/form.html',
+                templateUrl: 'club/form_name.html',
                 resolve: {
-                    club: _.constant(club)
+                    club: _.constant(angular.copy(club))
                 },
-                controller: 'ClubFormController'
+                controller: ModalController,
+                controllerAs: '$ctrl'
             });
 
             return modalInstance.result.then(function (club) {
@@ -25,12 +44,70 @@ angular.module('app.club.services', [])
             });
         }
 
-        this.editClub = function (club) {
-            return showModal(angular.copy(club));
+        this.editClubName = function (club) {
+            return showModal(club);
+        };
+    })
+    .service('ChangeClubTypeModal', function ($q, $uibModal, Clubs) {
+        function ModalController($uibModalInstance,
+                                 ActiveRoleService, PersonSearchModal, AccountService,
+                                 club) {
+            var $ctrl = this;
+            $ctrl.club = club;
+            $ctrl.moderator = ActiveRoleService.isModerator();
+            $ctrl.currentPerson = {};
+            if (!$ctrl.moderator) {
+                AccountService.loadAccount('me').then(function (acc) {
+                    $ctrl.currentPerson = {byName: acc.byName, lastName: acc.lastName};
+                });
+            }
+
+            $ctrl.setSubType = function (value) {
+                $ctrl.club.subtype = value;
+            };
+
+            $ctrl.findPerson = function () {
+                PersonSearchModal.searchPerson(true, true).then(function (personInfo) {
+                    $ctrl.club.clubPerson = {
+                        id: personInfo.id,
+                        lastName: personInfo.lastName,
+                        byName: personInfo.byName
+                    };
+                });
+            };
+
+            $ctrl.save = function () {
+                $uibModalInstance.close($ctrl.club);
+            };
+
+            $ctrl.cancel = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+        }
+
+        function showModal(club) {
+            var modalInstance = $uibModal.open({
+                templateUrl: 'club/form_type.html',
+                size: 'lg',
+                resolve: {
+                    club: _.constant(angular.copy(club))
+                },
+                controller: ModalController,
+                controllerAs: '$ctrl'
+            });
+
+            return modalInstance.result.then(function (club) {
+                var saveMethod = club.id ? Clubs.update : Clubs.save;
+                return saveMethod({id: club.id}, club).$promise;
+            });
+        }
+
+        this.editClubType = function (club) {
+            return showModal(club);
         };
     })
     .service('ClubTodoService', function ($uibModal, $state, $q,
-                                          HarvestPermits) {
+                                          ClubPermits) {
 
         function showNotification(clubId, year, todos) {
             return $uibModal.open({
@@ -54,11 +131,10 @@ angular.module('app.club.services', [])
         }
 
         this.showTodo = function (clubId, year) {
-            HarvestPermits.listClubTodos({clubId: clubId, year: year}).$promise.then(function (todos) {
+            ClubPermits.todos({clubId: clubId, year: year}).$promise.then(function (todos) {
                 if (todos.todo) {
                     showNotification(clubId, year, todos);
                 }
             });
         };
-    })
-;
+    });

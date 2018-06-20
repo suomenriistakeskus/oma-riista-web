@@ -1,6 +1,7 @@
 package fi.riista.feature.organization.person;
 
 import fi.riista.feature.account.payment.HuntingPaymentInfo;
+import fi.riista.feature.account.payment.HuntingPaymentUtil;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.common.entity.Municipality;
@@ -16,17 +17,16 @@ import fi.riista.util.LocalisedString;
 import fi.riista.validation.FinnishHunterNumber;
 import fi.riista.validation.FinnishSocialSecurityNumber;
 import fi.riista.validation.FinnishSocialSecurityNumberValidator;
-import javaslang.Tuple;
-import javaslang.Tuple2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.UnresolvableObjectException;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Access;
@@ -53,15 +53,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
 import static fi.riista.util.DateUtil.today;
 
 @Entity
 @Access(value = AccessType.FIELD)
 public class Person extends LifecycleEntity<Long> {
-    private static final Logger LOG = LoggerFactory.getLogger(Person.class);
 
     public enum DeletionCode {
         D // DEAD
@@ -80,15 +78,19 @@ public class Person extends LifecycleEntity<Long> {
 
     @NotBlank
     @Size(max = 255)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(nullable = false)
     private String firstName;
 
     @NotBlank
     @Size(max = 255)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(nullable = false)
     private String lastName;
 
     @NotBlank
+    @Size(max = 255)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(nullable = false)
     private String byName;
 
@@ -103,6 +105,7 @@ public class Person extends LifecycleEntity<Long> {
     private String email;
 
     @Size(max = 255)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column
     private String phoneNumber;
 
@@ -116,11 +119,11 @@ public class Person extends LifecycleEntity<Long> {
     @Column(name = "home_municipality_code", length = 3)
     private String homeMunicipalityCode;
 
-    @OneToOne(optional = true, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(unique = true)
     private Address mrAddress;
 
-    @OneToOne(optional = true, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(unique = true)
     private Address otherAddress;
 
@@ -172,9 +175,11 @@ public class Person extends LifecycleEntity<Long> {
     private Integer huntingPaymentTwoYear;
 
     // Metsästäjärekisteri: Laskun viitekoodit ja vastaavat metsästysvuodet
+    @Size(max = 255)
     @Column
     private String invoiceReferenceCurrent;
 
+    @Size(max = 255)
     @Column
     private String invoiceReferencePrevious;
 
@@ -237,6 +242,9 @@ public class Person extends LifecycleEntity<Long> {
 
     @Column
     private Boolean enableSrva;
+
+    @Column
+    private Boolean enableShootingTests;
 
     public static String maskSsn(final String ssn) {
         return StringUtils.isEmpty(ssn) ? StringUtils.EMPTY : StringUtils.substring(ssn, 0, 6) + "*****";
@@ -327,13 +335,30 @@ public class Person extends LifecycleEntity<Long> {
                 DateUtil.overlapsInclusive(huntingBanStart, huntingBanEnd, today());
     }
 
+    public boolean isPaymentDateMissing(final int huntingYear) {
+        return !getHuntingPaymentDateForHuntingYear(huntingYear).isPresent();
+    }
+
+    public boolean isInvoiceReferenceAvailable(final int huntingYear) {
+        return getInvoiceReferenceForHuntingYear(huntingYear).isPresent();
+    }
+
+    public HuntingPaymentInfo getPaymentInfo(final int huntingYear) {
+        if (!HuntingPaymentUtil.isPaymentAllowedForHuntingSeason(huntingYear)) {
+            throw new IllegalStateException("Payment PDF generation is not allowed");
+        }
+
+        return getInvoiceReferenceForHuntingYear(huntingYear)
+                .flatMap(invoiceReference -> HuntingPaymentInfo.create(huntingYear, invoiceReference))
+                .orElseThrow(() -> new RuntimeException("Could not calculate paymentInfo"));
+    }
+
     public Optional<LocalDate> getHuntingPaymentDateForNextOrCurrentSeason() {
-        final int huntingYear = DateUtil.getFirstCalendarYearOfCurrentHuntingYear();
+        final int huntingYear = DateUtil.huntingYear();
 
         return getHuntingPaymentDateForNextOrCurrentSeason(huntingYear);
     }
 
-    // For unit-testing
     Optional<LocalDate> getHuntingPaymentDateForNextOrCurrentSeason(final int currentHuntingYear) {
         final Optional<LocalDate> next = this.getHuntingPaymentDateForHuntingYear(currentHuntingYear + 1);
 
@@ -377,30 +402,7 @@ public class Person extends LifecycleEntity<Long> {
     }
 
     public Set<Integer> getHuntingPaymentPdfYears() {
-        return getHuntingPaymentPdfYears(DateUtil.getFirstCalendarYearOfCurrentHuntingYear());
-    }
-
-    // For unit-testing
-    Set<Integer> getHuntingPaymentPdfYears(final int currentHuntingYear) {
-        return IntStream.of(currentHuntingYear, currentHuntingYear + 1)
-                // Payment info is available
-                .filter(huntingYear -> getPaymentInfo(huntingYear).isPresent())
-                // Payment is not done
-                .filter(huntingYear -> !getHuntingPaymentDateForHuntingYear(huntingYear).isPresent())
-                .boxed()
-                .collect(Collectors.toCollection(TreeSet::new));
-    }
-
-    public Optional<HuntingPaymentInfo> getPaymentInfo(final int huntingYear) {
-        try {
-            return getInvoiceReferenceForHuntingYear(huntingYear)
-                    .map(invoiceReference -> HuntingPaymentInfo.create(huntingYear, invoiceReference));
-
-        } catch (final RuntimeException ex) {
-            LOG.error("Error while calculating HuntingPaymentInfo for personId=" + getId(), ex);
-
-            return Optional.empty();
-        }
+        return HuntingPaymentUtil.getHuntingPaymentPdfYears(this);
     }
 
     public boolean canPrintCertificate() {
@@ -465,6 +467,14 @@ public class Person extends LifecycleEntity<Long> {
             }
         }
         return LocalisedString.EMPTY;
+    }
+
+    public boolean isSrvaEnabled() {
+        return Boolean.TRUE.equals(getEnableSrva());
+    }
+
+    public boolean isShootingTestsEnabled() {
+        return Boolean.TRUE.equals(getEnableShootingTests());
     }
 
     // Accessors -->
@@ -563,7 +573,7 @@ public class Person extends LifecycleEntity<Long> {
         return mrAddress;
     }
 
-    public void setMrAddress(Address mrAddress) {
+    public void setMrAddress(final Address mrAddress) {
         this.mrAddress = mrAddress;
     }
 
@@ -759,12 +769,20 @@ public class Person extends LifecycleEntity<Long> {
         this.denyMagazine = denyMagazine;
     }
 
-    public Boolean isEnableSrva() {
+    public Boolean getEnableSrva() {
         return enableSrva;
     }
 
     public void setEnableSrva(final Boolean enableSrva) {
         this.enableSrva = enableSrva;
+    }
+
+    public Boolean getEnableShootingTests() {
+        return enableShootingTests;
+    }
+
+    public void setEnableShootingTests(final Boolean enableShootingTests) {
+        this.enableShootingTests = enableShootingTests;
     }
 
     // Following collection getters exposed in package-private scope only for property introspection.

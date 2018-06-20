@@ -5,21 +5,17 @@ import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
-import fi.riista.util.F;
 import fi.riista.util.MediaTypeExtras;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.view.document.AbstractXlsView;
+import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
-public class SrvaEventListExcelView extends AbstractXlsView {
-    private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
+public class SrvaEventListExcelView extends AbstractXlsxView {
 
     private static final String[] HEADER_LOCALIZATION_KEYS = new String[]{
             "SrvaEventExportExcel.srvaEventId",
@@ -71,8 +67,7 @@ public class SrvaEventListExcelView extends AbstractXlsView {
                                       final HttpServletResponse response) {
         setContentType(MediaTypeExtras.APPLICATION_EXCEL_VALUE);
         response.setCharacterEncoding(Constants.DEFAULT_ENCODING);
-        response.setHeader(ContentDispositionUtil.HEADER_NAME,
-                ContentDispositionUtil.encodeAttachmentFilename(createFilename()));
+        ContentDispositionUtil.addHeader(response, createFilename());
 
         final ExcelHelper excelHelper = new ExcelHelper(workbook).appendHeaderRow(getRowHeaders());
 
@@ -116,14 +111,13 @@ public class SrvaEventListExcelView extends AbstractXlsView {
     }
 
     private String[] getRowHeaders() {
-        final List<String> headers = F.mapNonNullsToList(HEADER_LOCALIZATION_KEYS, localiser.asFunction());
-        return headers.toArray(new String[headers.size()]);
+        return localiser.translate(HEADER_LOCALIZATION_KEYS);
     }
 
     private String createFilename() {
         return String.format(
-                "%s-%s.xls",
+                "%s-%s.xlsx",
                 StringUtils.uncapitalize(localiser.getTranslation("SrvaEventExportExcel.srvaEvents")),
-                DATETIME_PATTERN.print(DateUtil.now()));
+                Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
     }
 }

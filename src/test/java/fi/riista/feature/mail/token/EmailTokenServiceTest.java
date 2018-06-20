@@ -1,7 +1,7 @@
 package fi.riista.feature.mail.token;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.junit.Rule;
 import org.junit.Test;

@@ -1,7 +1,11 @@
 package fi.riista.feature.huntingclub.permit.summary;
 
 import fi.riista.feature.account.user.UserAuthorizationHelper;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
@@ -40,6 +44,12 @@ public class MooseHuntingSummaryAuthorization extends AbstractEntityAuthorizatio
 
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
+
+    @Resource
+    private GameSpeciesService gameSpeciesService;
+
+    @Resource
+    private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
 
     public MooseHuntingSummaryAuthorization() {
         allowCRUD(ROLE_ADMIN, ROLE_MODERATOR);
@@ -88,7 +98,16 @@ public class MooseHuntingSummaryAuthorization extends AbstractEntityAuthorizatio
                     () -> userAuthorizationHelper.isClubContact(club, activePerson));
 
             collector.addAuthorizationRole(RYHMAN_METSASTYKSENJOHTAJA,
-                    () -> userAuthorizationHelper.isLeaderOfSomePermitHuntingGroup(activePerson, permit, club));
+                    () -> {
+                        final int year = harvestPermitSpeciesAmountRepository
+                                .findByHarvestPermitAndSpeciesCode(permit, GameSpecies.OFFICIAL_CODE_MOOSE)
+                                .stream()
+                                .map(HarvestPermitSpeciesAmount::resolveHuntingYear)
+                                .findAny()
+                                .orElseThrow(IllegalStateException::new);
+                        return userAuthorizationHelper.isLeaderOfSomePermitHuntingGroup(activePerson, permit, club,
+                                gameSpeciesService.requireByOfficialCode(GameSpecies.OFFICIAL_CODE_MOOSE), year);
+                    });
 
             collector.addAuthorizationRole(SEURAN_JASEN,
                     () -> userAuthorizationHelper.isClubMember(club, activePerson));

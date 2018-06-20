@@ -1,6 +1,8 @@
 package fi.riista.feature.organization.calendar;
 
 import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.organization.address.Address;
+import fi.riista.util.DtoUtil;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -9,23 +11,24 @@ import javax.validation.constraints.Size;
 
 public class VenueDTO extends BaseEntityDTO<Long> {
 
-    public static VenueDTO create(Venue venue) {
-        VenueDTO dto = new VenueDTO();
-        dto.setId(venue.getId());
-        dto.setRev(venue.getConsistencyVersion());
+    public static VenueDTO create(final Venue venue, final Address venueAddress) {
+        final VenueDTO dto = new VenueDTO();
+        DtoUtil.copyBaseFields(venue, dto);
 
         dto.setName(venue.getName());
-        if (venue.getAddress() != null) {
-            dto.setAddress(VenueAddressDTO.from(venue.getAddress()));
-        }
         dto.setInfo(venue.getInfo());
+
+        final VenueAddressDTO address = new VenueAddressDTO(venueAddress);
+        dto.setAddress(address);
+
         return dto;
     }
 
     private Long id;
     private Integer rev;
 
-    @Size(max = 255) @NotBlank
+    @Size(max = 255)
+    @NotBlank
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String name;
 
@@ -41,7 +44,7 @@ public class VenueDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -51,7 +54,7 @@ public class VenueDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setRev(Integer rev) {
+    public void setRev(final Integer rev) {
         this.rev = rev;
     }
 
@@ -59,7 +62,7 @@ public class VenueDTO extends BaseEntityDTO<Long> {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -67,7 +70,7 @@ public class VenueDTO extends BaseEntityDTO<Long> {
         return address;
     }
 
-    public void setAddress(VenueAddressDTO address) {
+    public void setAddress(final VenueAddressDTO address) {
         this.address = address;
     }
 
@@ -75,8 +78,7 @@ public class VenueDTO extends BaseEntityDTO<Long> {
         return info;
     }
 
-    public void setInfo(String info) {
+    public void setInfo(final String info) {
         this.info = info;
     }
-
 }

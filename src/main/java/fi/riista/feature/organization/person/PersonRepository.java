@@ -2,8 +2,8 @@ package fi.riista.feature.organization.person;
 
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.repository.BaseRepository;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.occupation.OccupationType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,11 +22,16 @@ public interface PersonRepository extends BaseRepository<Person, Long> {
             " where p.ssn IN (?1)")
     List<Person> findBySsnAndFetchMrAddress(List<String> list);
 
+    // Faster fuzzy search using maximum distance 0.7
     @Query("select p from Person p" +
-            " where true = trgm_match(?1, p.firstName || ' ' || p.lastName)" +
-            " and trgm_dist(?1, p.firstName || ' ' || p.lastName) < ?2" +
+            " where TRUE = trgm_match(?1, p.firstName || ' ' || p.lastName)" +
             " order by trgm_dist(?1, p.firstName || ' ' || p.lastName)")
-    List<Person> findByFuzzyFullNameMatch(String searchQuery, double maxDistance, Pageable page);
+    List<Person> findByFuzzyFullNameMatch(String searchQuery, Pageable page);
+
+    @Query("select p from Person p" +
+            " where trgm_dist(?1, p.firstName || ' ' || p.lastName) < ?2" +
+            " order by trgm_dist(?1, p.firstName || ' ' || p.lastName)")
+    List<Person> findByFuzzyFullNameDistance(String searchQuery, double maxDistance, Pageable page);
 
     Optional<Person> findByHunterNumber(String hunterNumber);
 
@@ -43,4 +48,7 @@ public interface PersonRepository extends BaseRepository<Person, Long> {
             " and p.email is not null" +
             " and o.occupationType = :occupationType" + OccupationRepository.AND_ACTIVE)
     Set<String> findEmailForActiveUserWithOccupationType(@Param("occupationType") OccupationType type);
+
+    @Query("select p from SystemUser u JOIN u.person p where lower(u.username) = lower(:username)")
+    List<Person> findByUsernameIgnoreCase(@Param("username") String username);
 }

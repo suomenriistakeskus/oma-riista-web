@@ -13,6 +13,9 @@ import java.sql.Types;
 
 import com.querydsl.sql.spatial.RelationalPathSpatial;
 
+import com.querydsl.spatial.*;
+
+
 
 /**
  * SQObservationSpecimen is a Querydsl query type for SQObservationSpecimen
@@ -40,6 +43,8 @@ public class SQObservationSpecimen extends RelationalPathSpatial<SQObservationSp
 
     public final StringPath gender = createString("gender");
 
+    public final NumberPath<java.math.BigDecimal> lengthOfPaw = createNumber("lengthOfPaw", java.math.BigDecimal.class);
+
     public final StringPath marking = createString("marking");
 
     public final DateTimePath<java.sql.Timestamp> modificationTime = createDateTime("modificationTime", java.sql.Timestamp.class);
@@ -50,17 +55,19 @@ public class SQObservationSpecimen extends RelationalPathSpatial<SQObservationSp
 
     public final StringPath state = createString("state");
 
+    public final NumberPath<java.math.BigDecimal> widthOfPaw = createNumber("widthOfPaw", java.math.BigDecimal.class);
+
     public final com.querydsl.sql.PrimaryKey<SQObservationSpecimen> observationSpecimenPkey = createPrimaryKey(observationSpecimenId);
 
-    public final com.querydsl.sql.ForeignKey<SQObservedGameAge> observationSpecimenAgeFk = createForeignKey(age, "name");
+    public final com.querydsl.sql.ForeignKey<SQGameObservation> observationSpecimenObservationFk = createForeignKey(gameObservationId, "game_observation_id");
 
     public final com.querydsl.sql.ForeignKey<SQGameMarking> observationSpecimenMarkingFk = createForeignKey(marking, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQGameGender> observationSpecimenGenderFk = createForeignKey(gender, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQObservation> observationSpecimenObservationFk = createForeignKey(gameObservationId, "game_observation_id");
-
     public final com.querydsl.sql.ForeignKey<SQObservedGameState> observationSpecimenStateFk = createForeignKey(state, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQObservedGameAge> observationSpecimenAgeFk = createForeignKey(age, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQGameGender> observationSpecimenGenderFk = createForeignKey(gender, "name");
 
     public SQObservationSpecimen(String variable) {
         super(SQObservationSpecimen.class, forVariable(variable), "public", "observation_specimen");
@@ -69,6 +76,11 @@ public class SQObservationSpecimen extends RelationalPathSpatial<SQObservationSp
 
     public SQObservationSpecimen(String variable, String schema, String table) {
         super(SQObservationSpecimen.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQObservationSpecimen(String variable, String schema) {
+        super(SQObservationSpecimen.class, forVariable(variable), schema, "observation_specimen");
         addMetadata();
     }
 
@@ -91,11 +103,13 @@ public class SQObservationSpecimen extends RelationalPathSpatial<SQObservationSp
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
         addMetadata(gameObservationId, ColumnMetadata.named("game_observation_id").withIndex(9).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(gender, ColumnMetadata.named("gender").withIndex(10).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(lengthOfPaw, ColumnMetadata.named("length_of_paw").withIndex(15).ofType(Types.NUMERIC).withSize(3).withDigits(1));
         addMetadata(marking, ColumnMetadata.named("marking").withIndex(13).ofType(Types.VARCHAR).withSize(255));
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
         addMetadata(observationSpecimenId, ColumnMetadata.named("observation_specimen_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(state, ColumnMetadata.named("state").withIndex(12).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(widthOfPaw, ColumnMetadata.named("width_of_paw").withIndex(14).ofType(Types.NUMERIC).withSize(3).withDigits(1));
     }
 
 }

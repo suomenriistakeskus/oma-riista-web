@@ -12,35 +12,46 @@
             <div ng-include="'diary/list/filters.html'"></div>
         </div>
 
-        <div class="r-header">
-            <span translate="gamediary.menuTitles.huntingDays"></span>
-            <div class="btn-group pull-right" uib-dropdown dropdown-append-to-body>
-                <div uib-dropdown-toggle>
-                    <span class="glyphicon glyphicon-cog"></span>
-                </div>
-
-                <ul class="dropdown-menu" uib-dropdown-menu>
-                    <li>
-                        <form action="/api/v1/gamediary/excel" method="POST">
-                            <input type="hidden" spring-csrf-cookie/>
-                            <button type="submit" class="btn btn-info">
-                                <span class="glyphicon glyphicon-export"></span>
-                                <span translate="gamediary.button.exportToExcel"></span>
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
+        <div class="r-header" ng-click="speciesCollapsed = !speciesCollapsed">
+            <span class="glyphicon glyphicon-chevron-right" ng-show="speciesCollapsed"></span>
+            <span class="glyphicon glyphicon-chevron-down" ng-hide="speciesCollapsed"></span>
+            <span translate="gamediary.search.selectSpeciesTitle"></span>
         </div>
 
-        <div class="r-diary-days">
+        <diary-list-species-selection
+                uib-collapse="speciesCollapsed"
+                state="state"
+                parameters="parameters"
+                on-change="filterDiaryEntriesBySpeciesSelection()">
+        </diary-list-species-selection>
+
+        <div class="r-header">
+            <span translate="gamediary.menuTitles.huntingDays"></span>
+        </div>
+
+        <div>
+            <div class="well well-sm text-center">
+                <button type="button" class="btn btn-info"
+                        ng-click="exportExcel()">
+                    <span class="glyphicon glyphicon-export"></span>
+                    <span translate="gamediary.button.exportToExcel"></span>
+                </button>
+            </div>
+
             <div ng-include="'diary/list/days.html'"></div>
         </div>
     </div>
 
     <div class="main-column">
-        <div class="r-gamediary-map-button-area">
-            <a ng-click="addHarvest()" class="btn btn-primary">
+        <div class="map-overlay-button-container">
+            <a ng-click="addHarvest()" class="btn btn-primary"
+               popover-title="{{'account.profile.menu.harvestReportInfoTitle'|translate}}"
+               uib-popover-template="'diary/list/popover-harvest-report-info.html'"
+               popover-placement="bottom"
+               popover-is-open="harvestReportInfoVisible"
+               popover-append-to-body="true"
+               popover-enable="harvestReportInfoVisible">
+
                 <span class="fa fa-crosshairs"></span>&nbsp;
                 <span translate="gamediary.button.addHarvest"></span>
             </a>
@@ -64,7 +75,7 @@
                  bounds="mapState.viewBounds"
                  event-broadcast="mapEvents"
                  width="100%">
-            <marker-cluster id="diaryEntryMarkers" leaflet-markers="markers" />
+            <marker-cluster id="diaryEntryMarkers" leaflet-markers="markers"></marker-cluster>
         </leaflet>
     </div>
 </div>

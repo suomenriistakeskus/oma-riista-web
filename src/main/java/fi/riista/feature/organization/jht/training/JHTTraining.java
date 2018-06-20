@@ -1,12 +1,12 @@
 package fi.riista.feature.organization.jht.training;
 
-import fi.riista.feature.common.dto.XssSafe;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.common.entity.PersistableEnum;
 import fi.riista.feature.common.entity.PersistableEnumConverter;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.occupation.OccupationType;
-import org.hibernate.validator.constraints.Length;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.util.LocalisedEnum;
+import fi.riista.validation.XssSafe;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 
@@ -26,6 +26,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "jht_training")
@@ -43,7 +44,7 @@ public class JHTTraining extends LifecycleEntity<Long> {
     public static class TrainingTypeConverter implements PersistableEnumConverter<TrainingType> {
     }
 
-    public enum TrainingType implements PersistableEnum {
+    public enum TrainingType implements LocalisedEnum, PersistableEnum {
         LAHI("L"),
         SAHKOINEN("S");
 
@@ -61,8 +62,8 @@ public class JHTTraining extends LifecycleEntity<Long> {
 
     private Long id;
 
-    @Length(max = 255)
     @XssSafe
+    @Size(max = 255)
     @Column
     private String externalId;
 

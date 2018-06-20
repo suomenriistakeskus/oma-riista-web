@@ -9,9 +9,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Component;
 
-@Component
 public class CustomJacksonObjectMapper extends ObjectMapper {
 
     public CustomJacksonObjectMapper(boolean developmentEnvironment) {

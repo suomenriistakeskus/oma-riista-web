@@ -5,13 +5,11 @@ import com.github.jknack.handlebars.Handlebars;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitTotalPaymentDTO;
-import fi.riista.feature.mail.MailService;
 import fi.riista.feature.mail.MailMessageDTO;
+import fi.riista.feature.mail.MailService;
 import fi.riista.util.LocalisedString;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -27,7 +25,6 @@ import java.util.Set;
 @Service
 public class AllPartnersFinishedHuntingMailService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AllPartnersFinishedHuntingMailService.class);
     private static final LocalisedString EMAIL_TEMPLATE = new LocalisedString(
             "email_all_partners_finished_hunting", "email_all_partners_finished_hunting.sv");
 
@@ -40,6 +37,7 @@ public class AllPartnersFinishedHuntingMailService {
         private final LocalisedString speciesName;
         private final boolean allOk;
         private final boolean nokNotEdibles;
+        private final String recipientName;
         private final String iban;
         private final String bic;
         private final String creditorReference;
@@ -55,6 +53,7 @@ public class AllPartnersFinishedHuntingMailService {
             this.speciesName = speciesName;
             this.allOk = notEdibleOk;
             this.nokNotEdibles = !notEdibleOk;
+            this.recipientName = payment.getRecipientName();
             this.iban = payment.getIban();
             this.bic = payment.getBic();
             this.creditorReference = payment.getCreditorReference();
@@ -84,6 +83,10 @@ public class AllPartnersFinishedHuntingMailService {
 
         public boolean isNokNotEdibles() {
             return nokNotEdibles;
+        }
+
+        public String getRecipientName() {
+            return recipientName;
         }
 
         public String getIban() {
@@ -138,17 +141,13 @@ public class AllPartnersFinishedHuntingMailService {
         final String title = String.format("Luvan osakkaat ovat päättäneet metsästyksen %s (%s)",
                 data.permitNumber, data.speciesName.getFinnish());
 
-        final MailMessageDTO.Builder builder = new MailMessageDTO.Builder()
+        mailService.send(MailMessageDTO.builder()
+                .withFrom(mailService.getDefaultFromAddress())
+                .withRecipients(emails)
                 .withSubject(title)
-                .withHandlebarsBody(handlebars, EMAIL_TEMPLATE.getFinnish(), model)
+                .appendHandlebarsBody(handlebars, EMAIL_TEMPLATE.getFinnish(), model)
                 .appendBody("\n<br/><hr/><br/>\n")
-                .appendHandlebarsBody(handlebars, EMAIL_TEMPLATE.getSwedish(), model);
-
-        for (final String email : emails) {
-            LOG.info("Sending notification to {}", email);
-
-            builder.withTo(email);
-            mailService.sendLater(builder, null);
-        }
+                .appendHandlebarsBody(handlebars, EMAIL_TEMPLATE.getSwedish(), model)
+                .build());
     }
 }

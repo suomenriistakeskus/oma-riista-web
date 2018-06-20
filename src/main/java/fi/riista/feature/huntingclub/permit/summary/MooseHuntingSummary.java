@@ -25,6 +25,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -59,6 +60,7 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
     @Column(nullable = false)
     private boolean huntingFinished;
 
+    @Valid
     @AttributeOverrides({
         @AttributeOverride(
                 name = "remainingPopulationInTotalArea",
@@ -123,6 +125,7 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
     @Column(length = 255)
     private String causeOfDeath;
 
+    @Valid
     @AttributeOverrides({
         @AttributeOverride(name = "appeared", column = @Column(name = "white_tailed_deer_appeared")),
         @AttributeOverride(
@@ -134,6 +137,7 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
     @Embedded
     private SpeciesEstimatedAppearance whiteTailedDeerAppearance;
 
+    @Valid
     @AttributeOverrides({
         @AttributeOverride(name = "appeared", column = @Column(name = "roe_deer_appeared")),
         @AttributeOverride(name = "trendOfPopulationGrowth", column = @Column(name = "roe_deer_population_growth")),
@@ -144,6 +148,7 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
     @Embedded
     private SpeciesEstimatedAppearance roeDeerAppearance;
 
+    @Valid
     @AttributeOverrides({
         @AttributeOverride(name = "appeared", column = @Column(name = "wild_forest_reindeer_appeared")),
         @AttributeOverride(
@@ -155,6 +160,7 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
     @Embedded
     private SpeciesEstimatedAppearance wildForestReindeerAppearance;
 
+    @Valid
     @AttributeOverrides({
         @AttributeOverride(name = "appeared", column = @Column(name = "fallow_deer_appeared")),
         @AttributeOverride(name = "trendOfPopulationGrowth", column = @Column(name = "fallow_deer_population_growth")),
@@ -165,6 +171,7 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
     @Embedded
     private SpeciesEstimatedAppearance fallowDeerAppearance;
 
+    @Valid
     @AttributeOverrides({
             @AttributeOverride(name = "appeared", column = @Column(name = "wild_boar_appeared")),
             @AttributeOverride(name = "trendOfPopulationGrowth", column = @Column(name = "wild_boar_population_growth")),
@@ -177,6 +184,21 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
     })
     @Embedded
     private SpeciesEstimatedAppearanceWithPiglets wildBoarAppearance;
+
+    @Valid
+    @AttributeOverrides({
+            @AttributeOverride(name = "appeared", column = @Column(name = "beaver_appeared")),
+            @AttributeOverride(name = "trendOfPopulationGrowth", column = @Column(name = "beaver_population_growth")),
+            @AttributeOverride(
+                    name = "amountOfInhabitedWinterNests",
+                    column = @Column(name = "beaver_amount_of_inhabited_winter_nests")),
+            @AttributeOverride(name = "harvestAmount", column = @Column(name = "beaver_harvest_amount")),
+            @AttributeOverride(name = "areaOfDamage", column = @Column(name = "beaver_area_of_damage")),
+            @AttributeOverride(name = "areaOccupiedByWater", column = @Column(name = "beaver_area_occupied_by_water")),
+            @AttributeOverride(name = "additionalInfo", column = @Column(name = "beaver_additional_info")),
+    })
+    @Embedded
+    private BeaverAppearance beaverAppearance;
 
     @Column
     private LocalDate mooseHeatBeginDate;
@@ -212,6 +234,11 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
     @Convert(converter = TrendOfPopulationGrowthConverter.class)
     @Column(name = "deer_fly_population_growth", length = 1)
     private TrendOfPopulationGrowth trendOfDeerFlyPopulationGrowth;
+
+    // Olemme pyrkineet kirjaamaan hirvihavainnoiksi kaikki jahdin yhteydessä näkemämme hirvet
+    // annetun ohjeistuksen mukaisesti
+    @Column
+    private Boolean observationPolicyAdhered;
 
     public MooseHuntingSummary() {
     }
@@ -515,8 +542,16 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
         return wildBoarAppearance;
     }
 
-    public void setWildBoarAppearance(SpeciesEstimatedAppearanceWithPiglets wildBoarAppearance) {
+    public void setWildBoarAppearance(final SpeciesEstimatedAppearanceWithPiglets wildBoarAppearance) {
         this.wildBoarAppearance = SpeciesEstimatedAppearanceWithPiglets.revamp(wildBoarAppearance);
+    }
+
+    public BeaverAppearance getBeaverAppearance() {
+        return beaverAppearance;
+    }
+
+    public void setBeaverAppearance(final BeaverAppearance beaverAppearance) {
+        this.beaverAppearance = BeaverAppearance.revamp(beaverAppearance);
     }
 
     public LocalDate getMooseHeatBeginDate() {
@@ -599,4 +634,11 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
         this.trendOfDeerFlyPopulationGrowth = deerFlyPopulationGrowth;
     }
 
+    public Boolean getObservationPolicyAdhered() {
+        return observationPolicyAdhered;
+    }
+
+    public void setObservationPolicyAdhered(final Boolean observationPolicyAdhered) {
+        this.observationPolicyAdhered = observationPolicyAdhered;
+    }
 }

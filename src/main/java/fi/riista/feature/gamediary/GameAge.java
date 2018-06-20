@@ -1,8 +1,9 @@
 package fi.riista.feature.gamediary;
 
 import fi.riista.feature.common.entity.HasOfficialCode;
+import fi.riista.util.LocalisedEnum;
 
-public enum GameAge implements HasOfficialCode {
+public enum GameAge implements HasOfficialCode, LocalisedEnum {
 
     ADULT(1),
     YOUNG(2),
@@ -18,5 +19,4 @@ public enum GameAge implements HasOfficialCode {
     public int getOfficialCode() {
         return officialCode;
     }
-
 }

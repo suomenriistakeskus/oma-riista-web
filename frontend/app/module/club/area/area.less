@@ -28,18 +28,20 @@
 
       .panel.panel-open {
         .panel-heading {
-          background-color: #fff;
-          border-top: 1px solid #e9e9e9;
+          background-color: #f0f0f0;
+          border-top: 1px solid @table-border-color;
         }
       }
 
       .panel {
         border: 0;
-        border-bottom: 1px solid #cdcdcd;
+        border-bottom: 1px solid @table-border-color;
         margin: auto -10px;
+        border-radius: 0;
 
         .panel-heading {
-          background-color: #F0F5F2;
+          background-color: #fefefe;
+          border-radius: 0;
           cursor: pointer;
           font-weight: bold;
           color: #333;
@@ -50,7 +52,12 @@
         }
 
         .panel-body {
-          padding: 15px 15px 5px 15px;
+          padding: 10px 10px;
+
+          .buttons {
+            margin-bottom: 10px;
+            overflow: hidden;
+          }
 
           table {
             margin: 10px 0;

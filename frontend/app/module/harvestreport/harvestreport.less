@@ -1,59 +1,10 @@
-.r-harvestreport-list {
-  .form {
-    margin-top: 10px;
-    a.btn {
-      margin-bottom: 10px;
-    }
-  }
-}
-
-.r-harvestreport-required {
-  color: red;
-}
-
-.r-harvestreport-wide-btn {
-  .center-block;
-  display: block;
-}
-
-.r-harvestreport-breadcrumb {
-  .breadcrumb;
-  > li {
-    + li:before {
-      content: ">\00a0"; // Unicode space added since inline-block means non-collapsing white-space
-    }
-  }
-}
-
-.harvestreportform {
-  .r-harvestreport-margin-right {
-    div > label > input {
-      margin-right: 10px;
-      margin-left: 5px;
-    }
-    div > input {
-      width: 150px;
-      margin-right: 10px;
-      margin-left: 5px;
-    }
-  }
-  .form-group {
-    margin-bottom: 5px;
-  }
-  .modal-header {
-    padding: 5px 5px 5px 15px;
-  }
-  .modal-footer {
-    margin-top: 5px;
-  }
-}
-
 @r-harvestreport-sent-for-approval-color: @btn-primary-color;
-@r-harvestreport-sent-for-approval-background: #d2ad00;
-@r-harvestreport-sent-for-approval-border: #bf9d00;
+@r-harvestreport-sent-for-approval-background: @r-yellow;
+@r-harvestreport-sent-for-approval-border: @r-yellow;
 .r-harvestreport-sent-for-approval {
   background-color: @r-harvestreport-sent-for-approval-background;
-  color: @r-harvestreport-sent-for-approval-color
+  color: @r-harvestreport-sent-for-approval-color;
+  border: 1px solid darken(@r-harvestreport-sent-for-approval-border, 5%);
 }
 .btn.r-harvestreport-sent-for-approval {
   .button-variant(@r-harvestreport-sent-for-approval-color; @r-harvestreport-sent-for-approval-background; @r-harvestreport-sent-for-approval-border);
@@ -64,7 +15,8 @@
 @r-harvestreport-approved-border: @btn-primary-border;
 .r-harvestreport-approved {
   background-color: @r-harvestreport-approved-background;
-  color: @r-harvestreport-approved-color
+  color: @r-harvestreport-approved-color;
+  border: 1px solid darken(@r-harvestreport-approved-color, 5%);
 }
 .btn.r-harvestreport-approved {
   .button-variant(@r-harvestreport-approved-color; @r-harvestreport-approved-background; @r-harvestreport-approved-border);
@@ -72,43 +24,35 @@
 
 @r-harvestreport-rejected-color: @btn-primary-color;
 @r-harvestreport-rejected-background: #c44d4a;
-@r-harvestreport-rejected-border: @btn-primary-border;
+@r-harvestreport-rejected-border: #8c3d3a;
 .r-harvestreport-rejected {
   background-color: @r-harvestreport-rejected-background;
   color: @r-harvestreport-rejected-color;
+  border: 1px solid darken(@r-harvestreport-rejected-color, 5%);
 }
 .btn.r-harvestreport-rejected {
   .button-variant(@r-harvestreport-rejected-color; @r-harvestreport-rejected-background; @r-harvestreport-rejected-border);
 }
 
-
 @r-harvestreport-proposed-color: @btn-primary-color;
 @r-harvestreport-proposed-background: #d2ad00;
-@r-harvestreport-proposed-border: #bf9d00;
+@r-harvestreport-proposed-border: #8c7400;
 .r-harvestreport-proposed {
   background-color: @r-harvestreport-proposed-background;
   color: @r-harvestreport-proposed-color;
+  border: 1px solid darken(@r-harvestreport-proposed-color, 5%);
 }
 .btn.r-harvestreport-proposed {
   .button-variant(@r-harvestreport-proposed-color; @r-harvestreport-proposed-background; @r-harvestreport-proposed-border);
 }
 
-@r-harvestreport-proposed-to-contact-color: @btn-primary-color;
-@r-harvestreport-proposed-to-contact-background: #c44d4a;
-@r-harvestreport-proposed-to-contact-border: @btn-primary-border;
-.r-harvestreport-proposed-to-contact {
-  background-color: @r-harvestreport-proposed-to-contact-background;
-  color: @r-harvestreport-proposed-to-contact-color;
-}
-.btn.r-harvestreport-proposed-to-contact {
-  .button-variant(@r-harvestreport-proposed-to-contact-color; @r-harvestreport-proposed-to-contact-background; @r-harvestreport-proposed-to-contact-border);
-}
-
 .r-harvestreport-state-text {
-  cursor: default;
-  padding: 8px 5px;
+  margin: 0;
+  padding: 8px 10px;
   text-align: center;
-  text-shadow: 1px 1px 2px rgba(0,0,0,.35);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+  font-size: 16px;
   @radius: 3px;
   .border-top-radius(@radius);
   .border-right-radius(@radius);
@@ -116,6 +60,6 @@
   .border-left-radius(@radius);
 }
 
-.r-harvestreport-create {
-  .r-harvestreport-rejected;
+.r-harvest-report-state-transitions {
+  padding-bottom: 7px;
 }

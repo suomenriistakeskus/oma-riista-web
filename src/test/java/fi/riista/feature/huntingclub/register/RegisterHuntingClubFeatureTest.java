@@ -1,6 +1,5 @@
 package fi.riista.feature.huntingclub.register;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.organization.lupahallinta.LHOrganisation;
@@ -9,6 +8,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -88,10 +88,48 @@ public class RegisterHuntingClubFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test
+    public void testFindByOfficialCode_deactiveNotFound() {
+        withRhy(rhy -> {
+            final LHOrganisation lhOrg = model().newLHOrganisation(rhy);
+            final HuntingClub club = model().newHuntingClub(rhy);
+            club.setOfficialCode(lhOrg.getOfficialCode());
+
+            final LHOrganisation lhOrg2 = model().newLHOrganisation(rhy);
+            final HuntingClub club2 = model().newHuntingClub(rhy);
+            club2.setOfficialCode(lhOrg2.getOfficialCode());
+            club2.setActive(false);
+
+            onSavedAndAuthenticated(createNewUser(), () -> {
+                List<LHOrganisationSearchDTO> r = feature.findByOfficialCode(lhOrg.getOfficialCode());
+                assertEquals(1, r.size());
+                assertEquals(lhOrg.getId(), r.get(0).getId());
+
+                assertEquals(0, feature.findByOfficialCode(lhOrg2.getOfficialCode()).size());
+            });
+        });
+    }
+
+    @Test
     public void testRegister_ok_clubCreated() {
         final LHOrganisation lhOrg = model().newLHOrganisation();
         withPerson(person -> onSavedAndAuthenticated(createUser(person), () -> {
             assertSuccess(feature.register(dto(lhOrg)));
+
+            runInTransaction(() -> {
+                HuntingClub c = huntingClubRepository.findByOfficialCode(lhOrg.getOfficialCode());
+                assertClubEqualsLhOrg(lhOrg, c);
+                assertYhteyshenkilo(1, c, person);
+            });
+        }));
+    }
+
+    @Test
+    public void testRegisterAsModerator_ok_clubCreated() {
+        final LHOrganisation lhOrg = model().newLHOrganisation();
+        withPerson(person -> onSavedAndAuthenticated(createNewAdmin(), () -> {
+            final LHOrganisationSearchDTO dto = dto(lhOrg);
+            dto.setPersonId(person.getId());
+            assertSuccess(feature.register(dto));
 
             runInTransaction(() -> {
                 HuntingClub c = huntingClubRepository.findByOfficialCode(lhOrg.getOfficialCode());
@@ -151,12 +189,12 @@ public class RegisterHuntingClubFeatureTest extends EmbeddedDatabaseTest {
                 assertSuccess(feature.register(dto(lhOrganisation)));
 
                 runInTransaction(() -> {
-                    assertEquals(1, occupationRepository.countActiveOccupationByTypeAndPersonAndOrganizationIn(
+                    assertEquals(1, occupationRepository.countActiveByTypeAndPersonAndOrganizationIn(
                             Collections.singleton(huntingClub.getId()),
                             person,
                             EnumSet.of(OccupationType.SEURAN_YHDYSHENKILO)));
 
-                    assertEquals(0, occupationRepository.countActiveOccupationByTypeAndPersonAndOrganizationIn(
+                    assertEquals(0, occupationRepository.countActiveByTypeAndPersonAndOrganizationIn(
                             Collections.singleton(huntingClub.getId()),
                             person,
                             EnumSet.of(OccupationType.SEURAN_JASEN)));
@@ -166,8 +204,9 @@ public class RegisterHuntingClubFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private static void assertSuccess(Map<String, Object> res) {
-        assertEquals(1, res.size());
+        assertEquals(2, res.size());
         assertEquals("success", res.get("result"));
+        assertNotNull(res.get("clubId"));
     }
 
     private static void assertFailure(Map<String, Object> res) {
@@ -190,10 +229,13 @@ public class RegisterHuntingClubFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private void assertYhteyshenkilo(int amount, HuntingClub c, Person person) {
-        assertEquals(amount, occupationRepository.countActiveOccupationByTypeAndPersonAndOrganizationIn(
-                Collections.singleton(c.getId()),
-                person,
-                EnumSet.of(OccupationType.SEURAN_YHDYSHENKILO)));
+        final List<Occupation> clubOccupations = occupationRepository.findActiveByOrganisationAndPerson(c, person);
+        assertEquals(amount, clubOccupations.size());
+
+        for (Occupation clubOccupation : clubOccupations) {
+            assertEquals(OccupationType.SEURAN_YHDYSHENKILO, clubOccupation.getOccupationType());
+            assertEquals(0, (long) clubOccupation.getCallOrder());
+        }
     }
 
     private static LHOrganisationSearchDTO dto(LHOrganisation lhOrg) {

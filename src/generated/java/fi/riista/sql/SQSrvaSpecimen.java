@@ -51,9 +51,9 @@ public class SQSrvaSpecimen extends RelationalPathSpatial<SQSrvaSpecimen> {
 
     public final com.querydsl.sql.PrimaryKey<SQSrvaSpecimen> srvaEventSrvaSpecimenPkey = createPrimaryKey(srvaSpecimenId);
 
-    public final com.querydsl.sql.ForeignKey<SQGameAge> srvaSpecimenAgeFk = createForeignKey(age, "name");
-
     public final com.querydsl.sql.ForeignKey<SQGameGender> srvaSpecimenGenderFk = createForeignKey(gender, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQGameAge> srvaSpecimenAgeFk = createForeignKey(age, "name");
 
     public final com.querydsl.sql.ForeignKey<SQSrvaEvent> srvaSpecimenSrvaEventFk = createForeignKey(srvaEventId, "srva_event_id");
 
@@ -64,6 +64,11 @@ public class SQSrvaSpecimen extends RelationalPathSpatial<SQSrvaSpecimen> {
 
     public SQSrvaSpecimen(String variable, String schema, String table) {
         super(SQSrvaSpecimen.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQSrvaSpecimen(String variable, String schema) {
+        super(SQSrvaSpecimen.class, forVariable(variable), schema, "srva_specimen");
         addMetadata();
     }
 

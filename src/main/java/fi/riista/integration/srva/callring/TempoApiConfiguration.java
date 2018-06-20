@@ -1,5 +1,6 @@
 package fi.riista.integration.srva.callring;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -7,7 +8,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nsftele.tempo.api.CallRingApi;
 import com.nsftele.tempo.api.CallTrackingApi;
 import com.nsftele.tempo.api.LanguageApi;
-import com.nsftele.tempo.auth.HttpBasicAuth;
 import feign.Feign;
 import feign.FeignException;
 import feign.RetryableException;
@@ -15,7 +15,7 @@ import feign.httpclient.ApacheHttpClient;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.slf4j.Slf4jLogger;
-import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -45,7 +45,7 @@ public class TempoApiConfiguration {
     private String password;
 
     @Resource
-    private HttpClient httpClient;
+    private CloseableHttpClient httpClient;
 
     @Bean
     public CallRingApi callRingApi() {
@@ -78,8 +78,8 @@ public class TempoApiConfiguration {
                 .logger(new Slf4jLogger());
     }
 
-    private HttpBasicAuth tempoApiAuthentication() {
-        final HttpBasicAuth authorization = new HttpBasicAuth();
+    private TempoApiHttpBasicAuth tempoApiAuthentication() {
+        final TempoApiHttpBasicAuth authorization = new TempoApiHttpBasicAuth();
         authorization.setCredentials(username, password);
         return authorization;
     }
@@ -89,6 +89,7 @@ public class TempoApiConfiguration {
         objectMapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
         objectMapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
@@ -100,8 +101,8 @@ public class TempoApiConfiguration {
         final RetryPolicy retryPolicy = createRetryPolicy();
 
         final ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
-        backOffPolicy.setInitialInterval(2000);
-        backOffPolicy.setMultiplier(3);
+        backOffPolicy.setInitialInterval(5000);
+        backOffPolicy.setMultiplier(2);
 
         final RetryTemplate retryTemplate = new RetryTemplate();
         retryTemplate.setRetryPolicy(retryPolicy);

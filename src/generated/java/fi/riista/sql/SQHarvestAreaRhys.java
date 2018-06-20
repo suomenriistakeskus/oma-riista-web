@@ -33,9 +33,9 @@ public class SQHarvestAreaRhys extends RelationalPathSpatial<SQHarvestAreaRhys> 
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestAreaRhys> harvestAreaRhysPkey = createPrimaryKey(harvestAreaId, organisationId);
 
-    public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestAreaRhysOrganisationFk = createForeignKey(organisationId, "organisation_id");
-
     public final com.querydsl.sql.ForeignKey<SQHarvestArea> harvestAreaRhysHarvestAreaFk = createForeignKey(harvestAreaId, "harvest_area_id");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestAreaRhysOrganisationFk = createForeignKey(organisationId, "organisation_id");
 
     public SQHarvestAreaRhys(String variable) {
         super(SQHarvestAreaRhys.class, forVariable(variable), "public", "harvest_area_rhys");
@@ -44,6 +44,11 @@ public class SQHarvestAreaRhys extends RelationalPathSpatial<SQHarvestAreaRhys> 
 
     public SQHarvestAreaRhys(String variable, String schema, String table) {
         super(SQHarvestAreaRhys.class, forVariable(variable), schema, table);
+        addMetadata();
+    }
+
+    public SQHarvestAreaRhys(String variable, String schema) {
+        super(SQHarvestAreaRhys.class, forVariable(variable), schema, "harvest_area_rhys");
         addMetadata();
     }
 

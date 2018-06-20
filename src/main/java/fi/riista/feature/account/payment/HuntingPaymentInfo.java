@@ -1,27 +1,29 @@
 package fi.riista.feature.account.payment;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import fi.riista.validation.FinnishCreditorReferenceValidator;
-import org.apache.commons.lang.StringUtils;
+import com.google.common.collect.ImmutableList;
+import fi.riista.feature.common.entity.CreditorReference;
+import fi.riista.util.InvoiceUtil;
 import org.iban4j.Bic;
-import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 
 public final class HuntingPaymentInfo {
-    private static final DateTimeFormatter BAR_CODE_DUE_DATE_PATTERN = DateTimeFormat.forPattern("yyMMdd");
+
+    private static final List<AccountDetails> ACCOUNT_DETAILS = ImmutableList.of(
+            new AccountDetails(Bic.valueOf("OKOYFIHH"), Iban.valueOf("FI7850000120378442"), "OP-Pohjola"),
+            new AccountDetails(Bic.valueOf("NDEAFIHH"), Iban.valueOf("FI1216603000107212"), "Nordea"),
+            new AccountDetails(Bic.valueOf("DABAFIHH"), Iban.valueOf("FI8480001300035350"), "Danske"));
+
     private static final String PAYMENT_RECEIVER = "RIISTANHOITOMAKSUJEN KERÄILYTILI\nSAMLINGSKONTO FÖR JAKTVÅRDSAVGIFTER";
+
     private static final String ADDITIONAL_INFO = "Käytä allaolevaa viitenumeroa, sillä ilman viitettä maksettu\n" +
             "maksu ei kohdistu oikein\n" +
             "HUOM! Maksettaessa ulkomailta on myös vastaanottajan kulut maksettava\n" +
@@ -30,6 +32,17 @@ public final class HuntingPaymentInfo {
             "är det omöjligt att kontera betalningen rätt.\n" +
             "OBS! När du betalar utomlands, måste du betala\n" +
             "också mottagarbankens omkostnader.";
+
+    public static boolean isPaymentInfoAvailable(final int huntingYear) {
+        return huntingYear >= 2015 && huntingYear <= 2017;
+    }
+
+    @Nonnull
+    public static Optional<HuntingPaymentInfo> create(final int huntingYear, final String invoiceReference) {
+        return isPaymentInfoAvailable(huntingYear)
+                ? Optional.of(new HuntingPaymentInfo(33, 0, invoiceReference, ACCOUNT_DETAILS))
+                : Optional.empty();
+    }
 
     public static class AccountDetails {
         private final Bic bic;
@@ -55,28 +68,16 @@ public final class HuntingPaymentInfo {
         }
     }
 
-    public static HuntingPaymentInfo create(final int huntingYear, final String invoiceReference) {
-        switch (huntingYear) {
-            case 2015:
-            case 2016:
-                return new HuntingPaymentInfo(33, 0, invoiceReference, Arrays.asList(
-                        new AccountDetails(Bic.valueOf("OKOYFIHH"), Iban.valueOf("FI7850000120378442"), "OP-Pohjola"),
-                        new AccountDetails(Bic.valueOf("NDEAFIHH"), Iban.valueOf("FI1216603000107212"), "Nordea"),
-                        new AccountDetails(Bic.valueOf("DABAFIHH"), Iban.valueOf("FI8480001300035350"), "Danske")));
-            default:
-                return null;
-        }
-    }
-
     private final List<AccountDetails> accounts;
     private final int euros;
     private final int cents;
-    private final String invoiceReference;
+    private final CreditorReference invoiceReference;
 
     HuntingPaymentInfo(final int euros, final int cents,
                        final String invoiceReference,
                        final List<AccountDetails> accounts) {
-        this.invoiceReference = Objects.requireNonNull(invoiceReference, "invoiceReference is null");
+        this.invoiceReference =
+                CreditorReference.fromNullable(Objects.requireNonNull(invoiceReference, "invoiceReference is null"));
         this.euros = euros;
         this.cents = cents;
         this.accounts = Objects.requireNonNull(accounts, "accounts is null");
@@ -85,7 +86,7 @@ public final class HuntingPaymentInfo {
         Preconditions.checkArgument(accounts.size() > 0);
         Preconditions.checkArgument(cents >= 0 && cents < 100);
         Preconditions.checkArgument(euros >= 0 && euros < 100);
-        Preconditions.checkArgument(FinnishCreditorReferenceValidator.validate(invoiceReference, true));
+        Preconditions.checkArgument(this.invoiceReference.isValid());
     }
 
     @Nonnull
@@ -119,41 +120,16 @@ public final class HuntingPaymentInfo {
 
     @Nonnull
     public String getInvoiceReferenceForHuman() {
-        // Viitenumero tulostetaan sille varattuun kenttään
-        // oikealta vasemmalle viiden numeron ryhmiin,
-        // joiden välissä on tyhjä merkkipaikka.
-        final String reversed = StringUtils.reverse(this.invoiceReference.trim());
-        final Iterable<String> parts = Splitter.fixedLength(5).split(reversed);
-
-        // Etunollia ei tulosteta.
-        return StringUtils.stripStart(StringUtils.reverse(Joiner.on(' ').join(parts)), "0");
+        return invoiceReference.toString();
     }
 
     @Nonnull
-    public String getInvoiceReferenceForBarCode() {
-        return StringUtils.leftPad(invoiceReference.replaceAll("[^0-9]", ""), 20, '0');
-    }
-
-    @Nonnull
-    public String getIbanForBarCode() {
-        final AccountDetails account = accounts.get(0);
-
-        Preconditions.checkArgument(account.getIban().getCountryCode() == CountryCode.FI, "can only generate for FI");
-
-        // Skip country-code
-        return account.getIban().toString().substring(2);
+    public Iban getIbanForBarCode() {
+        return accounts.get(0).getIban();
     }
 
     @Nonnull
     public String createBarCodeMessage(final LocalDate dueDate) {
-        // Create message for version 4
-        return "4" +
-                getIbanForBarCode() +
-                String.format("%06d", euros) +
-                String.format("%02d", cents) +
-                // Reserved fixed value
-                "000" +
-                getInvoiceReferenceForBarCode() +
-                (dueDate != null ? BAR_CODE_DUE_DATE_PATTERN.print(dueDate) : "000000");
+        return InvoiceUtil.createBarCodeMessage(euros, cents, invoiceReference, accounts.get(0).getIban(), dueDate);
     }
 }

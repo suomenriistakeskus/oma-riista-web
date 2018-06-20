@@ -1,0 +1,26 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="{{::($ctrl.localisationPrefix + '.title')}}"></h3>
+    </div>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="{{::($ctrl.localisationPrefix + '.all')}}"></td>
+                        <td num-pieces="::$ctrl.events.all"></td>
+                    </tr>
+                    <tr ng-repeat="species in ::$ctrl.speciesList">
+                        <td class="col-xs-9">
+                            <span>{{species.name | rI18nNameFilter | capitalize}}</span>
+                            &nbsp;
+                            <span class="fa fa-bar-chart"></span>
+                        </td>
+                        <td num-pieces="::species.amount"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

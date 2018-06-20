@@ -51,7 +51,7 @@ gulp.task('tdd', ['watch'], function (done) {
         autoWatch: true
     }, function (exitStatus) {
         done();
-    });
+    }).start();
 });
 
 gulp.task('webdriver_update', plugins.protractor.webdriver_update);
@@ -142,6 +142,13 @@ gulp.task('appAssets', function (cb) {
 gulp.task('appShim', function (cb) {
     pump([
         gulp.src(config.appFiles.shim),
+        minifier({
+            mangle: false,
+            compress: false,
+            output: {
+                comments: false
+            }
+        }, uglifyjs),
         gulp.dest(config.target.lib)
     ], cb);
 });
@@ -154,29 +161,31 @@ gulp.task('vendorFonts', function (cb) {
     ], cb);
 });
 
-function createVendorCodePipeline(sourceFiles, targetFile) {
-    return function () {
-        var notMinified = function (file) {
-            return !/\.min\.js/.test(file.path);
-        };
+var notMinified = function (file) {
+    return !/\.min\.js/.test(file.path);
+};
 
-        return gulp.src(sourceFiles)
-            .pipe(plugins.if(!isProduction, plugins.sourcemaps.init({loadMaps: true})))
-            .pipe(plugins.cached(targetFile))
+function createVendorCodePipeline(sourceFiles, targetFile) {
+    return function (cb) {
+        pump([
+            gulp.src(sourceFiles),
+            plugins.if(!isProduction, plugins.sourcemaps.init({loadMaps: true})),
+            plugins.cached(targetFile),
             // Skip compression on minified files
-            .pipe(plugins.if(notMinified, minifier({
+            plugins.if(notMinified, minifier({
                 preserveComments: 'license',
                 compress: {
                     screw_ie8: true
                 },
                 mangle: false
-            }, uglifyjs)))
-            .pipe(plugins.remember(targetFile))
-            .pipe(plugins.concat(targetFile))
-            .pipe(plugins.if(!isProduction, plugins.sourcemaps.write('.')))
-            .pipe(gulp.dest(config.target.js))
-            .pipe(plugins.size({showFiles: true}))
-            .pipe(plugins.livereload({auto: false}));
+            }, uglifyjs)),
+            plugins.remember(targetFile),
+            plugins.concat(targetFile),
+            plugins.if(!isProduction, plugins.sourcemaps.write('.')),
+            gulp.dest(config.target.js),
+            plugins.size({showFiles: true}),
+            plugins.livereload({auto: false})
+        ], cb);
     };
 }
 

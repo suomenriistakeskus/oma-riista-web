@@ -1,83 +1,59 @@
 package fi.riista.feature.harvestpermit.report.excel;
 
 import fi.riista.config.Constants;
-import fi.riista.feature.common.EnumLocaliser;
-import fi.riista.feature.gamediary.harvest.HuntingAreaType;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
-import fi.riista.util.F;
+import fi.riista.util.Localiser;
 import fi.riista.util.MediaTypeExtras;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.view.document.AbstractXlsView;
+import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-public class HarvestReportListExcelView extends AbstractXlsView {
-
+public class HarvestReportListExcelView extends AbstractXlsxView {
     private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
 
-    private static final String[] HEADER_LOCALIZATION_KEYS = new String[] {
-            "harvestReportId",
-            "state",
-            "date",
-            "clockTime",
+    public static HarvestReportListExcelView create(final Localiser localiser,
+                                                    final List<HarvestReportExcelDTO> data) {
+        final String[] rowHeaders = localiser.translate(HEADER_LOCALIZATION_KEYS);
+        final String filename = String.format("%s-%s.xlsx",
+                StringUtils.uncapitalize(localiser.getTranslation("harvestReports")),
+                DATETIME_PATTERN.print(DateUtil.now()));
 
-            "species",
-            "gender",
-            "age",
-            "weight",
+        return new HarvestReportListExcelView(data, rowHeaders, filename);
+    }
 
-            "permitNumber",
-            "permitType",
-            "harvestQuotaArea",
-            "rka",
-            "rhyAbbrv",
+    private static final String[] HEADER_LOCALIZATION_KEYS = new String[]{
+            "state", "reportingTime", "date", "clockTime",
+            "species", "gender", "age", "weight",
+            "rka", "rhyAbbrv",
+            "permitNumber", "permitType",
+            "harvestSeasonName", "harvestQuotaArea",
+            "feedingPlace", "taigaBeanGoose", "reportedWithPhoneCall", "huntingMethod", "huntingAreaType", "nameOfHuntingClubOrParty", "huntingAreaSize",
+            "geolocationSource", "geolocationAccuracy", "latitude", "longitude", "propertyIdentifier", "municipality",
 
-            "geolocationSource",
-            "geolocationAccuracy",
-            "latitude",
-            "longitude",
-
-            "harvestArea",
-            "nameOfHuntingClubOrParty",
-            "surfaceAreaOfRegion",
-            "realEstateNumber",
-
-            "lastNameOfAuthor",
-            "firstNameOfAuthor",
-            "addressOfAuthor",
-            "postalCodeOfAuthor",
-            "postOfficeOfAuthor",
-            "phoneNumberOfAuthor",
-            "emailOfAuthor",
-
-            "lastNameOfHunter",
-            "firstNameOfHunter",
-            "addressOfHunter",
-            "postalCodeOfHunter",
-            "postOfficeOfHunter",
-            "phoneNumberOfHunter",
-            "emailOfHunter",
-            "huntingCardOfHunter",
-
-            "reportingTime"
+            "lastNameOfAuthor", "firstNameOfAuthor", "addressOfAuthor", "postalCodeOfAuthor", "postOfficeOfAuthor", "phoneNumberOfAuthor", "emailOfAuthor",
+            "lastNameOfHunter", "firstNameOfHunter", "addressOfHunter", "postalCodeOfHunter", "postOfficeOfHunter", "phoneNumberOfHunter", "emailOfHunter", "huntingCardOfHunter"
     };
 
-    private final List<HarvestReportExportExcelDTO> data;
-    private final EnumLocaliser localiser;
+    private final List<HarvestReportExcelDTO> data;
+    private final String[] rowHeaders;
+    private final String filename;
 
-    public HarvestReportListExcelView(
-            final List<HarvestReportExportExcelDTO> data, final EnumLocaliser enumLocaliser) {
-
-        this.data = data;
-        this.localiser = enumLocaliser;
+    private HarvestReportListExcelView(final List<HarvestReportExcelDTO> data,
+                                       final String[] rowHeaders,
+                                       final String filename) {
+        this.data = Objects.requireNonNull(data);
+        this.rowHeaders = Objects.requireNonNull(rowHeaders);
+        this.filename = Objects.requireNonNull(filename);
     }
 
     @Override
@@ -85,49 +61,69 @@ public class HarvestReportListExcelView extends AbstractXlsView {
                                       final Workbook workbook,
                                       final HttpServletRequest request,
                                       final HttpServletResponse response) {
-        response.setHeader(ContentDispositionUtil.HEADER_NAME,
-                ContentDispositionUtil.encodeAttachmentFilename(createFilename()));
         setContentType(MediaTypeExtras.APPLICATION_EXCEL_VALUE);
         response.setCharacterEncoding(Constants.DEFAULT_ENCODING);
+        ContentDispositionUtil.addHeader(response, filename);
 
-        final ExcelHelper excelHelper = new ExcelHelper(workbook).appendHeaderRow(getRowHeaders());
+        final ExcelHelper excelHelper = new ExcelHelper(workbook).appendHeaderRow(rowHeaders);
 
-        for (final HarvestReportExportExcelDTO dto : data) {
+        for (final HarvestReportExcelDTO dto : data) {
             excelHelper
                     .appendRow()
-                    .appendNumberCell(dto.getSubmissionId())
-                    .appendTextCell(dto.getState())
-                    .appendDateCell(DateUtil.toDateNullSafe(dto.getDateOfCatch()))
-                    .appendTimeCell(DateUtil.toDateTodayNullSafe(dto.getTimeOfCatch()))
+                    .appendTextCell(dto.getHarvestReportState())
+                    .appendDateTimeCell(dto.getHarvestReportDate())
+                    .appendDateCell(dto.getPointOfTime())
+                    .appendTimeCell(dto.getPointOfTime())
 
-                    .appendTextCell(dto.getAnimalSpecies())
+                    // specimen fields
+
+                    .appendTextCell(dto.getSpeciesName())
                     .appendTextCell(dto.getGenderName())
                     .appendTextCell(dto.getAgeName())
                     .appendTextCell(dto.getWeight())
 
-                    .appendTextCell(dto.getHuntingLicenseNumber())
-                    .appendTextCell(dto.getHuntingLicenseType())
-                    .appendTextCell(dto.getQuotaAreaName())
-                    .appendTextCell(dto.getRkkAreaName())
+                    // rhy + rka
+
+                    .appendTextCell(dto.getRkaName())
                     .appendTextCell(dto.getRhyName())
 
-                    .appendTextCell(localiser.getTranslation(dto.getCoordinatesCollectionMethod()))
-                    .appendNumberCell(dto.getCoordinatesAccuracy())
-                    .appendNumberCell(dto.getCoordinatesLatitude())
-                    .appendNumberCell(dto.getCoordinatesLongitude())
+                    // permit fields
 
-                    .appendTextCell(dto.getHuntingArea() == HuntingAreaType.HUNTING_SOCIETY ? "S" : "T")
-                    .appendTextCell(dto.getHuntingGroup())
-                    .appendNumberCell(dto.getArea())
+                    .appendTextCell(dto.getPermitNumber())
+                    .appendTextCell(dto.getPermitType())
+
+                    // season fields
+
+                    .appendTextCell(dto.getSeasonName())
+                    .appendTextCell(dto.getQuotaAreaName())
+                    .appendTextCell(dto.getFeedingPlace())
+                    .appendTextCell(dto.getTaigaBeanGoose())
+                    .appendTextCell(dto.getReportedWithPhoneCall())
+                    .appendTextCell(dto.getHuntingMethodName())
+                    .appendTextCell(dto.getHuntingAreaType())
+                    .appendTextCell(dto.getHuntingGroupName())
+                    .appendNumberCell(dto.getHuntingAreaSize())
+
+                    // location + gis
+
+                    .appendTextCell(dto.getLocationSourceName())
+                    .appendNumberCell(dto.getLocationAccuracy())
+                    .appendNumberCell(dto.getLocationLatitude())
+                    .appendNumberCell(dto.getLocationLongitude())
                     .appendTextCell(dto.getPropertyIdentifier())
+                    .appendTextCell(dto.getMunicipalityCode())
 
-                    .appendTextCell(dto.getSubmitterLastName())
-                    .appendTextCell(dto.getSubmitterFirstName())
-                    .appendTextCell(dto.getSubmitterAddress())
-                    .appendTextCell(dto.getSubmitterPostalCode())
-                    .appendTextCell(dto.getSubmitterPostalResidence())
-                    .appendTextCell(dto.getSubmitterPhone())
-                    .appendTextCell(dto.getSubmitterEmail())
+                    // author
+
+                    .appendTextCell(dto.getHarvestReportAuthorLastName())
+                    .appendTextCell(dto.getHarvestReportAuthorFirstName())
+                    .appendTextCell(dto.getHarvestReportAuthorAddress())
+                    .appendTextCell(dto.getHarvestReportAuthorPostalCode())
+                    .appendTextCell(dto.getHarvestReportAuthorPostalResidence())
+                    .appendTextCell(dto.getHarvestReportAuthorPhone())
+                    .appendTextCell(dto.getHarvestReportAuthorEmail())
+
+                    // actor
 
                     .appendTextCell(dto.getHunterLastName())
                     .appendTextCell(dto.getHunterFirstName())
@@ -136,22 +132,7 @@ public class HarvestReportListExcelView extends AbstractXlsView {
                     .appendTextCell(dto.getHunterPostalResidence())
                     .appendTextCell(dto.getHunterPhone())
                     .appendTextCell(dto.getHunterEmail())
-                    .appendTextCell(dto.getHunterHuntingCard())
-
-                    .appendDateTimeCell(dto.getReportingTime());
+                    .appendTextCell(dto.getHunterHuntingCard());
         }
     }
-
-    private String[] getRowHeaders() {
-        final List<String> headers = F.mapNonNullsToList(HEADER_LOCALIZATION_KEYS, localiser.asFunction());
-        return headers.toArray(new String[headers.size()]);
-    }
-
-    private String createFilename() {
-        return String.format(
-                "%s-%s.xls",
-                StringUtils.uncapitalize(localiser.getTranslation("harvestReports")),
-                DATETIME_PATTERN.print(DateUtil.now()));
-    }
-
 }

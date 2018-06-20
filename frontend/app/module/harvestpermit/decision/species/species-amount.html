@@ -1,0 +1,239 @@
+<form name="speciesAmountForm"
+      role="form" class="form"
+      novalidate autocomplete="off"
+      r-force-show-errors-check-validity>
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" ng-bind="$ctrl.modalTitle"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-xs-6">
+                <fieldset>
+                    <legend>Lupien lukumäärä</legend>
+
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label for="applicationAmount">Haettu määrä</label>
+
+                                <input type="number" name="applicationAmount" id="applicationAmount"
+                                       class="form-control no-spinner"
+                                       readonly
+                                       ng-model="$ctrl.applicationAmount">
+                            </div>
+                        </div>
+
+                        <div class="col-xs-6">
+                            <div class="form-group" show-errors>
+                                <label for="amount">Myönnettävä määrä</label>
+
+                                <div class="input-group">
+                                    <input name="amount" id="amount" type="number"
+                                           class="form-control no-spinner"
+                                           required
+                                           ng-model="$ctrl.amount"
+                                           min="0"
+                                           ng-max="$ctrl.maxAmount"
+                                           step="0.5">
+                                </div>
+
+                                <p class="help-block has-error"
+                                   ng-show="speciesAmountForm.amount.$invalid"
+                                   ng-messages="speciesAmountForm.amount.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="col-xs-6">
+                <fieldset ng-if="$ctrl.isRestrictionEnabled()">
+                    <legend>Rajoitukset</legend>
+
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group" show-errors>
+                                <label for="restrictionType">Rajoituksen tyyppi</label>
+
+                                <select name="restrictionType" id="restrictionType" class="form-control"
+                                        ng-model="$ctrl.restrictionType">
+                                    <option value="">Ei rajoitusta</option>
+                                    <option value="AE">Aikuisia enintään</option>
+                                    <option value="AU">Aikuisia uroksia</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-6">
+                            <div class="form-group" show-errors>
+                                <label for="restrictionAmount">Rajoituslukumäärä</label>
+
+                                <input type="number" name="restrictionAmount" id="restrictionAmount"
+                                       class="form-control no-spinner"
+                                       min="1"
+                                       ng-max="$ctrl.amount"
+                                       ng-disabled="!$ctrl.restrictionType"
+                                       ng-required="$ctrl.restrictionType"
+                                       ng-model="$ctrl.restrictionAmount">
+
+                                <p class="help-block has-error"
+                                   ng-show="speciesAmountForm.restrictionAmount.$invalid"
+                                   ng-messages="speciesAmountForm.restrictionAmount.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <fieldset>
+                    <legend>Ensimmäinen aikaväli</legend>
+
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group" show-errors>
+                                <label for="beginDate">Alku</label>
+
+                                <div class="input-group" ng-controller="DatePickerController">
+                                    <input id="beginDate" type="text" name="beginDate"
+                                           class="form-control"
+                                           uib-datepicker-popup is-open="isDatePickerOpen"
+                                           ng-model="$ctrl.beginDate"
+                                           ng-change="speciesAmountForm.endDate.$validate()"
+                                           max-date="$ctrl.endDate"
+                                           date-between-min-max
+                                           required/>
+                                    <div class="input-group-addon" ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </div>
+                                </div>
+
+                                <p class="help-block has-error"
+                                   ng-show="speciesAmountForm.beginDate.$invalid"
+                                   ng-messages="speciesAmountForm.beginDate.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-6">
+                            <div class="form-group" show-errors>
+                                <label for="endDate">Loppu</label>
+
+                                <div class="input-group" ng-controller="DatePickerController">
+                                    <input id="endDate" type="text" name="endDate"
+                                           class="form-control"
+                                           uib-datepicker-popup is-open="isDatePickerOpen"
+                                           ng-model="$ctrl.endDate"
+                                           ng-change="speciesAmountForm.beginDate.$validate()"
+                                           min-date="$ctrl.beginDate"
+                                           date-between-min-max
+                                           required/>
+
+                                    <div class="input-group-addon" ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </div>
+                                </div>
+
+                                <p class="help-block has-error"
+                                   ng-show="speciesAmountForm.endDate.$invalid"
+                                   ng-messages="speciesAmountForm.endDate.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-danger" ng-if="$ctrl.showDurationError()">
+                        Aikaväli ylittää 365 päivää.
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="col-xs-6">
+                <fieldset>
+                    <legend>Toinen aikaväli</legend>
+
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group" show-errors>
+                                <label for="beginDate2">Alku</label>
+
+                                <div class="input-group" ng-controller="DatePickerController">
+                                    <input id="beginDate2" type="text" name="beginDate2"
+                                           class="form-control"
+                                           uib-datepicker-popup is-open="isDatePickerOpen"
+                                           ng-model="$ctrl.beginDate2"
+                                           ng-change="speciesAmountForm.endDate2.$validate()"
+                                           max-date="$ctrl.endDate2"
+                                           date-between-min-max
+                                           ng-required="$ctrl.endDate2"/>
+
+                                    <div class="input-group-addon" ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </div>
+                                </div>
+
+                                <p class="help-block has-error"
+                                   ng-show="speciesAmountForm.beginDate2.$invalid"
+                                   ng-messages="speciesAmountForm.beginDate2.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-6">
+                            <div class="form-group" show-errors>
+                                <label for="endDate2">Loppu</label>
+
+                                <div class="input-group" ng-controller="DatePickerController">
+                                    <input id="endDate2" type="text" name="endDate2"
+                                           class="form-control"
+                                           uib-datepicker-popup is-open="isDatePickerOpen"
+                                           ng-model="$ctrl.endDate2"
+                                           ng-change="speciesAmountForm.beginDate2.$validate()"
+                                           min-date="$ctrl.beginDate2"
+                                           date-between-min-max
+                                           ng-required="$ctrl.beginDate2"/>
+
+                                    <div class="input-group-addon" ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </div>
+                                </div>
+
+                                <p class="help-block has-error"
+                                   ng-show="speciesAmountForm.endDate2.$invalid"
+                                   ng-messages="speciesAmountForm.endDate2.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-danger" ng-if="$ctrl.showOverlapError()">
+                        Aikavälit menevät päällekkäin!
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="!$ctrl.isValid(speciesAmountForm)"
+                translate="global.button.save"></button>
+    </div>
+</form>

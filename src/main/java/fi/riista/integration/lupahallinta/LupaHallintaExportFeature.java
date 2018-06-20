@@ -1,16 +1,16 @@
 package fi.riista.integration.lupahallinta;
 
-import fi.riista.feature.common.entity.HasOfficialCode;
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.common.entity.HasOfficialCode;
+import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.organization.occupation.OccupationRepository;
-import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.integration.common.model.C_Address;
 import fi.riista.integration.common.model.C_TypeCodeAndName;
 import fi.riista.integration.lupahallinta.model.LH_Export;
@@ -42,6 +42,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import static fi.riista.util.Collect.mappingTo;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -78,8 +80,8 @@ public class LupaHallintaExportFeature {
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasPrivilege('EXPORT_LUPAHALLINTA_OCCUPATIONS')")
-    public String export(final EnumSet<OccupationType> occupationTypes) {
-        return JaxbUtils.marshalToString(constructExportData(occupationTypes), jaxbMarshaller);
+    public String export() {
+        return JaxbUtils.marshalToString(constructExportData(), jaxbMarshaller);
     }
 
     private static Set<Integer> getAreaBoundOrganisationTypeCodes() {
@@ -144,7 +146,7 @@ public class LupaHallintaExportFeature {
 
         final Map<Long, Organisation> orgsById = F.indexById(organisations);
 
-        final Map<Organisation, LH_Organisation> resultMappings = F.toMapAsKeySet(organisations, entity -> {
+        final Map<Organisation, LH_Organisation> resultMappings = organisations.stream().collect(mappingTo(entity -> {
             final LH_Organisation ret = new LH_Organisation();
             ret.setXmlId(toXmlId(entity));
             ret.setId(entity.getId());
@@ -169,7 +171,7 @@ public class LupaHallintaExportFeature {
             }
 
             return ret;
-        });
+        }));
 
         // Set area references on second pass.
 
@@ -190,12 +192,13 @@ public class LupaHallintaExportFeature {
     }
 
     @Transactional(readOnly = true)
-    public LH_Export constructExportData(final EnumSet<OccupationType> occupationTypes) {
+    public LH_Export constructExportData() {
         final LH_Export exportData = new LH_Export();
 
         exportData.setVersio(version);
         exportData.setAikaleima(DateTime.now());
 
+        final EnumSet<OccupationType> occupationTypes = LHPositionTypeMapping.getExportableValues();
         final EnumSet<OrganisationType> organisationTypes = EnumSet.noneOf(OrganisationType.class);
         occupationTypes.forEach(occupationType -> {
             organisationTypes.addAll(occupationType.getApplicableOrganisationTypes());
@@ -210,7 +213,8 @@ public class LupaHallintaExportFeature {
         final List<Occupation> occupations =
                 occupationRepo.listNotDeletedFilteredByTypesWhileFetchingRelatedPersons(occupationTypes);
 
-        final Map<Person, List<Occupation>> personOccupations = F.nullSafeGroupBy(occupations, Occupation::getPerson);
+        final Map<Person, List<Occupation>> personOccupations =
+                occupations.stream().collect(groupingBy(Occupation::getPerson));
         final List<Person> occupiedPersons = new ArrayList<>(personOccupations.keySet());
 
         exportData.setHenkilot(new LH_Export.LH_Persons());
@@ -236,7 +240,7 @@ public class LupaHallintaExportFeature {
 
                 final LH_Position ret1 = new LH_Position();
                 ret1.setId(occ.getId());
-                ret1.setTyyppi(occ.getOccupationType().getExportType());
+                ret1.setTyyppi(LHPositionTypeMapping.transform(occ.getOccupationType()));
                 ret1.setAlkuPvm(occ.getBeginDate());
                 ret1.setLoppuPvm(occ.getEndDate());
                 ret1.setSuoritusvuosi(occ.getQualificationYear());
@@ -248,12 +252,10 @@ public class LupaHallintaExportFeature {
                 }
 
                 return ret1;
-            })
-            .collect(toList()));
+            }).collect(toList()));
 
             return ret;
-        })
-        .collect(toList()));
+        }).collect(toList()));
 
         copyMissingRhyAddressesFromCoordinators(
                 exportData.getOrganisaatiot().getOrganisaatio(), exportData.getHenkilot().getHenkilo());

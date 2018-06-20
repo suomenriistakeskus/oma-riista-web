@@ -1,30 +1,20 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardValidationException.parsingXmlFileOfMooseDataCardFailed;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.concat;
-import static javaslang.API.$;
-import static javaslang.API.Case;
-import static javaslang.API.Match;
-import static javaslang.Predicates.instanceOf;
-
+import com.google.common.collect.Streams;
 import fi.riista.config.Constants;
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.gamediary.GameDiaryService;
-import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
+import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
-import fi.riista.feature.harvestpermit.HarvestPermitRepository;
-import fi.riista.feature.huntingclub.register.RegisterHuntingClubService;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.moosedatacard.converter.MooseDataCardHuntingDayConverter;
 import fi.riista.feature.huntingclub.moosedatacard.converter.MooseDataCardLargeCarnivoreObservationConverter;
 import fi.riista.feature.huntingclub.moosedatacard.converter.MooseDataCardMooseCalfConverter;
@@ -33,19 +23,20 @@ import fi.riista.feature.huntingclub.moosedatacard.converter.MooseDataCardMooseM
 import fi.riista.feature.huntingclub.moosedatacard.converter.MooseDataCardMooseObservationConverter;
 import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportException;
 import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardValidationException;
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardContainer;
-import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage1;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardFilenameValidator;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardPage1Validator;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardValidationResult;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardValidator;
+import fi.riista.feature.huntingclub.register.RegisterHuntingClubService;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardContainer;
+import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage1;
 import fi.riista.util.F;
-
-import javaslang.Tuple2;
-import javaslang.control.Try;
-import javaslang.control.Validation;
-
+import io.vavr.Tuple2;
+import io.vavr.control.Try;
+import io.vavr.control.Validation;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -60,7 +51,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import javax.xml.transform.stream.StreamSource;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
@@ -70,13 +60,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardValidationException.parsingXmlFileOfMooseDataCardFailed;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
 @Component
 public class MooseDataCardImportService {
 
     private static final Logger LOG = LoggerFactory.getLogger(MooseDataCardImportService.class);
 
     @Resource
-    private HarvestPermitRepository permitRepo;
+    private HarvestPermitSpeciesAmountRepository speciesAmountRepo;
 
     @Resource
     private PersonRepository personRepo;
@@ -85,7 +79,7 @@ public class MooseDataCardImportService {
     private MooseDataCardImportRepository importRepo;
 
     @Resource
-    private GameDiaryService diaryService;
+    private GameSpeciesService gameSpeciesService;
 
     @Resource
     private RegisterHuntingClubService registerHuntingClubService;
@@ -132,11 +126,11 @@ public class MooseDataCardImportService {
 
                         return new MooseDataCardValidator(speciesAmount, page1Validation.clubCoordinates)
                                 .validate(mooseDataCard)
-                                .map(tuple -> tuple.transform((validatedCard, validationMessages) -> {
+                                .map(tuple -> tuple.apply((validatedCard, validationMessages) -> {
 
                                     return new MooseDataCardValidationResult(
                                             validatedCard, resolvedEntities.getClubOfficialCode(),
-                                            page1Validation.clubCoordinates, speciesAmount.getHarvestPermit(),
+                                            page1Validation.clubCoordinates, speciesAmount,
                                             resolvedEntities.huntingYear, resolvedEntities.contactPersonId,
                                             filenameValidation.timestamp, validationMessages);
                                 }));
@@ -166,7 +160,7 @@ public class MooseDataCardImportService {
     }
 
     private static <T> Try<T> tryFrom(final Validation<List<String>, T> validation) {
-        return validation.leftMap(MooseDataCardValidationException::of).<Try<T>> fold(Try::failure, Try::success);
+        return validation.mapError(MooseDataCardValidationException::of).<Try<T>> fold(Try::failure, Try::success);
     }
 
     private Try<MooseDataCard> parseMooseDataCard(final MultipartFile xmlFile) {
@@ -195,11 +189,9 @@ public class MooseDataCardImportService {
 
     @Nonnull
     @Transactional(rollbackFor = MooseDataCardImportException.class)
-    public List<String> importMooseDataCard(
-            @Nonnull final MooseDataCardValidationResult input,
-            @Nonnull final MultipartFile xmlFile,
-            @Nonnull final MultipartFile pdfFile)
-            throws MooseDataCardImportException {
+    public List<String> importMooseDataCard(@Nonnull final MooseDataCardValidationResult input,
+                                            @Nonnull final MultipartFile xmlFile,
+                                            @Nonnull final MultipartFile pdfFile) throws MooseDataCardImportException {
 
         Objects.requireNonNull(input, "input is null");
         Objects.requireNonNull(xmlFile, "xmlFile is null");
@@ -208,51 +200,49 @@ public class MooseDataCardImportService {
         return Try.success(input.mooseDataCard).flatMapTry(mooseDataCard -> {
 
             final HuntingClub club = registerHuntingClubService.findExistingOrCreate(input.clubCode);
-            final HarvestPermit permit = permitRepo.findOne(input.harvestPermitId);
             final Person contactPerson = personRepo.findOne(input.contactPersonId);
-            final GameSpecies mooseSpecies = diaryService.getGameSpeciesByOfficialCode(GameSpecies.OFFICIAL_CODE_MOOSE);
 
-            final LocalDate periodBeginDate = mooseDataCard.getPage1().getReportingPeriodBeginDate();
-            final LocalDate periodEndDate = mooseDataCard.getPage1().getReportingPeriodEndDate();
+            final HarvestPermitSpeciesAmount speciesAmount =
+                    speciesAmountRepo.getOne(input.harvestPermitSpeciesAmountId);
+            final LocalDate seasonBeginDate = speciesAmount.getFirstDate();
 
-            return helper.assignClubMembershipToPerson(contactPerson, club, periodBeginDate).flatMapTry(membership -> {
+            return helper.assignClubMembershipToPerson(contactPerson, club, seasonBeginDate).flatMapTry(membership -> {
+
+                final GameSpecies mooseSpecies = speciesAmount.getGameSpecies();
+                final HarvestPermit permit = speciesAmount.getHarvestPermit();
 
                 final Try<HuntingClubGroup> groupResult = helper.findOrCreateGroupForMooseDataCardImport(
-                        club, permit, mooseSpecies, input.huntingYear, contactPerson, periodBeginDate, periodEndDate);
+                        club, permit, mooseSpecies, input.huntingYear, contactPerson);
 
                 return groupResult.flatMapTry(group -> {
 
-                    final GeoLocation clubCoordinates = input.clubCoordinates;
+                    final int huntingYear = input.huntingYear;
+                    final GeoLocation defaultLoc = input.clubCoordinates;
 
                     final Try<Tuple2<List<GroupHuntingDay>, List<String>>> huntingDaysResult =
                             helper.persistHuntingDayData(
                                     group,
-                                    createTransientHuntingDays(mooseDataCard),
-                                    createTransientHarvests(
-                                            mooseDataCard, mooseSpecies, contactPerson, clubCoordinates),
+                                    createTransientHuntingDays(mooseDataCard, speciesAmount),
+                                    createTransientHarvests(mooseDataCard, speciesAmount, contactPerson, defaultLoc),
                                     createTransientObservations(
-                                            mooseDataCard, mooseSpecies, contactPerson, clubCoordinates));
+                                            mooseDataCard, mooseSpecies, contactPerson, huntingYear, defaultLoc));
 
-                    return huntingDaysResult.flatMapTry(tuple -> {
+                    return huntingDaysResult.flatMapTry(t2 -> t2.apply((newHuntingDays, huntingDayMsgs) -> {
 
-                        final List<GroupHuntingDay> newHuntingDays = tuple._1;
-                        final List<String> messages = F.concat(input.messages, tuple._2);
+                        final List<String> messages = F.concat(input.messages, huntingDayMsgs);
 
                         return huntingSummaryTransferer
-                                .upsertHuntingSummaryData(mooseDataCard, club, permit).flatMapTry(summary -> {
-
-                                    return helper.saveImportData(
-                                            xmlFile, pdfFile, group, newHuntingDays, input.timestamp,
-                                            periodBeginDate, periodEndDate, messages);
-
-                                }).map(importResult -> {
+                                .upsertHuntingSummaryData(mooseDataCard, club, permit)
+                                .flatMapTry(summary -> helper.saveImportData(
+                                        xmlFile, pdfFile, group, newHuntingDays, input.timestamp, messages))
+                                .map(importResult -> {
 
                                     LOG.info("Successfully imported data from moose data card file '{}'.",
                                             xmlFile.getOriginalFilename());
 
                                     return messages;
                                 });
-                    });
+                    }));
                 });
             });
 
@@ -287,49 +277,64 @@ public class MooseDataCardImportService {
         Objects.requireNonNull(expectedExceptionConsumer, "expectedExceptionConsumer must not be null");
         Objects.requireNonNull(unexpectedExceptionTranslator, "unexpectedExceptionTranslator must not be null");
 
-        return throwable -> Match(Objects.requireNonNull(throwable)).of(
-                Case(instanceOf(expectedExceptionClass), t -> {
-                    expectedExceptionConsumer.accept(t);
-                    return t;
-                }),
-                Case($(), unexpectedExceptionTranslator));
+        return throwable -> {
+            Objects.requireNonNull(throwable);
+
+            if (expectedExceptionClass.isAssignableFrom(throwable.getClass())) {
+                final X castException = expectedExceptionClass.cast(throwable);
+                expectedExceptionConsumer.accept(castException);
+                return castException;
+            }
+
+            return unexpectedExceptionTranslator.apply(throwable);
+        };
     }
 
-    private static List<GroupHuntingDay> createTransientHuntingDays(final MooseDataCard mooseDataCard) {
-        return MooseDataCardExtractor.streamHuntingDays(mooseDataCard)
-                .map(new MooseDataCardHuntingDayConverter()::convert)
-                .collect(toList());
+    private static List<GroupHuntingDay> createTransientHuntingDays(final MooseDataCard mooseDataCard,
+                                                                    final Has2BeginEndDates permitSeason) {
+
+        final MooseDataCardHuntingDayConverter converter = new MooseDataCardHuntingDayConverter(permitSeason);
+        return MooseDataCardExtractor.streamHuntingDays(mooseDataCard).map(converter::convert).collect(toList());
     }
 
     private static List<Tuple2<Harvest, HarvestSpecimen>> createTransientHarvests(
             final MooseDataCard mooseDataCard,
-            final GameSpecies mooseSpecies,
+            final HarvestPermitSpeciesAmount speciesAmount,
             final Person contactPerson,
             final GeoLocation clubCoordinates) {
 
-        return concat(concat(
-                MooseDataCardExtractor.streamMooseMaleHarvests(mooseDataCard).map(new MooseDataCardMooseMaleConverter(
-                        mooseSpecies, contactPerson, clubCoordinates)),
-                MooseDataCardExtractor.streamMooseFemaleHarvests(mooseDataCard).map(new MooseDataCardMooseFemaleConverter(
-                        mooseSpecies, contactPerson, clubCoordinates))),
-                MooseDataCardExtractor.streamMooseCalfHarvests(mooseDataCard).map(new MooseDataCardMooseCalfConverter(
-                        mooseSpecies, contactPerson, clubCoordinates)))
-                                .collect(toList());
+        final MooseDataCardMooseMaleConverter maleConverter =
+                new MooseDataCardMooseMaleConverter(speciesAmount, contactPerson, clubCoordinates);
+
+        final MooseDataCardMooseFemaleConverter femaleConverter =
+                new MooseDataCardMooseFemaleConverter(speciesAmount, contactPerson, clubCoordinates);
+
+        final MooseDataCardMooseCalfConverter calfConverter =
+                new MooseDataCardMooseCalfConverter(speciesAmount, contactPerson, clubCoordinates);
+
+        return Streams
+                .concat(MooseDataCardExtractor.streamMooseMaleHarvests(mooseDataCard).map(maleConverter),
+                        MooseDataCardExtractor.streamMooseFemaleHarvests(mooseDataCard).map(femaleConverter),
+                        MooseDataCardExtractor.streamMooseCalfHarvests(mooseDataCard).map(calfConverter))
+                .collect(toList());
     }
 
-    private List<Observation> createTransientObservations(
-            final MooseDataCard mooseDataCard,
-            final GameSpecies mooseSpecies,
-            final Person contactPerson,
-            final GeoLocation clubCoordinates) {
+    private List<Observation> createTransientObservations(final MooseDataCard mooseDataCard,
+                                                          final GameSpecies mooseSpecies,
+                                                          final Person contactPerson,
+                                                          final int huntingYear,
+                                                          final GeoLocation clubCoordinates) {
 
-        return concat(
-                MooseDataCardExtractor.streamMooseObservations(mooseDataCard)
-                        .flatMap(new MooseDataCardMooseObservationConverter(
-                                mooseSpecies, contactPerson, clubCoordinates)),
-                MooseDataCardExtractor.streamLargeCarnivoreObservations(mooseDataCard)
-                        .flatMap(new MooseDataCardLargeCarnivoreObservationConverter(
-                                diaryService, contactPerson, clubCoordinates))).collect(toList());
+        final MooseDataCardMooseObservationConverter mooseConverter =
+                new MooseDataCardMooseObservationConverter(mooseSpecies, contactPerson, huntingYear, clubCoordinates);
+
+        final MooseDataCardLargeCarnivoreObservationConverter carnivoreConverter =
+                new MooseDataCardLargeCarnivoreObservationConverter(gameSpeciesService, contactPerson, huntingYear, clubCoordinates);
+
+        return Stream
+                .concat(MooseDataCardExtractor.streamMooseObservations(mooseDataCard).flatMap(mooseConverter),
+                        MooseDataCardExtractor.streamLargeCarnivoreObservations(mooseDataCard).flatMap(carnivoreConverter))
+                .collect(toList());
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
@@ -341,21 +346,19 @@ public class MooseDataCardImportService {
 
     // Do sanitation for messages containing SSNs and cut too long lists.
     private static Optional<String> filterAndFormatMessagesToLog(@Nullable final List<String> msgs) {
-        return Optional.ofNullable(msgs)
-                .map(list -> {
-                    final Stream<String> first10 = list.stream()
-                            // Remove last 5 characters from SSNs.
-                            .map(msg -> msg.replaceAll("([0123]\\d[01]\\d{3}[+-A])\\d{3}\\w", "$1????"))
-                            // Add asterisk at beginning of each message.
-                            .map("* "::concat)
-                            // Do not show more than 10 messages.
-                            .limit(10);
+        return Optional.ofNullable(msgs).map(list -> {
 
-                    return Stream.concat(
-                            first10,
-                            list.size() > 10 ? Stream.of("  ...") : Stream.empty())
-                            .collect(joining("\n"));
-                });
+            final Stream<String> first10 = list.stream()
+                    // Remove last 5 characters from SSNs.
+                    .map(msg -> msg.replaceAll("([0123]\\d[01]\\d{3}[+-A])\\d{3}\\w", "$1????"))
+                    // Add asterisk at beginning of each message.
+                    .map("* "::concat)
+                    // Do not show more than 10 messages.
+                    .limit(10);
+
+            return Stream
+                    .concat(first10, list.size() > 10 ? Stream.of("  ...") : Stream.empty())
+                    .collect(joining("\n"));
+        });
     }
-
 }

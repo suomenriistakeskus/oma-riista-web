@@ -1,35 +1,74 @@
-.r-main-navbar-nav-right > li.r-role-nav {
+@main-nav-role-nav-width: 300px;
+
+li.r-role-nav {
+
+  .role-logo {
+    position: absolute;
+    top: 6px;
+    left: 12px;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    color: #c5c5c5;
+    font-size: 2em;
+  }
+
   .role-title {
-    overflow: hidden;
+    margin-left: 58px;
+    font-size: 12px;
+    line-height: 20px;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 85%;
+    overflow: hidden;
   }
 
   > a {
-    width: 220px;
-    padding: 10px 15px 7px;
+    width: @main-nav-role-nav-width;
+    padding: 10px 10px 7px;
+
+    .role-logo   {
+      top: 14px;
+      left: 14px;
+      color: @brand-primary;
+    }
+
+    .role-title {
+      overflow: hidden;
+      margin-left: 50px;
+    }
 
     .caret {
       display: inline-block;
       position: absolute;
-      top: 30px;
+      top: 14px;
       right: 10px;
     }
   }
 
   ul.dropdown-menu {
-    width: 220px;
-    padding-top: 0;
+    width: @main-nav-role-nav-width;
+    padding: 0;
     border: 1px solid #ccc;
     border-radius: 0;
     z-index: 1002;
 
-    > li > a.role-title {
-      clear: both;
-      padding: 6px 15px;
-      line-height: 20px;
-      width: 100%;
+    > li {
+      position: relative;
+
+      &.active > a > .role-logo {
+        color: @brand-primary;
+      }
+
+      &:last-child > a {
+        padding: 10px 0 15px;
+      }
+
+      > a {
+        display: block;
+        clear: both;
+        padding: 8px 0;
+        width: 100%;
+      }
     }
   }
 }

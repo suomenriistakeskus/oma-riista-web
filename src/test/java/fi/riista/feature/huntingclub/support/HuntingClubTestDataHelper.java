@@ -18,7 +18,7 @@ import static fi.riista.feature.gamediary.GameAge.ADULT;
 import static fi.riista.feature.gamediary.GameAge.YOUNG;
 import static fi.riista.feature.gamediary.GameGender.FEMALE;
 import static fi.riista.feature.gamediary.GameGender.MALE;
-import static fi.riista.util.TestUtils.createList;
+import static fi.riista.test.TestUtils.createList;
 
 public abstract class HuntingClubTestDataHelper {
 

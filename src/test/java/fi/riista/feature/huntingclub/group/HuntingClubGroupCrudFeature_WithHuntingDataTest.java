@@ -1,6 +1,5 @@
 package fi.riista.feature.huntingclub.group;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
@@ -10,6 +9,7 @@ import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.junit.Test;
 
@@ -18,7 +18,9 @@ import java.util.function.Consumer;
 
 import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class HuntingClubGroupCrudFeature_WithHuntingDataTest extends EmbeddedDatabaseTest {
 
@@ -90,21 +92,17 @@ public class HuntingClubGroupCrudFeature_WithHuntingDataTest extends EmbeddedDat
 
     @Test(expected = CannotModifyLockedFieldsForGroupWithHuntingDataException.class)
     public void testUpdate_speciesChangeForbidden() {
-        final GameSpecies newSpecies = model().newGameSpecies();
+        final GameSpecies newSpecies = model().newDeerSubjectToClubHunting();
 
         withMooseGroupWithHuntingData(f -> {
-            callUpdateWithChanges(f.group, dto -> {
-                dto.setGameSpeciesCode(newSpecies.getOfficialCode());
-            });
+            callUpdateWithChanges(f.group, dto -> dto.setGameSpeciesCode(newSpecies.getOfficialCode()));
         });
     }
 
     @Test(expected = CannotModifyLockedFieldsForGroupWithHuntingDataException.class)
     public void testUpdate_huntingYearChangeForbidden() {
         withMooseGroupWithHuntingData(f -> {
-            callUpdateWithChanges(f.group, dto -> {
-                dto.setHuntingYear(f.group.getHuntingYear() + 1);
-            });
+            callUpdateWithChanges(f.group, dto -> dto.setHuntingYear(f.group.getHuntingYear() + 1));
         });
     }
 
@@ -115,54 +113,52 @@ public class HuntingClubGroupCrudFeature_WithHuntingDataTest extends EmbeddedDat
             f.group.setHuntingArea(model().newHuntingClubArea(club));
             final HuntingClubArea newArea = model().newHuntingClubArea(club);
 
-            callUpdateWithChanges(f.group, dto -> {
-                dto.setHuntingAreaId(newArea.getId());
-            });
+            callUpdateWithChanges(f.group, dto -> dto.setHuntingAreaId(newArea.getId()));
         });
     }
 
     @Test(expected = CannotModifyLockedFieldsForGroupWithHuntingDataException.class)
     public void testUpdate_permitChangeForbidden() {
-        withMooseGroupWithHuntingData(f-> {
+        withMooseGroupWithHuntingData(f -> {
             final HarvestPermit newPermit = model().newHarvestPermit(f.group.getHarvestPermit().getRhy());
             model().newHarvestPermitSpeciesAmount(newPermit, f.group.getSpecies());
 
-            callUpdateWithChanges(f.group, dto -> {
-                dto.setPermit(HuntingClubGroupDTO.PermitDTO.create(newPermit));
-            });
+            callUpdateWithChanges(f.group, dto -> dto.setPermit(HuntingClubGroupDTO.PermitDTO.create(newPermit)));
         });
     }
 
-    @Test(expected = CannotDeleteHuntingGroupWithHuntingDataException.class)
+    @Test
     public void testDelete_asModerator() {
-        withMooseGroupWithHuntingData(f -> {
-            onSavedAndAuthenticated(createNewModerator(), () -> {
+        withMooseGroupWithHuntingData(f -> onSavedAndAuthenticated(createNewModerator(), () -> {
+            try {
                 huntingClubGroupCrudFeature.delete(f.group.getId());
-                assertNull(huntingClubGroupRepository.findOne(f.group.getId()));
-            });
-        });
+                fail("Attempt to delete hunting group with hunting data should have failed even for moderator.");
+            } catch (final CannotDeleteHuntingGroupWithHuntingDataException e) {
+                assertNotNull(huntingClubGroupRepository.findOne(f.group.getId()));
+            }
+        }));
     }
 
-    @Test(expected = CannotDeleteHuntingGroupWithHuntingDataException.class)
+    @Test
     public void testDelete_asContactPerson() {
-        withMooseGroupWithHuntingData(f -> callDeleteAsContactPerson(f.group));
+        withMooseGroupWithHuntingData(f -> callDeleteAsContactPerson(f.group, true));
     }
 
     @Test
     public void testDelete_deerGroupWithOnlyEmptyHuntingDay() {
         withMooseGroupWithHuntingData(f -> {
             f.group.getSpecies().setOfficialCode(GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER);
-            callDeleteAsContactPerson(f.group);
+            callDeleteAsContactPerson(f.group, false);
         });
     }
 
-    @Test(expected = CannotDeleteHuntingGroupWithHuntingDataException.class)
+    @Test
     public void testDelete_deerGroupWithLinkedDiaryEntries() {
         withMooseGroupWithHuntingData(f -> {
             final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, DateUtil.today().minusDays(1));
             final Harvest harvest = model().newHarvest(f.group.getSpecies());
             harvest.updateHuntingDayOfGroup(huntingDay, harvest.getActor());
-            callDeleteAsContactPerson(f.group);
+            callDeleteAsContactPerson(f.group, true);
         });
     }
 
@@ -176,17 +172,34 @@ public class HuntingClubGroupCrudFeature_WithHuntingDataTest extends EmbeddedDat
             persistInNewTransaction();
 
             model().newMooseHuntingSummary(f.permit, f.club, true);
-            callDeleteAsContactPerson(group2);
+            callDeleteAsContactPerson(group2, false);
         });
     }
 
-    private void callDeleteAsContactPerson(final HuntingClubGroup group) {
+    private void callDeleteAsContactPerson(final HuntingClubGroup group, final boolean expectException) {
         withPerson(person -> {
             model().newOccupation(group.getParentOrganisation(), person, OccupationType.SEURAN_YHDYSHENKILO);
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                huntingClubGroupCrudFeature.delete(group.getId());
-                assertNull(huntingClubGroupRepository.findOne(group.getId()));
+                try {
+                    huntingClubGroupCrudFeature.delete(group.getId());
+
+                    if (expectException) {
+                        fail("Attempt to delete a hunting group with hunting data should have failed.");
+                    }
+                } catch (final CannotDeleteHuntingGroupWithHuntingDataException e) {
+                    if (!expectException) {
+                        fail("Deletion of hunting group should have succeeded.");
+                    }
+                }
+
+                final HuntingClubGroup reloadedGroup = huntingClubGroupRepository.findOne(group.getId());
+
+                if (expectException) {
+                    assertNotNull(reloadedGroup);
+                } else {
+                    assertNull(reloadedGroup);
+                }
             });
         });
     }

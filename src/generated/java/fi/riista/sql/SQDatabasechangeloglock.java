@@ -47,6 +47,11 @@ public class SQDatabasechangeloglock extends RelationalPathSpatial<SQDatabasecha
         addMetadata();
     }
 
+    public SQDatabasechangeloglock(String variable, String schema) {
+        super(SQDatabasechangeloglock.class, forVariable(variable), schema, "databasechangeloglock");
+        addMetadata();
+    }
+
     public SQDatabasechangeloglock(Path<? extends SQDatabasechangeloglock> path) {
         super(path.getType(), path.getMetadata(), "public", "databasechangeloglock");
         addMetadata();

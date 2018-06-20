@@ -22,7 +22,8 @@ import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YH
 public class HuntingClubGroupAuthorization extends AbstractEntityAuthorization<HuntingClubGroup> {
 
     public enum Permission {
-        LINK_DIARY_ENTRY_TO_HUNTING_DAY
+        LINK_DIARY_ENTRY_TO_HUNTING_DAY,
+        COPY
     }
 
     @Resource
@@ -38,6 +39,10 @@ public class HuntingClubGroupAuthorization extends AbstractEntityAuthorization<H
         allow(Permission.LINK_DIARY_ENTRY_TO_HUNTING_DAY,
                 ROLE_ADMIN, ROLE_MODERATOR,
                 SEURAN_YHDYSHENKILO, RYHMAN_METSASTYKSENJOHTAJA);
+
+        allow(Permission.COPY,
+                ROLE_ADMIN, ROLE_MODERATOR,
+                SEURAN_YHDYSHENKILO);
     }
 
     @Override

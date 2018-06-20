@@ -1,17 +1,14 @@
 package fi.riista.feature.huntingclub.moosedatacard;
 
-import static com.google.common.base.Strings.emptyToNull;
-
 import fi.riista.feature.common.entity.GeoLocation;
-
-import javaslang.control.Try;
-
+import io.vavr.control.Try;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Optional;
+
+import static com.google.common.base.Strings.emptyToNull;
 
 public interface DateAndLocation {
 

@@ -13,13 +13,11 @@ public interface CallRingApi {
   /**
    * Delete call ring
    * 
-   * @param companyId  (required)
-   * @param ringNumber the number of call ring that this operation affects (required)
-   * @return void
+    * @param companyId the id of the company that this operation affects (required)
+    * @param ringNumber the number of call ring that this operation affects (required)
    */
   @RequestLine("DELETE /call_ring.json/{companyId}/{ringNumber}")
   @Headers({
-    "Content-type: application/json",
     "Accept: application/json",
   })
   void deleteCallRing(@Param("companyId") String companyId, @Param("ringNumber") String ringNumber);
@@ -27,13 +25,12 @@ public interface CallRingApi {
   /**
    * Get call ring details
    * 
-   * @param companyId  (required)
-   * @param ringNumber the number of call ring that this operation affects (required)
+    * @param companyId the id of the company that this operation affects (required)
+    * @param ringNumber the number of call ring that this operation affects (required)
    * @return CallRing
    */
   @RequestLine("GET /call_ring.json/{companyId}/{ringNumber}")
   @Headers({
-    "Content-type: application/json",
     "Accept: application/json",
   })
   CallRing getCallRing(@Param("companyId") String companyId, @Param("ringNumber") String ringNumber);
@@ -41,13 +38,12 @@ public interface CallRingApi {
   /**
    * Add or update call ring
    * 
-   * @param companyId  (required)
-   * @param callRingDetails call ring configuration details (required)
-   * @return void
+    * @param companyId the id of the company that this operation affects (required)
+    * @param callRingDetails call ring configuration details (required)
    */
   @RequestLine("PUT /call_ring.json/{companyId}")
   @Headers({
-    "Content-type: application/json",
+    "Content-Type: application/json",
     "Accept: application/json",
   })
   void putCallRing(@Param("companyId") String companyId, BaseCallRing callRingDetails);

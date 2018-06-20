@@ -43,6 +43,11 @@ public class SQGameCategory extends RelationalPathSpatial<SQGameCategory> {
         addMetadata();
     }
 
+    public SQGameCategory(String variable, String schema) {
+        super(SQGameCategory.class, forVariable(variable), schema, "game_category");
+        addMetadata();
+    }
+
     public SQGameCategory(Path<? extends SQGameCategory> path) {
         super(path.getType(), path.getMetadata(), "public", "game_category");
         addMetadata();

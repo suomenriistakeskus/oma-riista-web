@@ -1,6 +1,5 @@
 package fi.riista.feature.pub.statistics;
 
-import fi.riista.feature.EmbeddedDatabaseTest;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameCategory;
@@ -9,9 +8,11 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestLukeStatus;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.report.HarvestReport;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.Point;
@@ -53,8 +54,11 @@ public class PublicWolfReportFeatureTest extends EmbeddedDatabaseTest {
 
         model().newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE);
 
-        HarvestReport harvestReport = model().newHarvestReport(harvest, HarvestReport.State.APPROVED);
-        harvestReport.setHarvestPermit(permit);
+        harvest.setHarvestReportState(HarvestReportState.APPROVED);
+        harvest.setHarvestReportAuthor(author);
+        harvest.setHarvestReportDate(DateUtil.now());
+        harvest.setHarvestPermit(permit);
+        harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
         harvest.setRhy(rhy);
 
         persistInNewTransaction();

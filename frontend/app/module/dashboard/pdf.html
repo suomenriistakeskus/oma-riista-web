@@ -1,0 +1,24 @@
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <td><span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
+        <td>käyttäjiä</td>
+        <td>latauksia</td>
+    </tr>
+    </thead>
+    <tr>
+        <td>Metsästyskortti</td>
+        <td>{{$ctrl.metrics.countPdfCertificateUsers}}</td>
+        <td>{{$ctrl.metrics.countPdfCertificateDownloads}}</td>
+    </tr>
+    <tr>
+        <td>Todistus ulkomailla metsästystä varten</td>
+        <td>{{$ctrl.metrics.countForeignPdfCertificateUsers}}</td>
+        <td>{{$ctrl.metrics.countForeignPdfCertificateDownloads}}</td>
+    </tr>
+    <tr>
+        <td>Riistanhoitomaksun tilisiirtolomake</td>
+        <td>{{$ctrl.metrics.countHunterPaymentPdfUsers}}</td>
+        <td>{{$ctrl.metrics.countHunterPaymentPdfDownloads}}</td>
+    </tr>
+</table>

@@ -8,15 +8,19 @@ angular.module('app.account.directives', [])
             scope: {rAccountTodo: '&'},
             link: function (scope, element, attrs) {
                 if ($rootScope.account.role === 'ROLE_USER') {
-                    var key = scope.rAccountTodo() || 'harvestsAndPermitsTotal';
+                    var key = scope.rAccountTodo();
 
                     var red = key !== 'invitations';
                     scope.classes = {'r-account-todo': red, 'r-account-todo-yellow': !red};
 
-                    if (key === 'harvestsAndPermitsTotal' || key === 'harvests' || key === 'permits' || key === 'invitations') {
+                    if (key === 'permits') {
                         Account.countTodo().$promise.then(function (res) {
-                            scope.count = res[key];
+                            scope.count = res.permitIds.length;
                         });
+                    } else if (key === 'invitations') {
+                            Account.countTodo().$promise.then(function (res) {
+                                scope.count = res[key];
+                            });
                     } else if (key === 'unfinishedSrvaEvents') {
                         var activeRole = ActiveRoleService.getActiveRole();
                         var rhyId = _.get(activeRole, 'context.rhyId');

@@ -14,9 +14,8 @@ angular.module('app.clubhunting.day', [])
         });
     })
 
-    .service('ClubHuntingDayService', function ($translate, dialogs, FormSidebarService,
-                                                Helpers, NotificationService,
-                                                ClubGroups, ClubGroupHuntingDay) {
+    .service('ClubHuntingDayService', function ($translate, dialogs, ClubGroupDiary, ClubGroupHuntingDay, ClubGroups,
+                                                FormSidebarService, Helpers, NotificationService) {
         var modalOptions = {
             controller: 'GroupHuntingDayFormController',
             templateUrl: 'club/hunting/day/hunting-day.html',
@@ -28,9 +27,8 @@ angular.module('app.clubhunting.day', [])
             return {
                 huntingDay: _.constant(params.huntingDay),
                 existingHuntingDates: function () {
-                    return ClubGroups.huntingDays({
-                        id: params.groupId,
-                        clubId: params.clubId
+                    return ClubGroupDiary.huntingDays({
+                        id: params.groupId
                     }).$promise.then(function (days) {
                         return _.pluck(days, 'startDate');
                     });

@@ -17,6 +17,8 @@ angular.module('app.organisation.controllers', [])
                 },
                 controller: function ($scope, organisation) {
                     $scope.showOccupationMenu = organisation.hasOccupations;
+                    $scope.showDecisionrecipients = organisation.organisationType === 'RKA';
+                    $scope.showDecisionauthorities = organisation.organisationType === 'RKA';
                 }
             })
             .state('organisation.show', {
@@ -51,6 +53,34 @@ angular.module('app.organisation.controllers', [])
                 url: '/locations',
                 templateUrl: 'event/venue_list.html',
                 controller: 'VenueListController'
+            })
+            .state('organisation.decisionrecipients', {
+                url: '/decisionrecipients',
+                templateUrl: 'harvestpermit/decision/rkarecipient/list.html',
+                controller: 'DecisionRkaRecipientListControler',
+                controllerAs: '$ctrl',
+                resolve: {
+                    rkaId: function (orgId) {
+                        return orgId;
+                    },
+                    recipients: function (DecisionRkaRecipient, rkaId) {
+                        return DecisionRkaRecipient.listByRka({rkaId: rkaId});
+                    }
+                }
+            })
+            .state('organisation.decisionauthorities', {
+                url: '/decisionauuthorities',
+                templateUrl: 'harvestpermit/decision/rkaauthority/list.html',
+                controller: 'DecisionRkaAuthorityListControler',
+                controllerAs: '$ctrl',
+                resolve: {
+                    rkaId: function (orgId) {
+                        return orgId;
+                    },
+                    authorities: function (DecisionRkaAuthority, rkaId) {
+                        return DecisionRkaAuthority.listByRka({rkaId: rkaId});
+                    }
+                }
             });
     })
     .controller('OrganisationShowController', function (organisation) {

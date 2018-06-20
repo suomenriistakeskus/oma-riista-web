@@ -2,7 +2,7 @@
 
 angular.module('app.moosepermit.map', [])
     .factory('MoosePermitHarvest', function (DiaryEntryRepositoryFactory, $resource) {
-        var repository = $resource('api/v1/harvestpermit/moosepermit/:permitId/harvest', {"permitId": "@permitId"});
+        var repository = $resource('api/v1/moosepermit/:permitId/harvest', {"permitId": "@permitId"});
 
         DiaryEntryRepositoryFactory.decorateRepository(repository);
 
@@ -93,7 +93,6 @@ angular.module('app.moosepermit.map', [])
         this.mapEvents = MapDefaults.getMapBroadcastEvents();
 
         MapState.updateMapBounds(mapBounds, mapBounds, true);
-        MapState.get().center = {};
 
         var markerClickHandler = function (markerId) {
             var parts = markerId.split(':');
@@ -147,12 +146,12 @@ angular.module('app.moosepermit.map', [])
         }
     })
     .controller('MoosePermitMapShowHarvestController', function ($scope,
-                                                                 DiaryEntryService,
+                                                                 DiaryImageService,
                                                                  parameters,
                                                                  diaryEntry) {
         $scope.diaryEntry = diaryEntry;
         $scope.getGameNameWithAmount = parameters.$getGameNameWithAmount;
-        $scope.getUrl = DiaryEntryService.getUrl;
+        $scope.getUrl = DiaryImageService.getUrl;
 
         $scope.cancel = function () {
             $scope.$dismiss('cancel');

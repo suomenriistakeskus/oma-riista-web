@@ -9,9 +9,10 @@ import org.joda.time.LocalDate;
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
-import static fi.riista.feature.permit.invoice.search.InvoiceDeliveryType.EMAIL;
-import static fi.riista.feature.permit.invoice.search.InvoiceDeliveryType.LETTER;
+import static fi.riista.feature.permit.invoice.search.InvoiceDeliveryType.ELECTRONIC;
+import static fi.riista.feature.permit.invoice.search.InvoiceDeliveryType.MAIL;
 import static java.util.Objects.requireNonNull;
 
 public class InvoiceSearchResultDTO implements Serializable {
@@ -21,18 +22,25 @@ public class InvoiceSearchResultDTO implements Serializable {
         requireNonNull(invoice, "invoice is null");
         requireNonNull(recipientAddress, "recipientAddress is null");
 
+        final InvoiceType type = invoice.getType();
+
         final InvoiceSearchResultDTO dto = new InvoiceSearchResultDTO();
         dto.setId(invoice.getId());
         dto.setInvoiceNumber(invoice.getInvoiceNumber());
-        dto.setType(invoice.getType());
-        dto.setDeliveryType(invoice.isElectronicInvoicingEnabled() ? EMAIL : LETTER);
+        dto.setType(type);
+        dto.setDeliveryType(invoice.isElectronicInvoicingEnabled() ? ELECTRONIC : MAIL);
         dto.setState(invoice.getDisplayState());
         dto.setInvoiceDate(invoice.getInvoiceDate());
         dto.setDueDate(invoice.getDueDate());
-        dto.setPaymentAmount(invoice.getAmount());
+        dto.setPaymentAmount(Optional.ofNullable(invoice.getCorrectedAmount()).orElseGet(invoice::getAmount));
         dto.setCreditorReference(invoice.getCreditorReference().toString());
         dto.setInvoiceRecipientName(invoice.getRecipientName());
         dto.setInvoiceRecipientAddress(AddressDTO.from(recipientAddress));
+
+        dto.setReceivedAmount(Optional
+                .ofNullable(invoice.getReceivedAmount())
+                .orElseGet(() -> type == InvoiceType.PERMIT_HARVEST ? BigDecimal.ZERO : null));
+
         return dto;
     }
 
@@ -48,6 +56,7 @@ public class InvoiceSearchResultDTO implements Serializable {
     private LocalDate dueDate;
 
     private BigDecimal paymentAmount;
+    private BigDecimal receivedAmount;
 
     private String creditorReference;
 
@@ -116,6 +125,14 @@ public class InvoiceSearchResultDTO implements Serializable {
 
     public void setPaymentAmount(final BigDecimal paymentAmount) {
         this.paymentAmount = paymentAmount;
+    }
+
+    public BigDecimal getReceivedAmount() {
+        return receivedAmount;
+    }
+
+    public void setReceivedAmount(final BigDecimal receivedAmount) {
+        this.receivedAmount = receivedAmount;
     }
 
     public String getCreditorReference() {

@@ -7,7 +7,9 @@ import fi.riista.feature.common.repository.MunicipalityRepository;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
 import fi.riista.feature.gis.kiinteisto.GISPropertyIdentifierRepository;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusAreaLookupResult;
 import fi.riista.feature.gis.metsahallitus.MetsahallitusHirviRepository;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusMaterialYear;
 import fi.riista.feature.gis.metsahallitus.MetsahallitusPienriistaRepository;
 import fi.riista.feature.gis.rhy.GISRiistanhoitoyhdistys;
 import fi.riista.feature.gis.rhy.GISRiistanhoitoyhdistysRepository;
@@ -68,6 +70,9 @@ public class LocalGISQueryService implements GISQueryService {
     @Resource
     private MMLBuildingUnitService buildingUnitService;
 
+    @Resource
+    private MetsahallitusMaterialYear metsahallitusMaterialYear;
+
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -92,14 +97,14 @@ public class LocalGISQueryService implements GISQueryService {
 
     @Override
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Integer findMetsahallitusHirviAlueId(@Nonnull GeoLocation geoLocation, int year) {
-        return metsahallitusHirviRepository.findGid(geoLocation, year);
-    }
+    public MetsahallitusAreaLookupResult findMetsahallitusAreas(final @Nonnull GeoLocation geoLocation) {
+        final int latestHirviYear = metsahallitusMaterialYear.getLatestHirviYear();
+        final int latestPienriistaYear = metsahallitusMaterialYear.getLatestPienriistaYear();
 
-    @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Integer findMetsahallitusPienriistaAlueId(@Nonnull GeoLocation geoLocation, int year) {
-        return metsahallitusPienriistaRepository.findPienriistaAlueId(geoLocation, year);
+        final Integer hirviAlueId = metsahallitusHirviRepository.findGid(geoLocation, latestHirviYear);
+        final Integer pienriistaAlueId = metsahallitusPienriistaRepository.findPienriistaAlueId(geoLocation, latestPienriistaYear);
+
+        return new MetsahallitusAreaLookupResult(hirviAlueId, pienriistaAlueId);
     }
 
     @Override

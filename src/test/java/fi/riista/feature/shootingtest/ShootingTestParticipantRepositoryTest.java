@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import static fi.riista.feature.shootingtest.ShootingTestAttempt.ATTEMPT_PRICE;
+import static fi.riista.feature.shootingtest.ShootingTest.ATTEMPT_PRICE;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.QUALIFIED;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.UNQUALIFIED;
 import static fi.riista.feature.shootingtest.ShootingTestType.BEAR;
@@ -56,7 +56,7 @@ public class ShootingTestParticipantRepositoryTest extends EmbeddedDatabaseTest 
             persistInNewTransaction();
 
             final Map<Long, ParticipantSummary> expected = ImmutableMap.of(
-                    event.getId(), new ParticipantSummary(1, 1, 0, ATTEMPT_PRICE));
+                    event.getId(), new ParticipantSummary(1, 1, 0, ShootingTest.ATTEMPT_PRICE));
 
             assertEquals(expected, repo.getParticipantSummaryByShootingTestEventId(asList(event)));
         });

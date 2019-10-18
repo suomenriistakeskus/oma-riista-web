@@ -1,7 +1,7 @@
 package fi.riista.feature.gamediary;
 
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.BaseEntity;
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.test.TestUtils;
 import fi.riista.util.EqualityHelper;
@@ -516,8 +516,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
         private final VERSION version;
         private final SpecimenTestOps<PARENT, ENTITY, DTO> ops;
 
-        public Context(
-                @Nullable final PARENT diaryEntry, @Nonnull final VERSION version) {
+        public Context(@Nonnull final PARENT diaryEntry, @Nonnull final VERSION version) {
             this.diaryEntry = Objects.requireNonNull(diaryEntry, "diaryEntry is null");
             this.version = Objects.requireNonNull(version, "version is null");
             this.ops = getSpecimenTestOps(Objects.requireNonNull(diaryEntry.getSpecies(), "species is null"), version);

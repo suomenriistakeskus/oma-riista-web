@@ -1,6 +1,7 @@
 package fi.riista.integration.paytrail.rest.client;
 
 import fi.riista.config.JaxbConfig;
+import fi.riista.integration.paytrail.auth.PaytrailCredentials;
 import fi.riista.integration.paytrail.rest.PaytrailRestAdapter;
 import fi.riista.integration.paytrail.rest.model.Contact;
 import fi.riista.integration.paytrail.rest.model.ContactAddress;
@@ -41,9 +42,9 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 public class PaytrailRestTemplateTest {
 
-    private static PaytrailApiCredentials createTestCredentials() {
+    private static PaytrailCredentials createTestCredentials() {
         // Public test credentials from http://docs.paytrail.com/en/ch03.html
-        return new PaytrailApiCredentials("13466", "6pKF4jkv97zmqBJ3ZL8gUw5DfT2NMQ");
+        return new PaytrailCredentials("13466", "6pKF4jkv97zmqBJ3ZL8gUw5DfT2NMQ");
     }
 
     private static RestTemplate createRestTemplate() {

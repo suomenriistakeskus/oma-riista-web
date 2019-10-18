@@ -1,7 +1,7 @@
 package fi.riista.util;
 
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.BaseEntity;
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.error.RevisionConflictException;
 import io.vavr.Tuple2;
 import org.springframework.data.domain.Page;

@@ -38,21 +38,21 @@ public class AccountTodoFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testCountTodosWithNothing() {
-        persistAndAuthenticateWithNewUser(true);
-        assertEmpty(accountTodoFeature.countTodos().getPermitIds());
-    }
-
-    @Test
     public void testCountInvitations() {
         withPerson(person -> {
             model().newHuntingClubInvitation(person, model().newHuntingClub(rhy), OccupationType.SEURAN_JASEN);
+
             onSavedAndAuthenticated(createUser(person), () -> {
-                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
-                assertEquals(1, dto.getInvitations());
-                assertEmpty(dto.getPermitIds());
+                final AccountTodoCountDTO dto = accountTodoFeature.countInvitationTodos();
+                assertEquals(1, dto.getTodoCount());
             });
         });
+    }
+
+    @Test
+    public void testCountPermits_withNothing() {
+        persistAndAuthenticateWithNewUser(true);
+        assertEmpty(accountTodoFeature.countPermitTodos().getPermitIds());
     }
 
     @Test
@@ -60,8 +60,7 @@ public class AccountTodoFeatureTest extends EmbeddedDatabaseTest {
         withPerson(person -> {
             createPermit(person, today().minusDays(1), today().plusDays(1));
             onSavedAndAuthenticated(createUser(person), () -> {
-                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
-                assertEquals(0, dto.getInvitations());
+                final AccountPermitTodoCountDTO dto = accountTodoFeature.countPermitTodos();
                 assertEmpty(dto.getPermitIds());
             });
         });
@@ -72,8 +71,7 @@ public class AccountTodoFeatureTest extends EmbeddedDatabaseTest {
         withPerson(person -> {
             final HarvestPermit permit = createPermit(person, today().minusDays(1), null)._1;
             onSavedAndAuthenticated(createUser(person), () -> {
-                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
-                assertEquals(0, dto.getInvitations());
+                final AccountPermitTodoCountDTO dto = accountTodoFeature.countPermitTodos();
                 assertEquals(Sets.newHashSet(permit.getId()), dto.getPermitIds());
             });
         });
@@ -87,9 +85,9 @@ public class AccountTodoFeatureTest extends EmbeddedDatabaseTest {
             permit.setHarvestReportAuthor(person);
             permit.setHarvestReportDate(now());
             permit.setHarvestReportModeratorOverride(false);
+
             onSavedAndAuthenticated(createUser(person), () -> {
-                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
-                assertEquals(0, dto.getInvitations());
+                final AccountPermitTodoCountDTO dto = accountTodoFeature.countPermitTodos();
                 assertEmpty(dto.getPermitIds());
             });
         });
@@ -104,18 +102,20 @@ public class AccountTodoFeatureTest extends EmbeddedDatabaseTest {
             model().newHarvest(permit, spa.getGameSpecies());
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                AccountTodoCountDTO dto = accountTodoFeature.countTodos();
-                assertEquals(0, dto.getInvitations());
+                final AccountPermitTodoCountDTO dto = accountTodoFeature.countPermitTodos();
                 assertEquals(Sets.newHashSet(permit.getId()), dto.getPermitIds());
             });
         });
     }
 
-    private Tuple2<HarvestPermit, HarvestPermitSpeciesAmount> createPermit(final Person person, final LocalDate dateValid, final LocalDate dateValid2) {
+    private Tuple2<HarvestPermit, HarvestPermitSpeciesAmount> createPermit(final Person person,
+                                                                           final LocalDate dateValid,
+                                                                           final LocalDate dateValid2) {
         final HarvestPermit permit = model().newHarvestPermit(this.rhy);
         permit.setOriginalContactPerson(person);
 
-        HarvestPermitSpeciesAmount spa = model().newHarvestPermitSpeciesAmount(permit, model().newGameSpecies(), 2.0f);
+        final HarvestPermitSpeciesAmount spa =
+                model().newHarvestPermitSpeciesAmount(permit, model().newGameSpecies(), 2.0f);
         spa.setBeginDate(dateValid);
         spa.setEndDate(dateValid);
         spa.setBeginDate2(dateValid2);
@@ -152,8 +152,8 @@ public class AccountTodoFeatureTest extends EmbeddedDatabaseTest {
             });
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                final AccountSrvaTodoCountDTO todo = accountTodoFeature.countSrvaTodos(rhy.getId());
-                assertEquals(5, todo.getUnfinishedSrvaEvents());
+                final AccountTodoCountDTO todo = accountTodoFeature.countSrvaTodos(rhy.getId());
+                assertEquals(5, todo.getTodoCount());
             });
         }));
     }

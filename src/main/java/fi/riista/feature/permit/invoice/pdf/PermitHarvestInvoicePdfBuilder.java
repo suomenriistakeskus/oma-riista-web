@@ -1,6 +1,7 @@
 package fi.riista.feature.permit.invoice.pdf;
 
 import com.google.common.base.Joiner;
+import fi.riista.util.PdfWriter;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -11,6 +12,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -56,7 +58,7 @@ class PermitHarvestInvoicePdfBuilder {
         }
     }
 
-    private void addInvoiceSender(final InvoicePdfWriter writer) throws IOException {
+    private void addInvoiceSender(final PdfWriter writer) throws IOException {
         writer.topOffsetMm(13).marginLeftMm(20)
                 .italicFont()
                 .writeLine("Lähettäjä / Avsändare")
@@ -67,7 +69,7 @@ class PermitHarvestInvoicePdfBuilder {
         }
     }
 
-    private void addInvoiceReceiver(final InvoicePdfWriter writer) throws IOException {
+    private void addInvoiceReceiver(final PdfWriter writer) throws IOException {
         writer.topOffsetMm(40).marginLeftMm(20)
                 .italicFont()
                 .writeLine("Vastaanottaja / Mottagare")
@@ -79,10 +81,10 @@ class PermitHarvestInvoicePdfBuilder {
                 .writeLine(i18n("20540 Turku", "205040 Åbo"));
     }
 
-    private void addInvoiceHeader(final InvoicePdfWriter writer) throws IOException {
+    private void addInvoiceHeader(final PdfWriter writer) throws IOException {
         writer.topOffsetMm(13).marginLeftRelative(65)
                 .normalFont()
-                .writeLine(i18n("LASKU", "FAKTURA"))
+                .writeLine(model.getInvoiceTitle())
                 .writeEmptyLine()
                 .writeLine(model.getInvoiceDateString());
 
@@ -91,17 +93,22 @@ class PermitHarvestInvoicePdfBuilder {
                 .writeLine(i18n("Päätösnumero", "Beslutnummer"))
                 .writeLine(i18n("Asiakasnumero", "Kundnummer"));
 
+        if (StringUtils.hasText(model.getPaymentDateString())) {
+            writer.writeLine(i18n("Maksupäivä", "Betalningsdatum"));
+        }
+
         writer.topOffsetMm(45).marginLeftRelative(80)
                 .normalFont()
                 .writeLine(model.getPermitNumber())
-                .writeLine(model.getInvoiceRecipient().getCustomerNumber());
+                .writeLine(model.getInvoiceRecipient().getCustomerNumber())
+                .writeLine(model.getPaymentDateString());
     }
 
-    private void addInvoiceText(final InvoicePdfWriter writer) throws IOException {
+    private void addInvoiceText(final PdfWriter writer) throws IOException {
 
         writer.topOffsetMm(70).marginLeftMm(20)
                 .font(PDType1Font.HELVETICA_BOLD, 12)
-                .writeLine(model.getInvoiceTitle())
+                .writeLine(model.getInvoiceHeader())
                 .addVerticalSpaceMm(2)
 
                 .font(PDType1Font.HELVETICA_BOLD, 9.5f)
@@ -165,7 +172,7 @@ class PermitHarvestInvoicePdfBuilder {
                                 "verkställighet av skatter och avgifter (706/2007)."));
     }
 
-    private void addPaymentTable(final InvoicePdfWriter writer) throws IOException {
+    private void addPaymentTable(final PdfWriter writer) throws IOException {
         writer.font(PDType1Font.HELVETICA, 9.5f, 20f);
 
         final int baseTopOffset = 165;
@@ -209,11 +216,12 @@ class PermitHarvestInvoicePdfBuilder {
     }
 
     private void addFormFieldData() throws IOException {
-        textField("iban", model.getInvoiceAccountDetails().getCombinedBankNameAndIbanString());
+        textField("iban", model.getInvoiceAccountDetails().getCombinedBankNameAndIbanForInvoicePdf());
         textField("bic", model.getInvoiceAccountDetails().getBic().toString());
         textField("saaja", model.getPaymentRecipient());
         textField("maksaja", Joiner.on('\n').join(model.getInvoiceRecipient().formatAsLines()));
-        textField("summa", model.getAmountText());
+        textField("erapaiva", model.getDueDateString());
+        textField("summa", model.getInvoiceAmountText());
         textField("viitenumero", model.getInvoiceReferenceForHuman());
         textField("lisatiedot", model.getInvoiceAdditionalInfo());
 
@@ -237,13 +245,17 @@ class PermitHarvestInvoicePdfBuilder {
     }
 
     public byte[] build() throws IOException {
-        try (final InvoicePdfWriter writer = new InvoicePdfWriter(pdfDocument, pdfPage)) {
+        try (final PdfWriter writer = new PdfWriter(pdfDocument, pdfPage)) {
             addInvoiceHeader(writer);
             addInvoiceSender(writer);
             addInvoiceReceiver(writer);
             addInvoiceText(writer);
-            addPaymentTable(writer);
-            writer.barCode(model.createBarCodeMessage(null));
+
+            if (model.includePaymentTable()) {
+                addPaymentTable(writer);
+            }
+
+            writer.barCode(model.createBarCodeMessage(model.getDueDate()));
             writer.riistaLogo(10, 180, 20);
         }
 

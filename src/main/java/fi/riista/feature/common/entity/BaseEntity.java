@@ -129,7 +129,7 @@ public abstract class BaseEntity<PK extends Serializable> implements HasID<PK>, 
         return null == getId() ? 0 : 17 + getId().hashCode() * 31;
     }
 
-    protected static Long getActiveUserId() {
+    protected static long getActiveUserId() {
         return UserInfo.extractUserIdForEntity(SecurityContextHolder.getContext().getAuthentication());
     }
 }

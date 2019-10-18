@@ -2,6 +2,7 @@ package fi.riista.integration.paytrail.rest.client;
 
 import com.google.common.collect.Lists;
 import fi.riista.config.web.BasicAuthenticationClientInterceptor;
+import fi.riista.integration.paytrail.auth.PaytrailCredentials;
 import fi.riista.integration.paytrail.rest.model.ErrorMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -21,7 +22,7 @@ public class PaytrailRestTemplate extends RestTemplate {
 
     public PaytrailRestTemplate(final ClientHttpRequestFactory requestFactory,
                                 final Jaxb2Marshaller xmlMarshaller,
-                                final PaytrailApiCredentials credentials) {
+                                final PaytrailCredentials credentials) {
         super(requestFactory);
 
         final MarshallingHttpMessageConverter xmlConverter = createXmlMessageConverter(xmlMarshaller);
@@ -44,7 +45,7 @@ public class PaytrailRestTemplate extends RestTemplate {
         setErrorHandler(errorHandler);
     }
 
-    private static BasicAuthenticationClientInterceptor createAuthInterceptor(final PaytrailApiCredentials credentials) {
+    private static BasicAuthenticationClientInterceptor createAuthInterceptor(final PaytrailCredentials credentials) {
         return credentials != null ? new BasicAuthenticationClientInterceptor(
                 credentials.getMerchantId(), credentials.getMerchantSecret()) : null;
     }

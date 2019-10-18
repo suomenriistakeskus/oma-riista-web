@@ -5,11 +5,14 @@ import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionCompleteStatus;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
+import fi.riista.feature.permit.decision.PermitDecisionPaymentAmount;
 import fi.riista.security.EntityPermission;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Component
 public class PermitDecisionDocumentFeature {
@@ -85,6 +88,12 @@ public class PermitDecisionDocumentFeature {
             default:
                 return "";
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<BigDecimal> getPaymentOptions(long decisionId) {
+        final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.READ);
+        return PermitDecisionPaymentAmount.getPaymentOptionsFor(decision);
     }
 
     @Transactional

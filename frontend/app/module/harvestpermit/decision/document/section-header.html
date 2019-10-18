@@ -1,0 +1,36 @@
+<div class="row">
+    <div class="col-xs-8">
+        <p class="decision-section-title"
+           translate="harvestpermit.decision.sectionId.{{$ctrl.sectionId}}"></p>
+    </div>
+
+    <div class="col-xs-4 text-right">
+        <div class="btn-group" ng-if="$ctrl.isHandler() && $ctrl.sectionId !== 'application'"
+             style="position: sticky; right: 0; top: 0;">
+            <label class="btn btn-default" style="min-width: 100px"
+                   ng-change="$ctrl.toggleComplete()"
+                   ng-model="$ctrl.decision.completeStatus[$ctrl.sectionId]"
+                   uib-btn-radio="false">
+                <span class="fa fa-fw fa-lg fa-check-circle text-muted"
+                      ng-class="{'invisible': $ctrl.isComplete()}"></span>
+                <span translate="harvestpermit.decision.section.incomplete"></span>
+            </label>
+
+            <label class="btn" style="min-width: 100px"
+                   ng-class="{'btn-default': !$ctrl.isComplete(), 'btn-primary': $ctrl.isComplete()}"
+                   ng-disabled="!$ctrl.canBeCompleted()"
+                   ng-change="$ctrl.toggleComplete()"
+                   ng-model="$ctrl.decision.completeStatus[$ctrl.sectionId]"
+                   uib-btn-radio="true">
+                <span class="fa fa-fw fa-lg fa-ban text-danger"
+                      ng-show="!$ctrl.canBeCompleted()"></span>
+                <span class="fa fa-fw fa-lg fa-check-circle"
+                      ng-show="$ctrl.canBeCompleted()"
+                      ng-class="{'invisible': !$ctrl.isComplete()}"></span>
+                <span translate="harvestpermit.decision.section.complete"></span>
+            </label>
+        </div>
+    </div>
+</div>
+
+<hr class="invisible"/>

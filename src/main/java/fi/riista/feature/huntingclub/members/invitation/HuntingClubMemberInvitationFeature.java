@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -78,11 +79,10 @@ public class HuntingClubMemberInvitationFeature {
 
         final HuntingClubGroup group = findGroupAndAssertIsClubsGroup(clubId, groupId);
 
-        final Set<Person> personsByHunterNumbers = findPersonsByHunterNumber(hunterNumbers)
-                .stream()
-                .collect(toSet());
+        final Set<Person> personsByHunterNumbers = new HashSet<>(findPersonsByHunterNumber(hunterNumbers));
 
-        final Set<Person> personsToBeInvited = findPersonsNotMembersAndNotHavingInvitations(club, personsByHunterNumbers);
+        final Set<Person> personsToBeInvited = findPersonsNotMembersAndNotHavingInvitations(club,
+                personsByHunterNumbers);
         if (!personsToBeInvited.isEmpty()) {
             invitationRepository.save(personsToBeInvited.stream()
                     .map(person -> new HuntingClubMemberInvitation(person, club, OccupationType.SEURAN_JASEN))
@@ -98,14 +98,13 @@ public class HuntingClubMemberInvitationFeature {
         }
     }
 
-    private Set<Person> findPersonsNotMembersAndNotHavingInvitations(final HuntingClub club, final Set<Person> persons) {
+    private Set<Person> findPersonsNotMembersAndNotHavingInvitations(final HuntingClub club,
+                                                                     final Set<Person> persons) {
         final Set<Person> havingInvitation = invitationRepository.findAll(JpaSpecs.and(
                 JpaSpecs.equal(HuntingClubMemberInvitation_.huntingClub, club),
                 JpaSpecs.inCollection(HuntingClubMemberInvitation_.person, persons),
                 JpaSpecs.fetch(HuntingClubMemberInvitation_.person)
-        )).stream()
-                .map(HuntingClubMemberInvitation::getPerson)
-                .collect(toSet());
+        )).stream().map(HuntingClubMemberInvitation::getPerson).collect(toSet());
         final Set<Person> notMembers = findPersonsNotHavingOccupation(club, persons);
         return Sets.difference(notMembers, havingInvitation);
     }
@@ -222,6 +221,6 @@ public class HuntingClubMemberInvitationFeature {
     }
 
     private List<Person> findPersonsByHunterNumber(Set<String> hunterNumbers) {
-        return personRepository.findAll(JpaSpecs.inCollection(Person_.hunterNumber, hunterNumbers));
+        return personRepository.findFinnishPersonsByHunterNumber(hunterNumbers);
     }
 }

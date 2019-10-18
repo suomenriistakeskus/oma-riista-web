@@ -1,0 +1,48 @@
+<div class="invoice-payments-title-row">
+    <div class="col-xs-6">
+        <span class="column-title" translate="jht.invoice.show.payments"></span>
+    </div>
+
+    <div class="col-xs-6 col-md-offset-2 col-md-4" ng-if="$ctrl.paymentAlterPermissionGranted">
+        <button type="button" class="btn btn-primary btn-block" ng-click="$ctrl.addPayment()">
+            <span class="glyphicon glyphicon-plus"></span>&nbsp;
+            <span translate="jht.invoice.show.button.addPaymentLine"></span>
+        </button>
+    </div>
+</div>
+
+<div ng-if="$ctrl.payments.length === 0" class="alert alert-info" translate="jht.invoice.show.noPaymentsExist"></div>
+
+<table ng-if="$ctrl.payments.length > 0" class="table table-condensed">
+    <thead>
+        <tr>
+            <th translate="payment.bookingDate"></th>
+            <th translate="global.sum"></th>
+            <th translate="jht.invoice.show.verifiedFromAccountStatement"></th>
+            <th translate="jht.invoice.show.paymentLineAuthor"></th>
+            <th ng-if="$ctrl.paymentAlterPermissionGranted"></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="payment in $ctrl.payments | orderBy:['-paymentDate', '-id'] track by payment.id">
+            <td ng-bind="::payment.paymentDate | date:'d.M.yyyy'"></td>
+            <td ng-bind="::payment.amount | currency : '&euro;' : 2"></td>
+            <td ng-switch="::payment.verifiedFromAccountStatement">
+                <span ng-switch-when="true" class="fa fa-lg fa-check text-primary"></span>
+                <span ng-switch-when="false" class="fa fa-lg fa-times text-danger"></span>
+            </td>
+            <td ng-bind="::payment.moderatorName"></td>
+            <td ng-if="$ctrl.paymentAlterPermissionGranted" class="text-right">
+                <div ng-if="::(!payment.verifiedFromAccountStatement)">
+                    <button type="button" class="btn btn-primary"
+                            ng-confirm-click="{{'jht.invoice.show.confirm.removePaymentLine' | translate}}"
+                            ng-confirm-click-action="$ctrl.removePayment({paymentId: payment.id})">
+
+                        <span class="fa fa-lg fa-fw fa-times"></span>
+                        <span translate="global.button.delete"></span>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>

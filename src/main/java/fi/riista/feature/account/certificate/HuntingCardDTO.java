@@ -1,32 +1,30 @@
 package fi.riista.feature.account.certificate;
 
+import fi.riista.feature.account.AccountShootingTestDTO;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
-import fi.riista.feature.common.EnumLocaliser;
-import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
-import fi.riista.util.F;
-import fi.riista.util.LocalisedString;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.PrivateKey;
 import java.util.List;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class HuntingCardDTO {
 
     public static HuntingCardDTO create(@Nonnull final Person person,
-                                        @Nonnull final List<Occupation> occupations,
+                                        @Nonnull final List<OccupationDTO> occupations,
                                         @Nonnull final LocalDate paymentDate,
+                                        @Nonnull final List<AccountShootingTestDTO> qualifiedShootingTests,
                                         @Nullable final String languageCode,
-                                        @Nullable final PrivateKey signatureKey,
-                                        @Nonnull final EnumLocaliser enumLocaliser) {
-        Objects.requireNonNull(person);
-        Objects.requireNonNull(paymentDate);
-        Objects.requireNonNull(occupations);
-        Objects.requireNonNull(enumLocaliser);
+                                        @Nullable final PrivateKey signatureKey) {
+        requireNonNull(person);
+        requireNonNull(occupations);
+        requireNonNull(paymentDate);
+        requireNonNull(qualifiedShootingTests);
 
         final HuntingCardDTO dto = new HuntingCardDTO();
 
@@ -60,27 +58,14 @@ public class HuntingCardDTO {
             dto.qrCode = HuntingCardQRCodeGenerator.forPerson(person).build(signatureKey, languageCode);
         }
 
-        dto.occupations = F.mapNonNullsToList(occupations, occupation -> {
-            Objects.requireNonNull(occupation);
-
-            OccupationDTO occupationDTO = new OccupationDTO();
-
-            final LocalisedString occupationName = enumLocaliser.getLocalisedString(occupation.getOccupationType());
-            if (occupationName != null) {
-                occupationDTO.occupationName = occupationName.getAnyTranslation(languageCode);
-            }
-            occupationDTO.organisationOfficialCode = occupation.getOrganisation().getOfficialCode();
-            occupationDTO.organisationName = occupation.getOrganisation().getNameLocalisation().getTranslation(languageCode);
-            occupationDTO.beginDate = occupation.getBeginDate();
-            occupationDTO.endDate = occupation.getEndDate();
-
-            return occupationDTO;
-        });
+        dto.occupations = occupations;
+        dto.shootingTests = qualifiedShootingTests;
 
         return dto;
     }
 
     public static class OccupationDTO implements HasBeginAndEndDate {
+
         private String occupationName;
         private String organisationOfficialCode;
         private String organisationName;
@@ -92,12 +77,24 @@ public class HuntingCardDTO {
             return occupationName;
         }
 
+        public void setOccupationName(final String occupationName) {
+            this.occupationName = occupationName;
+        }
+
         public String getOrganisationOfficialCode() {
             return organisationOfficialCode;
         }
 
+        public void setOrganisationOfficialCode(final String organisationOfficialCode) {
+            this.organisationOfficialCode = organisationOfficialCode;
+        }
+
         public String getOrganisationName() {
             return organisationName;
+        }
+
+        public void setOrganisationName(final String organisationName) {
+            this.organisationName = organisationName;
         }
 
         @Override
@@ -105,9 +102,17 @@ public class HuntingCardDTO {
             return beginDate;
         }
 
+        public void setBeginDate(final LocalDate beginDate) {
+            this.beginDate = beginDate;
+        }
+
         @Override
         public LocalDate getEndDate() {
             return endDate;
+        }
+
+        public void setEndDate(final LocalDate endDate) {
+            this.endDate = endDate;
         }
     }
 
@@ -135,6 +140,8 @@ public class HuntingCardDTO {
     private String qrCode;
 
     private List<OccupationDTO> occupations;
+
+    private List<AccountShootingTestDTO> shootingTests;
 
     public String getFirstName() {
         return firstName;
@@ -206,5 +213,9 @@ public class HuntingCardDTO {
 
     public List<OccupationDTO> getOccupations() {
         return occupations;
+    }
+
+    public List<AccountShootingTestDTO> getShootingTests() {
+        return shootingTests;
     }
 }

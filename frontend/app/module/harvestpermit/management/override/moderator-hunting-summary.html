@@ -1,0 +1,308 @@
+<div class="content">
+    <h3 class="modal-title" translate="harvestpermit.management.moderatorOverride.title"></h3>
+
+    <div class="h5">
+        <div ng-bind="$ctrl.permit.permitNumber"></div>
+        <div>
+            <span translate="harvestpermit.management.moderatorOverride.selectedSpecies"></span>
+            <span ng-bind="::$ctrl.gameSpeciesName"></span>
+        </div>
+    </div>
+
+    <div ng-if="$ctrl.isPermitBasedDeer">
+        <div class="radio">
+            <label>
+                <input type="radio" name="completeHuntingOfPermit" id="completeHuntingOfPermit"
+                       ng-value="true"
+                       ng-model="$ctrl.completeHuntingOfPermit"
+                       ng-change="$ctrl.completeHuntingOfPermitChanged()">
+                <span translate="harvestpermit.management.moderatorOverride.completeHuntingOfPermit"></span>
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" name="completeOnlyHuntingOfSelectedPartners" id="completeOnlyHuntingOfSelectedPartners"
+                       ng-value="false"
+                       ng-model="$ctrl.completeHuntingOfPermit"
+                       ng-change="$ctrl.completeHuntingOfPermitChanged()">
+                <span translate="harvestpermit.management.moderatorOverride.completeOnlyHuntingOfSelectedPartners"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="alert alert-warning" role="alert"
+         translate="harvestpermit.management.moderatorOverride.disclaimer"></div>
+
+    <form name="moderatorHuntingSummaryForm" role="form" class="form form-inline" r-force-show-errors-check-validity>
+        <table class="table table-condensed table-striped moderator-hunting-summary-table">
+            <thead>
+            <tr class="topheader">
+                <th colspan="3"></th>
+                <th colspan="4">
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.top"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.topTooltip"></r-with-tooltip>
+                </th>
+                <th colspan="2">
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.notEdible.top"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.notEdible.topTooltip"></r-with-tooltip>
+                </th>
+                <th colspan="2">
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.area.top"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.area.topTooltip"></r-with-tooltip>
+                </th>
+                <th colspan="2">
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.remainingPopulation.top"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.remainingPopulation.topTooltip"></r-with-tooltip>
+                </th>
+            </tr>
+            <tr class="lowheader">
+                <th translate="harvestpermit.management.moderatorOverride.huntingPartner"></th>
+                <th translate="harvestpermit.management.moderatorOverride.moderatorOverridden"></th>
+                <th translate="harvestpermit.management.moderatorOverride.override"></th>
+
+                <th>
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.au"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.auTooltip"></r-with-tooltip>
+                </th>
+                <th>
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.an"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.anTooltip"></r-with-tooltip>
+                </th>
+                <th>
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.vu"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.vuTooltip"></r-with-tooltip>
+                </th>
+                <th>
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.vn"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.harvestedSpecimens.vnTooltip"></r-with-tooltip>
+                </th>
+
+                <th>
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.notEdible.a"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.notEdible.aTooltip"></r-with-tooltip>
+                </th>
+                <th>
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.notEdible.v"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.notEdible.vTooltip"></r-with-tooltip>
+                </th>
+
+                <th>
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.area.total"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.area.totalTooltip"></r-with-tooltip>
+                </th>
+                <th>
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.area.effective"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.area.effectiveTooltip"></r-with-tooltip>
+                </th>
+
+                <th>
+                    <r-with-tooltip content-key="harvestpermit.management.moderatorOverride.remainingPopulation.total"
+                                    tooltip-key="harvestpermit.management.moderatorOverride.remainingPopulation.totalTooltip"></r-with-tooltip>
+                </th>
+                <th>
+                    <r-with-tooltip
+                            content-key="harvestpermit.management.moderatorOverride.remainingPopulation.effective"
+                            tooltip-key="harvestpermit.management.moderatorOverride.remainingPopulation.effectiveTooltip"></r-with-tooltip>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="summary">
+                <td translate="club.permit.sumTitle"></td>
+                <td></td>
+                <td></td>
+
+                <td>
+                    <r-with-tooltip content-val="{{$ctrl.countTotalSumOf('adultMales')}}"></r-with-tooltip>
+                </td>
+                <td>
+                    <r-with-tooltip content-val="{{$ctrl.countTotalSumOf('adultFemales')}}"></r-with-tooltip>
+                </td>
+                <td>
+                    <r-with-tooltip content-val="{{$ctrl.countTotalSumOf('youngMales')}}"></r-with-tooltip>
+                </td>
+                <td>
+                    <r-with-tooltip content-val="{{$ctrl.countTotalSumOf('youngFemales')}}"></r-with-tooltip>
+                </td>
+
+                <td>
+                    <r-with-tooltip content-val="{{$ctrl.countTotalSumOf('adultsNotEdible')}}"></r-with-tooltip>
+                </td>
+                <td>
+                    <r-with-tooltip content-val="{{$ctrl.countTotalSumOf('youngsNotEdible')}}"></r-with-tooltip>
+                </td>
+
+                <td>
+                    <r-with-tooltip content-val="{{$ctrl.countTotalSumOf('totalHuntingArea')}}"></r-with-tooltip>
+                </td>
+                <td>
+                    <r-with-tooltip content-val="{{$ctrl.countTotalSumOf('effectiveHuntingArea')}}"></r-with-tooltip>
+                </td>
+
+                <td>
+                    <r-with-tooltip
+                            content-val="{{$ctrl.countTotalSumOf('remainingPopulationInTotalArea')}}"></r-with-tooltip>
+                </td>
+                <td>
+                    <r-with-tooltip
+                            content-val="{{$ctrl.countTotalSumOf('remainingPopulationInEffectiveArea')}}"></r-with-tooltip>
+                </td>
+            </tr>
+            <tr ng-repeat="a in $ctrl.huntingSummaries">
+                <td>
+                    <div name-translated="a"></div>
+                </td>
+                <td>
+                    <div class="checkbox" ng-if="$ctrl.moderatedOriginally(a)">
+                        <label>
+                            <input type="checkbox"
+                                   class="form-control input-sm"
+                                   checked
+                                   disabled
+                                   tabindex="-1" />
+                        </label>
+                    </div>
+                </td>
+                <td>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="moderatorOverridden{{$index}}" id="moderatorOverridden{{$index}}"
+                                   class="form-control input-sm"
+                                   ng-model="a.moderatorOverridden"
+                                   ng-disabled="$ctrl.moderationRequired(a) && $ctrl.completeHuntingOfPermit"
+                                   tabindex="-1" />
+                        </label>
+                    </div>
+                </td>
+
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="adultMales{{$index}}" id="adultMales{{$index}}"
+                               min="0" max="99999" step="1"
+                               class="form-control input-sm no-spinner"
+                               ng-model="a.adultMales"
+                               ng-disabled="!a.moderatorOverridden"
+                               required/>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="adultFemales{{$index}}" id="adultFemales{{$index}}"
+                               min="0" max="99999" step="1"
+                               class="form-control input-sm no-spinner"
+                               ng-model="a.adultFemales"
+                               ng-disabled="!a.moderatorOverridden"
+                               required/>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="youngMales{{$index}}" id="youngMales{{$index}}"
+                               min="0" max="99999" step="1"
+                               class="form-control input-sm no-spinner"
+                               ng-model="a.youngMales"
+                               ng-disabled="!a.moderatorOverridden"
+                               required/>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="youngFemales{{$index}}" id="youngFemales{{$index}}"
+                               min="0" max="99999" step="1"
+                               class="form-control input-sm no-spinner"
+                               ng-model="a.youngFemales"
+                               ng-disabled="!a.moderatorOverridden"
+                               required/>
+                    </div>
+                </td>
+
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="adultsNotEdible{{$index}}" id="adultsNotEdible{{$index}}"
+                               min="0" ng-max="getMaxForNonEdibleAdults(a)" step="1"
+                               class="form-control input-sm no-spinner"
+                               ng-model="a.adultsNotEdible"
+                               ng-disabled="!a.moderatorOverridden"
+                               required/>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="youngsNotEdible{{$index}}" id="youngsNotEdible{{$index}}"
+                               min="0" ng-max="getMaxForNonEdibleYoungs(a)" step="1"
+                               class="form-control input-sm no-spinner"
+                               ng-model="a.youngsNotEdible"
+                               ng-disabled="!a.moderatorOverridden"
+                               required/>
+                    </div>
+                </td>
+
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="totalHuntingArea{{$index}}" id="totalHuntingArea{{$index}}"
+                               min="0" ng-max="a.permitAreaSize" step="1"
+                               class="form-control input-sm no-spinner totalHuntingArea"
+                               ng-model="a.totalHuntingArea"
+                               ng-disabled="!a.moderatorOverridden"
+                               ng-required="!$ctrl.isEitherHuntingAreaPresent(a) && a.moderatorOverridden"/>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="effectiveHuntingArea{{$index}}" id="effectiveHuntingArea{{$index}}"
+                               min="0" ng-max="getMaxForEffectiveHuntingArea(a)" step="1"
+                               class="form-control input-sm no-spinner effectiveHuntingArea"
+                               ng-model="a.effectiveHuntingArea"
+                               ng-disabled="!a.moderatorOverridden"
+                               ng-required="!$ctrl.isEitherHuntingAreaPresent(a) && a.moderatorOverridden"/>
+                    </div>
+                </td>
+
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="remainingPopulationInTotalArea{{$index}}" id="remainingPopulationInTotalArea{{$index}}"
+                               min="0" max="99999" step="1"
+                               class="form-control input-sm no-spinner"
+                               ng-model="a.remainingPopulationInTotalArea"
+                               ng-disabled="!a.moderatorOverridden"
+                               ng-required="$ctrl.isRemainingPopulationForTotalAreaRequired(a) && a.moderatorOverridden"/>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-group" show-errors>
+                       <input type="number" name="remainingPopulationInEffectiveArea{{$index}}" id="remainingPopulationInEffectiveArea{{$index}}"
+                               min="0" ng-max="getMaxForRemainingPopulationInEffectiveHuntingArea(a)" step="1"
+                               class="form-control input-sm no-spinner"
+                               ng-model="a.remainingPopulationInEffectiveArea"
+                               ng-disabled="!a.moderatorOverridden"
+                               ng-required="$ctrl.isRemainingPopulationForEffectiveAreaRequired(a) && a.moderatorOverridden"/>
+                    </div>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+
+        <div class="buttons pull-right">
+            <button type="button"
+                    class="btn btn-danger"
+                    ng-confirm-click="{{'harvestpermit.management.moderatorOverride.deleteConfirmationMessage' | translate}}"
+                    ng-confirm-click-action="$ctrl.delete()"
+                    ng-if="$ctrl.anyPersistentModeratorOverriddenSummariesPresent"
+                    translate="harvestpermit.management.moderatorOverride.delete"></button>
+
+            <button type="button"
+                    class="btn btn-default"
+                    ng-click="$ctrl.cancel()"
+                    translate="global.button.cancel"></button>
+
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-click="$ctrl.submit()"
+                    ng-disabled="!$ctrl.isValid(moderatorHuntingSummaryForm)"
+                    translate="global.button.save"></button>
+        </div>
+
+    </form>
+</div>
+

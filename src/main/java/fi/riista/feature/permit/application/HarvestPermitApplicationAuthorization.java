@@ -19,7 +19,8 @@ import static fi.riista.feature.permit.application.HarvestPermitApplicationAutho
 public class HarvestPermitApplicationAuthorization extends AbstractEntityAuthorization<HarvestPermitApplication> {
     public enum Permission {
         LIST_CONFLICTS,
-        AMEND
+        AMEND,
+        CANCEL
     }
 
     public enum Role {
@@ -33,8 +34,10 @@ public class HarvestPermitApplicationAuthorization extends AbstractEntityAuthori
     public HarvestPermitApplicationAuthorization() {
         allow(EntityPermission.READ, ROLE_ADMIN, ROLE_MODERATOR, COORDINATOR_ANYWHERE);
         allow(EntityPermission.UPDATE, ROLE_ADMIN, ROLE_MODERATOR);
+        allow(EntityPermission.DELETE, ROLE_ADMIN, ROLE_MODERATOR, CONTACT_PERSON);
         allow(Permission.LIST_CONFLICTS, ROLE_ADMIN, ROLE_MODERATOR);
         allow(Permission.AMEND, ROLE_ADMIN, ROLE_MODERATOR);
+        allow(Permission.CANCEL, ROLE_ADMIN, ROLE_MODERATOR);
         allowCRUD(CONTACT_PERSON);
     }
 

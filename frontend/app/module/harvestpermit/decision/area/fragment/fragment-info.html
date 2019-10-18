@@ -1,0 +1,190 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title">
+        <span translate="harvestpermit.application.fragment.hash"></span>:
+        <span ng-bind="$ctrl.data.hash"></span>
+    </h3>
+</div>
+
+<div class="modal-body">
+    <div class="row">
+        <div class="col-xs-4">
+            <table class="table table-condensed">
+                <tbody>
+                <tr>
+                    <th>
+                        <span translate="global.map.size.landAreaSize"></span>
+                    </th>
+                    <td>
+                        <span ng-bind="$ctrl.data.bothSize.land | prettyAreaSize"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <span translate="global.map.size.waterAreaSize"></span>
+                    </th>
+                    <td>
+                        <span ng-bind="$ctrl.data.bothSize.water | prettyAreaSize"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <span translate="global.map.size.totalAreaSize"></span>
+                    </th>
+                    <td>
+                        <span ng-bind="$ctrl.data.bothSize.total | prettyAreaSize"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th colspan="2">
+                        <span translate="harvestpermit.application.fragment.intersectingYksityismaa"></span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th>
+                        <span translate="global.map.size.landAreaSize"></span>
+                    </th>
+                    <td>
+                        <span ng-bind="$ctrl.data.privateSize.land | prettyAreaSize"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <span translate="global.map.size.waterAreaSize"></span>
+                    </th>
+                    <td>
+                        <span ng-bind="$ctrl.data.privateSize.water | prettyAreaSize"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <span translate="global.map.size.totalAreaSize"></span>
+                    </th>
+                    <td>
+                        <span ng-bind="$ctrl.data.privateSize.total | prettyAreaSize"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th colspan="2">
+                        <span translate="harvestpermit.application.fragment.intersectingValtionmaa"></span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th>
+                        <span translate="global.map.size.landAreaSize"></span>
+                    </th>
+                    <td>
+                        <span ng-bind="$ctrl.data.stateSize.land | prettyAreaSize"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <span translate="global.map.size.waterAreaSize"></span>
+                    </th>
+                    <td>
+                        <span ng-bind="$ctrl.data.stateSize.water | prettyAreaSize"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <span translate="global.map.size.totalAreaSize"></span>
+                    </th>
+                    <td>
+                        <span ng-bind="$ctrl.data.stateSize.total | prettyAreaSize"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <button class="btn btn-default btn-block"
+                    ng-click="$ctrl.printMapPdf()">
+                <span class="fa fa-print fa-fw"></span>
+                <span translate="harvestpermit.application.fragment.printMap"></span>
+            </button>
+        </div>
+
+        <div class="col-xs-8">
+            <leaflet id="{{ $ctrl.mapId }}"
+                     defaults="$ctrl.mapDefaults"
+                     layers="$ctrl.mapDefaults.mmlLayers"
+                     controls="$ctrl.mapDefaults.controls"
+                     bounds="$ctrl.viewBounds"
+                     event-broadcast="$ctrl.mapEvents"
+                     class="r-cursor-arrow"
+                     height="450px">
+            </leaflet>
+        </div>
+    </div>
+
+    <table class="table table-condensed" style="margin-top: 10px">
+        <thead>
+        <tr>
+            <th colspan="4">
+                <span translate="harvestpermit.application.fragment.intersectingProperties"></span>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="p in $ctrl.data.propertyNumbers track by p.propertyNumber">
+            <td width="20%">
+                <span ng-bind="p.propertyNumber | formatPropertyIdentifier"></span>
+            </td>
+            <td width="10%">
+                <span class="sr-only" ng-if="p.metsahallitus">MH</span>
+                <span class="fa fa-tree text-primary" ng-if="p.metsahallitus"></span>
+            </td>
+            <td width="20%">
+                <span ng-bind="p.propertyArea | prettyAreaSize"></span>
+            </td>
+            <td>
+                <span ng-bind="p.propertyName"></span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-footer">
+    <div class="row">
+        <div class="col-xs-5">
+            <div class="btn-group btn-group-justified">
+                <label class="btn btn-default"
+                       ng-model="$ctrl.fragmentStatus"
+                       ng-change="$ctrl.setFragmentStatus($ctrl.fragmentStatus)"
+                       uib-btn-radio="false">
+                    <span class="fa fa-fw fa-lg fa-ban text-danger"
+                          ng-class="{'invisible': $ctrl.fragmentStatus}"></span>
+                    Alue ei ole sirpale
+                </label>
+
+                <label class="btn btn-default"
+                       ng-model="$ctrl.fragmentStatus"
+                       ng-change="$ctrl.setFragmentStatus($ctrl.fragmentStatus)"
+                       uib-btn-radio="true">
+                    <span class="fa fa-fw fa-lg fa-check-circle text-primary"
+                          ng-class="{'invisible': !$ctrl.fragmentStatus}"></span>
+                    Alue on sirpale
+                </label>
+            </div>
+        </div>
+        <div class="col-xs-7">
+            <button type="button" class="btn btn-default"
+                    ng-click="$ctrl.close()"
+                    translate="global.button.close"></button>
+        </div>
+    </div>
+</div>

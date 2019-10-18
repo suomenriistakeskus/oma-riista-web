@@ -7,149 +7,84 @@ angular.module('app.harvestpermit.decision.species', [])
         return $resource(apiPrefix, {id: '@id', decisionId: '@decisionId'}, {
             getSpecies: {method: 'GET', url: apiPrefix + '/species', isArray: true},
             updateSpecies: {method: 'POST', url: apiPrefix + '/species', isArray: true},
-            deleteSpecies: {method: 'DELETE', url: apiPrefix + '/species/:id'}
+            getForbiddenMethods: {method: 'GET', url: apiPrefix + '/methods/:id'},
+            updateForbiddenMethods: {method: 'POST', url: apiPrefix + '/methods/:id'}
         });
     })
 
-    .service('PermitDecisionSpeciesModal', function ($uibModal) {
-        this.open = function (decisionId) {
-            return $uibModal.open({
-                templateUrl: 'harvestpermit/decision/species/species.html',
-                controllerAs: '$ctrl',
-                controller: ModalController,
-                size: 'lg',
-                resolve: {
-                    decisionId: _.constant(decisionId),
-                    decisionSpeciesAmounts: function (PermitDecisionSpecies) {
-                        return PermitDecisionSpecies.getSpecies({decisionId: decisionId}).$promise;
-                    },
-                    diaryParameters: function (GameDiaryParameters) {
-                        return GameDiaryParameters.query().$promise;
-                    }
-                }
-            }).result;
-        };
-
-        function ModalController($uibModalInstance, $translate, dialogs,
-                                 PermitDecisionSpecies, PermitDecisionSpeciesAmountModal,
-                                 decisionId, decisionSpeciesAmounts, diaryParameters) {
-            var $ctrl = this;
-
-            $ctrl.$onInit = function () {
-                $ctrl.decisionSpeciesAmounts = decisionSpeciesAmounts;
-                $ctrl.availableSpecies = filterAvailableSpecies(decisionSpeciesAmounts);
-                $ctrl.gameSpeciesCode = null;
-            };
-
-            $ctrl.close = function () {
-                $uibModalInstance.close();
-            };
-
-            $ctrl.addSpeciesAmount = function () {
-                if ($ctrl.gameSpeciesCode) {
-                    $ctrl.edit({
-                        gameSpeciesCode: $ctrl.gameSpeciesCode
-                    });
-                }
-            };
-
-            $ctrl.setSpeciesCode = function (speciesCode) {
-                $ctrl.gameSpeciesCode = speciesCode;
-            };
-
-            $ctrl.getSpeciesName = function (gameSpeciesCode) {
-                return diaryParameters
-                    ? diaryParameters.$getGameName(gameSpeciesCode, null)
-                    : gameSpeciesCode;
-            };
-
-            $ctrl.edit = function (spa) {
-                var gameSpeciesName = $ctrl.getSpeciesName(spa.gameSpeciesCode);
-
-                PermitDecisionSpeciesAmountModal.open(spa, gameSpeciesName).then(function (result) {
-                    PermitDecisionSpecies.updateSpecies({decisionId: decisionId}, result).$promise.then(function () {
-                        reloadSpecies();
-                    });
-                });
-            };
-
-            $ctrl.delete = function (spa) {
-                confirmDelete().then(function () {
-                    PermitDecisionSpecies.deleteSpecies({decisionId: decisionId, id: spa.id}).$promise.then(function () {
-                        reloadSpecies();
-                    });
-                });
-            };
-
-            function reloadSpecies() {
-                PermitDecisionSpecies.getSpecies({decisionId: decisionId}).$promise.then(function (res) {
-                    $ctrl.decisionSpeciesAmounts = res;
-                    $ctrl.availableSpecies = filterAvailableSpecies(res);
-                });
-            }
-
-            function filterAvailableSpecies(input) {
-                var selectedSpeciesCodes = _.pluck(input, 'gameSpeciesCode');
-
-                return _.filter(diaryParameters.species, function (s) {
-                    return !_.includes(selectedSpeciesCodes, s.code);
-                });
-            }
-
-            function confirmDelete() {
-                var dialogTitle = $translate.instant('global.dialog.confirmation.title');
-                var dialogMessage = $translate.instant('global.dialog.confirmation.text');
-                return dialogs.confirm(dialogTitle, dialogMessage).result;
-            }
-        }
-    })
-
     .service('PermitDecisionSpeciesAmountModal', function ($uibModal) {
-        this.open = function (spa, gameSpeciesName) {
+        this.open = function (decisionId, gameSpeciesCode, permitTypeCode) {
             return $uibModal.open({
                 templateUrl: 'harvestpermit/decision/species/species-amount.html',
                 controllerAs: '$ctrl',
                 controller: ModalController,
                 size: 'lg',
                 resolve: {
-                    spa: _.constant(spa),
-                    gameSpeciesName: _.constant(gameSpeciesName)
+                    decisionId: _.constant(decisionId),
+                    gameSpeciesCode: _.constant(gameSpeciesCode),
+                    permitTypeCode: _.constant(permitTypeCode),
+                    speciesAmountList: function ($filter, PermitDecisionSpecies) {
+                        return PermitDecisionSpecies.getSpecies({
+                            decisionId: decisionId
+
+                        }).$promise.then(function (speciesAmountList) {
+                            var dateFilter = $filter('date');
+
+                            return _.chain(speciesAmountList)
+                                .filter({gameSpeciesCode: gameSpeciesCode})
+                                .map(function (spa) {
+                                    spa.year = dateFilter(spa.beginDate, 'yyyy');
+                                    return spa;
+                                })
+                                .sortBy('year')
+                                .value();
+                        });
+                    }
                 }
             }).result;
         };
 
-        function ModalController($uibModalInstance, Helpers, HuntingYearService, GameSpeciesCodes,
-                                 spa, gameSpeciesName) {
+        function ModalController($uibModalInstance, Helpers, HuntingYearService, NotificationService,
+                                 GameSpeciesCodes, PermitDecisionSpecies,
+                                 decisionId, gameSpeciesCode, speciesAmountList, permitTypeCode) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                var huntingYear = HuntingYearService.getCurrent();
+                $ctrl.gameSpeciesCode = gameSpeciesCode;
+                $ctrl.speciesAmountList = speciesAmountList;
+                $ctrl.restrictionsInUse = permitTypeCode === '100' && GameSpeciesCodes.isMooselike(gameSpeciesCode);
 
-                var defaults = {
-                    beginDate: HuntingYearService.getBeginDateStr(huntingYear),
-                    endDate: HuntingYearService.getEndDateStr(huntingYear),
-                    beginDate2: null,
-                    endDate2: null,
-                    restrictionType: null,
-                    restrictionAmount: null,
-                    gameSpeciesCode: null,
-                    amount: 0,
-                    applicationAmount: 0
-                };
-
-                _.assign($ctrl, defaults, spa || {});
-
-                if (!$ctrl.isRestrictionEnabled()) {
-                    $ctrl.restrictionType = null;
-                    $ctrl.restrictionAmount = null;
+                if (!$ctrl.restrictionsInUse) {
+                    _.forEach($ctrl.speciesAmountList, function (spa) {
+                        spa.restrictionType = null;
+                        spa.restrictionAmount = null;
+                    });
                 }
-
-                $ctrl.maxAmount = $ctrl.applicationAmount > 0 ? $ctrl.applicationAmount : 9999;
-                $ctrl.modalTitle = gameSpeciesName + ' - muokkaa kiintiötä';
             };
 
             $ctrl.save = function () {
-                $uibModalInstance.close(createSpeciesAmount());
+                var dtoList = _.map($ctrl.speciesAmountList, function (spa) {
+                    var hasRestriction = !!spa.restrictionType && spa.restrictionAmount > 0;
+
+                    return {
+                        id: spa.id,
+                        gameSpeciesCode: spa.gameSpeciesCode,
+                        beginDate: spa.beginDate,
+                        endDate: spa.endDate,
+                        amount: spa.amount,
+                        beginDate2: spa.beginDate2,
+                        endDate2: spa.endDate2,
+                        restrictionType: hasRestriction ? spa.restrictionType : null,
+                        restrictionAmount: hasRestriction ? spa.restrictionAmount : null
+                    };
+                });
+
+                PermitDecisionSpecies.updateSpecies({decisionId: decisionId}, {list: dtoList}).$promise.then(function () {
+                    $uibModalInstance.close();
+
+                }, function () {
+                    NotificationService.showDefaultFailure();
+                });
             };
 
             $ctrl.cancel = function () {
@@ -157,26 +92,24 @@ angular.module('app.harvestpermit.decision.species', [])
             };
 
             $ctrl.isValid = function (form) {
-                return form.$valid && checkIntervalsDoNotOverlap($ctrl.beginDate2, $ctrl.endDate) &&
-                    checkPeriodLessThanYear($ctrl.beginDate, $ctrl.endDate, $ctrl.endDate2);
+                return form.$valid && _.every($ctrl.speciesAmountList, function (spa) {
+                    return checkIntervalsDoNotOverlap(spa.beginDate2, spa.endDate) &&
+                        checkPeriodLessThanYear(spa.beginDate, spa.endDate, spa.endDate2);
+                });
             };
 
-            $ctrl.isRestrictionEnabled = function () {
-                return $ctrl.gameSpeciesCode && GameSpeciesCodes.isMooselike($ctrl.gameSpeciesCode);
+            $ctrl.showOverlapError = function (spa) {
+                return !checkIntervalsDoNotOverlap(spa.beginDate2, spa.endDate);
             };
 
-            $ctrl.showOverlapError = function () {
-                return !checkIntervalsDoNotOverlap($ctrl.beginDate2, $ctrl.endDate);
-            };
-
-            $ctrl.showDurationError = function () {
-                return !checkPeriodLessThanYear($ctrl.beginDate, $ctrl.endDate, $ctrl.endDate2);
+            $ctrl.showDurationError = function (spa) {
+                return !checkPeriodLessThanYear(spa.beginDate, spa.endDate, spa.endDate2);
             };
 
             function checkPeriodLessThanYear(beginDate, endDate, endDate2) {
-                beginDate = Helpers.toMoment($ctrl.beginDate, 'YYYY-MM-DD');
-                endDate = Helpers.toMoment($ctrl.endDate, 'YYYY-MM-DD');
-                endDate2 = Helpers.toMoment($ctrl.endDate2, 'YYYY-MM-DD');
+                beginDate = Helpers.toMoment(beginDate, 'YYYY-MM-DD');
+                endDate = Helpers.toMoment(endDate, 'YYYY-MM-DD');
+                endDate2 = Helpers.toMoment(endDate2, 'YYYY-MM-DD');
 
                 if (beginDate && beginDate.isValid()) {
                     var diff;
@@ -189,15 +122,15 @@ angular.module('app.harvestpermit.decision.species', [])
                         return true;
                     }
 
-                    return diff < 365;
+                    return diff <= 365;
                 }
 
                 return true;
             }
 
             function checkIntervalsDoNotOverlap(beginDate2, endDate) {
-                endDate = Helpers.toMoment($ctrl.endDate, 'YYYY-MM-DD');
-                beginDate2 = Helpers.toMoment($ctrl.beginDate2, 'YYYY-MM-DD');
+                endDate = Helpers.toMoment(endDate, 'YYYY-MM-DD');
+                beginDate2 = Helpers.toMoment(beginDate2, 'YYYY-MM-DD');
 
                 if (!beginDate2 || !endDate || !endDate.isValid() || !beginDate2.isValid()) {
                     return true;
@@ -205,21 +138,60 @@ angular.module('app.harvestpermit.decision.species', [])
 
                 return beginDate2.isAfter(endDate);
             }
+        }
+    })
 
-            function createSpeciesAmount() {
-                var hasRestriction = !!$ctrl.restrictionType && $ctrl.restrictionAmount > 0;
+    .service('PermitDecisionSpeciesMethodModal', function ($uibModal) {
+        this.open = function (decisionId, gameSpeciesCode) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/decision/species/species-method.html',
+                controllerAs: '$ctrl',
+                controller: ModalController,
+                size: 'lg',
+                resolve: {
+                    decisionId: _.constant(decisionId),
+                    gameSpeciesCode: _.constant(gameSpeciesCode),
+                    dto: function (PermitDecisionSpecies) {
+                        return PermitDecisionSpecies.getForbiddenMethods({
+                            decisionId: decisionId,
+                            id: gameSpeciesCode
+                        }).$promise;
+                    }
+                }
+            }).result;
+        };
 
-                return {
-                    gameSpeciesCode: $ctrl.gameSpeciesCode,
-                    beginDate: $ctrl.beginDate,
-                    endDate: $ctrl.endDate,
-                    amount: $ctrl.amount,
-                    beginDate2: $ctrl.beginDate2,
-                    endDate2: $ctrl.endDate2,
-                    restrictionType: hasRestriction ? $ctrl.restrictionType : null,
-                    restrictionAmount: hasRestriction ? $ctrl.restrictionAmount : null
-                };
-            }
+        function ModalController($uibModalInstance, PermitDecisionSpecies, PermitDecisionForbiddenMethodType,
+                                 decisionId, gameSpeciesCode, dto) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.gameSpeciesCode = gameSpeciesCode;
+                $ctrl.methodList = _.map(PermitDecisionForbiddenMethodType, function (method) {
+                    return {
+                        type: method,
+                        selected: _.includes(dto.forbiddenMethodTypes, method)
+                    };
+                });
+            };
+
+            $ctrl.cancel = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+
+            $ctrl.isValid = function (form) {
+                return form.$valid;
+            };
+
+            $ctrl.save = function () {
+                PermitDecisionSpecies.updateForbiddenMethods({decisionId: decisionId, id: gameSpeciesCode}, {
+                    forbiddenMethodTypes: _.chain($ctrl.methodList).map(function (m) {
+                        return m.selected ? m.type : null;
+                    }).filter().value()
+                }).$promise.then(function () {
+                    $uibModalInstance.close();
+                });
+            };
         }
     });
 

@@ -1,8 +1,8 @@
 package fi.riista.feature;
 
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.BaseEntity;
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DtoUtil;

@@ -35,6 +35,8 @@ public class SQGameAge extends RelationalPathSpatial<SQGameAge> {
 
     public final com.querydsl.sql.ForeignKey<SQSrvaSpecimen> _srvaSpecimenAgeFk = createInvForeignKey(name, "age");
 
+    public final com.querydsl.sql.ForeignKey<SQAmendmentApplicationData> _amendmentApplicationDataAgeFk = createInvForeignKey(name, "age");
+
     public SQGameAge(String variable) {
         super(SQGameAge.class, forVariable(variable), "public", "game_age");
         addMetadata();

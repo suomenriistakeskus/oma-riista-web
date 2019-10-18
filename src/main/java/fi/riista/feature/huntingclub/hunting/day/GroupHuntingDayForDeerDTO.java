@@ -1,6 +1,6 @@
 package fi.riista.feature.huntingclub.hunting.day;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import org.joda.time.LocalDate;
 
 import javax.validation.constraints.NotNull;

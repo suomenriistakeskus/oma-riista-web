@@ -4,7 +4,7 @@ import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonLookupService;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,7 +12,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Objects;
 
-@Service
+import static fi.riista.feature.gamediary.GameDiaryEntry.FOREIGN_PERSON_ELIGIBLE_AS_ACTOR;
+import static fi.riista.feature.gamediary.GameDiaryEntry.FOREIGN_PERSON_ELIGIBLE_AS_AUTHOR;
+
+@Component
 public class GameDiaryEntryAuthorActorService {
 
     @Resource
@@ -36,7 +39,10 @@ public class GameDiaryEntryAuthorActorService {
 
         } else if (activeUser.getPerson() != null) {
             diaryEntry.setAuthor(!diaryEntry.isNew() ? diaryEntry.getAuthor() : activeUser.getPerson());
-            diaryEntry.setActor(personLookupService.findPerson(authorAndActor.getActorInfo()).orElse(diaryEntry.getAuthor()));
+            diaryEntry.setActor(personLookupService
+                    .findPerson(authorAndActor.getActorInfo(), FOREIGN_PERSON_ELIGIBLE_AS_ACTOR)
+                    .orElseGet(diaryEntry::getAuthor));
+
         } else {
             throw new IllegalStateException("Active person is null");
         }
@@ -44,13 +50,15 @@ public class GameDiaryEntryAuthorActorService {
 
     @Nonnull
     private Person requireAuthor(@Nonnull final HasAuthorAndActor authorAndActor) {
-        return personLookupService.findPerson(authorAndActor.getAuthorInfo())
+        return personLookupService
+                .findPerson(authorAndActor.getAuthorInfo(), FOREIGN_PERSON_ELIGIBLE_AS_AUTHOR)
                 .orElseThrow(() -> new IllegalArgumentException("Author not specified"));
     }
 
     @Nonnull
     private Person requireActor(@Nonnull final HasAuthorAndActor authorAndActor) {
-        return personLookupService.findPerson(authorAndActor.getActorInfo())
+        return personLookupService
+                .findPerson(authorAndActor.getActorInfo(), FOREIGN_PERSON_ELIGIBLE_AS_ACTOR)
                 .orElseThrow(() -> new IllegalArgumentException("Actor not specified"));
     }
 }

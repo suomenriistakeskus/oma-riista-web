@@ -30,9 +30,7 @@ window.RiistaWidget = (function() {
             bounds: _bounds()
         },
 
-        initialize: function (options) {
-            L.setOptions(this, options);
-            var url = "https://kartta.riista.fi/tms/1.0.0/maasto_kiint/EPSG_3067/{z}/{x}/{y}.png";
+        initialize: function (url, options) {
             L.TileLayer.prototype.initialize.call(this, url, options);
         }
     });
@@ -207,17 +205,20 @@ window.RiistaWidget = (function() {
 
     RiistaWidget.prototype.createMap = function(mapId) {
         var map = new L.map(mapId, {
-            crs: L.CRS.EPSG3067,
+            crs: L.CRS.EPSG3857,
             continuousWorld: true,
             worldCopyJump: false,
-            minZoom: 2,
+            minZoom: 5,
             maxZoom: 10,
             zoomAnimation: true,
             zoomControl: false
         });
 
         L.control.zoom({position: 'bottomleft'}).addTo(map);
-        map.addLayer(new L.TileLayer.Riista({})).setView([65.01275, 25.46815], 2);
+        map.addLayer(new L.TileLayer.Riista("https://kartta.riista.fi/tms/1.0.0/maasto_mobile/EPSG_3857/{z}/{x}/{y}.png", {
+            minZoom: 5,
+            maxZoom: 17
+        })).setView([65.01275, 25.46815], 5);
 
         return map;
     };
@@ -240,7 +241,7 @@ window.RiistaWidget = (function() {
         this.map.addLayer(new L.MarkerClusterGroup({
             animate: false,
             spiderfyOnMaxZoom: false,
-            disableClusteringAtZoom: 5,
+            disableClusteringAtZoom: 10,
             showCoverageOnHover: false
         }).addLayer(geoJsonLayer));
 

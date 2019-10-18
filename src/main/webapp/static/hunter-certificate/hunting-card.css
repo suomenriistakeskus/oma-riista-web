@@ -33,6 +33,11 @@ td.occupation-name {
     min-width: 350pt;
 }
 
+td.shooting-test-entry {
+    padding: 5pt 0 0;
+    min-width: 350pt;
+}
+
 dl {
     overflow: auto;
     width:100%;

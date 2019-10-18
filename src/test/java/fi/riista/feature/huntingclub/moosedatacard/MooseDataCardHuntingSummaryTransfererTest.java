@@ -2,9 +2,9 @@ package fi.riista.feature.huntingclub.moosedatacard;
 
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.permit.summary.AreaSizeAndRemainingPopulation;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummaryRepository;
+import fi.riista.feature.huntingclub.permit.endofhunting.AreaSizeAndRemainingPopulation;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummaryRepository;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;

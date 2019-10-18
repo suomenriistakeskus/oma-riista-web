@@ -21,6 +21,10 @@ public interface OrganisationFixtureMixin extends FixtureMixin {
         consumer.accept(getEntitySupplier().newPerson());
     }
 
+    default void withForeignPerson(final Consumer<Person> consumer) {
+        consumer.accept(getEntitySupplier().newForeignPerson());
+    }
+
     default void withRhyAndCoordinator(final BiConsumer<Riistanhoitoyhdistys, Person> consumer) {
         withRhyAndCoordinatorOccupation((rhy, occupation) -> consumer.accept(rhy, occupation.getPerson()));
     }

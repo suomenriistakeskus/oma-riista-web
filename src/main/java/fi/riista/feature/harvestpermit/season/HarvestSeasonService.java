@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
@@ -23,12 +24,13 @@ public class HarvestSeasonService {
     private HarvestQuotaRepository harvestQuotaRepository;
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Tuple2<HarvestSeason, HarvestQuota> findHarvestSeasonAndQuota(final GameSpecies gameSpecies,
-                                                                         final Riistanhoitoyhdistys rhy,
-                                                                         final LocalDate harvestDate,
+    public Tuple2<HarvestSeason, HarvestQuota> findHarvestSeasonAndQuota(final @Nonnull GameSpecies gameSpecies,
+                                                                         final @Nonnull Riistanhoitoyhdistys rhy,
+                                                                         final @Nonnull LocalDate harvestDate,
                                                                          final boolean failIfQuotaNotFound) {
-        Objects.requireNonNull(harvestDate, "harvestDate is null");
+        Objects.requireNonNull(gameSpecies, "gameSpecies is null");
         Objects.requireNonNull(rhy, "rhy is null");
+        Objects.requireNonNull(harvestDate, "harvestDate is null");
 
         final List<HarvestSeason> validSeasonForHarvest =
                 harvestSeasonRepository.getAllSeasonsForHarvest(gameSpecies, harvestDate);
@@ -38,9 +40,7 @@ public class HarvestSeasonService {
         }
 
         if (validSeasonForHarvest.size() != 1) {
-            throw new IllegalStateException(String.format(
-                    "Unique HarvestSeason not found for species=%d date=%s",
-                    gameSpecies.getOfficialCode(), harvestDate));
+            throw HarvestQuotaNotFoundException.uniqueQuotaNotFound(gameSpecies, harvestDate);
         }
 
         final HarvestSeason harvestSeason = validSeasonForHarvest.get(0);
@@ -48,7 +48,7 @@ public class HarvestSeasonService {
 
         if (harvestQuota == null && harvestSeason.hasQuotas()) {
             if (failIfQuotaNotFound) {
-                throw new HarvestQuotaNotFoundException(gameSpecies, harvestDate);
+                throw HarvestQuotaNotFoundException.missingQuotaForRhy(gameSpecies, harvestDate, rhy);
             }
             return null;
         }

@@ -81,7 +81,7 @@ public class SiteSearchFeature {
         builder.setRhy(searchOrganisations(searchTerm, builder.getLocale(), MAX_RESULT_ORGANISATION_RHY,
                 of(OrganisationType.RHY)));
 
-        builder.setPersons(personRepository.findByFuzzyFullNameMatch(
+        builder.setPersons(personRepository.findAllPersonsByFuzzyFullNameMatch(
                 searchTerm, new PageRequest(0, MAX_RESULT_PERSON)));
 
         builder.setOtherOrganisations(searchOrganisations(searchTerm, builder.getLocale(), MAX_RESULT_ORGANISATION_OTHER,
@@ -150,7 +150,7 @@ public class SiteSearchFeature {
                     searchTerm, organisationTypes, MAX_FUZZY_DISTANCE_ORGANISATION_NAME, pageRequest);
         }
 
-        return organisationRepository.findByFinnishFuzzyNameMatch(
+        return organisationRepository.findByFuzzyFullNameMatch(
                 searchTerm, organisationTypes, MAX_FUZZY_DISTANCE_ORGANISATION_NAME, pageRequest);
     }
 }

@@ -1,6 +1,6 @@
 package fi.riista.feature.permit.decision.revision;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.HasID;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
@@ -74,6 +74,7 @@ public class PermitDecisionRevisionDTO extends BaseEntityDTO<Long> {
 
     private Long id;
     private Integer rev;
+    private String externalId;
     private LocalDateTime lockedDate;
     private String lockedByUsername;
     private LocalDateTime scheduledPublishDate;
@@ -97,12 +98,13 @@ public class PermitDecisionRevisionDTO extends BaseEntityDTO<Long> {
 
         dto.setId(revision.getId());
         dto.setRev(revision.getConsistencyVersion());
+        dto.setExternalId(revision.getExternalId());
         dto.setLockedDate(toLocalDateTime(revision.getLockedDate()));
         dto.setLockedByUsername(creatorName);
         dto.setScheduledPublishDate(toLocalDateTime(revision.getScheduledPublishDate()));
         dto.setPublishDate(toLocalDateTime(revision.getPublishDate()));
         dto.setPostalByMail(revision.isPostalByMail());
-        dto.setCanTogglePosted(!revision.isCancelled() && revision.getScheduledPublishDate().isBeforeNow());
+        dto.setCanTogglePosted(!revision.isCancelled() && revision.isPostalByMail() && revision.getPublishDate() != null);
         dto.setPosted(revision.getPostedByMailDate() != null);
         dto.setPostedByMailDate(toLocalDateTime(revision.getPostedByMailDate()));
         dto.setPostedByMailUsername(revision.getPostedByMailUsername());
@@ -142,6 +144,14 @@ public class PermitDecisionRevisionDTO extends BaseEntityDTO<Long> {
     @Override
     public void setRev(final Integer rev) {
         this.rev = rev;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(final String externalId) {
+        this.externalId = externalId;
     }
 
     public LocalDateTime getLockedDate() {

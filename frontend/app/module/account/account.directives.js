@@ -1,34 +1,45 @@
 'use strict';
 
 angular.module('app.account.directives', [])
-    .directive('rAccountTodo', function (Account, ActiveRoleService, $rootScope) {
+    .directive('rAccountTodo', function (Account, ActiveRoleService) {
         return {
             restrict: 'A',
             template: '<span ng-show="count > 0" ng-class="classes">{{count}}</span>',
             scope: {rAccountTodo: '&'},
             link: function (scope, element, attrs) {
-                if ($rootScope.account.role === 'ROLE_USER') {
+                if (ActiveRoleService.isUser()) {
                     var key = scope.rAccountTodo();
+                    var rhyId;
 
                     var red = key !== 'invitations';
                     scope.classes = {'r-account-todo': red, 'r-account-todo-yellow': !red};
 
+                    var getRhyId = function () {
+                        var activeRole = ActiveRoleService.getActiveRole();
+                        return _.get(activeRole, 'context.rhyId');
+                    };
+
+                    var setTodoCount = function (response) {
+                        scope.count = response.todoCount;
+                    };
+
                     if (key === 'permits') {
-                        Account.countTodo().$promise.then(function (res) {
+                        Account.countPermitTodo().$promise.then(function (res) {
                             scope.count = res.permitIds.length;
                         });
                     } else if (key === 'invitations') {
-                            Account.countTodo().$promise.then(function (res) {
-                                scope.count = res[key];
-                            });
+                        Account.countInvitationTodo().$promise.then(setTodoCount);
                     } else if (key === 'unfinishedSrvaEvents') {
-                        var activeRole = ActiveRoleService.getActiveRole();
-                        var rhyId = _.get(activeRole, 'context.rhyId');
+                        rhyId = getRhyId();
 
                         if (rhyId) {
-                            Account.countSrvaTodo({rhyId: rhyId}).$promise.then(function (res) {
-                                scope.count = res[key];
-                            });
+                            Account.countSrvaTodo({rhyId: rhyId}).$promise.then(setTodoCount);
+                        }
+                    } else if (key === 'unfinishedShootingTestEvents') {
+                        rhyId = getRhyId();
+
+                        if (rhyId) {
+                            Account.countShootingTestTodo({rhyId: rhyId}).$promise.then(setTodoCount);
                         }
                     } else {
                         console.warn('invalid key:', key);

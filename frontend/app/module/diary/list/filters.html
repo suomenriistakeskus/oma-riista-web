@@ -41,54 +41,55 @@
         </div>
     </div>
 
-    <ul class="list-unstyled col-xs-offset-1">
-        <li>
-            <label class="checkbox-inline">
-                <input type="checkbox"
-                       name="reportedForOthers" id="reportedForOthers"
-                       ng-model="state.reportedForOthers">
-                <span translate="gamediary.search.reportedForOthers"></span>
-            </label>
-        </li>
-        <li>
-            <label class="checkbox-inline">
-                <input type="checkbox"
-                       name="onlyTodo" id="onlyTodo"
-                       ng-model="state.onlyTodo">
-                <span translate="gamediary.search.onlyTodo"></span>
-            </label>
-        </li>
-        <li>
-            <label class="checkbox-inline">
-                <input type="checkbox"
-                       name="onlyReports" id="onlyReports"
-                       ng-model="state.onlyReports">
-                <span translate="gamediary.search.onlyHarvestReports"></span>
-            </label>
-        </li>
-        <li>
-            <label class="checkbox-inline">
-                <input type="checkbox"
-                       name="showHarvest" id="showHarvest"
-                       ng-model="state.showHarvest">
-                <span translate="gamediary.search.showHarvest"></span>
-            </label>
-        </li>
-        <li>
-            <label class="checkbox-inline">
-                <input type="checkbox"
-                       name="showObservation" id="showObservation"
-                       ng-model="state.showObservation">
-                <span translate="gamediary.search.showObservation"></span>
-            </label>
-        </li>
-        <li ng-show="enableSrva">
-            <label class="checkbox-inline">
-                <input type="checkbox"
-                       name="showSrvaEvent" id="showSrvaEvent"
-                       ng-model="state.showSrvaEvent">
-                <span translate="srva.form.showSrvaEvent"></span>
-            </label>
-        </li>
-    </ul>
+    <div class="col-xs-offset-1">
+        <ul class="list-unstyled">
+            <li>
+                <label class="checkbox-inline">
+                    <input type="checkbox"
+                           name="reportedForOthers" id="reportedForOthers"
+                           ng-model="state.reportedForOthers">
+                    <span translate="gamediary.search.reportedForOthers"></span>
+                </label>
+            </li>
+            <li>
+                <div style="width: 100%; height: 1px; margin: 10px 15px 2px 0px; border-top: 1px solid #ddd"></div>
+            </li>
+            <li>
+                <label class="checkbox-inline">
+                    <input type="checkbox"
+                           name="showObservation" id="showObservation"
+                           ng-model="state.showObservation">
+                    <span translate="gamediary.search.showObservation"></span>
+                </label>
+            </li>
+            <li ng-show="enableSrva">
+                <label class="checkbox-inline">
+                    <input type="checkbox"
+                           name="showSrvaEvent" id="showSrvaEvent"
+                           ng-model="state.showSrvaEvent">
+                    <span translate="srva.form.showSrvaEvent"></span>
+                </label>
+            </li>
+            <li>
+                <label class="checkbox-inline">
+                    <input type="checkbox"
+                           name="showHarvest" id="showHarvest"
+                           ng-model="state.showHarvest">
+                    <span translate="gamediary.search.showHarvest"></span>
+                </label>
+            </li>
+        </ul>
+
+        <div style="margin-left: 20px">
+            <select class="form-control"
+                    name="harvestReportFilter" id="harvestReportFilter"
+                    ng-model="state.harvestReportFilter"
+                    ng-disabled="!state.showHarvest"
+                    required>
+                <option value="all">Kaikki saaliit</option>
+                <option value="report-only" translate="gamediary.search.onlyHarvestReports"></option>
+                <option value="todo-only" translate="gamediary.search.onlyTodo"></option>
+            </select>
+        </div>
+    </div>
 </form>

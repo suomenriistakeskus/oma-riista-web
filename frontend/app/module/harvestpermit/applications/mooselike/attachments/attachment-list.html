@@ -1,0 +1,31 @@
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+        <tr>
+            <th translate="harvestpermit.wizard.attachments.filename"></th>
+            <th>&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="a in $ctrl.filteredAttachments track by a.id">
+            <td>
+                <a ng-if="$ctrl.canDownload()"
+                   ng-click="$ctrl.downloadAttachment(a.id)"
+                   ng-bind="a.name"></a>
+
+                <span ng-if="!$ctrl.canDownload()"
+                      ng-bind="a.name"></span>
+            </td>
+            <td class="col-xs-1 text-right vcenter">
+                <a ng-if="$ctrl.canDelete()"
+                   ng-click="$ctrl.deleteAttachment(a.id)">
+                    <span class="fa fa-2x fa-remove text-danger"></span>
+                </a>
+            </td>
+        </tr>
+        <tr ng-show="!$ctrl.filteredAttachments || $ctrl.filteredAttachments.length === 0">
+            <td colspan="2"><span class="text-muted" translate="harvestpermit.wizard.attachments.none"></span></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

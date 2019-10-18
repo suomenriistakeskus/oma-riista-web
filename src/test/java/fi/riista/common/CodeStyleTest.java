@@ -11,6 +11,7 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,21 +47,31 @@ public class CodeStyleTest {
 
     @Test
     public void verifySourceFilesDoNotContainTabCharacters() throws IOException {
-        final Iterator<File> iter = FileUtils.iterateFiles(new File("src"), new CodeStyleFileFilter(), TrueFileFilter.INSTANCE);
+        final List<String> filesContainingTabs = find("\t", StandardCharsets.US_ASCII);
+        assertEmpty(filesContainingTabs, "The following files contain tab characters: ");
+    }
 
-        final List<String> filesContainingTabs = new ArrayList<>();
+    @Test
+    public void verifySourceFilesDoNotContainCombiningDiaeresis() throws IOException {
+        final String combiningDiaeresis = "\u0308";
+        final List<String> foundFiles = find(combiningDiaeresis, StandardCharsets.UTF_8);
+        assertEmpty(foundFiles, "The following files contain combining diaeresis (looks like umlaut but is not): ");
+    }
+
+    private List<String> find(final String toFind, final Charset charset) throws IOException {
+        final List<String> foundFiles = new ArrayList<>();
+        final Iterator<File> iter = FileUtils.iterateFiles(new File("src"), new CodeStyleFileFilter(), TrueFileFilter.INSTANCE);
 
         while (iter.hasNext()) {
             final File file = iter.next();
-            Files.asCharSource(file, StandardCharsets.US_ASCII).readLines(new LineProcessor<Void>() {
+            Files.asCharSource(file, charset).readLines(new LineProcessor<Void>() {
                 @Override
                 public boolean processLine(@Nonnull final String line) throws IOException {
-                    boolean result = true;
-                    if (line.contains("\t")) {
-                        filesContainingTabs.add(file.getCanonicalPath());
-                        result = false;
+                    if (line.contains(toFind)) {
+                        foundFiles.add(file.getCanonicalPath());
+                        return false;
                     }
-                    return result;
+                    return true;
                 }
 
                 @Override
@@ -69,8 +80,6 @@ public class CodeStyleTest {
                 }
             });
         }
-
-        assertEmpty(filesContainingTabs, "The following files contain tab characters: ");
+        return foundFiles;
     }
-
 }

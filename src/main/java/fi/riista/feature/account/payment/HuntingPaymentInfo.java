@@ -3,24 +3,23 @@ package fi.riista.feature.account.payment;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import fi.riista.feature.common.entity.CreditorReference;
+import fi.riista.feature.common.money.FinnishBankAccount;
 import fi.riista.util.InvoiceUtil;
-import org.iban4j.Bic;
 import org.iban4j.Iban;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
 public final class HuntingPaymentInfo {
 
-    private static final List<AccountDetails> ACCOUNT_DETAILS = ImmutableList.of(
-            new AccountDetails(Bic.valueOf("OKOYFIHH"), Iban.valueOf("FI7850000120378442"), "OP-Pohjola"),
-            new AccountDetails(Bic.valueOf("NDEAFIHH"), Iban.valueOf("FI1216603000107212"), "Nordea"),
-            new AccountDetails(Bic.valueOf("DABAFIHH"), Iban.valueOf("FI8480001300035350"), "Danske"));
+    private static final List<FinnishBankAccount> ACCOUNT_DETAILS = ImmutableList.of(
+            FinnishBankAccount.GAME_MANAGEMENT_FEE_OP_POHJOLA,
+            FinnishBankAccount.GAME_MANAGEMENT_FEE_NORDEA,
+            FinnishBankAccount.GAME_MANAGEMENT_FEE_DANSKE_BANK);
 
     private static final String PAYMENT_RECEIVER = "RIISTANHOITOMAKSUJEN KERÄILYTILI\nSAMLINGSKONTO FÖR JAKTVÅRDSAVGIFTER";
 
@@ -33,54 +32,46 @@ public final class HuntingPaymentInfo {
             "OBS! När du betalar utomlands, måste du betala\n" +
             "också mottagarbankens omkostnader.";
 
-    public static boolean isPaymentInfoAvailable(final int huntingYear) {
-        return huntingYear >= 2015 && huntingYear <= 2017;
+    static boolean isPaymentInfoAvailable(final int huntingYear) {
+        return huntingYear == 2018 || huntingYear == 2019;
     }
 
-    @Nonnull
-    public static Optional<HuntingPaymentInfo> create(final int huntingYear, final String invoiceReference) {
-        return isPaymentInfoAvailable(huntingYear)
-                ? Optional.of(new HuntingPaymentInfo(33, 0, invoiceReference, ACCOUNT_DETAILS))
-                : Optional.empty();
-    }
+    public static HuntingPaymentInfo create(final int huntingYear,
+                                            final @Nonnull LocalDate dateOfBirth,
+                                            final @Nonnull String invoiceReference) {
+        requireNonNull(dateOfBirth);
+        requireNonNull(invoiceReference);
 
-    public static class AccountDetails {
-        private final Bic bic;
-        private final Iban iban;
-        private final String bankName;
+        switch (huntingYear) {
+            case 2018:
+                return new HuntingPaymentInfo(39, 0, invoiceReference, ACCOUNT_DETAILS);
 
-        public AccountDetails(final Bic bic, final Iban iban, final String bankName) {
-            this.bic = Objects.requireNonNull(bic, "bic is null");
-            this.iban = Objects.requireNonNull(iban, "iban is null");
-            this.bankName = Objects.requireNonNull(bankName, "bankName is null");
-        }
+            case 2019:
+                // 31.7.2001 jälkeen syntyneet saavat 20 € laskun
+                // 31.7.2001 ja sitä aiemmin syntyneet 39 € laskun
+                final LocalDate dateBoundary = new LocalDate(2001, 7, 31);
+                final int euros = dateOfBirth.isAfter(dateBoundary) ? 20 : 39;
 
-        public Bic getBic() {
-            return bic;
-        }
+                return new HuntingPaymentInfo(euros, 0, invoiceReference, ACCOUNT_DETAILS);
 
-        public Iban getIban() {
-            return iban;
-        }
-
-        public String getBankName() {
-            return bankName;
+            default:
+                return null;
         }
     }
 
-    private final List<AccountDetails> accounts;
+    private final List<FinnishBankAccount> accounts;
     private final int euros;
     private final int cents;
     private final CreditorReference invoiceReference;
 
     HuntingPaymentInfo(final int euros, final int cents,
                        final String invoiceReference,
-                       final List<AccountDetails> accounts) {
+                       final List<FinnishBankAccount> accounts) {
         this.invoiceReference =
-                CreditorReference.fromNullable(Objects.requireNonNull(invoiceReference, "invoiceReference is null"));
+                CreditorReference.fromNullable(requireNonNull(invoiceReference, "invoiceReference is null"));
         this.euros = euros;
         this.cents = cents;
-        this.accounts = Objects.requireNonNull(accounts, "accounts is null");
+        this.accounts = requireNonNull(accounts, "accounts is null");
 
         // Sanity check
         Preconditions.checkArgument(accounts.size() > 0);

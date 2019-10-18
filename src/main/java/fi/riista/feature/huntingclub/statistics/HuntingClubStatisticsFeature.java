@@ -4,8 +4,8 @@ import com.querydsl.jpa.JPQLQueryFactory;
 import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.SQLQueryFactory;
-import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.sql.SQHarvestPermit;
 import fi.riista.sql.SQHarvestPermitPartners;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,7 +42,7 @@ public class HuntingClubStatisticsFeature {
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR')")
-    public List<HuntingClubStatisticsRow> calculateByRka(Long rkaId, final boolean includePermitHolders) {
+    public List<HuntingClubStatisticsRow> calculateByRka(final Long rkaId, final boolean includePermitHolders) {
         return new HuntingClubStatistics(new HuntingClubStatisticsRhyQueries(queryFactory, rkaId))
                 .calculate(listClubsWithPermit(includePermitHolders));
     }
@@ -64,7 +64,7 @@ public class HuntingClubStatisticsFeature {
 
         final SQLQuery<Long> mooseLikeHarvestPermitIds = SQLExpressions.select(harvestPermit.harvestPermitId)
                 .from(harvestPermit)
-                .where(harvestPermit.permitTypeCode.eq(HarvestPermit.MOOSELIKE_PERMIT_TYPE));
+                .where(harvestPermit.permitTypeCode.eq(PermitTypeCode.MOOSELIKE));
 
         return sqlQueryFactory.from(harvestPermitPartners)
                 .where(harvestPermitPartners.harvestPermitId.in(mooseLikeHarvestPermitIds))
@@ -75,8 +75,8 @@ public class HuntingClubStatisticsFeature {
     private List<Long> findAllPermitHolders() {
         final QHarvestPermit harvestPermit = QHarvestPermit.harvestPermit;
 
-        return queryFactory.from(harvestPermit).select(harvestPermit.permitHolder.id)
-                .where(harvestPermit.permitTypeCode.eq(HarvestPermit.MOOSELIKE_PERMIT_TYPE),
+        return queryFactory.from(harvestPermit).select(harvestPermit.huntingClub.id)
+                .where(harvestPermit.permitTypeCode.eq(PermitTypeCode.MOOSELIKE),
                         harvestPermit.permitHolder.isNotNull())
                 .fetch();
     }

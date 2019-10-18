@@ -53,4 +53,8 @@ public final class AuthorizationTokenCollector {
     public boolean hasPermission() {
         return authorizationTokenHelper.hasPermission(permission, acquiredTokens);
     }
+
+    public Enum<?> getRequestedPermission() {
+        return permission;
+    }
 }

@@ -6,7 +6,15 @@ public enum NumberSequence implements NumberGenerator {
 
     INSTANCE;
 
-    private final AtomicLong nextValue = new AtomicLong(1L);
+    private static final long INITIAL_VALUE = 1L;
+
+    private final AtomicLong nextValue = new AtomicLong(INITIAL_VALUE);
+
+
+    @Override
+    public void reset() {
+        nextValue.set(INITIAL_VALUE);
+    }
 
     @Override
     public int nextInt() {

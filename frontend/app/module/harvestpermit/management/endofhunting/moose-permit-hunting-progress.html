@@ -1,0 +1,35 @@
+<div class="moose-permit-hunting-progress text-right">
+    <div>
+        <span translate="harvestpermit.management.endOfMooselikeHunting.permitAmount"></span>:
+        <span ng-bind="$ctrl.permitAmount"></span>
+    </div>
+
+    <div>
+        <span translate="harvestpermit.management.endOfMooselikeHunting.nonEdibleAmount"></span>:
+        <span ng-bind="$ctrl.nonEdibleAmount"></span>
+    </div>
+
+    <div>
+        <span translate="harvestpermit.management.endOfMooselikeHunting.amendmentAmount"></span>:
+        <span ng-bind="$ctrl.amendmentAmount"></span>
+    </div>
+
+    <div class="large-text">
+        <span ng-bind="$ctrl.totalAmount"></span>
+    </div>
+
+    <div class="progress">
+        <div class="progress-bar" role="progressbar"
+             aria-valuenow="$ctrl.progressBarWidth" aria-valuemin="0" aria-valuemax="100"
+             ng-style="{'width': $ctrl.progressBarWidth + '%'}">
+
+            <span class="sr-only">{{$ctrl.progressBarWidth}}%</span>
+        </div>
+    </div>
+
+    <div class="large-text">
+        <span ng-bind="$ctrl.harvestedAmount"
+              ng-class="$ctrl.getCssClassForHarvestedAmount()">
+        </span>
+    </div>
+</div>

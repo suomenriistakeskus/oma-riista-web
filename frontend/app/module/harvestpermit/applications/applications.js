@@ -13,67 +13,31 @@ angular.module('app.harvestpermit.application', [])
         }
 
         return $resource(apiPrefix, {id: '@id'}, {
-            getFullDetails: getMethod('/full'),
+            listMyApplicationsAndDecisions: getMethod('/myApplicationsAndDecisions', true),
 
             // application types
             listTypes: getMethod('/types', true),
             findType: getMethod('/findtype'),
 
             // Search for moderator
-            search: postMethod('/search', true),
-            assignedApplications: postMethod('/assigned/applications', true),
-            assignedDecisions: postMethod('/assigned/decisions', true),
+            search: postMethod('/search'),
+            assignedApplications: postMethod('/assigned/applications'),
+            assignedDecisions: postMethod('/assigned/decisions'),
             postalQueue: postMethod('/search/postalqueue', true),
             listYears: getMethod('/years', true),
             listHandlers: getMethod('/handlers', true),
-            listPartnerClubs: getMethod('/partner/club', true),
+
+            // Wizard
+            createAmendmentApplication: postMethod('/amendment'),
+            updateAdditionalData: postMethod('/additional'),
+            getAttachments: getMethod('/attachment', true),
 
             // Validate and send
+            send: postMethod('/send'),
             validate: postMethod('/validate'),
-            sendApplication: postMethod('/send'),
-            updateAdditionalData: postMethod('/additional'),
+
+            // Amend
             startAmending: postMethod('/amend/start'),
-            stopAmending: postMethod('/amend/stop'),
-
-            // Species amounts
-            listSpeciesAmounts: getMethod('/species', true),
-            saveSpeciesAmounts: postMethod('/species', true),
-
-            // Permit holder
-            listAvailablePermitHolders: getMethod('/permit-holder', true),
-            searchPermitHolder: getMethod('/permit-holder-search'),
-            updatePermitHolder: postMethod('/permit-holder'),
-
-            // Shooter count
-            getShooterCounts: getMethod('/shooters'),
-            updateShooterCounts: postMethod('/shooters'),
-
-            // Attachments
-            getAttachments: getMethod('/attachment', true),
-            importMh: postMethod('/mh'),
-
-            // Permit area
-            getArea: getMethod('/area'),
-            getAreaStatus: getMethod('/area/status'),
-            setAreaReady: postMethod('/area/ready'),
-            setAreaIncomplete: postMethod('/area/incomplete'),
-            getBounds: getMethod('/area/bounds'),
-            getGeometry: getMethod('/area/geometry'),
-
-            // Conflicts & fragments
-            listConflicts: getMethod('/conflicts', true),
-            listPairwiseConflicts: getMethod('/conflicts/:otherId', true),
-            getGeometryFragmentInfo: postMethod('/area/fragmentinfo')
-        });
-    })
-    .factory('HarvestPermitApplicationAreaPartners', function ($resource) {
-        var apiPrefix = '/api/v1/harvestpermit/application/:applicationId/partner/:partnerId';
-
-        return $resource(apiPrefix, {'applicationId': '@applicationId', 'partnerId': '@partnerId'}, {
-            listAvailable: {
-                method: 'GET',
-                url: apiPrefix + '/available',
-                isArray: true
-            }
+            stopAmending: postMethod('/amend/stop')
         });
     });

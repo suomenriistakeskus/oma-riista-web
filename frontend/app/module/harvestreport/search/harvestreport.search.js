@@ -248,7 +248,7 @@ angular.module('app.harvestreport.search', [])
         };
 
         function markerClickHandler(markerId) {
-            $ctrl.show(_.find($ctrl.harvestReports, 'id', markerId));
+            $ctrl.show(_.find($ctrl.harvestReports, {id: markerId}));
         }
 
         function harvestToState(harvest) {
@@ -318,12 +318,13 @@ angular.module('app.harvestreport.search', [])
     })
 
     .controller('ModeratorHarvestReportSearchController', function ($state, $translate, HuntingYearService,
-                                                                    Helpers, FormPostService, ModeratorSearchData,
+                                                                    Helpers, FormPostService, FetchAndSaveBlob, ModeratorSearchData,
                                                                     MapDefaults, MapState, MapBounds,
                                                                     Harvest, DiaryEntryService, PersonSearchModal,
                                                                     HarvestReportSearchSidebar, HarvestChangeHistoryModal,
                                                                     HarvestReportSearch, HarvestReportSearchMarkers,
-                                                                    reportCategories, areas, harvestReportLocalityResolver) {
+                                                                    reportCategories, areas, harvestReportLocalityResolver,
+                                                                    GameSpeciesCodes) {
         var $ctrl = this;
 
         $ctrl.getHarvestAreaName = harvestReportLocalityResolver.getHarvestAreaName;
@@ -425,7 +426,7 @@ angular.module('app.harvestreport.search', [])
         };
 
         function markerClickHandler(markerId) {
-            $ctrl.showSidebar(_.find($ctrl.results.content, 'id', markerId));
+            $ctrl.showSidebar(_.find($ctrl.results.content, {id: markerId}));
         }
 
         function harvestToState(harvest) {
@@ -471,7 +472,7 @@ angular.module('app.harvestreport.search', [])
 
         function updateRhyList(area) {
             if (area) {
-                $ctrl.rhys = _.chain(areas).filter('id', area.id).map('subOrganisations').filter().flatten().value();
+                $ctrl.rhys = _.chain(areas).filter({id: area.id}).map('subOrganisations').filter().flatten().value();
             } else {
                 $ctrl.rhys = _.chain(areas).map('subOrganisations').filter().flatten().value();
             }
@@ -493,7 +494,15 @@ angular.module('app.harvestreport.search', [])
         $ctrl.harvestReportStateChanged = function (harvest, state) {
             harvest.harvestReportState = state;
             harvest.rev = harvest.rev + 1;
-            harvest.canEdit = false;
+        };
+
+        $ctrl.isAcceptedCarnivore = function (harvest) {
+            return harvest.harvestReportState === 'APPROVED' &&
+                GameSpeciesCodes.isCarnivoreSpecies(harvest.gameSpeciesCode);
+        };
+
+        $ctrl.exportCertificate = function (harvest) {
+            FetchAndSaveBlob.post('/api/v1/harvest/certificate/' + harvest.id + '/print/pdf');
         };
 
         $ctrl.editHarvest = function (harvest) {

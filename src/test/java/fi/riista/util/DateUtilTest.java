@@ -1,5 +1,6 @@
 package fi.riista.util;
 
+import com.google.common.collect.Range;
 import fi.riista.config.Constants;
 import io.vavr.Tuple;
 import org.joda.time.DateTime;
@@ -215,4 +216,19 @@ public class DateUtilTest {
     public void testBeginOfCalendarYear() {
         assertEquals(new DateTime(2017, 1, 1, 0, 0, 0, 0, Constants.DEFAULT_TIMEZONE), DateUtil.beginOfCalendarYear(2017));
     }
+
+    @Test
+    public void testMonthAsRange() {
+        final Range<DateTime> tuple = DateUtil.monthAsRange(2018, 2);
+        assertEquals(1, tuple.lowerEndpoint().getDayOfMonth());
+        assertEquals(2, tuple.lowerEndpoint().getMonthOfYear());
+        assertEquals(0, tuple.lowerEndpoint().getHourOfDay());
+        assertEquals(0, tuple.lowerEndpoint().getMinuteOfHour());
+
+        assertEquals(1, tuple.upperEndpoint().getDayOfMonth());
+        assertEquals(3, tuple.upperEndpoint().getMonthOfYear());
+        assertEquals(0, tuple.upperEndpoint().getHourOfDay());
+        assertEquals(0, tuple.upperEndpoint().getMinuteOfHour());
+    }
+
 }

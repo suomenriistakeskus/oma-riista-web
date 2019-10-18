@@ -27,7 +27,7 @@ angular.module('app.custom-leaflet.directives', ['ui-leaflet'])
 
                 var _clearMarkerGroups = function () {
                     if (isDefined(groups)) {
-                        _.each(_.keys(groups), function (groupName) {
+                        _.forEach(_.keys(groups), function (groupName) {
                             groups[groupName].clearLayers();
                             delete groups[groupName];
                         });
@@ -228,7 +228,7 @@ angular.module('app.custom-leaflet.directives', ['ui-leaflet'])
                                 leafletMarkerEvents.bindEvents(attrs.id, marker, pathToMarker, markerData, leafletScope, null);
                             });
 
-                            _.each(_.keys(groupedMarkers), function (groupName) {
+                            _.forEach(_.keys(groupedMarkers), function (groupName) {
                                 groups[groupName].addLayers(groupedMarkers[groupName]);
                             });
 

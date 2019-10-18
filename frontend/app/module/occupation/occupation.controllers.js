@@ -19,6 +19,8 @@ angular.module('app.occupation.controllers', [])
                 past: OccupationsFilterSorterService.past,
                 future: OccupationsFilterSorterService.future
             };
+            $ctrl.occupationTypes = occupationTypes.all;
+            $ctrl.occupationTypeFilter = null;
 
             $ctrl.canModify = OccupationPermissionService.canModify;
 
@@ -26,10 +28,13 @@ angular.module('app.occupation.controllers', [])
                 return item && item.person && !!item.person.registered;
             };
 
+            $ctrl.onOccupationTypeChange = function() {
+                $ctrl.showTense($ctrl.selectedTense);
+            };
+
             $ctrl.showTense = function (tenseFn) {
                 $ctrl.selectedTense = tenseFn;
-
-                var v = tenseFn(occupationTypes.board, $ctrl.allOccupations);
+                var v = tenseFn(occupationTypes.board, $ctrl.allOccupations, $ctrl.occupationTypeFilter);
 
                 $ctrl.occupations = v.occupations;
                 $ctrl.board = v.board;
@@ -135,7 +140,7 @@ angular.module('app.occupation.controllers', [])
 
                     return searchMethod(search)
                         .then(ok, nok).finally(done);
-                }, 500, true);
+                }, 500);
             }
 
             $scope.findPersonBySsn = decorateSearch(function () {

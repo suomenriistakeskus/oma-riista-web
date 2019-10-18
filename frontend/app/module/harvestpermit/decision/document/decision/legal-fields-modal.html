@@ -1,0 +1,44 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="harvestpermit.derogation.legalFieldsTitle"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group">
+            <div class="col-xs-10 col-xs-offset-1">
+                <label class="checkbox">
+                    <input type="checkbox" ng-model="$ctrl.legalFields.legalSection32">
+                    <span translate="harvestpermit.decision.legal.deviate32Label"></span>
+                </label>
+
+                <label class="checkbox">
+                    <input type="checkbox" ng-model="$ctrl.legalFields.legalSection33">
+                    <span translate="harvestpermit.decision.legal.deviate33Label"></span>
+                </label>
+
+                <label class="checkbox">
+                    <input type="checkbox" ng-model="$ctrl.legalFields.legalSection34">
+                    <span translate="harvestpermit.decision.legal.deviate34Label"></span>
+                </label>
+
+                <label class="checkbox">
+                    <input type="checkbox" ng-model="$ctrl.legalFields.legalSection51">
+                    <span translate="harvestpermit.decision.legal.deviate51Label"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

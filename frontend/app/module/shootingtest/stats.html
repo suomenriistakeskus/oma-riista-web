@@ -29,14 +29,29 @@
 <shooting-test-statistics-table statistic="$ctrl.statistics.summary"></shooting-test-statistics-table>
 
 <div ng-repeat="event in $ctrl.statistics.eventStatistics track by event.calendarEvent.calendarEventId">
-    <div class="h5">
-        {{::('event.type.' + event.calendarEvent.calendarEventType | translate)}}
-        {{::event.calendarEvent.date | date: 'dd.M.yyyy'}}
-        {{::event.calendarEvent.beginTime}}
-        <span ng-if="event.calendarEvent.endTime">- {{event.calendarEvent.endTime}}</span>
+    <div class="row">
+        <div class="col-xs-6 col-sm-7 col-md-8 col-lg-9">
+            <div class="h5">
+                {{::('event.type.' + event.calendarEvent.calendarEventType | translate)}}
+                {{::event.calendarEvent.date | date: 'd.M.yyyy'}}
+                {{::event.calendarEvent.beginTime}}
+                <span ng-if="event.calendarEvent.endTime">- {{event.calendarEvent.endTime}}</span>
+            </div>
+            <div>{{::event.calendarEvent.venue.address.streetAddress}} {{::event.calendarEvent.venue.address.city}}</div>
+            <div>
+                <span>{{::$ctrl.getResponsibleOfficialName(event.calendarEvent.officials)}}</span>
+                <span  ng-if="$ctrl.getResponsibleOfficialName(event.calendarEvent.officials)">
+                    <span show-in-development class="shooting-test-responsible-official"></span><span>, </span>
+                </span>
+                <span>{{::$ctrl.joinNonResponsibleOfficials(event.calendarEvent.officials)}}</span>
+            </div>
+        </div>
+        <div class="col-xs-6 col-sm-5 col-md-4 col-lg-3" ng-if="::$ctrl.isModeratorOrCoordinator">
+            <button type="button" ng-click="$ctrl.loadPaymentSummaryPdf(event.calendarEvent.calendarEventId)" class="btn btn-primary pull-right">
+                <span translate="account.profile.shootingTests.downloadPaymentSummary"></span>
+            </button>
+        </div>
     </div>
-    <div>{{::event.calendarEvent.venue.address.streetAddress}} {{::event.calendarEvent.venue.address.city}}</div>
-    <div>{{::$ctrl.joinOfficials(event.calendarEvent.officials)}}</div>
 
     <shooting-test-statistics-table statistic="event"></shooting-test-statistics-table>
 </div>

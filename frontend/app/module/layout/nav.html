@@ -1,7 +1,7 @@
 <div class="navbar navbar-primary r-main-navbar" role="navigation"
      ng-if="$ctrl.isAuthenticated()">
     <div class="container">
-        <div class="navbar-header">
+        <div class="navbar-header hidden-xs">
             <nav-active-role></nav-active-role>
         </div>
 
@@ -23,14 +23,13 @@
         </ul>
 
         <ul class="nav navbar-nav navbar-right r-main-navbar-nav-right">
-            <nav-search ng-if="$ctrl.isAdminOrModerator()"
-                        active-if-state-includes="profile,rhy"></nav-search>
+            <nav-search ng-if="$ctrl.isAdminOrModerator()"></nav-search>
 
-            <li ng-if="$ctrl.isUser()">
+            <li class="hidden-xs" ng-if="$ctrl.isUser()">
                 <a href="{{'login.instructionsLink' | translate}}" target="_blank" translate="global.menu.help"></a>
             </li>
 
-            <nav-language></nav-language>
+            <nav-language class="hidden-xs"></nav-language>
             <nav-change-role></nav-change-role>
         </ul>
     </div>

@@ -1,0 +1,260 @@
+<div class="h3">
+    <span translate="harvestpermit.wizard.amendment.title"></span>
+    /
+    <span ng-if="::($ctrl.application.status == 'ACTIVE')"
+          translate="harvestpermit.mine.applications.sent"></span>
+    <span ng-if="::($ctrl.application.status == 'DRAFT')"
+          translate="harvestpermit.mine.applications.draft"></span>
+</div>
+<form id="form" name="form" role="form" class="form-horizontal">
+    <div class="form-group">
+        <div class="col-xs-12 col-sm-6">
+            <div class="h4" translate="harvestpermit.wizard.amendment.details"></div>
+            <table class="table">
+                <tr>
+                    <td translate="gamediary.form.species"></td>
+                    <td>
+                        <div ng-class="{ 'has-error': (!$ctrl.application.gameSpeciesCode) }">
+                            <select name="species" id="species"
+                                    class="form-control"
+                                    ng-disabled="!$ctrl.editable"
+                                    ng-model="$ctrl.application.gameSpeciesCode"
+                                    required
+                                    ng-options="s.code as (s.name | rI18nNameFilter) for s in $ctrl.species"></select>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate="gamediary.form.date"></td>
+                    <td>
+                        <div class="input-group r-dropdown-align-right"
+                             ng-controller="DatePickerController" ng-class="{ 'has-error': (!$ctrl.viewState.date) }">
+
+                            <input type="text" name="date" id="date"
+                                   class="form-control"
+                                   uib-datepicker-popup is-open="isDatePickerOpen"
+                                   date-between-min-max
+                                   ng-model="$ctrl.viewState.date"
+                                   ng-model-options="{ updateOn: 'blur' }"
+                                   ng-change="$ctrl.updatePointOfTime()"
+                                   max-date="today()"
+                                   ng-disabled="!$ctrl.editable">
+
+                            <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)"
+                                ng-disabled="!$ctrl.editable">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td translate="gamediary.form.time"></td>
+                    <td>
+                        <div ng-class="{ 'has-error': (!$ctrl.viewState.time) }">
+                            <input type="text" name="time" id="time"
+                                   class="form-control"
+                                   finnish-date-time-in-past="$ctrl.viewState.date"
+                                   ng-change="$ctrl.updatePointOfTime()"
+                                   ng-required="!!$ctrl.viewState.date"
+                                   ng-model="$ctrl.viewState.time"
+                                   ng-disabled="!$ctrl.editable">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate="gamediary.form.age"></td>
+                    <td>
+                        <select name="age" id="age"
+                                class="form-control"
+                                ng-disabled="!$ctrl.editable"
+                                ng-model="$ctrl.application.age"
+                                ng-options="('gamediary.age.' + a | translate) for a in $ctrl.getAvailableGameAges()">
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate="gamediary.form.gender"></td>
+                    <td>
+                        <select name="gender" id="gender"
+                                class="form-control"
+                                ng-disabled="!$ctrl.editable"
+                                ng-model="$ctrl.application.gender"
+                                ng-options="('gamediary.gender.' + a | translate) for a in $ctrl.getAvailableGameGenders()">
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate="gamediary.form.hunter"></td>
+                    <td>
+                        <div ng-if="$ctrl.application.shooter">
+                            <span ng-bind="$ctrl.application.shooter.lastName"></span>
+                            <span ng-bind="$ctrl.application.shooter.byName"></span>
+                            <span ng-bind="$ctrl.application.shooter.hunterNumber"></span>
+                        </div>
+                        <div ng-if="!$ctrl.application.shooter" translate="global.messages.notSet"></div>
+
+                        <button class="btn btn-default"
+                                ng-disabled="!$ctrl.editable"
+                                ng-click="$ctrl.findShooter()"
+                                translate="harvestpermit.wizard.amendment.selectShooter"></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate="harvestpermit.application.partnerList.partnerName"></td>
+                    <td>
+                        <select name="partner" id="partner"
+                                class="form-control"
+                                ng-disabled="!$ctrl.editable"
+                                ng-model="$ctrl.viewState.partnerId"
+                                ng-change="$ctrl.partnerChanged()"
+                                ng-options="p.id as (p | rI18nNameFilter) for p in $ctrl.partners">
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" translate="gamediary.form.location"></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <leaflet class="r-cursor-pointer"
+                                 id="viewHarvestMap"
+                                 defaults="$ctrl.mapDefaults"
+                                 layers="$ctrl.mapDefaults.mmlLayers"
+                                 controls="$ctrl.mapDefaults.controls"
+                                 lf-center="$ctrl.mapState.center"
+                                 event-broadcast="$ctrl.mapEvents"
+                                 r-geolocation-marker="$ctrl.application.geoLocation"
+                                 r-geolocation-editable="$ctrl.editable"
+                                 r-geolocation-marker-force-finland="true"
+                                 height="300px">
+                        </leaflet>
+                        <div r-geolocation-input="$ctrl.application.geoLocation"
+                             ng-if="$ctrl.showGeolocationInput">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="col-xs-12 col-sm-6">
+            <div class="h4" translate="harvestpermit.wizard.amendment.description"></div>
+            <div class="help-block" translate="harvestpermit.wizard.amendment.descriptionHelp1"></div>
+            <div class="help-block" translate="harvestpermit.wizard.amendment.descriptionHelp2"></div>
+
+            <textarea name="description" id="description"
+                      class="form-control"
+                      rows="27"
+                      ng-disabled="!$ctrl.editable"
+                      ng-model="$ctrl.application.description"></textarea>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-xs-12">
+            <div class="h4" translate="harvestpermit.application.attachments"></div>
+        </div>
+
+        <div class="col-xs-12 col-sm-6">
+            <div class="h5" translate="harvestpermit.wizard.amendment.officialStatementAttachments"></div>
+            <div class="help-block"
+                 style="min-height: 160px"
+                 translate="harvestpermit.wizard.amendment.officialStatementAttachmentsHelp"></div>
+
+            <permit-application-attachment-upload ng-if="$ctrl.editable"
+                                                  uri="$ctrl.attachmentConfig.baseUri"
+                                                  attachment-type="'OFFICIAL_STATEMENT'"
+                                                  done="$ctrl.attachmentUploadComplete()"></permit-application-attachment-upload>
+
+            <permit-application-attachment-list attachments="$ctrl.attachments"
+                                                attachment-type="'OFFICIAL_STATEMENT'"
+                                                attachment-config="$ctrl.attachmentConfig"
+                                                refresh="$ctrl.refreshAttachments()">
+            </permit-application-attachment-list>
+        </div>
+
+        <div class="col-xs-12 col-sm-6">
+            <div class="h5" translate="harvestpermit.wizard.amendment.otherAttachments"></div>
+            <div class="help-block"
+                 style="min-height: 160px"
+                 translate="harvestpermit.wizard.amendment.otherAttachmentsHelp"></div>
+
+            <permit-application-attachment-upload ng-if="$ctrl.editable"
+                                                  uri="$ctrl.attachmentConfig.baseUri"
+                                                  attachment-type="'OTHER'"
+                                                  done="$ctrl.attachmentUploadComplete()"></permit-application-attachment-upload>
+
+            <permit-application-attachment-list attachments="$ctrl.attachments"
+                                                attachment-type="'OTHER'"
+                                                attachment-config="$ctrl.attachmentConfig"
+                                                refresh="$ctrl.refreshAttachments()">
+            </permit-application-attachment-list>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="form-group" ng-if="$ctrl.showSubmitDate">
+        <div class="col-xs-6">
+            <span translate="harvestpermit.wizard.summary.submitDate"></span>
+            <span class="text-danger fa fa-asterisk"></span>
+        </div>
+        <div class="col-xs-3">
+            <div class="input-group"
+                 ng-controller="DatePickerController">
+
+                <input type="text" name="submitDate" id="submitDate"
+                       class="form-control"
+                       uib-datepicker-popup is-open="isDatePickerOpen"
+                       date-between-min-max
+                       ng-model="$ctrl.submitDate"
+                       ng-model-options="{ updateOn: 'blur' }"
+                       required
+                       ng-disabled="!$ctrl.editable"
+                       max-date="today()">
+
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+            </div>
+
+            <p class="help-block has-error"
+               ng-show="form.submitDate.$invalid"
+               ng-messages="form.submitDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <button class="btn btn-default col-xs-offset-3 col-xs-6 text-uppercase"
+                translate="harvestpermit.wizard.amendment.saveIncomplete"
+                ng-disabled="form.$invalid || !$ctrl.canSave()"
+                ng-click="$ctrl.save()"></button>
+    </div>
+
+    <div class="row">
+        <button class="btn btn-primary col-xs-offset-3 col-xs-6 text-uppercase"
+                style="margin-top:15px"
+                translate="harvestpermit.wizard.navigation.send"
+                ng-disabled="form.$invalid || !$ctrl.canSend()"
+                ng-click="$ctrl.send()"></button>
+    </div>
+
+    <div class="row" ng-if="$ctrl.application.status === 'DRAFT'">
+        <div class="text-right">
+            <button class="btn btn-default btn-danger"
+                    ng-confirm-click="{{'harvestpermit.mine.applications.deleteConfirmation' | translate}}"
+                    ng-confirm-click-action="$ctrl.delete()">
+                <span class="fa fa-fw fa-remove"></span>
+                <span translate="global.button.delete"></span>
+            </button>
+        </div>
+    </div>
+</form>

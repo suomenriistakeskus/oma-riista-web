@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Map;
 
 public interface HarvestPermitApplicationConflictPalstaRepositoryCustom {
-    List<HarvestPermitApplicationConflictPalsta> listAll(HarvestPermitApplication firstApplication,
+    List<HarvestPermitApplicationConflictPalsta> listAll(final long batchId,
+                                                         HarvestPermitApplication firstApplication,
                                                          HarvestPermitApplication secondApplication);
 
-    List<HarvestPermitApplicationConflictPalsta> listAll(HarvestPermitApplication firstApplication,
+    List<HarvestPermitApplicationConflictPalsta> listAll(final long batchId,
+                                                         HarvestPermitApplication firstApplication,
                                                          List<HarvestPermitApplication> otherApplicationList);
 
-    Map<Long, ConfictSummaryDTO> countConflictSummaries(HarvestPermitApplication application,
+    Map<Long, ConfictSummaryDTO> countConflictSummaries(final long batchId,
+                                                        HarvestPermitApplication application,
                                                         List<HarvestPermitApplication> conflicting);
 }

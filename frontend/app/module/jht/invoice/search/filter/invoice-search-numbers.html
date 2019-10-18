@@ -1,0 +1,36 @@
+<div class="form-group" show-errors>
+    <label for="byNumberSearchType" translate="jht.invoice.search.byNumberSearchType"></label>
+
+    <select name="byNumberSearchType" id="byNumberSearchType" class="form-control"
+            ng-model="$ctrl.byNumberSearchType"
+            ng-change="$ctrl.onByNumberSearchTypeChanged()"
+            ng-options="('jht.invoice.search.byNumberSearchTypes.' + option | translate) for option in $ctrl.byNumberSearchTypes">
+        <option value="">{{'jht.invoice.search.selectByNumberSearchType' | translate}}</option>
+    </select>
+</div>
+
+<div class="form-group" ng-if="$ctrl.isInvoiceNumberFieldVisible()" show-errors>
+    <label for="invoiceNumber" translate="jht.invoice.search.byNumberSearchTypes.invoiceNumber"></label>
+
+    <input name="invoiceNumber" id="invoiceNumber" class="form-control"
+           type="number"
+           min="200000"
+           ng-model="$ctrl.filters.invoiceNumber"/>
+</div>
+
+<div class="form-group" ng-if="$ctrl.isCreditorReferenceFieldVisible()" show-errors>
+    <label for="creditorReference" translate="jht.invoice.search.byNumberSearchTypes.creditorReference"></label>
+
+    <input name="creditorReference" id="creditorReference" class="form-control"
+           type="text"
+           ng-model="$ctrl.filters.creditorReference"/>
+</div>
+
+<div class="form-group" ng-if="$ctrl.isApplicationNumberFieldVisible()" show-errors>
+    <label for="applicationNumber" translate="jht.invoice.search.byNumberSearchTypes.applicationNumber"></label>
+
+    <input name="applicationNumber" id="applicationNumber" class="form-control"
+           type="number"
+           min="10000"
+           ng-model="$ctrl.filters.applicationNumber"/>
+</div>

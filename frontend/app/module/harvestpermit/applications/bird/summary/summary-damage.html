@@ -1,0 +1,41 @@
+<div ng-repeat="spa in ::$ctrl.damage track by spa.gameSpeciesCode">
+    <div>
+        <strong ng-bind="spa.gameSpeciesCode | translateSpeciesCode | uppercase"></strong>
+    </div>
+
+    <div>
+        <p translate="harvestpermit.wizard.bird.damage.damageDescription"></p>
+        <div class="well">
+            <span ng-bind="spa.causedDamageAmount"></span>
+            &euro;
+        </div>
+    </div>
+
+    <div>
+        <p translate="harvestpermit.wizard.bird.damage.performedMeasures"></p>
+        <div class="well">
+            <span ng-bind="spa.evictionMeasureDescription"></span>
+        </div>
+    </div>
+    <hr>
+</div>
+
+<div ng-repeat="spa in ::$ctrl.damage track by spa.gameSpeciesCode">
+    <p><strong ng-bind="spa.gameSpeciesCode | translateSpeciesCode | uppercase"></strong></p>
+
+    <div>
+        <p translate="harvestpermit.wizard.bird.damage.damageDescription"></p>
+        <div class="well">
+            <span ng-bind="spa.causedDamageDescription"></span>
+        </div>
+    </div>
+
+    <div>
+        <p translate="harvestpermit.wizard.bird.damage.evictionMeasureEffect"></p>
+        <div class="well">
+            <span ng-bind="spa.evictionMeasureEffect"></span>
+        </div>
+    </div>
+
+    <hr>
+</div>

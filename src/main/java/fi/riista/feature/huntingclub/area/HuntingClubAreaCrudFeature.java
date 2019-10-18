@@ -2,7 +2,7 @@ package fi.riista.feature.huntingclub.area;
 
 import com.google.common.base.Preconditions;
 import fi.riista.feature.AbstractCrudFeature;
-import fi.riista.feature.gis.metsahallitus.MetsahallitusProperties;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusMaterialYear;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.security.EntityPermission;
@@ -31,10 +31,10 @@ public class HuntingClubAreaCrudFeature extends AbstractCrudFeature<Long, Huntin
     private HuntingClubAreaDTOTransformer huntingClubAreaDTOTransformer;
 
     @Resource
-    private SecureRandom secureRandom;
+    private MetsahallitusMaterialYear metsahallitusMaterialYear;
 
     @Resource
-    private MetsahallitusProperties metsahallitusProperties;
+    private SecureRandom secureRandom;
 
     @Override
     protected JpaRepository<HuntingClubArea, Long> getRepository() {
@@ -62,7 +62,7 @@ public class HuntingClubAreaCrudFeature extends AbstractCrudFeature<Long, Huntin
         }
         entity.setHuntingYear(dto.getHuntingYear());
         entity.setMetsahallitusYear(HuntingClubArea.calculateMetsahallitusYear(
-                dto.getHuntingYear(), metsahallitusProperties.getLatestMetsahallitusYear()));
+                dto.getHuntingYear(), metsahallitusMaterialYear.getLatestHirviYear()));
         entity.setNameFinnish(dto.getNameFI());
         entity.setNameSwedish(dto.getNameSV());
 

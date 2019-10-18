@@ -2,6 +2,7 @@ package fi.riista.feature.harvestpermit.statistics;
 
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.huntingclub.permit.statistics.HarvestCountDTO;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
@@ -17,15 +18,23 @@ import java.util.Map;
 public class MoosePermitStatisticsExcelView extends AbstractXlsxView {
 
     private static final String HEADER_PREFIX = "MoosePermitStatisticsExcel.";
-    private static final String[] HEADERS = new String[] {
-            "permitNumber", "permitHolder", "permitAmount",
+    private static final String[] HEADERS = new String[]{
+            "speciesName", "rka", "rhy", "hta",
+            "permitNumber", "permitHolder",
+            "partnerCount", "totalLandAreaSize", "effectiveLandAreaSize", "permitLandAreaSize",
+            "applicationPermitAmount", "applicationPermitAmountPer1000ha",
+            "originalPermitAmount", "amendmentAmount",
+            "totalPermitAmount", "totalPermitAmountPer1000ha",
+            "usedPermitAmount", "usedPermitPercentage",
+            "restrictionAdult", "restrictionAdultMale", "restrictedYoungPercentage",
             "adultMales", "adultFemales", "adults",
             "youngMales", "youngFemales", "young",
-            "total", "permitUsedPercentage", "youngPercentage", "adultMalePercentage",
+            "totalHarvest", "totalHarvestPer1000ha",
+            "youngPercentage", "youngMalePercentage", "adultMalePercentage",
             "remainingPopulationInTotalArea", "remainingPopulationInEffectiveArea",
-            "totalAreaSize", "effectiveAreaSize",
             "remainingPopulationInTotalAreaPer1000ha", "remainingPopulationInEffectiveAreaPer1000ha"
     };
+
 
     private final EnumLocaliser localiser;
     private final List<MoosePermitStatisticsDTO> stats;
@@ -37,7 +46,7 @@ public class MoosePermitStatisticsExcelView extends AbstractXlsxView {
     }
 
     private static String createFilename() {
-        return String.format("RHY_hirvielaintilasto_%s.xlsx", Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
+        return String.format("hirvielaintilasto_%s.xlsx", Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
     }
 
     @Override
@@ -59,10 +68,6 @@ public class MoosePermitStatisticsExcelView extends AbstractXlsxView {
                 .appendHeaderRow(localiser.translate(HEADER_PREFIX, HEADERS));
 
         for (final MoosePermitStatisticsDTO stat : stats) {
-            // this is summary row, should be the first dto
-            if (stat.getPermitNumber() == null) {
-                continue;
-            }
             createRow(helper, stat);
         }
 
@@ -70,34 +75,57 @@ public class MoosePermitStatisticsExcelView extends AbstractXlsxView {
     }
 
     private void createRow(final ExcelHelper helper, final MoosePermitStatisticsDTO dto) {
-        final MoosePermitStatisticsCount count = dto.getHarvestCount();
+        final MoosePermitStatisticsAmountDTO permitAmount = dto.getPermitAmount();
+        final HarvestCountDTO harvestCount = dto.getHarvestCount();
+        final MoosePermitStatisticsAreaAndPopulation areaAndPopulation = dto.getAreaAndPopulation();
 
         helper.appendRow()
+                .appendTextCell(localiser.getTranslation(dto.getSpeciesName()))
+                .appendTextCell(localiser.getTranslation(dto.getRka()))
+                .appendTextCell(localiser.getTranslation(dto.getRhy()))
+                .appendTextCell(localiser.getTranslation(dto.getHta()))
+
                 .appendTextCell(dto.getPermitNumber())
-                .appendTextCell(localiser.getTranslation(dto.getPermitHolderLocalisedString()))
-                .appendNumberCell(dto.getPermitAmount())
+                .appendTextCell(localiser.getTranslation(dto.getPermitHolder()))
+                .appendNumberCell(dto.getPartnerCount())
+                .appendNumberCell(areaAndPopulation.getTotalAreaSize())
+                .appendNumberCell(areaAndPopulation.getEffectiveAreaSize())
+                .appendNumberCell(dto.getPermitLandAreaSize())
 
-                .appendNumberCell(count.getAdultMales())
-                .appendNumberCell(count.getAdultFemales())
-                .appendNumberCell(count.getAdults())
+                .appendDoubleCell(permitAmount.getApplication(), 1)
+                .appendDoubleCell(dto.getApplicationPermitsPer1000ha(), 2)
 
-                .appendNumberCell(count.getYoungMales())
-                .appendNumberCell(count.getYoungFemales())
-                .appendNumberCell(count.getYoung())
+                .appendDoubleCell(permitAmount.getOriginal(), 1)
+                .appendDoubleCell(permitAmount.getAmendment(), 1)
+                .appendDoubleCell(permitAmount.getTotal(), 1)
+                .appendDoubleCell(dto.getTotalPermitsPer1000ha(), 2)
 
-                .appendNumberCell(count.getTotal())
+                .appendDoubleCell(dto.getHarvestCount().getRequiredPermitAmount(), 1)
+                .appendDoubleCell(dto.getUsedPermitPercentage(), 1)
 
-                .appendNumberCell(100 * (count.getAdults() + count.getYoung() / 2) / dto.getPermitAmount())
-                .appendNumberCell(count.getYoungPercentage())
-                .appendNumberCell(count.getAdultMalePercentage())
+                .appendNumberCell(permitAmount.getRestrictionAdult())
+                .appendNumberCell(permitAmount.getRestrictionAdultMale())
+                .appendDoubleCell(permitAmount.getRestrictedYoungPercentage(), 1)
 
-                .appendNumberCell(count.getRemainingPopulationInTotalArea())
-                .appendNumberCell(count.getRemainingPopulationInEffectiveArea())
+                .appendNumberCell(harvestCount.getNumberOfAdultMales())
+                .appendNumberCell(harvestCount.getNumberOfAdultFemales())
+                .appendNumberCell(harvestCount.getNumberOfAdults())
 
-                .appendNumberCell(count.getTotalAreaSize())
-                .appendNumberCell(count.getEffectiveAreaSize())
+                .appendNumberCell(harvestCount.getNumberOfYoungMales())
+                .appendNumberCell(harvestCount.getNumberOfYoungFemales())
+                .appendNumberCell(harvestCount.getNumberOfYoung())
 
-                .appendNumberCell(count.getRemainingPopulationInTotalAreaPer1000ha())
-                .appendNumberCell(count.getRemainingPopulationInEffectiveAreaPer1000ha());
+                .appendNumberCell(harvestCount.getTotal())
+                .appendDoubleCell(dto.getTotalHarvestPer1000ha(), 2)
+
+                .appendDoubleCell(harvestCount.getYoungPercentage(), 1)
+                .appendDoubleCell(harvestCount.getYoungMalePercentage(), 1)
+                .appendDoubleCell(harvestCount.getAdultMalePercentage(), 1)
+
+                .appendNumberCell(areaAndPopulation.getRemainingPopulationInTotalArea())
+                .appendNumberCell(areaAndPopulation.getRemainingPopulationInEffectiveArea())
+
+                .appendDoubleCell(areaAndPopulation.getRemainingPopulationInTotalAreaPer1000ha(), 2)
+                .appendDoubleCell(areaAndPopulation.getRemainingPopulationInEffectiveAreaPer1000ha(), 2);
     }
 }

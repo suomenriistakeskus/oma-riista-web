@@ -1,7 +1,7 @@
 package fi.riista.api.external;
 
 import fi.riista.feature.account.user.ActiveUserService;
-import fi.riista.integration.metsastajarekisteri.innofactor.InnofactorImportRunner;
+import fi.riista.integration.metsastajarekisteri.InnofactorImportRunner;
 import fi.riista.integration.metsastajarekisteri.input.PendingImportFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

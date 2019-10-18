@@ -1,6 +1,6 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
-import fi.riista.util.DateUtil;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
 
@@ -17,22 +17,24 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
 public class ShootingRangeStatistics
-        implements AnnualStatisticsFieldsetStatus, HasLastModificationStatus<ShootingRangeStatistics>, Serializable {
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<ShootingRangeStatistics>,
+        Serializable {
 
     public static final ShootingRangeStatistics reduce(@Nullable final ShootingRangeStatistics a,
                                                        @Nullable final ShootingRangeStatistics b) {
 
         final ShootingRangeStatistics result = new ShootingRangeStatistics();
-        result.setMooseRanges(nullsafeSumAsInt(a, b, ShootingRangeStatistics::getMooseRanges));
-        result.setShotgunRanges(nullsafeSumAsInt(a, b, ShootingRangeStatistics::getShotgunRanges));
-        result.setRifleRanges(nullsafeSumAsInt(a, b, ShootingRangeStatistics::getRifleRanges));
-        result.setOtherShootingRanges(nullsafeSumAsInt(a, b, ShootingRangeStatistics::getOtherShootingRanges));
+        result.setMooseRanges(nullableIntSum(a, b, ShootingRangeStatistics::getMooseRanges));
+        result.setShotgunRanges(nullableIntSum(a, b, ShootingRangeStatistics::getShotgunRanges));
+        result.setRifleRanges(nullableIntSum(a, b, ShootingRangeStatistics::getRifleRanges));
+        result.setOtherShootingRanges(nullableIntSum(a, b, ShootingRangeStatistics::getOtherShootingRanges));
         result.setLastModified(nullsafeMax(a, b, ShootingRangeStatistics::getLastModified));
         return result;
     }
@@ -77,7 +79,7 @@ public class ShootingRangeStatistics
     }
 
     public ShootingRangeStatistics(@Nonnull final ShootingRangeStatistics that) {
-        Objects.requireNonNull(that);
+        requireNonNull(that);
 
         this.mooseRanges = that.mooseRanges;
         this.shotgunRanges = that.shotgunRanges;
@@ -87,18 +89,28 @@ public class ShootingRangeStatistics
     }
 
     @Override
-    public boolean isEqualTo(final ShootingRangeStatistics other) {
-        // Includes manually updateable fields only.
-
-        return Objects.equals(mooseRanges, other.mooseRanges) &&
-                Objects.equals(shotgunRanges, other.shotgunRanges) &&
-                Objects.equals(rifleRanges, other.rifleRanges) &&
-                Objects.equals(otherShootingRanges, other.otherShootingRanges);
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.SHOOTING_RANGES;
     }
 
     @Override
-    public void updateModificationStatus() {
-        lastModified = DateUtil.now();
+    public boolean isEqualTo(@Nonnull final ShootingRangeStatistics that) {
+        // Includes manually updateable fields only.
+
+        return Objects.equals(mooseRanges, that.mooseRanges) &&
+                Objects.equals(shotgunRanges, that.shotgunRanges) &&
+                Objects.equals(rifleRanges, that.rifleRanges) &&
+                Objects.equals(otherShootingRanges, that.otherShootingRanges);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final ShootingRangeStatistics that) {
+        // Includes manually updateable fields only.
+
+        this.mooseRanges = that.mooseRanges;
+        this.shotgunRanges = that.shotgunRanges;
+        this.rifleRanges = that.rifleRanges;
+        this.otherShootingRanges = that.otherShootingRanges;
     }
 
     @Override
@@ -145,10 +157,12 @@ public class ShootingRangeStatistics
         this.otherShootingRanges = otherShootingRanges;
     }
 
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

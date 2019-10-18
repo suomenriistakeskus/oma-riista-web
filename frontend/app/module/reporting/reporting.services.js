@@ -15,7 +15,7 @@ angular.module('app.reporting.services', [])
                 transformResponse: appendTransform($http.defaults.transformResponse, function(data, headersGetter, status) {
                     if (status === 200) {
                         // sort areas and rhys by name, also make sure that all area subOrganisations are of RHY type
-                        _.each(data, function (area) {
+                        _.forEach(data, function (area) {
                             area.subOrganisations = _.sortBy(area.subOrganisations, 'name').filter(function (v) {
                                 return v.organisationType === 'RHY';
                             });
@@ -25,15 +25,6 @@ angular.module('app.reporting.services', [])
                         return data;
                     }
                 })
-            }
-        });
-    })
-    .factory('Htas', function ($resource, $http, CacheFactory) {
-        return $resource('api/v1/contactsearch/htas', {}, {
-            query: {
-                method: 'GET',
-                isArray: true,
-                cache: CacheFactory.get('htasContactSearchCache')
             }
         });
     });

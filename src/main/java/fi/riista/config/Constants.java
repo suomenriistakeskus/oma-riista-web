@@ -4,6 +4,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -14,6 +15,8 @@ public final class Constants {
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     public static final String DEFAULT_ENCODING = DEFAULT_CHARSET.name();
     public static final DateTimeFormatter FILENAME_TS_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
+
+    public static final BigDecimal ZERO_MONETARY_AMOUNT = BigDecimal.ZERO.setScale(2);
 
     // Top-level Java packages
     public static final String APPLICATION_ROOT_PACKAGE = "fi.riista";
@@ -31,5 +34,4 @@ public final class Constants {
     private Constants() {
         throw new AssertionError();
     }
-
 }

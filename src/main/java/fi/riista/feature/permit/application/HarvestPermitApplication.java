@@ -1,17 +1,19 @@
 package fi.riista.feature.permit.application;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
-import fi.riista.feature.permit.application.species.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.mooselike.MooselikePermitApplicationAreaMissingException;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.IllegalHarvestPermitAreaStateTransitionException;
 import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.util.LocalisedString;
-import fi.riista.validation.FinnishHuntingPermitNumber;
+import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
@@ -20,6 +22,7 @@ import org.springframework.util.StringUtils;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -34,6 +37,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
+import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -44,28 +48,25 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 @Entity
 @Access(AccessType.FIELD)
 public class HarvestPermitApplication extends LifecycleEntity<Long> {
-    private static final LocalisedString FILENAME_PREFIX =
+    public static final LocalisedString FILENAME_PREFIX =
             new LocalisedString("Hakemus", "Ansökning");
-
-    public static String getPdfFileName(final Locale locale, final int applicationNumber) {
-        return String.format("%s-%d.pdf", FILENAME_PREFIX.getAnyTranslation(locale), applicationNumber);
-    }
-    public static String getArchiveFileName(final Locale locale, final int applicationNumber) {
-        return String.format("%s-%d.zip", FILENAME_PREFIX.getAnyTranslation(locale), applicationNumber);
-    }
 
     public enum Status {
         // Hakemus on jätetty ja valmis käsiteltäväksi
         ACTIVE,
 
-        // Hakemus peruutettu LH:ssa
-        CANCELLED,
+        // Hakemus piilotetaan, kyseessä on peruutettu hakemus mutta sen peruutuspäätös on tehty toisessa järjestelmässä.
+        HIDDEN,
 
         // Moderaattori on avannut hakemuksen täydennettäväksi
         AMENDING,
@@ -78,13 +79,17 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
 
     private Long id;
 
+    @Type(type = "uuid-char")
+    @Column
+    private UUID uuid;
+
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
     private Status status;
 
     @Column(nullable = false)
-    private int huntingYear;
+    private int applicationYear;
 
     // Timestamp used to determine when application was submitted, eg. first time status changed to ACTIVE
     @Column
@@ -98,10 +103,6 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
     @Size(max = 255)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String applicationName;
-
-    @FinnishHuntingPermitNumber
-    @Column
-    private String permitNumber;
 
     // Ampujat, jotka eivät kuulu muuhun pyyntilupaa hakevaan seuraan / seurueeseen
     @Column
@@ -131,17 +132,26 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
     @Column
     private Boolean deliveryByMail;
 
+    @Embedded
+    @Valid
+    private DeliveryAddress deliveryAddress;
+
     // TODO: Viittau LH:n tarjoamaan PDF-tiedostoon, joka voidaan poistaa kun LH:sta tulleita hakemuksia ei enää tarvita.
     @Column(length = 2048) // max url length in IE
     private URL printingUrl;
 
-    @Size(min = 3, max = 3)
+    @Enumerated(EnumType.STRING)
     @NotNull
-    @Column(nullable = false, length = 3)
-    private String permitTypeCode;
+    @Column(nullable = false)
+    private HarvestPermitCategory harvestPermitCategory;
+
+    @Embedded
+    @Valid
+    private PermitHolder permitHolder;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private HuntingClub permitHolder;
+    @JoinColumn(name = "permit_holder_id")
+    private HuntingClub huntingClub;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Person contactPerson;
@@ -174,21 +184,39 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
             inverseJoinColumns = {@JoinColumn(name = Organisation.ID_COLUMN_NAME, referencedColumnName = Organisation.ID_COLUMN_NAME)})
     private Set<Riistanhoitoyhdistys> relatedRhys = new HashSet<>();
 
+    @NotNull
+    @Column(name = "locale_id", nullable = false)
+    private Locale locale;
+
+    @NotNull
+    @Column(name = "decision_locale_id", nullable = false)
+    private Locale decisionLocale;
+
     @Transient
     public void startAmending() {
-        assertStatus(EnumSet.of(HarvestPermitApplication.Status.ACTIVE, HarvestPermitApplication.Status.AMENDING));
-        setStatus(HarvestPermitApplication.Status.AMENDING);
+        assertStatus(EnumSet.of(Status.ACTIVE, Status.AMENDING));
+        setStatus(Status.AMENDING);
     }
 
     @Transient
     public void stopAmending() {
-        assertStatus(HarvestPermitApplication.Status.AMENDING);
-        setStatus(HarvestPermitApplication.Status.ACTIVE);
+        assertStatus(Status.AMENDING);
+        setStatus(Status.ACTIVE);
     }
 
     @Transient
     public Stream<String> streamEmails() {
         return Stream.of(email1, email2).filter(StringUtils::hasText);
+    }
+
+    @Transient
+    public List<String> getAttachmentFilenames(final HarvestPermitApplicationAttachment.Type type) {
+        return attachments.stream()
+                .filter(a -> a.getAttachmentType() == type)
+                .map(HarvestPermitApplicationAttachment::getAttachmentMetadata)
+                .map(PersistentFileMetadata::getOriginalFilename)
+                .filter(StringUtils::hasText)
+                .collect(toList());
     }
 
     @Transient
@@ -206,27 +234,40 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
 
     public void assertHasPermitArea() {
         if (this.area == null) {
-            throw new HarvestPermitApplicationAreaMissingException(getId());
+            throw new MooselikePermitApplicationAreaMissingException(getId());
         }
+    }
+
+    @Transient
+    public Integer getValidityYears() {
+        return getSpeciesAmounts().stream()
+                .map(HarvestPermitApplicationSpeciesAmount::getValidityYears)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     // VALIDATION CONSTRAINTS
 
     @AssertTrue
     public boolean isSubmitDateSetWhenActive() {
-        return this.status == Status.DRAFT || this.submitDate != null;
+        return this.status == Status.DRAFT || this.status == Status.HIDDEN || this.submitDate != null;
     }
 
     @AssertTrue
     public boolean isApplicationNumberSetWhenActive() {
-        return this.status == Status.DRAFT || this.applicationNumber != null;
+        return this.status == Status.DRAFT || this.status == Status.HIDDEN || this.applicationNumber != null;
     }
 
     @AssertTrue
-    public boolean isPermitNumberSetWhenActive() {
-        return this.status == Status.DRAFT || this.permitNumber != null;
+    public boolean isPermitHolderSetWhenActive() {
+        return this.status == Status.DRAFT || this.status == Status.HIDDEN || this.permitHolder != null;
     }
 
+    @AssertTrue
+    public boolean isDeliveryAddresSetWhenActive() {
+        return this.status == Status.DRAFT || this.status == Status.HIDDEN || this.deliveryAddress != null;
+    }
 
     // ACCESSORS
 
@@ -244,6 +285,14 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
         this.id = id;
     }
 
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(final UUID uuid) {
+        this.uuid = uuid;
+    }
+
     public Status getStatus() {
         return status;
     }
@@ -252,12 +301,12 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
         this.status = status;
     }
 
-    public int getHuntingYear() {
-        return huntingYear;
+    public int getApplicationYear() {
+        return applicationYear;
     }
 
-    public void setHuntingYear(final int huntingYear) {
-        this.huntingYear = huntingYear;
+    public void setApplicationYear(final int huntingYear) {
+        this.applicationYear = huntingYear;
     }
 
     public DateTime getSubmitDate() {
@@ -282,14 +331,6 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
 
     public void setApplicationName(final String applicationName) {
         this.applicationName = applicationName;
-    }
-
-    public String getPermitNumber() {
-        return permitNumber;
-    }
-
-    public void setPermitNumber(final String permitNumber) {
-        this.permitNumber = permitNumber;
     }
 
     public Integer getShooterOnlyClub() {
@@ -340,6 +381,14 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
         this.deliveryByMail = deliveryByMail;
     }
 
+    public DeliveryAddress getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(DeliveryAddress deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
     public URL getPrintingUrl() {
         return printingUrl;
     }
@@ -348,24 +397,38 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
         this.printingUrl = printingUrl;
     }
 
-    public String getPermitTypeCode() {
-        return permitTypeCode;
+    public HarvestPermitCategory getHarvestPermitCategory() {
+        return harvestPermitCategory;
     }
 
-    public void setPermitTypeCode(final String permitTypeCode) {
-        this.permitTypeCode = permitTypeCode;
+    public void setHarvestPermitCategory(HarvestPermitCategory harvestPermitCategory) {
+        this.harvestPermitCategory = harvestPermitCategory;
     }
 
-    public HuntingClub getPermitHolder() {
+    public PermitHolder getPermitHolder() {
         return permitHolder;
     }
 
-    public void setPermitHolder(HuntingClub permitHolder) {
+    public void setPermitHolder(final PermitHolder permitHolder) {
         this.permitHolder = permitHolder;
+    }
+
+    public HuntingClub getHuntingClub() {
+        return huntingClub;
+    }
+
+    public void setHuntingClub(final HuntingClub huntingClub) {
+        this.huntingClub = huntingClub;
     }
 
     public Person getContactPerson() {
         return contactPerson;
+    }
+
+    @Transient
+    public void setHuntingClubAndPermitHolder(final HuntingClub club) {
+        setHuntingClub(club);
+        setPermitHolder(PermitHolder.createHolderForClub(club));
     }
 
     public void setContactPerson(final Person contactPerson) {
@@ -418,5 +481,21 @@ public class HarvestPermitApplication extends LifecycleEntity<Long> {
 
     public void setRelatedRhys(Set<Riistanhoitoyhdistys> relatedRhys) {
         this.relatedRhys = relatedRhys;
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public void setLocale(final Locale locale) {
+        this.locale = locale;
+    }
+
+    public Locale getDecisionLocale() {
+        return decisionLocale;
+    }
+
+    public void setDecisionLocale(Locale decisionLocale) {
+        this.decisionLocale = decisionLocale;
     }
 }

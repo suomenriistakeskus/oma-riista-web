@@ -19,4 +19,3 @@ ${PSQL} -f ./import/observation_base_fields.sql
 ${PSQL} -f ./import/observation_context_sensitive_fields.sql
 ${PSQL} -f ./import/harvest_season.sql
 ${PSQL} -f ./import/harvest_quota.sql
-${PSQL} -f ./import/mooselike_price.sql

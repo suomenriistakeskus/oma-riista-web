@@ -1,0 +1,58 @@
+<form name="speciesMethodForm"
+      role="form" class="form"
+      novalidate autocomplete="off"
+      r-force-show-errors-check-validity>
+    <div class="modal-header">
+        <div class="modal-title">
+            <span ng-bind="$ctrl.gameSpeciesCode | translateSpeciesCode"></span>
+        </div>
+        <button riista-modal-close></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-xs-6" ng-repeat="method in $ctrl.methodList">
+                <table style="margin-bottom: 10px">
+                    <tbody>
+                    <tr>
+                        <td style="width: 140px; min-height: 60px; vertical-align: top">
+                            <div class="btn-group">
+                                <label class="btn btn-default"
+                                       ng-model="method.selected"
+                                       uib-btn-radio="false">
+                                    <span class="text-muted fa fa-fw fa-lg fa-check-circle"
+                                          ng-class="{invisible: method.selected}"></span>
+                                    &nbsp;
+                                </label>
+
+                                <label class="btn"
+                                       ng-class="{'btn-primary': method.selected, 'btn-default': !method.selected}"
+                                       ng-model="method.selected"
+                                       uib-btn-radio="true">
+                                    <span class="fa fa-fw fa-lg fa-check-circle"
+                                          ng-class="{invisible: !method.selected}"></span>
+                                    &nbsp;
+                                </label>
+                            </div>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <span translate="harvestpermit.decision.forbiddenMethod.{{method.type}}"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="!$ctrl.isValid(speciesMethodForm)"
+                translate="global.button.save"></button>
+    </div>
+</form>

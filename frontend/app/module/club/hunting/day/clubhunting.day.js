@@ -30,7 +30,7 @@ angular.module('app.clubhunting.day', [])
                     return ClubGroupDiary.huntingDays({
                         id: params.groupId
                     }).$promise.then(function (days) {
-                        return _.pluck(days, 'startDate');
+                        return _.map(days, 'startDate');
                     });
                 },
                 permitSpeciesAmount: function () {

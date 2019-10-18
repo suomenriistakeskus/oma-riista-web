@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/common/export/2018/10"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/common/export/2018/10"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:include schemaLocation="geolocation-v1.xsd"/>
+
+
+    <xs:element name="observations">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="observation" type="Observation" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="observationSpecimen" type="ObservationSpecimen" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="Observation">
+        <xs:sequence>
+            <xs:element name="observationId" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>
+                        Unique identifier for this observation.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="rhyNumber" type="xs:string"/>
+            <xs:element name="pointOfTime" type="xs:dateTime"/>
+            <xs:element name="geoLocation" type="geoLocation"/>
+            <xs:element name="gameSpeciesCode" type="xs:int"/>
+            <xs:element name="observationType" type="observationType"/>
+            <xs:element name="amount" type="xs:int" minOccurs="0"/>
+            <xs:element name="maleAmount" type="xs:int" minOccurs="0"/>
+            <xs:element name="femaleAndCalfs" type="FemaleAndCalfs" nillable="true" minOccurs="0" maxOccurs="5">
+                <xs:annotation>
+                    <xs:documentation>
+                        Describes amount of females and observed calves with the female.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="solitaryCalfAmount" type="xs:int" minOccurs="0"/>
+            <xs:element name="unknownSpecimenAmount" type="xs:int" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FemaleAndCalfs">
+        <xs:annotation>
+            <xs:documentation>
+                Amount specifies the amount of females observed and the calves specifies the number of calves with
+                the observed female.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="calfs" type="xs:int">
+                <xs:annotation>
+                    <xs:documentation>
+                        Number of calves, i.e. zero means solitary female.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="amount" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ObservationSpecimen">
+        <xs:sequence>
+            <xs:element name="observationId" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>
+                        Refers to the observation id.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="gender" type="gameGender" minOccurs="0"/>
+            <xs:element name="age" type="observedGameAge" minOccurs="0"/>
+            <xs:element name="state" type="observedGameState" minOccurs="0"/>
+            <xs:element name="marking" type="gameMarking" minOccurs="0"/>
+            <xs:element name="widthOfPaw" type="xs:double" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Width of paw in centimeters
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="lengthOfPaw" type="xs:double" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Length of paw in centimeters
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="gameFitnessClass">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ERINOMAINEN"/>
+            <xs:enumeration value="NORMAALI"/>
+            <xs:enumeration value="LAIHA"/>
+            <xs:enumeration value="NAANTYNYT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameGender">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="FEMALE"/>
+            <xs:enumeration value="MALE"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="observationType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="NAKO"/>
+            <xs:enumeration value="JALKI"/>
+            <xs:enumeration value="ULOSTE"/>
+            <xs:enumeration value="AANI"/>
+            <xs:enumeration value="RIISTAKAMERA"/>
+            <xs:enumeration value="KOIRAN_RIISTATYO"/>
+            <xs:enumeration value="MAASTOLASKENTA"/>
+            <xs:enumeration value="KOLMIOLASKENTA"/>
+            <xs:enumeration value="LENTOLASKENTA"/>
+            <xs:enumeration value="HAASKA"/>
+            <xs:enumeration value="SYONNOS"/>
+            <xs:enumeration value="KELOMISPUU"/>
+            <xs:enumeration value="KIIMAKUOPPA"/>
+            <xs:enumeration value="MAKUUPAIKKA"/>
+            <xs:enumeration value="PATO"/>
+            <xs:enumeration value="PESA"/>
+            <xs:enumeration value="PESA_KEKO"/>
+            <xs:enumeration value="PESA_PENKKA"/>
+            <xs:enumeration value="PESA_SEKA"/>
+            <xs:enumeration value="SOIDIN"/>
+            <xs:enumeration value="LUOLASTO"/>
+            <xs:enumeration value="PESIMALUOTO"/>
+            <xs:enumeration value="LEPAILYLUOTO"/>
+            <xs:enumeration value="PESIMASUO"/>
+            <xs:enumeration value="MUUTON_AIKAINEN_LEPAILYALUE"/>
+            <xs:enumeration value="RIISTANKULKUPAIKKA"/>
+            <xs:enumeration value="POIKUEYMPARISTO"/>
+            <xs:enumeration value="VAIHTELEVARAKENTEINEN_MUSTIKKAMETSA"/>
+            <xs:enumeration value="KUUSISEKOTTEINEN_METSA"/>
+            <xs:enumeration value="VAIHTELEVARAKENTEINEN_MANTYSEKOTTEINEN_METSA"/>
+            <xs:enumeration value="VAIHTELEVARAKENTEINEN_LEHTIPUUSEKOTTEINEN_METSA"/>
+            <xs:enumeration value="SUON_REUNAMETSA"/>
+            <xs:enumeration value="HAKOMAMANTY"/>
+            <xs:enumeration value="RUOKAILUKOIVIKKO"/>
+            <xs:enumeration value="LEPPAKUUSIMETSA_TAI_KOIVUKUUSIMETSA"/>
+            <xs:enumeration value="RUOKAILUPAJUKKO_TAI_KOIVIKKO"/>
+            <xs:enumeration value="MUU"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="observedGameAge">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ADULT"/>
+            <xs:enumeration value="LT1Y"/>
+            <xs:enumeration value="_1TO2Y"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameMarking">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="NOT_MARKED"/>
+            <xs:enumeration value="COLLAR_OR_RADIO_TRANSMITTER"/>
+            <xs:enumeration value="LEG_RING_OR_WING_TAG"/>
+            <xs:enumeration value="EARMARK"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="observedGameState">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="HEALTHY"/>
+            <xs:enumeration value="ILL"/>
+            <xs:enumeration value="WOUNDED"/>
+            <xs:enumeration value="CARCASS"/>
+            <xs:enumeration value="DEAD"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+
+</xs:schema>

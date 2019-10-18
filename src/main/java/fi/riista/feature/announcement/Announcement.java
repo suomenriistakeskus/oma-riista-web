@@ -61,6 +61,9 @@ public class Announcement extends LifecycleEntity<Long> {
     @OneToMany(mappedBy = "announcement")
     private List<AnnouncementSubscriber> subscribers;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Organisation rhyMembershipSubscriber;
+
     private Long id;
 
     // For Hibernate
@@ -141,5 +144,13 @@ public class Announcement extends LifecycleEntity<Long> {
 
     public void setSenderType(final AnnouncementSenderType fromOccupationType) {
         this.senderType = fromOccupationType;
+    }
+
+    public Organisation getRhyMembershipSubscriber() {
+        return rhyMembershipSubscriber;
+    }
+
+    public void setRhyMembershipSubscriber(final Organisation rhyMembershipSubscriber) {
+        this.rhyMembershipSubscriber = rhyMembershipSubscriber;
     }
 }

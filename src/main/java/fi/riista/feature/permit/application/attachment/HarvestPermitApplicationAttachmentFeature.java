@@ -9,8 +9,6 @@ import fi.riista.feature.storage.FileStorageService;
 import fi.riista.feature.storage.metadata.FileType;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.security.EntityPermission;
-import io.vavr.Tuple;
-import io.vavr.Tuple3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -59,7 +56,7 @@ public class HarvestPermitApplicationAttachmentFeature {
     }
 
     @Transactional
-    public void addAttachment(final long applicationId,
+    public Long addAttachment(final long applicationId,
                               final HarvestPermitApplicationAttachment.Type attachmentType,
                               final MultipartFile file) {
         final HarvestPermitApplication application = requireEntityService.requireHarvestPermitApplication(
@@ -67,12 +64,13 @@ public class HarvestPermitApplicationAttachmentFeature {
         harvestPermitApplicationLockedCondition.assertCanUpdate(application);
 
         final HarvestPermitApplicationAttachment attachment = new HarvestPermitApplicationAttachment();
-        attachment.setName(file.getOriginalFilename());
         attachment.setAttachmentType(attachmentType);
         attachment.setHarvestPermitApplication(application);
         attachment.setAttachmentMetadata(storeAttachment(file));
 
         harvestPermitApplicationAttachmentRepository.save(attachment);
+
+        return attachment.getId();
     }
 
     private PersistentFileMetadata storeAttachment(final MultipartFile file) {
@@ -95,28 +93,16 @@ public class HarvestPermitApplicationAttachmentFeature {
         final HarvestPermitApplication application = attachment.getHarvestPermitApplication();
         harvestPermitApplicationLockedCondition.assertCanUpdate(application);
 
-        if (attachment.getAttachmentMetadata() != null) {
-            fileStorageService.remove(attachment.getAttachmentMetadata().getId());
-        }
-
+        final UUID fileUuid = attachment.getAttachmentMetadata().getId();
         harvestPermitApplicationAttachmentRepository.delete(attachment);
+        fileStorageService.remove(fileUuid);
     }
 
     @Transactional(readOnly = true, rollbackFor = IOException.class)
-    public Tuple3<ResponseEntity<byte[]>, URL, String> getAttachment(final long attachmentId) throws IOException {
+    public ResponseEntity<byte[]> getAttachment(final long attachmentId) throws IOException {
         final HarvestPermitApplicationAttachment attachment = requireAttachment(attachmentId, EntityPermission.READ);
 
-        if (attachment.getUrl() != null) {
-            return Tuple.of(null, attachment.getUrl(), attachment.getName());
-        }
-
-        final PersistentFileMetadata metadata = attachment.getAttachmentMetadata();
-
-        if (metadata == null) {
-            throw new IllegalArgumentException("Not LH attachment");
-        }
-
-        return Tuple.of(fileDownloadService.download(metadata), null, null);
+        return fileDownloadService.download(attachment.getAttachmentMetadata());
     }
 
     @Nonnull

@@ -3,28 +3,32 @@ package fi.riista.util;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.function.BinaryOperator;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
+import java.util.stream.Stream;
 
+import static java.math.BigDecimal.ZERO;
+import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
 
 public final class NumberUtils {
 
+    public static final BigDecimal MAX_PERCENTAGE_SHARE = new BigDecimal(100);
+
     public static final double EPSILON = 0.00001;
-
-    public static final BinaryOperator<Integer> NULLSAFE_INT_SUM = (a, b) -> nullsafeSum(a, b);
-
-    private NumberUtils() {
-        throw new AssertionError();
-    }
 
     public static int getIntValueOrZero(@Nullable final Number n) {
         return F.coalesceAsInt(n, 0);
+    }
+
+    public static boolean isPositive(@Nonnull final BigDecimal number) {
+        return number.compareTo(ZERO) > 0;
+    }
+
+    public static boolean isNegative(@Nonnull final BigDecimal number) {
+        return number.compareTo(ZERO) < 0;
     }
 
     public static boolean equal(final Float num1, final Float num2) {
@@ -35,23 +39,27 @@ public final class NumberUtils {
         return num1 == null ? num2 == null : num2 != null && Math.abs(num1 - num2) < EPSILON;
     }
 
-    public static void bigDecimalEquals(long expected, BigDecimal actual) {
+    public static boolean bigDecimalIsPositive(final BigDecimal value) {
+        return value.compareTo(BigDecimal.ZERO) > 0;
+    }
+
+    public static void bigDecimalEquals(final long expected, final BigDecimal actual) {
         NumberUtils.bigDecimalEquals(BigDecimal.valueOf(expected), actual);
     }
 
-    public static void bigDecimalEquals(int expected, BigDecimal actual) {
+    public static void bigDecimalEquals(final int expected, final BigDecimal actual) {
         NumberUtils.bigDecimalEquals(BigDecimal.valueOf(expected), actual);
     }
 
-    public static void bigDecimalEquals(BigDecimal expected, long actual) {
+    public static void bigDecimalEquals(final BigDecimal expected, final long actual) {
         NumberUtils.bigDecimalEquals(expected, BigDecimal.valueOf(actual));
     }
 
-    public static void bigDecimalEquals(BigDecimal expected, int actual) {
+    public static void bigDecimalEquals(final BigDecimal expected, final int actual) {
         NumberUtils.bigDecimalEquals(expected, BigDecimal.valueOf(actual));
     }
 
-    public static void bigDecimalEquals(BigDecimal expected, BigDecimal actual) {
+    public static void bigDecimalEquals(final BigDecimal expected, final BigDecimal actual) {
         final boolean eitherNull = expected == null && actual != null || expected != null && actual == null;
 
         if (eitherNull || expected != null && actual != null && expected.compareTo(actual) != 0) {
@@ -63,94 +71,156 @@ public final class NumberUtils {
         return value > min && value < max || equal(value, min) || equal(value, max);
     }
 
-    public static long squareMetersToHectares(double squareMeters) {
+    public static long squareMetersToHectares(final double squareMeters) {
         return Math.round(squareMeters / 10_000);
     }
 
-    public static <T> int sum(@Nonnull final Collection<? extends T> collection,
+    public static double percentRatio(final double a, final double b) {
+        return Math.round(b) == 0 ? 0 : 100.0 * a / b;
+    }
+
+    public static double ratio(final double a, final double b) {
+        return Math.round(b) == 0 ? 0 : a / b;
+    }
+
+    public static <T> int sum(@Nonnull final Iterable<? extends T> iterable,
                               @Nonnull final ToIntFunction<? super T> mapper) {
-
-        requireNonNull(collection, "collection is null");
-        requireNonNull(mapper, "mapper is null");
-
-        return collection.stream().mapToInt(mapper).sum();
-    }
-
-    public static <T> double sum(@Nonnull final Collection<? extends T> collection,
-                                 @Nonnull final ToDoubleFunction<? super T> mapper) {
-
-        requireNonNull(collection, "collection is null");
-        requireNonNull(mapper, "mapper is null");
-
-        return collection.stream().mapToDouble(mapper).sum();
-    }
-
-    @Nonnull
-    public static <T> BigDecimal sum(@Nonnull final Collection<? extends T> collection,
-                                     @Nonnull final Function<? super T, BigDecimal> mapper) {
-
-        requireNonNull(collection, "collection is null");
-        requireNonNull(mapper, "mapper is null");
-
-        return collection.stream().map(mapper).reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    public static <T, N extends Number> int sumNullsToZero(@Nonnull final Iterable<? extends T> iterable,
-                                                           @Nonnull final Function<? super T, N> mapper) {
 
         requireNonNull(iterable, "iterable is null");
         requireNonNull(mapper, "mapper is null");
 
-        return F.stream(iterable).map(mapper).mapToInt(NumberUtils::getIntValueOrZero).sum();
+        return F.stream(iterable).mapToInt(mapper).sum();
+    }
+
+    public static <T> double sum(@Nonnull final Iterable<? extends T> iterable,
+                                 @Nonnull final ToDoubleFunction<? super T> mapper) {
+
+        requireNonNull(iterable, "iterable is null");
+        requireNonNull(mapper, "mapper is null");
+
+        return F.stream(iterable).mapToDouble(mapper).sum();
+    }
+
+    @Nonnull
+    public static <T> BigDecimal sum(@Nonnull final Iterable<? extends T> iterable,
+                                     @Nonnull final Function<? super T, BigDecimal> mapper) {
+
+        requireNonNull(iterable, "iterable is null");
+        requireNonNull(mapper, "mapper is null");
+
+        return F.stream(iterable).map(mapper).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Nonnull
+    public static <T> BigDecimal currencySum(@Nonnull final Iterable<? extends T> iterable,
+                                             @Nonnull final Function<? super T, BigDecimal> mapper) {
+
+        return sum(iterable, mapper).setScale(2);
     }
 
     @Nullable
-    public static Integer nullsafeSum(@Nullable final Integer a, @Nullable final Integer b) {
-        if (a == null) {
-            return b;
+    public static Integer nullableIntSum(@Nullable final Integer first, @Nullable final Integer second) {
+        if (first == null) {
+            return second;
         }
-        return a.intValue() + getIntValueOrZero(b);
+        return first.intValue() + getIntValueOrZero(second);
+    }
+
+    @Nullable
+    public static <T> Integer nullableIntSum(@Nullable final T first,
+                                             @Nullable final T second,
+                                             @Nonnull final Function<? super T, Integer> mapper) {
+
+        requireNonNull(mapper, "mapper is null");
+
+        final Integer firstInteger = first != null ? mapper.apply(first) : null;
+        final Integer secondInteger = second != null ? mapper.apply(second) : null;
+
+        return nullableIntSum(firstInteger, secondInteger);
+    }
+
+    @Nullable
+    public static Integer nullableIntSum(@Nonnull final Stream<Integer> integers) {
+        requireNonNull(integers);
+        return integers.reduce(null, NumberUtils::nullableIntSum);
     }
 
     @Nullable
     @SafeVarargs
-    public static <T> Integer nullsafeSum(@Nonnull final Function<? super T, Integer> mapper,
-                                          @Nonnull final T... objects) {
-
-        requireNonNull(mapper, "mapper is null");
-        requireNonNull(objects, "objects is null");
-
-        return Arrays.stream(objects).map(mapper).reduce(null, NULLSAFE_INT_SUM);
+    public static Integer nullableIntSum(@Nonnull final Integer... integers) {
+        requireNonNull(integers);
+        return nullableIntSum(stream(integers));
     }
 
     @Nullable
-    public static <T, N extends Number> Integer nullsafeSumAsInt(@Nullable final T first,
-                                                                 @Nullable final T second,
-                                                                 @Nonnull final Function<? super T, N> mapper) {
+    public static <T> Integer nullableIntSum(@Nonnull final Iterable<? extends T> iterable,
+                                             @Nonnull final Function<? super T, Integer> mapper) {
 
-        requireNonNull(mapper, "mapper is null");
+        return nullableIntSum(F.stream(iterable).map(mapper));
+    }
 
-        final Optional<Integer> secondValueOpt = Optional.ofNullable(second).map(mapper).map(Number::intValue);
+    public static <T> int nullsafeIntSum(@Nonnull final Iterable<? extends T> iterable,
+                                         @Nonnull final Function<? super T, Integer> mapper) {
 
-        return Optional.ofNullable(first)
+        return F.stream(iterable)
                 .map(mapper)
-                .map(Number::intValue)
-                .map(firstValue -> firstValue + secondValueOpt.orElse(0))
-                .orElseGet(() -> secondValueOpt.orElse(null));
+                .mapToInt(i -> F.coalesceAsInt(i, 0))
+                .sum();
     }
 
     @Nullable
-    public static <T> BigDecimal nullsafeSum(@Nullable final T first,
+    public static BigDecimal nullableSum(@Nullable final BigDecimal first, @Nullable final BigDecimal second) {
+        if (first == null) {
+            return second;
+        }
+        return second == null ? first : first.add(second);
+    }
+
+    @Nullable
+    public static <T> BigDecimal nullableSum(@Nullable final T first,
                                              @Nullable final T second,
                                              @Nonnull final Function<? super T, BigDecimal> mapper) {
 
         requireNonNull(mapper, "mapper is null");
 
-        final Optional<BigDecimal> secondValueOpt = Optional.ofNullable(second).map(mapper);
+        final BigDecimal firstNumber = first != null ? mapper.apply(first) : null;
+        final BigDecimal secondNumber = second != null ? mapper.apply(second) : null;
 
-        return Optional.ofNullable(first)
+        return nullableSum(firstNumber, secondNumber);
+    }
+
+    @Nullable
+    public static BigDecimal nullableSum(@Nonnull final Stream<BigDecimal> numbers) {
+        requireNonNull(numbers);
+        return numbers.reduce(null, NumberUtils::nullableSum);
+    }
+
+    @Nullable
+    @SafeVarargs
+    public static BigDecimal nullableSum(@Nonnull final BigDecimal... numbers) {
+        requireNonNull(numbers);
+        return nullableSum(stream(numbers));
+    }
+
+    @Nullable
+    public static <T> BigDecimal nullableSum(@Nonnull final Iterable<? extends T> iterable,
+                                             @Nonnull final Function<? super T, BigDecimal> mapper) {
+
+        requireNonNull(iterable, "iterable is null");
+        requireNonNull(mapper, "mapper is null");
+
+        return F.stream(iterable)
                 .map(mapper)
-                .map(firstValue -> firstValue.add(secondValueOpt.orElse(BigDecimal.ZERO)))
-                .orElseGet(() -> secondValueOpt.orElse(null));
+                .filter(Objects::nonNull)
+                .reduce(null, NumberUtils::nullableSum);
+    }
+
+    @Nonnull
+    public static BigDecimal currencySum(@Nonnull final Iterable<BigDecimal> numbers) {
+        return F.stream(numbers).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2);
+    }
+
+    private NumberUtils() {
+        throw new AssertionError();
     }
 }

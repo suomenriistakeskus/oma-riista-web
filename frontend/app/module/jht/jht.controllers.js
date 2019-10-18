@@ -1,18 +1,28 @@
 'use strict';
 
-angular.module('app.jht.controllers', [])
+angular.module('app.jht.controllers', ['app.admin.users'])
     .config(function ($stateProvider) {
         $stateProvider
             .state('jht', {
                 abstract: true,
                 templateUrl: 'jht/layout.html',
-                url: '/jht'
+                url: '/jht',
+                controllerAs: '$ctrl',
+
+                controller: function(ModeratorPrivileges, AvailableRoleService, ActiveRoleService) {
+                    var $ctrl = this;
+
+                    $ctrl.isAuthorizedForHarvestRegistry = ActiveRoleService.isAdmin() ||
+                            AvailableRoleService.hasPrivilege(ModeratorPrivileges.harvestRegistry);
+                }
             })
             .state('jht.home', {
                 url: '/home',
                 templateUrl: 'jht/dashboard.html',
                 controllerAs: '$ctrl',
-                controller: function ($state, PersonAddFromVtjModal) {
+
+                controller: function ($state, PersonAddFromVtjModal, ModeratorPrivileges,
+                                      AvailableRoleService, ActiveRoleService) {
                     var $ctrl = this;
 
                     $ctrl.addPersonFromVtj = function () {
@@ -20,24 +30,38 @@ angular.module('app.jht.controllers', [])
                             $state.go('profile.account', {id: personInfo.id});
                         });
                     };
+
+                    $ctrl.isAuthorizedForBulkMessages = function () {
+                        return ActiveRoleService.isAdmin() ||
+                            AvailableRoleService.hasPrivilege(ModeratorPrivileges.bulkMessagePrivilege);
+                    };
                 }
             })
             .state('jht.applications', {
-                url: '/applications',
-                controller: function (availableSpecies, handlers) {
-                    this.availableSpecies = availableSpecies;
-                    this.handlers = handlers;
+                url: '/applications?tab',
+                reloadOnSearch: false,
+                params: {
+                    tab: null
                 },
-                controllerAs: '$ctrl',
-                template: '<moderator-application-search available-species="$ctrl.availableSpecies"' +
-                ' handlers="$ctrl.handlers"></moderator-application-search>',
+                templateUrl: 'jht/applications.html',
                 resolve: {
-                    availableSpecies: function (MooselikeSpecies) {
-                        return MooselikeSpecies.getPermitBased();
-                    },
                     handlers: function (HarvestPermitApplications) {
                         return HarvestPermitApplications.listHandlers().$promise;
                     }
+                },
+                controllerAs: '$ctrl',
+                controller: function (handlers, $location) {
+                    var $ctrl = this;
+
+                    $ctrl.$onInit = function () {
+                        $ctrl.handlers = handlers;
+                        $ctrl.showTab('filter');
+                    };
+
+                    $ctrl.showTab = function (tab) {
+                        $ctrl.tab = tab;
+                        $location.search({tab: tab});
+                    };
                 }
             })
             .state('jht.nomination', {

@@ -1,0 +1,80 @@
+<div class="container-fluid">
+
+    <div class="permit-species-logo">
+        <img ng-src="/static/elainlajikuvat/96x96/{{::$ctrl.permit.gameSpeciesCode}}.jpg"
+             width="96" height="96"/>
+    </div>
+
+    <table class="table table-condensed permit-percentage-table">
+        <thead>
+        <tr>
+            <th></th>
+            <th translate="club.permit.percentage.allocated"></th>
+            <th translate="club.permit.percentage.harvests"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class="h5" translate="club.permit.percentage.males"></td>
+            <td>{{::$ctrl.counter.maleAdultPercentage()}}%</td>
+            <td>{{::$ctrl.counter.maleAdultHarvestPercentage()}}%</td>
+        </tr>
+        <tr>
+            <td class="h5" translate="club.permit.percentage.young"></td>
+            <td>{{::$ctrl.counter.youngPercentage()}}%</td>
+            <td>{{::$ctrl.counter.youngHarvestPercentage()}}%</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div ng-if="::(!$ctrl.permit.amendmentPermitsMatchHarvests)">
+        <div class="alert alert-danger">
+            <span class="text-danger fa fa-exclamation-triangle"></span>
+            <span translate="club.permit.amendmentPermitsDoNotMatchHarvests"></span>
+        </div>
+    </div>
+
+    <form name="form" role="form" class="form-inline" r-force-show-errors-check-validity>
+        <uib-tabset active="tabSelection">
+            <uib-tab heading="{{'club.permit.tabHunting' | translate}}">
+                <moose-permit-table-hunting
+                        partners="::$ctrl.permit.partners"
+                        latest-update="::$ctrl.permit.totalStatistics.latestUpdate"
+                        counter="::$ctrl.counter"
+                        todo="::$ctrl.permit.todo"
+                        is-current-club="::$ctrl.isCurrentClub(partner)"
+                        can-navigate-to-club="::$ctrl.canNavigateToClub"
+                        navigate-to-club="::$ctrl.navigateToClub(partner)"></moose-permit-table-hunting>
+            </uib-tab>
+            <uib-tab heading="{{'club.permit.tabIndexes' | translate}}" ng-if="::$ctrl.isMoose">
+                <moose-permit-table-indexes
+                        partners="::$ctrl.permit.partners"
+                        total-statistics="::$ctrl.permit.totalStatistics"
+                        stats="::$ctrl.permit.statistics"
+                        todo="::$ctrl.permit.todo"
+                        is-current-club="::$ctrl.isCurrentClub(partner)"
+                        can-navigate-to-club="::$ctrl.canNavigateToClub"
+                        navigate-to-club="::$ctrl.navigateToClub(partner)"></moose-permit-table-indexes>
+            </uib-tab>
+            <uib-tab heading="{{'club.permit.tabPayments' | translate}}">
+                <moose-permit-table-payments
+                        partners="::$ctrl.permit.partners"
+                        total-payment="::$ctrl.permit.totalPayment"
+                        amendment-permits-match-harvests="::$ctrl.permit.amendmentPermitsMatchHarvests"
+                        counter="::$ctrl.counter"
+                        todo="::$ctrl.permit.todo"
+                        is-current-club="::$ctrl.isCurrentClub(partner)"
+                        can-navigate-to-club="::$ctrl.canNavigateToClub"
+                        navigate-to-club="::$ctrl.navigateToClub(partner)"></moose-permit-table-payments>
+            </uib-tab>
+            <uib-tab heading="{{'club.permit.tabAreas' | translate}}">
+                <moose-permit-table-areas
+                        partners="::$ctrl.permit.partners"
+                        todo="::$ctrl.permit.todo"
+                        is-current-club="::$ctrl.isCurrentClub(partner)"
+                        can-navigate-to-club="::$ctrl.canNavigateToClub"
+                        navigate-to-club="::$ctrl.navigateToClub(partner)"></moose-permit-table-areas>
+            </uib-tab>
+        </uib-tabset>
+    </form>
+</div>

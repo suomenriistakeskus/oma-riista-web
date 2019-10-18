@@ -27,6 +27,10 @@ public class SQHarvestPermitApplicationAttachment extends RelationalPathSpatial<
 
     public static final SQHarvestPermitApplicationAttachment harvestPermitApplicationAttachment = new SQHarvestPermitApplicationAttachment("harvest_permit_application_attachment");
 
+    public final StringPath additionalInfo = createString("additionalInfo");
+
+    public final StringPath attachmentMetadataId = createString("attachmentMetadataId");
+
     public final StringPath attachmentType = createString("attachmentType");
 
     public final NumberPath<Integer> consistencyVersion = createNumber("consistencyVersion", Integer.class);
@@ -35,15 +39,13 @@ public class SQHarvestPermitApplicationAttachment extends RelationalPathSpatial<
 
     public final NumberPath<Long> harvestPermitApplicationId = createNumber("harvestPermitApplicationId", Long.class);
 
-    public final StringPath name = createString("name");
-
-    public final StringPath url = createString("url");
-
     public final com.querydsl.sql.PrimaryKey<SQHarvestPermitApplicationAttachment> harvestPermitApplicationAttachmentPkey = createPrimaryKey(harvestPermitApplicationAttachmentId);
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationAttachmentType> harvestPermitApplicationAttachmentTypeFk = createForeignKey(attachmentType, "name");
-
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplication> harvestPermitApplicationAttachmentApplicationFk = createForeignKey(harvestPermitApplicationId, "harvest_permit_application_id");
+
+    public final com.querydsl.sql.ForeignKey<SQFileMetadata> harvestPermitApplicationAttachmentMetadataFk = createForeignKey(attachmentMetadataId, "file_metadata_uuid");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationAttachmentType> harvestPermitApplicationAttachmentTypeFk = createForeignKey(attachmentType, "name");
 
     public SQHarvestPermitApplicationAttachment(String variable) {
         super(SQHarvestPermitApplicationAttachment.class, forVariable(variable), "public", "harvest_permit_application_attachment");
@@ -71,12 +73,12 @@ public class SQHarvestPermitApplicationAttachment extends RelationalPathSpatial<
     }
 
     public void addMetadata() {
-        addMetadata(attachmentType, ColumnMetadata.named("attachment_type").withIndex(6).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(additionalInfo, ColumnMetadata.named("additional_info").withIndex(6).ofType(Types.VARCHAR).withSize(2147483647));
+        addMetadata(attachmentMetadataId, ColumnMetadata.named("attachment_metadata_id").withIndex(5).ofType(Types.CHAR).withSize(36).notNull());
+        addMetadata(attachmentType, ColumnMetadata.named("attachment_type").withIndex(4).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(consistencyVersion, ColumnMetadata.named("consistency_version").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(harvestPermitApplicationAttachmentId, ColumnMetadata.named("harvest_permit_application_attachment_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(harvestPermitApplicationId, ColumnMetadata.named("harvest_permit_application_id").withIndex(3).ofType(Types.BIGINT).withSize(19).notNull());
-        addMetadata(name, ColumnMetadata.named("name").withIndex(5).ofType(Types.VARCHAR).withSize(255).notNull());
-        addMetadata(url, ColumnMetadata.named("url").withIndex(4).ofType(Types.VARCHAR).withSize(2147483647).notNull());
     }
 
 }

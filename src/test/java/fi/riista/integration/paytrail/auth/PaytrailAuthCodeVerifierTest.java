@@ -1,6 +1,5 @@
 package fi.riista.integration.paytrail.auth;
 
-import fi.riista.integration.paytrail.rest.client.PaytrailApiCredentials;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -16,9 +15,8 @@ public class PaytrailAuthCodeVerifierTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Nonnull
-    private PaytrailAuthCodeVerifier createTestVerifier() {
-        final PaytrailApiCredentials credentials = new PaytrailApiCredentials(
-                "13466", "6pKF4jkv97zmqBJ3ZL8gUw5DfT2NMQ");
+    private static PaytrailAuthCodeVerifier createTestVerifier() {
+        final PaytrailCredentials credentials = new PaytrailCredentials("13466", "6pKF4jkv97zmqBJ3ZL8gUw5DfT2NMQ");
         return new PaytrailAuthCodeVerifier(credentials, PaytrailAuthCodeDigest.SHA256, Duration.ofMinutes(1));
     }
 

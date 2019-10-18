@@ -74,7 +74,7 @@
                 var parts = markerId.split(':');
 
                 if (parts.length === 2) {
-                    var diaryEntry = _.findWhere(entryList, {
+                    var diaryEntry = _.find(entryList, {
                         'type': parts[0],
                         'id': _.parseInt(parts[1])
                     });

@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class HarvestPermitNotFoundException extends RuntimeException {
+public class HarvestPermitNotFoundException extends IllegalArgumentException {
     private final String permitNumber;
 
     public HarvestPermitNotFoundException(final String permitNumber) {

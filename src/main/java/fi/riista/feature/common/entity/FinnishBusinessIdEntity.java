@@ -1,5 +1,6 @@
 package fi.riista.feature.common.entity;
 
+import com.google.common.base.Preconditions;
 import fi.riista.validation.FinnishBusinessId;
 
 import javax.persistence.Access;
@@ -14,8 +15,10 @@ import java.io.Serializable;
 @Access(AccessType.FIELD)
 public class FinnishBusinessIdEntity implements Serializable {
 
-    @Column(length = 9)
-    @Size(min = 9, max = 9)
+    private static final int LENGTH = 9;
+
+    @Column(length = LENGTH)
+    @Size(min = LENGTH, max = LENGTH)
     @FinnishBusinessId
     @Convert(converter = FinnishBusinessIdConverter.class)
     private String businessId;
@@ -35,4 +38,10 @@ public class FinnishBusinessIdEntity implements Serializable {
         this.businessId = value;
     }
 
+    public static FinnishBusinessIdEntity of(String value) {
+        Preconditions.checkArgument(value.length() == LENGTH);
+        FinnishBusinessIdEntity businessId = new FinnishBusinessIdEntity();
+        businessId.setValue(value);
+        return businessId;
+    }
 }

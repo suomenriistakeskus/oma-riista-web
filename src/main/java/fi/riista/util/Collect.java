@@ -3,6 +3,7 @@ package fi.riista.util;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import fi.riista.feature.common.entity.HasID;
+import io.vavr.Tuple2;
 import io.vavr.control.Either;
 
 import javax.annotation.Nonnull;
@@ -40,11 +41,16 @@ public final class Collect {
     }
 
     @Nonnull
+    public static <K, U> Collector<Map.Entry<K, U>, ?, Map<K, U>> entriesToMap() {
+        return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
+    }
+
+    @Nonnull
     public static <T, K extends Comparable<? super K>, U> Collector<T, ?, ImmutableSortedMap<K, U>> toImmutableSortedMap(
             @Nonnull final Function<? super T, ? extends K> keyMapper,
             @Nonnull final Function<? super T, ? extends U> valueMapper) {
 
-        return ImmutableSortedMap.toImmutableSortedMap(Comparator.<K> naturalOrder(), keyMapper, valueMapper);
+        return ImmutableSortedMap.toImmutableSortedMap(Comparator.<K>naturalOrder(), keyMapper, valueMapper);
     }
 
     @Nonnull
@@ -144,6 +150,11 @@ public final class Collect {
     public static <T, U> Collector<T, Set<U>, Set<U>> toSetBy(@Nonnull final BiConsumer<Set<U>, T> accumulator) {
         requireNonNull(accumulator);
         return Collector.of(HashSet::new, accumulator, collectionCombiner());
+    }
+
+    @Nonnull
+    public static <K, V> Collector<Tuple2<K, V>, ?, Map<K, V>> tuplesToMap() {
+        return Collectors.toMap(Tuple2::_1, Tuple2::_2);
     }
 
     @Nonnull

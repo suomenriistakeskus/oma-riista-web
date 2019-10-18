@@ -194,7 +194,7 @@ public class HarvestUpdater {
         clearMutations();
     }
 
-    private void checkPostConditions(final HarvestReportingType reportingType, final Harvest harvest) {
+    private static void checkPostConditions(final HarvestReportingType reportingType, final Harvest harvest) {
         // Validate updated fields
         final RequiredHarvestFields.Report reportRequirements = RequiredHarvestFields.getFormFields(
                 DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate()),

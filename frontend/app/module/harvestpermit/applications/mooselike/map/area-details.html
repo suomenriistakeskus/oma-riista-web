@@ -1,0 +1,117 @@
+<div class="row">
+    <div class="col-xs-6">
+        <table class="table">
+            <tbody>
+            <tr>
+                <td translate="global.map.size.landAreaSize"></td>
+                <td class="text-right">
+                    <span ng-bind="$ctrl.permitArea.size.all.land | prettyAreaSize:0"></span>
+                </td>
+            </tr>
+
+            <tr>
+                <td translate="global.map.size.waterAreaSize"></td>
+                <td class="text-right">
+                    <span ng-bind="$ctrl.permitArea.size.all.water | prettyAreaSize:0"></span>
+                </td>
+            </tr>
+
+            <tr>
+                <td translate="global.map.size.totalAreaSize"></td>
+                <td class="text-right">
+                    <span ng-bind="$ctrl.permitArea.size.all.total | prettyAreaSize:0"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-xs-5 col-xs-offset-1">
+        <table class="table">
+            <tbody>
+            <tr>
+                <td translate="global.map.size.stateLandAreaSize"></td>
+                <td class="text-right">
+                    <span ng-bind="$ctrl.permitArea.size.stateLandAreaSize | prettyAreaSize:0"></span>
+                </td>
+            </tr>
+
+            <tr>
+                <td translate="global.map.size.privateLandAreaSize"></td>
+                <td class="text-right">
+                    <span ng-bind="$ctrl.permitArea.size.privateLandAreaSize | prettyAreaSize:0"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-6">
+        <h4 translate="harvestpermit.wizard.partners.table.rhy.title"></h4>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th></th>
+                <th translate="harvestpermit.wizard.partners.table.rhy.stateAndPrivate"></th>
+                <th translate="harvestpermit.wizard.partners.table.rhy.state"></th>
+                <th translate="harvestpermit.wizard.partners.table.rhy.private"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat-start="rhy in $ctrl.permitArea.rhy | orderBy:'-bothSize.total' track by rhy.id ">
+                <th colspan="4" class="text-center">
+                    <span name-translated="rhy.rhy"></span>
+                </th>
+            </tr>
+            <tr ng-repeat-end>
+                <th>
+                    <span translate="harvestpermit.wizard.partners.table.rhy.land"></span><br/>
+                    <span translate="harvestpermit.wizard.partners.table.rhy.water"></span><br/>
+                    <span translate="harvestpermit.wizard.partners.table.rhy.landAndWater"></span><br/>
+                </th>
+                <td>
+                    <span ng-bind="rhy.bothSize.land | prettyAreaSize:0"></span><br/>
+                    <span ng-bind="rhy.bothSize.water | prettyAreaSize:0"></span><br/>
+                    <span ng-bind="rhy.bothSize.total | prettyAreaSize:0"></span>
+                </td>
+                <td>
+                    <span ng-bind="rhy.stateSize.land | prettyAreaSize:0"></span><br/>
+                    <span ng-bind="rhy.stateSize.water | prettyAreaSize:0"></span><br/>
+                    <span ng-bind="rhy.stateSize.total | prettyAreaSize:0"></span>
+                </td>
+                <td>
+                    <span ng-bind="rhy.privateSize.land | prettyAreaSize:0"></span><br/>
+                    <span ng-bind="rhy.privateSize.water | prettyAreaSize:0"></span><br/>
+                    <span ng-bind="rhy.privateSize.total | prettyAreaSize:0"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-xs-5 col-xs-offset-1">
+        <h4 translate="harvestpermit.wizard.partners.table.hta"></h4>
+
+        <table class="table">
+            <tbody>
+            <tr ng-repeat="hta in $ctrl.permitArea.hta | orderBy:'-computedAreaSize' track by hta.id ">
+                <td name-translated="hta.hta"></td>
+                <td class="text-right" ng-bind="hta.computedAreaSize | prettyAreaSize:0"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h4 translate="harvestpermit.wizard.partners.mml.title"></h4>
+        <div>
+            <span translate="harvestpermit.wizard.partners.mml.instruction"></span>
+        </div>
+        <hr class="invisible"/>
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.onExportMmlExcel()">
+            <span class="fa fa-fw fa-file-excel-o"></span>
+            <span translate="harvestpermit.wizard.partners.mml.exportToFile"></span>
+        </button>
+    </div>
+</div>

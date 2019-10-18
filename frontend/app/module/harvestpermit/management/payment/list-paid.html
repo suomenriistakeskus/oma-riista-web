@@ -7,13 +7,12 @@
 <table class="table" ng-show="$ctrl.paymentList.length > 0">
     <thead>
     <tr>
-        <th>
-            &nbsp;
-        </th>
+        <th>&nbsp;</th>
         <th translate="invoice.invoiceNumber"></th>
         <th translate="invoice.info"></th>
         <th translate="payment.paidDate"></th>
-        <th translate="payment.amount"></th>
+        <th translate="harvestpermit.management.payments.invoiceAmount"></th>
+        <th translate="payment.paid"></th>
     </tr>
     </thead>
     <tbody>
@@ -35,23 +34,34 @@
         <td class="col-xs-2">
             <span ng-bind="::p.paymentDate | date:'dd.MM.yyyy'"></span>
         </td>
-        <td class="col-xs-4">
-            <span ng-bind="::p.amount"></span> &euro;
+        <td class="col-xs-2">
+            <span ng-bind="::p.amount | currency: '&euro;' : 2"></span>
+            <span ng-if="::p.corrected">
+                &nbsp;
+                <span class="text-danger">
+                    <strong translate="harvestpermit.management.payments.corrected"></strong>
+                </span>
+            </span>
+        </td>
+        <td class="col-xs-2" ng-switch="::(p.amount !== p.paidAmount)">
+            <span ng-switch-when="true" class="text-danger">
+                <strong ng-bind="::p.paidAmount | currency: '&euro;' : 2"></strong>
+            </span>
+            <span ng-switch-when="false" ng-bind="::p.paidAmount | currency: '&euro;' : 2"></span>
         </td>
     </tr>
     <tr ng-repeat-end ng-if="p.$$visible">
-        <td colspan="5">
+        <td colspan="6">
             <div class="row" style="margin: 20px 0 40px;">
                 <div class="col-xs-3 text-muted">
                     <p class="text-uppercase" translate="payment.amount"></p>
 
                     <p style="font-size: 36px; line-height: 32px; font-weight: 300; margin-bottom: 16px">
-                        <span ng-bind="::p.amount"></span> &euro;
+                        <span ng-bind="::p.paidAmount | currency: '&euro;' : 2"></span>
                     </p>
 
                     <button class="btn btn-primary" ng-click="$ctrl.downloadReceipt(p)">
-                        <span class="fa fa-file-text"></span>
-                        &nbsp;
+                        <span class="fa fa-fw fa-file-text"></span>
                         <span translate="harvestpermit.management.downloadReceipt"></span>
                     </button>
                 </div>

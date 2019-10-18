@@ -1,0 +1,55 @@
+<div class="r-annual-statistics-panel">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <span>{{$ctrl.rhy|rI18nNameFilter}}</span>
+                <span>({{::$ctrl.rhy.officialCode}})</span>
+            </h3>
+        </div>
+
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-condensed">
+                    <tbody>
+                        <tr>
+                            <td class="col-xs-6 col-md-4" translate="global.state"></td>
+                            <td>
+                                <span class="r-annual-statistics-state-label" ng-class="::$ctrl.colorCssClass"
+                                    uib-tooltip="{{$ctrl.tooltipLocalisationKey | translate}}"
+                                    tooltip-enable="::$ctrl.isTooltipEnabled"
+                                    tooltip-placement="right"
+                                    tooltip-popup-delay="0">
+
+                                    <span class="fa fa-fw" ng-class="::$ctrl.iconCssClass"></span>
+                                    <span translate="rhy.annualStats.state.{{::$ctrl.state}}"></span>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr ng-if="::(!!$ctrl.submitEvent)">
+                            <td class="col-xs-6 col-md-4" translate="rhy.annualStats.submitEvent"></td>
+                            <td ng-switch="::(!!$ctrl.submitEvent.actor)">
+                                <div ng-switch-when="true">
+                                    <span ng-bind="::$ctrl.submitEvent.eventTime | date:'d.M.yyyy HH:mm'"></span>
+                                    <span class="hidden-xs hidden-sm">
+                                        &nbsp;
+                                        <span ng-bind="::$ctrl.submitEvent.actor.fullName"></span>
+                                    </span>
+                                    <div class="hidden-md hidden-lg" ng-bind="::$ctrl.submitEvent.actor.fullName"></div>
+                                </div>
+                                <span ng-switch-when="false"
+                                      ng-bind="::$ctrl.submitEvent.eventTime | date:'d.M.yyyy HH:mm'"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div ng-if="$ctrl.isModerator" class="text-right">
+                <button class="btn btn-primary" ng-click="$ctrl.openAnnualStatisticsDashboard()">
+                    <span class="fa fa-lg fa-fw fa-table"></span>
+                    <span translate="rhy.annualStats.button.showTable"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

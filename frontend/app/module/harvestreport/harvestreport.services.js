@@ -27,7 +27,7 @@ angular.module('app.harvestreport.services', ['ngResource'])
                 })
                 .filter()
                 .flatten()
-                .zipObject()
+                .fromPairs()
                 .value();
         }
 
@@ -112,41 +112,6 @@ angular.module('app.harvestreport.services', ['ngResource'])
                         return category;
                     })
                     .value();
-            });
-        };
-
-        this.get = function (report) {
-            var pointOfTime = Helpers.toMoment(report.pointOfTime, 'YYYY-MM-DD[T]HH:mm');
-            var harvestDate = Helpers.dateToString(pointOfTime, 'YYYY-MM-DD');
-
-            return HarvestFieldsService.getForHarvest({
-                withPermit: !!report.permitNumber,
-                gameSpeciesCode: report.gameSpeciesCode,
-                harvestDate: harvestDate,
-                geoLocation: report.geoLocation
-
-            }).then(function (response) {
-                if (!response || !response.fields) {
-                    return $q.reject();
-                }
-
-                var result = {
-                    type: null,
-                    name: null,
-                    species: report.gameSpecies,
-                    season: report.harvestSeason,
-                    fields: response.fields
-                };
-
-                if (report.harvestSeason) {
-                    result.type = nameOtherHarvest();
-                    result.name = translateSeason(report.harvestSeason);
-                } else {
-                    result.type = namePermitHarvest();
-                    result.name = translatePermit(report.gameSpecies);
-                }
-
-                return result;
             });
         };
     })

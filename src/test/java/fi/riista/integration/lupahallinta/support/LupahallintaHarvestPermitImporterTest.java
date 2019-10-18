@@ -200,7 +200,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
             final Person person = model().newPerson();
 
             onSavedAndAuthenticated(createNewAdmin(), () -> {
-                final String permitNumber = permitNumber("001");
+                final String permitNumber = permitNumber();
                 final LocalDate today = DateUtil.today();
                 final String dates = formatDate(today, today.plusDays(14));
                 final int amount = 2;

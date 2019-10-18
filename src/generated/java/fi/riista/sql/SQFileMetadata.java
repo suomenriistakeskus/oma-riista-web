@@ -61,13 +61,27 @@ public class SQFileMetadata extends RelationalPathSpatial<SQFileMetadata> {
 
     public final com.querydsl.sql.ForeignKey<SQGameDiaryImage> _gameDiaryImageFileMetadataFk = createInvForeignKey(fileMetadataUuid, "file_metadata_id");
 
-    public final com.querydsl.sql.ForeignKey<SQMooseDataCardImport> _mooseDataCardImportXmlFileMetadataFk = createInvForeignKey(fileMetadataUuid, "xml_file_metadata_id");
+    public final com.querydsl.sql.ForeignKey<SQPermitDecisionActionAttachment> _permitDecisionActionAttachmentMetadataIdFk = createInvForeignKey(fileMetadataUuid, "attachment_metadata_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitDecisionInvoiceBatch> _permitDecisionInvoiceBatchFileMetadataFk = createInvForeignKey(fileMetadataUuid, "file_metadata_id");
 
     public final com.querydsl.sql.ForeignKey<SQZone> _zoneUploadMetadataUuidFk = createInvForeignKey(fileMetadataUuid, "upload_file_id");
 
+    public final com.querydsl.sql.ForeignKey<SQMooseHarvestReport> _mooseHarvestReportReceiptFileMetadataFk = createInvForeignKey(fileMetadataUuid, "receipt_file_metadata_id");
+
+    public final com.querydsl.sql.ForeignKey<SQInvoice> _invoiceFileMetadataFk = createInvForeignKey(fileMetadataUuid, "file_metadata_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitDecisionRevision> _permitDecisionRevisionPdfFk = createInvForeignKey(fileMetadataUuid, "pdf_metadata_id");
+
+    public final com.querydsl.sql.ForeignKey<SQMooseDataCardImport> _mooseDataCardImportXmlFileMetadataFk = createInvForeignKey(fileMetadataUuid, "xml_file_metadata_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitApplicationArchive> _permitApplicationArchiveMetadataFk = createInvForeignKey(fileMetadataUuid, "file_metadata_id");
+
     public final com.querydsl.sql.ForeignKey<SQFileContent> _fileContentMetadataUuidFk = createInvForeignKey(fileMetadataUuid, "file_metadata_uuid");
 
-    public final com.querydsl.sql.ForeignKey<SQMooseHarvestReport> _mooseHarvestReportReceiptFileMetadataFk = createInvForeignKey(fileMetadataUuid, "receipt_file_metadata_id");
+    public final com.querydsl.sql.ForeignKey<SQPermitDecisionAttachment> _permitDecisionAttachmentMetadataIdFk = createInvForeignKey(fileMetadataUuid, "attachment_metadata_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationAttachment> _harvestPermitApplicationAttachmentMetadataFk = createInvForeignKey(fileMetadataUuid, "attachment_metadata_id");
 
     public SQFileMetadata(String variable) {
         super(SQFileMetadata.class, forVariable(variable), "public", "file_metadata");

@@ -1,6 +1,5 @@
 package fi.riista.feature.harvestpermit;
 
-import com.google.common.collect.Sets;
 import com.querydsl.core.annotations.QueryDelegate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import fi.riista.feature.account.user.SystemUser;
@@ -11,14 +10,17 @@ import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.report.HasHarvestReportState;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.util.F;
-import fi.riista.util.LocalisedString;
 import fi.riista.validation.FinnishHuntingPermitNumber;
+import org.hibernate.validator.constraints.SafeHtml;
 import org.hibernate.validator.constraints.URL;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -29,6 +31,7 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -41,10 +44,10 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,54 +55,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Access(AccessType.FIELD)
 public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestReportState {
 
     public static final String ID_COLUMN_NAME = "harvest_permit_id";
-
-    /**
-     * These permit types possibly have permitted methods which are otherwise
-     * illegal.
-     */
-    private static final Set<String> PERMITTED_METHOD_ALLOWED = Sets.newHashSet("300", "310", "345", "370");
-
-    private static final Set<String> PERMIT_TYPES_AS_LIST = Sets.newHashSet(
-            "200", "210", "250", "251", "253", "300", "310", "345", "370");
-
-    public static final String MOOSELIKE_PERMIT_TYPE = "100";
-    public static final String MOOSELIKE_AMENDMENT_PERMIT_TYPE = "190";
-    public static final LocalisedString MOOSELIKE_PERMIT_NAME = LocalisedString.of("Hirvieläinten pyyntilupa", "Jaktlicens för hjortdjur");
-
-    private static final Set<String> RESOLVE_PERMIT_HOLDER_AND_PARTNER = Collections.singleton(MOOSELIKE_PERMIT_TYPE);
-
-    public static boolean checkIsHarvestsAsList(String permitTypeCode) {
-        return PERMIT_TYPES_AS_LIST.contains(permitTypeCode);
-    }
-
-    public static boolean checkShouldResolvePermitHolder(String permitTypeCode) {
-        return RESOLVE_PERMIT_HOLDER_AND_PARTNER.contains(permitTypeCode);
-    }
-
-    public static boolean checkShouldResolvePermitPartners(String permitTypeCode) {
-        return RESOLVE_PERMIT_HOLDER_AND_PARTNER.contains(permitTypeCode);
-    }
-
-    public static boolean isMooselikePermitTypeCode(String permitTypeCode) {
-        return MOOSELIKE_PERMIT_TYPE.equals(permitTypeCode);
-    }
-
-    public static boolean isAmendmentPermitTypeCode(String permitTypeCode) {
-        return MOOSELIKE_AMENDMENT_PERMIT_TYPE.equals(permitTypeCode);
-    }
-
-    public static LocalDate getDefaultMooselikeBeginDate(final int huntingYear) {
-        return new LocalDate(huntingYear, 9, 1);
-    }
-
-    public static LocalDate getDefaultMooselikeEndDate(final int huntingYear) {
-        return new LocalDate(huntingYear + 1, 1, 15);
-    }
 
     private Long id;
 
@@ -107,6 +69,9 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
     @NotNull
     @Column(nullable = false)
     private String permitNumber;
+
+    @Column(nullable = false)
+    private int permitYear;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -133,10 +98,10 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
     private String permitTypeCode;
 
     @OneToMany(mappedBy = "harvestPermit", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<HarvestPermitSpeciesAmount> speciesAmounts = new LinkedList<>();
+    private final List<HarvestPermitSpeciesAmount> speciesAmounts = new LinkedList<>();
 
     @OneToMany(mappedBy = "harvestPermit", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<HarvestPermitContactPerson> contactPersons = new LinkedList<>();
+    private final List<HarvestPermitContactPerson> contactPersons = new LinkedList<>();
 
     @OneToMany(mappedBy = "harvestPermit")
     private List<Harvest> harvests = new LinkedList<>();
@@ -167,21 +132,25 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
     @OneToMany(mappedBy = "harvestPermit")
     private Set<MooseHuntingSummary> mooseHuntingSummaries;
 
+    @Embedded
+    @Valid
+    private PermitHolder permitHolder;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    private HuntingClub permitHolder;
+    @JoinColumn(name = "permit_holder_id")
+    private HuntingClub huntingClub;
 
     @ManyToMany
     @JoinTable(name = "harvest_permit_partners",
             joinColumns = {@JoinColumn(name = ID_COLUMN_NAME, referencedColumnName = ID_COLUMN_NAME)},
-            inverseJoinColumns = {@JoinColumn(name = Organisation.ID_COLUMN_NAME, referencedColumnName = Organisation.ID_COLUMN_NAME)}
-    )
+            inverseJoinColumns = {@JoinColumn(name = Organisation.ID_COLUMN_NAME, referencedColumnName = Organisation.ID_COLUMN_NAME)})
     private Set<HuntingClub> permitPartners = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     private HarvestPermit originalPermit;
 
     @OneToMany(mappedBy = "harvestPermit")
-    private Set<HuntingClubGroup> permitGroups = new HashSet<>();
+    private final Set<HuntingClubGroup> permitGroups = new HashSet<>();
 
     /**
      * Lupapäätöksen tulostuksen URL
@@ -208,10 +177,19 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
     @Column
     private Integer permitAreaSize;
 
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.BASIC)
+    @Column(columnDefinition = "TEXT")
+    private String endOfHuntingReportComments;
+
     @AssertTrue
     public boolean isHarvestReportFieldsConsistent() {
         return F.allNull(this.harvestReportAuthor, this.harvestReportState, this.harvestReportDate, this.harvestReportModeratorOverride) ||
                 F.allNotNull(this.harvestReportAuthor, this.harvestReportState, this.harvestReportDate, this.harvestReportModeratorOverride);
+    }
+
+    @AssertTrue
+    public boolean isPermitHolderSetForMooselike() {
+        return !(isMooselikePermitType() || isAmendmentPermit()) || this.permitHolder != null;
     }
 
     // Helpers -->
@@ -221,7 +199,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
     }
 
     public boolean isPermittedMethodAllowed() {
-        return PERMITTED_METHOD_ALLOWED.contains(permitTypeCode);
+        return PermitTypeCode.isPermittedMethodAllowed(permitTypeCode);
     }
 
     @Nonnull
@@ -258,12 +236,12 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return !isMooselikePermitType() && !isAmendmentPermit();
     }
 
-    public boolean canAddHarvest(final SystemUser activeUser) {
+    public boolean canAddHarvest(final @Nonnull SystemUser activeUser) {
         return !isHarvestReportDone() &&
                 (activeUser.isModeratorOrAdmin() || hasContactPerson(activeUser.getPerson()));
     }
 
-    public boolean canCreateEndOfHuntingReport(final SystemUser activeUser) {
+    public boolean canCreateEndOfHuntingReport(final @Nonnull SystemUser activeUser) {
         return !isHarvestReportDone() && !hasHarvestProposedToPermit() &&
                 (activeUser.isModeratorOrAdmin() || hasContactPerson(activeUser.getPerson()));
     }
@@ -278,7 +256,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
     }
 
     public boolean isMooselikePermitType() {
-        return isMooselikePermitTypeCode(this.getPermitTypeCode());
+        return PermitTypeCode.isMooselikePermitTypeCode(this.getPermitTypeCode());
     }
 
     public boolean isApplicableForMooseDataCardImport() {
@@ -286,27 +264,27 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return isMooselikePermitType();
     }
 
-    public boolean isPermitHolderOrPartner(HuntingClub club) {
+    public boolean isPermitHolderOrPartner(final HuntingClub club) {
         return isPermitHolder(club) || isPermitPartner(club);
     }
 
-    public boolean isPermitHolder(HuntingClub club) {
-        return permitHolder != null && Objects.equals(permitHolder.getId(), club.getId());
+    public boolean isPermitHolder(final HuntingClub club) {
+        return huntingClub != null && Objects.equals(huntingClub.getId(), club.getId());
     }
 
-    public boolean isPermitPartner(HuntingClub club) {
+    public boolean isPermitPartner(final HuntingClub club) {
         return permitPartners.stream().anyMatch(p -> Objects.equals(p.getId(), club.getId()));
     }
 
     public boolean isAmendmentPermit() {
-        return isAmendmentPermitTypeCode(this.permitTypeCode);
+        return PermitTypeCode.isAmendmentPermitTypeCode(this.permitTypeCode);
     }
 
-    public boolean hasContactPerson(Person person) {
+    public boolean hasContactPerson(final Person person) {
         if (originalContactPerson != null && originalContactPerson.equals(person)) {
             return true;
         }
-        for (HarvestPermitContactPerson cp : contactPersons) {
+        for (final HarvestPermitContactPerson cp : contactPersons) {
             if (cp.getContactPerson().equals(person)) {
                 return true;
             }
@@ -314,35 +292,56 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return false;
     }
 
-    public void addHarvest(Harvest h) {
+    public void addHarvest(final Harvest h) {
         this.harvests.add(h);
     }
 
     // Querydsl delegates -->
 
     @QueryDelegate(HarvestPermit.class)
-    public static BooleanExpression hasRhy(QHarvestPermit permit, long rhyId) {
+    public static BooleanExpression matchesPermitYear(final QHarvestPermit permit, final int year) {
+        return permit.permitYear.eq(year);
+    }
+
+    @QueryDelegate(HarvestPermit.class)
+    public static BooleanExpression hasRhy(final QHarvestPermit permit, final long rhyId) {
         return permit.rhy.id.eq(rhyId);
     }
 
     @QueryDelegate(HarvestPermit.class)
-    public static BooleanExpression hasRelatedRhy(QHarvestPermit permit, long rhyId) {
+    public static BooleanExpression hasRelatedRhy(final QHarvestPermit permit, final long rhyId) {
         return permit.relatedRhys.any().id.eq(rhyId);
     }
 
     @QueryDelegate(HarvestPermit.class)
-    public static BooleanExpression hasRhyOrRelatedRhy(QHarvestPermit permit, long rhyId) {
+    public static BooleanExpression hasRhyOrRelatedRhy(final QHarvestPermit permit, final long rhyId) {
         return permit.hasRhy(rhyId).or(permit.hasRelatedRhy(rhyId));
     }
 
     @QueryDelegate(HarvestPermit.class)
-    public static BooleanExpression isMooselikePermit(QHarvestPermit permit) {
-        return permit.permitTypeCode.eq(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+    public static BooleanExpression isMooselikePermit(final QHarvestPermit permit) {
+        return permit.permitTypeCode.eq(PermitTypeCode.MOOSELIKE);
     }
 
     @QueryDelegate(HarvestPermit.class)
-    public static BooleanExpression isMooselikeOrAmendmentPermit(QHarvestPermit permit) {
-        return permit.permitTypeCode.in(MOOSELIKE_PERMIT_TYPE, MOOSELIKE_AMENDMENT_PERMIT_TYPE);
+    public static BooleanExpression isMooselikeOrAmendmentPermit(final QHarvestPermit permit) {
+        return permit.permitTypeCode.in(PermitTypeCode.MOOSELIKE, PermitTypeCode.MOOSELIKE_AMENDMENT);
+    }
+
+    // CONSTRUCTORS
+
+    public static HarvestPermit create(@Nonnull final String permitNumber) {
+        requireNonNull(permitNumber);
+        return new HarvestPermit(permitNumber, PermitNumberUtil.extractYear(permitNumber));
+    }
+
+    // For Hibernate
+    public HarvestPermit() {
+    }
+
+    private HarvestPermit(final String permitNumber, final int permitYear) {
+        this.permitNumber = permitNumber;
+        this.permitYear = permitYear;
     }
 
     // Accessors -->
@@ -357,7 +356,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -365,15 +364,16 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return permitNumber;
     }
 
-    public void setPermitNumber(String permitNumber) {
-        this.permitNumber = permitNumber;
+
+    public int getPermitYear() {
+        return permitYear;
     }
 
     public Person getOriginalContactPerson() {
         return originalContactPerson;
     }
 
-    public void setOriginalContactPerson(Person originalContactPerson) {
+    public void setOriginalContactPerson(final Person originalContactPerson) {
         this.originalContactPerson = originalContactPerson;
     }
 
@@ -389,7 +389,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return rhy;
     }
 
-    public void setRhy(Riistanhoitoyhdistys rhy) {
+    public void setRhy(final Riistanhoitoyhdistys rhy) {
         this.rhy = rhy;
     }
 
@@ -397,7 +397,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return permitType;
     }
 
-    public void setPermitType(String permitType) {
+    public void setPermitType(final String permitType) {
         this.permitType = permitType;
     }
 
@@ -405,7 +405,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return permitTypeCode;
     }
 
-    public void setPermitTypeCode(String permitTypeCode) {
+    public void setPermitTypeCode(final String permitTypeCode) {
         this.permitTypeCode = permitTypeCode;
     }
 
@@ -429,7 +429,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return parsingInfo;
     }
 
-    public void setParsingInfo(String parsingInfo) {
+    public void setParsingInfo(final String parsingInfo) {
         this.parsingInfo = parsingInfo;
     }
 
@@ -437,7 +437,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return lhSyncTime;
     }
 
-    public void setLhSyncTime(DateTime lhSyncTime) {
+    public void setLhSyncTime(final DateTime lhSyncTime) {
         this.lhSyncTime = lhSyncTime;
     }
 
@@ -445,7 +445,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return harvestsAsList;
     }
 
-    public void setHarvestsAsList(boolean harvestsAsList) {
+    public void setHarvestsAsList(final boolean harvestsAsList) {
         this.harvestsAsList = harvestsAsList;
     }
 
@@ -482,19 +482,27 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         this.harvestReportModeratorOverride = harvestReportModeratorOverride;
     }
 
-    public HuntingClub getPermitHolder() {
+    public PermitHolder getPermitHolder() {
         return permitHolder;
     }
 
-    public void setPermitHolder(HuntingClub permitHolder) {
+    public void setPermitHolder(final PermitHolder permitHolder) {
         this.permitHolder = permitHolder;
+    }
+
+    public HuntingClub getHuntingClub() {
+        return huntingClub;
+    }
+
+    public void setHuntingClub(final HuntingClub huntingClub) {
+        this.huntingClub = huntingClub;
     }
 
     public Set<HuntingClub> getPermitPartners() {
         return permitPartners;
     }
 
-    public void setPermitPartners(Set<HuntingClub> permitPartners) {
+    public void setPermitPartners(final Set<HuntingClub> permitPartners) {
         this.permitPartners = permitPartners;
     }
 
@@ -502,7 +510,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return originalPermit;
     }
 
-    public void setOriginalPermit(HarvestPermit originalPermit) {
+    public void setOriginalPermit(final HarvestPermit originalPermit) {
         this.originalPermit = originalPermit;
     }
 
@@ -510,7 +518,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return printingUrl;
     }
 
-    public void setPrintingUrl(String printingUrl) {
+    public void setPrintingUrl(final String printingUrl) {
         this.printingUrl = printingUrl;
     }
 
@@ -518,7 +526,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return mooseArea;
     }
 
-    public void setMooseArea(GISHirvitalousalue mooseArea) {
+    public void setMooseArea(final GISHirvitalousalue mooseArea) {
         this.mooseArea = mooseArea;
     }
 
@@ -526,7 +534,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return relatedRhys;
     }
 
-    public void setRelatedRhys(Set<Riistanhoitoyhdistys> relatedRhys) {
+    public void setRelatedRhys(final Set<Riistanhoitoyhdistys> relatedRhys) {
         this.relatedRhys = relatedRhys;
     }
 
@@ -534,7 +542,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return permitAreaSize;
     }
 
-    public void setPermitAreaSize(Integer permitAreaSize) {
+    public void setPermitAreaSize(final Integer permitAreaSize) {
         this.permitAreaSize = permitAreaSize;
     }
 
@@ -542,6 +550,14 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
 
     Set<HuntingClubGroup> getPermitGroups() {
         return permitGroups;
+    }
+
+    public String getEndOfHuntingReportComments() {
+        return endOfHuntingReportComments;
+    }
+
+    public void setEndOfHuntingReportComments(final String endOfHuntingReportComments) {
+        this.endOfHuntingReportComments = endOfHuntingReportComments;
     }
 
 }

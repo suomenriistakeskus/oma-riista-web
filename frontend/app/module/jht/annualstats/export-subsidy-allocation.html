@@ -1,0 +1,47 @@
+<form name="exportSubsidyAllocationForm" class="form" role="form" autocomplete="off"
+      r-force-show-errors-check-validity>
+
+      <div class="modal-header">
+        <h3 class="modal-title">
+            <div translate="jht.annualStats.exportSubsidyAllocationDialog.title"></div>
+        </h3>
+        <button riista-modal-close></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="row">
+            <div class="form-group col-xs-offset-3 col-xs-6 col-md-offset-4 col-md-5" show-errors>
+                <label for="totalSubsidyAmount" class="control-label">
+                    <span translate="jht.annualStats.exportSubsidyAllocationDialog.totalSubsidyAmount"></span>
+                </label>
+
+                <div class="form-control-wrapper input-group">
+                    <input type="number" name="totalSubsidyAmount" id="totalSubsidyAmount"
+                           class="form-control no-spinner"
+                           ng-model="$ctrl.data.totalSubsidyAmount"
+                           min="0" max="9999999" step="1"
+                           required/>
+
+                    <div class="input-group-addon">
+                        <span>&euro;</span>
+                    </div>
+                </div>
+
+                <div class="form-control-offset-wrapper" ng-show="exportSubsidyAllocationForm.totalSubsidyAmount.$invalid">
+                    <p class="help-block" translate="global.messages.invalid"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-disabled="exportSubsidyAllocationForm.$invalid"
+                ng-click="$ctrl.export()"
+                translate="global.button.print"></button>
+    </div>
+</form>

@@ -2,9 +2,6 @@ package fi.riista.feature.shootingtest;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.util.jpa.CriteriaUtils;
-import org.hibernate.validator.constraints.Range;
-import org.joda.time.ReadablePeriod;
-import org.joda.time.Years;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -18,6 +15,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -25,10 +24,6 @@ import java.util.Objects;
 @Entity
 @Access(value = AccessType.FIELD)
 public class ShootingTestAttempt extends LifecycleEntity<Long> {
-
-    public static final ReadablePeriod SHOOTING_TEST_VALIDITY_PERIOD = Years.THREE;
-    public static final int MAX_ATTEMPTS_PER_TYPE = 5;
-    public static final BigDecimal ATTEMPT_PRICE = BigDecimal.valueOf(20.0);
 
     private Long id;
 
@@ -46,7 +41,8 @@ public class ShootingTestAttempt extends LifecycleEntity<Long> {
     @Column(nullable = false)
     private ShootingTestAttemptResult result;
 
-    @Range(min = 0, max = 4)
+    @Min(0)
+    @Max(4)
     @Column
     private Integer hits;
 
@@ -80,7 +76,7 @@ public class ShootingTestAttempt extends LifecycleEntity<Long> {
     }
 
     public static BigDecimal calculatePaymentSum(final int chargeableAttempts) {
-        return ATTEMPT_PRICE.multiply(BigDecimal.valueOf(chargeableAttempts));
+        return ShootingTest.ATTEMPT_PRICE.multiply(BigDecimal.valueOf(chargeableAttempts));
     }
 
     @Override

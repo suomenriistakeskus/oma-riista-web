@@ -1,7 +1,7 @@
 package fi.riista.feature.organization.jht.nomination;
 
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.jht.JHTPeriod;

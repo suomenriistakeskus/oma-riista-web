@@ -6,9 +6,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -57,15 +55,7 @@ public class Payment {
     @Pattern(regexp = "[\\pL-0-9- \"', ()\\[\\]{}*+\\-_,.]*")
     private String msgSettlementMerchant;
 
-    // CALLBACKS
-
-    @NotNull
-    private URI successUri;
-
-    @NotNull
-    private URI cancelUri;
-
-    private URI notifyUri;
+    private CallbackUrlSet callbacks;
 
     public String getOrderNumber() {
         return orderNumber;
@@ -123,28 +113,12 @@ public class Payment {
         this.vatIsIncluded = vatIsIncluded;
     }
 
-    public URI getSuccessUri() {
-        return successUri;
+    public CallbackUrlSet getCallbacks() {
+        return callbacks;
     }
 
-    public void setSuccessUri(final URI successUri) {
-        this.successUri = successUri;
-    }
-
-    public URI getCancelUri() {
-        return cancelUri;
-    }
-
-    public void setCancelUri(final URI cancelUri) {
-        this.cancelUri = cancelUri;
-    }
-
-    public URI getNotifyUri() {
-        return notifyUri;
-    }
-
-    public void setNotifyUri(final URI notifyUri) {
-        this.notifyUri = notifyUri;
+    public void setCallbacks(final CallbackUrlSet callbacks) {
+        this.callbacks = callbacks;
     }
 
     public List<Product> getProducts() {

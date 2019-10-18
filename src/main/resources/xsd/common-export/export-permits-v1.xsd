@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/common/export/2018/10"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:hbd="http://dd.eionet.europa.eu/schemas/habides-2.0"
+           targetNamespace="http://riista.fi/integration/common/export/2018/10"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:include schemaLocation="geolocation-v1.xsd"/>
+    <xs:import namespace="http://dd.eionet.europa.eu/schemas/habides-2.0" schemaLocation="reason-type.xsd"/>
+    <xs:element name="permits">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="permit" type="Permit" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="permitSpeciesAmount" type="PermitSpeciesAmount" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="permitPartner" type="PermitPartner" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="Permit">
+        <xs:sequence>
+            <xs:element name="permitNumber" type="xs:string"/>
+            <xs:element name="permitYear" type="xs:int"/>
+            <xs:element name="rhyOfficialCode" type="xs:string"/>
+            <xs:element name="geoLocation" type="geoLocation"/>
+            <xs:element name="originalPermitNumber" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Permit number of the original permit, present for amendment permits only.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="permitDisplayName" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Human readable title of the permit.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="huntingFinished" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>
+                        True when hunting with the permit has been finished.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="derogationReasons" type="hbd:reasonType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Derogation reason for this permit. Present only in derogation permits.
+                        Values used for describing the reasons are defined in following definitions:
+                        - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdslegalbasis/view
+                        - Habitats directive: http://dd.eionet.europa.eu/vocabulary/habides/habitatslegalbasis/view
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PermitPartner">
+        <xs:sequence>
+            <xs:element name="permitNumber" type="xs:string"/>
+            <xs:element name="clubOfficialCode" type="xs:string"/>
+            <xs:element name="nameFinnish" type="xs:string"/>
+            <xs:element name="geoLocation" type="geoLocation" minOccurs="0"/>
+            <xs:element name="rhyOfficialCode" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PermitSpeciesAmount">
+        <xs:sequence>
+            <xs:element name="permitNumber" type="xs:string"/>
+            <xs:element name="validityPeriod" type="validityTimeInterval" maxOccurs="unbounded"/>
+            <xs:element name="gameSpeciesCode" type="xs:int"/>
+            <xs:element name="amount" type="xs:float"/>
+            <xs:element name="restrictedAmountAdult" type="xs:float" minOccurs="0"/>
+            <xs:element name="restrictedAmountAdultMale" type="xs:float" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="validityTimeInterval">
+        <xs:sequence>
+            <xs:element name="beginDate" type="xs:date"/>
+            <xs:element name="endDate" type="xs:date"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,156 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+           targetNamespace="http://dd.eionet.europa.eu/schemas/habides-2.0">
+    <!--
+
+
+           XML Schema for HABIDES+ data (the first reporting year 2015)
+
+            Reporting derogations from the species protection requirements under the Article 9 EU Birds
+            and Article 16 Habitats Directives (and equivalent provisions under the Article 9 Bern Convention).
+
+           Reporting obligatios:
+               http://rod.eionet.europa.eu/obligations/276
+               http://rod.eionet.europa.eu/obligations/268
+
+
+           The official location for this schema is http://dd.eionet.europa.eu/schemas/habides-2.0/derogations.xsd
+           Remember to upload when a new version is checked in.
+
+           Authors: Enrko Käsper, Jaak Kapten (TripleDev)
+
+   -->
+    <xs:simpleType name="reasonType">
+        <xs:annotation>
+            <xs:documentation>
+                The values are defined at: - Birds directive:
+                http://dd.eionet.europa.eu/vocabulary/habides/birdslegalbasis/view - Habitats directive:
+                http://dd.eionet.europa.eu/vocabulary/habides/habitatslegalbasis/view
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value=""/>
+            <!--  Birds Directive  -->
+            <xs:enumeration value="10">
+                <xs:annotation>
+                    <xs:documentation>in the interests of public health and safety</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="20">
+                <xs:annotation>
+                    <xs:documentation>in the interests of air safety</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30">
+                <xs:annotation>
+                    <xs:documentation>
+                        to prevent serious damage, in particular to crops, livestock, forests, fisheries and water
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="40">
+                <xs:annotation>
+                    <xs:documentation>for the protection of flora and fauna</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="50">
+                <xs:annotation>
+                    <xs:documentation>
+                        for the purposes of research and teaching, and for the breeding necessary for these purposes
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="55">
+                <xs:annotation>
+                    <xs:documentation>
+                        for the purposes of re-population or re-introduction, and for the breeding necessary for these
+                        purposes
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="64">
+                <xs:annotation>
+                    <xs:documentation>
+                        to permit, under strictly supervised conditions and on a selective basis, the capture, keeping
+                        or other judicious use of certain birds in small numbers (derogation from the protection regime
+                        for a protected bird species, for purposes other than falconry)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="65">
+                <xs:annotation>
+                    <xs:documentation>
+                        to permit, under strictly supervised conditions and on a selective basis, the capture, keeping
+                        or other judicious use of certain birds in small numbers (derogation from the protection regime
+                        for a protected bird species, for the purpose of falconry)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="66">
+                <xs:annotation>
+                    <xs:documentation>
+                        to permit, under strictly supervised conditions and on a selective basis, the capture, keeping
+                        or other judicious use of certain birds in small numbers (derogation for hunting a huntable bird
+                        species during a season when its hunting would not be allowed according to Article 7.4 of the EU
+                        Birds Directive)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="67">
+                <xs:annotation>
+                    <xs:documentation>
+                        to permit, under strictly supervised conditions and on a selective basis, the capture, keeping
+                        or other judicious use of certain birds in small numbers (derogation for the use of a forbidden
+                        mean, arrangement, method or mode of transport listed in Annex IV of the EU Birds Directive)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <!--  Habitats Directive  -->
+            <xs:enumeration value="11">
+                <xs:annotation>
+                    <xs:documentation>
+                        In the interest of protecting wild fauna and flora and conserving natural habitats
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="31">
+                <xs:annotation>
+                    <xs:documentation>
+                        to prevent serious damage, in particular to crops, livestock, forests, fisheries and water and
+                        other types of property
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="41">
+                <xs:annotation>
+                    <xs:documentation>
+                        in the interests of public health and safety, or for other imperative reasons of overriding
+                        public interest, including those of a social or economic nature and beneficial consequences of
+                        primary importance for the environment
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="51">
+                <xs:annotation>
+                    <xs:documentation>for the purpose of research and education</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="52">
+                <xs:annotation>
+                    <xs:documentation>
+                        for the purposes of repopulating and re-introducing these species and for the breeding
+                        operations necessary for these purposes, including the artificial propagation of plants
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="60">
+                <xs:annotation>
+                    <xs:documentation>
+                        to allow, under strictly supervised conditions, on a selective basis and to a limited extent,
+                        the taking or keeping of certain specimens of the species listed in Annex IV (EU Habitats
+                        Directive) in limited numbers specified by the competent national authorities
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

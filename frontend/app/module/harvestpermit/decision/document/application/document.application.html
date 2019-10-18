@@ -1,0 +1,21 @@
+<permit-decision-section-header decision="$ctrl.decision"
+                                section-id="$ctrl.sectionId">
+</permit-decision-section-header>
+
+<div class="panel panel-decision">
+    <div class="panel-heading">
+        <div class="panel-title">
+            <span translate="harvestpermit.decision.section.textHeader"></span>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <div class="pull-right">
+            <a ng-if="::($ctrl.canEditDecision())"
+               ng-click="$ctrl.regenerateApplicationSection()">
+                <span class="fa fa-2x fa-refresh text-info"></span>
+            </a>
+        </div>
+        <div class="html-content" ng-bind-html="$ctrl.sectionContent"></div>
+    </div>
+</div>

@@ -42,38 +42,56 @@
         <div class="form-group">
             <label class="col-xs-4 control-label" translate="occupation.form.validity"></label>
 
-            <div class="col-xs-8 row">
-                <div class="col-xs-5">
-                    <div class="input-group" ng-controller="DatePickerController">
-                        <input type="text" name="beginDate" id="beginDate"
-                               class="form-control r-wider-date-input"
-                               uib-datepicker-popup is-open="isDatePickerOpen"
-                               max-date="occupation.endDate"
-                               ng-model="occupation.beginDate"/>
+            <div class="col-xs-8">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <div class="input-group" ng-controller="DatePickerController">
+                            <input type="text" name="beginDate" id="beginDate"
+                                   class="form-control"
+                                   uib-datepicker-popup is-open="isDatePickerOpen"
+                                   ng-model="occupation.beginDate"
+                                   ng-change="occupationForm.endDate.$validate()"
+                                   date-between-min-max
+                                   max-date="occupation.endDate"/>
 
-                        <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" tabindex="-1"
-                                    ng-click="toggleDatePopup($event)">
-                                <span class="glyphicon glyphicon-calendar"></span>
-                            </button>
-                        </span>
+                            <div class="input-group-btn">
+                                <button type="button" class="btn btn-default" tabindex="-1"
+                                        ng-click="toggleDatePopup($event)">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="help-block"
+                           ng-show="occupationForm.beginDate.$invalid"
+                           ng-messages="occupationForm.beginDate.$error">
+                            <span ng-messages-include="common/errorMessages.html"></span>
+                        </p>
                     </div>
-                </div>
-                <div class="col-xs-1 r-date-input-spacer">-</div>
-                <div class="col-xs-5">
-                    <div class="input-group" ng-controller="DatePickerController">
-                        <input type="text" name="endDate" id="endDate"
-                               class="form-control r-wider-date-input"
-                               uib-datepicker-popup is-open="isDatePickerOpen"
-                               min-date="occupation.beginDate"
-                               ng-model="occupation.endDate"/>
+                    <div class="col-xs-6">
+                        <div class="r-date-input-spacer">&dash;</div>
+                        <div class="input-group" ng-controller="DatePickerController">
+                            <input type="text" name="endDate" id="endDate"
+                                   class="form-control"
+                                   uib-datepicker-popup is-open="isDatePickerOpen"
+                                   ng-model="occupation.endDate"
+                                   ng-change="occupationForm.beginDate.$validate()"
+                                   date-between-min-max
+                                   min-date="occupation.beginDate"/>
 
-                        <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" tabindex="-1"
-                                    ng-click="toggleDatePopup($event)">
-                                <span class="glyphicon glyphicon-calendar"></span>
-                            </button>
-                        </span>
+                            <div class="input-group-btn">
+                                <button type="button" class="btn btn-default" tabindex="-1"
+                                        ng-click="toggleDatePopup($event)">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="help-block"
+                           ng-show="occupationForm.endDate.$invalid"
+                           ng-messages="occupationForm.endDate.$error">
+                            <span ng-messages-include="common/errorMessages.html"></span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -112,7 +130,7 @@
                     </span>
                     <span class="radio-inline">
                         <label>
-                            <input type="radio" ng-model="addPersonBy.value"value="HETU">
+                            <input type="radio" ng-model="addPersonBy.value" value="HETU">
                             <span translate="occupation.form.selectBySSN"></span>
                         </label>
                     </span>
@@ -218,7 +236,8 @@
                            ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
                            ng-maxlength=255
                            ng-required="phoneNumberRequired">
-                    <p class="help-block" ng-show="occupationForm.phoneNumber.$invalid" translate="global.messages.invalid"></p>
+                    <p class="help-block" ng-show="occupationForm.phoneNumber.$invalid"
+                       translate="global.messages.invalid"></p>
                 </div>
             </div>
 
@@ -307,7 +326,8 @@
 
             <!--Address-->
             <div class="form-group" show-errors ng-if="editAddress">
-                <label for="streetAddress" class="col-xs-4 control-label" translate="global.address.streetAddress"></label>
+                <label for="streetAddress" class="col-xs-4 control-label"
+                       translate="global.address.streetAddress"></label>
 
                 <div class="col-xs-8">
                     <input type="text" name="streetAddress" id="streetAddress"
@@ -361,8 +381,10 @@
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-default" ng-click="cancel()" translate="occupation.form.button.cancel"></button>
+        <button type="button" class="btn btn-default" ng-click="cancel()"
+                translate="occupation.form.button.cancel"></button>
         <button type="submit" class="btn btn-primary"
-                ng-disabled="occupationForm.$invalid || !isValid(occupation, editPersonInformation, occupationForm.phoneNumber.$error.invalid)" translate="occupation.form.button.save"></button>
+                ng-disabled="occupationForm.$invalid || !isValid(occupation, editPersonInformation, occupationForm.phoneNumber.$error.invalid)"
+                translate="occupation.form.button.save"></button>
     </div>
 </form>

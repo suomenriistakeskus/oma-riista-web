@@ -1,0 +1,61 @@
+<div class="panel panel-default personal-area-union-container"
+     ng-repeat="a in $ctrl.areaList track by a.id">
+    <div class="panel-heading">
+        <div class="row">
+
+            <div class="col-xs-6">
+                <p class="panel-title">
+                    <span ng-bind="a.name"></span>
+                    <button type="button" class="btn btn-link"
+                            ng-click="$ctrl.edit(a)">
+                        <span class="fa fa-lg fa-edit"></span>
+                    </button>
+                </p>
+            </div>
+
+            <div class="col-xs-6 text-right">
+                <button type="button" class="btn btn-link"
+                        ng-if="a.status === 'READY'"
+                        ng-click="$ctrl.printArea(a)">
+                    <span class="fa fa-2x fa-print text-primary"></span>
+                </button>
+                <button type="button" class="btn btn-primary"
+                        ng-if="!$ctrl.isAreaLocked(a)"
+                        ng-click="$ctrl.addPartner(a)">
+                    <span translate="account.personalAreaUnion.addPartnerArea"></span>
+                </button>
+                <button type="button" class="btn btn-default"
+                        ng-if="!$ctrl.isAreaLocked(a)"
+                        ng-disabled="!a.partners || a.partners.length === 0"
+                        ng-click="$ctrl.lockArea(a)">
+                    <span translate="account.personalAreaUnion.setAreaReady"></span>
+                </button>
+                <button type="button" class="btn btn-default"
+                        ng-if="$ctrl.isAreaLocked(a)"
+                        ng-click="$ctrl.unlockArea(a)">
+                    <span translate="account.personalAreaUnion.setAreaIncomplete"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-6">
+                <personal-area-list-map area="a" ng-show="a.status === 'READY'"
+                                        area-type="'personal-area-union'"></personal-area-list-map>
+            </div>
+
+            <div class="col-md-6">
+                <personal-area-union-info area="a"></personal-area-union-info>
+            </div>
+        </div>
+    </div>
+
+    <harvest-permit-area-partner-area-list partners="a.partners"
+                                           on-refresh-partner="$ctrl.refreshPartner(a, id)"
+                                           on-remove-partner="$ctrl.removePartner(a, id)"
+                                           is-locked="$ctrl.isAreaLocked(a)" >
+
+    </harvest-permit-area-partner-area-list>
+</div>

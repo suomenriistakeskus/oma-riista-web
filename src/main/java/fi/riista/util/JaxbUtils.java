@@ -15,6 +15,7 @@ import java.util.Objects;
 import static javax.xml.bind.Marshaller.JAXB_ENCODING;
 import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 import static javax.xml.bind.Marshaller.JAXB_FRAGMENT;
+import static javax.xml.bind.Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION;
 
 public final class JaxbUtils {
 
@@ -60,6 +61,18 @@ public final class JaxbUtils {
         if (includeNamespacePrefixMapper) {
             builder.put("com.sun.xml.bind.namespacePrefixMapper", NAMESPACE_PREFIX_MAPPER);
         }
+
+        return builder.build();
+    }
+
+    public static Map<String, Object> getHabidesMarshallerProperties() {
+        final String encoding = Constants.DEFAULT_ENCODING;
+        final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object> builder()
+                .put(JAXB_ENCODING, encoding)
+                .put(JAXB_FRAGMENT, true)
+                .put(JAXB_FORMATTED_OUTPUT, true)
+                .put(JAXB_NO_NAMESPACE_SCHEMA_LOCATION, "http://dd.eionet.europa.eu/schemas/habides-2.0/derogations.xsd")
+                .put("com.sun.xml.bind.xmlHeaders", String.format("<?xml version=\"1.0\" encoding=\"%s\"?>\n", encoding));
 
         return builder.build();
     }

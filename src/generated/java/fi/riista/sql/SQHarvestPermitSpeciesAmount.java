@@ -39,8 +39,6 @@ public class SQHarvestPermitSpeciesAmount extends RelationalPathSpatial<SQHarves
 
     public final DateTimePath<java.sql.Timestamp> creationTime = createDateTime("creationTime", java.sql.Timestamp.class);
 
-    public final StringPath creditorReference = createString("creditorReference");
-
     public final NumberPath<Long> deletedByUserId = createNumber("deletedByUserId", Long.class);
 
     public final DateTimePath<java.sql.Timestamp> deletionTime = createDateTime("deletionTime", java.sql.Timestamp.class);
@@ -55,9 +53,13 @@ public class SQHarvestPermitSpeciesAmount extends RelationalPathSpatial<SQHarves
 
     public final NumberPath<Long> harvestPermitSpeciesAmountId = createNumber("harvestPermitSpeciesAmountId", Long.class);
 
+    public final BooleanPath huntingFinishedByModerator = createBoolean("huntingFinishedByModerator");
+
     public final DateTimePath<java.sql.Timestamp> modificationTime = createDateTime("modificationTime", java.sql.Timestamp.class);
 
     public final NumberPath<Long> modifiedByUserId = createNumber("modifiedByUserId", Long.class);
+
+    public final BooleanPath mooselikeHuntingFinished = createBoolean("mooselikeHuntingFinished");
 
     public final NumberPath<java.math.BigDecimal> restrictionAmount = createNumber("restrictionAmount", java.math.BigDecimal.class);
 
@@ -65,11 +67,13 @@ public class SQHarvestPermitSpeciesAmount extends RelationalPathSpatial<SQHarves
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestPermitSpeciesAmount> harvestPermitSpeciesAmountPkey = createPrimaryKey(harvestPermitSpeciesAmountId);
 
-    public final com.querydsl.sql.ForeignKey<SQGameSpecies> harvestPermitSpeciesAmountGameSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
-
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> harvestPermitSpeciesAmountPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
 
+    public final com.querydsl.sql.ForeignKey<SQGameSpecies> harvestPermitSpeciesAmountGameSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
+
     public final com.querydsl.sql.ForeignKey<SQBasicClubHuntingSummary> _basicClubHuntingSummarySpeciesAmountFk = createInvForeignKey(harvestPermitSpeciesAmountId, "species_amount_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitHarvestInvoice> _permitHarvestInvoiceSpeciesAmountFk = createInvForeignKey(harvestPermitSpeciesAmountId, "harvest_permit_species_amount_id");
 
     public final com.querydsl.sql.ForeignKey<SQMooseHarvestReport> _mooseHarvestReportSpeciesAmountFk = createInvForeignKey(harvestPermitSpeciesAmountId, "species_amount_id");
 
@@ -105,7 +109,6 @@ public class SQHarvestPermitSpeciesAmount extends RelationalPathSpatial<SQHarves
         addMetadata(consistencyVersion, ColumnMetadata.named("consistency_version").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(createdByUserId, ColumnMetadata.named("created_by_user_id").withIndex(3).ofType(Types.BIGINT).withSize(19));
         addMetadata(creationTime, ColumnMetadata.named("creation_time").withIndex(6).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
-        addMetadata(creditorReference, ColumnMetadata.named("creditor_reference").withIndex(18).ofType(Types.VARCHAR).withSize(20));
         addMetadata(deletedByUserId, ColumnMetadata.named("deleted_by_user_id").withIndex(4).ofType(Types.BIGINT).withSize(19));
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
         addMetadata(endDate, ColumnMetadata.named("end_date").withIndex(13).ofType(Types.DATE).withSize(13).notNull());
@@ -113,8 +116,10 @@ public class SQHarvestPermitSpeciesAmount extends RelationalPathSpatial<SQHarves
         addMetadata(gameSpeciesId, ColumnMetadata.named("game_species_id").withIndex(10).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(harvestPermitId, ColumnMetadata.named("harvest_permit_id").withIndex(9).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(harvestPermitSpeciesAmountId, ColumnMetadata.named("harvest_permit_species_amount_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
+        addMetadata(huntingFinishedByModerator, ColumnMetadata.named("hunting_finished_by_moderator").withIndex(19).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
+        addMetadata(mooselikeHuntingFinished, ColumnMetadata.named("mooselike_hunting_finished").withIndex(18).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(restrictionAmount, ColumnMetadata.named("restriction_amount").withIndex(17).ofType(Types.NUMERIC).withSize(6).withDigits(2));
         addMetadata(restrictionType, ColumnMetadata.named("restriction_type").withIndex(16).ofType(Types.VARCHAR).withSize(2));
     }

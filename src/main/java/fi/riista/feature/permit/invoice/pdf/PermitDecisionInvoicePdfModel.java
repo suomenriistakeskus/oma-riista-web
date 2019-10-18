@@ -2,41 +2,38 @@ package fi.riista.feature.permit.invoice.pdf;
 
 import com.google.common.base.Preconditions;
 import fi.riista.feature.common.entity.CreditorReference;
-import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.common.money.FinnishBankAccount;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.invoice.Invoice;
-import fi.riista.feature.permit.invoice.InvoiceAccountDetails;
-import fi.riista.feature.permit.invoice.InvoiceRecipient;
 import fi.riista.feature.permit.invoice.InvoiceType;
-import fi.riista.feature.permit.invoice.PermitDecisionInvoice;
 import fi.riista.util.BigDecimalMoney;
 import fi.riista.util.InvoiceUtil;
 import fi.riista.util.LocalisedString;
+import fi.riista.util.RiistakeskusConstants;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import static fi.riista.util.DateUtil.today;
 import static java.util.Objects.requireNonNull;
 
 class PermitDecisionInvoicePdfModel {
+
     public enum ResultType {
         INVOICE,
         REMINDER,
         RECEIPT
     }
 
-    static PermitDecisionInvoicePdfModel create(final @Nonnull PermitDecisionInvoicePdfModel.ResultType resultType,
+    static PermitDecisionInvoicePdfModel create(final @Nonnull ResultType resultType,
                                                 final @Nonnull PermitDecision decision,
                                                 final @Nonnull Invoice invoice) {
         requireNonNull(resultType);
@@ -45,12 +42,13 @@ class PermitDecisionInvoicePdfModel {
 
         Preconditions.checkArgument(invoice.getType() == InvoiceType.PERMIT_PROCESSING);
 
-        final HarvestPermitApplication application = requireNonNull(decision.getApplication());
-        final LocalDate invoiceDate = resultType == ResultType.REMINDER ? today() : invoice.getInvoiceDate();
+        final boolean isReminder = resultType == ResultType.REMINDER;
+        final LocalDate invoiceDate = isReminder ? today() : invoice.getInvoiceDate();
+        final BigDecimal amount = isReminder ? invoice.getRemainingAmount() : invoice.getAmount();
 
-        return new PermitDecisionInvoicePdfModel(resultType, decision.getLocale(), invoice.getAmount(),
-                InvoiceAccountDetails.create(invoice), invoice.getInvoiceNumber(), invoice.getCreditorReference(),
-                InvoiceRecipient.create(decision), invoiceDate, application.getPermitNumber(), invoice.getDueDate(),
+        return new PermitDecisionInvoicePdfModel(resultType, decision.getLocale(), amount,
+                invoice.resolveBankAccountDetails(), invoice.getInvoiceNumber(), invoice.getCreditorReference(),
+                InvoicePdfRecipient.create(decision), invoiceDate, decision.createPermitNumber(), invoice.getDueDate(),
                 invoice.getPaymentDate());
     }
 
@@ -59,9 +57,9 @@ class PermitDecisionInvoicePdfModel {
 
     private final ResultType resultType;
     private final Locale locale;
-    private final InvoiceAccountDetails invoiceAccountDetails;
-    private final InvoiceRecipient invoiceRecipient;
-    private final Integer invoiceNumber;
+    private final FinnishBankAccount invoiceAccountDetails;
+    private final InvoicePdfRecipient invoiceRecipient;
+    private final int invoiceNumber;
     private final CreditorReference invoiceReference;
     private final LocalDate invoiceDate;
     private final LocalDate dueDate;
@@ -72,10 +70,10 @@ class PermitDecisionInvoicePdfModel {
     PermitDecisionInvoicePdfModel(final @Nonnull ResultType resultType,
                                   final @Nonnull Locale locale,
                                   final @Nonnull BigDecimal paymentAmount,
-                                  final @Nonnull InvoiceAccountDetails invoiceAccountDetails,
-                                  final @Nonnull Integer invoiceNumber,
+                                  final @Nonnull FinnishBankAccount invoiceAccountDetails,
+                                  final int invoiceNumber,
                                   final @Nonnull CreditorReference invoiceReference,
-                                  final @Nonnull InvoiceRecipient invoiceRecipient,
+                                  final @Nonnull InvoicePdfRecipient invoiceRecipient,
                                   final @Nonnull LocalDate invoiceDate,
                                   final @Nonnull String permitNumber,
                                   final LocalDate dueDate,
@@ -83,7 +81,7 @@ class PermitDecisionInvoicePdfModel {
         this.resultType = requireNonNull(resultType);
         this.locale = requireNonNull(locale);
         this.invoiceAccountDetails = requireNonNull(invoiceAccountDetails);
-        this.invoiceNumber = requireNonNull(invoiceNumber);
+        this.invoiceNumber = invoiceNumber;
         this.invoiceReference = requireNonNull(invoiceReference);
         this.paymentAmount = new BigDecimalMoney(paymentAmount);
         this.invoiceDate = requireNonNull(invoiceDate);
@@ -100,7 +98,7 @@ class PermitDecisionInvoicePdfModel {
 
     @Nonnull
     public String getPdfFileName() {
-        final String invoiceTypeName = PermitDecisionInvoice.getInvoiceTypeName(locale);
+        final String invoiceTypeName = InvoiceType.PERMIT_PROCESSING.getName(locale).toLowerCase();
 
         switch (resultType) {
             case REMINDER:
@@ -132,44 +130,35 @@ class PermitDecisionInvoicePdfModel {
 
     @Nonnull
     public String getInvoiceAmountText() {
-        switch (resultType) {
-            case INVOICE:
-            case REMINDER:
-                return getProductAmountText();
-            case RECEIPT:
-                return getLocalisedString("MAKSETTU", "BETALD");
-            default:
-                throw new IllegalArgumentException("invalid resultType");
-        }
+        return getProductAmountText();
     }
 
     @Nonnull
-    public InvoiceAccountDetails getInvoiceAccountDetails() {
+    public FinnishBankAccount getInvoiceAccountDetails() {
         return invoiceAccountDetails;
     }
 
     @Nonnull
-    public InvoiceRecipient getInvoiceRecipient() {
+    public InvoicePdfRecipient getInvoiceRecipient() {
         return invoiceRecipient;
     }
 
     @Nonnull
     public List<String> getInvoiceSender() {
         return Arrays.asList(
-                InvoicePdfConstants.RK_NAME.getTranslation(locale),
-                InvoicePdfConstants.RK_STREET.getTranslation(locale),
-                InvoicePdfConstants.RK_POST_OFFICE.getTranslation(locale),
-                InvoicePdfConstants.RK_PHONE);
+                RiistakeskusConstants.NAME.getTranslation(locale),
+                RiistakeskusConstants.STREET_ADDRESS.getTranslation(locale),
+                RiistakeskusConstants.POST_OFFICE.getTranslation(locale),
+                RiistakeskusConstants.PHONE_NUMBER);
     }
 
-    @Nullable
-    public Integer getInvoiceNumber() {
+    public int getInvoiceNumber() {
         return invoiceNumber;
     }
 
     @Nonnull
     public String getInvoiceNumberString() {
-        return Optional.ofNullable(invoiceNumber).map(String::valueOf).orElse("");
+        return String.valueOf(invoiceNumber);
     }
 
     @Nonnull
@@ -228,6 +217,7 @@ class PermitDecisionInvoicePdfModel {
             case REMINDER:
                 return getLocalisedString("HETI", "OMEDELBART");
             case RECEIPT:
+                return getLocalisedString("MAKSETTU", "BETALD");
             case INVOICE:
                 return DUE_DATE_PATTERN.print(dueDate);
             default:
@@ -247,7 +237,17 @@ class PermitDecisionInvoicePdfModel {
 
     @Nonnull
     public String getInvoiceAdditionalInfo() {
-        return InvoicePdfConstants.ADDITIONAL_INFO.getTranslation(this.locale);
+        final StringBuilder sb = new StringBuilder();
+        sb.append(InvoicePdfConstants.INFO_LINE_1.getTranslation(locale));
+        sb.append("\n\n");
+        sb.append(InvoicePdfConstants.INFO_LINE_2.getTranslation(locale));
+
+        if (resultType != ResultType.RECEIPT) {
+            sb.append("\n\n");
+            sb.append(InvoicePdfConstants.INFO_LINE_3.getTranslation(locale));
+        }
+
+        return sb.toString();
     }
 
     @Nonnull

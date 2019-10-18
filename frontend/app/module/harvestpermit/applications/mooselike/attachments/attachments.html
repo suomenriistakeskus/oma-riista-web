@@ -1,0 +1,167 @@
+<div class="row">
+    <div class="col-xs-10 col-xs-offset-1">
+        <div class="alert alert-info">
+            <span class="fa fa-info-circle"></span>
+
+            <div class="alert-content">
+                <p class="alert-title" translate="harvestpermit.wizard.attachments.instructionsTitle"></p>
+                <p ng-if="$ctrl.freeHunting"
+                   translate="harvestpermit.wizard.attachments.instructionsFreeHunting"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-10 col-xs-offset-1">
+        <button type="button" class="btn btn-info"
+                ng-if="$ctrl.freeHunting"
+                ng-click="$ctrl.importMh()">
+            <span class="glyphicon glyphicon-import"></span>
+            &nbsp;
+            <span translate="harvestpermit.wizard.attachments.importFromMh"></span>
+        </button>
+
+        <hr/>
+
+        <uib-accordion close-others="true">
+            <div uib-accordion-group class="panel-default"
+                 is-open="$ctrl.toggle.a"
+                 ng-if="$ctrl.freeHunting || $ctrl.hasAttachmentWithType('MH_AREA_PERMIT')"
+                 template-url="common/accordion-group.html">
+                <uib-accordion-heading>
+                    <div class="row">
+                        <div class="col-xs-8">
+                            <div class="panel-title">
+                                <span panel-toggle="$ctrl.toggle.a"></span>
+                                <span translate="harvestpermit.wizard.attachments.areaPermit"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-4 text-right" ng-switch="$ctrl.hasAttachmentWithType('MH_AREA_PERMIT')">
+                            <span class="panel-title" ng-switch-when="true">
+                                <span ng-bind="::$ctrl.getAttachmentCount('MH_AREA_PERMIT')"></span>
+                                <span translate="global.pcs"></span>
+                                <span class="fa fa-check text-primary"></span>
+                            </span>
+                            <strong class="text-danger" ng-switch-when="false"
+                                    translate="harvestpermit.wizard.attachments.missing"></strong>
+                        </div>
+                    </div>
+                </uib-accordion-heading>
+
+                <permit-application-attachment-upload uri="$ctrl.attachmentConfig.baseUri"
+                                                      attachment-type="'MH_AREA_PERMIT'"
+                                                      done="$ctrl.attachmentUploadComplete()"></permit-application-attachment-upload>
+
+                <permit-application-attachment-list attachments="$ctrl.attachments"
+                                                    attachment-type="'MH_AREA_PERMIT'"
+                                                    attachment-config="$ctrl.attachmentConfig"
+                                                    refresh="$ctrl.refreshAttachments()">
+                </permit-application-attachment-list>
+            </div>
+
+            <div uib-accordion-group class="panel-default"
+                 is-open="$ctrl.toggle.b"
+                 ng-if="$ctrl.freeHunting || $ctrl.hasAttachmentWithType('SHOOTER_LIST')"
+                 template-url="common/accordion-group.html">
+                <uib-accordion-heading>
+                    <div class="row">
+                        <div class="col-xs-8">
+                            <div class="panel-title">
+                                <span panel-toggle="$ctrl.toggle.b"></span>
+                                <span translate="harvestpermit.wizard.attachments.shooterList"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-4 text-right" ng-switch="$ctrl.hasAttachmentWithType('SHOOTER_LIST')">
+                            <span class="panel-title" ng-switch-when="true">
+                                <span ng-bind="::$ctrl.getAttachmentCount('SHOOTER_LIST')"></span>
+                                <span translate="global.pcs"></span>
+                                <span class="fa fa-check text-primary"></span>
+                            </span>
+                            <strong class="text-danger" ng-switch-when="false"
+                                    translate="harvestpermit.wizard.attachments.missing"></strong>
+                        </div>
+                    </div>
+                </uib-accordion-heading>
+
+                <permit-application-attachment-upload uri="$ctrl.attachmentConfig.baseUri"
+                                                      attachment-type="'SHOOTER_LIST'"
+                                                      done="$ctrl.attachmentUploadComplete()"></permit-application-attachment-upload>
+
+                <permit-application-attachment-list attachments="$ctrl.attachments"
+                                                    attachment-type="'SHOOTER_LIST'"
+                                                    attachment-config="$ctrl.attachmentConfig"
+                                                    refresh="$ctrl.refreshAttachments()">
+                </permit-application-attachment-list>
+            </div>
+
+            <div uib-accordion-group class="panel-default"
+                 is-open="$ctrl.toggle.c"
+                 ng-if="$ctrl.freeHunting"
+                 template-url="common/accordion-group.html">
+                <uib-accordion-heading>
+                    <div class="row">
+                        <div class="col-xs-8">
+                            <div class="panel-title">
+                                <span panel-toggle="$ctrl.toggle.c"></span>
+                                <span class="panel-title"
+                                      translate="harvestpermit.wizard.attachments.shooterCount"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-4 text-right" ng-switch="$ctrl.shooterCountsValid()">
+                            <strong class="text-danger" ng-switch-when="false"
+                                    translate="harvestpermit.wizard.attachments.missingShooterCount"></strong>
+                            <span class="fa fa-check text-primary" ng-switch-when="true"></span>
+                        </div>
+                    </div>
+                </uib-accordion-heading>
+
+                <div class="well">
+                    <strong translate="harvestpermit.wizard.attachments.shooterListInstructions"></strong>
+                </div>
+
+                <mooselike-application-shooter-counts
+                        shooter-counts="$ctrl.shooterCounts"></mooselike-application-shooter-counts>
+            </div>
+
+            <div uib-accordion-group class="panel-default"
+                 is-open="$ctrl.toggle.d"
+                 template-url="common/accordion-group.html">
+                <uib-accordion-heading>
+                    <div class="row">
+                        <div class="col-xs-8">
+                            <div class="panel-title">
+                                <span panel-toggle="$ctrl.toggle.d"></span>
+                                <span class="panel-title" translate="harvestpermit.wizard.attachments.otherList"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-4 text-right">
+                            <span class="panel-title">
+                                <span ng-bind="::$ctrl.getAttachmentCount('OTHER')"></span>
+                                <span translate="global.pcs"></span>
+                            </span>
+                        </div>
+                    </div>
+                </uib-accordion-heading>
+
+                <p class="help-block" translate="harvestpermit.wizard.attachments.otherInstructions"></p>
+
+                <permit-application-attachment-upload uri="$ctrl.attachmentConfig.baseUri"
+                                                      attachment-type="'OTHER'"
+                                                      done="$ctrl.attachmentUploadComplete()"></permit-application-attachment-upload>
+
+                <permit-application-attachment-list attachments="$ctrl.attachments"
+                                                    attachment-type="'OTHER'"
+                                                    attachment-config="$ctrl.attachmentConfig"
+                                                    refresh="$ctrl.refreshAttachments()">
+                </permit-application-attachment-list>
+            </div>
+        </uib-accordion>
+    </div>
+</div>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit()"
+        previous="$ctrl.previous()"
+        next-disabled="!$ctrl.shooterCountsValid() || !$ctrl.attachmentListComplete()"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

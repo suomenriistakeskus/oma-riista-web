@@ -57,7 +57,7 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
                 obs.setMooselikeFemale3CalfsAmount(6);
                 obs.setMooselikeFemale4CalfsAmount(7);
                 obs.setMooselikeUnknownSpecimenAmount(8);
-                obs.setAmountToSumOfMooselikeAmounts();
+                obs.setAmount(obs.getSumOfMooselikeAmounts());
                 return obs;
             });
 

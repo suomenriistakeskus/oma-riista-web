@@ -1,7 +1,7 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
-import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
@@ -16,7 +16,6 @@ import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage3;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_2_1;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_3_1;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardSection_7_1;
-import fi.riista.util.DateUtil;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.NumberSequence;
 import fi.riista.util.ValueGeneratorMixin;
@@ -39,6 +38,8 @@ import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFac
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newMooseObservation;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardObjectFactory.newPage7;
 import static fi.riista.test.Asserts.assertValid;
+import static fi.riista.test.TestUtils.ld;
+import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
 
 public class MooseDataCardValidatorTest implements ValueGeneratorMixin {
@@ -50,7 +51,7 @@ public class MooseDataCardValidatorTest implements ValueGeneratorMixin {
 
     @Test
     public void testCalculateHarvestAmounts() {
-        final LocalDate date = DateUtil.today();
+        final LocalDate date = today();
         final Consumer<MooseDataCardHarvest> notEdibleSetter = harvest -> harvest.setNotEdible(true);
 
         final List<MooseDataCardMooseMale> edibleAdultMales = List.fill(3, () -> newMooseMale(date));
@@ -95,18 +96,18 @@ public class MooseDataCardValidatorTest implements ValueGeneratorMixin {
 
     @Test
     public void testCollectingOfAbandonReasons() {
-        final LocalDate today = DateUtil.today();
-        final Has2BeginEndDates permitSeason = new Has2BeginEndDatesDTO(today, today);
+        final LocalDate date = ld(2017, 11, 1);
+        final Has2BeginEndDates permitSeason = new Has2BeginEndDatesDTO(date, date);
 
-        final MooseDataCardHuntingDay abandonedHuntingDay = newHuntingDay(today.plusDays(1));
+        final MooseDataCardHuntingDay abandonedHuntingDay = newHuntingDay(date.plusDays(1));
         final MooseDataCardObservation mooseObservation = newMooseObservation(null);
         final MooseDataCardLargeCarnivoreObservation carnivore =
-                newLargeCarnivoreObservation(today).withObservationType("INVALID");
+                newLargeCarnivoreObservation(date).withObservationType("INVALID");
 
         final MooseDataCard card = newMooseDataCardWithoutSummary()
                 .withPage2(new MooseDataCardPage2()
                         .withSection_2_1(new MooseDataCardSection_2_1()
-                                .withHuntingDays(abandonedHuntingDay, newHuntingDay(today))))
+                                .withHuntingDays(abandonedHuntingDay, newHuntingDay(date))))
                 .withPage3(new MooseDataCardPage3()
                         .withSection_3_1(new MooseDataCardSection_3_1()
                                 .withMooseObservations(mooseObservation)))
@@ -123,5 +124,4 @@ public class MooseDataCardValidatorTest implements ValueGeneratorMixin {
                         observationTypeOfLargeCarnivoreContainsIllegalCharacters(carnivore)),
                 resultTuple._2));
     }
-
 }

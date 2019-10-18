@@ -1,0 +1,46 @@
+<form name="accountAreaForm" role="form"
+      class="form form-horizontal"
+      autocomplete="off">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <div class="modal-title h3" ng-switch="$ctrl.isUpdate">
+            <span ng-switch-when="true" translate="account.areas.editArea"></span>
+            <span ng-switch-when="false" translate="account.areas.create"></span>
+        </div>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="areaName" class="col-xs-3 control-label">
+                <span translate="account.areas.areaName"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <input type="text" name="areaName" id="areaName"
+                       class="form-control"
+                       minlength="1" maxlength="255"
+                       ng-model="$ctrl.areaName"
+                       required>
+
+                <p class="help-block has-error"
+                   ng-show="accountAreaForm.areaName.$invalid"
+                   ng-messages="accountAreaForm.areaName.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save(accountAreaForm)"
+                ng-disabled="accountAreaForm.$invalid"
+                translate="global.button.ok"></button>
+    </div>
+</form>

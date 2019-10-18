@@ -24,10 +24,10 @@
             areaPromise.then(function (areas) {
                 names['RK:850'] = 'Suomen riistakeskus';
 
-                _.each(areas, function (area) {
+                _.forEach(areas, function (area) {
                     names['RKA:' + area.officialCode] = area.name;
 
-                    _.each(area.subOrganisations, function (rhy) {
+                    _.forEach(area.subOrganisations, function (rhy) {
                         names['RHY:' + rhy.officialCode] = rhy.name;
                     });
                 });
@@ -46,7 +46,8 @@
                         rhyCode: '=',
                         areaCode: '=',
                         showRk: '<',
-                        showRka: '<'
+                        showRka: '<',
+                        showInactiveRhys: '<'
                     },
                     controllerAs: '$ctrl',
                     bindToController: true,
@@ -55,7 +56,7 @@
             }
         );
 
-    function OrganisationSelectionController($scope, Areas) {
+    function OrganisationSelectionController($scope, OrganisationsByArea) {
         var $ctrl = this;
 
         $ctrl.updateModel = function () {
@@ -80,20 +81,21 @@
         function updateView(areas) {
             if ($ctrl.rhyCode) {
                 $ctrl.selectedArea = _.find(areas, function (area) {
-                    return _.some(area.subOrganisations, 'officialCode', $ctrl.rhyCode);
+                    return _.some(area.subOrganisations, ['officialCode', $ctrl.rhyCode]);
                 });
 
                 if ($ctrl.selectedArea) {
-                    $ctrl.selectedRhy = _.find($ctrl.selectedArea.subOrganisations, 'officialCode', $ctrl.rhyCode);
+                    $ctrl.selectedRhy = _.find($ctrl.selectedArea.subOrganisations, {officialCode: $ctrl.rhyCode});
                 } else {
                     $ctrl.selectedRhy = null;
                 }
 
             } else if ($ctrl.areaCode) {
-                $ctrl.selectedArea = _.find(areas, 'officialCode', $ctrl.areaCode);
+                $ctrl.selectedArea = _.find(areas, {officialCode: $ctrl.areaCode});
                 $ctrl.selectedRhy = null;
 
             } else {
+                $ctrl.selectedOrganisationType = 'RK';
                 $ctrl.selectedArea = null;
                 $ctrl.selectedRhy = null;
             }
@@ -115,15 +117,28 @@
                     : $ctrl.showRk ? 'RK'
                         : 'RHY';
 
-            Areas.query().$promise.then(function (areas) {
+            var promise = !!$ctrl.showInactiveRhys
+                ? OrganisationsByArea.queryAll().$promise
+                : OrganisationsByArea.queryActive().$promise;
+
+            // OR-4338 Force undefined codes to null to avoid extra calls to updateView
+            if (!$ctrl.rhyCode) {
+                $ctrl.rhyCode = null;
+            }
+            if (!$ctrl.areaCode) {
+                $ctrl.areaCode = null;
+            }
+
+            promise.then(function (areas) {
                 $ctrl.areas = areas;
 
                 updateView(areas);
 
                 $ctrl.ready = true;
 
-                $scope.$watch('$ctrl.rhyCode', function (newRhyCode, oldRhyCode) {
-                    if (!angular.equals(newRhyCode, oldRhyCode)) {
+                $scope.$watchGroup(['$ctrl.rhyCode', '$ctrl.areaCode'], function (newValues, oldValues) {
+                    if (!angular.equals(newValues[0], oldValues[0]) ||
+                        !angular.equals(newValues[1], oldValues[1])) {
                         updateView(areas);
                     }
                 });

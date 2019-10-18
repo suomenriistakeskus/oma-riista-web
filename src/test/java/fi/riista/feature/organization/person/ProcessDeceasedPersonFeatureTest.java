@@ -4,10 +4,12 @@ import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitation;
+import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitationRepository;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
 import org.junit.Test;
@@ -18,6 +20,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -32,6 +35,9 @@ public class ProcessDeceasedPersonFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
     private UserRepository userRepository;
+
+    @Resource
+    private HuntingClubMemberInvitationRepository huntingClubMemberInvitationRepository;
 
     // Occupations
 
@@ -145,5 +151,20 @@ public class ProcessDeceasedPersonFeatureTest extends EmbeddedDatabaseTest {
         for (SystemUser systemUser : all) {
             assertTrue(systemUser.isActive());
         }
+    }
+
+    @Test
+    public void testDeleteInvitations() {
+        final HuntingClub club = model().newHuntingClub();
+        final HuntingClubMemberInvitation invitation1 = model().newHuntingClubInvitation(club);
+        final HuntingClubMemberInvitation invitation2 = model().newHuntingClubInvitation(club);
+        invitation2.getPerson().setDeletionCode(Person.DeletionCode.D);
+
+        persistInNewTransaction();
+
+        processDeceasedPersonFeature.execute();
+
+        assertNotNull(huntingClubMemberInvitationRepository.findOne(invitation1.getId()));
+        assertNull(huntingClubMemberInvitationRepository.findOne(invitation2.getId()));
     }
 }

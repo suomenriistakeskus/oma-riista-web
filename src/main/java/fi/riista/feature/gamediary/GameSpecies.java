@@ -1,6 +1,7 @@
 package fi.riista.feature.gamediary;
 
 import com.google.common.collect.ImmutableSet;
+import com.querydsl.core.annotations.QueryDelegate;
 import fi.riista.feature.common.entity.HasOfficialCode;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.observation.metadata.ObservationBaseFields;
@@ -73,7 +74,61 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
     // Halli
     public static final int OFFICIAL_CODE_GREY_SEAL = 47282;
 
-    public static final int[] ALL_GAME_SPECIES_CODES = new int[] {
+    // Norppa
+    public static final int OFFICIAL_CODE_RINGED_SEAL = 200555;
+
+    // Peltopyy
+    public static final int OFFICIAL_CODE_PARTRIDGE = 27048;
+
+    // Minkki
+    public static final int OFFICIAL_CODE_AMERICAN_MINK = 47243;
+
+    // Pesukarhu
+    public static final int OFFICIAL_CODE_RACCOON = 47329;
+
+    // Piisami
+    public static final int OFFICIAL_CODE_MUSKRAT = 48537;
+
+    // Supikoira
+    public static final int OFFICIAL_CODE_RACCOON_DOG = 46564;
+
+    // Rämemajava
+    public static final int OFFICIAL_CODE_NUTRIA = 50336;
+
+    // Villikani
+    public static final int OFFICIAL_CODE_RABBIT = 50114;
+
+    // Metsäjänis
+    public static final int OFFICIAL_CODE_MOUNTAIN_HARE = 50106;
+
+    // Rusakko
+    public static final int OFFICIAL_CODE_BROWN_HARE = 50386;
+
+    //Orava
+    public static final int OFFICIAL_CODE_RED_SQUIRREL = 48089;
+
+    // Tarhattu naali
+    public static final int OFFICIAL_CODE_BLUE_FOX = 46542;
+
+    // Kettu
+    public static final int OFFICIAL_CODE_RED_FOX = 46587;
+
+    // Mäyrä
+    public static final int OFFICIAL_CODE_BADGER = 47180;
+
+    // Kärppä
+    public static final int OFFICIAL_CODE_ERMINE = 47230;
+
+    // Saukko
+    public static final int OFFICIAL_CODE_OTTER = 47169;
+
+    // Näätä
+    public static final int OFFICIAL_CODE_PINE_MARTEN = 47223;
+
+    // Kirjohylje
+    public static final int OFFICIAL_CODE_HARBOUR_SEAL = 47305;
+
+    public static final int[] ALL_GAME_SPECIES_CODES = new int[]{
             26366, 27152, 27381, 27649, 27911, 37178, 37166, 37122, 27750, 27759, 200535, 33117, 27048, 26921, 26922,
             26931, 26926, 26928, 200555, 47305, 47282, 26298, 26291, 26373, 26360, 26382, 26388, 26394, 26407, 26415,
             26419, 26427, 26435, 26440, 26442, 26287, 50106, 50386, 50336, 47476, 47479, 47774, 53004, 48089, 48251,
@@ -92,10 +147,16 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
 
     public static final ImmutableSet<Integer> PERMIT_REQUIRED_WITHOUT_SEASON = ImmutableSet.of(
             OFFICIAL_CODE_ROE_DEER, OFFICIAL_CODE_BEAR, OFFICIAL_CODE_WOLVERINE, OFFICIAL_CODE_LYNX, OFFICIAL_CODE_WOLF,
-            OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_EUROPEAN_BEAVER, 47169, 200555);
+            OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_EUROPEAN_BEAVER, OFFICIAL_CODE_RINGED_SEAL, 47169);
 
     public static final ImmutableSet<Integer> LARGE_CARNIVORES =
             ImmutableSet.of(OFFICIAL_CODE_BEAR, OFFICIAL_CODE_LYNX, OFFICIAL_CODE_WOLF, OFFICIAL_CODE_WOLVERINE);
+
+    // All fowl and unprotected species except "domesticated cat" (53004)
+    public static final ImmutableSet<Integer> BIRD_PERMIT_SPECIES = ImmutableSet.of(
+            26287, 26291, 26298, 26360, 26366, 26373, 26382, 26388, 26394, 26407, 26415, 26419, 26427, 26435, 26440,
+            26442, 26921, 26922, 26926, 26928, 26931, 27048, 27152, 27381, 27649, 27750, 27759, 27911, 33117, 37122,
+            37142, 37166, 37178, 200535);
 
     private Long id;
 
@@ -166,6 +227,10 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return PERMIT_REQUIRED_WITHOUT_SEASON.contains(gameSpeciesCode);
     }
 
+    public static boolean isBirdPermitSpecies(final int gameSpeciesCode) {
+        return BIRD_PERMIT_SPECIES.contains(gameSpeciesCode);
+    }
+
     public static boolean isWolf(final int speciesCode) {
         return speciesCode == OFFICIAL_CODE_WOLF;
     }
@@ -218,6 +283,13 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
         return isWolf(officialCode);
     }
 
+    // QueryDSL delegates -->
+
+    @QueryDelegate(GameSpecies.class)
+    public static fi.riista.util.QLocalisedString nameLocalisation(final QGameSpecies species) {
+        return new fi.riista.util.QLocalisedString(species.nameFinnish, species.nameSwedish, species.nameEnglish);
+    }
+
     // Accessors -->
 
     @Id
@@ -230,7 +302,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 

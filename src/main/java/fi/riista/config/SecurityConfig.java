@@ -5,6 +5,7 @@ import fi.riista.config.properties.SecurityConfigurationProperties;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.security.aop.CustomMethodSecurityExpressionHandler;
 import fi.riista.security.authentication.CustomUserDetailsService;
+import fi.riista.security.authentication.RiistaPasswordEncoder;
 import fi.riista.security.jwt.JwtAuthenticationProvider;
 import fi.riista.security.otp.OneTimePasswordAuthenticationProvider;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,7 +26,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
@@ -100,7 +100,7 @@ public class SecurityConfig {
 
         @Bean
         public PasswordEncoder passwordEncoder() {
-            return new BCryptPasswordEncoder(10);
+            return new RiistaPasswordEncoder();
         }
 
         @Bean

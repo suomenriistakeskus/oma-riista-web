@@ -1,6 +1,6 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
-import fi.riista.util.DateUtil;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
 
@@ -17,19 +17,21 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
 public class MetsahallitusStatistics
-        implements AnnualStatisticsFieldsetStatus, HasLastModificationStatus<MetsahallitusStatistics>, Serializable {
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<MetsahallitusStatistics>,
+        Serializable {
 
     public static final MetsahallitusStatistics reduce(@Nullable final MetsahallitusStatistics a,
                                                        @Nullable final MetsahallitusStatistics b) {
 
         final MetsahallitusStatistics result = new MetsahallitusStatistics();
-        result.setSmallGameLicensesSoldByMetsahallitus(nullsafeSumAsInt(a, b, s -> s.getSmallGameLicensesSoldByMetsahallitus()));
+        result.setSmallGameLicensesSoldByMetsahallitus(nullableIntSum(a, b, s -> s.getSmallGameLicensesSoldByMetsahallitus()));
         result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
         return result;
     }
@@ -59,22 +61,29 @@ public class MetsahallitusStatistics
     }
 
     public MetsahallitusStatistics(@Nonnull final MetsahallitusStatistics that) {
-        Objects.requireNonNull(that);
+        requireNonNull(that);
 
         this.smallGameLicensesSoldByMetsahallitus = that.smallGameLicensesSoldByMetsahallitus;
         this.lastModified = that.lastModified;
     }
 
     @Override
-    public boolean isEqualTo(final MetsahallitusStatistics other) {
-        // Includes manually updateable fields only.
-
-        return Objects.equals(smallGameLicensesSoldByMetsahallitus, other.smallGameLicensesSoldByMetsahallitus);
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.METSAHALLITUS;
     }
 
     @Override
-    public void updateModificationStatus() {
-        lastModified = DateUtil.now();
+    public boolean isEqualTo(@Nonnull final MetsahallitusStatistics that) {
+        // Includes manually updateable fields only.
+
+        return Objects.equals(smallGameLicensesSoldByMetsahallitus, that.smallGameLicensesSoldByMetsahallitus);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final MetsahallitusStatistics that) {
+        // Includes manually updateable fields only.
+
+        this.smallGameLicensesSoldByMetsahallitus = that.smallGameLicensesSoldByMetsahallitus;
     }
 
     @Override
@@ -97,10 +106,12 @@ public class MetsahallitusStatistics
         this.smallGameLicensesSoldByMetsahallitus = smallGameLicensesSoldByMetsahallitus;
     }
 
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

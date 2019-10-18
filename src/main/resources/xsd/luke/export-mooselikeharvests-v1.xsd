@@ -173,7 +173,7 @@
 
             <xs:element name="totalHuntingArea" type="xs:int" minOccurs="0"/>
             <xs:element name="effectiveHuntingArea" type="xs:int" minOccurs="0"/>
-            <xs:element name="effectiveHuntingAreaPercentage" type="xs:float" minOccurs="0"/>
+            <xs:element name="effectiveHuntingAreaPercentage" type="xs:double" minOccurs="0"/>
             <xs:element name="moosesRemainingInTotalHuntingArea" type="xs:int" minOccurs="0"/>
             <xs:element name="moosesRemainingInEffectiveHuntingArea" type="xs:int" minOccurs="0"/>
             <xs:element name="huntingAreaType" type="mooseHuntingAreaType" nillable="true"/>

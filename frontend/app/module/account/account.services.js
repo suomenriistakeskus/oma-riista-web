@@ -14,10 +14,10 @@ angular.module('app.account.services', ['ngResource'])
                 params: {personId: '@personId'}
             },
             deactivate: {url: '/api/v1/account/deactivate', params: {personId: '@personId'}, method: 'POST'},
-            activateSrvaFeature: {url: '/api/v1/account/srva/enable', method: 'PUT'},
-            deactivateSrvaFeature: {url: '/api/v1/account/srva/disable', method: 'PUT'},
-            activateShootingTestFeature: {url: '/api/v1/account/shootingtests/enable', method: 'PUT'},
-            deactivateShootingTestFeature: {url: '/api/v1/account/shootingtests/disable', method: 'PUT'},
+            activateSrvaFeature: {url: '/api/v1/account/:id/srva/enable', method: 'PUT'},
+            deactivateSrvaFeature: {url: '/api/v1/account/:id/srva/disable', method: 'PUT'},
+            activateShootingTestFeature: {url: '/api/v1/account/:id/shootingtests/enable', method: 'PUT'},
+            deactivateShootingTestFeature: {url: '/api/v1/account/:id/shootingtests/disable', method: 'PUT'},
             contactShare: {
                 method: 'PUT',
                 url: 'api/v1/account/contactshare'
@@ -27,16 +27,27 @@ angular.module('app.account.services', ['ngResource'])
                 url: 'api/v1/account/invitation',
                 isArray: true
             },
-            countTodo: {
-                url: 'api/v1/account/todocount',
+            countPermitTodo: {
+                url: 'api/v1/account/permittodocount',
                 method: 'GET',
-                cache: CacheFactory.get('accountTodoCountCache')
+                cache: CacheFactory.get('accountPermitTodoCountCache')
+            },
+            countInvitationTodo: {
+                url: 'api/v1/account/invitationtodocount',
+                method: 'GET',
+                cache: CacheFactory.get('accountInvitationTodoCountCache')
             },
             countSrvaTodo: {
                 url: 'api/v1/account/srvatodocount',
                 params: {rhyId: '@rhyId'},
                 method: 'GET',
                 cache: CacheFactory.get('accountSrvaTodoCountCache')
+            },
+            countShootingTestTodo: {
+                url: 'api/v1/account/shootingtesttodocount',
+                params: {rhyId: '@rhyId'},
+                method: 'GET',
+                cache: CacheFactory.get('accountShootingTestTodoCountCache')
             },
             shootingTests: {
                 method: 'GET',
@@ -46,15 +57,15 @@ angular.module('app.account.services', ['ngResource'])
             }
         });
     })
-    .service('AccountService', function ($rootScope, $translate, Account, ActiveRoleService, AuthenticationService,
+    .service('AccountService', function ($translate, Account, AvailableRoleService, AuthenticationService,
                                          HuntingYearService) {
 
         this.updateRoles = function () {
             return Account.get().$promise.then(function (account) {
                 // Whenever user updates his account and state reload is called, then this is
                 // resolved, so we update users account information now when we have fresh data
-                ActiveRoleService.updateRoles(account);
-                $rootScope.account = account;
+
+                AvailableRoleService.updateAvailableRoles(account);
                 return account;
             });
         };
@@ -96,7 +107,7 @@ angular.module('app.account.services', ['ngResource'])
                 ]);
             }
 
-            _.each(account.huntingPaymentPdfYears, function (huntingYear) {
+            _.forEach(account.huntingPaymentPdfYears, function (huntingYear) {
                 result.unshift({
                     title: $translate.instant('account.profile.pdf.huntingPayment') +
                     ' ' + HuntingYearService.toStr(huntingYear),

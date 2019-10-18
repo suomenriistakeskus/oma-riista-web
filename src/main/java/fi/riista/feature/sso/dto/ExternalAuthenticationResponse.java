@@ -9,6 +9,7 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.UserInfo;
 import org.joda.time.LocalDate;
+import org.joda.time.format.ISODateTimeFormat;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -130,6 +131,14 @@ public class ExternalAuthenticationResponse {
             this.ssn = null;
         }
 
+        // Check if we are allowed to export date of birth ?
+        if (activeUserInfo.hasPrivilege(SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION_DATE_OF_BIRTH)) {
+            // Format date of birth to YYYY-MM-DD
+            this.dateOfBirth = person.parseDateOfBirth().toString(ISODateTimeFormat.date());
+        } else {
+            this.dateOfBirth = null;
+        }
+
         if (activeUserInfo.hasPrivilege(SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION_HUNTERNUMBER)) {
             this.hunterNumber = person.getHunterNumber();
         } else {
@@ -155,6 +164,7 @@ public class ExternalAuthenticationResponse {
     private final Address address;
     private final String hunterNumber;
     private final String ssn;
+    private final String dateOfBirth;
     private final String homeMunicipality;
     private final List<ActiveOccupation> occupations;
 
@@ -192,6 +202,10 @@ public class ExternalAuthenticationResponse {
 
     public String getSsn() {
         return ssn;
+    }
+
+    public String getDateOfBirth() {
+        return dateOfBirth;
     }
 
     public String getHomeMunicipality() {

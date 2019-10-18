@@ -37,6 +37,8 @@ public class SQGameGender extends RelationalPathSpatial<SQGameGender> {
 
     public final com.querydsl.sql.ForeignKey<SQHarvestSpecimen> _harvestSpecimenGenderFk = createInvForeignKey(name, "gender");
 
+    public final com.querydsl.sql.ForeignKey<SQAmendmentApplicationData> _amendmentApplicationDataGenderFk = createInvForeignKey(name, "gender");
+
     public SQGameGender(String variable) {
         super(SQGameGender.class, forVariable(variable), "public", "game_gender");
         addMetadata();

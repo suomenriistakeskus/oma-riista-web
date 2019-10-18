@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -26,6 +27,9 @@ public class ListPermitApplicationConflictsFeature {
 
     @Resource
     private HarvestPermitApplicationConflictPalstaRepository harvestPermitApplicationConflictPalstaRepository;
+
+    @Resource
+    private HarvestPermitApplicationConflictBatchRepository harvestPermitApplicationConflictBatchRepository;
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -42,8 +46,14 @@ public class ListPermitApplicationConflictsFeature {
         final HarvestPermitApplication secondApplication = requireEntityService.requireHarvestPermitApplication(
                 secondApplicationId, HarvestPermitApplicationAuthorization.Permission.LIST_CONFLICTS);
 
+        final Long batchId = harvestPermitApplicationConflictBatchRepository.findLatestCompletedBatchId();
+
+        if (batchId == null) {
+            return emptyList();
+        }
+
         return harvestPermitApplicationConflictPalstaRepository
-                .listAll(firstApplication, secondApplication)
+                .listAll(batchId, firstApplication, secondApplication)
                 .stream()
                 .map(entity -> new HarvestPermitApplicationConflictPalstaDTO(
                         entity.getPalstaId(),
@@ -55,21 +65,32 @@ public class ListPermitApplicationConflictsFeature {
     }
 
     @Transactional(readOnly = true)
-    public HarvestPermitApplicationConflictExcelView getConflictsExcel(long permitApplicationId) {
+    public HarvestPermitApplicationConflictExcelView getConflictsExcel(final long permitApplicationId) {
         final HarvestPermitApplication application = requireEntityService.requireHarvestPermitApplication(
                 permitApplicationId, HarvestPermitApplicationAuthorization.Permission.LIST_CONFLICTS);
 
         return new HarvestPermitApplicationConflictExcelView(
                 new EnumLocaliser(messageSource, LocaleContextHolder.getLocale()),
-                application.getPermitNumber(), listConflictsForExcel(application));
+                application.getApplicationNumber(), listConflictsForExcel(application));
+    }
+
+    private static boolean isActiveOrAmending(final HarvestPermitApplication application) {
+        return application.getStatus() == HarvestPermitApplication.Status.ACTIVE ||
+                application.getStatus() == HarvestPermitApplication.Status.AMENDING;
     }
 
     private List<HarvestPermitApplicationConflictExcelDTO> listConflictsForExcel(final HarvestPermitApplication firstApplication) {
-        final List<HarvestPermitApplication> otherApplicationList = harvestPermitApplicationConflictRepository.listAllConflicting(firstApplication);
+        final Long batchId = harvestPermitApplicationConflictBatchRepository.findLatestCompletedBatchId();
 
-        return harvestPermitApplicationConflictPalstaRepository.listAll(firstApplication, otherApplicationList).stream()
-                .filter(conflictPalsta -> conflictPalsta.getFirstApplication().getStatus() != HarvestPermitApplication.Status.DRAFT)
-                .filter(conflictPalsta -> conflictPalsta.getSecondApplication().getStatus() != HarvestPermitApplication.Status.DRAFT)
+        if (batchId == null) {
+            return emptyList();
+        }
+
+        final List<HarvestPermitApplication> otherApplicationList = harvestPermitApplicationConflictRepository.listAllConflicting(batchId, firstApplication);
+
+        return harvestPermitApplicationConflictPalstaRepository.listAll(batchId, firstApplication, otherApplicationList).stream()
+                .filter(conflictPalsta -> isActiveOrAmending(conflictPalsta.getFirstApplication()))
+                .filter(conflictPalsta -> isActiveOrAmending(conflictPalsta.getSecondApplication()))
                 .map(conflictPalsta -> {
                     final Person firstContact = conflictPalsta.getFirstApplication().getContactPerson();
                     final Person secondContact = conflictPalsta.getSecondApplication().getContactPerson();
@@ -88,10 +109,16 @@ public class ListPermitApplicationConflictsFeature {
 
     @Transactional(readOnly = true)
     public List<HarvestPermitApplicationConflictDTO> listConflicts(final long permitApplicationId) {
+        final Long batchId = harvestPermitApplicationConflictBatchRepository.findLatestCompletedBatchId();
+
+        if (batchId == null) {
+            return emptyList();
+        }
+
         final HarvestPermitApplication application = requireEntityService.requireHarvestPermitApplication(
                 permitApplicationId, HarvestPermitApplicationAuthorization.Permission.LIST_CONFLICTS);
-        final List<HarvestPermitApplication> activeConflicting = harvestPermitApplicationConflictRepository.listAllConflicting(application);
-        final Map<Long, ConfictSummaryDTO> summaries = harvestPermitApplicationConflictPalstaRepository.countConflictSummaries(application, activeConflicting);
+        final List<HarvestPermitApplication> activeConflicting = harvestPermitApplicationConflictRepository.listAllConflicting(batchId, application);
+        final Map<Long, ConfictSummaryDTO> summaries = harvestPermitApplicationConflictPalstaRepository.countConflictSummaries(batchId, application, activeConflicting);
 
         return toDTO(activeConflicting, summaries);
     }
@@ -104,9 +131,9 @@ public class ListPermitApplicationConflictsFeature {
 
             // summary might be null if conflicts are not processed yet
             return summary == null
-                    ? HarvestPermitApplicationConflictDTO.create(a, a.getPermitHolder(), a.getRhy(), a.getArea(),
+                    ? HarvestPermitApplicationConflictDTO.create(a, a.getHuntingClub(), a.getRhy(),
                     false, false, null)
-                    : HarvestPermitApplicationConflictDTO.create(a, a.getPermitHolder(), a.getRhy(), a.getArea(),
+                    : HarvestPermitApplicationConflictDTO.create(a, a.getHuntingClub(), a.getRhy(),
                     summary.isOnlyPrivateConflicts(), summary.isOnlyMhConflicts(), summary.getConflictSum());
 
         });

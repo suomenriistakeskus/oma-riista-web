@@ -11,6 +11,7 @@
     <logger name="com.jayway.restassured" level="INFO" />
     <logger name="com.amazonaws" level="INFO"/>
     <logger name="com.ancientprogramming.fixedformat4j.format" level="INFO"/>
+    <logger name="net.schmizz" level="INFO"/>
 
     <logger name="fi.riista" level="DEBUG" />
     <logger name="fi.riista.security.authorization" level="INFO" />

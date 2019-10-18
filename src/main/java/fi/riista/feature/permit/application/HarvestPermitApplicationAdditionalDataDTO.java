@@ -1,7 +1,9 @@
 package fi.riista.feature.permit.application;
 
 import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.SafeHtml;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Size;
 
 public class HarvestPermitApplicationAdditionalDataDTO {
@@ -15,6 +17,13 @@ public class HarvestPermitApplicationAdditionalDataDTO {
     private String email2;
 
     private boolean deliveryByMail;
+
+    @Valid
+    private DeliveryAddressDTO deliveryAddress;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String decisionLanguage;
+
 
     public String getEmail1() {
         return email1;
@@ -38,5 +47,21 @@ public class HarvestPermitApplicationAdditionalDataDTO {
 
     public void setDeliveryByMail(final boolean deliveryByMail) {
         this.deliveryByMail = deliveryByMail;
+    }
+
+    public String getDecisionLanguage() {
+        return decisionLanguage;
+    }
+
+    public void setDecisionLanguage(String language) {
+        this.decisionLanguage = language;
+    }
+
+    public DeliveryAddressDTO getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(DeliveryAddressDTO deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
     }
 }

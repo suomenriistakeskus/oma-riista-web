@@ -51,11 +51,22 @@ angular.module('app.occupation.services', [])
             return localDate(new Date());
         }
 
-        var current = function (boardTypes, allOccupations) {
+        function filterByOccupationType(occupations, type) {
+            if (type) {
+                occupations = _.filter(occupations, function (o) {
+                    return o.occupationType === type;
+                });
+            }
+
+            return occupations;
+        }
+
+        var current = function (boardTypes, allOccupations, occupationTypeFilter) {
             var occupations = _.filter(allOccupations, function (o) {
                 return (!o.beginDate|| localDate(o.beginDate) <= today()) &&
                     (!o.endDate || localDate(o.endDate) >= today());
             });
+            occupations = filterByOccupationType(occupations, occupationTypeFilter);
             var currentOccupations = _.filter(occupations, function (o) {
                 return !isBoard(boardTypes, o.occupationType);
             });
@@ -68,10 +79,11 @@ angular.module('app.occupation.services', [])
             };
         };
 
-        var past = function (boardTypes, allOccupations) {
+        var past = function (boardTypes, allOccupations, occupationTypeFilter) {
             var pastOccupations = _.filter(allOccupations, function (o) {
                 return o.endDate !== null && localDate(o.endDate) < today();
             });
+            pastOccupations = filterByOccupationType(pastOccupations, occupationTypeFilter);
             pastOccupations.sort(function (a, b) {
                 return a.endDate - b.endDate;
             });
@@ -81,10 +93,11 @@ angular.module('app.occupation.services', [])
             };
         };
 
-        var future = function (boardTypes, allOccupations) {
+        var future = function (boardTypes, allOccupations, occupationTypeFilter) {
             var futureOccupations = _.filter(allOccupations, function (o) {
                 return o.beginDate !== null && localDate(o.beginDate) > today();
             });
+            futureOccupations = filterByOccupationType(futureOccupations, occupationTypeFilter);
             futureOccupations.sort(function (a, b) {
                 return a.beginDate - b.beginDate;
             });
@@ -164,7 +177,7 @@ angular.module('app.occupation.services', [])
 
     .service('OccupationPermissionService', function (ActiveRoleService, JHTOccupationTypes) {
         function onlyModeratorCanModify(occupationType) {
-            return occupationType === 'TOIMINNANOHJAAJA' || _.contains(JHTOccupationTypes, occupationType);
+            return occupationType === 'TOIMINNANOHJAAJA' || _.includes(JHTOccupationTypes, occupationType);
         }
 
         this.canModify = function (occupation) {

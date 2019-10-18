@@ -1,0 +1,62 @@
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th translate="harvestpermit.wizard.partners.table.clubName"></th>
+            <th translate="harvestpermit.wizard.partners.table.clubAreaName"></th>
+            <th translate="harvestpermit.wizard.partners.table.areaExternalId"></th>
+            <th class="text-right">
+                <span class="text-nowrap" translate="harvestpermit.wizard.partners.table.landAreaSize"></span>
+                <br/>
+                <span class="text-nowrap" translate="harvestpermit.wizard.partners.table.waterAreaSize"></span>
+                <br/>
+                <span class="text-nowrap" translate="harvestpermit.wizard.partners.table.totalAreaSize"></span>
+            </th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="p in $ctrl.partners track by p.id">
+            <td>
+                <span class="text-danger fa fa-warning"
+                      ng-if="p.sourceArea.hasChanged"
+                      uib-tooltip="{{ 'harvestpermit.wizard.partners.table.clubAreaChanged' | translate }}"
+                      tooltip-popup-delay="0" tooltip-placement="right"></span>
+                <span name-translated="p.club"></span>
+                <br />
+                <button type="button" class="btn btn-default"
+                     ng-click="$ctrl.updateGeometry(p.id)"
+                     ng-if="p.sourceArea.hasChanged && !$ctrl.isLocked"
+                     uib-tooltip="{{ 'harvestpermit.wizard.partners.table.clubAreaChanged' | translate }}">
+                    <span class="fa fa-repeat text-success"></span>&nbsp;
+                    <span class="text-success" translate="harvestpermit.wizard.partners.button.update"></span>
+                </button>
+
+            </td>
+
+            <td>
+                <p name-translated="p.sourceArea.name"></p>
+            </td>
+
+            <td>
+                <p ng-bind="p.sourceArea.externalId"></p>
+            </td>
+
+            <td class="text-right">
+                <span class="text-nowrap" ng-bind="p.size.land | prettyAreaSize:0"></span>
+                <br/>
+                <span class="text-nowrap" ng-bind="p.size.water | prettyAreaSize:0"></span>
+                <br/>
+                <span class="text-nowrap"  ng-bind="p.size.total | prettyAreaSize:0"></span>
+            </td>
+
+            <td class="text-center vcenter col-xs-1">
+                <a ng-click="$ctrl.deletePartner(p.id)"
+                   ng-if="!$ctrl.isLocked">
+                    <span class="fa fa-2x fa-remove text-danger"></span>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

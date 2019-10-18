@@ -1,7 +1,7 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import fi.riista.util.DateUtil;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
 import fi.riista.util.NumberUtils;
 import org.joda.time.DateTime;
@@ -21,24 +21,26 @@ import java.util.stream.Stream;
 
 import static fi.riista.util.BigDecimalComparison.nullsafeEq;
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSum;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableSum;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
 public class GameDamageStatistics
-        implements AnnualStatisticsFieldsetStatus, HasLastModificationStatus<GameDamageStatistics>, Serializable {
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<GameDamageStatistics>,
+        Serializable {
 
     public static final GameDamageStatistics reduce(@Nullable final GameDamageStatistics a,
                                                     @Nullable final GameDamageStatistics b) {
 
         final GameDamageStatistics result = new GameDamageStatistics();
-        result.setMooselikeDamageInspectionLocations(nullsafeSumAsInt(a, b, s -> s.getMooselikeDamageInspectionLocations()));
-        result.setMooselikeDamageInspectionExpenses(nullsafeSum(a, b, s -> s.getMooselikeDamageInspectionExpenses()));
-        result.setLargeCarnivoreDamageInspectionLocations(nullsafeSumAsInt(a, b, s -> s.getLargeCarnivoreDamageInspectionLocations()));
-        result.setLargeCarnivoreDamageInspectionExpenses(nullsafeSum(a, b, s -> s.getLargeCarnivoreDamageInspectionExpenses()));
-        result.setGameDamageInspectors(nullsafeSumAsInt(a, b, s -> s.getGameDamageInspectors()));
+        result.setMooselikeDamageInspectionLocations(nullableIntSum(a, b, s -> s.getMooselikeDamageInspectionLocations()));
+        result.setMooselikeDamageInspectionExpenses(nullableSum(a, b, s -> s.getMooselikeDamageInspectionExpenses()));
+        result.setLargeCarnivoreDamageInspectionLocations(nullableIntSum(a, b, s -> s.getLargeCarnivoreDamageInspectionLocations()));
+        result.setLargeCarnivoreDamageInspectionExpenses(nullableSum(a, b, s -> s.getLargeCarnivoreDamageInspectionExpenses()));
+        result.setGameDamageInspectors(nullableIntSum(a, b, s -> s.getGameDamageInspectors()));
         result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
         return result;
     }
@@ -99,18 +101,28 @@ public class GameDamageStatistics
     }
 
     @Override
-    public boolean isEqualTo(final GameDamageStatistics other) {
-        // Includes manually updateable fields only.
-
-        return Objects.equals(mooselikeDamageInspectionLocations, other.mooselikeDamageInspectionLocations) &&
-                nullsafeEq(mooselikeDamageInspectionExpenses, other.mooselikeDamageInspectionExpenses) &&
-                Objects.equals(largeCarnivoreDamageInspectionLocations, other.largeCarnivoreDamageInspectionLocations) &&
-                nullsafeEq(largeCarnivoreDamageInspectionExpenses, other.largeCarnivoreDamageInspectionExpenses);
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.GAME_DAMAGE;
     }
 
     @Override
-    public void updateModificationStatus() {
-        lastModified = DateUtil.now();
+    public boolean isEqualTo(@Nonnull final GameDamageStatistics that) {
+        // Includes manually updateable fields only.
+
+        return Objects.equals(mooselikeDamageInspectionLocations, that.mooselikeDamageInspectionLocations) &&
+                nullsafeEq(mooselikeDamageInspectionExpenses, that.mooselikeDamageInspectionExpenses) &&
+                Objects.equals(largeCarnivoreDamageInspectionLocations, that.largeCarnivoreDamageInspectionLocations) &&
+                nullsafeEq(largeCarnivoreDamageInspectionExpenses, that.largeCarnivoreDamageInspectionExpenses);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final GameDamageStatistics that) {
+        // Includes manually updateable fields only.
+
+        this.mooselikeDamageInspectionLocations = that.mooselikeDamageInspectionLocations;
+        this.mooselikeDamageInspectionExpenses = that.mooselikeDamageInspectionExpenses;
+        this.largeCarnivoreDamageInspectionLocations = that.largeCarnivoreDamageInspectionLocations;
+        this.largeCarnivoreDamageInspectionExpenses = that.largeCarnivoreDamageInspectionExpenses;
     }
 
     @Override
@@ -182,10 +194,12 @@ public class GameDamageStatistics
         this.gameDamageInspectors = gameDamageInspectors;
     }
 
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

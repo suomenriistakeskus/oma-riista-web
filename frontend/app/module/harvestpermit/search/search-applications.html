@@ -1,26 +1,25 @@
-<ul class="nav nav-pills">
-    <li ng-class="{'active': $ctrl.tab == 'filter'}">
-        <a ng-click="$ctrl.showFilters()">Suodatus</a>
-    </li>
-    <li ng-class="{'active': $ctrl.tab === 'myApplications'}">
-        <a ng-click="$ctrl.showMyApplications()">Omat hakemukset</a>
-    </li>
-    <li ng-class="{'active': $ctrl.tab === 'myDecisions'}">
-        <a ng-click="$ctrl.showMyDecisions()">Omat päätökset</a>
-    </li>
-    <li ng-class="{'active': $ctrl.tab === 'postalQueue'}">
-        <a ng-click="$ctrl.showPostalQueue()">Postitettavat</a>
-    </li>
-</ul>
+<div class="row">
+    <div class="col-xs-3" ng-if="$ctrl.tab !== 'postalQueue'">
+        <moderator-application-search-filters
+                filters="$ctrl.filters"
+                available-species="$ctrl.availableSpecies"
+                handlers="$ctrl.handlers"
+                reset="$ctrl.reset()"
+                search="$ctrl.loadPage(0)">
+        </moderator-application-search-filters>
+    </div>
 
-<moderator-application-search-filters
-        ng-if="$ctrl.tab === 'filter'"
-        filters="$ctrl.filters"
-        available-species="$ctrl.availableSpecies"
-        handlers="$ctrl.handlers"
-        search="$ctrl.search()">
-</moderator-application-search-filters>
+    <div ng-class="{'col-xs-9': $ctrl.tab !== 'postalQueue', 'col-xs-12': $ctrl.tab === 'postalQueue'}">
+        <div ng-if="$ctrl.tab !== 'postalQueue'">
+            <button type="button" class="btn btn-primary" ng-click="$ctrl.exportResultsToExcel()">
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="global.button.exportToExcel"></span>
+            </button>
+            <hr class="invisible"/>
+        </div>
 
-<hr>
+        <slice-pager slice="$ctrl.results" load-page="$ctrl.loadPage(page)"></slice-pager>
 
-<moderator-application-results-list results="$ctrl.results"></moderator-application-results-list>
+        <moderator-application-results-list results="$ctrl.results.content"></moderator-application-results-list>
+    </div>
+</div>

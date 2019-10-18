@@ -5,6 +5,8 @@ import com.google.common.collect.Range;
 
 public interface NumberGenerator {
 
+    void reset();
+
     int nextInt();
 
     long nextLong();

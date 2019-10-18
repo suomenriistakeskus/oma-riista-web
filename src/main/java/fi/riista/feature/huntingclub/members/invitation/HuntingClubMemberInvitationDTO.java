@@ -1,6 +1,6 @@
 package fi.riista.feature.huntingclub.members.invitation;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;

@@ -4,10 +4,11 @@ import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
-import fi.riista.feature.organization.lupahallinta.LHOrganisation;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.lupahallinta.LHOrganisationRepository;
 import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.lupahallinta.LHOrganisation;
+import fi.riista.feature.organization.lupahallinta.LHOrganisationRepository;
+import fi.riista.feature.organization.rhy.MergedRhyMapping;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.util.F;
 import io.vavr.Tuple;
@@ -127,7 +128,9 @@ public class RegisterHuntingClubService {
     }
 
     private Optional<Organisation> findRhy(String officialCode) {
-        return Optional.ofNullable(officialCode).map(rhyRepository::findByOfficialCode);
+        return Optional.ofNullable(officialCode)
+                .map(MergedRhyMapping::translateIfMerged)
+                .map(rhyRepository::findByOfficialCode);
     }
 
 }

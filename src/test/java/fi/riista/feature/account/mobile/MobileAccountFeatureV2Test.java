@@ -1,20 +1,19 @@
 package fi.riista.feature.account.mobile;
 
+import com.google.common.collect.ImmutableSortedMap;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
 import javax.annotation.Resource;
+import java.util.SortedMap;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 public class MobileAccountFeatureV2Test extends MobileAccountFeatureTest {
@@ -30,31 +29,28 @@ public class MobileAccountFeatureV2Test extends MobileAccountFeatureTest {
     @Test
     public void testGetMobileAccount_succeedsWhenUserAuthenticated() {
         final SystemUser user = createEntityGraphForMobileAccountTest(
-                asList(Tuple.of(2014, 1), Tuple.of(2015, 2)),
-                asList(Tuple.of(2013, 1), Tuple.of(2015, 1)));
+                ImmutableSortedMap.of(2014, 1, 2015, 2),
+                ImmutableSortedMap.of(2013, 1, 2015, 1));
 
-        persistInNewTransaction();
+        onSavedAndAuthenticated(user, () -> {
+            final DateTime now = DateUtil.now();
+            final MobileAccountV2DTO dto = feature.getMobileAccount();
 
-        authenticate(user);
+            runInTransaction(() -> {
+                // Refresh Person object in order to have home municipality associated properly.
+                final Person person2 = personRepo.findOne(user.getPerson().getId());
 
-        final DateTime now = DateUtil.now();
-        final MobileAccountV2DTO dto = feature.getMobileAccount();
+                doMobileAccountAssertions(dto, person2, user.getUsername(), F.newSortedSet(2013, 2014, 2015), now);
+                assertEquals(F.newSortedSet(2014, 2015), dto.getHarvestYears());
+                assertEquals(F.newSortedSet(2013, 2015), dto.getObservationYears());
 
-        runInTransaction(() -> {
-            // Refresh Person object in order to have home municipality associated properly.
-            final Person person2 = personRepo.findOne(user.getPerson().getId());
-
-            doMobileAccountAssertions(dto, person2, user.getUsername(), F.newSortedSet(2013, 2014, 2015), now);
-            assertEquals(F.newSortedSet(2014, 2015), dto.getHarvestYears());
-            assertEquals(F.newSortedSet(2013, 2015), dto.getObservationYears());
-
-            assertEquals(0, dto.getOccupations().size());
+                assertEquals(0, dto.getOccupations().size());
+            });
         });
     }
 
-    private SystemUser createEntityGraphForMobileAccountTest(
-            final Iterable<Tuple2<Integer, Integer>> pairsOfHarvestYearAndAmount,
-            final Iterable<Tuple2<Integer, Integer>> pairsOfObservationYearAndAmount) {
+    private SystemUser createEntityGraphForMobileAccountTest(final SortedMap<Integer, Integer> pairsOfHarvestYearAndAmount,
+                                                             final SortedMap<Integer, Integer> pairsOfObservationYearAndAmount) {
 
         final SystemUser user = createEntityGraphForMobileAccountTest(pairsOfHarvestYearAndAmount);
         final Person person = user.getPerson();
@@ -63,21 +59,19 @@ public class MobileAccountFeatureV2Test extends MobileAccountFeatureTest {
         // authored by the requesting person) before the first given
         // observation year to test that non-observed events are not included
         // in array of observation years.
-        final int firstObservationYear = pairsOfObservationYearAndAmount.iterator().next()._1();
+        final int firstObservationYear = pairsOfObservationYearAndAmount.keySet().iterator().next();
         final Observation observationObservedByOtherPerson = model().newObservation(
                 model().newGameSpecies(), model().newPerson(), new LocalDate(firstObservationYear - 1, 8, 1));
         observationObservedByOtherPerson.setAuthor(person);
 
-        for (final Tuple2<Integer, Integer> pair : pairsOfObservationYearAndAmount) {
-            final int observationYear = pair._1();
+        pairsOfObservationYearAndAmount.forEach((observationYear, observationAmount) -> {
             final LocalDate firstObservationDateForYear = new LocalDate(observationYear, 8, 1);
             final GameSpecies species = model().newGameSpecies();
 
-            final int numObservationsForYear = pair._2();
-            for (int i = 0; i < numObservationsForYear; i++) {
+            for (int i = 0; i < observationAmount; i++) {
                 model().newObservation(species, person, firstObservationDateForYear.plusDays(i));
             }
-        }
+        });
 
         return user;
     }

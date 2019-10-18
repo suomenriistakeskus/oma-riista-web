@@ -43,23 +43,37 @@ public class SearchApplicationConflictsRunner {
     }
 
     public void run() {
-        if (processHarvestPermitApplicationFeature.isConflictCalculationPending()) {
-            calculateConflictingApplications();
+        final Long batchId = processHarvestPermitApplicationFeature.getPendingBatchId();
+
+        if (batchId == null) {
+            return;
         }
-        calculatePalstaConflicts();
+
+        LOG.info("Starting processing batch {}...", batchId);
+
+        if (processHarvestPermitApplicationFeature.isConflictCalculationPending(batchId)) {
+            calculateConflictingApplications(batchId);
+        }
+
+        calculatePalstaConflicts(batchId);
+
+        processHarvestPermitApplicationFeature.markBatchComplete(batchId);
     }
 
-    private void calculateConflictingApplications() {
-        LOG.info("Starting ...");
+    private void calculateConflictingApplications(final long batchId) {
+        final List<Long> applicationIds = processHarvestPermitApplicationFeature.getApplicationIdsToCalculate(batchId);
 
-        final List<Long> applicationIds = processHarvestPermitApplicationFeature.getApplicationIdsToCalculate();
         if (applicationIds.isEmpty()) {
             return;
         }
+
+        LOG.info("Starting step 1...");
+
         final int taskCount = applicationIds.size();
         final CountDownLatch countDownLatch = new CountDownLatch(taskCount);
         final AtomicInteger successCounter = new AtomicInteger(0);
         final AtomicInteger failureCounter = new AtomicInteger(0);
+
         for (final long applicationId : applicationIds) {
             executorService.submit(() -> {
                 final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -68,7 +82,7 @@ public class SearchApplicationConflictsRunner {
                     LOG.info("Applications remaining {} / {}. Successful={} failed={}",
                             countDownLatch.getCount(), taskCount, successCounter, failureCounter);
 
-                    processHarvestPermitApplicationFeature.calculateConflictingApplications(applicationId);
+                    processHarvestPermitApplicationFeature.calculateConflictingApplications(applicationId, batchId);
                     successCounter.incrementAndGet();
 
                 } catch (Exception e) {
@@ -86,15 +100,18 @@ public class SearchApplicationConflictsRunner {
             Thread.currentThread().interrupt();
             workQueue.clear();
         }
-        LOG.info("Done.");
+
+        LOG.info("Finished step 1.");
     }
 
-    private void calculatePalstaConflicts() {
-        final List<Long> conflictIdList = processHarvestPermitApplicationFeature.getConflictIdListForSecondStep();
+    private void calculatePalstaConflicts(final long batchId) {
+        final List<Long> conflictIdList = processHarvestPermitApplicationFeature.getConflictIdListForSecondStep(batchId);
 
         if (conflictIdList.isEmpty()) {
             return;
         }
+
+        LOG.info("Starting step 2...");
 
         final int taskCount = conflictIdList.size();
         final CountDownLatch countDownLatch = new CountDownLatch(taskCount);
@@ -128,5 +145,7 @@ public class SearchApplicationConflictsRunner {
             Thread.currentThread().interrupt();
             workQueue.clear();
         }
+
+        LOG.info("Finished step 2.");
     }
 }

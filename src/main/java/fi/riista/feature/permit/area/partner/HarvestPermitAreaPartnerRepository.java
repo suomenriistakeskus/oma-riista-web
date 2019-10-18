@@ -1,8 +1,8 @@
 package fi.riista.feature.permit.area.partner;
 
 import fi.riista.feature.common.repository.BaseRepository;
-import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.permit.area.HarvestPermitArea;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;

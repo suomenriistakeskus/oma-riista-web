@@ -1,5 +1,6 @@
 package fi.riista.feature.search;
 
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPQLQueryFactory;
@@ -44,7 +45,7 @@ public class RhySearchParamsFeature {
         public final RhySearchOrgType type;
         public final List<RhySearchOrgList.Org> organisations;
 
-        RhySearchOrgList(RhySearchOrgType type, List<RhySearchOrgList.Org> organisations) {
+        RhySearchOrgList(final RhySearchOrgType type, final List<RhySearchOrgList.Org> organisations) {
             this.type = type;
             this.organisations = organisations;
         }
@@ -85,13 +86,13 @@ public class RhySearchParamsFeature {
         final String viewedRhyHtaOfficialCode = rhyId != null ? findHta(rhyId) : null;
 
         final QGISHirvitalousalue HTA = QGISHirvitalousalue.gISHirvitalousalue;
-        final List<RhySearchOrgList.Org> htas = listOrgs(locale, viewedRhyHtaOfficialCode, HTA, HTA.number, HTA.nameFinnish, HTA.nameSwedish);
+        final List<RhySearchOrgList.Org> htas = listOrgs(locale, viewedRhyHtaOfficialCode, HTA, HTA.number, HTA.nameLocalisation());
 
         final QRiistakeskuksenAlue RKA = QRiistakeskuksenAlue.riistakeskuksenAlue;
-        final List<RhySearchOrgList.Org> rkas = listOrgs(locale, getParentOfficialCode(viewedRhy), RKA, RKA.officialCode, RKA.nameFinnish, RKA.nameSwedish);
+        final List<RhySearchOrgList.Org> rkas = listOrgs(locale, getParentOfficialCode(viewedRhy), RKA, RKA.officialCode, RKA.nameLocalisation());
 
         final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
-        final List<RhySearchOrgList.Org> rhys = listOrgs(locale, getOfficialCode(viewedRhy), RHY, RHY.officialCode, RHY.nameFinnish, RHY.nameSwedish);
+        final List<RhySearchOrgList.Org> rhys = listOrgs(locale, getOfficialCode(viewedRhy), RHY, RHY.officialCode, RHY.nameLocalisation());
 
         return Arrays.asList(
                 new RhySearchOrgList(RhySearchOrgType.RHY, rhys),
@@ -100,11 +101,11 @@ public class RhySearchParamsFeature {
         );
     }
 
-    private String getParentOfficialCode(final Optional<Riistanhoitoyhdistys> viewedRhy) {
+    private static String getParentOfficialCode(final Optional<Riistanhoitoyhdistys> viewedRhy) {
         return viewedRhy.map(Riistanhoitoyhdistys::getParentOrganisation).map(Organisation::getOfficialCode).orElse(null);
     }
 
-    private String getOfficialCode(final Optional<Riistanhoitoyhdistys> viewedRhy) {
+    private static String getOfficialCode(final Optional<Riistanhoitoyhdistys> viewedRhy) {
         return viewedRhy.map(Riistanhoitoyhdistys::getOfficialCode).orElse(null);
     }
 
@@ -130,16 +131,15 @@ public class RhySearchParamsFeature {
                                                 final String viewedOfficialCode,
                                                 final EntityPathBase<?> table,
                                                 final StringPath number,
-                                                final StringPath nameFinnish,
-                                                final StringPath nameSwedish) {
-        return jpqlQueryFactory.select(number, nameFinnish, nameSwedish)
+                                                final Expression<LocalisedString> nameLocalisation) {
+        return jpqlQueryFactory.select(number, nameLocalisation)
                 .from(table)
                 .fetch()
                 .stream()
                 .map(t -> {
-                    final String name = LocalisedString.of(t.get(nameFinnish), t.get(nameSwedish))
-                            .getAnyTranslation(locale);
                     final String officialCode = t.get(number);
+                    final String name = t.get(nameLocalisation).getAnyTranslation(locale);
+
                     return new RhySearchOrgList.Org(officialCode, name, Objects.equals(officialCode, viewedOfficialCode));
                 })
                 .sorted(comparing(o -> o.name))
@@ -149,5 +149,4 @@ public class RhySearchParamsFeature {
     private <T> JPASQLQuery<T> createNativeQuery() {
         return new JPASQLQuery<>(em, sqlTemplates);
     }
-
 }

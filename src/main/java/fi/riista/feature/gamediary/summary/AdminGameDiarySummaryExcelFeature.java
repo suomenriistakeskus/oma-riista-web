@@ -26,6 +26,8 @@ import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysNameDTO;
+import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysNameService;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.util.DateUtil;
 import fi.riista.util.LocalisedString;
@@ -88,6 +90,9 @@ public class AdminGameDiarySummaryExcelFeature {
     private AdminSummarySrvaEventDTOTransformer adminSummarySrvaEventDTOTransformer;
 
     @Resource
+    private RiistanhoitoyhdistysNameService riistanhoitoyhdistysNameService;
+
+    @Resource
     private RiistanhoitoyhdistysRepository riistanhoitoyhdistysRepository;
 
     @PersistenceContext
@@ -99,6 +104,7 @@ public class AdminGameDiarySummaryExcelFeature {
         final Locale locale = LocaleContextHolder.getLocale();
 
         final Map<Integer, LocalisedString> species = gameSpeciesService.getNameIndex();
+        final Map<Long, RiistanhoitoyhdistysNameDTO> rhyNameMapping = riistanhoitoyhdistysNameService.getNameIndex();
 
         final GameSpecies gameSpecies = Optional.ofNullable(dto.getSpeciesCode())
                 .map(gameSpeciesService::requireByOfficialCode).orElse(null);
@@ -119,7 +125,8 @@ public class AdminGameDiarySummaryExcelFeature {
 
         return new AdminGameDiarySummaryExcelView(
                 new EnumLocaliser(messageSource, locale),
-                species, harvestDTOList, observationDTOList, srvaEventDTOList);
+                species, rhyNameMapping,
+                harvestDTOList, observationDTOList, srvaEventDTOList);
     }
 
     private BooleanBuilder createSrvaPredicate(final Interval interval,

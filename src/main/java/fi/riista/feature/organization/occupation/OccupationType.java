@@ -9,7 +9,10 @@ import fi.riista.util.LocalisedEnum;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static fi.riista.feature.organization.OrganisationType.ARN;
 import static fi.riista.feature.organization.OrganisationType.CLUB;
@@ -70,6 +73,12 @@ public enum OccupationType implements LocalisedEnum {
         return EnumSet.copyOf(CLUB_VALUES);
     }
 
+    public static Set<OccupationType> rhyValues() {
+        return Arrays.stream(OccupationType.values())
+                .filter(o -> o.isApplicableFor(OrganisationType.RHY))
+                .collect(Collectors.toSet());
+    }
+
     public static EnumSet<OccupationType> jhtValues() {
         return EnumSet.copyOf(VALID_JHT_OCCUPATION_TYPE);
     }
@@ -104,8 +113,12 @@ public enum OccupationType implements LocalisedEnum {
         return BOARD_VALUES.contains(this);
     }
 
-    public boolean isClubSpecific() {
+    public boolean isClubOrGroupOccupation() {
         return CLUB_VALUES.contains(this);
+    }
+
+    public boolean isRhyOccupation() {
+        return isApplicableFor(RHY);
     }
 
     public boolean isMappedToRole() {

@@ -38,79 +38,13 @@
 
 .r-rhy-year-species-menu {
   padding-bottom: 10px;
+
   div.left {
     padding-right: 5px;
   }
+
   div.right {
     padding-left: 5px;
-  }
-}
-
-.rhy-mooselike-stats {
-  @rhy-mooselike-stats-header-border-style: 1px solid #c5c5c5;
-  @rhy-mooselike-stats-border-style: 1px solid rgb(221, 221, 221);
-
-  td:first-child {
-    width: 250px;
-  }
-  th, td:not(:first-child) {
-    .text-center;
-    padding: 2px !important;
-  }
-
-  .topheader {
-    th {
-      border-bottom: none;
-
-      &:not(:first-child) {
-        border-left: @rhy-mooselike-stats-header-border-style;
-      }
-    }
-  }
-
-  .lowheader {
-    th {
-      border-top: 0;
-    }
-  }
-
-  .summary {
-    font-weight: bold;
-  }
-
-  tr:hover {
-    background-color: #e0f0eb;
-  }
-}
-
-.loop-rhy-mooselike-border-left(@cols; @index: 1) when (@index <= length(@cols)) {
-  .loop-rhy-mooselike-border-left(@cols; (@index + 1));
-
-  @i: extract(@cols, @index);
-  &:nth-of-type(@{i}) {
-    border-left: @rhy-mooselike-stats-header-border-style;
-  }
-}
-
-.rhy-mooselike-stats-table {
-  .rhy-mooselike-stats;
-
-  @rhy-mooselike-stats-table-border-indexes: 2 3 10 13 15 17;
-
-  .topheader {
-    th {
-      border-bottom: none;
-
-      &:not(:first-child) {
-        border-left: @rhy-mooselike-stats-header-border-style;
-      }
-    }
-  }
-  .lowheader > th {
-    .loop-rhy-mooselike-border-left(@rhy-mooselike-stats-table-border-indexes);
-  }
-  tr > td {
-    .loop-rhy-mooselike-border-left(@rhy-mooselike-stats-table-border-indexes);
   }
 }
 

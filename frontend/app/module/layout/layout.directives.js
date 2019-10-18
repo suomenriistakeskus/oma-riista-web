@@ -180,7 +180,6 @@ angular.module('app.layout.directives', [])
         };
     })
 
-
     .directive('activeIfStateIncludes', function ($state, $timeout) {
         return {
             restrict: 'A',

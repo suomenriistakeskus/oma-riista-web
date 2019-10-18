@@ -1,0 +1,52 @@
+<form class="form-horizontal">
+    <div class="form-group">
+        <label for="mhSearch" class="control-label col-xs-3 text-right">
+            <span translate="global.map.editor.tab.metsahallitus.search"></span>
+        </label>
+
+        <div class="col-xs-9">
+            <input type="text" id="mhSearch" name="mhSearch"
+                   class="form-control"
+                   focus-me
+                   autocomplete="off"
+                   ng-model="$ctrl.mooseAreaSearchQuery"
+                   typeahead-on-select="$ctrl.onSelectMooseArea($item)"
+                   uib-typeahead="(area.number + ' ' + area.name) for area in $ctrl.metsahallitus.filterMooseAreaList($viewValue) | limitTo:10">
+        </div>
+    </div>
+</form>
+
+<p class="well well-sm" ng-if="$ctrl.metsahallitus.isEmpty()">
+    <span translate="global.map.editor.tab.metsahallitus.emptySelection"></span>
+</p>
+
+<ul class="list-group">
+    <li class="list-group-item"
+        ng-click="$ctrl.focusMooseArea(area); $event.stopPropagation()"
+        ng-repeat="area in $ctrl.metsahallitus.getSelectedAreaList() | orderBy:['number', 'year'] track by area.id">
+
+        <span class="list-group-item-heading">
+            {{ ::area.number  }} {{ ::area.name  }} ({{ ::area.year }})
+        </span>
+
+        <div class="pull-right">
+            <button type="button" class="btn btn-default"
+                    ng-confirm-click
+                    ng-confirm-click-action="$ctrl.removeMooseArea(area)">
+                <span translate="global.button.delete"></span>
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+            </button>
+        </div>
+
+        <div class="list-group-item-text">
+            <strong>{{ area.size | prettyAreaSize }}</strong>
+
+            <button type="button" class="btn btn-default btn-xs"
+                    ng-show="!$ctrl.metsahallitus.isUpToDate(area)"
+                    ng-click="$ctrl.updateMooseArea(area); $event.stopPropagation();">
+                <span translate="global.map.editor.tab.mml.fix"></span>
+                <span class="glyphicon glyphicon-wrench text-info"></span>
+            </button>
+        </div>
+    </li>
+</ul>

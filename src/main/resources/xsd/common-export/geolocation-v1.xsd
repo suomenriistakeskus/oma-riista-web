@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/common/export/2018/10"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/common/export/2018/10"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+
+    <xs:complexType name="geoLocation">
+        <xs:annotation>
+            <xs:documentation>Location in ETRS-TM35FIN coordinate system.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="latitude" type="xs:int"/>
+            <xs:element name="longitude" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

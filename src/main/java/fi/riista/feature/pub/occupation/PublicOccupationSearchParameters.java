@@ -1,96 +1,90 @@
 package fi.riista.feature.pub.occupation;
 
 import com.google.common.base.Preconditions;
-import fi.riista.feature.organization.Organisation;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.organization.Organisation_;
-import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.QOrganisation;
+import fi.riista.feature.organization.QRiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.occupation.Occupation_;
+import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.util.DateUtil;
-import fi.riista.util.jpa.JpaPreds;
-import org.springframework.data.jpa.domain.Specification;
+import org.joda.time.LocalDate;
 
-import javax.annotation.Nonnull;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.LinkedList;
-import java.util.List;
 
 public final class PublicOccupationSearchParameters {
+
+    private static final QOccupation OCCUPATION = QOccupation.occupation;
+    private static final QRiistakeskuksenAlue RKA = QRiistakeskuksenAlue.riistakeskuksenAlue;
+    private static final QOrganisation ORG = QOrganisation.organisation;
+
     private final String areaId;
     private final String rhyId;
     private final OrganisationType organisationType;
     private final OccupationType occupationType;
+    private final Integer pageSize;
+    private final Integer pageNumber;
 
     private PublicOccupationSearchParameters(final String areaId,
                                              final String rhyId,
                                              final OrganisationType organisationType,
-                                             final OccupationType occupationType) {
+                                             final OccupationType occupationType,
+                                             final Integer pageSize,
+                                             final Integer pageNumber) {
         this.areaId = areaId;
         this.rhyId = rhyId;
         this.organisationType = organisationType;
         this.occupationType = occupationType;
+        this.pageSize = pageSize;
+        this.pageNumber = pageNumber;
     }
 
-    @Nonnull
-    public Specification<Occupation> toJpaSpecification() {
-        return (root, query, cb) -> {
-            final List<Predicate> predicateList = getPredicates(root, cb);
-            return cb.and(predicateList.toArray(new Predicate[predicateList.size()]));
-        };
+
+    public Predicate toQueryDslPredicate() {
+        return isPresentOccupationPredicate().and(areaPredicate()).and(rhyPredicate()).and(areaPredicate())
+                .and(organisationTypePredicate()).and(occupationTypePredicate());
     }
 
-    @Nonnull
-    private List<Predicate> getPredicates(final Root<Occupation> root, final CriteriaBuilder cb) {
-        final Join<Occupation, Organisation> organisationJoin = root.join(Occupation_.organisation);
-        final Path<OccupationType> occupationTypePath = root.get(Occupation_.occupationType);
-        final List<Predicate> predicateList = new LinkedList<>();
+    private BooleanExpression isPresentOccupationPredicate() {
+        final LocalDate today = DateUtil.today();
 
-        predicateList.add(JpaPreds.withinInterval(cb,
-                root.get(Occupation_.beginDate),
-                root.get(Occupation_.endDate),
-                DateUtil.today()));
+        final BooleanExpression beginExpression = OCCUPATION.beginDate.loe(today).or(OCCUPATION.beginDate.isNull());
+        final BooleanExpression endExpression = OCCUPATION.endDate.goe(today).or(OCCUPATION.endDate.isNull());
+        return beginExpression.and(endExpression);
+    }
 
-        if (occupationType != null) {
-            predicateList.add(cb.equal(occupationTypePath, occupationType));
-        } else {
-            predicateList.add(cb.not(JpaPreds.inCollection(cb, occupationTypePath, OccupationType.clubValues())));
+    private BooleanExpression areaPredicate() {
+        if (rhyId == null && areaId != null) {
+            // If only rka is selected as search criteria, match events for rhys that have
+            // the specified rka as their parent organisation.
+            return OCCUPATION.organisation.eq(ORG).
+                    and(ORG.parentOrganisation.isNotNull().and(ORG.parentOrganisation.eq(RKA._super)))
+                    .and(RKA.officialCode.eq(areaId));
         }
 
-        if (organisationType != null) {
-            predicateList.add(cb.equal(organisationJoin.get(Organisation_.organisationType), organisationType));
-        }
+        return null;
 
-        if (rhyId != null) {
-            predicateList.add(organisationEqual(organisationJoin, cb, rhyId, OrganisationType.RHY));
-
-        } else if (areaId != null) {
-            final Join<Organisation, Organisation> parentJoin =
-                    organisationJoin.join(Organisation_.parentOrganisation);
-
-            predicateList.add(cb.or(
-                    organisationEqual(organisationJoin, cb, areaId, OrganisationType.RKA),
-                    organisationEqual(parentJoin, cb, areaId, OrganisationType.RKA)));
-        }
-
-        return predicateList;
     }
 
-    private static Predicate organisationEqual(final Path<Organisation> organisationJoin,
-                                               final CriteriaBuilder cb,
-                                               final String officialCode,
-                                               final OrganisationType organisationType) {
-        final Path<OrganisationType> organisationTypePath = organisationJoin.get(Organisation_.organisationType);
-        final Path<String> organisationCodePath = organisationJoin.get(Organisation_.officialCode);
-
-        return cb.and(
-                cb.equal(organisationTypePath, organisationType),
-                cb.equal(organisationCodePath, officialCode));
+    private BooleanExpression rhyPredicate() {
+        return rhyId == null
+                ? OCCUPATION.occupationType.notIn(OccupationType.clubValues())
+                : OCCUPATION.organisation.eq(ORG).and(ORG.organisationType.eq(OrganisationType.RHY))
+                .and(ORG.officialCode.eq(rhyId));
     }
+
+    private final BooleanExpression organisationTypePredicate() {
+        return organisationType == null
+                ? null
+                : OCCUPATION.organisation.organisationType.eq(organisationType);
+    }
+
+    private final BooleanExpression occupationTypePredicate() {
+        return occupationType == null
+                ? null
+                : OCCUPATION.occupationType.eq(occupationType);
+    }
+
 
     public String getAreaId() {
         return areaId;
@@ -108,6 +102,14 @@ public final class PublicOccupationSearchParameters {
         return occupationType;
     }
 
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public Integer getPageNumber() {
+        return pageNumber;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -117,6 +119,10 @@ public final class PublicOccupationSearchParameters {
         private String rhyId;
         private OrganisationType organisationType;
         private OccupationType occupationType;
+
+
+        private Integer pageSize;
+        private Integer pageNumber;
 
         private Builder() {
         }
@@ -141,9 +147,24 @@ public final class PublicOccupationSearchParameters {
             return this;
         }
 
+        public Builder withPageSize(final Integer pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        public Builder withPageNumber(final Integer pageNumber) {
+            this.pageNumber = pageNumber;
+            return this;
+        }
         public PublicOccupationSearchParameters build() {
-            if (organisationType == null && occupationType == null && rhyId == null && areaId == null) {
+            if (organisationType == null && occupationType == null && rhyId == null &&
+                    areaId == null && pageSize == null && pageNumber == null) {
                 throw new IllegalArgumentException("Missing parameters");
+            }
+
+            if (pageSize != null || pageNumber != null) {
+                Preconditions.checkArgument(pageSize != null && pageNumber != null,
+                        "pageSize and pageNumber must be both given or neither");
             }
 
             if (organisationType != null || occupationType != null) {
@@ -161,7 +182,7 @@ public final class PublicOccupationSearchParameters {
                         "Invalid organisationType");
             }
 
-            return new PublicOccupationSearchParameters(areaId, rhyId, organisationType, occupationType);
+            return new PublicOccupationSearchParameters(areaId, rhyId, organisationType, occupationType, pageSize, pageNumber);
         }
     }
 }

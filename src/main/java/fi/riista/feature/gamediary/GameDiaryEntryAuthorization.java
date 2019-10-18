@@ -109,7 +109,7 @@ public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry>
         final int huntingYearOfDiaryEntry = DateUtil.huntingYearContaining(diaryEntryDate);
 
         return huntingClubGroupRepository
-                .findGroupsByAuthorAndActorWuthAreaIntersecting(diaryEntry, huntingYearOfDiaryEntry).stream()
+                .findGroupsByAuthorOrActorWithGroupAreaIntersecting(diaryEntry, huntingYearOfDiaryEntry).stream()
                 .filter(group -> hasCorrectSpeciesOrObservedWithinHunting(diaryEntry, group))
                 .filter(group -> authorOrActorHasValidClubAndGroupRole(diaryEntry, group))
                 .filter(group -> groupPermitIsValidDuringPointOfTime(diaryEntry, group))

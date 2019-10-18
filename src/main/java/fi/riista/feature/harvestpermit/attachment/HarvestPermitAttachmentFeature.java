@@ -2,10 +2,13 @@ package fi.riista.feature.harvestpermit.attachment;
 
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.download.HarvestPermitLatestDecisionRevisionService;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachment;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachmentDTO;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachmentRepository;
+import fi.riista.feature.permit.decision.revision.PermitDecisionRevision;
+import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionAttachment;
 import fi.riista.feature.storage.FileDownloadService;
 import fi.riista.security.EntityPermission;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,9 @@ public class HarvestPermitAttachmentFeature {
     @Resource
     private PermitDecisionAttachmentRepository permitDecisionAttachmentRepository;
 
+    @Resource
+    private HarvestPermitLatestDecisionRevisionService harvestPermitLatestDecisionRevisionService;
+
     @Transactional(readOnly = true)
     public List<PermitDecisionAttachmentDTO> listAttachments(final long harvestPermitId) {
         final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(harvestPermitId, EntityPermission.READ);
@@ -40,8 +46,11 @@ public class HarvestPermitAttachmentFeature {
             return Collections.emptyList();
         }
 
-        return decision.getSortedAttachments().stream()
-                .filter(a -> !a.isDeleted())
+        final List<PermitDecisionRevisionAttachment> revisionAttachments = harvestPermitLatestDecisionRevisionService.getLatestRevisionArchivePdfId(decision)
+                .map(PermitDecisionRevision::getSortedAttachments)
+                .orElse(Collections.emptyList());
+
+        return revisionAttachments.stream()
                 .map(PermitDecisionAttachmentDTO::new)
                 .collect(Collectors.toList());
     }

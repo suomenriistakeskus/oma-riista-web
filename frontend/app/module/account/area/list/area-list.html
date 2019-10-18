@@ -1,0 +1,44 @@
+<div class="panel panel-default"
+     ng-repeat="a in $ctrl.areaList">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-xs-8">
+                <p class="panel-title">
+                    <span ng-bind="a.name"></span>
+                    <button type="button" class="btn btn-link"
+                            ng-click="$ctrl.edit(a)">
+                        <span class="fa fa-lg fa-edit"></span>
+                    </button>
+                </p>
+            </div>
+
+            <div class="col-xs-4 text-right">
+                <button type="button" class="btn btn-link"
+                        ng-click="$ctrl.printArea(a)">
+                    <span class="fa fa-2x fa-print text-primary"></span>
+                </button>
+
+                <button type="button" class="btn btn-primary"
+                        ng-click="$ctrl.editMap(a)">
+                    <span translate="account.areas.editMap"></span>
+                </button>
+
+                &nbsp;
+
+                <account-area-functions area="a"></account-area-functions>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-6">
+                <personal-area-list-map area="a" area-type="'personal-area'"></personal-area-list-map>
+            </div>
+
+            <div class="col-md-6">
+                <account-area-list-info area="a"></account-area-list-info>
+            </div>
+        </div>
+    </div>
+</div>

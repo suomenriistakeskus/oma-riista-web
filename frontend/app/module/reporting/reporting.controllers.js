@@ -6,7 +6,16 @@ angular.module('app.reporting.controllers', [])
             .state('reporting', {
                 abstract: true,
                 templateUrl: 'reporting/layout.html',
-                url: '/moderator'
+                url: '/moderator',
+                controllerAs: '$ctrl',
+
+                controller: function (ActiveRoleService, AvailableRoleService, ModeratorPrivileges) {
+                    var $ctrl = this;
+
+                    $ctrl.isAuthorizedForHabides = ActiveRoleService.isAdmin() ||
+                            AvailableRoleService.hasPrivilege(ModeratorPrivileges.habides);
+
+                }
             })
             .state('reporting.home', {
                 url: '/home',

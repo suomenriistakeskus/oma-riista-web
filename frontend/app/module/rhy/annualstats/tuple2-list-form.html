@@ -20,13 +20,14 @@
                     <td>
                         <div class="form-group" show-errors>
                             <div class="input-group">
-                                <input type="number" name="{{::group.value1Key}}" id="{{::group.value1Key}}"
+                                <input type="number" name="{{::group.input1Key}}" id="{{::group.input1Key}}"
                                        ng-min="$ctrl.getValue1Min(group)" ng-max="$ctrl.getValue1Max(group)" step="1"
                                        class="form-control no-spinner"
-                                       ng-model="$ctrl.data[group.value1Key]"/>
+                                       ng-model="$ctrl.data[group.input1Key]"
+                                       r-copy-zero-on-blur-to-empty-input="{{::group.input2Key}}"/>
 
                                 <div class="input-group-addon">
-                                    <span translate="{{::$ctrl.value1UnitKey}}"></span>
+                                    <span translate="{{::$ctrl.input1UnitKey}}"></span>
                                 </div>
                             </div>
                         </div>
@@ -34,13 +35,13 @@
                     <td>
                         <div class="form-group" show-errors>
                             <div class="input-group">
-                                <input type="number" name="{{::group.value2Key}}" id="{{::group.value2Key}}"
+                                <input type="number" name="{{::group.input2Key}}" id="{{::group.input2Key}}"
                                        ng-min="$ctrl.getValue2Min(group)" ng-max="$ctrl.getValue2Max(group)" step="1"
                                        class="form-control no-spinner"
-                                       ng-model="$ctrl.data[group.value2Key]"/>
+                                       ng-model="$ctrl.data[group.input2Key]"/>
 
                                 <div class="input-group-addon">
-                                    <span translate="{{::$ctrl.value2UnitKey}}"></span>
+                                    <span translate="{{::$ctrl.input2UnitKey}}"></span>
                                 </div>
                             </div>
                         </div>

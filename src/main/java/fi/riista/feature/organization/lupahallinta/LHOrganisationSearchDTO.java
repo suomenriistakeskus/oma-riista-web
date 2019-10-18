@@ -1,6 +1,6 @@
 package fi.riista.feature.organization.lupahallinta;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.NotNull;

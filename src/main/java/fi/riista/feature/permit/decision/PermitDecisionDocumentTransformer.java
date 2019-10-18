@@ -61,23 +61,38 @@ public class PermitDecisionDocumentTransformer {
         return text != null ? transformation.apply(text) : null;
     }
 
+    private String transformLineFeeds(final String text) {
+        if (StringUtils.isEmpty(text)) {
+            return text;
+        }
+        
+        return "<p>" +
+                text.replaceAll("\n", "<br />\n") +
+                "</p>\n";
+    }
+
     private void copyBody(final PermitDecisionDocument from, final PermitDecisionDocument to) {
+
+        // Fields with generated content
         to.setApplication(transform(from.getApplication()));
         to.setApplicationReasoning(transform(from.getApplicationReasoning()));
         to.setProcessing(transform(from.getProcessing()));
-        to.setDecisionReasoning(transform(from.getDecisionReasoning()));
         to.setDecision(transform(from.getDecision()));
         to.setRestriction(transform(from.getRestriction()));
-        to.setRestrictionExtra(transform(from.getRestrictionExtra()));
-        to.setExecution(transform(from.getExecution()));
-        to.setLegalAdvice(transform(from.getLegalAdvice()));
-        to.setNotificationObligation(transform(from.getNotificationObligation()));
-        to.setAppeal(transform(from.getAppeal()));
         to.setAdditionalInfo(transform(from.getAdditionalInfo()));
         to.setDelivery(transform(from.getDelivery()));
         to.setPayment(transform(from.getPayment()));
         to.setAttachments(transform(from.getAttachments()));
         to.setAdministrativeCourt(transform(from.getAdministrativeCourt()));
+
+        // Only line feeds transformed for fields containing free text
+        to.setDecisionReasoning(transformLineFeeds(from.getDecisionReasoning()));
+        to.setDecisionExtra(transformLineFeeds(from.getDecisionExtra()));
+        to.setRestrictionExtra(transformLineFeeds(from.getRestrictionExtra()));
+        to.setExecution(transformLineFeeds(from.getExecution()));
+        to.setLegalAdvice(transformLineFeeds(from.getLegalAdvice()));
+        to.setNotificationObligation(transformLineFeeds(from.getNotificationObligation()));
+        to.setAppeal(transformLineFeeds(from.getAppeal()));
     }
 
 }

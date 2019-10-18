@@ -5,18 +5,17 @@ import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
-import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
-import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportDTO;
-import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportRepository;
 import fi.riista.feature.harvestpermit.statistics.HarvestPermitUsageDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTO;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTOFactory;
 import fi.riista.feature.organization.OrganisationNameDTO;
+import fi.riista.feature.permit.decision.PermitDecisionRepository;
 import fi.riista.security.EntityPermission;
+import fi.riista.util.F;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
@@ -40,12 +40,6 @@ public class HarvestPermitDetailsFeature {
     private UserRepository userRepository;
 
     @Resource
-    private MooseHarvestReportRepository mooseHarvestReportRepository;
-
-    @Resource
-    private HarvestPermitSpeciesAmountRepository speciesAmountRepo;
-
-    @Resource
     private RequireEntityService requireEntityService;
 
     @Resource
@@ -55,7 +49,16 @@ public class HarvestPermitDetailsFeature {
     private HuntingClubPermitDTOFactory huntingClubPermitDTOFactory;
 
     @Resource
+    private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
+
+    @Resource
+    private HarvestPermitRepository harvestPermitRepository;
+
+    @Resource
     private HarvestDTOTransformer harvestDTOTransformer;
+
+    @Resource
+    private PermitDecisionRepository permitDecisionRepository;
 
     @Transactional(readOnly = true)
     public OrganisationNameDTO getRhyCode(long permitId) {
@@ -68,14 +71,19 @@ public class HarvestPermitDetailsFeature {
         final SystemUser activeUser = activeUserService.requireActiveUser();
         final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(harvestPermitId, EntityPermission.READ);
 
-        final Set<Integer> gameSpeciesCodes = harvestPermit.getSpeciesAmounts().stream()
-                .map(HarvestPermitSpeciesAmount::getGameSpecies)
-                .map(GameSpecies::getOfficialCode)
-                .collect(Collectors.toSet());
+        final List<HarvestPermit> amendmentPermits = harvestPermit.isMooselikePermitType()
+                ? harvestPermitRepository.findAmendmentPermits(harvestPermit) : emptyList();
 
-        return new HarvestPermitDTO(harvestPermit, gameSpeciesCodes,
-                harvestPermit.canAddHarvest(activeUser),
-                harvestPermit.canCreateEndOfHuntingReport(activeUser));
+        final List<HarvestPermitSpeciesAmount> amendmentPermitSpeciesAmounts = harvestPermit.isMooselikePermitType()
+                ? harvestPermitSpeciesAmountRepository.getAmendmentPermitSpeciesAmounts(harvestPermit) : emptyList();
+
+        final Set<String> amendmentPermitNumbers = F.mapNonNullsToSet(amendmentPermits, HarvestPermit::getPermitNumber);
+        final List<String> cancelledAndIgnoredPermitNumbers = harvestPermit.isMooselikePermitType() ?
+                permitDecisionRepository.findCancelledAndIgnoredPermitNumbersByOriginalPermit(harvestPermit) : emptyList();
+        amendmentPermitNumbers.addAll(cancelledAndIgnoredPermitNumbers);
+
+        return HarvestPermitDTO.create(harvestPermit, harvestPermit.getSpeciesAmounts(),
+                amendmentPermitNumbers, amendmentPermitSpeciesAmounts, activeUser);
     }
 
     @Transactional(readOnly = true)
@@ -90,7 +98,7 @@ public class HarvestPermitDetailsFeature {
     public List<HarvestDTO> getHarvestForPermit(final long harvestPermitId) {
         final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(harvestPermitId, EntityPermission.READ);
 
-        if (harvestPermit.isMooselikePermitType()) {
+        if (harvestPermit.isMooselikePermitType() || harvestPermit.isAmendmentPermit()) {
             throw new IllegalArgumentException("Cannot fetch harvest for moose permit");
         }
 
@@ -128,17 +136,13 @@ public class HarvestPermitDetailsFeature {
 
         Preconditions.checkArgument(permit.isPermitHolderOrPartner(club), "Club is not permits holder or partner");
 
-        final HuntingClubPermitDTO dto = huntingClubPermitDTOFactory.getPermitWithoutAuthorization(permit, speciesCode, huntingClubId);
-        final HarvestPermitSpeciesAmount hpsa =
-                speciesAmountRepo.getOneByHarvestPermitIdAndSpeciesCode(harvestPermitId, speciesCode);
-
-        dto.setMooseHarvestReport(MooseHarvestReportDTO.create(mooseHarvestReportRepository.findBySpeciesAmount(hpsa)));
-        return dto;
+        return huntingClubPermitDTOFactory.getDTO(permit, speciesCode, huntingClubId);
     }
 
     @Transactional(readOnly = true)
     public HuntingClubPermitDTO getClubPermit(long permitId, int officialCodeMoose) {
         final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
-        return huntingClubPermitDTOFactory.getPermitWithoutAuthorization(permit, officialCodeMoose, null);
+
+        return huntingClubPermitDTOFactory.getDTO(permit, officialCodeMoose, null);
     }
 }

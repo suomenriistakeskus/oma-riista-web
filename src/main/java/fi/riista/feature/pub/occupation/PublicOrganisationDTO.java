@@ -2,9 +2,8 @@ package fi.riista.feature.pub.occupation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.address.AddressDTO;
 
 import java.util.List;
 
@@ -33,11 +32,16 @@ public class PublicOrganisationDTO {
     @JsonInclude(Include.NON_NULL)
     private List<PublicOrganisationDTO> subOrganisations;
 
+
+    private Double latitude;
+
+    private Double longitude;
+
     public long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(final long id) {
         this.id = id;
     }
 
@@ -45,7 +49,7 @@ public class PublicOrganisationDTO {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -53,7 +57,7 @@ public class PublicOrganisationDTO {
         return organisationType;
     }
 
-    public void setOrganisationType(OrganisationType organisationType) {
+    public void setOrganisationType(final OrganisationType organisationType) {
         this.organisationType = organisationType;
     }
 
@@ -61,7 +65,7 @@ public class PublicOrganisationDTO {
         return officialCode;
     }
 
-    public void setOfficialCode(String officialCode) {
+    public void setOfficialCode(final String officialCode) {
         this.officialCode = officialCode;
     }
 
@@ -69,7 +73,7 @@ public class PublicOrganisationDTO {
         return rhyNumberString;
     }
 
-    public void setRhyNumberString(String rhyNumber) {
+    public void setRhyNumberString(final String rhyNumber) {
         this.rhyNumberString = rhyNumber;
     }
 
@@ -77,7 +81,7 @@ public class PublicOrganisationDTO {
         return address;
     }
 
-    public void setAddress(AddressDTO address) {
+    public void setAddress(final AddressDTO address) {
         this.address = address;
     }
 
@@ -85,7 +89,7 @@ public class PublicOrganisationDTO {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
+    public void setPhoneNumber(final String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
@@ -93,7 +97,7 @@ public class PublicOrganisationDTO {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(final String email) {
         this.email = email;
     }
 
@@ -101,7 +105,23 @@ public class PublicOrganisationDTO {
         return subOrganisations;
     }
 
-    public void setSubOrganisations(List<PublicOrganisationDTO> subOrganisations) {
+    public void setSubOrganisations(final List<PublicOrganisationDTO> subOrganisations) {
         this.subOrganisations = subOrganisations;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(final double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(final double longitude) {
+        this.longitude = longitude;
     }
 }

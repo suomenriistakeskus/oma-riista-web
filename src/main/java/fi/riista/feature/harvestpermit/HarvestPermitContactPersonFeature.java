@@ -57,13 +57,22 @@ public class HarvestPermitContactPersonFeature {
 
         for (final HarvestPermitContactPersonDTO cp : contactPersons) {
             // dto:s contact person hunter number can be empty if the person is same as original contact person
+            // or if moderator is adding by ssn
             if (StringUtils.isNotBlank(cp.getHunterNumber())) {
-                personRepository.findByHunterNumber(cp.getHunterNumber()).ifPresent(p -> {
-                    if (!permit.getOriginalContactPerson().equals(p)) {
-                        permit.getContactPersons().add(new HarvestPermitContactPerson(permit, p));
-                    }
+                personRepository.findFinnishPersonByHunterNumber(cp.getHunterNumber()).ifPresent(p -> {
+                    addContactPerson(permit, p);
                 });
+            } else if (activeUserService.isModeratorOrAdmin()) {
+                addContactPerson(permit, personRepository.getOne(cp.getId()));
+            } else {
+                // should not happen
             }
+        }
+    }
+
+    private static void addContactPerson(final HarvestPermit permit, final Person p) {
+        if (!permit.getOriginalContactPerson().equals(p)) {
+            permit.getContactPersons().add(new HarvestPermitContactPerson(permit, p));
         }
     }
 }

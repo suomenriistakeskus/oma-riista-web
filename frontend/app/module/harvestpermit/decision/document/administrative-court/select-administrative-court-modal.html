@@ -1,0 +1,34 @@
+<form name="form" role="form" class="form" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="harvestpermit.decision.selectAdministrativeCourt"></h3>
+    </div>
+
+    <div class="modal-body">
+        <table class="table table-striped">
+            <tr ng-repeat="court in $ctrl.courts">
+                <td>
+                    <label>
+                        <input name="administrativeCourt" type="radio"
+                               required
+                               ng-model="$ctrl.selectedCourt"
+                               ng-value="court">
+                        <span ng-bind-html="court"></span>
+                    </label>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

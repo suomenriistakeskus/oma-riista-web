@@ -91,7 +91,7 @@
                         </div>
 
                         <div>
-                            <span ng-bind="::(entry.gameSpecies.name | rI18nNameFilter)"></span>
+                            <span ng-bind="::(entry.gameSpeciesCode | translateSpeciesCode)"></span>
                             <span class="glyphicon glyphicon-asterisk text-danger" ng-hide="entry.huntingDayId"></span>
                             <span class="glyphicon glyphicon-briefcase text-warning" ng-show="entry.moderatorOverride"
                                   uib-tooltip="{{ 'gamediary.moderatorOverride' | translate }}" tooltip-append-to-body></span>

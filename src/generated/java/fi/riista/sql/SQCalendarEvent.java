@@ -49,6 +49,8 @@ public class SQCalendarEvent extends RelationalPathSpatial<SQCalendarEvent> {
 
     public final TimePath<java.sql.Time> endTime = createTime("endTime", java.sql.Time.class);
 
+    public final BooleanPath excludedFromStatistics = createBoolean("excludedFromStatistics");
+
     public final DateTimePath<java.sql.Timestamp> modificationTime = createDateTime("modificationTime", java.sql.Timestamp.class);
 
     public final NumberPath<Long> modifiedByUserId = createNumber("modifiedByUserId", Long.class);
@@ -56,6 +58,10 @@ public class SQCalendarEvent extends RelationalPathSpatial<SQCalendarEvent> {
     public final StringPath name = createString("name");
 
     public final NumberPath<Long> organisationId = createNumber("organisationId", Long.class);
+
+    public final NumberPath<Integer> participants = createNumber("participants", Integer.class);
+
+    public final BooleanPath publicVisibility = createBoolean("publicVisibility");
 
     public final NumberPath<Long> venueId = createNumber("venueId", Long.class);
 
@@ -66,7 +72,10 @@ public class SQCalendarEvent extends RelationalPathSpatial<SQCalendarEvent> {
     public final com.querydsl.sql.ForeignKey<SQVenue> calendarEventVenueFk = createForeignKey(venueId, "venue_id");
 
     public final com.querydsl.sql.ForeignKey<SQCalendarEventType> calendarEventTypeFk = createForeignKey(calendarEventType, "name");
+
     public final com.querydsl.sql.ForeignKey<SQShootingTestEvent> _shootingTestEventCalendarEventFk = createInvForeignKey(calendarEventId, "calendar_event_id");
+
+    public final com.querydsl.sql.ForeignKey<SQAdditionalCalendarEvent> _additionalCalendarEventCalendarEventFk = createInvForeignKey(calendarEventId, "calendar_event_id");
 
     public SQCalendarEvent(String variable) {
         super(SQCalendarEvent.class, forVariable(variable), "public", "calendar_event");
@@ -105,10 +114,13 @@ public class SQCalendarEvent extends RelationalPathSpatial<SQCalendarEvent> {
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
         addMetadata(description, ColumnMetadata.named("description").withIndex(14).ofType(Types.VARCHAR).withSize(2147483647));
         addMetadata(endTime, ColumnMetadata.named("end_time").withIndex(11).ofType(Types.TIME).withSize(15).withDigits(6));
+        addMetadata(excludedFromStatistics, ColumnMetadata.named("excluded_from_statistics").withIndex(18).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
         addMetadata(name, ColumnMetadata.named("name").withIndex(13).ofType(Types.VARCHAR).withSize(255));
         addMetadata(organisationId, ColumnMetadata.named("organisation_id").withIndex(15).ofType(Types.BIGINT).withSize(19).notNull());
+        addMetadata(participants, ColumnMetadata.named("participants").withIndex(19).ofType(Types.INTEGER).withSize(10));
+        addMetadata(publicVisibility, ColumnMetadata.named("public_visibility").withIndex(17).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(venueId, ColumnMetadata.named("venue_id").withIndex(16).ofType(Types.BIGINT).withSize(19).notNull());
     }
 

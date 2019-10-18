@@ -46,13 +46,20 @@
                 $ctrl.$onInit = function () {
                     var fromOrganisationType = $ctrl.fromOrganisation.organisationType;
 
-                    $ctrl.canSend = ActiveRoleService.isClubContact() && fromOrganisationType === 'CLUB' ||
-                        ActiveRoleService.isCoordinator() && fromOrganisationType === 'RHY' ||
-                        ActiveRoleService.isModerator() && fromOrganisationType === 'RK';
+                    var fromClub = fromOrganisationType === 'CLUB';
+                    var fromRhy = fromOrganisationType === 'RHY';
+                    var fromRk = fromOrganisationType === 'RK';
+
+                    $ctrl.canSend = ActiveRoleService.isClubContact() && fromClub ||
+                        ActiveRoleService.isCoordinator() && fromRhy ||
+                        ActiveRoleService.isModerator() && (fromRk || fromRhy);
                 };
 
                 $ctrl.openSendModal = function () {
-                    AnnouncementFormModal.openModal($ctrl.fromOrganisation, {}).then(function () {
+                    AnnouncementFormModal.openModal($ctrl.fromOrganisation, {
+                        visibleToAll: false,
+                        visibleToRhyMembers: false
+                    }).then(function () {
                         $state.reload();
                     });
                 };
@@ -62,8 +69,7 @@
         .component('announcementList', {
             templateUrl: 'announcements/list.html',
             bindings: {
-                organisation: '<',
-                filter: '<'
+                organisation: '<'
             },
             controller: function (Announcements) {
                 var $ctrl = this;
@@ -72,7 +78,6 @@
                     Announcements.query({
                         organisationType: $ctrl.organisation.organisationType,
                         officialCode: $ctrl.organisation.officialCode,
-                        direction: $ctrl.filter || 'RECEIVED',
                         page: page || 0,
                         size: 10,
                         sort: 'id,DESC'
@@ -96,20 +101,23 @@
             var translateFilter = $filter('translate');
 
             return function (announcement) {
-                if (!announcement || !announcement.fromOrganisation) {
-                    return '';
+                if (announcement && announcement.fromOrganisation && announcement.senderType) {
+                    return getName(announcement.fromOrganisation, announcement.senderType);
                 }
 
-                var result = '';
-                var organisationType = announcement.fromOrganisation.organisationType;
-
-                if (organisationType === 'CLUB' || organisationType === 'RHY') {
-                    result += translateFilter('announcements.senderType.' + announcement.senderType);
-                    result += ' - ';
-                }
-
-                return result + rI18nNameFilter(announcement.fromOrganisation.name);
+                return '';
             };
+
+            function getName(fromOrganisation, senderType) {
+                var organisationName = rI18nNameFilter(fromOrganisation.name);
+                var organisationType = fromOrganisation.organisationType;
+
+                if (organisationType === 'RK' || organisationType === 'RHY' && senderType === 'RIISTAKESKUS') {
+                    return organisationName;
+                }
+
+                return translateFilter('announcements.senderType.' + senderType) + ' - ' + organisationName;
+            }
         })
 
         .component('announcementListItem', {
@@ -190,101 +198,97 @@
                 }).result;
             };
 
-            function ModalController($uibModalInstance, $q, TranslatedBlockUI,
+            function ModalController($uibModalInstance, $q, TranslatedBlockUI, AvailableRoleService, ModeratorPrivileges,
                                      announcement, fromOrganisation, occupationTypeChoices) {
 
-                var $modalCtrl = this;
+                var $ctrl = this;
 
-                $modalCtrl.adminView = ActiveRoleService.isAdmin();
-                $modalCtrl.fromOrganisation = fromOrganisation;
-                $modalCtrl.announcement = announcement;
-                $modalCtrl.availableChoices = [];
-                $modalCtrl.selectedOrganisations = announcement.subscriberOrganisations || [];
-                $modalCtrl.showOrganisationSelect = function () {
-                    return $modalCtrl.fromOrganisation.organisationType === 'RK';
-                };
+                $ctrl.fromOrganisation = fromOrganisation;
+                $ctrl.announcement = announcement;
+                $ctrl.availableChoices = [];
+                $ctrl.selectedOrganisations = announcement.subscriberOrganisations || [];
 
-                $modalCtrl.visibleToAllChanged = function () {
-                    if ($modalCtrl.announcement.visibleToAll) {
-                        $modalCtrl.selectedOrganisations = [];
-                        $modalCtrl.announcement.occupationTypes = [];
-                        updateOccupationTypeChoices();
-                    }
-                };
+                var fromRiistakeskus = $ctrl.fromOrganisation.organisationType === 'RK';
+
+                $ctrl.showOrganisationSelect = fromRiistakeskus;
+                $ctrl.showVisibleToAllOption = fromRiistakeskus && (ActiveRoleService.isAdmin() ||
+                    ActiveRoleService.isPrivilegedModerator(ModeratorPrivileges.bulkMessagePrivilege));
+                $ctrl.showVisibleToRhyMembersOption = $ctrl.fromOrganisation.organisationType === 'RHY';
 
                 function updateOccupationTypeChoices() {
-                    $modalCtrl.occupationTypeChoices = _.filter(occupationTypeChoices, function (choice) {
-                        return !_.includes($modalCtrl.announcement.occupationTypes, choice.key);
+                    $ctrl.occupationTypeChoices = _.filter(occupationTypeChoices, function (choice) {
+                        return !_.includes($ctrl.announcement.occupationTypes, choice.key);
                     });
                 }
 
                 updateOccupationTypeChoices();
 
-                $modalCtrl.addOccupationType = function (occupationType) {
+                $ctrl.addOccupationType = function (occupationType) {
                     if (!occupationType) {
                         return;
                     }
 
-                    var result = $modalCtrl.announcement.occupationTypes || [];
+                    var result = $ctrl.announcement.occupationTypes || [];
 
-                    if (!_.contains(result, occupationType)) {
+                    if (!_.includes(result, occupationType)) {
                         result.push(occupationType);
                     }
 
-                    $modalCtrl.announcement.occupationTypes = result;
+                    $ctrl.announcement.occupationTypes = result;
                     updateOccupationTypeChoices();
                 };
 
-                $modalCtrl.addOrganisation = function (rka, rhy) {
+                $ctrl.addOrganisation = function (rka, rhy) {
                     if (rhy) {
-                        $modalCtrl.selectedOrganisations.push({
+                        $ctrl.selectedOrganisations.push({
                             organisationType: 'RHY',
                             officialCode: rhy
                         });
                     } else if (rka) {
-                        $modalCtrl.selectedOrganisations.push({
+                        $ctrl.selectedOrganisations.push({
                             organisationType: 'RKA',
                             officialCode: rka
                         });
                     } else {
-                        $modalCtrl.selectedOrganisations.push({
+                        $ctrl.selectedOrganisations.push({
                             organisationType: 'RK',
                             officialCode: 850
                         });
                     }
 
-                    $modalCtrl.selectedOrganisations = _($modalCtrl.selectedOrganisations).uniq(function (o) {
+                    $ctrl.selectedOrganisations = _($ctrl.selectedOrganisations).uniqBy(function (o) {
                         return o.organisationType + ':' + o.officialCode;
                     }).value();
                 };
 
-                $modalCtrl.removeOccupationType = function (occupationType) {
-                    $modalCtrl.announcement.occupationTypes = _.difference($modalCtrl.announcement.occupationTypes, [occupationType]);
+                $ctrl.removeOccupationType = function (occupationType) {
+                    $ctrl.announcement.occupationTypes = _.difference($ctrl.announcement.occupationTypes, [occupationType]);
                     updateOccupationTypeChoices();
                 };
 
-                $modalCtrl.removeOrganisation = function (organisation) {
-                    $modalCtrl.selectedOrganisations = _.difference($modalCtrl.selectedOrganisations, [organisation]);
+                $ctrl.removeOrganisation = function (organisation) {
+                    $ctrl.selectedOrganisations = _.difference($ctrl.selectedOrganisations, [organisation]);
                 };
 
-                $modalCtrl.occupationTypeMissing = function () {
-                    return _.isEmpty($modalCtrl.announcement.occupationTypes);
+                $ctrl.occupationTypeMissing = function () {
+                    return _.isEmpty($ctrl.announcement.occupationTypes);
                 };
 
-                $modalCtrl.organisationMissing = function () {
-                    return $modalCtrl.showOrganisationSelect() && _.isEmpty($modalCtrl.selectedOrganisations);
+                $ctrl.organisationMissing = function () {
+                    return $ctrl.showOrganisationSelect && _.isEmpty($ctrl.selectedOrganisations);
                 };
 
-                $modalCtrl.canNotSubmit = function (form) {
+                $ctrl.canNotSubmit = function (form) {
                     return form.$invalid || !recipientSelected();
                 };
 
                 function recipientSelected() {
-                    return $modalCtrl.announcement.visibleToAll ||
-                        (!$modalCtrl.occupationTypeMissing() && !$modalCtrl.organisationMissing());
+                    return $ctrl.announcement.visibleToAll ||
+                        $ctrl.announcement.visibleToRhyMembers ||
+                        (!$ctrl.occupationTypeMissing() && !$ctrl.organisationMissing());
                 }
 
-                $modalCtrl.submit = function () {
+                $ctrl.submit = function () {
                     if (!recipientSelected()) {
                         return;
                     }
@@ -293,9 +297,14 @@
                         return _.pick(org, ['organisationType', 'officialCode']);
                     }
 
-                    $modalCtrl.announcement.fromOrganisation = pickOrganisation($modalCtrl.fromOrganisation);
-                    $modalCtrl.announcement.subscriberOrganisations = $modalCtrl.showOrganisationSelect()
-                        ? _.map($modalCtrl.selectedOrganisations, pickOrganisation)
+                    if ($ctrl.announcement.visibleToAll || $ctrl.announcement.visibleToRhyMembers) {
+                        $ctrl.selectedOrganisations = [];
+                        $ctrl.announcement.occupationTypes = [];
+                    }
+
+                    $ctrl.announcement.fromOrganisation = pickOrganisation($ctrl.fromOrganisation);
+                    $ctrl.announcement.subscriberOrganisations = $ctrl.showOrganisationSelect
+                        ? _.map($ctrl.selectedOrganisations, pickOrganisation)
                         : [];
 
                     showSendEmailDialog()
@@ -307,7 +316,7 @@
                                 : Announcements.save(announcement).$promise;
                         })
                         .then(function () {
-                            $uibModalInstance.close($modalCtrl.announcement);
+                            $uibModalInstance.close($ctrl.announcement);
                             NotificationService.showDefaultSuccess();
                         }, function () {
                             NotificationService.showDefaultFailure();
@@ -315,13 +324,13 @@
                         .finally(TranslatedBlockUI.stop);
                 };
 
-                $modalCtrl.cancel = function () {
+                $ctrl.cancel = function () {
                     $uibModalInstance.dismiss('cancel');
                 };
 
                 function showSendEmailDialog() {
-                    if ($modalCtrl.fromOrganisation.organisationType !== 'CLUB') {
-                        // Email is disabled
+                    if ($ctrl.announcement.visibleToAll) {
+                        // Email is not supported for sending to all
                         return $q.when(false);
                     }
 

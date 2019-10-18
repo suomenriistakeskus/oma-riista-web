@@ -144,7 +144,7 @@ public class HarvestReportModeratorFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private HarvestReportStateChangeDTO createDto(final Harvest harvest, final HarvestReportState toState, final String reason) {
+    private static HarvestReportStateChangeDTO createDto(final Harvest harvest, final HarvestReportState toState, final String reason) {
         final HarvestReportStateChangeDTO dto = new HarvestReportStateChangeDTO();
         dto.setHarvestId(harvest.getId());
         dto.setRev(harvest.getConsistencyVersion());

@@ -32,8 +32,7 @@
     </div>
 </div>
 
-<form name="allocationForm" novalidate role="form"
-      ng-model-options="{allowInvalid: true}">
+<form name="allocationForm" novalidate role="form">
     <table class="table table-condensed moose-permit-infotable-allocation">
         <thead>
         <tr class="topheader">
@@ -177,83 +176,93 @@
             </td>
         </tr>
 
-        <tr ng-repeat="a in $ctrl.allocations">
-            <td name-translated="a.huntingClubName"></td>
+        <tr ng-repeat="partner in $ctrl.moosePermit.partners track by partner.huntingClubId">
+            <td name-translated="::partner.allocation.huntingClubName"></td>
             <td>
-                <r-with-tooltip bind-content="{{a.total | number}}"
+                <r-with-tooltip bind-content="{{partner.allocation.total | number}}"
                                 tooltip-key="club.permit.allocation.sumOfAllocated.cellTooltip"></r-with-tooltip>
             </td>
             <td class="text-center">
                 <div class="form-group" show-errors="{ trigger: 'keypress' }">
-                    <input type="number" name="adultMales{{$index}}" class="form-control input-sm"
-                           ng-min="0"
-                           ng-max="$ctrl.floor($ctrl.permitUnallocated + a.adultMales)"
-                           ng-model="a.adultMales"
+                    <input type="number" name="adultMales{{$index}}"
+                           class="form-control input-sm no-spinner"
+                           valid-integer
+                           step="1"
+                           min="0"
+                           max="{{$ctrl.getMaxAdultMale(partner)}}"
+                           ng-model="partner.allocation.adultMales"
+                           ng-model-options="{allowInvalid: true}"
                            ng-change="$ctrl.recalculate()">
                 </div>
             </td>
             <td>
                 <div class="form-group" show-errors="{ trigger: 'keypress' }">
-                    <input type="number" name="adultFemales{{$index}}" class="form-control input-sm"
-                           maxlength="3"
-                           ng-min="0"
-                           ng-max="$ctrl.floor($ctrl.permitUnallocated + a.adultFemales)"
-                           ng-model="a.adultFemales"
+                    <input type="number" name="adultFemales{{$index}}"
+                           class="form-control input-sm no-spinner"
+                           valid-integer
+                           step="1"
+                           min="0"
+                           max="{{$ctrl.getMaxAdultFemale(partner)}}"
+                           ng-model="partner.allocation.adultFemales"
+                           ng-model-options="{allowInvalid: true}"
                            ng-change="$ctrl.recalculate()">
                 </div>
             </td>
             <td>
                 <div class="form-group" show-errors="{ trigger: 'keypress' }">
-                    <input type="number" class="form-control input-sm" name="young{{$index}}"
-                           maxlength="3"
-                           ng-min="0"
-                           ng-max="$ctrl.floor($ctrl.permitUnallocated * 2 + a.young)"
-                           ng-model="a.young"
+                    <input type="number" name="young{{$index}}"
+                           class="form-control input-sm no-spinner"
+                           valid-integer
+                           step="1"
+                           min="0"
+                           max="{{$ctrl.getMaxYoung(partner)}}"
+                           ng-model="partner.allocation.young"
+                           ng-model-options="{allowInvalid: true}"
                            ng-change="$ctrl.recalculate()">
                 </div>
             </td>
             <td>
-                <r-with-tooltip content-val="{{$ctrl.countUsedPermitForPartner(a.huntingClubId) | number}}"
+                <r-with-tooltip content-val="{{$ctrl.countUsedPermitForPartner(partner) | number}}"
                                 tooltip-key="club.permit.allocation.usedPermits.cellTooltip"></r-with-tooltip>
             </td>
             <td>
                 <r-with-tooltip
-                        content-val="{{$ctrl.harvestCounts[a.huntingClubId].adultMales+ $ctrl.harvestCounts[a.huntingClubId].adultFemales}}"
+                        content-val="{{partner.harvestCount.adultMales + partner.harvestCount.adultFemales}}"
                         tooltip-key="club.permit.allocation.harvestedSpecimens.aCellTooltip"></r-with-tooltip>
             </td>
             <td>
                 <r-with-tooltip
-                        content-val="{{$ctrl.harvestCounts[a.huntingClubId].adultMales}}"
+                        content-val="{{partner.harvestCount.adultMales}}"
                         tooltip-key="club.permit.allocation.harvestedSpecimens.auCellTooltip"></r-with-tooltip>
             </td>
             <td>
                 <r-with-tooltip
-                        content-val="{{$ctrl.harvestCounts[a.huntingClubId].adultFemales}}"
+                        content-val="{{partner.harvestCount.adultFemales}}"
                         tooltip-key="club.permit.allocation.harvestedSpecimens.anCellTooltip"></r-with-tooltip>
             </td>
             <td>
                 <r-with-tooltip
-                        content-val="{{$ctrl.harvestCounts[a.huntingClubId].youngMales + $ctrl.harvestCounts[a.huntingClubId].youngFemales}}"
+                        content-val="{{partner.harvestCount.youngMales + partner.harvestCount.youngFemales}}"
                         tooltip-key="club.permit.allocation.harvestedSpecimens.vCellTooltip"></r-with-tooltip>
             </td>
             <td>
                 <r-with-tooltip
-                        content-val="{{$ctrl.harvestCounts[a.huntingClubId].youngMales}}"
+                        content-val="{{partner.harvestCount.youngMales}}"
                         tooltip-key="club.permit.allocation.harvestedSpecimens.vuCellTooltip"></r-with-tooltip>
             </td>
             <td>
                 <r-with-tooltip
-                        content-val="{{$ctrl.harvestCounts[a.huntingClubId].youngFemales}}"
+                        content-val="{{partner.harvestCount.youngFemales}}"
                         tooltip-key="club.permit.allocation.harvestedSpecimens.vnCellTooltip"></r-with-tooltip>
             </td>
             <td>
                 <r-with-tooltip
-                        content-val="{{$ctrl.harvestCounts[a.huntingClubId].adultsNotEdible}}"
+                        content-val="{{partner.harvestCount.adultsNotEdible}}"
                         tooltip-key="club.permit.allocation.notEdible.aCellTooltip"></r-with-tooltip>
             </td>
             <td>
                 <r-with-tooltip
-                        content-val="{{$ctrl.harvestCounts[a.huntingClubId].youngsNotEdible}}"
+                        content-val="{{partner.harvestCount.youngsNotEdible}}"
                         tooltip-key="club.permit.allocation.notEdible.vCellTooltip"></r-with-tooltip>
             </td>
         </tr>

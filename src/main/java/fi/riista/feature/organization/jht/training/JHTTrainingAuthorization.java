@@ -25,7 +25,7 @@ public class JHTTrainingAuthorization extends AbstractEntityAuthorization<JHTTra
     private UserAuthorizationHelper userAuthorizationHelper;
 
     public JHTTrainingAuthorization() {
-        allow(EntityPermission.CREATE, TOIMINNANOHJAAJA, ROLE_MODERATOR, SystemUser.Role.ROLE_ADMIN);
+        allow(EntityPermission.CREATE, ROLE_MODERATOR, SystemUser.Role.ROLE_ADMIN);
         allow(EntityPermission.DELETE, ROLE_MODERATOR, SystemUser.Role.ROLE_ADMIN);
         allow(Permission.PROPOSE, TOIMINNANOHJAAJA);
     }

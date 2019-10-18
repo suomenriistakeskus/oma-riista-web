@@ -1,7 +1,8 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import fi.riista.util.NumberUtils;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -12,25 +13,29 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
-public class HunterExamStatistics implements AnnualStatisticsFieldsetStatus, Serializable {
+public class HunterExamStatistics
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<HunterExamStatistics>,
+        Serializable {
 
     public static final HunterExamStatistics reduce(@Nullable final HunterExamStatistics a,
                                                     @Nullable final HunterExamStatistics b) {
 
         final HunterExamStatistics result = new HunterExamStatistics();
-        result.hunterExamEvents = nullsafeSumAsInt(a, b, HunterExamStatistics::getHunterExamEvents);
-        result.passedHunterExams = nullsafeSumAsInt(a, b, HunterExamStatistics::getPassedHunterExams);
-        result.failedHunterExams = nullsafeSumAsInt(a, b, HunterExamStatistics::getFailedHunterExams);
-        result.hunterExamOfficials = nullsafeSumAsInt(a, b, HunterExamStatistics::getHunterExamOfficials);
+        result.hunterExamEvents = nullableIntSum(a, b, HunterExamStatistics::getHunterExamEvents);
+        result.passedHunterExams = nullableIntSum(a, b, HunterExamStatistics::getPassedHunterExams);
+        result.failedHunterExams = nullableIntSum(a, b, HunterExamStatistics::getFailedHunterExams);
+        result.hunterExamOfficials = nullableIntSum(a, b, HunterExamStatistics::getHunterExamOfficials);
         result.hunterExamEventsLastOverridden = nullsafeMax(a, b, HunterExamStatistics::getHunterExamEventsLastOverridden);
         result.lastModified = nullsafeMax(a, b, HunterExamStatistics::getLastModified);
         return result;
@@ -79,15 +84,36 @@ public class HunterExamStatistics implements AnnualStatisticsFieldsetStatus, Ser
     public HunterExamStatistics() {
     }
 
-    public HunterExamStatistics(@Nonnull final HunterExamStatistics that) {
-        requireNonNull(that);
+    public HunterExamStatistics makeCopy() {
+        final HunterExamStatistics copy = new HunterExamStatistics();
+        copy.hunterExamEvents = this.hunterExamEvents;
+        copy.hunterExamEventsLastOverridden = this.hunterExamEventsLastOverridden;
+        copy.passedHunterExams = this.passedHunterExams;
+        copy.failedHunterExams = this.failedHunterExams;
+        copy.hunterExamOfficials = this.hunterExamOfficials;
+        copy.lastModified = this.lastModified;
+        return copy;
+    }
 
-        this.hunterExamEvents = that.hunterExamEvents;
-        this.hunterExamEventsLastOverridden = that.hunterExamEventsLastOverridden;
+    @Override
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.HUNTER_EXAMS;
+    }
+
+    @Override
+    public boolean isEqualTo(@Nonnull final HunterExamStatistics that) {
+        // Includes only fields manually updateable by coordinator.
+
+        return Objects.equals(passedHunterExams, that.passedHunterExams) &&
+                Objects.equals(failedHunterExams, that.failedHunterExams);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final HunterExamStatistics that) {
+        // Includes only fields manually updateable by coordinator.
+
         this.passedHunterExams = that.passedHunterExams;
         this.failedHunterExams = that.failedHunterExams;
-        this.hunterExamOfficials = that.hunterExamOfficials;
-        this.lastModified = that.lastModified;
     }
 
     @Override
@@ -104,15 +130,17 @@ public class HunterExamStatistics implements AnnualStatisticsFieldsetStatus, Ser
         return this.hunterExamEventsLastOverridden != null;
     }
 
-    public void setHunterExamEventsWithModeratorOverride(@Nonnull final Integer hunterExamEvents,
-                                                         @Nonnull final DateTime overriddenAt) {
+    public void setHunterExamEventsOverridden(@Nonnull final Integer moderatorOverriddenEvents) {
+        this.hunterExamEvents = requireNonNull(moderatorOverriddenEvents);
 
-        this.hunterExamEvents = requireNonNull(hunterExamEvents, "hunterExamEvents is null");
-        this.hunterExamEventsLastOverridden = requireNonNull(overriddenAt, "overriddenAt is null");
+        final DateTime now = DateUtil.now();
+        this.hunterExamEventsLastOverridden = now;
+        this.lastModified = now;
     }
 
-    public int countAllAttempts() {
-        return NumberUtils.getIntValueOrZero(passedHunterExams) + NumberUtils.getIntValueOrZero(failedHunterExams);
+    @Nullable
+    public Integer countAllAttempts() {
+        return nullableIntSum(passedHunterExams, failedHunterExams);
     }
 
     // Accessors -->
@@ -153,10 +181,12 @@ public class HunterExamStatistics implements AnnualStatisticsFieldsetStatus, Ser
         this.hunterExamOfficials = hunterExamOfficials;
     }
 
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

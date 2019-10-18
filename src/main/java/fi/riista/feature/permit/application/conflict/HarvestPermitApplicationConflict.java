@@ -21,6 +21,10 @@ public class HarvestPermitApplicationConflict extends LifecycleEntity<Long> {
     private Long id;
 
     @NotNull
+    @Column(nullable = false)
+    private Long batchId;
+
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private HarvestPermitApplication firstApplication;
 
@@ -48,15 +52,25 @@ public class HarvestPermitApplicationConflict extends LifecycleEntity<Long> {
         this.id = id;
     }
 
-    public HarvestPermitApplicationConflict() {
+    HarvestPermitApplicationConflict() {
     }
 
-    public HarvestPermitApplicationConflict(final HarvestPermitApplication firstApplication,
+    public HarvestPermitApplicationConflict(final long batchId,
+                                            final HarvestPermitApplication firstApplication,
                                             final HarvestPermitApplication secondApplication,
                                             final long processingSeconds) {
+        this.batchId = batchId;
         this.firstApplication = firstApplication;
         this.secondApplication = secondApplication;
         this.processingSeconds = processingSeconds;
+    }
+
+    public Long getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(final Long batchId) {
+        this.batchId = batchId;
     }
 
     public HarvestPermitApplication getFirstApplication() {

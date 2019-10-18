@@ -21,11 +21,10 @@
             <p class="text-uppercase" translate="payment.amount"></p>
 
             <p style="font-size: 36px; line-height: 32px; font-weight: 300; margin-bottom: 24px">
-                <span ng-bind="::p.amount"></span> &euro;
+                <span ng-bind="::p.amount | currency: '&euro;' : 2"></span>
             </p>
 
-            <button class="btn btn-primary"
-                    ng-click="$ctrl.startPayment(p)">
+            <button class="btn btn-primary" ng-click="$ctrl.startPayment(p)">
                 <span class="fa fa-credit-card"></span>
                 &nbsp;
                 <span class="text-uppercase" translate="payment.payButton"></span>

@@ -3,7 +3,6 @@ package fi.riista.feature.account.mobile;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
-import fi.riista.feature.gamediary.mobile.MobileOccupationDTOFactory;
 import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.person.Person;

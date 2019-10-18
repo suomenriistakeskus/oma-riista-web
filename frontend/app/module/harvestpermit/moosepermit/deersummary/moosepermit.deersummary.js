@@ -3,8 +3,9 @@
 angular.module('app.moosepermit.deerhuntingsummary', [])
 
     .factory('DeerHuntingSummary', function ($resource) {
-        return $resource('api/v1/deersummary/:id', { id: "@id" }, {
-            'findByClubIdAndSpeciesAmountId': {
+        return $resource('api/v1/deersummary/:id', {id: "@id"}, {
+            update: {method: 'PUT'},
+            findByClubIdAndSpeciesAmountId: {
                 method: 'GET',
                 url: 'api/v1/deersummary/club/:clubId/speciesamount/:speciesAmountId',
                 params: {
@@ -12,7 +13,7 @@ angular.module('app.moosepermit.deerhuntingsummary', [])
                     speciesAmountId: "@speciesAmountId"
                 }
             },
-            'getEditState': {
+            getEditState: {
                 method: 'GET',
                 url: 'api/v1/deersummary/editstate/club/:clubId/speciesamount/:speciesAmountId',
                 params: {
@@ -20,94 +21,137 @@ angular.module('app.moosepermit.deerhuntingsummary', [])
                     speciesAmountId: "@speciesAmountId"
                 }
             },
-            'update': { method: 'PUT' },
-            'markUnfinished': {
+            markUnfinished: {
                 method: 'POST',
                 url: 'api/v1/deersummary/:id/markunfinished',
-                params: { id: "@id" }
-            },
+                params: {id: "@id"}
+            }
         });
     })
 
-    .service('DeerHuntingSummaryService', function ($q, DeerHuntingSummary, FormSidebarService, GameDiaryParameters) {
-
-        var modalOptions = {
-            controller: 'DeerHuntingSummaryFormController',
-            templateUrl: 'harvestpermit/moosepermit/deersummary/deer-hunting-summary.html',
-            largeDialog: true,
-            resolve: {
-                // Nothing to resolve. Will break if resolve object removed!
-            }
-        };
-
-        function parametersToResolve(parameters) {
-            return {
-                deerHuntingSummary: _.constant(parameters.deerHuntingSummary),
-                speciesAmount: _.constant(parameters.speciesAmount),
-                formEditingEnabled: _.constant(!parameters.editState.isLocked),
-                getGameSpeciesName: function () {
-                    return GameDiaryParameters.query().$promise.then(function (parameters) {
-                        return parameters.$getGameName;
-                    });
-                }
-            };
-        }
-
-        var formSidebar = FormSidebarService.create(modalOptions, DeerHuntingSummary, parametersToResolve);
-
+    .service('DeerHuntingSummaryService', function ($q, $uibModal, NotificationService,
+                                                    DeerHuntingSummary, GameDiaryParameters) {
         this.editHuntingSummary = function (clubId, speciesAmount) {
-            var params = {
-                clubId: clubId,
-                speciesAmountId: speciesAmount.id
-            };
+            var modalInstance = $uibModal.open({
+                templateUrl: 'harvestpermit/moosepermit/deersummary/deer-hunting-summary.html',
+                size: 'lg',
+                controllerAs: '$ctrl',
+                controller: 'DeerHuntingSummaryFormController',
+                resolve: {
+                    speciesAmount: _.constant(speciesAmount),
+                    getGameSpeciesName: function () {
+                        return GameDiaryParameters.query().$promise.then(function (parameters) {
+                            return parameters.$getGameName;
+                        });
+                    },
+                    deerHuntingSummary: function () {
+                        return DeerHuntingSummary.findByClubIdAndSpeciesAmountId({
+                            clubId: clubId,
+                            speciesAmountId: speciesAmount.id
+                        }).$promise;
+                    },
+                    formEditingEnabled: function () {
+                        return DeerHuntingSummary.getEditState({
+                            clubId: clubId,
+                            speciesAmountId: speciesAmount.id
+                        }).$promise.then(function (editState) {
+                            return !editState.isLocked;
+                        });
+                    }
+                }
+            });
 
-            return $q.all([
-                DeerHuntingSummary.findByClubIdAndSpeciesAmountId(params).$promise,
-                DeerHuntingSummary.getEditState(params).$promise])
-                .then(function (promises) {
-                    var summary = promises[0];
-                    var editState = promises[1];
+            modalInstance.rendered.then(function () {
+                var nodeList = document.querySelectorAll('.modal');
 
-                    return formSidebar.show({
-                        id: summary.id,
-                        deerHuntingSummary: summary,
-                        speciesAmount: speciesAmount,
-                        editState: editState
-                    });
+                for (var i = 0; i < nodeList.length; i++) {
+                    nodeList[i].scrollTop = 0;
+                }
+            });
+
+            return modalInstance.result.then(function (summary) {
+                var saveMethod = summary.id ? DeerHuntingSummary.update : DeerHuntingSummary.save;
+
+                return saveMethod(summary).$promise.then(function (result) {
+                    NotificationService.showDefaultSuccess();
+                    return result;
+
+                }, function (err) {
+                    NotificationService.showDefaultFailure();
+                    return $q.reject(err);
                 });
+            });
         };
     })
 
-    .controller('DeerHuntingSummaryFormController', function ($scope, DeerHuntingSummary, Helpers, deerHuntingSummary,
+    .controller('DeerHuntingSummaryFormController', function ($uibModalInstance, $scope,
+                                                              DeerHuntingSummary, Helpers, deerHuntingSummary,
                                                               speciesAmount, formEditingEnabled, getGameSpeciesName) {
-        $scope.summary = deerHuntingSummary;
-        $scope.speciesAmount = speciesAmount;
-        $scope.markedUnfinished = false;
+        var $ctrl = this;
 
-        $scope.viewState = {
-            huntingEndDate: $scope.summary.huntingEndDate
+        $ctrl.$onInit = function () {
+            $ctrl.summary = deerHuntingSummary;
+            $ctrl.speciesAmount = speciesAmount;
+            $ctrl.markedUnfinished = false;
+            $ctrl.huntingEndDate = $ctrl.summary.huntingEndDate;
         };
 
-        $scope.getGameSpeciesName = function () {
-            return getGameSpeciesName($scope.summary.gameSpeciesCode);
+        $ctrl.cancel = function () {
+            $uibModalInstance.dismiss('cancel');
         };
 
-        $scope.showPermitAreaSize = function () {
-            var summary = $scope.summary;
+        $ctrl.submit = function (form) {
+            prepareForSubmit(form, $ctrl.isValid);
+
+            $uibModalInstance.close($ctrl.summary);
+        };
+
+        $ctrl.doFinalSubmit = function (form) {
+            prepareForSubmit(form, $ctrl.isValidForFinalSubmit);
+
+            $ctrl.summary.huntingFinished = true;
+
+            $uibModalInstance.close($ctrl.summary);
+        };
+
+        $ctrl.markUnfinished = function () {
+            var summary = $ctrl.summary;
+
+            DeerHuntingSummary.markUnfinished({id: summary.id}).$promise.then(function (deerHuntingSummary) {
+                $ctrl.summary = deerHuntingSummary;
+                $ctrl.markedUnfinished = true;
+            });
+        };
+
+        $ctrl.isValid = function (form) {
+            return form.$valid;
+        };
+
+        $ctrl.isValidForFinalSubmit = function (form) {
+            return $ctrl.isValid(form) && allRequiredFieldsPopulated();
+        };
+
+        $ctrl.getGameSpeciesName = function () {
+            return getGameSpeciesName($ctrl.summary.gameSpeciesCode);
+        };
+
+        $ctrl.showAlertForPermitAreaSize = function () {
+            var summary = $ctrl.summary;
             var totalHuntingArea = summary.totalHuntingArea;
+
             return !_.isFinite(totalHuntingArea) || totalHuntingArea > summary.permitAreaSize;
         };
 
-        $scope.isTotalHuntingAreaRequired = function () {
-            return !_.isFinite($scope.summary.effectiveHuntingArea);
+        $ctrl.isTotalHuntingAreaRequired = function () {
+            return !_.isFinite($ctrl.summary.effectiveHuntingArea);
         };
 
-        $scope.isEffectiveHuntingAreaRequired = function () {
-            return !_.isFinite($scope.summary.totalHuntingArea);
+        $ctrl.isEffectiveHuntingAreaRequired = function () {
+            return !_.isFinite($ctrl.summary.totalHuntingArea);
         };
 
-        $scope.isRemainingPopulationForTotalAreaRequired = function () {
-            var summary = $scope.summary;
+        $ctrl.isRemainingPopulationForTotalAreaRequired = function () {
+            var summary = $ctrl.summary;
 
             return !_.isFinite(summary.effectiveHuntingArea) ||
                 !_.isFinite(summary.remainingPopulationInEffectiveArea) &&
@@ -115,8 +159,8 @@ angular.module('app.moosepermit.deerhuntingsummary', [])
                 _.isFinite(summary.effectiveHuntingArea);
         };
 
-        $scope.isRemainingPopulationForEffectiveAreaRequired = function () {
-            var summary = $scope.summary;
+        $ctrl.isRemainingPopulationForEffectiveAreaRequired = function () {
+            var summary = $ctrl.summary;
 
             return !_.isFinite(summary.totalHuntingArea) ||
                 !_.isFinite(summary.remainingPopulationInTotalArea) &&
@@ -124,32 +168,28 @@ angular.module('app.moosepermit.deerhuntingsummary', [])
                 _.isFinite(summary.effectiveHuntingArea);
         };
 
-        $scope.getMaxForEffectiveHuntingArea = function () {
-            return $scope.summary.totalHuntingArea || $scope.summary.permitAreaSize;
+        $ctrl.getMaxForEffectiveHuntingArea = function () {
+            return $ctrl.summary.totalHuntingArea || $ctrl.summary.permitAreaSize;
         };
 
-        $scope.getMaxForRemainingPopulationInEffectiveArea = function () {
-            return $scope.summary.remainingPopulationInTotalArea || 9999;
+        $ctrl.getMaxForRemainingPopulationInEffectiveArea = function () {
+            return $ctrl.summary.remainingPopulationInTotalArea || 9999;
         };
 
-        $scope.isHuntingFinished = function () {
-            return !!$scope.summary.huntingFinished;
+        $ctrl.isHuntingFinished = function () {
+            return !!$ctrl.summary.huntingFinished;
         };
 
-        $scope.isHuntingFinishedOrLocked = function () {
-            return $scope.isHuntingFinished() || !formEditingEnabled;
+        $ctrl.isHuntingFinishedOrLocked = function () {
+            return $ctrl.isHuntingFinished() || !formEditingEnabled;
         };
 
-        $scope.isHuntingFinishedAndNotLocked = function () {
-            return $scope.isHuntingFinished() && formEditingEnabled;
+        $ctrl.isHuntingFinishedAndNotLocked = function () {
+            return $ctrl.isHuntingFinished() && formEditingEnabled;
         };
 
-        $scope.isValid = function (form) {
-            return form.$valid;
-        };
-
-        var allRequiredFieldsPopulated = function () {
-            var summary = $scope.summary;
+        function allRequiredFieldsPopulated() {
+            var summary = $ctrl.summary;
 
             var isDefined = function (value) {
                 return angular.isDefined(value) && value !== null;
@@ -157,49 +197,19 @@ angular.module('app.moosepermit.deerhuntingsummary', [])
 
             var isHuntingAreaAndRemainingPopulationDefined = function () {
                 return isDefined(summary.totalHuntingArea) && isDefined(summary.remainingPopulationInTotalArea) ||
-                       isDefined(summary.effectiveHuntingArea) && isDefined(summary.remainingPopulationInEffectiveArea);
+                    isDefined(summary.effectiveHuntingArea) && isDefined(summary.remainingPopulationInEffectiveArea);
             };
 
-            return $scope.viewState.huntingEndDate && isHuntingAreaAndRemainingPopulationDefined();
-        };
+            return $ctrl.huntingEndDate && isHuntingAreaAndRemainingPopulationDefined();
+        }
 
-        $scope.isValidForFinalSubmit = function (form) {
-            return $scope.isValid(form) && allRequiredFieldsPopulated();
-        };
-
-        var prepareForSubmit = function (form, checkFormValidFn) {
+        function prepareForSubmit(form, checkFormValidFn) {
             $scope.$broadcast('show-errors-check-validity');
 
             if (!checkFormValidFn(form)) {
                 return;
             }
 
-            $scope.summary.huntingEndDate = Helpers.dateToString($scope.viewState.huntingEndDate);
-        };
-
-        $scope.markUnfinished = function () {
-            var summary = $scope.summary;
-
-            DeerHuntingSummary.markUnfinished({ id: summary.id }).$promise
-                .then(function (deerHuntingSummary) {
-                    $scope.summary = deerHuntingSummary;
-                    $scope.markedUnfinished = true;
-                });
-        };
-
-        $scope.submit = function (form) {
-            prepareForSubmit(form, $scope.isValid);
-            $scope.$close($scope.summary);
-        };
-
-        $scope.doFinalSubmit = function (form) {
-            prepareForSubmit(form, $scope.isValidForFinalSubmit);
-            $scope.summary.huntingFinished = true;
-            $scope.$close($scope.summary);
-        };
-
-        $scope.cancel = function () {
-            $scope.$dismiss('cancel');
-        };
-    })
-;
+            $ctrl.summary.huntingEndDate = Helpers.dateToString($ctrl.huntingEndDate);
+        }
+    });

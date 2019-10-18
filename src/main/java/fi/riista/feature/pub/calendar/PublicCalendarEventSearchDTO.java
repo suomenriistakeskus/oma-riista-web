@@ -25,11 +25,16 @@ public class PublicCalendarEventSearchDTO {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate end;
 
+
+    private Integer pageSize;
+
+    private Integer pageNumber;
+
     public String getAreaId() {
         return areaId;
     }
 
-    public void setAreaId(String areaId) {
+    public void setAreaId(final String areaId) {
         this.areaId = areaId;
     }
 
@@ -37,7 +42,7 @@ public class PublicCalendarEventSearchDTO {
         return rhyId;
     }
 
-    public void setRhyId(String rhyId) {
+    public void setRhyId(final String rhyId) {
         this.rhyId = rhyId;
     }
 
@@ -45,7 +50,7 @@ public class PublicCalendarEventSearchDTO {
         return calendarEventType;
     }
 
-    public void setCalendarEventType(CalendarEventType calendarEventType) {
+    public void setCalendarEventType(final CalendarEventType calendarEventType) {
         this.calendarEventType = calendarEventType;
     }
 
@@ -53,7 +58,7 @@ public class PublicCalendarEventSearchDTO {
         return begin;
     }
 
-    public void setBegin(LocalDate begin) {
+    public void setBegin(final LocalDate begin) {
         this.begin = begin;
     }
 
@@ -61,18 +66,37 @@ public class PublicCalendarEventSearchDTO {
         return end;
     }
 
-    public void setEnd(LocalDate end) {
+    public void setEnd(final LocalDate end) {
         this.end = end;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(final Integer pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public Integer getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(final Integer pageNumber) {
+        this.pageNumber = pageNumber;
     }
 
     @Override
     public String toString() {
-        return "CalendarEventSearchParams{" +
-                "areaId=" + areaId +
-                ", rhyId=" + rhyId +
+        return "PublicCalendarEventSearchDTO{" +
+                "areaId='" + areaId + '\'' +
+                ", rhyId='" + rhyId + '\'' +
                 ", calendarEventType=" + calendarEventType +
                 ", begin=" + begin +
                 ", end=" + end +
+                ", pageSize=" + pageSize +
+                ", pageNumber=" + pageNumber +
                 '}';
     }
+
 }

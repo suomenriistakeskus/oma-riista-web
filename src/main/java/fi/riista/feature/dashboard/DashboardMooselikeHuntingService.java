@@ -13,8 +13,8 @@ import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.SQLQueryFactory;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.QGameSpecies;
-import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.sql.SQBasicClubHuntingSummary;
 import fi.riista.sql.SQGameObservation;
 import fi.riista.sql.SQGroupHuntingDay;
@@ -227,13 +227,12 @@ public class DashboardMooselikeHuntingService {
                 "  SELECT \n" +
                 "    hp.harvest_permit_id                                                AS permitId, \n" +
                 "    hpsa.game_species_id                                                AS speciesId, \n" +
-                "    CASE WHEN mhr.moose_harvest_report_id IS NOT NULL THEN 1 ELSE 0 END AS closedReport, \n" +
-                "    CASE WHEN mhr.moderator_override = true THEN 1 ELSE 0 END AS moderatedReport \n" +
+                "    CASE WHEN hpsa.mooselike_hunting_finished IS TRUE THEN 1 ELSE 0 END AS closedReport, \n" +
+                "    CASE WHEN hpsa.hunting_finished_by_moderator IS TRUE THEN 1 ELSE 0 END AS moderatedReport \n" +
                 "  FROM harvest_permit_species_amount hpsa \n" +
                 "  INNER JOIN harvest_permit hp ON hp.harvest_permit_id = hpsa.harvest_permit_id \n" +
-                "  LEFT OUTER JOIN moose_harvest_report mhr ON mhr.species_amount_id = hpsa.harvest_permit_species_amount_id \n" +
                 "  WHERE \n" +
-                "    hp.permit_type_code = '" + HarvestPermit.MOOSELIKE_PERMIT_TYPE + "' \n" +
+                "    hp.permit_type_code = '" + PermitTypeCode.MOOSELIKE + "' \n" +
                 "    AND ( \n" +
                 "      hpsa.begin_date >= :beginDate AND hpsa.end_date <= :endDate \n" +
                 "      OR hpsa.begin_date2 IS NOT NULL AND hpsa.begin_date2 >= :beginDate \n" +

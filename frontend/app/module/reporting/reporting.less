@@ -28,7 +28,7 @@
   }
 }
 
-.loop-moderator-hunting-summary-border-left(@cols; @index: 1) when(@index <= length(@cols)) {
+.loop-moderator-hunting-summary-border-left(@cols; @index: 1) when (@index <= length(@cols)) {
   .loop-moderator-hunting-summary-border-left(@cols; (@index + 1));
 
   @i: extract(@cols, @index);
@@ -106,4 +106,27 @@
 
     margin: 0;
   }
+}
+
+.reporting-applications {
+  td:not(:first-child), th:not(:first-child) {
+    .text-center;
+  }
+  td:nth-child(3n+4) {
+    border-right: solid rgb(211, 211, 211) 1px;
+  }
+  .danger {
+    .r-label-red;
+    font-size: 100%;
+    font-weight: normal;
+  }
+  .warning {
+    .r-label-yellow;
+    font-size: 100%;
+    font-weight: normal;
+  }
+}
+
+.reporting-payment-control-title {
+  .h3;
 }

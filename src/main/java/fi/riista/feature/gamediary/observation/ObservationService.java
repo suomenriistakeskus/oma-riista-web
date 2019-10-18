@@ -72,7 +72,14 @@ public class ObservationService {
         observation.setMooselikeUnknownSpecimenAmount(dto.getMooselikeUnknownSpecimenAmount());
 
         if (observation.hasMinimumSetOfNonnullAmountsCommonToAllMooselikeSpecies()) {
-            observation.setAmountToSumOfMooselikeAmounts();
+            final int sumOfMooselikeAmounts = observation.getSumOfMooselikeAmounts();
+
+            // Do not use ternary operator to avoid NPE
+            if (sumOfMooselikeAmounts > 0) {
+                observation.setAmount(sumOfMooselikeAmounts);
+            } else {
+                observation.setAmount(dto.getAmount());
+            }
         } else {
             observation.setAmount(dto.getAmount());
         }

@@ -107,23 +107,23 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
 
     public final com.querydsl.sql.PrimaryKey<SQOrganisation> organisationPkey = createPrimaryKey(organisationId);
 
-    public final com.querydsl.sql.ForeignKey<SQHuntingClubSubtype> clubTypeFk = createForeignKey(subtype, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQAddress> organisationAddressFk = createForeignKey(addressId, "address_id");
-
-    public final com.querydsl.sql.ForeignKey<SQPerson> clubPersonFk = createForeignKey(clubPersonId, "person_id");
-
-    public final com.querydsl.sql.ForeignKey<SQOrganisationType> organisationTypeFk = createForeignKey(organisationType, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQGameSpecies> organisationGameSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
-
-    public final com.querydsl.sql.ForeignKey<SQOrganisation> organisationParentFk = createForeignKey(parentOrganisationId, "organisation_id");
-
     public final com.querydsl.sql.ForeignKey<SQHta> organisationMooseAreaFk = createForeignKey(mooseAreaId, "gid");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> organisationHarvestPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
 
+    public final com.querydsl.sql.ForeignKey<SQAddress> organisationAddressFk = createForeignKey(addressId, "address_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHuntingClubSubtype> clubTypeFk = createForeignKey(subtype, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQPerson> clubPersonFk = createForeignKey(clubPersonId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQGameSpecies> organisationGameSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
+
     public final com.querydsl.sql.ForeignKey<SQHuntingClubArea> organisationHuntingClubAreaIdFk = createForeignKey(huntingAreaId, "hunting_club_area_id");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisationType> organisationTypeFk = createForeignKey(organisationType, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> organisationParentFk = createForeignKey(parentOrganisationId, "organisation_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationPartner> _harvestPermitApplicationPartnerOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
 
@@ -137,6 +137,8 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitRhys> _harvestPermitRhysOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
 
+    public final com.querydsl.sql.ForeignKey<SQPermitDecision> _permitDecisionRhyFk = createInvForeignKey(organisationId, "rhy_id");
+
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> _harvestPermitPermitHolderFk = createInvForeignKey(organisationId, "permit_holder_id");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisationVenue> _organisationVenueOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
@@ -144,6 +146,8 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
     public final com.querydsl.sql.ForeignKey<SQPerson> _rhyMembershipFk = createInvForeignKey(organisationId, "rhy_membership_id");
 
     public final com.querydsl.sql.ForeignKey<SQOccupationNomination> _occupationNominationRhyIdFk = createInvForeignKey(organisationId, "rhy_id");
+
+    public final com.querydsl.sql.ForeignKey<SQAmendmentApplicationData> _amendmentApplicationDataPartnerFk = createInvForeignKey(organisationId, "partner_id");
 
     public final com.querydsl.sql.ForeignKey<SQGameObservation> _gameObservationRhyFk = createInvForeignKey(organisationId, "rhy_id");
 
@@ -154,6 +158,8 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitAreaRhy> _harvestPermitAreaRhyRefFk = createInvForeignKey(organisationId, "rhy_id");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> _organisationParentFk = createInvForeignKey(organisationId, "parent_organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitDecisionRkaRecipient> _permitDecisionRkaRecipientRkaFk = createInvForeignKey(organisationId, "rka_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitAllocation> _harvestPermitAllocationOrganisationFk = createInvForeignKey(organisationId, "hunting_club_id");
 
@@ -168,6 +174,8 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
     public final com.querydsl.sql.ForeignKey<SQRhyAnnualStatistics> _rhyAnnualStatisticsRhyFk = createInvForeignKey(organisationId, "rhy_id");
 
     public final com.querydsl.sql.ForeignKey<SQGroupObservationRejection> _groupObservationRejectionHuntingClubGroupFk = createInvForeignKey(organisationId, "hunting_club_group_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitDecisionRkaAuthority> _permitDecisionRkaAuthorityRkaFk = createInvForeignKey(organisationId, "rka_id");
 
     public final com.querydsl.sql.ForeignKey<SQCalendarEvent> _calendarEventOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
 
@@ -186,6 +194,8 @@ public class SQOrganisation extends RelationalPathSpatial<SQOrganisation> {
     public final com.querydsl.sql.ForeignKey<SQGroupHarvestRejection> _groupHarvestRejectionHuntingClubGroupFk = createInvForeignKey(organisationId, "hunting_club_group_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestAreaRhys> _harvestAreaRhysOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitDecision> _permitDecisionHolderFk = createInvForeignKey(organisationId, "permit_holder_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitPartners> _harvestPermitPartnersOrganisationFk = createInvForeignKey(organisationId, "organisation_id");
 

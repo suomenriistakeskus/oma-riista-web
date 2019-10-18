@@ -1,0 +1,40 @@
+<permit-decision-section-header decision="$ctrl.decision"
+                                section-id="$ctrl.sectionId"
+                                deny-complete="$ctrl.denyComplete()">
+</permit-decision-section-header>
+
+<div ng-switch="$ctrl.decision.decisionType">
+    <div ng-switch-when="HARVEST_PERMIT">
+        <div ng-if="$ctrl.showProtectedAreaTypes">
+            <permit-decision-protected-area-types decision-id="$ctrl.decision.id"
+                                                  can-edit-content="$ctrl.canEditContent()"
+                                                  protected-area-types="$ctrl.protectedAreaTypes">
+            </permit-decision-protected-area-types>
+        </div>
+
+        <permit-decision-legal-fields decision-id="$ctrl.decision.id"
+                                      can-edit-content="$ctrl.canEditContent()"
+                                      legal-fields="$ctrl.legalFields">
+        </permit-decision-legal-fields>
+
+        <permit-decision-species-amounts
+                decision-id="$ctrl.decision.id"
+                permit-type-code="$ctrl.decision.permitTypeCode"
+                can-edit-content="$ctrl.canEditContent()"
+                species-amounts="$ctrl.speciesAmounts">
+        </permit-decision-species-amounts>
+
+        <div ng-if="$ctrl.showDerogationReasons">
+            <permit-decision-derogation-reasons decision-id="$ctrl.decision.id"
+                                                can-edit-content="$ctrl.canEditContent()"
+                                                derogation-reasons="$ctrl.derogationReasons">
+            </permit-decision-derogation-reasons>
+        </div>
+    </div>
+</div>
+
+<permit-decision-document-text-section
+        section-id="'decisionExtra'"
+        decision="$ctrl.decision"
+        reference="$ctrl.reference">
+</permit-decision-document-text-section>

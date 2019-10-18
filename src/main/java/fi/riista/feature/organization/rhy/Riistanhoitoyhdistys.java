@@ -26,6 +26,9 @@ public class Riistanhoitoyhdistys extends Organisation {
             "279", "282"
     });
 
+    private static final String RHY_SUFFIX_FI = "riistanhoitoyhdistys";
+    private static final String RHY_SUFFIX_SV = "jaktvårdsförening";
+
     @Size(max = 255)
     @Column
     private String poronhoitoalueId;
@@ -36,6 +39,14 @@ public class Riistanhoitoyhdistys extends Organisation {
 
     @Column(name = "is_at_coast")
     private Boolean atCoast;
+
+    public static String shortenRhySuffixFi(final String input) {
+        return input.endsWith(RHY_SUFFIX_FI) ? input.substring(0, input.length() - RHY_SUFFIX_FI.length()) + "RHY" : input;
+    }
+
+    public static String shortenRhySuffixSv(final String input) {
+        return input.endsWith(RHY_SUFFIX_SV) ? input.substring(0, input.length() - RHY_SUFFIX_SV.length()) + "JVF" : input;
+    }
 
     public Riistanhoitoyhdistys() {
         super(OrganisationType.RHY);

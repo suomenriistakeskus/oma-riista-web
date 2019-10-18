@@ -6,8 +6,9 @@ import org.junit.Test;
 
 import static fi.riista.feature.organization.calendar.CalendarEventType.shootingTestTypes;
 import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA;
-import static fi.riista.feature.shootingtest.ShootingTestEvent.DAYS_UPDATEABLE_BY_OFFICIAL;
+import static fi.riista.feature.shootingtest.ShootingTest.DAYS_OF_EVENT_UPDATEABLE_BY_OFFICIAL;
 import static fi.riista.feature.shootingtest.ShootingTestEventAuthorization.ShootingTestEventPermission.ASSIGN_OFFICIALS;
+import static fi.riista.feature.shootingtest.ShootingTestEventAuthorization.ShootingTestEventPermission.VIEW_PARTICIPANTS;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.READ;
 import static fi.riista.security.EntityPermission.UPDATE;
@@ -46,7 +47,7 @@ public class ShootingTestEventAuthorizationTest extends AbstractShootingTestEnti
     @Test
     public void testAssignedOfficial_afterOneWeek() {
         withPerson(person -> {
-            calendarEvent.setDate(today().minus(DAYS_UPDATEABLE_BY_OFFICIAL).minusDays(1).toDate());
+            calendarEvent.setDate(today().minus(DAYS_OF_EVENT_UPDATEABLE_BY_OFFICIAL).minusDays(1).toDate());
             model().newShootingTestOfficial(getEntity(), person);
 
             onSavedAndAuthenticated(createUser(person), this::assertPermittedAsUnassignedOfficial);
@@ -58,6 +59,7 @@ public class ShootingTestEventAuthorizationTest extends AbstractShootingTestEnti
         testPermission(READ, permitted, maxQueryCount);
         testPermission(UPDATE, permitted, maxQueryCount);
         testPermission(ASSIGN_OFFICIALS, permitted, maxQueryCount);
+        testPermission(VIEW_PARTICIPANTS, permitted, maxQueryCount);
 
         // Create a transient event (not yet persisted).
         createEntity();
@@ -67,6 +69,7 @@ public class ShootingTestEventAuthorizationTest extends AbstractShootingTestEnti
     private void assertPermittedAsUnassignedOfficial() {
         testPermission(READ, true, 3);
         testPermission(ASSIGN_OFFICIALS, true, 4);
+        testPermission(VIEW_PARTICIPANTS, false, 4);
         testPermission(UPDATE, false, 4);
 
         // Create a transient event (not yet persisted).

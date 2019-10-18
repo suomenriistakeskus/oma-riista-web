@@ -1,0 +1,168 @@
+<form name="harvestRegistrySearchFilterForm">
+    <div class="row">
+        <div class="form-group col-xs-3">
+            <label class="control-label" for="selectedSpeciesCode"
+                   translate="harvestRegistry.item.species"></label>
+            <select class="form-control"
+                    name="selectedSpeciesCode"
+                    id="selectedSpeciesCode"
+                    ng-model="$ctrl.filters.selectedSpeciesCode"
+                    ng-options="s.code as s.name group by s.category for s in $ctrl.speciesOptions | orderBy:'sortOrder'">
+                <option value="">-</option>
+            </select>
+        </div>
+
+        <div class="form-group col-xs-3" show-errors>
+            <label class="control-label" for="beginDate"
+                   translate="global.beginDate"></label>
+
+            <div class="input-group r-dropdown-align-right"
+                 ng-controller="DatePickerController">
+
+                <input type="text" name="beginDate"
+                       id="beginDate"
+                       class="form-control"
+                       uib-datepicker-popup is-open="isDatePickerOpen"
+                       datepicker-append-to-body="true"
+                       ng-model="$ctrl.filters.beginDate"
+                       ng-change="$ctrl.filtersChanged(harvestRegistrySearchFilterForm)"
+                       required
+                       date-between-min-max
+                       max-date="$ctrl.filters.endDate">
+
+                <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+            </div>
+            <p class="help-block has-error col-xs-12"
+               ng-show="harvestRegistrySearchFilterForm.beginDate.$invalid"
+               ng-messages="harvestRegistrySearchFilterForm.beginDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+
+        <div class="form-group col-xs-3" show-errors>
+            <label class="control-label" for="endDate"
+                   translate="global.endDate"></label>
+
+            <div class="input-group r-dropdown-align-right"
+                 ng-controller="DatePickerController">
+
+                <input type="text" name="endDate"
+                       id="endDate"
+                       ng-change="$ctrl.filtersChanged(harvestRegistrySearchFilterForm)"
+                       class="form-control"
+                       uib-datepicker-popup is-open="isDatePickerOpen"
+                       datepicker-append-to-body="true"
+                       ng-model="$ctrl.filters.endDate"
+                       required
+                       date-between-min-max
+                       min-date="$ctrl.filters.beginDate">
+
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+            </div>
+            <p class="help-block has-error col-xs-12"
+               ng-show="harvestRegistrySearchFilterForm.endDate.$invalid"
+               ng-messages="harvestRegistrySearchFilterForm.endDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+
+        <div class="form-group col-xs-3">
+            <label class="control-label" for="personSelect"
+                   translate="harvestRegistry.item.shooterName"></label>
+
+            <input type="text" id="personSelect" name="personSelect"
+                   class="form-control col-xs-11"
+                   autocomplete="off"
+                   focus-me
+                   ng-click="$ctrl.clearShooter()"
+                   ng-model="$ctrl.uiSelectModelShooter"
+                   typeahead-wait-ms="500"
+                   typeahead-min-length="3"
+                   typeahead-on-select="$ctrl.onSelectShooter($item); asyncSelected = '';"
+                   uib-typeahead="(person.byName + ' ' + person.lastName) for person in $ctrl.doSearchPerson($viewValue) | limitTo:10"
+                   placeholder="{{'harvestRegistry.item.shooterSearchPlaceHolder' | translate}}">
+        </div>
+
+        <div class="form-group col-xs-3">
+            <label class="control-label" for="selectedRka"
+                   translate="global.organisationType.RKA"></label>
+            <select class="form-control"
+                    name="selectedRka"
+                    id="selectedRka"
+                    ng-model="$ctrl.selectedRka"
+                    ng-options="rka as rka.name for rka in $ctrl.areas">
+                <option value="">-</option>
+            </select>
+        </div>
+        <div class="form-group col-xs-3">
+            <label class="control-label" for="selectedRhy"
+                   translate="global.organisationType.RHY"> </label>
+            <select class="form-control"
+                    name="selectedRhy"
+                    id="selectedRhy"
+                    ng-model="$ctrl.selectedRhy"
+                    ng-options="rhy as rhy.name for rhy in $ctrl.selectedRka.subOrganisations">
+                <option value="">-</option>
+            </select>
+        </div>
+
+        <div class="form-group col-xs-3">
+            <label class="control-label" for="municipalitySelect"
+                   translate="harvestRegistry.item.municipality"></label>
+
+            <input type="text" id="municipalitySelect" name="municipalitySelect"
+                   class="form-control col-xs-11"
+                   autocomplete="off"
+                   focus-me
+                   ng-click="$ctrl.clearMunicipality()"
+                   ng-model="$ctrl.uiSelectModelMunicipality"
+                   typeahead-wait-ms="200"
+                   typeahead-min-length="2"
+                   typeahead-on-select="$ctrl.onSelectMunicipality($item); asyncSelected = '';"
+                   uib-typeahead="(municipality.name | rI18nNameFilter) for municipality in $ctrl.searchMunicipalities($viewValue) | limitTo:10"
+                   placeholder="{{'harvestRegistry.item.municipalitySearchPlaceHolder' | translate}}">
+        </div>
+
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-xs-3 ">
+        <button type="button" class="btn btn-default btn-block"
+                ng-disabled="harvestRegistrySearchFilterForm.$invalid"
+                ng-click="$ctrl.exportExcel()">
+            <span class="glyphicon glyphicon-file"></span>
+            <span translate="harvestRegistry.toExcel"></span>
+        </button>
+    </div>
+    <div class="col-xs-3 col-xs-offset-6">
+        <button type="button" class="btn btn-primary btn-block"
+                ng-disabled="harvestRegistrySearchFilterForm.$invalid"
+                ng-click="$ctrl.doSearch(0)">
+            <span class="glyphicon glyphicon-search"></span>
+            <span translate="global.button.search"></span>
+        </button>
+    </div>
+</div>
+
+<hr class="invisible"/>
+<div ng-if="$ctrl.slice">
+
+    <div ng-if="!$ctrl.slice.content.length" class="well" style="margin-top: 20px">
+        <span translate="search.formatNoMatches"></span>
+    </div>
+
+    <slice-pager slice="$ctrl.slice" load-page="$ctrl.doSearch(page)"></slice-pager>
+    <jht-harvest-registry-table ng-if="$ctrl.slice.content.length > 0" items="$ctrl.slice.content"
+                                areas="$ctrl.areas"></jht-harvest-registry-table>
+</div>

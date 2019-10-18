@@ -4,17 +4,22 @@ import fi.riista.config.Constants;
 import fi.riista.config.HttpClientConfig;
 import fi.riista.config.JaxbConfig;
 import fi.riista.integration.paytrail.PaytrailConfig;
+import fi.riista.integration.paytrail.auth.PaytrailCredentials;
 import fi.riista.integration.paytrail.rest.PaytrailRestAdapter;
+import fi.riista.integration.paytrail.rest.client.PaytrailRestTemplate;
 import fi.riista.integration.paytrail.rest.model.CreatePaymentRequest;
 import fi.riista.integration.paytrail.rest.model.CreatePaymentResponse;
 import fi.riista.integration.paytrail.rest.model.UrlSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -28,6 +33,14 @@ public class PaytrailCli {
         @Bean
         public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
             return new PropertySourcesPlaceholderConfigurer();
+        }
+
+        @Bean
+        public PaytrailRestAdapter paytrailApi(final @Qualifier("paytrailMarshaller") Jaxb2Marshaller marshaller,
+                                               final @Qualifier("rk") PaytrailCredentials rkCredentials,
+                                               final ClientHttpRequestFactory clientHttpRequestFactory) {
+            return new PaytrailRestAdapter(new PaytrailRestTemplate(
+                    clientHttpRequestFactory, marshaller, rkCredentials));
         }
     }
 

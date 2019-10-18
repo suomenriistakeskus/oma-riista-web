@@ -1,25 +1,25 @@
 package fi.riista.feature.permit.decision.document;
 
-import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.util.Locales;
 
+import javax.annotation.Nonnull;
 import java.util.Locale;
 import java.util.function.BiFunction;
 
 public class PermitDecisionDocumentHeadingDTO {
 
-    public PermitDecisionDocumentHeadingDTO(final Locale locale) {
+    public PermitDecisionDocumentHeadingDTO(final @Nonnull Locale locale, final @Nonnull String decisionName) {
         final boolean swedishLocale = Locales.isSwedish(locale);
         final BiFunction<String, String, String> i18n = (fi, sv) -> swedishLocale ? sv : fi;
 
         this.title = i18n.apply("PÄÄTÖS", "BESLUT");
         this.decisionDate = i18n.apply("Pvm", "Datum");
         this.decisionNumber = i18n.apply("Nro", "Nr.");
-        this.decisionName = HarvestPermit.MOOSELIKE_PERMIT_NAME.getTranslation(locale).toUpperCase();
-        this.applicant = i18n.apply("Hakijan asiakasnumero ja nimi", "Sökandens kundnummer och namn");
-        this.application = i18n.apply("HAKEMUS", "ANSÖKAN");
+        this.decisionName = decisionName.toUpperCase();
+        this.applicant = i18n.apply("Hakija", "Sökande");
+        this.application = i18n.apply("HAKEMUS", "ANSÖKAN");
         this.applicationReasoning = i18n.apply("Hakemuksen perustelut", "Motiveringar till ansökan");
-        this.processing = i18n.apply("Välitoimenpiteet", "Interimistiska åtgärder");
+        this.processing = i18n.apply("Välitoimenpiteet", "Interimistiska åtgärder");
         this.decision = i18n.apply("PÄÄTÖS", "BESLUT");
         this.restriction = i18n.apply("Ehdot", "Villkor");
         this.decisionReasoning = i18n.apply("Päätöksen perustelut", "Motiveringar till beslutet");

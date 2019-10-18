@@ -4,16 +4,20 @@ import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
+import fi.riista.feature.huntingclub.area.HuntingClubAreaRepository;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+
+import static java.util.Objects.requireNonNull;
 
 @Service
 public class HarvestPermitAreaPartnerService {
@@ -27,6 +31,9 @@ public class HarvestPermitAreaPartnerService {
     @Resource
     private GISZoneRepository zoneRepository;
 
+    @Resource
+    private HuntingClubAreaRepository huntingClubAreaRepository;
+
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public List<HarvestPermitAreaPartnerDTO> listPartners(final HarvestPermitArea harvestPermitArea,
                                                           final Locale locale) {
@@ -38,9 +45,10 @@ public class HarvestPermitAreaPartnerService {
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public HarvestPermitAreaPartner addPartner(final HarvestPermitArea harvestPermitArea,
-                                               final HuntingClubArea clubArea) {
+                                               @Nonnull final String clubAreaId) {
         harvestPermitArea.assertStatus(HarvestPermitArea.StatusCode.INCOMPLETE);
 
+        final HuntingClubArea clubArea = getClubArea(requireNonNull(clubAreaId));
         // Club area must Zone with non-empty geometry
         if (clubArea.isGeometryEmpty()) {
             throw new NotFoundException("Specified area is empty");
@@ -77,7 +85,8 @@ public class HarvestPermitAreaPartnerService {
 
         }).orElseGet(() -> {
             final GISZone zoneCopy = zoneRepository.copyZone(clubArea.getZone(), new GISZone());
-            final HarvestPermitAreaPartner partner = new HarvestPermitAreaPartner(harvestPermitArea, clubArea, zoneCopy);
+            final HarvestPermitAreaPartner partner = new HarvestPermitAreaPartner(harvestPermitArea, clubArea,
+                    zoneCopy);
             return harvestPermitAreaPartnerRepository.save(partner);
         });
     }
@@ -112,5 +121,11 @@ public class HarvestPermitAreaPartnerService {
 
         zoneRepository.copyZone(partner.getSourceArea().getZone(), partner.getZone());
         partner.forceRevisionUpdate();
+    }
+
+    @Nonnull
+    private HuntingClubArea getClubArea(final String clubAreaId) {
+        return huntingClubAreaRepository.findByExternalId(clubAreaId)
+                .orElseThrow(() -> new NotFoundException("Could not find club area by externalId"));
     }
 }

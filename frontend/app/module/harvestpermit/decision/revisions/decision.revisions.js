@@ -21,24 +21,50 @@ angular.module('app.harvestpermit.decision.revisions', [])
                 }
 
             },
-            controller: function ($state, PermitDecision, NotificationService, FormPostService, GameSpeciesCodes,
+            controller: function ($state, $filter, $translate, PermitDecision, NotificationService,
+                                  FormPostService, GameSpeciesCodes,
                                   decisionId, decision, revisions, decisionSpeciesAmounts, diaryParameters) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
                     $ctrl.decision = decision;
-                    $ctrl.revisions = _.sortByOrder(revisions, ['id'], ['desc']);
+                    $ctrl.revisions = _.orderBy(revisions, ['id'], ['desc']);
                     $ctrl.mooselikeSpeciesCodes = _.chain(decisionSpeciesAmounts)
                         .map('gameSpeciesCode')
                         .filter(GameSpeciesCodes.isPermitBasedMooselike)
                         .value();
+                    $ctrl.showHarvestReports =
+                        decision.harvestPermitCategory === 'BIRD' &&
+                        decision.status === 'PUBLISHED' &&
+                        decision.decisionType === 'HARVEST_PERMIT' &&
+                        decision.grantStatus !== 'REJECTED';
+                    $ctrl.contactPersonReceivers = [];
+                    $ctrl.otherReceivers = [];
                     $ctrl.activeRevision = null;
                     $ctrl.activeTab = 1;
 
                     if (_.size($ctrl.revisions) > 0) {
                         $ctrl.revisions[0].latest = true;
                         $ctrl.activeRevision = $ctrl.revisions[0];
+                        $ctrl.onActiveRevisionChanged($ctrl.activeRevision);
                     }
+                };
+
+                $ctrl.onActiveRevisionChanged = function (revision) {
+                    $ctrl.contactPersonReceivers = filterReceivers(revision, 'CONTACT_PERSON');
+                    $ctrl.otherReceivers = filterReceivers(revision, 'OTHER');
+                };
+
+                function filterReceivers(revision, type) {
+                    return _.filter(revision.receivers, _.matchesProperty('receiverType', type));
+                }
+
+                var dateFilter = $filter('date');
+
+                $ctrl.getRevisionName = function (rev) {
+                    return dateFilter(rev.lockedDate, 'd.M.yyyy HH:mm')
+                        + (rev.externalId ? ' - ' + rev.externalId : '')
+                        + (rev.latest ? ' - ' + $translate.instant('harvestpermit.decision.revision.latest') : '');
                 };
 
                 $ctrl.togglePosted = function (posted) {
@@ -47,6 +73,8 @@ angular.module('app.harvestpermit.decision.revisions', [])
                         $ctrl.activeRevision.posted = r.posted;
                         $ctrl.activeRevision.postedByMailDate = r.postedByMailDate;
                         $ctrl.activeRevision.postedByMailUsername = r.postedByMailUsername;
+                    }, function () {
+                        NotificationService.showDefaultFailure();
                     });
                 };
 
@@ -66,10 +94,25 @@ angular.module('app.harvestpermit.decision.revisions', [])
                         '/api/v1/decision/' + decisionId + '/revisions/attachment' + '/' + attachment.id);
                 };
 
-                $ctrl.canDownloadDecisionInvoice = function () {
-                    return $ctrl.activeRevision
-                        && !!$ctrl.activeRevision.publishDate
-                        && $ctrl.activeRevision.postalByMail;
+                // Allow invoice downloading only for published decisions since decision status can change
+                // back to draft after invoice is generated
+                var canDownloadDecisionInvoice = function () {
+                    return $ctrl.decision.hasDecisionInvoice
+                        && $ctrl.decision.status === 'PUBLISHED'
+                        && $ctrl.activeRevision
+                        && !!$ctrl.activeRevision.publishDate;
+                };
+
+                $ctrl.getProcessingInvoiceDownloadStatus = function () {
+                    if (!canDownloadDecisionInvoice()) {
+                        return 'NOT_AVAILABLE';
+                    }
+
+                    if (!$ctrl.activeRevision.postalByMail) {
+                        return 'DISABLED_BY_ELECTRONIC_INVOICING';
+                    }
+
+                    return 'AVAILABLE';
                 };
 
                 $ctrl.downloadProcessingInvoice = function () {
@@ -80,14 +123,12 @@ angular.module('app.harvestpermit.decision.revisions', [])
                     window.open('/api/v1/decision/' + decisionId + '/invoice/harvest/' + gameSpeciesCode);
                 };
 
-                $ctrl.filterReceivers = function (type) {
-                    return _.filter($ctrl.activeRevision.receivers, function (r) {
-                        return r.receiverType === type;
-                    });
+                $ctrl.downloadBirdHarvestReport = function () {
+                    window.open('/api/v1/decision/' + decisionId + '/bird-harvest-report');
                 };
 
                 $ctrl.moveToInvoices = function () {
-                    $state.go('jht.payments.invoices', {applicationNumber: decision.applicationNumber});
+                    $state.go('jht.invoice.search', {applicationNumber: decision.applicationNumber});
                 };
 
                 $ctrl.moveToPermit = function () {

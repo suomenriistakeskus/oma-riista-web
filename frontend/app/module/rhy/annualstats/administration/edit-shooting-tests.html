@@ -7,7 +7,7 @@
     </div>
 
     <div class="modal-body">
-        <div ng-if="$ctrl.isModerator" class="form-horizontal">
+        <div class="form-horizontal">
             <div class="form-group" show-errors>
                 <label for="moderatorOverriddenFirearmTestEvents" class="control-label">
                     <span translate="rhy.annualStats.administration.shootingTests.form.moderatorOverriddenFirearmTestEvents"></span>
@@ -54,51 +54,6 @@
                    translate="global.messages.invalid"></p>
             </div>
         </div>
-
-        <table class="form-inline table table-condensed table-striped">
-            <thead>
-                <tr>
-                    <th class="col-xs-6" translate="rhy.annualStats.administration.shootingTests.form.shootingTestType"></th>
-                    <th translate="rhy.annualStats.administration.shootingTests.form.allAttempts"></th>
-                    <th translate="rhy.annualStats.administration.shootingTests.form.qualifiedAttempts"></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr ng-repeat="shootingTestType in $ctrl.shootingTestTypes">
-                    <td class="col-xs-6 vcenter" translate="{{::$ctrl.getTitleKey(shootingTestType)}}"></td>
-
-                    <td>
-                        <div class="form-group" show-errors>
-                            <div class="input-group">
-                                <input type="number" name="{{::shootingTestType.value1Key}}" id="{{::shootingTestType.value1Key}}"
-                                       ng-min="$ctrl.getValue1Min(shootingTestType)" max="99999" step="1"
-                                       class="form-control no-spinner"
-                                       ng-model="$ctrl.data[shootingTestType.value1Key]"/>
-
-                                <div class="input-group-addon">
-                                    <span translate="global.pcs"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-
-                    <td>
-                        <div class="form-group" show-errors>
-                            <div class="input-group">
-                                <input type="number" name="{{::shootingTestType.value2Key}}" id="{{::shootingTestType.value2Key}}"
-                                       min="0" ng-max="$ctrl.getValue2Max(shootingTestType)" step="1"
-                                       class="form-control no-spinner"
-                                       ng-model="$ctrl.data[shootingTestType.value2Key]"/>
-
-                                <div class="input-group-addon">
-                                    <span translate="global.pcs"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
     </div>
 
     <div class="modal-footer">

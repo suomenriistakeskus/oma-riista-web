@@ -122,7 +122,7 @@ angular.module('app.clubhunting.list', [])
             function collectStats(stats, entry) {
                 if (entry.isPermitBasedMooselike()) {
                     if (entry.isHarvest() && entry.huntingDayId) {
-                        _.each(entry.specimens, function (specimen) {
+                        _.forEach(entry.specimens, function (specimen) {
                             if (specimen.gender && specimen.age) {
                                 var statsKey = entry.type + '_' + specimen.gender + '_' + specimen.age;
                                 stats[statsKey] = (stats[statsKey] || 0) + 1;
@@ -132,7 +132,7 @@ angular.module('app.clubhunting.list', [])
                     // Count observations only of selected species.
                     // Since observations are shown only for moose, count only moose observations
                     if (entry.isMoose() && entry.isObservation() && entry.huntingDayId) {
-                        _.each($ctrl.mooseAmountFields, function (statsKey) {
+                        _.forEach($ctrl.mooseAmountFields, function (statsKey) {
                             stats[statsKey] = (stats[statsKey] || 0) + (entry[statsKey] || 0);
                         });
                     }
@@ -157,9 +157,13 @@ angular.module('app.clubhunting.list', [])
             $scope.$on('huntingDaySelected', function (event, selected) {
                 var selectedDay;
                 if (selected.id) {
-                    selectedDay = _.find($ctrl.huntingDays, 'id', selected.id);
+                    selectedDay = _.find($ctrl.huntingDays, {
+                        id: selected.id
+                    });
                 } else {
-                    selectedDay = _.find($ctrl.huntingDays, 'startDate', selected.startDate);
+                    selectedDay = _.find($ctrl.huntingDays, {
+                        startDate: selected.startDate
+                    });
                 }
 
                 if (selectedDay) {

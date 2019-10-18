@@ -3,14 +3,17 @@ package fi.riista.util;
 import org.junit.Test;
 
 import static fi.riista.util.NumberUtils.isInRange;
-import static fi.riista.util.NumberUtils.nullsafeSum;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class NumberUtilsTest {
+
+    private static final Integer NULL = null;
+    private static final Integer ONE = Integer.valueOf(1);
 
     @Test
     public void testIsInRange_double() {
@@ -31,35 +34,45 @@ public class NumberUtilsTest {
     }
 
     @Test
-    public void testNullsafeSum_withIntegerVararg() {
-        assertNull(nullsafeSum(IntegerHolder::value));
-        assertNull(nullsafeSum(IntegerHolder::value, IntegerHolder.NULL));
-        assertNull(nullsafeSum(IntegerHolder::value, IntegerHolder.NULL, IntegerHolder.NULL));
-        assertNull(nullsafeSum(IntegerHolder::value, IntegerHolder.NULL, IntegerHolder.NULL, IntegerHolder.NULL));
+    public void testNullableIntSum_consumingVararg() {
+        assertNull(nullableIntSum());
+        assertNull(nullableIntSum(NULL));
+        assertNull(nullableIntSum(NULL, NULL, NULL));
 
-        assertEquals(Integer.valueOf(1), nullsafeSum(IntegerHolder::value, IntegerHolder.NULL, IntegerHolder.ONE));
-        assertEquals(Integer.valueOf(1), nullsafeSum(IntegerHolder::value, IntegerHolder.ONE, IntegerHolder.NULL));
-        assertEquals(Integer.valueOf(2), nullsafeSum(IntegerHolder::value, IntegerHolder.ONE, IntegerHolder.ONE));
-
-        assertEquals(
-                Integer.valueOf(3),
-                nullsafeSum(IntegerHolder::value, IntegerHolder.ONE, IntegerHolder.NULL, new IntegerHolder(2)));
+        assertEquals(Integer.valueOf(1), nullableIntSum(ONE));
+        assertEquals(Integer.valueOf(1), nullableIntSum(NULL, ONE, NULL));
+        assertEquals(Integer.valueOf(3), nullableIntSum(ONE, ONE, ONE));
     }
 
     @Test
-    public void testNullsafeSumAsInt() {
-        assertNull(nullsafeSumAsInt(null, null, IntegerHolder::value));
-        assertNull(nullsafeSumAsInt(null, IntegerHolder.NULL, IntegerHolder::value));
-        assertNull(nullsafeSumAsInt(IntegerHolder.NULL, null, IntegerHolder::value));
-        assertNull(nullsafeSumAsInt(IntegerHolder.NULL, IntegerHolder.NULL, IntegerHolder::value));
+    public void testNullableIntSum_consumingTwoObjectsAndIntegerFunction() {
+        assertNull(nullableIntSum(null, null, IntegerHolder::value));
+        assertNull(nullableIntSum(null, IntegerHolder.NULL, IntegerHolder::value));
+        assertNull(nullableIntSum(IntegerHolder.NULL, null, IntegerHolder::value));
+        assertNull(nullableIntSum(IntegerHolder.NULL, IntegerHolder.NULL, IntegerHolder::value));
 
-        assertEquals(Integer.valueOf(1), nullsafeSumAsInt(null, IntegerHolder.ONE, IntegerHolder::value));
-        assertEquals(Integer.valueOf(1), nullsafeSumAsInt(IntegerHolder.NULL, IntegerHolder.ONE, IntegerHolder::value));
+        assertEquals(ONE, nullableIntSum(null, IntegerHolder.ONE, IntegerHolder::value));
+        assertEquals(ONE, nullableIntSum(IntegerHolder.NULL, IntegerHolder.ONE, IntegerHolder::value));
 
-        assertEquals(Integer.valueOf(1), nullsafeSumAsInt(IntegerHolder.ONE, null, IntegerHolder::value));
-        assertEquals(Integer.valueOf(1), nullsafeSumAsInt(IntegerHolder.ONE, IntegerHolder.NULL, IntegerHolder::value));
+        assertEquals(ONE, nullableIntSum(IntegerHolder.ONE, null, IntegerHolder::value));
+        assertEquals(ONE, nullableIntSum(IntegerHolder.ONE, IntegerHolder.NULL, IntegerHolder::value));
 
-        assertEquals(Integer.valueOf(3), nullsafeSumAsInt(IntegerHolder.ONE, new IntegerHolder(2), IntegerHolder::value));
+        assertEquals(Integer.valueOf(3), nullableIntSum(IntegerHolder.ONE, new IntegerHolder(2), IntegerHolder::value));
+    }
+
+    @Test
+    public void testNullableIntSum_consumingCollectionOfObjectsAndIntegerFunction() {
+        assertNull(nullableIntSum(asList(), IntegerHolder::value));
+        assertNull(nullableIntSum(asList(IntegerHolder.NULL), IntegerHolder::value));
+        assertNull(nullableIntSum(asList(IntegerHolder.NULL, IntegerHolder.NULL), IntegerHolder::value));
+
+        assertEquals(ONE, nullableIntSum(asList(IntegerHolder.ONE), IntegerHolder::value));
+        assertEquals(ONE, nullableIntSum(asList(IntegerHolder.NULL, IntegerHolder.ONE), IntegerHolder::value));
+        assertEquals(ONE, nullableIntSum(asList(IntegerHolder.ONE, IntegerHolder.NULL), IntegerHolder::value));
+
+        assertEquals(Integer.valueOf(2), nullableIntSum(asList(IntegerHolder.ONE, IntegerHolder.ONE), IntegerHolder::value));
+        assertEquals(Integer.valueOf(3), nullableIntSum(IntegerHolder.ONE, new IntegerHolder(2), IntegerHolder::value));
+        assertEquals(Integer.valueOf(3), nullableIntSum(asList(IntegerHolder.ONE, IntegerHolder.ONE, IntegerHolder.ONE), IntegerHolder::value));
     }
 
     private static class IntegerHolder {

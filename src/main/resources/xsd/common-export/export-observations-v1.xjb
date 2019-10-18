@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               schemaLocation="export-observations-v1.xsd"
+               version="2.1">
+
+    <jaxb:schemaBindings>
+        <jaxb:package name="fi.riista.integration.common.export.observations"/>
+
+        <jaxb:nameXmlTransform>
+            <jaxb:typeName prefix="COBS_"/>
+            <jaxb:anonymousTypeName prefix="COBS_"/>
+            <jaxb:elementName prefix="COBS_"/>
+        </jaxb:nameXmlTransform>
+
+    </jaxb:schemaBindings>
+
+    <jaxb:globalBindings>
+        <xjc:javaType adapter="fi.riista.integration.support.LocalDateTimeAdapter"
+                      name="org.joda.time.LocalDateTime"
+                      xmlType="xsd:dateTime"/>
+    </jaxb:globalBindings>
+
+    <jaxb:bindings schemaLocation="export-observations-v1.xsd" node="/xsd:schema">
+        <jaxb:bindings node="//xsd:simpleType[@name='observedGameAge']/xsd:restriction/xsd:enumeration[@value='LT1Y']">
+            <jaxb:typesafeEnumMember name="LT1Y"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:simpleType[@name='observedGameAge']/xsd:restriction/xsd:enumeration[@value='_1TO2Y']">
+            <jaxb:typesafeEnumMember name="_1TO2Y"/>
+        </jaxb:bindings>
+    </jaxb:bindings>
+</jaxb:bindings>

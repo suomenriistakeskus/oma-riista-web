@@ -39,7 +39,7 @@
             </td>
 
             <td>
-                <div name-translated="::harvest.gameSpecies.name"></div>
+                <div ng-bind="::harvest.gameSpeciesCode | translateSpeciesCode"></div>
 
                 <div ng-if="::harvest.totalSpecimenAmount > 1">
                     <span ng-bind="::harvest.totalSpecimenAmount"></span>

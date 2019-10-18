@@ -1,0 +1,52 @@
+<div class="row info-row">
+    <div class="col-xs-12">
+        <p class="metsahallitus-header">
+            <span ng-bind="::$ctrl.permit.permitType | rI18nNameFilter"></span>,
+            <span ng-bind="::$ctrl.permit.permitIdentifier"></span>
+        </p>
+    </div>
+</div>
+
+<div class="row info-row">
+    <div class="col-xs-2">
+        <span class="info-label" translate="harvestpermit.mine.metsahallitus.area"></span>
+    </div>
+
+    <div class="col-xs-4">
+        <div class="info-value">
+            <span ng-bind="::$ctrl.permit.areaNumber"></span>
+            <span ng-bind="::$ctrl.permit.areaName | rI18nNameFilter"></span>
+        </div>
+    </div>
+
+    <div class="col-xs-1">
+        <span class="info-label" translate="harvestpermit.mine.metsahallitus.time"></span>
+    </div>
+
+    <div class="col-xs-3">
+        <div class="info-value">
+            <span ng-bind="::$ctrl.permit.beginDate | date:'d.M.yyyy'"></span>
+            <span ng-show="::($ctrl.permit.beginDate && $ctrl.permit.endDate)">&dash;</span>
+            <span ng-bind="::$ctrl.permit.endDate | date:'d.M.yyyy'"></span>
+        </div>
+    </div>
+</div>
+
+<div class="row info-row">
+    <div class="col-xs-2">
+        <span class="info-label" translate="harvestpermit.mine.metsahallitus.type"></span>
+    </div>
+
+    <div class="col-xs-4">
+        <span class="info-value" ng-bind="::$ctrl.permit.permitName | rI18nNameFilter"></span>
+    </div>
+
+    <div ng-if="::$ctrl.permit.url" class="col-xs-6">
+
+        <a ng-click="$ctrl.submitHarvestFeedback()">
+            <span class="fa fa-share-square"></span>
+            &nbsp;
+            <span translate="harvestpermit.mine.metsahallitus.url"></span>
+        </a>
+    </div>
+</div>

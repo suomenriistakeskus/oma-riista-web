@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesRepository;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
@@ -23,6 +22,8 @@ import fi.riista.feature.organization.person.PersonLookupService;
 import fi.riista.feature.organization.rhy.MergedRhyMapping;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
+import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.permit.application.PermitHolder;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import org.apache.commons.lang.StringUtils;
@@ -70,7 +71,7 @@ public class PermitCSVImporter {
     @Resource
     private GISHirvitalousalueRepository hirvitalousalueRepository;
 
-    public Tuple3<HarvestPermit, List<String>, PermitCSVLine> process(String[] line) {
+    public Tuple3<HarvestPermit, List<String>, PermitCSVLine> process(final String[] line) {
         final List<String> errors = Lists.newLinkedList();
         final PermitCSVLine csvLine = new PermitCSVLineParser(errors).parse(line);
 
@@ -84,15 +85,15 @@ public class PermitCSVImporter {
         return Tuple.of(harvestPermit, errors, csvLine);
     }
 
-    private HarvestPermit process(PermitCSVLine csvLine, List<String> errors) {
+    private HarvestPermit process(final PermitCSVLine csvLine, final List<String> errors) {
         Objects.requireNonNull(csvLine);
         Objects.requireNonNull(errors);
 
         final Person contactPerson = findContactPerson(csvLine, errors);
         final Riistanhoitoyhdistys rhy = findRHY(csvLine, errors);
         final HarvestPermit originalPermit = findOriginalPermit(csvLine);
-        final HuntingClub permitHolder = originalPermit != null
-                ? originalPermit.getPermitHolder()
+        final HuntingClub huntingClub = originalPermit != null
+                ? originalPermit.getHuntingClub()
                 : findPermitHolder(csvLine, errors);
         final Set<HuntingClub> permitPartners = originalPermit != null
                 ? new HashSet<>(originalPermit.getPermitPartners())
@@ -101,19 +102,20 @@ public class PermitCSVImporter {
         final String printingUrl = findPrintingUrl(csvLine, errors);
         final Set<Riistanhoitoyhdistys> relatedRhys = findRelatedRhys(csvLine, errors);
         final Integer permitAreaSize = findPermitAreaSize(csvLine, errors);
-
         if (!errors.isEmpty()) {
             return null;
         }
 
+        final String permitNumber = csvLine.getPermitNumber();
+
         if (skipOriginalPermitNotFound(csvLine, originalPermit)) {
             LOG.info("Skipping permit:{} type:{} because original permit:{} is not found",
-                    csvLine.getPermitNumber(), csvLine.getPermitTypeCode(), csvLine.getOriginalPermitNumber());
+                    permitNumber, csvLine.getPermitTypeCode(), csvLine.getOriginalPermitNumber());
             return null;
         }
 
-        final HarvestPermit existingPermit = harvestPermitRepository.findByPermitNumber(csvLine.getPermitNumber());
-        final HarvestPermit harvestPermit = existingPermit != null ? existingPermit : new HarvestPermit();
+        final HarvestPermit existingPermit = harvestPermitRepository.findByPermitNumber(permitNumber);
+        final HarvestPermit harvestPermit = existingPermit != null ? existingPermit : HarvestPermit.create(permitNumber);
 
         if (harvestPermit.isNew() && csvLine.getSpeciesAmounts().isEmpty()) {
             // Skip non-existing permit without amounts
@@ -124,13 +126,19 @@ public class PermitCSVImporter {
         if (!errors.isEmpty()) {
             return null;
         }
-
         harvestPermit.setOriginalContactPerson(contactPerson);
-        harvestPermit.setPermitHolder(permitHolder);
-        harvestPermit.setPermitNumber(csvLine.getPermitNumber());
+
+        if (huntingClub != null) {
+            harvestPermit.setHuntingClub(huntingClub);
+            harvestPermit.setPermitHolder(PermitHolder.createHolderForClub(huntingClub));
+        } else {
+            harvestPermit.setHuntingClub(null);
+            harvestPermit.setPermitHolder(null);
+        }
+
         harvestPermit.setPermitTypeCode(csvLine.getPermitTypeCode());
         harvestPermit.setPermitType(csvLine.getPermitTypeName());
-        harvestPermit.setHarvestsAsList(HarvestPermit.checkIsHarvestsAsList(csvLine.getPermitTypeCode()));
+        harvestPermit.setHarvestsAsList(PermitTypeCode.checkIsHarvestsAsList(csvLine.getPermitTypeCode()));
         harvestPermit.setRhy(rhy);
         harvestPermit.setOriginalPermit(originalPermit);
         harvestPermit.setPrintingUrl(printingUrl);
@@ -143,7 +151,7 @@ public class PermitCSVImporter {
         return harvestPermit;
     }
 
-    private void updateSpeciesAmounts(PermitCSVLine csvLine, List<String> errors, HarvestPermit harvestPermit) {
+    private void updateSpeciesAmounts(final PermitCSVLine csvLine, final List<String> errors, final HarvestPermit harvestPermit) {
         final List<HarvestPermitSpeciesAmount> copyOfSpeciesAmounts = harvestPermit.isMooselikePermitType()
                 ? new ArrayList<>(harvestPermit.getSpeciesAmounts())
                 : Collections.emptyList();
@@ -169,7 +177,6 @@ public class PermitCSVImporter {
                 hpsa.setRestrictionAmount(restrictionAmount);
                 hpsa.setBeginDate(csvAmount.getBeginDate());
                 hpsa.setEndDate(csvAmount.getEndDate());
-                hpsa.setCreditorReference(CreditorReference.fromNullable(csvAmount.getReferenceNumber()));
                 hpsa.setBeginDate2(csvAmount.getBeginDate2());
                 hpsa.setEndDate2(csvAmount.getEndDate2());
 
@@ -179,8 +186,8 @@ public class PermitCSVImporter {
             }
         }
         // remove if needed
-        for (HarvestPermitSpeciesAmount existing : copyOfSpeciesAmounts) {
-            Optional<PermitCSVLine.SpeciesAmount> csvAmount = find(csvLine.getSpeciesAmounts(), existing);
+        for (final HarvestPermitSpeciesAmount existing : copyOfSpeciesAmounts) {
+            final Optional<PermitCSVLine.SpeciesAmount> csvAmount = find(csvLine.getSpeciesAmounts(), existing);
             if (!csvAmount.isPresent() && !existing.isNew()) {
                 harvestPermit.getSpeciesAmounts().remove(existing);
             }
@@ -202,7 +209,7 @@ public class PermitCSVImporter {
                 .orElseGet(HarvestPermitSpeciesAmount::new);
     }
 
-    private void updatePartners(List<String> errors, HarvestPermit permit, Set<HuntingClub> newPartners) {
+    private void updatePartners(final List<String> errors, final HarvestPermit permit, final Set<HuntingClub> newPartners) {
         if (permit.isNew()) {
             permit.getPermitPartners().addAll(newPartners);
             return;
@@ -224,15 +231,15 @@ public class PermitCSVImporter {
         }
     }
 
-    private static <T> Set<T> difference(Set<T> a, Set<T> b) {
+    private static <T> Set<T> difference(final Set<T> a, final Set<T> b) {
         return Sets.difference(a, b).immutableCopy();
     }
 
-    private static boolean skipOriginalPermitNotFound(PermitCSVLine csvLine, HarvestPermit originalPermit) {
-        return originalPermit == null && HarvestPermit.isAmendmentPermitTypeCode(csvLine.getPermitTypeCode());
+    private static boolean skipOriginalPermitNotFound(final PermitCSVLine csvLine, final HarvestPermit originalPermit) {
+        return originalPermit == null && PermitTypeCode.isAmendmentPermitTypeCode(csvLine.getPermitTypeCode());
     }
 
-    private HarvestPermit findOriginalPermit(PermitCSVLine csvLine) {
+    private HarvestPermit findOriginalPermit(final PermitCSVLine csvLine) {
         final String originalPermitNumber = csvLine.getOriginalPermitNumber();
         if (Strings.isNullOrEmpty(originalPermitNumber)) {
             return null;
@@ -240,7 +247,7 @@ public class PermitCSVImporter {
         return harvestPermitRepository.findByPermitNumber(originalPermitNumber);
     }
 
-    private GameSpecies findSpecies(PermitCSVLine.SpeciesAmount csvAmount, List<String> errors) {
+    private GameSpecies findSpecies(final PermitCSVLine.SpeciesAmount csvAmount, final List<String> errors) {
         Objects.requireNonNull(csvAmount.getSpeciesOfficialCode());
 
         return gameSpeciesRepository
@@ -251,7 +258,7 @@ public class PermitCSVImporter {
                 });
     }
 
-    private Person findContactPerson(PermitCSVLine csvLine, List<String> errors) {
+    private Person findContactPerson(final PermitCSVLine csvLine, final List<String> errors) {
         Preconditions.checkArgument(StringUtils.isNotBlank(csvLine.getContactPersonSsn()));
 
         return personLookupService.findBySsnFallbackVtj(csvLine.getContactPersonSsn())
@@ -261,26 +268,22 @@ public class PermitCSVImporter {
                 });
     }
 
-    private Riistanhoitoyhdistys findRHY(PermitCSVLine csvLine, List<String> errors) {
+    private Riistanhoitoyhdistys findRHY(final PermitCSVLine csvLine, final List<String> errors) {
         final String rhyOfficialCode = csvLine.getRhyOfficialCode();
         Preconditions.checkArgument(StringUtils.isNotBlank(rhyOfficialCode));
 
         return findRhyByOfficialCode(errors, rhyOfficialCode);
     }
 
-    private Set<Riistanhoitoyhdistys> findRelatedRhys(PermitCSVLine csvLine, List<String> errors) {
+    private Set<Riistanhoitoyhdistys> findRelatedRhys(final PermitCSVLine csvLine, final List<String> errors) {
         return csvLine.getRelatedRhys().stream()
                 .map(c -> findRhyByOfficialCode(errors, c))
                 .collect(toSet());
     }
 
-    private Riistanhoitoyhdistys findRhyByOfficialCode(List<String> errors, String rhyOfficialCode) {
-        Riistanhoitoyhdistys rhy = riistanhoitoyhdistysRepository.findByOfficialCode(rhyOfficialCode);
-
-        if (rhy == null && MergedRhyMapping.isMappedToNewRhy(rhyOfficialCode)) {
-            final String newRhyCode = MergedRhyMapping.getNewRhyCode(rhyOfficialCode);
-            rhy = riistanhoitoyhdistysRepository.findByOfficialCode(newRhyCode);
-        }
+    private Riistanhoitoyhdistys findRhyByOfficialCode(final List<String> errors, final String rhyOfficialCode) {
+        final Riistanhoitoyhdistys rhy = riistanhoitoyhdistysRepository.findByOfficialCode(
+                MergedRhyMapping.translateIfMerged(rhyOfficialCode));
 
         if (rhy == null) {
             errors.add("RHY ei löydy:" + rhyOfficialCode);
@@ -289,15 +292,15 @@ public class PermitCSVImporter {
         return rhy;
     }
 
-    private HuntingClub findPermitHolder(PermitCSVLine csvLine, List<String> errors) {
-        if (!HarvestPermit.checkShouldResolvePermitHolder(csvLine.getPermitTypeCode())) {
+    private HuntingClub findPermitHolder(final PermitCSVLine csvLine, final List<String> errors) {
+        if (!PermitTypeCode.checkShouldResolvePermitHolder(csvLine.getPermitTypeCode())) {
             return null;
         }
-        return tryFindOrCreateClub(errors, csvLine.getPermitHolder(), "Luvansaajaa ei löydy:");
+        return tryFindOrCreateClub(errors, csvLine.getPermitHolderClub(), "Luvansaajaa ei löydy:");
     }
 
-    private Set<HuntingClub> findPermitPartners(PermitCSVLine csvLine, List<String> errors) {
-        if (!HarvestPermit.checkShouldResolvePermitPartners(csvLine.getPermitTypeCode())) {
+    private Set<HuntingClub> findPermitPartners(final PermitCSVLine csvLine, final List<String> errors) {
+        if (!PermitTypeCode.checkShouldResolvePermitPartners(csvLine.getPermitTypeCode())) {
             return Collections.emptySet();
         }
         final List<String> partners = csvLine.getPermitPartners();
@@ -310,7 +313,7 @@ public class PermitCSVImporter {
                 .collect(toSet());
     }
 
-    private HuntingClub tryFindOrCreateClub(List<String> errors, String officialCode, String errMsgPrefix) {
+    private HuntingClub tryFindOrCreateClub(final List<String> errors, final String officialCode, final String errMsgPrefix) {
 
         try {
             final HuntingClub club = registerHuntingClubService.findExistingOrCreate(officialCode);
@@ -318,14 +321,14 @@ public class PermitCSVImporter {
                 errors.add(errMsgPrefix + officialCode);
             }
             return club;
-        } catch (RegisterHuntingClubException hcre) {
+        } catch (final RegisterHuntingClubException hcre) {
             errors.add("Lupahallinnassa ei seuralle ole merkitty RHY:tä. Seura:" + officialCode);
             return null;
         }
     }
 
-    private GISHirvitalousalue findMooseArea(PermitCSVLine csvLine, List<String> errors) {
-        if (HarvestPermit.isMooselikePermitTypeCode(csvLine.getPermitTypeCode())) {
+    private GISHirvitalousalue findMooseArea(final PermitCSVLine csvLine, final List<String> errors) {
+        if (PermitTypeCode.isMooselikePermitTypeCode(csvLine.getPermitTypeCode())) {
             final GISHirvitalousalue mooseArea = resolveMooseArea(csvLine.getHtaNumber());
             if (mooseArea == null) {
                 errors.add("Lupatyypille vaaditaan hirvitaloustalue mutta ei löydy:" + csvLine.getHtaNumber());
@@ -335,32 +338,32 @@ public class PermitCSVImporter {
         return null;
     }
 
-    private GISHirvitalousalue resolveMooseArea(String htaNumber) {
+    private GISHirvitalousalue resolveMooseArea(final String htaNumber) {
         if (StringUtils.isBlank(htaNumber)) {
             return null;
         }
         return hirvitalousalueRepository.findByNumber(htaNumber);
     }
 
-    private static String findPrintingUrl(PermitCSVLine csvLine, List<String> errors) {
+    private static String findPrintingUrl(final PermitCSVLine csvLine, final List<String> errors) {
         final String url = csvLine.getPrintingUrl();
-        if (HarvestPermit.isMooselikePermitTypeCode(csvLine.getPermitTypeCode()) && !isValidUrl(url)) {
+        if (PermitTypeCode.isMooselikePermitTypeCode(csvLine.getPermitTypeCode()) && !isValidUrl(url)) {
             errors.add("Lupatyypille vaaditaan päätöksen URL, annettu arvo ei kelpaa:" + url);
         }
         return url;
     }
 
-    private static boolean isValidUrl(String url) {
+    private static boolean isValidUrl(final String url) {
         try {
             new URL(url);
             return true;
-        } catch (MalformedURLException e) {
+        } catch (final MalformedURLException e) {
             return false;
         }
     }
 
     private static Integer findPermitAreaSize(final PermitCSVLine csvLine, final List<String> errors) {
-        if (!HarvestPermit.isMooselikePermitTypeCode(csvLine.getPermitTypeCode())) {
+        if (!PermitTypeCode.isMooselikePermitTypeCode(csvLine.getPermitTypeCode())) {
             return null;
         }
         final String permitAreaStr = csvLine.getPermitAreaSize();
@@ -379,7 +382,7 @@ public class PermitCSVImporter {
                     .map(Integer::parseInt)
                     .filter(x -> x > 0)
                     .orElse(null);
-        } catch (NumberFormatException nfe) {
+        } catch (final NumberFormatException nfe) {
             return null;
         }
     }

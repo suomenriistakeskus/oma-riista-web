@@ -56,6 +56,7 @@
     <logger name="com.onelogin.saml2" level="INFO"/>
     <logger name="org.apache.fontbox" level="INFO"/>
     <logger name="org.apache.pdfbox" level="INFO"/>
+    <logger name="net.schmizz" level="INFO"/>
 
     <logger name="org.apache.http" level="INFO" />
     <logger name="org.apache.xml.security" level="INFO"/>

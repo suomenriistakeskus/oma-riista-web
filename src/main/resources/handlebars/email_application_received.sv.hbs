@@ -1,0 +1,34 @@
+<h1>Ansökning inlämnad</h1>
+<h2>Tillstånd som ansöks</h2>
+<p>
+    Tillstånd som ansöks: {{ applicationType }}<br/>
+    Ansökningsnummer: {{ applicationNumber }}
+</p>
+
+<h3>Tillståndets kontaktperson</h3>
+<p>
+    {{contactPersonFirstName}} {{contactPersonLastName}}<br/>
+    {{contactPersonStreetAddress}}<br/>
+    {{contactPersonPostalCode}} {{contactPersonCity}}, {{contactPersonCountry}}<br/>
+    Telefonnummer: {{contactPersonPhoneNumber}}<br/>
+    E-postadress: {{contactPersonEmail}}
+</p>
+
+<h3>Tillståndet söks av</h3>
+<p>
+    {{~#if permitHolderCode}}
+        {{ permitHolderCode }} - {{ permitHolderName }}
+    {{else}}
+        {{ permitHolderName }}
+    {{/if~}}
+</p>
+
+<p>
+    Ansökning kan hämtas via Webb-länken nedan<br>
+    <a href="{{emailLink}}">{{emailLink}}</a>
+</p>
+<p>Hälsningar,</p>
+<p>Finlands viltcentral</p>
+<p>Offentliga förvaltningsuppgifter</p>
+<hr/>
+<p>Detta är ett automatiskt meddelande, svara inte på detta meddelande.</p>

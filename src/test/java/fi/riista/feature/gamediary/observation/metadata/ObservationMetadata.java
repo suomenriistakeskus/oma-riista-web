@@ -51,7 +51,7 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
         return baseFields.getWithinMooseHunting() != Required.NO ? contextSensitiveFields.isWithinMooseHunting() : null;
     }
 
-    public boolean isAmountLegal(@Nonnull final boolean carnivoreAuthority) {
+    public boolean isAmountLegal(final boolean carnivoreAuthority) {
         return contextSensitiveFields.getAmount().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal();
     }
 

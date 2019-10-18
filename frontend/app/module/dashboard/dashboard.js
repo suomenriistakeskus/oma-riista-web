@@ -3,20 +3,21 @@
 angular.module('app.dashboard', [])
     .component('dashboard', {
         templateUrl: 'dashboard/dashboard.html',
-        controller: function ($scope, ActiveRoleService) {
-            $scope.selectedTab = null;
-            $scope.shouldLoadFirstTab = false;
+        controller: function (ActiveRoleService) {
+            var $ctrl = this;
 
-            $scope.select = function (i) {
-                $scope.selectedTab = i;
+            $ctrl.$onInit = function () {
+                $ctrl.selectedTab = null;
+                $ctrl.shouldLoadFirstTab = false;
+                $ctrl.isAdmin = ActiveRoleService.isAdmin();
             };
 
-            $scope.loadFirstTab = function () {
-                $scope.shouldLoadFirstTab = true;
+            $ctrl.select = function (i) {
+                $ctrl.selectedTab = i;
             };
 
-            $scope.isAdmin = function () {
-                return ActiveRoleService.isAdmin();
+            $ctrl.loadFirstTab = function () {
+                $ctrl.shouldLoadFirstTab = true;
             };
         }
     })
@@ -56,6 +57,24 @@ angular.module('app.dashboard', [])
             };
         }
     })
+    .component('dashboardShootingTest', {
+        templateUrl: 'dashboard/shootingtest.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/dashboard/shootingtest').get();
+            };
+        }
+    })
+    .component('dashboardMhPermits', {
+        templateUrl: 'dashboard/mh-permits.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/moderator/mh/statistics').get();
+            };
+        }
+    })
     .component('dashboardMobileLogin', {
         templateUrl: 'dashboard/mobile_login.html',
         controller: function ($http) {
@@ -64,7 +83,7 @@ angular.module('app.dashboard', [])
                 $http.get('/api/v1/dashboard/mobile').then(function (response) {
                     $ctrl.metrics = response.data;
 
-                    _.each($ctrl.metrics.platform, function (row) {
+                    _.forEach($ctrl.metrics.platform, function (row) {
                         row.total = row.android + row.ios + row.wp;
                     });
                 });
@@ -185,9 +204,9 @@ angular.module('app.dashboard', [])
                 if ($scope.viewState.sendTo !== $scope.SEND_TO.test) {
                     var url;
                     if ($scope.viewState.sendTo === $scope.SEND_TO.all) {
-                        url = '/api/v1/admin/sendBulkMail';
+                        url = '/api/v1/bulkMail/sendBulkMail';
                     } else if ($scope.viewState.sendTo === $scope.SEND_TO.clubContacts) {
-                        url = '/api/v1/admin/sendBulkMailToClubContacts';
+                        url = '/api/v1/bulkMail/sendBulkMailToClubContacts';
                     } else {
                         throw 'Invalid value for viewState.sendTo:' + $scope.viewState.sendTo;
                     }
@@ -202,7 +221,7 @@ angular.module('app.dashboard', [])
                     // sending the test mail, keep dialog open and send
                     var testData = angular.copy($scope.message);
                     testData.testRecipient = $scope.viewState.testRecipient;
-                    return _send('/api/v1/admin/sendTestBulkMail/', testData).then(_resetConfirmationCode);
+                    return _send('/api/v1/bulkMail/sendTestBulkMail/', testData).then(_resetConfirmationCode);
                 }
             };
 

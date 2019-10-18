@@ -1,50 +1,77 @@
 package fi.riista.feature.harvestpermit;
 
+import fi.riista.config.Constants;
 import fi.riista.feature.RuntimeEnvironmentUtil;
-import fi.riista.util.DateUtil;
+import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import org.joda.time.LocalDate;
-import org.springframework.stereotype.Service;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.Optional;
 
-@Service
+import static fi.riista.util.DateUtil.today;
+
+@Component
 public class HarvestPermitLockedByDateService {
 
-    private boolean disabled = false;
+    private static boolean isTodayPastHuntingYearLockedDate(final int huntingYear) {
+        return today().isAfter(new LocalDate(huntingYear + 1, 3, 31));
+    }
 
     @Resource
     private RuntimeEnvironmentUtil runtimeEnvironmentUtil;
 
-    public boolean isPermitLockedByDateForHuntingYear(final HarvestPermit permit, final int huntingYear) {
-        if (disabled) {
-            return returnDisabled();
-        }
-        return Optional.ofNullable(permit)
-                .map(p -> p.isMooselikePermitType() && isDateLockedForHuntingYear(huntingYear))
-                .orElse(false);
-    }
+    @Resource
+    private Environment springEnvironment;
 
-    public boolean isDateLockedForHuntingYear(final int huntingYear) {
-        if (disabled) {
-            return returnDisabled();
-        }
-        final LocalDate lockDate = new LocalDate(huntingYear + 1, 3, 31);
-        return DateUtil.today().isAfter(lockDate);
-    }
+    @Resource
+    private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
 
-    private boolean returnDisabled() {
-        if (runtimeEnvironmentUtil.isIntegrationTestEnvironment() || runtimeEnvironmentUtil.isDevelopmentEnvironment()) {
-            return false;
+    private boolean disableForTesting = false;
+
+    private boolean lockTestEnabled() {
+        if (springEnvironment.acceptsProfiles(Constants.EMBEDDED_DATABASE)) {
+            return !disableForTesting;
         }
-        throw new IllegalStateException("Functionality is disabled");
+
+        return runtimeEnvironmentUtil.isProductionEnvironment();
     }
 
     public void disableLockingForTests() {
-        disabled = true;
+        disableForTesting = true;
     }
 
     public void normalLocking() {
-        disabled = false;
+        disableForTesting = false;
+    }
+
+    public boolean isDateLockedForHuntingYear(final int huntingYear) {
+        return lockTestEnabled() && isTodayPastHuntingYearLockedDate(huntingYear);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isPermitLockedByDateForHuntingYear(final @Nonnull HarvestPermit permit, final int huntingYear) {
+        return lockTestEnabled() && permit.isMooselikePermitType() && isTodayPastHuntingYearLockedDate(huntingYear);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isPermitLocked(final @Nonnull HarvestPermitSpeciesAmount speciesAmount) {
+        return isPermitLockedByDateForHuntingYear(speciesAmount.getHarvestPermit(), speciesAmount.resolveHuntingYear());
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isPermitLocked(final @Nonnull HuntingClubGroup group) {
+        return group.getHarvestPermit() != null && isPermitLockedByDateForHuntingYear(group.getHarvestPermit(), group.getHuntingYear());
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isMoosePermitLockDatePassed(final HarvestPermit permit) {
+        return harvestPermitSpeciesAmountRepository
+                .findMooseAmounts(permit) // in real world scenarios returns only one result
+                .stream()
+                .anyMatch(this::isPermitLocked);
     }
 }

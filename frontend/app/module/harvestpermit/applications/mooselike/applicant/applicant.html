@@ -1,0 +1,65 @@
+<div class="row">
+    <div class="col-xs-10 col-xs-offset-1">
+        <div class="alert alert-info">
+            <span class="fa fa-info-circle"></span>
+
+            <div class="alert-content">
+                <p class="alert-title" translate="harvestpermit.wizard.applicant.instructionsTitle"></p>
+                <p translate="harvestpermit.wizard.applicant.instructionsOne"></p>
+                <p translate="harvestpermit.wizard.applicant.instructionsTwo"></p>
+                <p translate="harvestpermit.wizard.applicant.instructionsThree"></p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-offset-1 col-xs-5">
+        <div class="h3">
+            <span class="fa fa-user"></span>
+            &nbsp;
+            <span translate="harvestpermit.wizard.applicant.contactPerson"></span>
+        </div>
+
+        <div class="well" style="min-height: 140px;">
+            <permit-application-wizard-contact-person person="$ctrl.contactPerson"></permit-application-wizard-contact-person>
+        </div>
+    </div>
+    <div class="col-xs-5">
+        <div class="h3">
+            <permit-application-wizard-applicant-type
+                    subtype="$ctrl.permitHolder.type"></permit-application-wizard-applicant-type>
+        </div>
+
+        <div class="well" style="min-height: 140px;">
+            <div ng-if="$ctrl.personalApplication">
+                <permit-application-wizard-contact-person person="$ctrl.contactPerson"></permit-application-wizard-contact-person>
+            </div>
+
+            <div ng-if="!$ctrl.personalApplication">
+                <span ng-bind="$ctrl.permitHolder.code"></span>
+                <span ng-bind="$ctrl.permitHolder.name"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-5 col-xs-offset-6">
+        <div class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.changeApplicant()">
+                <span translate="harvestpermit.wizard.applicant.selectPermitHolder"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit()"
+        previous-disabled="$ctrl.constantTrue()"
+        previous="$ctrl.previous()"
+        next-disabled="$ctrl.isNextDisabled()"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

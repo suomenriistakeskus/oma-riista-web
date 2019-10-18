@@ -32,7 +32,6 @@ public class RestErrorService {
             .put(ValidationException.class, HttpStatus.BAD_REQUEST)
             .put(NotFoundException.class, HttpStatus.NOT_FOUND)
             .put(EntityNotFoundException.class, HttpStatus.NOT_FOUND)
-            .put(NotImplementedException.class, HttpStatus.NOT_IMPLEMENTED)
             .put(RevisionConflictException.class, HttpStatus.CONFLICT)
             .put(OptimisticLockingFailureException.class, HttpStatus.CONFLICT)
             .put(AccessDeniedException.class, HttpStatus.FORBIDDEN)
@@ -40,7 +39,7 @@ public class RestErrorService {
             .put(IllegalStateException.class, HttpStatus.INTERNAL_SERVER_ERROR)
             .build();
 
-    private static HttpStatus getHttpStatusCode(final @Nonnull Exception ex) {
+    private static HttpStatus getHttpStatusCode(final @Nonnull Throwable ex) {
         final ResponseStatus annotationStatusCode = AnnotationUtils.findAnnotation(ex.getClass(), ResponseStatus.class);
 
         if (annotationStatusCode != null) {
@@ -61,7 +60,7 @@ public class RestErrorService {
     @Resource
     private RuntimeEnvironmentUtil runtimeEnvironmentUtil;
 
-    public RestError exposeGeneralException(final Exception ex) {
+    public RestError exposeGeneralException(final Throwable ex) {
         final HttpStatus httpStatusCode = getHttpStatusCode(ex);
 
         final RestError.Builder builder = new RestError.Builder(httpStatusCode);
@@ -75,10 +74,9 @@ public class RestErrorService {
         return builder.build();
     }
 
-    private static boolean shouldExposeExceptionMessage(final @Nonnull Exception ex) {
+    private static boolean shouldExposeExceptionMessage(final @Nonnull Throwable ex) {
         return ex instanceof MessageExposableValidationException ||
                 ex instanceof NotFoundException ||
-                ex instanceof NotImplementedException ||
                 ex instanceof RevisionConflictException;
     }
 

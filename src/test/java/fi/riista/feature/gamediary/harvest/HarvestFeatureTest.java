@@ -280,7 +280,7 @@ public class HarvestFeatureTest extends GameDiaryEntryFeatureTest
     public void testCreateHarvest_whenPermitNotFound() {
         model().newRiistanhoitoyhdistys();
         final GameSpecies species = model().newGameSpecies();
-        final String invalidPermitNumber = model().permitNumber("300");
+        final String invalidPermitNumber = model().permitNumber();
 
         onSavedAndAuthenticated(createUserWithPerson(), () -> {
             invokeCreateHarvest(create(species, 1).withPermitNumber(invalidPermitNumber).build());
@@ -1029,7 +1029,7 @@ public class HarvestFeatureTest extends GameDiaryEntryFeatureTest
         withPerson(author -> {
             model().newRiistanhoitoyhdistys();
             final GameSpecies species = model().newGameSpecies();
-            final String permitNumber = model().permitNumber("300");
+            final String permitNumber = model().permitNumber();
             final Harvest harvest = model().newHarvest(species, author);
 
             onSavedAndAuthenticated(createUser(author), () -> {

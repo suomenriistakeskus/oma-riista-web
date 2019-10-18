@@ -81,8 +81,9 @@
         this.createSearchParameters = function (defaultRhy) {
             return {
                 searchType: 'PREVIOUS_OCCUPATION',
+                areaCode: null,
                 rhyCode: defaultRhy ? defaultRhy.officialCode : null,
-                occupationType: _.first(JHTOccupationTypes),
+                occupationType: _.head(JHTOccupationTypes),
                 nominationStatus: 'KOULUTUS'
             };
         };
@@ -232,7 +233,7 @@
         };
 
         $ctrl.showAddTraining = function () {
-            return $ctrl.searchParams.nominationStatus === 'KOULUTUS';
+            return $ctrl.searchParams.nominationStatus === 'KOULUTUS' && $ctrl.isModerator;
         };
 
         $ctrl.showTrainingLocationFilter = function () {
@@ -321,16 +322,18 @@
 
         function getSelectedIds() {
             return $ctrl.resultList ? _.chain($ctrl.resultList.content)
-                .filter('selected', true)
+                .filter({
+                    selected: true
+                })
                 .reject('person.underage')
                 .reject('person.huntingBanActive')
-                .uniq('person.id')
+                .uniqBy('person.id')
                 .map('id')
                 .value() : [];
         }
 
         $ctrl.selectAll = function (value) {
-            _.each($ctrl.resultList.content, function (nomination) {
+            _.forEach($ctrl.resultList.content, function (nomination) {
                 nomination.selected = value;
             });
         };
@@ -454,6 +457,7 @@
 
         $ctrl.endDatePickerOptions = {
             minDate: new Date(),
+            datepickerMode: 'year',
             dateDisabled: isEndDateDisabled
         };
 
@@ -462,24 +466,33 @@
         }
 
         function isEndDateDisabled(data) {
-            return !(data.mode === 'day' && isHuntingYearEndDate(data.date));
+            var JULY = 6;
+            return !(
+                (data.mode === 'day' && isHuntingYearEndDate(data.date))
+                || (data.mode === 'month' && data.date.getMonth() === JULY)
+                || (data.mode === 'year' && isPeriodLessThanFiveYears($ctrl.beginDate, new Date(data.date.getFullYear(), JULY, 31)))
+            );
         }
 
-        $ctrl.isValidOccupationPeriod = function () {
-            if ($ctrl.beginDate && $ctrl.endDate) {
-                var beginDate = Helpers.toMoment($ctrl.beginDate);
-                var endDate = Helpers.toMoment($ctrl.endDate);
+        function isPeriodLessThanFiveYears(beginDate, endDate) {
+            if (beginDate && endDate) {
+                var beginMoment = Helpers.toMoment(beginDate);
+                var endMoment = Helpers.toMoment(endDate);
 
-                var minDuration = moment.duration('P4Y');
+                var minDuration = moment.duration(0);
                 var maxDuration = moment.duration('P5Y');
 
-                var minDate = beginDate.clone().add(minDuration);
-                var maxDate = beginDate.clone().add(maxDuration);
+                var minDate = beginMoment.clone().add(minDuration);
+                var maxDate = beginMoment.clone().add(maxDuration);
 
-                return endDate.isAfter(minDate) && endDate.isBefore(maxDate);
+                return endMoment.isSameOrAfter(minDate) && endMoment.isBefore(maxDate);
             }
 
             return false;
+        }
+
+        $ctrl.isValidOccupationPeriod = function () {
+            return isPeriodLessThanFiveYears($ctrl.beginDate, $ctrl.endDate);
         };
 
         $ctrl.submit = function () {
@@ -558,7 +571,7 @@
             return _.debounce(function (search) {
                 TranslatedBlockUI.start("global.block.wait");
                 return searchMethod(search).then(ok, nok).finally(TranslatedBlockUI.stop);
-            }, 500, true);
+            }, 500);
         }
     }
 })();

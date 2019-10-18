@@ -68,17 +68,21 @@ public class SQGameSpecies extends RelationalPathSpatial<SQGameSpecies> {
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> _organisationGameSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
+    public final com.querydsl.sql.ForeignKey<SQPermitDecisionSpeciesAmount> _permitDecisionSpeciesAmountGameSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
+
     public final com.querydsl.sql.ForeignKey<SQSrvaEvent> _srvaEventGameSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitSpeciesAmount> _harvestPermitSpeciesAmountGameSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
     public final com.querydsl.sql.ForeignKey<SQGameObservation> _gameObservationSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
-    public final com.querydsl.sql.ForeignKey<SQMooselikePrice> _mooselikePriceGameSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
-
     public final com.querydsl.sql.ForeignKey<SQObservationBaseFields> _observationBaseFieldsSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationSpecies> _harvestPermitApplicationSpeciesSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationSpeciesAmount> _harvestPermitApplicationSpeciesAmountSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestSeason> _harvestSeasonGameSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitDecisionForbiddenMethod> _permitDecisionForbiddenMethodGameSpeciesIdFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 
     public final com.querydsl.sql.ForeignKey<SQObservationContextSensitiveFields> _observationContextSensitiveFieldsSpeciesFk = createInvForeignKey(gameSpeciesId, "game_species_id");
 

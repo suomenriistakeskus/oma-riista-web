@@ -3,7 +3,6 @@ package fi.riista.feature.gamediary.observation.metadata;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import fi.riista.config.Constants;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.util.DateUtil;
@@ -12,7 +11,6 @@ import org.joda.time.DateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonPropertyOrder({ "observationSpecVersion", "lastModified" })
 public class ObservationMetadataDTO {
 
     @JsonProperty(value = "observationSpecVersion")

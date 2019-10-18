@@ -12,6 +12,8 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.lupahallinta.LHOrganisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.integration.lupahallinta.parser.PermitCSVImporterTest;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
@@ -95,7 +97,6 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
             assertEquals(d(2014, 5, 28), speciesAmount.getEndDate());
             assertEquals(d(2014, 7, 15), speciesAmount.getBeginDate2());
             assertEquals(d(2014, 10, 23), speciesAmount.getEndDate2());
-            assertEquals(CREDITOR_REFERENCE, speciesAmount.getCreditorReference().getValue());
         });
     }
 
@@ -291,7 +292,8 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
         final HuntingClubGroup group = model().newHuntingClubGroup(club);
 
         final HarvestPermit originalPermit = model().newMooselikePermit(rhy);
-        originalPermit.setPermitHolder(club);
+        originalPermit.setHuntingClub(club);
+        originalPermit.setPermitHolder(PermitHolder.createHolderForClub(club));
         originalPermit.getPermitPartners().add(club);
         group.updateHarvestPermit(originalPermit);
 
@@ -307,7 +309,7 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
         SystemUser admin = createNewAdmin();
         Reader reader = createReaderForOneRowData(
                 person.getSsn(), club.getOfficialCode(), club.getOfficialCode(), originalPermit.getPermitNumber(),
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, GAME_SPECIES_NAME,
+                PermitTypeCode.MOOSELIKE, GAME_SPECIES_NAME,
                 species.getOfficialCode(),
                 "1.0",
                 "1.04.2014 - 28.5.2014", "15.7.2014 - 31.7.2014",
@@ -336,7 +338,8 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
         final HuntingClubGroup partnerGroup = model().newHuntingClubGroup(partner);
 
         final HarvestPermit originalPermit = model().newMooselikePermit(rhy);
-        originalPermit.setPermitHolder(club);
+        originalPermit.setHuntingClub(club);
+        originalPermit.setPermitHolder(PermitHolder.createHolderForClub(club));
         originalPermit.getPermitPartners().add(club);
         originalPermit.getPermitPartners().add(partner);
         partnerGroup.updateHarvestPermit(originalPermit);
@@ -346,7 +349,7 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
         SystemUser admin = createNewAdmin();
         Reader reader = createReaderForOneRowData(
                 person.getSsn(), club.getOfficialCode(), club.getOfficialCode(), originalPermit.getPermitNumber(),
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, GAME_SPECIES_NAME,
+                PermitTypeCode.MOOSELIKE, GAME_SPECIES_NAME,
                 species.getOfficialCode(),
                 "1.0",
                 "1.04.2014 - 28.5.2014", "15.7.2014 - 31.7.2014",
@@ -385,7 +388,7 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
         SystemUser admin = createNewAdmin();
         Reader reader = createReaderForOneRowData(
                 person.getSsn(), lhOrg.getOfficialCode(), partner.getOfficialCode(), PERMIT_NUMBER,
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, GAME_SPECIES_NAME,
+                PermitTypeCode.MOOSELIKE, GAME_SPECIES_NAME,
                 species.getOfficialCode(), "1.0", "1.04.2014 - 28.5.2014", "15.7.2014 - 31.7.2014",
                 rhy.getOfficialCode(), RESTRICTION_TYPE, "1.0",
                 "", CREDITOR_REFERENCE, PRINTING_URL, hta.getNumber(), rhy.getOfficialCode(), PERMIT_AREA_SIZE);

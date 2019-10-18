@@ -1,7 +1,7 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
-import fi.riista.feature.huntingclub.permit.summary.TrendOfPopulationGrowth;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.TrendOfPopulationGrowth;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
 import io.vavr.control.Validation;

@@ -1,6 +1,7 @@
 package fi.riista.feature.permit.area.partner;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
+import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.feature.gis.zone.TotalLandWaterSizeDTO;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.organization.OrganisationNameDTO;
@@ -47,12 +48,12 @@ public class HarvestPermitAreaPartnerDTO extends BaseEntityDTO<Long> {
     public HarvestPermitAreaPartnerDTO(final HarvestPermitAreaPartner partner,
                                        final SourceAreaDTO sourceArea,
                                        final OrganisationNameDTO club,
-                                       final TotalLandWaterSizeDTO size) {
+                                       final GISZoneSizeDTO size) {
         DtoUtil.copyBaseFields(partner, this);
 
         this.club = Objects.requireNonNull(club);
         this.sourceArea = Objects.requireNonNull(sourceArea);
-        this.size = Objects.requireNonNull(size);
+        this.size = size != null ? size.getAll() : null;
     }
 
     @Override

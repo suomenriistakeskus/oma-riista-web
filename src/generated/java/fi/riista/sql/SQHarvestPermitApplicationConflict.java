@@ -1,19 +1,16 @@
 package fi.riista.sql;
 
-import static com.querydsl.core.types.PathMetadataFactory.*;
-
-import com.querydsl.core.types.dsl.*;
-
-import com.querydsl.core.types.PathMetadata;
-import javax.annotation.Generated;
 import com.querydsl.core.types.Path;
-
+import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.sql.ColumnMetadata;
-import java.sql.Types;
-
 import com.querydsl.sql.spatial.RelationalPathSpatial;
 
-import com.querydsl.spatial.*;
+import javax.annotation.Generated;
+import java.sql.Types;
+
+import static com.querydsl.core.types.PathMetadataFactory.forVariable;
 
 
 
@@ -26,6 +23,8 @@ public class SQHarvestPermitApplicationConflict extends RelationalPathSpatial<SQ
     private static final long serialVersionUID = -1082676079;
 
     public static final SQHarvestPermitApplicationConflict harvestPermitApplicationConflict = new SQHarvestPermitApplicationConflict("harvest_permit_application_conflict");
+
+    public final NumberPath<Long> batchId = createNumber("batchId", Long.class);
 
     public final NumberPath<Integer> consistencyVersion = createNumber("consistencyVersion", Integer.class);
 
@@ -57,6 +56,8 @@ public class SQHarvestPermitApplicationConflict extends RelationalPathSpatial<SQ
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplication> harvestPermitApplicationConflictFirstFk = createForeignKey(firstApplicationId, "harvest_permit_application_id");
 
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationConflictBatch> harvestPermitApplicationConflictBatchIdFk = createForeignKey(batchId, "harvest_permit_application_conflict_batch_id");
+
     public SQHarvestPermitApplicationConflict(String variable) {
         super(SQHarvestPermitApplicationConflict.class, forVariable(variable), "public", "harvest_permit_application_conflict");
         addMetadata();
@@ -83,6 +84,7 @@ public class SQHarvestPermitApplicationConflict extends RelationalPathSpatial<SQ
     }
 
     public void addMetadata() {
+        addMetadata(batchId, ColumnMetadata.named("batch_id").withIndex(13).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(consistencyVersion, ColumnMetadata.named("consistency_version").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(createdByUserId, ColumnMetadata.named("created_by_user_id").withIndex(3).ofType(Types.BIGINT).withSize(19));
         addMetadata(creationTime, ColumnMetadata.named("creation_time").withIndex(6).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());

@@ -4,14 +4,15 @@ import com.querydsl.core.group.Group;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
-import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitNotFoundException;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpecs;
 import fi.riista.feature.harvestpermit.HarvestPermit_;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermitSpeciesAmount;
+import fi.riista.feature.permit.PermitNumberUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.JpaSpecs;
 import org.apache.commons.lang.StringUtils;
@@ -29,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -80,7 +81,7 @@ public class HarvestPermitSearchFeature {
                 .filter(permit -> !permit.isMooselikePermitType())
                 .filter(permit -> !permit.isAmendmentPermit())
                 .map(HarvestPermitExistsDTO::create)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(() -> new HarvestPermitNotFoundException(permitNumber));
     }
 
     @Transactional(readOnly = true)
@@ -96,16 +97,21 @@ public class HarvestPermitSearchFeature {
     public List<HarvestPermitSearchResultDTO> search(final HarvestPermitSearchDTO dto) {
         final List<HarvestPermit> all = harvestPermitRepository.findAll(createSpec(dto), sort(dto.getPermitNumberSort()));
         if (dto.getSortingType() == HarvestPermitSearchDTO.SortType.SPECIAL) {
-            final Comparator<HarvestPermit> c1 = createComparator(p -> p.getPermitNumber().substring(0, 4), dto.getYearSort());
-            final Comparator<HarvestPermit> c2 = createComparator(p -> p.getPermitNumber().substring(11, 16), dto.getOrdinalSort());
-            all.sort(c1.thenComparing(c2));
+            all.sort(comparePermitYear(dto).thenComparing(comparePermitOrderNumber(dto)));
         }
         return HarvestPermitSearchResultDTO.create(all);
     }
 
-    private static Comparator<HarvestPermit> createComparator(final Function<HarvestPermit, String> valueExtrator, final Sort.Direction direction) {
-        final Comparator<HarvestPermit> c = Comparator.comparing(valueExtrator);
-        return direction == Sort.Direction.DESC ? c.reversed() : c;
+    private static Comparator<HarvestPermit> comparePermitOrderNumber(final HarvestPermitSearchDTO dto) {
+        return comparing(p -> PermitNumberUtil.extractOrderNumber(p.getPermitNumber()), keyComparator(dto.getOrdinalSort()));
+    }
+
+    private static Comparator<HarvestPermit> comparePermitYear(final HarvestPermitSearchDTO dto) {
+        return comparing(p -> PermitNumberUtil.extractYear(p.getPermitNumber()), keyComparator(dto.getYearSort()));
+    }
+
+    private static <T extends Comparable<? super T>> Comparator<T> keyComparator(final Sort.Direction direction) {
+        return direction == Sort.Direction.DESC ? Comparator.reverseOrder() : Comparator.naturalOrder();
     }
 
     private static Specification<HarvestPermit> createSpec(final HarvestPermitSearchDTO dto) {

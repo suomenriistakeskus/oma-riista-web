@@ -1,167 +1,68 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.util.DateUtil;
-import fi.riista.util.DtoUtil;
-import fi.riista.validation.DoNotValidate;
+import fi.riista.feature.common.dto.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityEventDTO;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nonnull;
-import javax.validation.Valid;
-import javax.validation.constraints.AssertTrue;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
-import static java.util.Objects.requireNonNull;
-
 public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
-
-    public static RhyAnnualStatisticsDTO create(@Nonnull final RhyAnnualStatistics entity) {
-        requireNonNull(entity);
-
-        final int calendarYear = entity.getYear();
-
-        final RhyAnnualStatisticsDTO dto = new RhyAnnualStatisticsDTO(entity.getRhy().getId(), calendarYear);
-        DtoUtil.copyBaseFields(entity, dto);
-
-        dto.setState(entity.getState());
-
-        final StateAidTrainingStatistics stateAidTraining = entity.getOrCreateStateAidTraining();
-
-        dto.setBasicInfo(RhyBasicInfoDTO.create(entity.getOrCreateBasicInfo()));
-        dto.setHunterExams(HunterExamStatisticsDTO.create(entity.getOrCreateHunterExams()));
-        dto.setShootingTests(AnnualShootingTestStatisticsDTO.create(entity.getOrCreateShootingTests()));
-        dto.setGameDamage(entity.getOrCreateGameDamage());
-        dto.setHuntingControl(entity.getOrCreateHuntingControl());
-        dto.setOtherPublicAdmin(entity.getOrCreateOtherPublicAdmin());
-        dto.setSrva(entity.getOrCreateSrva());
-        dto.setHunterExamTraining(HunterExamTrainingStatisticsDTO.create(entity.getOrCreateHunterExamTraining()));
-        dto.setJhtTraining(entity.getOrCreateJhtTraining());
-        dto.setStateAidTraining(stateAidTraining);
-        dto.setOtherHunterTraining(entity.getOrCreateOtherHunterTraining());
-        dto.setOtherTraining(entity.getOrCreateOtherTraining());
-        dto.setOtherHuntingRelated(entity.getOrCreateOtherHuntingRelated());
-        dto.setCommunication(entity.getOrCreateCommunication());
-        dto.setShootingRanges(entity.getOrCreateShootingRanges());
-        dto.setLuke(entity.getOrCreateLuke());
-        dto.setMetsahallitus(entity.getOrCreateMetsahallitus());
-
-        dto.setAllTrainingEvents(entity.countAllTrainingEvents());
-        dto.setAllTrainingParticipants(entity.countAllTrainingParticipants());
-        dto.setStateAidHunterTrainingEvents(stateAidTraining.countStateAidHunterTrainingEvents());
-        dto.setSchoolAndCollegeTrainingEvents(stateAidTraining.countSchoolAndCollegeTrainingEvents());
-
-        dto.setStateAidAffectingQuantitiesLastModified(entity.getTimeOfLastManualModificationToStateAidAffectingQuantities());
-        dto.setPublicAdministrationTasksLastModified(entity.getTimeOfLastManualModificationToPublicAdministrationTasks());
-
-        dto.setReadyForInspection(entity.isReadyForInspection());
-        dto.setCompleteForApproval(entity.isCompleteForApproval());
-
-        return dto;
-    }
 
     private Long id;
     private Integer rev;
 
     private long rhyId;
-
-    @Min(2017)
     private int year;
 
     private RhyAnnualStatisticsState state;
 
-    @Valid
-    @NotNull
     private RhyBasicInfoDTO basicInfo;
 
-    @Valid
-    @NotNull
     private HunterExamStatisticsDTO hunterExams;
 
-    @Valid
-    @NotNull
     private AnnualShootingTestStatisticsDTO shootingTests;
 
-    @Valid
-    @NotNull
     private HuntingControlStatistics huntingControl;
 
-    @Valid
-    @NotNull
     private GameDamageStatistics gameDamage;
 
-    @Valid
-    @NotNull
     private OtherPublicAdminStatistics otherPublicAdmin;
 
-    @DoNotValidate
     private SrvaEventStatistics srva;
 
-    @Valid
-    @NotNull
     private HunterExamTrainingStatisticsDTO hunterExamTraining;
 
-    @Valid
-    @NotNull
     private JHTTrainingStatistics jhtTraining;
 
-    @Valid
-    @NotNull
-    private StateAidTrainingStatistics stateAidTraining;
+    private HunterTrainingStatistics hunterTraining;
 
-    @Valid
-    @NotNull
+    private YouthTrainingStatistics youthTraining;
+
     private OtherHunterTrainingStatistics otherHunterTraining;
 
-    @Valid
-    @NotNull
-    private OtherTrainingStatistics otherTraining;
+    private PublicEventStatistics publicEvents;
 
-    @Valid
-    @NotNull
     private OtherHuntingRelatedStatistics otherHuntingRelated;
 
-    @Valid
-    @NotNull
     private CommunicationStatistics communication;
 
-    @Valid
-    @NotNull
     private ShootingRangeStatistics shootingRanges;
 
-    @Valid
-    @NotNull
     private LukeStatistics luke;
 
-    @Valid
-    @NotNull
     private MetsahallitusStatistics metsahallitus;
 
-    @JsonIgnore
-    private Integer allTrainingEvents;
+    private Integer subsidizableOtherTrainingEvents;
+    private Integer subsidizableStudentAndYouthTrainingEvents;
 
-    @JsonIgnore
+    private DateTime quantitiesContributingToSubsidyLastModified;
+    private DateTime jhtQuantitiesLastModified;
+
+    private Integer allTrainingEvents;
     private Integer allTrainingParticipants;
 
-    @JsonIgnore
-    private Integer stateAidHunterTrainingEvents;
-
-    @JsonIgnore
-    private Integer schoolAndCollegeTrainingEvents;
-
-    @JsonIgnore
-    private DateTime stateAidAffectingQuantitiesLastModified;
-
-    @JsonIgnore
-    private DateTime publicAdministrationTasksLastModified;
-
-    @JsonIgnore
     private Boolean readyForInspection;
-
-    @JsonIgnore
     private Boolean completeForApproval;
+
+    private BaseEntityEventDTO submitEvent;
 
     public RhyAnnualStatisticsDTO() {
     }
@@ -169,11 +70,6 @@ public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
     public RhyAnnualStatisticsDTO(final long rhyId, final int year) {
         this.rhyId = rhyId;
         this.year = year;
-    }
-
-    @AssertTrue
-    public boolean isYearLessThanOrEqualToCurrentYear() {
-        return DateUtil.today().getYear() >= year;
     }
 
     // Accessors -->
@@ -294,12 +190,20 @@ public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
         this.jhtTraining = jhtTraining;
     }
 
-    public StateAidTrainingStatistics getStateAidTraining() {
-        return stateAidTraining;
+    public HunterTrainingStatistics getHunterTraining() {
+        return hunterTraining;
     }
 
-    public void setStateAidTraining(final StateAidTrainingStatistics stateAidTraining) {
-        this.stateAidTraining = stateAidTraining;
+    public void setHunterTraining(final HunterTrainingStatistics hunterTraining) {
+        this.hunterTraining = hunterTraining;
+    }
+
+    public YouthTrainingStatistics getYouthTraining() {
+        return youthTraining;
+    }
+
+    public void setYouthTraining(final YouthTrainingStatistics youthTraining) {
+        this.youthTraining = youthTraining;
     }
 
     public OtherHunterTrainingStatistics getOtherHunterTraining() {
@@ -310,12 +214,12 @@ public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
         this.otherHunterTraining = otherHunterTraining;
     }
 
-    public OtherTrainingStatistics getOtherTraining() {
-        return otherTraining;
+    public PublicEventStatistics getPublicEvents() {
+        return publicEvents;
     }
 
-    public void setOtherTraining(final OtherTrainingStatistics otherTraining) {
-        this.otherTraining = otherTraining;
+    public void setPublicEvents(final PublicEventStatistics publicEvents) {
+        this.publicEvents = publicEvents;
     }
 
     public OtherHuntingRelatedStatistics getOtherHuntingRelated() {
@@ -358,83 +262,76 @@ public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
         this.metsahallitus = metsahallitus;
     }
 
-    @JsonProperty
+    public Integer getSubsidizableOtherTrainingEvents() {
+        return subsidizableOtherTrainingEvents;
+    }
+
+    public void setSubsidizableOtherTrainingEvents(final Integer subsidizableOtherTrainingEvents) {
+        this.subsidizableOtherTrainingEvents = subsidizableOtherTrainingEvents;
+    }
+
+    public Integer getSubsidizableStudentAndYouthTrainingEvents() {
+        return subsidizableStudentAndYouthTrainingEvents;
+    }
+
+    public void setSubsidizableStudentAndYouthTrainingEvents(final Integer subsidizableStudentAndYouthTrainingEvents) {
+        this.subsidizableStudentAndYouthTrainingEvents = subsidizableStudentAndYouthTrainingEvents;
+    }
+
+    public DateTime getQuantitiesContributingToSubsidyLastModified() {
+        return quantitiesContributingToSubsidyLastModified;
+    }
+
+    public void setQuantitiesContributingToSubsidyLastModified(final DateTime quantitiesContributingToSubsidyLastModified) {
+        this.quantitiesContributingToSubsidyLastModified = quantitiesContributingToSubsidyLastModified;
+    }
+
+    public DateTime getJhtQuantitiesLastModified() {
+        return jhtQuantitiesLastModified;
+    }
+
+    public void setJhtQuantitiesLastModified(final DateTime jhtQuantitiesLastModified) {
+        this.jhtQuantitiesLastModified = jhtQuantitiesLastModified;
+    }
+
     public Integer getAllTrainingEvents() {
         return allTrainingEvents;
     }
 
-    @JsonIgnore
     public void setAllTrainingEvents(final Integer allTrainingEvents) {
         this.allTrainingEvents = allTrainingEvents;
     }
 
-    @JsonProperty
     public Integer getAllTrainingParticipants() {
         return allTrainingParticipants;
     }
 
-    @JsonIgnore
     public void setAllTrainingParticipants(final Integer allTrainingParticipants) {
         this.allTrainingParticipants = allTrainingParticipants;
     }
 
-    @JsonProperty
-    public Integer getStateAidHunterTrainingEvents() {
-        return stateAidHunterTrainingEvents;
-    }
-
-    @JsonIgnore
-    public void setStateAidHunterTrainingEvents(final Integer stateAidHunterTrainingEvents) {
-        this.stateAidHunterTrainingEvents = stateAidHunterTrainingEvents;
-    }
-
-    @JsonProperty
-    public Integer getSchoolAndCollegeTrainingEvents() {
-        return schoolAndCollegeTrainingEvents;
-    }
-
-    @JsonIgnore
-    public void setSchoolAndCollegeTrainingEvents(final Integer schoolAndCollegeTrainingEvents) {
-        this.schoolAndCollegeTrainingEvents = schoolAndCollegeTrainingEvents;
-    }
-
-    @JsonProperty
-    public DateTime getStateAidAffectingQuantitiesLastModified() {
-        return stateAidAffectingQuantitiesLastModified;
-    }
-
-    @JsonIgnore
-    public void setStateAidAffectingQuantitiesLastModified(final DateTime stateAidAffectingQuantitiesLastModified) {
-        this.stateAidAffectingQuantitiesLastModified = stateAidAffectingQuantitiesLastModified;
-    }
-
-    @JsonProperty
-    public DateTime getPublicAdministrationTasksLastModified() {
-        return publicAdministrationTasksLastModified;
-    }
-
-    @JsonIgnore
-    public void setPublicAdministrationTasksLastModified(final DateTime publicAdministrationTasksLastModified) {
-        this.publicAdministrationTasksLastModified = publicAdministrationTasksLastModified;
-    }
-
-    @JsonProperty
     public Boolean getReadyForInspection() {
         return readyForInspection;
     }
 
-    @JsonIgnore
     public void setReadyForInspection(final Boolean readyForInspection) {
         this.readyForInspection = readyForInspection;
     }
 
-    @JsonProperty
     public Boolean getCompleteForApproval() {
         return completeForApproval;
     }
 
-    @JsonIgnore
     public void setCompleteForApproval(final Boolean completeForApproval) {
         this.completeForApproval = completeForApproval;
     }
+
+    public BaseEntityEventDTO getSubmitEvent() {
+        return submitEvent;
+    }
+
+    public void setSubmitEvent(final BaseEntityEventDTO submitEvent) {
+        this.submitEvent = submitEvent;
+    }
+
 }

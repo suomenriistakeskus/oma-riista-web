@@ -3,7 +3,6 @@ package fi.riista.api.external;
 import fi.riista.integration.metsastajarekisteri.shootingtest.ShootingTestExportFeature;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +18,7 @@ public class ShootingTestExportApiResource {
     private ShootingTestExportFeature feature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(produces = MediaType.APPLICATION_XML_VALUE)
+    @GetMapping
     public ResponseEntity<byte[]> exportShootingTestRegistry() {
         return feature.exportShootingTestRegistry();
     }

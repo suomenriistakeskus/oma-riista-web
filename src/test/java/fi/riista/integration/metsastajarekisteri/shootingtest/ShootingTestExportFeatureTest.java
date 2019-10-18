@@ -59,7 +59,6 @@ public class ShootingTestExportFeatureTest extends EmbeddedDatabaseTest implemen
 
         final PersistentFileMetadata metadata = metadataRepo.findOne(UUID.fromString(exportFileUUID));
         assertNotNull(metadata);
-        assertEquals(xmlBytes.length, metadata.getContentSize());
 
         assertEquals(today, helper.unmarshal(xmlBytes).getRegisterDate());
     }

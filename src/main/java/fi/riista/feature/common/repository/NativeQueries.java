@@ -8,9 +8,9 @@ public final class NativeQueries {
             "   WHERE ha3.zone_id IN (" +
             "  SELECT DISTINCT bbox.zone_id" +
             "  FROM (" +
-            "       SELECT z2.zone_id, z1.geom AS g1, (ST_Dump(ST_Buffer(z2.geom, -0.01))).geom AS g2" +
-            "       FROM harvest_permit_application hpa1" +
-            "       JOIN harvest_permit_area ha1 ON (hpa1.area_id = ha1.harvest_permit_area_id)" +
+            "   SELECT z2.zone_id, z1.geom AS g1, (ST_Dump(z2.geom)).geom AS g2" +
+            "   FROM harvest_permit_application hpa1" +
+            "   JOIN harvest_permit_area ha1 ON (hpa1.area_id = ha1.harvest_permit_area_id)" +
             "   JOIN zone z1 ON (z1.zone_id = ha1.zone_id)" +
             "   JOIN zone z2 ON (z2.geom && z1.geom)" +
             "   WHERE hpa1.harvest_permit_application_id = :harvestPermitApplicationId" +
@@ -20,9 +20,10 @@ public final class NativeQueries {
             "       SELECT zone_id " +
             "       FROM harvest_permit_application hpa2 " +
             "       JOIN harvest_permit_area ha2 ON (hpa2.area_id = ha2.harvest_permit_area_id)" +
-            "       WHERE ha2.hunting_year = :huntingYear" +
-            "       AND hpa2.status = 'ACTIVE')" +
-            ") bbox WHERE ST_Intersects(bbox.g1, bbox.g2));";
+            "       WHERE hpa2.application_year = :applicationYear" +
+            "       AND hpa2.harvest_permit_category = 'MOOSELIKE'" +
+            "       AND (hpa2.status = 'ACTIVE' OR hpa2.status = 'AMENDING'))" +
+            ") bbox WHERE ST_Intersects(bbox.g1, ST_Buffer(bbox.g2, -1)));";
 
     private NativeQueries() {
         throw new AssertionError();

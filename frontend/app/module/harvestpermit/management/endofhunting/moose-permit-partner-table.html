@@ -1,0 +1,43 @@
+<div class="row">
+    <div ng-if="$ctrl.pager.total > $ctrl.pager.pageSize" class="col-xs-12 text-right">
+        <ul uib-pagination
+            ng-model="$ctrl.pager.currentPage"
+            total-items="$ctrl.pager.total"
+            items-per-page="$ctrl.pager.pageSize"
+            ng-change="$ctrl.updatePager()"
+            boundary-links="false"
+            direction-links="false"
+            rotate="false"
+            page-label="($page - 1) * $ctrl.pager.pageSize + 1 + ' &#8211; ' + $page * $ctrl.pager.pageSize"
+            class="pagination-md">
+        </ul>
+    </div>
+</div>
+
+<table class="table table-striped table-condensed">
+    <thead>
+        <tr>
+            <th translate="harvestpermit.management.endOfMooselikeHunting.partnerName"></th>
+            <th translate="harvestpermit.management.endOfMooselikeHunting.huntingFinished"></th>
+            <th translate="harvestpermit.management.endOfMooselikeHunting.huntingEndDate"></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="partner in ($ctrl.page | orderBy:['huntingClubName']) track by partner.huntingClubId">
+            <td ng-bind="partner.huntingClubName | rI18nNameFilter"></td>
+            <td ng-switch="partner.summary.huntingFinished">
+                <div ng-switch-when="true">
+                    <span class="fa fa-fw fa-lg fa-check text-primary"></span>
+                    <span translate="global.yes"></span>
+                </div>
+                <div ng-switch-when="false">
+                    <span class="fa fa-fw fa-lg fa-ban text-danger"></span>
+                    <span translate="global.no"></span>
+                </div>
+            </td>
+            <td>
+                <span ng-if="partner.summary.huntingFinished" ng-bind="::partner.summary.huntingEndDate | date:'d.M.yyyy'"></span>
+            </td>
+        </tr>
+    </tbody>
+</table>

@@ -2,6 +2,61 @@
 
 angular.module('app.harvestpermit.services', ['ngResource'])
 
+    .constant('PermitCategories', ['MOOSELIKE', 'MOOSELIKE_NEW', 'BIRD', 'LARGE_CARNIVORE_BEAR', 'LARGE_CARNIVORE_LYNX', 'LARGE_CARNIVORE_LYNX_PORONHOITO'])
+    .constant('DecisionTypes', ['HARVEST_PERMIT', 'CANCEL_APPLICATION', 'IGNORE_APPLICATION'])
+    .constant('DecisionGrantStatus', ['UNCHANGED', 'RESTRICTED', 'REJECTED'])
+    .constant('AppealStatus', ['INITIATED', 'IGNORED', 'UNCHANGED', 'REPEALED', 'PARTIALLY_REPEALED', 'RETREATMENT'])
+    .constant('ProtectedAreaTypes', [
+        'OTHER',
+        'AIRPORT',
+        'FOOD_PREMISES',
+        'WASTE_DISPOSAL',
+        'BERRY_FARM',
+        'FUR_FARM',
+        'FISHERY',
+        'ANIMAL_SHELTER'
+    ])
+
+    .constant('DerogationReasonType', [
+        'REASON_PUBLIC_HEALTH',
+        'REASON_PUBLIC_SAFETY',
+        'REASON_AVIATION_SAFETY',
+        'REASON_CROPS_DAMAMGE',
+        'REASON_DOMESTIC_PETS',
+        'REASON_FOREST_DAMAGE',
+        'REASON_FISHING',
+        'REASON_WATER_SYSTEM',
+        'REASON_FLORA',
+        'REASON_FAUNA',
+        'REASON_RESEARCH'
+    ])
+
+    .constant('PermitDecisionForbiddenMethodType', [
+        'SNARES',
+        'LIVE_ANIMAL_DECOY',
+        'TAPE_RECORDERS',
+        'ELECTRICAL_DEVICE',
+        'ARTIFICIAL_LIGHT',
+        'MIRRORS',
+        'ILLUMINATION_DEVICE',
+        'NIGHT_SHOOTING_DEVICE',
+        'EXPLOSIVES',
+        'NETS',
+        'TRAPS',
+        'POISON',
+        'GASSING',
+        'AUTOMATIC_WEAPON',
+        'LIMES',
+        'HOOKS',
+        'CROSSBOWS',
+        'SPEAR',
+        'BLOWPIPE',
+        'LEGHOLD_TRAP',
+        'CONCEALED_WEAPON',
+        'OTHER_SELECTIVE',
+        'OTHER_NON_SELECTIVE'
+    ])
+
     .factory('CheckPermitNumber', function (HttpPost) {
         return {
             check: function (permitNumber) {
@@ -20,6 +75,19 @@ angular.module('app.harvestpermit.services', ['ngResource'])
             });
         };
     })
+
+    .service('HarvestPermitPdfUrl', function () {
+        this.get = function (permitNumber) {
+            return '/api/v1/harvestpermit/pdf/' + permitNumber;
+        };
+    })
+
+    .service('HarvestPermitAttachmentUrl', function () {
+        this.get = function (permitId, attachmentId) {
+            return '/api/v1/harvestpermit/' + permitId + '/attachment/' + attachmentId;
+        };
+    })
+
     .factory('HarvestPermits', function ($http, $resource, CacheFactory) {
         return $resource('api/v1/harvestpermit/:id', {id: '@id'}, {
             permitTypes: {
@@ -33,6 +101,11 @@ angular.module('app.harvestpermit.services', ['ngResource'])
                 isArray: true,
                 url: 'api/v1/harvestpermit/mypermits'
             },
+            listMetsahallitusPermits: {
+                method: 'GET',
+                isArray: true,
+                url: 'api/v1/harvestpermit/metsahallitus'
+            },
             get: {
                 method: 'GET'
             },
@@ -43,7 +116,7 @@ angular.module('app.harvestpermit.services', ['ngResource'])
             },
             getSpeciesUsage: {
                 method: 'GET',
-                url: 'api/v1/harvestpermit/:id/species',
+                url: 'api/v1/harvestpermit/:id/usage',
                 isArray: true
             },
             getAttachmentList: {

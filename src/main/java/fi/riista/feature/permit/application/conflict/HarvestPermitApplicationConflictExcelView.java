@@ -38,21 +38,21 @@ public class HarvestPermitApplicationConflictExcelView extends AbstractXlsxView 
 
     private final EnumLocaliser localiser;
 
-    private final String permitNumber;
+    private final int applicationNumber;
     private final List<HarvestPermitApplicationConflictExcelDTO> rows;
 
     public HarvestPermitApplicationConflictExcelView(final EnumLocaliser localiser,
-                                                     final String permitNumber,
+                                                     final int applicationNumber,
                                                      final List<HarvestPermitApplicationConflictExcelDTO> rows) {
         this.localiser = Objects.requireNonNull(localiser);
-        this.permitNumber = Objects.requireNonNull(permitNumber);
+        this.applicationNumber = applicationNumber;
         this.rows = Objects.requireNonNull(rows);
     }
 
     private String createFilename() {
         return String.format(
-                "Konfliktit-%s-Pvm-%se.xlsx",
-                permitNumber,
+                "Konfliktit-%d-Pvm-%se.xlsx",
+                applicationNumber,
                 Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
     }
 

@@ -1,7 +1,7 @@
 package fi.riista.feature.organization.rhy;
 
-import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.OrganisationDTO;
+import fi.riista.feature.organization.address.AddressDTO;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -26,14 +26,14 @@ public class RiistanhoitoyhdistysDTO extends OrganisationDTO {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String phoneNumber;
 
-    public static RiistanhoitoyhdistysDTO create(Riistanhoitoyhdistys rhy) {
+    public static RiistanhoitoyhdistysDTO create(final Riistanhoitoyhdistys rhy) {
         return new RiistanhoitoyhdistysDTO(rhy);
     }
 
     public RiistanhoitoyhdistysDTO() {
     }
 
-    public RiistanhoitoyhdistysDTO(Riistanhoitoyhdistys rhy) {
+    public RiistanhoitoyhdistysDTO(final Riistanhoitoyhdistys rhy) {
         super(rhy);
 
         this.address = AddressDTO.from(rhy.getAddress());
@@ -50,7 +50,7 @@ public class RiistanhoitoyhdistysDTO extends OrganisationDTO {
         return hasOwnAddress;
     }
 
-    public void setHasOwnAddress(boolean hasOwnAddress) {
+    public void setHasOwnAddress(final boolean hasOwnAddress) {
         this.hasOwnAddress = hasOwnAddress;
     }
 
@@ -58,7 +58,7 @@ public class RiistanhoitoyhdistysDTO extends OrganisationDTO {
         return hasOwnEmail;
     }
 
-    public void setHasOwnEmail(boolean hasOwnEmail) {
+    public void setHasOwnEmail(final boolean hasOwnEmail) {
         this.hasOwnEmail = hasOwnEmail;
     }
 
@@ -66,7 +66,7 @@ public class RiistanhoitoyhdistysDTO extends OrganisationDTO {
         return hasOwnPhoneNumber;
     }
 
-    public void setHasOwnPhoneNumber(boolean hasOwnPhoneNumber) {
+    public void setHasOwnPhoneNumber(final boolean hasOwnPhoneNumber) {
         this.hasOwnPhoneNumber = hasOwnPhoneNumber;
     }
 
@@ -74,7 +74,7 @@ public class RiistanhoitoyhdistysDTO extends OrganisationDTO {
         return address;
     }
 
-    public void setAddress(AddressDTO address) {
+    public void setAddress(final AddressDTO address) {
         this.address = address;
     }
 
@@ -82,7 +82,7 @@ public class RiistanhoitoyhdistysDTO extends OrganisationDTO {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(final String email) {
         this.email = email;
     }
 
@@ -90,7 +90,8 @@ public class RiistanhoitoyhdistysDTO extends OrganisationDTO {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
+    public void setPhoneNumber(final String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
 }

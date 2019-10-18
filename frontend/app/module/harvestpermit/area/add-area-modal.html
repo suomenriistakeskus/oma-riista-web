@@ -1,0 +1,95 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="harvestpermit.wizard.carnivore.map.addAreaModal.title"></h3>
+</div>
+<div class="modal-body col-xs-12">
+    <form name="addAreaForm">
+        <div class="row" ng-if="$ctrl.showClubs">
+            <div class="col-xs-4 text-right form-control-static">
+                <label class="control-label"
+                       translate="harvestpermit.wizard.carnivore.map.addAreaModal.huntingClub"></label>
+            </div>
+            <div class="col-xs-8">
+                <select class="form-control"
+                        name="selectedClub"
+                        id="selectedClub"
+                        ng-model="$ctrl.selectedClub"
+                        ng-change="$ctrl.reloadAreas()"
+                        ng-options="g.id as g.name for g in $ctrl.availableClubs"
+                        ng-if="$ctrl.showClubs">
+                </select>
+            </div>
+        </div>
+
+        <hr class="invisible">
+
+        <div class="row">
+            <div class="col-xs-4 text-right">
+                <label class="control-label form-control-static"
+                       translate="harvestpermit.wizard.carnivore.map.addAreaModal.area"></label>
+            </div>
+            <div class="col-xs-8" ng-if="!$ctrl.showClubs">
+                <select class="form-control ui-select-dropdown"
+                        name="selectedArea"
+                        id="selectedArea"
+                        ng-model="$ctrl.externalId"
+                        ng-options="g.externalId as g.name for g in $ctrl.areaList">
+                </select>
+            </div>
+            <div class="col-xs-8" ng-if="$ctrl.showClubs">
+                <select class="form-control"
+                        name="clubArea"
+                        id="clubArea"
+                        ng-model="$ctrl.externalId"
+                        ng-options="g.externalId as g.name for g in $ctrl.clubAreas">
+                </select>
+            </div>
+        </div>
+
+        <hr class="invisible">
+
+        <div class="row">
+            <div class="col-xs-8 col-xs-offset-4">
+                <label class="control-label"
+                       translate="harvestpermit.wizard.carnivore.map.addAreaModal.areaCodeInstruction"></label>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-xs-4 text-right">
+                <label class="control-label form-control-static"
+                       for="externalId"
+                       translate="harvestpermit.wizard.carnivore.map.addAreaModal.areaCode"></label>
+            </div>
+            <div class="col-xs-4">
+                <input type="text" name="externalId" id="externalId"
+                       class="form-control"
+                       minlength="10"
+                       maxlength="10"
+                       ng-pattern="/^[a-zA-Z0-9]{10,}$/"
+                       focus-me
+                       required
+                       ng-model="$ctrl.externalId">
+
+                <p class="help-block has-error"
+                   ng-show="addAreaForm.externalId.$invalid && addAreaForm.externalId.$touched"
+                   ng-messages="addAreaForm.externalId.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-click="$ctrl.cancel()"
+            translate="global.button.cancel"></button>
+    <button type="button" class="btn btn-primary pull-right"
+            ng-click="$ctrl.close()"
+            ng-disabled="!$ctrl.externalId">
+        <span translate="global.button.add"></span>
+    </button>
+</div>

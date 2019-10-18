@@ -1,8 +1,11 @@
 package fi.riista.feature.organization;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.util.LocalisedString;
 import org.hibernate.validator.constraints.SafeHtml;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class OrganisationNameDTO extends BaseEntityDTO<Long> {
 
@@ -18,19 +21,16 @@ public class OrganisationNameDTO extends BaseEntityDTO<Long> {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String nameSV;
 
-    public LocalisedString getNameLocalisation() {
-        return LocalisedString.of(nameFI, nameSV);
-    }
-
-    public static OrganisationNameDTO create(Organisation organisation) {
+    public static OrganisationNameDTO create(@Nonnull final Organisation organisation) {
         return new OrganisationNameDTO(organisation);
     }
 
-    public static OrganisationNameDTO createWithOfficialCode(Organisation organisation) {
+    public static OrganisationNameDTO createWithOfficialCode(@Nullable final Organisation organisation) {
         if (organisation == null) {
             return null;
         }
-        OrganisationNameDTO dto = new OrganisationNameDTO(organisation);
+
+        final OrganisationNameDTO dto = new OrganisationNameDTO(organisation);
         dto.setOfficialCode(organisation.getOfficialCode());
         return dto;
     }
@@ -38,12 +38,18 @@ public class OrganisationNameDTO extends BaseEntityDTO<Long> {
     public OrganisationNameDTO() {
     }
 
-    public OrganisationNameDTO(Organisation organisation) {
+    public OrganisationNameDTO(@Nonnull final Organisation organisation) {
         setId(organisation.getId());
         setRev(organisation.getConsistencyVersion());
         setNameFI(organisation.getNameFinnish());
         setNameSV(organisation.getNameSwedish());
     }
+
+    public LocalisedString getNameLocalisation() {
+        return LocalisedString.of(nameFI, nameSV);
+    }
+
+    // Accessors -->
 
     @Override
     public Long getId() {
@@ -51,7 +57,7 @@ public class OrganisationNameDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -61,7 +67,7 @@ public class OrganisationNameDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setRev(Integer rev) {
+    public void setRev(final Integer rev) {
         this.rev = rev;
     }
 
@@ -69,7 +75,7 @@ public class OrganisationNameDTO extends BaseEntityDTO<Long> {
         return officialCode;
     }
 
-    public void setOfficialCode(String officialCode) {
+    public void setOfficialCode(final String officialCode) {
         this.officialCode = officialCode;
     }
 
@@ -77,7 +83,7 @@ public class OrganisationNameDTO extends BaseEntityDTO<Long> {
         return nameFI;
     }
 
-    public void setNameFI(String nameFI) {
+    public void setNameFI(final String nameFI) {
         this.nameFI = nameFI;
     }
 
@@ -85,7 +91,7 @@ public class OrganisationNameDTO extends BaseEntityDTO<Long> {
         return nameSV;
     }
 
-    public void setNameSV(String nameSV) {
+    public void setNameSV(final String nameSV) {
         this.nameSV = nameSV;
     }
 

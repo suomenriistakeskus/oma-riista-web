@@ -16,6 +16,7 @@ module.exports = function (config) {
             '_public/frontend/js/vendor.angular.min.js',
             '_public/frontend/js/app.min.js',
             '_public/frontend/js/templates.js',
+            'test-metadata.js',
 
             // Load mocks for angular
             '../node_modules/angular-mocks/angular-mocks.js',

@@ -1,7 +1,6 @@
 package fi.riista.feature.gamediary.observation.metadata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -23,10 +22,8 @@ import java.util.Objects;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
-@JsonPropertyOrder({ "gameSpeciesCode", "baseFields", "specimenFields", "contextSensitiveFieldSets", "minWidthOfPaw", "maxWidthOfPaw", "minLengthOfPaw", "maxLengthOfPaw" })
 public class GameSpeciesObservationFieldRequirementsDTO {
 
-    @JsonPropertyOrder({ "withinMooseHunting", "type", "baseFields", "specimenFields", "allowedAges", "allowedStates", "allowedMarkings" })
     public static class ContextSensitiveFieldSetDTO implements Comparable<ContextSensitiveFieldSetDTO> {
 
         private final boolean withinMooseHunting;

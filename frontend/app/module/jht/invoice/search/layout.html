@@ -1,0 +1,29 @@
+<moderator-invoice-search-filters filters="$ctrl.filters"
+                                  available-hunting-years="$ctrl.availableHuntingYears"
+                                  available-species="$ctrl.availableSpecies"
+                                  search="$ctrl.search()">
+</moderator-invoice-search-filters>
+
+<hr ng-show="$ctrl.results">
+
+<div ng-if="$ctrl.results.length === 0" class="alert alert-info" translate="global.noSearchResults"></div>
+
+<div ng-switch="$ctrl.filters.type">
+    <div ng-switch-when="PERMIT_PROCESSING">
+        <processing-invoice-search-results results="$ctrl.results"
+                                           open-invoice="$ctrl.openInvoice(invoiceId)">
+        </processing-invoice-search-results>
+    </div>
+
+    <div ng-switch-when="PERMIT_HARVEST">
+        <harvest-invoice-search-results results="$ctrl.results"
+                                        open-invoice="$ctrl.openInvoice(invoiceId)">
+        </harvest-invoice-search-results>
+    </div>
+
+    <div ng-switch-default>
+        <generic-invoice-search-results results="$ctrl.results"
+                                        open-invoice="$ctrl.openInvoice(invoiceId)">
+        </generic-invoice-search-results>
+    </div>
+</div>

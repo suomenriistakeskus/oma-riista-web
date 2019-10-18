@@ -203,7 +203,7 @@ angular.module('app.common.map.directives', [])
     )
 
     .directive('rGeolocationMarker',
-        function ($parse, leafletMarkersHelpers, MapUtil, WGS84, GIS) {
+        function ($parse, leafletMarkersHelpers, versionUrlPrefix, MapUtil, WGS84, GIS) {
             var location = {};
 
             function updateCoordinates(lat, lng) {
@@ -272,7 +272,21 @@ angular.module('app.common.map.directives', [])
                     function _addMarker(map, geoLocation, draggable) {
                         var markerData = WGS84.fromETRS(geoLocation.latitude, geoLocation.longitude);
                         markerData.draggable = draggable;
+                        markerData.icon = {
+                            type: 'icon',
+                            icon: new L.Icon.Default({
+                                iconUrl: versionUrlPrefix + '/css/images/marker-icon.png',
+                                iconRetinaUrl: versionUrlPrefix + '/css/images/marker-icon-2x.png',
+                                shadowUrl: versionUrlPrefix + '/css/images/marker-shadow.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [1, -34],
+                                shadowSize: [41, 41]
+                            })
+                        };
+
                         scope.leafletMarker = _createMarker(markerData);
+
                         map.addLayer(scope.leafletMarker);
                         // accuracy circle
                         if (geoLocation.accuracy) {

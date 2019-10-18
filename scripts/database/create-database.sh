@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")" # Ensuring correct working directory
 set -e
-
+set -x
 DATABASE_NAME="$1"
 
 if [ -z "${DATABASE_NAME}" ]; then

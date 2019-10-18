@@ -1,6 +1,6 @@
 package fi.riista.feature.permit.area.hta;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.organization.OrganisationNameDTO;
 

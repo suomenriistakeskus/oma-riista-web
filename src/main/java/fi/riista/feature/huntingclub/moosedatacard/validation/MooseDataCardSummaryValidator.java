@@ -41,8 +41,9 @@ public class MooseDataCardSummaryValidator {
 
         MooseDataCardExtractor.findFirstPage7ContainingHuntingSummaryData(mooseDataCard).ifPresent(originalPage7 -> {
             MooseDataCardPage7MooselikeValidator.validate(originalPage7)
-                    .toEither().left().peek(errorMsgs::addAll)
-                    .toEither().right().peek(validPage7 -> {
+                    .toEither()
+                    .peekLeft(errorMsgs::addAll)
+                    .peek(validPage7 -> {
                         final MooseDataCardPage7 resultPage7 = MooseDataCardExtractor
                                 .findFirstPage7ContainingHuntingSummaryData(mutatedCardSupplier.get())
                                 .orElseThrow(() -> new IllegalStateException("Could not find moose data card page 7"));
@@ -58,18 +59,21 @@ public class MooseDataCardSummaryValidator {
                     .orElseThrow(() -> new IllegalStateException("Could not find moose data card page 8"));
 
             MooseDataCardSection81Validator.validate(originalPage8.getSection_8_1())
-                    .toEither().left().peek(errorMsgs::addAll)
-                    .toEither().right().peek(valid -> resultPage8Supplier.get().setSection_8_1(valid));
+                    .toEither()
+                    .peekLeft(errorMsgs::addAll)
+                    .peek(resultPage8Supplier.get()::setSection_8_1);
 
             // Section 8.2 not included because it relates to harvests which are validated elsewhere.
 
             MooseDataCardSection83Validator.validate(originalPage8.getSection_8_3())
-                    .toEither().left().peek(errorMsgs::addAll)
-                    .toEither().right().peek(valid -> resultPage8Supplier.get().setSection_8_3(valid));
+                    .toEither()
+                    .peekLeft(errorMsgs::addAll)
+                    .peek(resultPage8Supplier.get()::setSection_8_3);
 
             MooseDataCardSection84Validator.validate(originalPage8.getSection_8_4())
-                    .toEither().left().peek(errorMsgs::addAll)
-                    .toEither().right().peek(valid -> resultPage8Supplier.get().setSection_8_4(valid));
+                    .toEither()
+                    .peekLeft(errorMsgs::addAll)
+                    .peek(resultPage8Supplier.get()::setSection_8_4);
 
             final LocalDate huntingEndDate = originalPage8.getHuntingEndDate();
 

@@ -1,10 +1,10 @@
 package fi.riista.feature.gamediary;
 
 import fi.riista.feature.common.EnumLocaliser;
-import fi.riista.feature.common.dto.CodesetEntryDTO;
 import fi.riista.feature.gamediary.observation.metadata.ObservationContextSensitiveFields_;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.jpa.JpaSubQuery;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,14 +46,15 @@ public class GameSpeciesService {
                 .exists((root, cb) -> cb.isTrue(root.get(ObservationContextSensitiveFields_.withinMooseHunting)))));
     }
 
+    @Cacheable(value = "gameSpeciesNameIndex")
     @Transactional(readOnly = true)
     public Map<Integer, LocalisedString> getNameIndex() {
         return gameSpeciesRepository.findAll().stream()
                 .collect(toMap(GameSpecies::getOfficialCode, GameSpecies::getNameLocalisation));
     }
 
-    public List<CodesetEntryDTO> getCategories() {
-        return Arrays.stream(GameCategory.values()).map(enumValue -> new CodesetEntryDTO(
+    public List<GameCategoryDTO> getCategories() {
+        return Arrays.stream(GameCategory.values()).map(enumValue -> new GameCategoryDTO(
                 enumValue.getOfficialCode(), enumLocaliser.getLocalisedString(enumValue)))
                 .collect(toList());
     }

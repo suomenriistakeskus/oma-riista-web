@@ -2,6 +2,9 @@ package fi.riista.util;
 
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.common.money.FinnishBank;
+import fi.riista.feature.common.money.FinnishBankAccount;
+import org.iban4j.Bic;
 import org.iban4j.Iban;
 
 import javax.annotation.Nonnull;
@@ -85,6 +88,10 @@ public interface ValueGeneratorMixin {
         return SsnSequence.nextRealSsn();
     }
 
+    default String personName() {
+        return ValueGenerator.personName();
+    }
+
     default GeoLocation geoLocation() {
         return geoLocation(some(GeoLocation.Source.class));
     }
@@ -97,16 +104,36 @@ public interface ValueGeneratorMixin {
         return ValueGenerator.hunterNumber(getNumberGenerator());
     }
 
-    default String permitNumber(@Nonnull final String rka) {
-        return ValueGenerator.permitNumber(rka, getNumberGenerator());
+    default String permitNumber() {
+        return ValueGenerator.permitNumber(getNumberGenerator());
+    }
+
+    default String permitNumber(final int year) {
+        return permitNumber(year, 1);
+    }
+
+    default String permitNumber(final int year, final int yearsValid) {
+        return ValueGenerator.permitNumber(year, yearsValid, getNumberGenerator());
     }
 
     default CreditorReference creditorReference() {
         return ValueGenerator.creditorReference(getNumberGenerator());
     }
 
+    default Bic bic() {
+        return ValueGenerator.bic(getNumberGenerator());
+    }
+
     default Iban iban() {
-        return ValueGenerator.iban();
+        return ValueGenerator.iban(getNumberGenerator());
+    }
+
+    default Iban iban(final FinnishBank bank) {
+        return ValueGenerator.iban(bank, getNumberGenerator());
+    }
+
+    default FinnishBankAccount bankAccount() {
+        return ValueGenerator.bankAccount(getNumberGenerator());
     }
 
     default Double weight() {

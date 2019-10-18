@@ -1,6 +1,6 @@
 package fi.riista.feature.harvestpermit.season;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.util.DtoUtil;
 import fi.riista.validation.DoNotValidate;
 

@@ -5,10 +5,11 @@ import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTOBase;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersionSupport;
-import org.hibernate.validator.constraints.Range;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -38,7 +39,8 @@ public class MobileHarvestDTO extends HarvestDTOBase {
     protected Long mobileClientRefId;
 
     @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
-    @Range(min = Harvest.MIN_AMOUNT, max = Harvest.MAX_AMOUNT)
+    @Min(Harvest.MIN_AMOUNT)
+    @Max(Harvest.MAX_AMOUNT)
     protected Integer amount;
 
     @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)

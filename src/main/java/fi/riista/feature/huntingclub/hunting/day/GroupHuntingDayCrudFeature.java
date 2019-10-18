@@ -8,7 +8,7 @@ import fi.riista.feature.gamediary.harvest.HarvestRepository;
 import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
+import fi.riista.feature.huntingclub.permit.endofhunting.HuntingFinishingService;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.JpaSpecs;
@@ -47,7 +47,7 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
     private RequireEntityService requireEntityService;
 
     @Resource
-    private HuntingClubPermitService clubPermitService;
+    private HuntingFinishingService huntingFinishingService;
 
     @Override
     protected JpaRepository<GroupHuntingDay, Long> getRepository() {
@@ -60,8 +60,7 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
     }
 
     @Override
-    protected Enum<?> getCreatePermission(final GroupHuntingDay entity,
-                                          final GroupHuntingDayDTO dto) {
+    protected Enum<?> getCreatePermission(final GroupHuntingDay entity, final GroupHuntingDayDTO dto) {
         return entity.getGroup().isFromMooseDataCard()
                 ? GroupHuntingDayAuthorization.Permission.CREATE_WITHIN_MOOSE_DATA_CARD_IMPORT
                 : EntityPermission.CREATE;
@@ -92,7 +91,7 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
                     "startDate cannot be changed");
         }
 
-        if (clubPermitService.hasClubHuntingFinished(entity.getGroup())) {
+        if (huntingFinishingService.hasPermitPartnerFinishedHunting(entity.getGroup())) {
             throw new ClubHuntingFinishedException("Cannot add/update hunting day of group whose hunting is finished");
         }
 
@@ -131,7 +130,7 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
     @Override
     protected void delete(final GroupHuntingDay groupHuntingDay) {
 
-        if (clubPermitService.hasClubHuntingFinished(groupHuntingDay.getGroup())) {
+        if (huntingFinishingService.hasPermitPartnerFinishedHunting(groupHuntingDay.getGroup())) {
             throw new ClubHuntingFinishedException("Cannot delete hunting day for group whose hunting is finished");
         }
 

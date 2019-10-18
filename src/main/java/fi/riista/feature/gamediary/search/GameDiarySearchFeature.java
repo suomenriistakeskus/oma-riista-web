@@ -83,8 +83,8 @@ public class GameDiarySearchFeature {
                 srvaEventDTOTransformer.apply(srvaEvents));
     }
 
-    private Specification<Harvest> harvestSpecification(@Nonnull final GameDiarySearchDTO dto,
-                                                        @Nonnull final Person person) {
+    private static Specification<Harvest> harvestSpecification(@Nonnull final GameDiarySearchDTO dto,
+                                                               @Nonnull final Person person) {
         final Specification<Harvest> authorSpec = dto.isReportedForOthers()
                 ? authorButNotShooter(person)
                 : shooter(person);
@@ -105,7 +105,8 @@ public class GameDiarySearchFeature {
     }
 
     @Nonnull
-    private Specification<Observation> observationSpecification(final @Nonnull GameDiarySearchDTO dto, final Person person) {
+    private static Specification<Observation> observationSpecification(final @Nonnull GameDiarySearchDTO dto,
+                                                                       final Person person) {
         final Specification<Observation> authorSpec = dto.isReportedForOthers()
                 ? authorButNotObserver(person)
                 : observer(person);
@@ -116,7 +117,8 @@ public class GameDiarySearchFeature {
     }
 
     @Nonnull
-    private Specifications<SrvaEvent> srvaSpecification(final @Nonnull GameDiarySearchDTO dto, final Person person) {
+    private static Specifications<SrvaEvent> srvaSpecification(final @Nonnull GameDiarySearchDTO dto,
+                                                               final Person person) {
         return Specifications.where(SrvaSpecs.author(person))
                 .and(SrvaSpecs.withinInterval(dto.getInterval()));
     }

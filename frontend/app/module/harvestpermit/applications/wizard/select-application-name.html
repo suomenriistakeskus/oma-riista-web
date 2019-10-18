@@ -1,0 +1,61 @@
+<form name="applicationNameForm">
+    <h3 translate="harvestpermit.mine.applications.permitCategory.{{$ctrl.selectedCategory}}"></h3>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="form-group" show-errors>
+                <label for="applicationName" class="control-label">
+                    <span translate="harvestpermit.new.nameModal.nameLabel"></span>
+                </label>
+
+                <input name="applicationName" id="applicationName"
+                       class="form-control"
+                       ng-model="$ctrl.applicationName"
+                       minlength="5"
+                       maxlength="255"
+                       focus-me
+                       required/>
+
+                <p class="help-block has-error"
+                   ng-show="applicationNameForm.applicationName.$invalid"
+                   ng-messages="applicationNameForm.applicationName.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="invisible">
+
+    <p>
+        <span>
+            <strong translate="invoice.invoiceTypes.PERMIT_PROCESSING"></strong>
+            <strong>: {{$ctrl.selectedCategoryPrice | currency : '&euro;' : 0}}</strong>
+        </span>
+    </p>
+    <button class="btn btn-primary"
+            ng-disabled="applicationNameForm.applicationName.$invalid"
+            ng-click="$ctrl.onCreate({name : $ctrl.applicationName})">
+        <span translate="harvestpermit.new.createButton"></span>
+        <span class="glyphicon glyphicon-chevron-right"></span>
+    </button>
+</form>
+
+<hr class="invisible"/>
+
+<div class="alert alert-info">
+    <div class="row">
+        <div ng-switch="$ctrl.wizardType">
+            <div ng-switch-when="mooselike" class="col-xs-11">
+                <div ng-include="'harvestpermit.new.instructions.mooselikePath' | translate | withVersion"></div>
+            </div>
+            <div ng-switch-when="bird" class="col-xs-11">
+                <div ng-include="'harvestpermit.new.instructions.birdPath' | translate | withVersion"></div>
+            </div>
+            <div ng-switch-when="carnivore" class="col-xs-11">
+                <div ng-include="'harvestpermit.new.instructions.carnivorePath' | translate | withVersion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+

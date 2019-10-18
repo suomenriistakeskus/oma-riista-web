@@ -1,6 +1,6 @@
 package fi.riista.feature.harvestpermit.search;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountDTO;
 import fi.riista.util.DtoUtil;

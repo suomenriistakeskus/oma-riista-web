@@ -12,6 +12,11 @@ angular.module('app.event.services', ['ngResource'])
             'delete': {method: 'DELETE'}
         });
     })
+    .factory('EventsByYear', function ($resource) {
+        return $resource('api/v1/organisation/:orgId/events/year/:year', {"orgId": "@orgId", "year": "@year"}, {
+            'query': { method: 'GET', isArray: true}
+        });
+    })
     .factory('Venues', function ($resource) {
         return $resource('api/v1/organisation/:orgId/venues/:id', {"orgId": "@orgId", "id": "@id"}, {
             'query': { method: 'GET', isArray: true},

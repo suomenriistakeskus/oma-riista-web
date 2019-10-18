@@ -27,6 +27,9 @@ public class PermitDecisionActionFeature {
     private PermitDecisionActionRepository permitDecisionActionRepository;
 
     @Resource
+    private PermitDecisionActionDTOTransformer permitDecisionActionDTOTransformer;
+
+    @Resource
     private PermitDecisionTextService permitDecisionTextService;
 
     @Resource
@@ -36,8 +39,7 @@ public class PermitDecisionActionFeature {
     public List<PermitDecisionActionDTO> listActions(final long decisionId) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.READ);
 
-        return decision.getActions().stream()
-                .map(PermitDecisionActionDTO::create)
+        return permitDecisionActionDTOTransformer.transform(decision.getActions()).stream()
                 .sorted(Comparator.comparing(PermitDecisionActionDTO::getPointOfTime).reversed())
                 .collect(toList());
     }

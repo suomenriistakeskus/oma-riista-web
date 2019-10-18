@@ -190,11 +190,13 @@ public class HarvestFieldValidatorTest {
         assertThat(validator.getMissingFields(), hasSize(0));
     }
 
-    private RequiredHarvestFields.Report createFields(final Required required) {
+    private static RequiredHarvestFields.Report createFields(final Required required) {
         return createFields(required, required);
     }
 
-    private RequiredHarvestFields.Report createFields(final Required required, final Required huntingAreaTypeAndParty) {
+    private static RequiredHarvestFields.Report createFields(final Required required,
+                                                             final Required huntingAreaTypeAndParty) {
+
         // bogus constructor fields, because all methods are overridden
         return new RequiredHarvestFields.Report(2017, 1, HarvestReportingType.BASIC) {
             @Override

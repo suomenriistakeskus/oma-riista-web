@@ -1,7 +1,6 @@
 package fi.riista.feature.shootingtest;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.QPerson;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ListTransformer;
@@ -23,13 +22,14 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @Component
-public class ShootingTestParticipantDTOTransformer extends ListTransformer<ShootingTestParticipant, ShootingTestParticipantDTO> {
+public class ShootingTestParticipantDTOTransformer
+        extends ListTransformer<ShootingTestParticipant, ShootingTestParticipantDTO> {
 
     @Resource
     private JPAQueryFactory queryFactory;
 
     private static ShootingTestParticipantDTO create(@Nonnull final ShootingTestParticipant participant,
-                                                     @Nonnull final Person person,
+                                                     @Nonnull final PersonInfo person,
                                                      @Nonnull final List<ShootingTestParticipantDTO.AttemptDTO> attemptDTOs) {
 
         Objects.requireNonNull(participant);
@@ -40,9 +40,9 @@ public class ShootingTestParticipantDTOTransformer extends ListTransformer<Shoot
         dto.setId(participant.getId());
         dto.setRev(participant.getConsistencyVersion());
 
-        dto.setLastName(person.getLastName());
-        dto.setFirstName(person.getFirstName());
-        dto.setHunterNumber(person.getHunterNumber());
+        dto.setLastName(person.lastName);
+        dto.setFirstName(person.firstName);
+        dto.setHunterNumber(person.hunterNumber);
 
         dto.setMooseTestIntended(participant.isMooseTestIntended());
         dto.setBearTestIntended(participant.isBearTestIntended());
@@ -68,8 +68,9 @@ public class ShootingTestParticipantDTOTransformer extends ListTransformer<Shoot
             return emptyList();
         }
 
-        final Map<Long, Person> participantIdToPersonMapping = getParticipantIdToPersonMapping(list);
-        final Map<Long, Map<ShootingTestType, Map<ShootingTestAttemptResult, Long>>> allAttempts = countAllAttempts(list);
+        final Map<Long, PersonInfo> participantIdToPersonMapping = getParticipantIdToPersonMapping(list);
+        final Map<Long, Map<ShootingTestType, Map<ShootingTestAttemptResult, Long>>> allAttempts =
+                countAllAttempts(list);
 
         return list.stream()
                 .sorted(comparing(ShootingTestParticipant::getRegistrationTime))
@@ -91,7 +92,8 @@ public class ShootingTestParticipantDTOTransformer extends ListTransformer<Shoot
 
                                 final boolean qualified = resultToCount.containsKey(QUALIFIED);
 
-                                return new ShootingTestParticipantDTO.AttemptDTO(type, numberOfChargeableAttempts, qualified);
+                                return new ShootingTestParticipantDTO.AttemptDTO(type, numberOfChargeableAttempts,
+                                        qualified);
                             })
                             .sorted(comparing(dto -> dto.getType()))
                             .collect(toList());
@@ -104,18 +106,21 @@ public class ShootingTestParticipantDTOTransformer extends ListTransformer<Shoot
                 .collect(toList());
     }
 
-    private Map<Long, Person> getParticipantIdToPersonMapping(final List<ShootingTestParticipant> participants) {
+    private Map<Long, PersonInfo> getParticipantIdToPersonMapping(final List<ShootingTestParticipant> participants) {
         final QShootingTestParticipant PARTICIPANT = QShootingTestParticipant.shootingTestParticipant;
         final QPerson PERSON = QPerson.person;
 
         return queryFactory
-                .select(PARTICIPANT.id, PERSON)
+                .select(PARTICIPANT.id, PERSON.firstName, PERSON.lastName, PERSON.hunterNumber)
                 .from(PARTICIPANT)
-                .join(PARTICIPANT.person, PERSON)
+                .leftJoin(PARTICIPANT.person, PERSON)
                 .where(PARTICIPANT.in(participants))
                 .fetch()
                 .stream()
-                .collect(toMap(t -> t.get(PARTICIPANT.id), t -> t.get(PERSON)));
+                .collect(toMap(
+                        t -> t.get(PARTICIPANT.id),
+                        t -> new PersonInfo(t.get(PERSON.firstName), t.get(PERSON.lastName),
+                                t.get(PERSON.hunterNumber))));
     }
 
     private Map<Long, Map<ShootingTestType, Map<ShootingTestAttemptResult, Long>>> countAllAttempts(final List<ShootingTestParticipant> participants) {
@@ -134,5 +139,18 @@ public class ShootingTestParticipantDTOTransformer extends ListTransformer<Shoot
                         groupingBy(
                                 t -> t.get(ATTEMPT.type),
                                 toMap(t -> t.get(ATTEMPT.result), t -> t.get(ATTEMPT.type.count())))));
+    }
+
+    private static class PersonInfo {
+
+        private final String firstName;
+        private final String lastName;
+        private final String hunterNumber;
+
+        public PersonInfo(final String firstName, final String lastName, final String hunterNumber) {
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.hunterNumber = hunterNumber;
+        }
     }
 }

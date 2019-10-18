@@ -1,22 +1,20 @@
 <nav class="navbar r-subnav-navbar navbar-permit" role="navigation">
     <div class="container">
-        <div class="navbar-collapse collapse" class="in">
-            <ul class="nav navbar-nav r-subnav-nav">
-                <li active-if-state-includes="permitmanagement.dashboard, permitmanagement.allocation, permitmanagement.map, permitmanagement.tables">
-                    <a ui-sref="permitmanagement.dashboard"
-                       translate="harvestpermit.management.nav.home"></a>
-                </li>
+        <ul class="nav navbar-nav r-subnav-nav">
+            <li active-if-state-includes="permitmanagement.dashboard, permitmanagement.allocation, permitmanagement.map, permitmanagement.tables, permitmanagement.endofmooselikehunting, permitmanagement.amendment">
+                <a ui-sref="permitmanagement.dashboard"
+                   translate="harvestpermit.management.nav.home"></a>
+            </li>
 
-                <li active-if-state-includes="permitmanagement.payment">
-                    <a ui-sref="permitmanagement.payment.due">
-                        <span translate="harvestpermit.management.nav.payments"></span>
-                        <span class="badge r-badge-red"
-                              ng-show="$navCtrl.duePaymentsCount > 0"
-                              ng-bind="$navCtrl.duePaymentsCount"></span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+            <li active-if-state-includes="permitmanagement.payment">
+                <a ui-sref="permitmanagement.payment.due">
+                    <span translate="harvestpermit.management.nav.payments"></span>
+                    <span class="badge r-badge-red"
+                          ng-show="$navCtrl.paymentAlertCount > 0"
+                          ng-bind="$navCtrl.paymentAlertCount"></span>
+                </a>
+            </li>
+        </ul>
     </div>
 </nav>
 

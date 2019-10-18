@@ -10,6 +10,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.joda.time.LocalDate;
 import org.junit.Before;
@@ -162,9 +163,12 @@ public class HarvestPermitAuthorizationTest extends EmbeddedDatabaseTest {
         }));
     }
 
-    private void testPermitHolderAndPartner(Person clubMember, HuntingClub club, Set<HuntingClub> partners) {
+    private void testPermitHolderAndPartner(final Person clubMember, final HuntingClub club, final Set<HuntingClub> partners) {
         final HarvestPermit permit = model().newHarvestPermit(newRhy());
-        permit.setPermitHolder(club);
+        if (club != null) {
+            permit.setHuntingClub(club);
+            permit.setPermitHolder(PermitHolder.createHolderForClub(club));
+        }
         permit.setPermitPartners(partners);
 
         onSavedAndAuthenticated(createUser(clubMember), () -> {
@@ -237,7 +241,8 @@ public class HarvestPermitAuthorizationTest extends EmbeddedDatabaseTest {
         }
 
         HarvestPermit permit = model().newHarvestPermit(rhy);
-        permit.setPermitHolder(holderClub);
+        permit.setHuntingClub(holderClub);
+        permit.setPermitHolder(PermitHolder.createHolderForClub(holderClub));
         permit.setPermitPartners(Sets.newHashSet(partnerClub, holderClub));
 
         if (groupIsAttachedToPermit) {

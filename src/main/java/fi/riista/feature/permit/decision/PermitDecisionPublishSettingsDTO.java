@@ -8,7 +8,6 @@ import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
 import javax.validation.constraints.NotNull;
-import java.util.Locale;
 
 public class PermitDecisionPublishSettingsDTO {
 
@@ -18,8 +17,7 @@ public class PermitDecisionPublishSettingsDTO {
     @NotNull
     private LocalDate publishDate;
 
-    @NotNull
-    private Locale locale;
+    private PermitDecision.AppealStatus appealStatus;
 
     @NotNull
     @JsonSerialize(using = LocalTimeToStringSerializer.class)
@@ -50,11 +48,11 @@ public class PermitDecisionPublishSettingsDTO {
         this.publishTime = publishTime;
     }
 
-    public Locale getLocale() {
-        return locale;
+    public PermitDecision.AppealStatus getAppealStatus() {
+        return appealStatus;
     }
 
-    public void setLocale(final Locale locale) {
-        this.locale = locale;
+    public void setAppealStatus(final PermitDecision.AppealStatus appealStatus) {
+        this.appealStatus = appealStatus;
     }
 }

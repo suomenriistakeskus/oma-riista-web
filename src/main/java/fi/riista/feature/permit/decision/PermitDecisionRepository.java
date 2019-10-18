@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface PermitDecisionRepository extends BaseRepository<PermitDecision, Long> {
+public interface PermitDecisionRepository extends BaseRepository<PermitDecision, Long>, PermitDecisionRepositoryCustom {
 
     @Query("SELECT d FROM PermitDecision d WHERE d.application = ?1")
     PermitDecision findOneByApplication(final HarvestPermitApplication application);

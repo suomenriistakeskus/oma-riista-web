@@ -1,0 +1,39 @@
+<ng-form name="birdApplicantForm" r-force-show-errors-check-validity>
+    <div class="alert alert-info">
+        <span class="fa fa-info-circle"></span>
+
+        <div class="alert-content">
+            <p class="alert-title" translate="harvestpermit.wizard.applicant.instructionsTitle"></p>
+
+            <p translate="harvestpermit.wizard.applicant.instructions"></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="h3">
+                <span class="fa fa-fw fa-user"></span>
+                <span translate="harvestpermit.wizard.applicant.contactPerson"></span>
+            </div>
+
+            <div class="well" style="min-height: 140px; margin-top: 60px">
+                <permit-application-wizard-contact-person
+                        person="$ctrl.contactPerson"></permit-application-wizard-contact-person>
+            </div>
+        </div>
+
+        <harvest-permit-derogation-application-applicant
+                permit-holder="$ctrl.permitHolder"
+                contact-person="$ctrl.contactPerson"></harvest-permit-derogation-application-applicant>
+    </div>
+</ng-form>
+
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(birdApplicantForm)"
+        previous-disabled="$ctrl.constantTrue()"
+        previous="$ctrl.previous()"
+        next-disabled="$ctrl.isNextDisabled(birdApplicantForm)"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

@@ -99,7 +99,7 @@ angular.module('app.clubhunting.data', [])
                 })
                 .value();
 
-            var existingHuntingDates = _(huntingDays).pluck('startDate').map(formatDate).value();
+            var existingHuntingDates = _(huntingDays).map('startDate').map(formatDate).value();
             var allHuntingDates = _.keys(diaryWithoutHuntingDay);
             var missingHuntingDays = _.difference(allHuntingDates, existingHuntingDates);
 
@@ -134,13 +134,13 @@ angular.module('app.clubhunting.data', [])
                 var diary = _.chain([byStartDate, byEndDate, byHuntingDayId])
                     .filter()
                     .flatten()
-                    .sortByOrder('pointOfTime', false)
+                    .orderBy('pointOfTime', 'desc')
                     .value();
 
                 huntingDay.gameEntries = diary;
                 huntingDay.canEdit = groupStatus.canEditHuntingDay;
-                huntingDay.totalHarvestSpecimenCount = _(diary).filter(_.method('isHarvest')).sum('totalSpecimenAmount');
-                huntingDay.totalObservationSpecimenCount = _(diary).filter(_.method('isObservation')).sum('totalSpecimenAmount');
+                huntingDay.totalHarvestSpecimenCount = _(diary).filter(_.method('isHarvest')).sumBy('totalSpecimenAmount');
+                huntingDay.totalObservationSpecimenCount = _(diary).filter(_.method('isObservation')).sumBy('totalSpecimenAmount');
             });
         }
 
@@ -196,7 +196,9 @@ angular.module('app.clubhunting.data', [])
 
             if (data.huntingYear) {
                 if (speciesCode) {
-                    data.species = _.find(data.speciesWithinSelectedYear, 'code', speciesCode);
+                    data.species = _.find(data.speciesWithinSelectedYear, {
+                        code: speciesCode
+                    });
                 }
 
                 if (!data.species) {
@@ -210,7 +212,9 @@ angular.module('app.clubhunting.data', [])
 
                 if (_.size(data.huntingGroups) > 0) {
                     if (groupId) {
-                        data.huntingGroup = _.find(data.huntingGroups, 'id', groupId);
+                        data.huntingGroup = _.find(data.huntingGroups, {
+                            id: groupId
+                        });
                     }
 
                     if (!data.huntingGroup) {
@@ -241,7 +245,7 @@ angular.module('app.clubhunting.data', [])
             speciesGroupedByYear = _(huntingGroups)
                 .groupBy('huntingYear')
                 .mapValues(function (groups) {
-                    return _(groups).map('species').uniq('code').value();
+                    return _(groups).map('species').uniqBy('code').value();
                 })
                 .value();
 
@@ -312,7 +316,7 @@ angular.module('app.clubhunting.data', [])
         };
 
         this.findHuntingDay = function (where) {
-            return _.isObject(where) ? _.findWhere(data.huntingDays, where) : null;
+            return _.isObject(where) ? _.find(data.huntingDays, where) : null;
         };
 
         this.isMooseGroupSelected = function () {

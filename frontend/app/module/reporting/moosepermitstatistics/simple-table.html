@@ -1,0 +1,203 @@
+<div class="table-responsive" ng-if="$ctrl.statistics">
+    <table class="table table-condensed moosepermit-statistics-table simple">
+        <thead>
+        <tr class="topheader">
+            <th colspan="2">&nbsp;</th>
+            <th>
+                <span translate="reporting.moosePermitStatistics.permitTotalTop"></span>
+            </th>
+            <th colspan="10">
+                <span translate="reporting.moosePermitStatistics.permitUsedTop"></span>
+            </th>
+            <th colspan="2">
+                <span translate="reporting.moosePermitStatistics.remaining.top"></span>
+            </th>
+            <th colspan="2">
+                <span translate="reporting.moosePermitStatistics.area.top"></span>
+            </th>
+            <th colspan="2">
+                <span translate="reporting.moosePermitStatistics.remainingPer1000.top"></span>
+            </th>
+        </tr>
+        <tr class="lowheader">
+            <th></th>
+            <th translate="reporting.moosePermitStatistics.permit"></th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.permitTotal"
+                                tooltip-key="reporting.moosePermitStatistics.permitTotalTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.au"
+                                tooltip-key="reporting.moosePermitStatistics.auTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.an"
+                                tooltip-key="reporting.moosePermitStatistics.anTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.a"
+                                tooltip-key="reporting.moosePermitStatistics.aTooltip"></r-with-tooltip>
+            </th>
+
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.vu"
+                                tooltip-key="reporting.moosePermitStatistics.vuTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.vn"
+                                tooltip-key="reporting.moosePermitStatistics.vnTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.v"
+                                tooltip-key="reporting.moosePermitStatistics.vTooltip"></r-with-tooltip>
+            </th>
+
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.total"
+                                tooltip-key="reporting.moosePermitStatistics.totalTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.permitUsedPercentage"
+                                tooltip-key="reporting.moosePermitStatistics.permitUsedPercentageTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.vPercentage"
+                                tooltip-key="reporting.moosePermitStatistics.vPercentageTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.auPercentage"
+                                tooltip-key="reporting.moosePermitStatistics.auPercentageTooltip"></r-with-tooltip>
+            </th>
+
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.remaining.total"
+                                tooltip-key="reporting.moosePermitStatistics.remaining.totalTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.remaining.effective"
+                                tooltip-key="reporting.moosePermitStatistics.remaining.effectiveTooltip"></r-with-tooltip>
+            </th>
+
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.area.total"
+                                tooltip-key="reporting.moosePermitStatistics.area.totalTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.area.effective"
+                                tooltip-key="reporting.moosePermitStatistics.area.effectiveTooltip"></r-with-tooltip>
+            </th>
+
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.remainingPer1000.total"
+                                tooltip-key="reporting.moosePermitStatistics.remainingPer1000.totalTooltip"></r-with-tooltip>
+            </th>
+            <th>
+                <r-with-tooltip content-key="reporting.moosePermitStatistics.remainingPer1000.effective"
+                                tooltip-key="reporting.moosePermitStatistics.remainingPer1000.effectiveTooltip"></r-with-tooltip>
+            </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr ng-repeat="s in $ctrl.statistics"
+            ng-class="{'summary': $ctrl.isSummaryRow(s)}">
+            <td>
+                <span uib-tooltip="{{ 'reporting.moosePermitStatistics.huntingFinished' | translate }}"
+                      tooltip-popup-delay="0" tooltip-placement="right">
+                    <span ng-show="::s.permitAmount.mooselikeHuntingFinished"
+                          class="fa fa-fw fa-lock text-danger"></span>
+                </span>
+            </td>
+            <td>
+                <div ng-if="::($ctrl.isSummaryRow(s))" translate="reporting.moosePermitStatistics.totalRowTitle"></div>
+
+                <div ng-if="::s.permitNumber">
+                    <div ng-switch="::($ctrl.canNavigateToPermit())">
+                        <a ng-switch-when="true"
+                           ng-click="$ctrl.onRowClick(s)">
+                            <span ng-bind="::s.permitNumber"></span>
+                        </a>
+
+                        <div ng-switch-default>
+                            <span ng-bind="::s.permitNumber"></span>
+                            <br>
+                            <span ng-bind="::s.permitHolder | rI18nNameFilter"></span>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.permitAmount.total | number:1}}"
+                                tooltip-key="reporting.moosePermitStatistics.permitTotalTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.harvestCount.adultMales}}"
+                                tooltip-key="reporting.moosePermitStatistics.auTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.harvestCount.adultFemales}}"
+                                tooltip-key="reporting.moosePermitStatistics.anTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.harvestCount.adults}}"
+                                tooltip-key="reporting.moosePermitStatistics.aTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.harvestCount.youngMales}}"
+                                tooltip-key="reporting.moosePermitStatistics.vuTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.harvestCount.youngFemales}}"
+                                tooltip-key="reporting.moosePermitStatistics.vnTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.harvestCount.young}}"
+                                tooltip-key="reporting.moosePermitStatistics.vTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.harvestCount.total}}"
+                                tooltip-key="reporting.moosePermitStatistics.totalTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip
+                        content-val="{{::s.usedPermitPercentage | number:1}}"
+                        tooltip-key="reporting.moosePermitStatistics.permitUsedPercentageTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.harvestCount.youngPercentage | number:0}}"
+                                tooltip-key="reporting.moosePermitStatistics.vPercentageTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.harvestCount.adultMalePercentage | number:0}}"
+                                tooltip-key="reporting.moosePermitStatistics.auPercentageTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.areaAndPopulation.remainingPopulationInTotalArea }}"
+                                tooltip-key="reporting.moosePermitStatistics.remaining.totalTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.areaAndPopulation.remainingPopulationInEffectiveArea }}"
+                                tooltip-key="reporting.moosePermitStatistics.remaining.effectiveTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.areaAndPopulation.totalAreaSize}}"
+                                tooltip-key="reporting.moosePermitStatistics.area.totalTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip content-val="{{::s.areaAndPopulation.effectiveAreaSize}}"
+                                tooltip-key="reporting.moosePermitStatistics.area.effectiveTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip
+                        content-val="{{::s.areaAndPopulation.remainingPopulationInTotalAreaPer1000ha | number: 2}}"
+                        tooltip-key="reporting.moosePermitStatistics.remainingPer1000.totalTooltip"></r-with-tooltip>
+            </td>
+            <td>
+                <r-with-tooltip
+                        content-val="{{::s.areaAndPopulation.remainingPopulationInEffectiveAreaPer1000ha | number: 2}}"
+                        tooltip-key="reporting.moosePermitStatistics.remainingPer1000.effectiveTooltip"></r-with-tooltip>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

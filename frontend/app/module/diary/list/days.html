@@ -15,7 +15,7 @@
                     </div>
 
                     <div class="col2">
-                        <span class="harvest-date" 
+                        <span class="harvest-date"
                               ng-bind="::(group.pointOfTime|date:'d.M.yyyy')"></span>
                     </div>
 
@@ -55,7 +55,7 @@
                 </div>
 
                 <div class="col2">
-                    <span class="species-name" ng-bind="getGameName(entry.gameSpeciesCode)"></span>
+                    <span class="species-name" ng-bind="::entry.gameSpeciesCode | translateSpeciesCode"></span>
 
                     <span class="fa fa-lock text-danger" ng-if="!entry.canEdit"></span>
                     <span class="fa fa-institution text-warning" ng-if="entry.moderatorOverride"

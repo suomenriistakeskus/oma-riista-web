@@ -2,7 +2,7 @@
 
 <p class="text-primary" style="font-weight: 700; font-size: 18px; margin: 25px 0 35px;">
     <span translate="payment.amount"></span>
-    <span ng-bind="::$ctrl.invoice.amount"></span> &euro;
+    <span ng-bind="::$ctrl.invoice.amount | currency: '&euro;' : 2"></span>
 </p>
 
 <div class="row">

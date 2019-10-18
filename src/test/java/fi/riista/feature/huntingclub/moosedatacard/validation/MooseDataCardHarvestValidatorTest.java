@@ -1,9 +1,9 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
 import com.kscs.util.jaxb.Copyable;
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
-import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest;
 import io.vavr.control.Validation;
 import org.joda.time.LocalDate;

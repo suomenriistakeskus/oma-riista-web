@@ -14,16 +14,10 @@ import fi.riista.feature.organization.person.PersonAuthorization;
 import fi.riista.security.EntityPermission;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.session.FindByIndexNameSessionRepository;
-import org.springframework.session.Session;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 
 @Component
 @PreAuthorize("hasRole('ROLE_USER')")
@@ -31,6 +25,9 @@ public class AccountEditFeature {
 
     @Resource
     private ActiveUserService activeUserService;
+
+    @Resource
+    private AccountSessionService accountSessionService;
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -43,9 +40,6 @@ public class AccountEditFeature {
 
     @Resource
     private AuditService auditService;
-
-    @Resource
-    private FindByIndexNameSessionRepository<? extends Session> sessionRepository;
 
     @Transactional
     public void updateAddress(final AccountAddressDTO dto) {
@@ -133,24 +127,14 @@ public class AccountEditFeature {
         final Person person = requireEntityService.requirePerson(personId, PersonAuthorization.Permission.DEACTIVATE);
         person.deactivate();
 
-        deleteSessions(person.listUsernames());
+        accountSessionService.deleteSessions(person.listUsernames());
 
         auditService.log("deactivate", person);
     }
 
-    private void deleteSessions(final List<String> usernames) {
-        usernames.stream()
-                .flatMap(this::findSessionKeysByUsername)
-                .forEach(sessionRepository::delete);
-    }
-
-    private Stream<String> findSessionKeysByUsername(final String username) {
-        return sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX_NAME, username).keySet().stream();
-    }
-
     @Transactional
-    public void toggleActivationOfSrvaFeature(final boolean enableSrva) {
-        final Person person = activeUserService.requireActivePerson();
+    public void toggleActivationOfSrvaFeature(final long personId, final boolean enableSrva) {
+        final Person person = requireEntityService.requirePerson(personId, EntityPermission.UPDATE);
         person.setEnableSrva(enableSrva);
 
         if (enableSrva) {
@@ -161,8 +145,8 @@ public class AccountEditFeature {
     }
 
     @Transactional
-    public void toggleActivationOfShootingTestFeature(final boolean enableShootingTests) {
-        final Person person = activeUserService.requireActivePerson();
+    public void toggleActivationOfShootingTestFeature(final long personId, final boolean enableShootingTests) {
+        final Person person = requireEntityService.requirePerson(personId, EntityPermission.UPDATE);
         person.setEnableShootingTests(enableShootingTests);
 
         if (enableShootingTests) {

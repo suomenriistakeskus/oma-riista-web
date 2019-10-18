@@ -1,0 +1,198 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p translate="harvestpermit.wizard.bird.map.instructions"></p>
+    </div>
+</div>
+
+<form name="protectedAreaForm" r-force-show-errors-check-validity>
+    <div class="form-group" show-errors>
+        <label for="protectedAreaName" translate="harvestpermit.wizard.bird.map.areaName"></label>
+
+        <input type="text" class="form-control"
+               name="protectedAreaName" id="protectedAreaName"
+               ng-model="$ctrl.protectedAreaInfo.name"
+               minlength="5" maxlength="255"
+               required>
+
+        <p class="help-block has-error"
+           ng-show="protectedAreaForm.protectedAreaName.$invalid && protectedAreaForm.protectedAreaName.$touched"
+           ng-messages="protectedAreaForm.protectedAreaName.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label for="protectedAreaStreetAddress" translate="harvestpermit.wizard.bird.map.streetAddress"></label>
+
+        <input type="text" class="form-control"
+               name="protectedAreaStreetAddress" id="protectedAreaStreetAddress"
+               ng-model="$ctrl.protectedAreaInfo.streetAddress"
+               minlength="5" maxlength="255"
+               required>
+
+        <p class="help-block has-error"
+           ng-show="protectedAreaForm.protectedAreaStreetAddress.$invalid && protectedAreaForm.protectedAreaStreetAddress.$touched"
+           ng-messages="protectedAreaForm.protectedAreaStreetAddress.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group" show-errors>
+                <label for="protectedAreaPostalCode" translate="harvestpermit.wizard.bird.map.postalCode"></label>
+
+                <input type="text" class="form-control"
+                       id="protectedAreaPostalCode" name="protectedAreaPostalCode"
+                       ng-model="$ctrl.protectedAreaInfo.postalCode"
+                       ng-pattern="/^[0-9]{1,10}$/"
+                       maxlength="10"
+                       required>
+
+                <p class="help-block has-error"
+                   ng-show="protectedAreaForm.protectedAreaPostalCode.$invalid && protectedAreaForm.protectedAreaPostalCode.$touched"
+                   ng-messages="protectedAreaForm.protectedAreaPostalCode.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="form-group" show-errors>
+                <label for="protectedAreaCity" translate="harvestpermit.wizard.bird.map.city"></label>
+
+                <input type="text" class="form-control"
+                       id="protectedAreaCity" name="protectedAreaCity"
+                       ng-model="$ctrl.protectedAreaInfo.city"
+                       maxlength="255"
+                       required>
+
+                <p class="help-block has-error"
+                   ng-show="protectedAreaForm.protectedAreaCity.$invalid && protectedAreaForm.protectedAreaCity.$touched"
+                   ng-messages="protectedAreaForm.protectedAreaCity.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+
+            <div class="form-group" show-errors>
+                <label for="protectedAreaSize" translate="harvestpermit.wizard.bird.map.areaSize"></label>
+
+                <div class="input-group">
+                    <input type="number" class="form-control"
+                           id="protectedAreaSize" name="protectedAreaSize"
+                           min="1" max="999999"
+                           ng-model="$ctrl.protectedAreaInfo.protectedAreSize"
+                           required>
+
+                    <div class="input-group-addon">
+                        <span translate="global.hectares"></span>
+                    </div>
+                </div>
+
+                <p class="help-block has-error"
+                   ng-show="protectedAreaForm.protectedAreaSize.$invalid && protectedAreaForm.protectedAreaSize.$touched"
+                   ng-messages="protectedAreaForm.protectedAreaSize.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="form-group" show-errors>
+                <label for="protectedAreaType" translate="harvestpermit.wizard.bird.map.areaType"></label>
+
+                <select class="form-control"
+                        id="protectedAreaType" name="protectedAreaType"
+                        ng-model="$ctrl.protectedAreaInfo.protectedAreaType"
+                        ng-options="a as ('harvestpermit.derogation.area.type.' + a | translate) for a in $ctrl.availableProtectedAreaTypes"
+                        required>
+                    <option value="" disabled translate="harvestpermit.wizard.bird.map.typeNotSelected"></option>
+                </select>
+
+                <p class="help-block has-error"
+                   ng-show="protectedAreaForm.protectedAreaType.$invalid && protectedAreaForm.protectedAreaType.$touched"
+                   ng-messages="protectedAreaForm.protectedAreaType.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label for="descriptionOfRights" translate="harvestpermit.wizard.bird.map.descriptionOfRights"></label>
+
+        <textarea class="form-control" name="descriptionOfRights" id="descriptionOfRights" rows="6"
+                  ng-model="$ctrl.protectedAreaInfo.descriptionOfRights"
+                  required>
+                </textarea>
+
+        <p class="help-block has-error"
+           ng-show="protectedAreaForm.descriptionOfRights.$invalid && protectedAreaForm.descriptionOfRights.$touched"
+           ng-messages="protectedAreaForm.descriptionOfRights.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+</form>
+
+<hr class="invisible">
+<hr class="invisible">
+
+<div class="alert alert-info">
+    <span ng-if="$ctrl.protectedAreaInfo.geoLocation" class="fa fa-info-circle"></span>
+    <span ng-if="!$ctrl.protectedAreaInfo.geoLocation" class="fa fa-exclamation-triangle"></span>
+
+    <div class="alert-content">
+        <span translate="harvestpermit.wizard.bird.map.geoLocationInstruction"></span>
+    </div>
+</div>
+
+<bird-application-location-editor protected-area="$ctrl.protectedAreaInfo"></bird-application-location-editor>
+
+<hr class="invisible">
+
+<div class="alert alert-danger">
+    <div ng-switch="$ctrl.protectedAreaAttachmentList.length > 0">
+        <span ng-switch-when="true" class="fa fa-info-circle"></span>
+        <span ng-switch-when="false" class="fa fa-exclamation-triangle"></span>
+    </div>
+
+    <div class="alert-content">
+        <p translate="harvestpermit.wizard.bird.map.attachmentInstruction"></p>
+    </div>
+</div>
+
+<div class="bird-application-wizard-area-attachment"
+     ng-repeat="a in $ctrl.protectedAreaAttachmentList track by a.id">
+    <div class="attachment-logo">
+        <span class="fa fa-2x fa-file-o text-primary"></span>
+    </div>
+
+    <div class="attachment-name" ng-bind="a.name"></div>
+
+    <div class="remove-button">
+        <a ng-click="$ctrl.removeAttachment(a)">
+            <span class="fa fa-lg fa-fw fa-remove text-danger"></span>
+        </a>
+    </div>
+</div>
+
+<hr class="invisible">
+
+<permit-application-attachment-upload
+        uri="$ctrl.attachmentBaseUri"
+        attachment-type="'PROTECTED_AREA'"
+        done="$ctrl.attachmentUploadComplete(fileName, response)"></permit-application-attachment-upload>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(protectedAreaForm)"
+        previous="$ctrl.previous(protectedAreaForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(protectedAreaForm)">
+</permit-application-wizard-navigation>

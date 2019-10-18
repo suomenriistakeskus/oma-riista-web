@@ -1,12 +1,10 @@
 package fi.riista.feature;
 
-import fi.riista.util.Locales;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.net.URI;
-import java.util.Locale;
 
 import static org.springframework.util.StringUtils.hasText;
 
@@ -40,10 +38,6 @@ public class RuntimeEnvironmentUtil {
         }
 
         return hasText(gitCommitIdAbbrev) ? gitCommitIdAbbrev : Long.toHexString(JVM_STARTUP_TIMESTAMP);
-    }
-
-    public Locale getDefaultLocale() {
-        return Locales.FI;
     }
 
     public String getEnvironmentId() {

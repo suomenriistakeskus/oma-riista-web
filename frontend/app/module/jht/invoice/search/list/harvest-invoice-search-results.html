@@ -1,0 +1,50 @@
+<table ng-if="$ctrl.results.length > 0" class="table table-condensed table-striped invoice-search-results">
+    <thead>
+        <tr>
+            <th></th>
+            <th>
+                <div translate="invoice.invoiceNumber"></div>
+                <div translate="payment.creditorReference"></div>
+            </th>
+            <th translate="invoice.recipient" style="vertical-align: top;"></th>
+            <th translate="jht.invoice.search.invoiceDate" style="vertical-align: top;"></th>
+            <th translate="payment.dueDate" style="vertical-align: top;"></th>
+            <th translate="global.sum" style="vertical-align: top;"></th>
+            <th translate="jht.invoice.search.receivedAmount" style="vertical-align: top;"></th>
+            <th translate="jht.invoice.amountDifference" style="vertical-align: top;"></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="invoice in $ctrl.results track by invoice.id">
+            <td>
+                <invoice-list-item-delivery-type value="invoice.deliveryType"></invoice-list-item-delivery-type>
+            </td>
+            <td>
+                <div ng-bind="::invoice.invoiceNumber"></div>
+                <div ng-bind="::invoice.creditorReference"></div>
+            </td>
+            <td>
+                <div ng-bind="::invoice.invoiceRecipientName"></div>
+                <div>
+                    <span ng-bind="::invoice.invoiceRecipientAddress.streetAddress"></span>,
+                    <span ng-bind="::invoice.invoiceRecipientAddress.postalCode"></span>
+                    <span ng-bind="::invoice.invoiceRecipientAddress.city"></span>
+                </div>
+            </td>
+            <td ng-bind="::invoice.invoiceDate | date: 'd.M.yyyy'"></td>
+            <td ng-bind="::invoice.dueDate | date: 'd.M.yyyy'"></td>
+            <td ng-bind="::invoice.paymentAmount | currency: '&euro;': 2"></td>
+            <td ng-bind="invoice.receivedAmount | currency: '&euro;': 2"></td>
+            <td ng-class="{'mismatching-payment': invoice.paymentAmount !== invoice.receivedAmount}"
+                ng-bind="(invoice.paymentAmount - invoice.receivedAmount) | currency: '&euro;': 2"></td>
+            <td>
+                <button type="button"
+                        class="btn btn-primary btn-block"
+                        ng-click="$ctrl.openInvoice({invoiceId: invoice.id})">
+                    <span translate="global.button.open"></span>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>

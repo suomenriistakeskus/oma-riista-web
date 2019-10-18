@@ -78,7 +78,7 @@ angular.module('app.jht.moosedatacard', [])
                 dz = $scope.dropzone,
                 queuedFiles = dz.getQueuedFiles();
 
-            if (queuedFiles.length > 0 && _.pluck(queuedFiles, 'name').indexOf(file.name) >= 0) {
+            if (queuedFiles.length > 0 && _.map(queuedFiles, 'name').indexOf(file.name) >= 0) {
                 done(errorCodes.duplicate);
                 return;
             }
@@ -193,7 +193,7 @@ angular.module('app.jht.moosedatacard', [])
                         acceptedFiles = dz.getAcceptedFiles();
 
                     if (acceptedFiles.length > 0) {
-                        acceptedFilenames = _.pluck(acceptedFiles, 'name');
+                        acceptedFilenames = _.map(acceptedFiles, 'name');
 
                         _.forEach(files, function (file) {
                             if (acceptedFilenames.indexOf(file.name) >= 0) {

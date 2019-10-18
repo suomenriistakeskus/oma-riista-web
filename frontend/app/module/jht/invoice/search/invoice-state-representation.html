@@ -1,0 +1,7 @@
+<span class="{{$ctrl.getColorClass()}}"
+      uib-tooltip="{{'invoice.states.' + $ctrl.state | translate}}"
+      tooltip-enable="$ctrl.showIconOnly">
+
+    <span class="fa fa-fw {{$ctrl.getIconClass()}}" ng-class="$ctrl.largeIcon ? 'fa-lg' : ''"></span>
+    <span ng-if="!$ctrl.showIconOnly" ng-bind="'invoice.states.' + $ctrl.state | translate"></span>
+</span>

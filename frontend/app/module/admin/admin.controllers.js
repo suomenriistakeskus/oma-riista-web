@@ -12,5 +12,4 @@ angular.module('app.admin.controllers', [])
                 url: '/home',
                 template: '<dashboard></dashboard>'
             });
-    })
-;
+    });

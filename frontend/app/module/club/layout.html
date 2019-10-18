@@ -1,40 +1,41 @@
 <nav class="navbar r-subnav-navbar" role="navigation">
     <div class="container">
-        <div class="navbar-collapse collapse" class="in">
-            <ul class="nav navbar-nav r-subnav-nav" ng-show="authenticated">
-                <li active-if-state-includes="club.main">
-                    <a ui-sref="club.main({ id: club.id })" translate="club.menu.main"></a>
-                </li>
+        <ul class="nav navbar-nav r-subnav-nav">
+            <li active-if-state-includes="club.main">
+                <a ui-sref="club.main({ id: club.id })" translate="club.menu.main"></a>
+            </li>
 
-                <li active-if-state-includes="club.announcements">
-                    <a ui-sref="club.announcements" translate="announcements.list.title"></a>
-                </li>
+            <li active-if-state-includes="club.announcements">
+                <a ui-sref="club.announcements" translate="announcements.list.title"></a>
+            </li>
 
-                <li active-if-state-includes="club.area,club.map">
-                    <a ui-sref="club.area.list({ id: club.id })" translate="club.menu.areas"></a>
-                </li>
+            <li active-if-state-includes="club.area,club.map">
+                <a ui-sref="club.area.list({ id: club.id })" translate="club.menu.areas"></a>
+            </li>
 
-                <li active-if-state-includes="club.members">
-                    <a ui-sref="club.members({ id: club.id })" translate="club.menu.members"></a>
-                </li>
+            <li active-if-state-includes="club.members">
+                <a ui-sref="club.members({ id: club.id })" translate="club.menu.members"></a>
+            </li>
 
-                <li active-if-state-includes="club.groups">
-                    <a ui-sref="club.groups({ id: club.id })" translate="club.menu.groups"></a>
-                </li>
+            <li active-if-state-includes="club.groups">
+                <a ui-sref="club.groups({ id: club.id })">
+                    <span translate="club.menu.groups"></span>
+                    <span ng-if="::groupTodos" class="r-account-todo">!</span>
+                </a>
+            </li>
 
-                <li active-if-state-includes="club.hunting,club.hunting.add">
-                    <a ui-sref="club.hunting({ id: club.id })" translate="club.menu.hunting"></a>
-                </li>
+            <li active-if-state-includes="club.hunting,club.hunting.add">
+                <a ui-sref="club.hunting({ id: club.id })" translate="club.menu.hunting"></a>
+            </li>
 
-                <li active-if-state-includes="club.permit">
-                    <a ui-sref="club.permit" translate="club.menu.permits"></a>
-                </li>
+            <li active-if-state-includes="club.permit">
+                <a ui-sref="club.permit" translate="club.menu.permits"></a>
+            </li>
 
-                <li active-if-state-includes="club.harvestsummary">
-                    <a ui-sref="club.harvestsummary({ id: club.id })" translate="club.menu.harvestsummary"></a>
-                </li>
-            </ul>
-        </div>
+            <li active-if-state-includes="club.harvestsummary">
+                <a ui-sref="club.harvestsummary({ id: club.id })" translate="club.menu.harvestsummary"></a>
+            </li>
+        </ul>
     </div>
 </nav>
 <div riista-container-css>

@@ -5,6 +5,7 @@ public enum PermitDecisionSectionIdentifier {
     applicationReasoning,
     processing,
     decision,
+    decisionExtra,
     decisionReasoning,
     restriction,
     restrictionExtra,

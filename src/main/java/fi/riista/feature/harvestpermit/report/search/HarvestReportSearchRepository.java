@@ -26,7 +26,7 @@ import java.util.List;
 @Service
 public class HarvestReportSearchRepository {
 
-    private static final int MAX_RESULTS = 10_000;
+    private static final int MAX_RESULTS = 100_000;
 
     @Resource
     private GameSpeciesService gameSpeciesService;

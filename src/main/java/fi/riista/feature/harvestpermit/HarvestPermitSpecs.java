@@ -1,11 +1,10 @@
 package fi.riista.feature.harvestpermit;
 
-import fi.riista.feature.gamediary.GameDiaryEntry_;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpecies_;
-import fi.riista.feature.gamediary.harvest.Harvest_;
 import fi.riista.feature.organization.Organisation_;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.JpaSpecs;
 import fi.riista.util.jpa.JpaSubQuery;
@@ -33,14 +32,14 @@ import static fi.riista.util.jpa.JpaSpecs.pathToValueExists;
 public final class HarvestPermitSpecs {
 
     public static final Specification<HarvestPermit> IS_MOOSELIKE_PERMIT =
-            equal(HarvestPermit_.permitTypeCode, HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+            equal(HarvestPermit_.permitTypeCode, PermitTypeCode.MOOSELIKE);
 
     public static final Specification<HarvestPermit> IS_NOT_ANY_MOOSELIKE_PERMIT = and(
-            notEqual(HarvestPermit_.permitTypeCode, HarvestPermit.MOOSELIKE_PERMIT_TYPE),
-            notEqual(HarvestPermit_.permitTypeCode, HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE));
+            notEqual(HarvestPermit_.permitTypeCode, PermitTypeCode.MOOSELIKE),
+            notEqual(HarvestPermit_.permitTypeCode, PermitTypeCode.MOOSELIKE_AMENDMENT));
 
     public static final Specification<HarvestPermit> IS_NOT_MOOSELIKE_AMENDMENT_PERMIT =
-            notEqual(HarvestPermit_.permitTypeCode, HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE);
+            notEqual(HarvestPermit_.permitTypeCode, PermitTypeCode.MOOSELIKE_AMENDMENT);
 
     public static Specification<HarvestPermit> withPermitNumber(@Nonnull final String permitNumber) {
         return equal(HarvestPermit_.permitNumber, permitNumber);
@@ -68,10 +67,6 @@ public final class HarvestPermitSpecs {
         return joinPathToId(HarvestPermit_.rhy, Organisation_.parentOrganisation, Organisation_.id, areaId);
     }
 
-    public static Specification<HarvestPermit> harvestReportNotDone() {
-        return JpaSpecs.isNull(HarvestPermit_.harvestReportState);
-    }
-
     public static Specification<HarvestPermit> isPermitContactPerson(final Person person) {
         //person is null when current user is moderator or admin
         if (person == null) {
@@ -84,14 +79,6 @@ public final class HarvestPermitSpecs {
         return Specifications
                 .where(equal(HarvestPermit_.originalContactPerson, person))
                 .or(contactPerson);
-    }
-
-    public static Specification<HarvestPermit> withHarvestAuthor(final Person author) {
-        return pathToValueExists(Harvest_.harvestPermit, GameDiaryEntry_.author, author);
-    }
-
-    public static Specification<HarvestPermit> withHarvestShooter(final Person shooter) {
-        return pathToValueExists(Harvest_.harvestPermit, Harvest_.actualShooter, shooter);
     }
 
     public static Specification<HarvestPermit> validWithinHuntingYear(final int huntingYear) {

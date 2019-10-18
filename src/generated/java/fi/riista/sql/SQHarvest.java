@@ -137,37 +137,39 @@ public class SQHarvest extends RelationalPathSpatial<SQHarvest> {
 
     public final com.querydsl.sql.PrimaryKey<SQHarvest> harvestPkey = createPrimaryKey(harvestId);
 
-    public final com.querydsl.sql.ForeignKey<SQGroupHuntingDay> harvestGroupHuntingDayFk = createForeignKey(groupHuntingDayId, "group_hunting_day_id");
-
-    public final com.querydsl.sql.ForeignKey<SQGeolocationSource> harvestGeolocationSourceFk = createForeignKey(geolocationSource, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestRhyFk = createForeignKey(rhyId, "organisation_id");
-
-    public final com.querydsl.sql.ForeignKey<SQHarvestLukeStatus> harvestLukeStatusFk = createForeignKey(lukeStatus, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQHarvestSeason> harvestHarvestSeasonFk = createForeignKey(harvestSeasonId, "harvest_season_id");
-
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> harvestHarvestPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
-
-    public final com.querydsl.sql.ForeignKey<SQHarvestReportState> harvestHarvestReportStateFk = createForeignKey(harvestReportState, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQPerson> harvestApproverToHuntingDayPersonIdFk = createForeignKey(approverToHuntingDayId, "person_id");
-
-    public final com.querydsl.sql.ForeignKey<SQGameSpecies> harvestSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestStateAcceptedToHarvestPermit> harvestHarvestStateAcceptedToHarvestPermitFk = createForeignKey(stateAcceptedToHarvestPermit, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQPerson> harvestAuthorFk = createForeignKey(authorId, "person_id");
+    public final com.querydsl.sql.ForeignKey<SQHarvestLukeStatus> harvestLukeStatusFk = createForeignKey(lukeStatus, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQGroupHuntingDay> harvestGroupHuntingDayFk = createForeignKey(groupHuntingDayId, "group_hunting_day_id");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestRhyFk = createForeignKey(rhyId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestSeason> harvestHarvestSeasonFk = createForeignKey(harvestSeasonId, "harvest_season_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPerson> harvestActualShooterFk = createForeignKey(actualShooterId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQGameSpecies> harvestSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
+
+    public final com.querydsl.sql.ForeignKey<SQGeolocationSource> harvestGeolocationSourceFk = createForeignKey(geolocationSource, "name");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestQuota> harvestHarvestQuotaFk = createForeignKey(harvestQuotaId, "harvest_quota_id");
 
     public final com.querydsl.sql.ForeignKey<SQPerson> harvestHarvestReportAuthorFk = createForeignKey(harvestReportAuthorId, "person_id");
 
-    public final com.querydsl.sql.ForeignKey<SQPerson> harvestActualShooterFk = createForeignKey(actualShooterId, "person_id");
+    public final com.querydsl.sql.ForeignKey<SQPerson> harvestApproverToHuntingDayPersonIdFk = createForeignKey(approverToHuntingDayId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestReportState> harvestHarvestReportStateFk = createForeignKey(harvestReportState, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQPerson> harvestAuthorFk = createForeignKey(authorId, "person_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestChangeHistory> _harvestChangeHistoryHarvestFk = createInvForeignKey(harvestId, "harvest_id");
 
     public final com.querydsl.sql.ForeignKey<SQGroupHarvestRejection> _groupHarvestRejectionHarvestFk = createInvForeignKey(harvestId, "harvest_id");
+
+    public final com.querydsl.sql.ForeignKey<SQAmendmentApplicationData> _amendmentApplicationDataHarvestIdFk = createInvForeignKey(harvestId, "non_edible_harvest_id");
 
     public final com.querydsl.sql.ForeignKey<SQGameDiaryImage> _gameDiaryImageHarvestFk = createInvForeignKey(harvestId, "harvest_id");
 

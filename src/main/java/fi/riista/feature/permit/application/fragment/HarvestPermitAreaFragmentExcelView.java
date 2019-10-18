@@ -2,11 +2,11 @@ package fi.riista.feature.permit.application.fragment;
 
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.gis.zone.TotalLandWaterSizeDTO;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
 import fi.riista.util.MediaTypeExtras;
-import fi.riista.util.NumberUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
@@ -34,28 +34,29 @@ public class HarvestPermitAreaFragmentExcelView extends AbstractXlsxView {
             "yksityismaaAreaSize",
 
             "propertyIdentifier",
+            "propertyName",
             "propertyAreaSize",
             "metsahallitus"
     };
 
     private final EnumLocaliser localiser;
 
-    private final String permitNumber;
+    private final int applicationNumber;
     private final List<HarvestPermitAreaFragmentInfoDTO> rows;
 
     public HarvestPermitAreaFragmentExcelView(final EnumLocaliser localiser,
-                                              final String permitNumber,
+                                              final int applicationNumber,
                                               final List<HarvestPermitAreaFragmentInfoDTO> rows) {
         this.localiser = Objects.requireNonNull(localiser);
-        this.permitNumber = Objects.requireNonNull(permitNumber);
+        this.applicationNumber = applicationNumber;
         this.rows = Objects.requireNonNull(rows);
     }
 
     private String createFilename() {
-        return String.format(
-                "Sirpaleet-%s-Pvm-%se.xlsx",
-                permitNumber,
-                Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
+        final String prefix = localiser.getTranslation(COLUMN_HEADER_PREFIX + "filename");
+        final String timestamp = Constants.FILENAME_TS_PATTERN.print(DateUtil.now());
+
+        return String.format(prefix + "-%d-%s.xlsx", applicationNumber, timestamp);
     }
 
     @Override
@@ -73,38 +74,36 @@ public class HarvestPermitAreaFragmentExcelView extends AbstractXlsxView {
         final ExcelHelper helper = new ExcelHelper(workbook);
         helper.appendHeaderRow(localiser.translate(COLUMN_HEADER_PREFIX, COLUMN_HEADERS));
 
-        String previousHash = null;
-        for (final HarvestPermitAreaFragmentInfoDTO f : rows) {
+        for (final HarvestPermitAreaFragmentInfoDTO fragment : rows) {
             helper.appendRow();
-            helper.appendTextCell(f.getHash());
+            helper.appendTextCell(fragment.getHash());
 
-            if (Objects.equals(previousHash, f.getHash())) {
-                helper.appendEmptyCell(9);
-            } else {
-                helper.appendNumberCell(NumberUtils.squareMetersToHectares(f.getAreaSize() - f.getWaterAreaSize()));
-                helper.appendNumberCell(NumberUtils.squareMetersToHectares(f.getWaterAreaSize()));
-                helper.appendNumberCell(NumberUtils.squareMetersToHectares(f.getAreaSize()));
+            addSizeColumns(fragment.getBothSize(), helper);
+            addSizeColumns(fragment.getStateSize(), helper);
+            addSizeColumns(fragment.getPrivateSize(), helper);
 
-                helper.appendNumberCell(NumberUtils.squareMetersToHectares(f.getValtionmaaAreaSize() - f.getValtionmaaWaterAreaSize()));
-                helper.appendNumberCell(NumberUtils.squareMetersToHectares(f.getValtionmaaWaterAreaSize()));
-                helper.appendNumberCell(NumberUtils.squareMetersToHectares(f.getValtionmaaAreaSize()));
+            int propertyCounter = 0;
 
-                final double yksityismaaAreaSize = f.getAreaSize() - f.getValtionmaaAreaSize();
-                final double yksityismaaWaterAreaSize = f.getWaterAreaSize() - f.getValtionmaaWaterAreaSize();
-                final double yksityismaaLandAreaSize = yksityismaaAreaSize - yksityismaaWaterAreaSize;
+            for (final HarvestPermitAreaFragmentPropertyDTO property : fragment.getPropertyNumbers()) {
+                if (propertyCounter++ > 0) {
+                    helper.appendRow();
+                    helper.appendTextCell(fragment.getHash());
+                    helper.appendEmptyCell(9);
+                }
 
-                helper.appendNumberCell(NumberUtils.squareMetersToHectares(yksityismaaLandAreaSize));
-                helper.appendNumberCell(NumberUtils.squareMetersToHectares(yksityismaaWaterAreaSize));
-                helper.appendNumberCell(NumberUtils.squareMetersToHectares(yksityismaaAreaSize));
+                helper.appendTextCell(property.getPropertyNumber());
+                helper.appendTextCell(property.getPropertyName());
+                helper.appendDoubleCell(property.getPropertyArea() / 10_000, 2);
+                helper.appendTextCell(property.isMetsahallitus() ? booleanTrue : booleanFalse);
             }
-
-            helper.appendTextCell(f.getPropertyNumber());
-            helper.appendNumberCell(NumberUtils.squareMetersToHectares(f.getPropertyArea()));
-            helper.appendTextCell(f.isMetsahallitus() ? booleanTrue : booleanFalse);
-
-            previousHash = f.getHash();
         }
 
         helper.autoSizeColumns();
+    }
+
+    private static void addSizeColumns(final TotalLandWaterSizeDTO size, final ExcelHelper helper) {
+        helper.appendDoubleCell(size.getLand() / 10_000, 2);
+        helper.appendDoubleCell(size.getWater() / 10_000, 2);
+        helper.appendDoubleCell(size.getTotal() / 10_000, 2);
     }
 }

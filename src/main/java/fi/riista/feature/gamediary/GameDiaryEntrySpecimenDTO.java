@@ -1,6 +1,6 @@
 package fi.riista.feature.gamediary;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 
 public abstract class GameDiaryEntrySpecimenDTO extends BaseEntityDTO<Long> {
 

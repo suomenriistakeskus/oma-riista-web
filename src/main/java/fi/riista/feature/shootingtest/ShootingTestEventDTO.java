@@ -1,6 +1,6 @@
 package fi.riista.feature.shootingtest;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.calendar.CalendarEvent;
 import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;

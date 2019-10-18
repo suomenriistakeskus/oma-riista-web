@@ -4,7 +4,7 @@
     angular.module('app.layout.idle', [])
         .controller('IdleController', IdleController);
 
-    function IdleController($rootScope, $scope, $uibModal,
+    function IdleController($rootScope, $state, $scope, $uibModal,
                             Keepalive, Idle, Title,
                             UnsavedChangesConfirmationService) {
         var originalTitle = Title.value();
@@ -53,8 +53,7 @@
                 // Prevent opening another warning dialog on navigation
                 UnsavedChangesConfirmationService.setChanges(false);
 
-                window.location = '#';
-                window.location.reload();
+                $state.go('login');
             });
         });
 

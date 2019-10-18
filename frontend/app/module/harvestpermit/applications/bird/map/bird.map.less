@@ -1,0 +1,36 @@
+.bird-application-wizard-area-attachment + .bird-application-wizard-area-attachment {
+}
+
+.bird-application-wizard-area-attachment {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  overflow: hidden;
+  border-top: 1px solid #eee;
+  box-sizing: border-box;
+
+  > .attachment-logo {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: @brand-primary;
+  }
+
+  > .attachment-name {
+    position: absolute;
+    left: 55px;
+    top: 50%;
+    right: 45px;
+    transform: translateY(-50%);
+    overflow: hidden;
+    text-overflow: ellipsis
+  }
+
+  > .remove-button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}

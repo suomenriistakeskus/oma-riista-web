@@ -4,6 +4,8 @@ import fi.riista.feature.common.entity.BicConverter;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.IbanConverter;
 import fi.riista.feature.common.entity.LifecycleEntity;
+import fi.riista.feature.common.money.FinnishBank;
+import fi.riista.feature.common.money.FinnishBankAccount;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.permit.invoice.search.InvoiceDeliveryType;
 import fi.riista.feature.permit.invoice.search.InvoiceDisplayState;
@@ -14,6 +16,7 @@ import org.iban4j.Bic;
 import org.iban4j.Iban;
 import org.joda.time.LocalDate;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
@@ -31,15 +34,22 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Optional;
 
 import static fi.riista.feature.permit.invoice.InvoiceState.DELIVERED;
 import static fi.riista.feature.permit.invoice.InvoiceState.PAID;
 import static fi.riista.feature.permit.invoice.InvoiceState.REMINDER;
+import static fi.riista.feature.permit.invoice.InvoiceState.VOID;
 import static fi.riista.util.DateUtil.today;
+import static fi.riista.util.NumberUtils.bigDecimalIsPositive;
+import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 // Common data for all invoices
 @Entity
@@ -56,9 +66,8 @@ public class Invoice extends LifecycleEntity<Long> {
     private InvoiceType type;
 
     // Must meet Fivaldi constraints (max 8 digits and must not collide with existing Fivaldi invoice numbers)
-    @NotNull
     @Column(nullable = false)
-    private Integer invoiceNumber;
+    private int invoiceNumber;
 
     @NotNull
     @Convert(converter = BicConverter.class)
@@ -89,6 +98,14 @@ public class Invoice extends LifecycleEntity<Long> {
     @NotNull
     @Column(nullable = false)
     private BigDecimal amount;
+
+    // Corrected amount will be set instead of amount when invoice has transitioned to PAID state.
+    @Column
+    private BigDecimal correctedAmount;
+
+    // Accumulated money sum from one or multiple account transfers parsed from account statements.
+    @Column
+    private BigDecimal receivedAmount;
 
     @NotNull
     @Valid
@@ -134,26 +151,45 @@ public class Invoice extends LifecycleEntity<Long> {
         // For Hibernate
     }
 
-    public Invoice(final boolean electronicInvoicingEnabled) {
+    public Invoice(final InvoiceType type, final boolean electronicInvoicingEnabled) {
+        this.type = type;
         this.electronicInvoicingEnabled = electronicInvoicingEnabled;
         this.originalDeliveryByEmail = electronicInvoicingEnabled;
     }
 
     @Transient
-    public void assertStateTransition(final EnumSet<InvoiceState> allowedFromStates, final InvoiceState toState) {
+    @AssertTrue
+    public boolean isMatchBetweenBicAndIban() {
+        return Objects.equals(bic, FinnishBank.resolveBic(iban));
+    }
+
+    @Transient
+    public void updateInvoiceAndDueDate(@Nonnull final LocalDate invoiceDate) {
+        this.invoiceDate = requireNonNull(invoiceDate);
+        this.dueDate = type.calculateDueDate(invoiceDate);
+    }
+
+    @Transient
+    private void assertStateTransition(final EnumSet<InvoiceState> allowedFromStates, final InvoiceState toState) {
         if (!allowedFromStates.contains(this.state)) {
-            throw new IllegalStateException(String.format(
-                    "Illegal state transition from %s to %s for invoice id=%d",
-                    this.state.name(), toState.name(), this.id));
+            throw new IllegalStateException(format(
+                    "Illegal state transition from %s to %s for invoice id=%d", state.name(), toState.name(), id));
         }
     }
 
     @Transient
     public void setStateReminder() {
-        assertStateTransition(EnumSet.of(DELIVERED, REMINDER), REMINDER);
+        switch (type) {
+            case PERMIT_PROCESSING:
+                assertStateTransition(EnumSet.of(DELIVERED, REMINDER), REMINDER);
+                break;
+            case PERMIT_HARVEST:
+                assertStateTransition(EnumSet.of(DELIVERED, REMINDER, PAID), REMINDER);
+                break;
+        }
 
         if (electronicInvoicingEnabled) {
-            throw new IllegalStateException(String.format(
+            throw new IllegalStateException(format(
                     "Cannot transition invoice state to %s when electronic invoicing is enabled for invoice id=%d",
                     REMINDER.name(), this.id));
         }
@@ -161,43 +197,111 @@ public class Invoice extends LifecycleEntity<Long> {
         this.state = InvoiceState.REMINDER;
     }
 
+    @Transient
     public void disableElectronicInvoicing() {
-        if (state == PAID) {
-            throw new IllegalStateException("Cannot disable electronic invoicing for paid invoice id=" + id);
-        }
         if (!electronicInvoicingEnabled) {
             throw new IllegalStateException("Electronic invoicing is already disabled for invoice id=" + id);
         }
+
+        if (type == InvoiceType.PERMIT_PROCESSING) {
+            if (state == PAID) {
+                throw new IllegalStateException("Cannot disable electronic invoicing for paid processing invoice id=" + id);
+            }
+        } else if (type == InvoiceType.PERMIT_HARVEST) {
+            // If receivedAmount is null then a relating account statement is not yet received
+            // => Need to wait for it
+            if (state == PAID && receivedAmount == null || !hasRemainingAmount()) {
+                throw new IllegalStateException("Cannot disable electronic invoicing for harvest invoice id=" + id);
+            }
+        }
+
         this.electronicInvoicingEnabled = false;
     }
 
     @Transient
-    public InvoiceDisplayState getDisplayState() {
-        switch (state) {
-            case CREATED:
-                return InvoiceDisplayState.CREATED;
-            case DELIVERED:
-                return today().isAfter(dueDate) ? InvoiceDisplayState.OVERDUE : InvoiceDisplayState.DELIVERED;
-            case PAID:
-                return InvoiceDisplayState.PAID;
-            case REMINDER:
-                return InvoiceDisplayState.REMINDER;
-            case VOID:
-                return InvoiceDisplayState.VOID;
-            case UNKNOWN:
+    public boolean isReceiptAvailable() {
+        switch (type) {
+            case PERMIT_PROCESSING:
+                return state == PAID;
+            case PERMIT_HARVEST:
+                return state == PAID || receivedAmount != null;
             default:
-                return InvoiceDisplayState.UNKNOWN;
+                throw new IllegalStateException("Unknown invoice type: " + type);
         }
     }
 
     @Transient
+    public BigDecimal getReceiptAmount() {
+        switch (type) {
+            case PERMIT_PROCESSING:
+                return state == PAID ? amount : BigDecimal.ZERO;
+            case PERMIT_HARVEST:
+                return Optional
+                        .ofNullable(receivedAmount)
+                        // If account statement for Paytrail payment not yet received => Use invoice amount
+                        .orElseGet(() -> paytrailPaymentId != null ? amount : BigDecimal.ZERO);
+        }
+        throw new IllegalStateException("Unknown invoice type: " + type);
+    }
+
+    @Transient
+    public BigDecimal getRemainingAmount() {
+        final BigDecimal invoicedAmount = Optional.ofNullable(correctedAmount).orElse(amount);
+        return receivedAmount != null ? invoicedAmount.subtract(receivedAmount) : invoicedAmount;
+    }
+
+    @Transient
+    public boolean hasRemainingAmount() {
+        return bigDecimalIsPositive(getRemainingAmount());
+    }
+
+    @Transient
+    public InvoiceDisplayState getDisplayState() {
+        return InvoiceDisplayState.from(state, isDueDateInPast());
+    }
+
+    @Transient
     public InvoiceDeliveryType getDeliveryType() {
-        return electronicInvoicingEnabled ? InvoiceDeliveryType.EMAIL : InvoiceDeliveryType.LETTER;
+        return electronicInvoicingEnabled ? InvoiceDeliveryType.ELECTRONIC : InvoiceDeliveryType.MAIL;
+    }
+
+    @Transient
+    public FinnishBankAccount resolveBankAccountDetails() {
+        return FinnishBankAccount.fromIban(iban);
     }
 
     @Transient
     public boolean isOverdue() {
-        return EnumSet.of(DELIVERED, REMINDER).contains(state) && today().isAfter(dueDate);
+        switch (type) {
+            case PERMIT_PROCESSING:
+                return (state == DELIVERED || state == REMINDER) && isDueDateInPast();
+            case PERMIT_HARVEST:
+                return state != VOID && isDueDateInPast() && hasRemainingAmount();
+            default:
+                throw new IllegalStateException("Unknown invoice type: " + type);
+        }
+    }
+
+    @Transient
+    public boolean isPaytrailPaymentInitiated() {
+        return paytrailPaymentId != null;
+    }
+
+    @Transient
+    public void setPaid(@Nonnull final LocalDate paymentDate) {
+        setState(PAID);
+        setPaymentDate(requireNonNull(paymentDate));
+    }
+
+    @Transient
+    public void setIbanAndBic(@Nonnull final FinnishBankAccount bankAccount) {
+        requireNonNull(bankAccount);
+        setBic(bankAccount.getBic());
+        setIban(bankAccount.getIban());
+    }
+
+    private boolean isDueDateInPast() {
+        return today().isAfter(dueDate);
     }
 
     // Accessors -->
@@ -220,15 +324,15 @@ public class Invoice extends LifecycleEntity<Long> {
         return type;
     }
 
-    public void setType(final InvoiceType type) {
+    /* package */ void setType(final InvoiceType type) {
         this.type = type;
     }
 
-    public Integer getInvoiceNumber() {
+    public int getInvoiceNumber() {
         return invoiceNumber;
     }
 
-    public void setInvoiceNumber(final Integer invoiceNumber) {
+    public void setInvoiceNumber(final int invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
     }
 
@@ -236,7 +340,7 @@ public class Invoice extends LifecycleEntity<Long> {
         return bic;
     }
 
-    public void setBic(final Bic bic) {
+    /* package */ void setBic(final Bic bic) {
         this.bic = bic;
     }
 
@@ -244,7 +348,7 @@ public class Invoice extends LifecycleEntity<Long> {
         return iban;
     }
 
-    public void setIban(final Iban iban) {
+    /* package */ void setIban(final Iban iban) {
         this.iban = iban;
     }
 
@@ -260,7 +364,7 @@ public class Invoice extends LifecycleEntity<Long> {
         return invoiceDate;
     }
 
-    public void setInvoiceDate(final LocalDate invoiceDate) {
+    /* package */ void setInvoiceDate(final LocalDate invoiceDate) {
         this.invoiceDate = invoiceDate;
     }
 
@@ -268,7 +372,7 @@ public class Invoice extends LifecycleEntity<Long> {
         return dueDate;
     }
 
-    public void setDueDate(final LocalDate dueDate) {
+    /* package */ void setDueDate(final LocalDate dueDate) {
         this.dueDate = dueDate;
     }
 
@@ -286,6 +390,22 @@ public class Invoice extends LifecycleEntity<Long> {
 
     public void setAmount(final BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public BigDecimal getCorrectedAmount() {
+        return correctedAmount;
+    }
+
+    public void setCorrectedAmount(final BigDecimal correctedAmount) {
+        this.correctedAmount = correctedAmount;
+    }
+
+    public BigDecimal getReceivedAmount() {
+        return receivedAmount;
+    }
+
+    public void setReceivedAmount(final BigDecimal receivedAmount) {
+        this.receivedAmount = receivedAmount;
     }
 
     public CreditorReference getCreditorReference() {

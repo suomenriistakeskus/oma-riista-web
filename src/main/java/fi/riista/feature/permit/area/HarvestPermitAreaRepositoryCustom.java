@@ -4,8 +4,9 @@ import fi.riista.feature.huntingclub.HuntingClub;
 
 import java.util.List;
 
-public interface HarvestPermitAreaRepositoryCustom {
-    List<Integer> listHuntingYears(HuntingClub club);
 
-    List<HarvestPermitArea> listByClub(HuntingClub club, int huntingYear);
+public interface HarvestPermitAreaRepositoryCustom {
+    List<HarvestPermitArea> listActiveApplicationAreas(HuntingClub club, int huntingYear);
+
+    List<Long> findPartnerZoneIds(HarvestPermitArea permitArea);
 }

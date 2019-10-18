@@ -1,7 +1,7 @@
 package fi.riista.feature.organization.calendar;
 
 import com.google.common.base.MoreObjects;
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.address.Address;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;

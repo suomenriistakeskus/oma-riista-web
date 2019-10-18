@@ -18,15 +18,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.BOW_TEST_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.FIREARM_TEST_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.SRVA_ALL_LARGE_CARNIVORE_EVENTS_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.SRVA_ALL_MOOSELIKE_EVENTS_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.SRVA_ALL_WILD_BOAR_EVENTS_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.SRVA_OTHER_ACCIDENTS;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.SRVA_RAILWAY_ACCIDENTS;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.SRVA_TRAFFIC_ACCIDENTS;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang.StringUtils.capitalize;
 
 @Component
 public class AnnualStatisticsPdfCreator {
@@ -52,28 +62,40 @@ public class AnnualStatisticsPdfCreator {
     private static final float MARGIN_BOTTOM = 30f;
     private static final float INDENT_UNIT = 8f;
 
-    // PDF point units
+    // PDF point unit based constants
     private static final float TOP = PAZE_SIZE.getUpperRightY() - MARGIN_TOP * DOTS_PER_MM;
     private static final float LOGO_IMAGE_WIDTH = (MARGIN_TEXT_LEFT - MARGIN_LOGO - /*gap*/4f) * DOTS_PER_MM;
 
     private static final int MAX_TEXT_LENGTH = 80;
 
-    @Resource
-    private AnnualStatisticItemGroupFactory statisticsGroupFactory;
+    private static final DecimalFormat NUMBER_FORMATTER;
+
+    private static final EnumSet<AnnualStatisticItem> INDENTED_STATISTIC_ITEMS = EnumSet.of(
+            SRVA_ALL_MOOSELIKE_EVENTS_2017, SRVA_ALL_LARGE_CARNIVORE_EVENTS_2017, SRVA_ALL_WILD_BOAR_EVENTS_2017,
+            FIREARM_TEST_EVENTS, BOW_TEST_EVENTS, SRVA_TRAFFIC_ACCIDENTS, SRVA_RAILWAY_ACCIDENTS,
+            SRVA_OTHER_ACCIDENTS);
+
+    static {
+        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
+        symbols.setGroupingSeparator(' ');
+
+        NUMBER_FORMATTER = new DecimalFormat("###,###", symbols);
+    }
 
     @Resource
     private MessageSource messageSource;
 
-    public byte[] create(final int year, @Nonnull final AnnualStatisticsExportItemDTO rhy, final Locale locale) {
+    public byte[] create(final int year, @Nonnull final AnnualStatisticsExportDTO rhy, final Locale locale) {
         requireNonNull(rhy);
 
         final EnumLocaliser localiser = new EnumLocaliser(messageSource, locale);
 
         try (final PDDocument document = new PDDocument()) {
 
-            statisticsGroupFactory.getAllGroups(true)
+            AnnualStatisticGroupsFactory
+                    .getAllGroups(year)
                     .stream()
-                    .collect(groupingBy(group -> group.getPrintoutPageNumber(), TreeMap::new, toList()))
+                    .collect(groupingBy(AnnualStatisticGroup::getPrintoutPageNumber, TreeMap::new, toList()))
                     .forEach((pageNumber, groups) -> {
 
                         final PDPage page = new PDPage(PAZE_SIZE);
@@ -105,6 +127,10 @@ public class AnnualStatisticsPdfCreator {
         return text.replaceAll("\u2011", "-");
     }
 
+    private static boolean isIndented(final AnnualStatisticItem item) {
+        return INDENTED_STATISTIC_ITEMS.contains(item);
+    }
+
     private static class PageWriter implements Closeable {
 
         private final PDDocument document;
@@ -131,11 +157,11 @@ public class AnnualStatisticsPdfCreator {
 
         public void writeHeader(final int year,
                                 final AnnualStatisticsCategory category,
-                                final AnnualStatisticsExportItemDTO dto) throws IOException {
+                                final AnnualStatisticsExportDTO dto) throws IOException {
 
             writeLogo(LOGO_IMAGE_RESOURCE.getFile());
 
-            final String rhyName = this.localiser.getTranslation(dto.getOrganisationName());
+            final String rhyName = this.localiser.getTranslation(dto.getOrganisation().getNameLocalisation());
             final String documentName = format(
                     "%s %s", this.localiser.getTranslation("annualStatistics").toUpperCase(), String.valueOf(year));
 
@@ -143,7 +169,8 @@ public class AnnualStatisticsPdfCreator {
             writeTextOnRight(documentName);
             writeEmptyLine();
 
-            final String rhyNumber = format("%s %s", this.localiser.getTranslation("rhyNumber"), dto.getOrganisationCode());
+            final String rhyNumber =
+                    format("%s %s", this.localiser.getTranslation("rhyNumber"), dto.getOrganisation().getOfficialCode());
             writeTitle(rhyNumber);
             writeEmptyLine();
             writeEmptyLine();
@@ -164,30 +191,31 @@ public class AnnualStatisticsPdfCreator {
                     LOGO_IMAGE_WIDTH, scaledHeight);
         }
 
-        public void writeStatisticGroups(final AnnualStatisticsExportItemDTO dto,
-                                         final List<AnnualStatisticItemGroup> groups) throws IOException {
+        public void writeStatisticGroups(final AnnualStatisticsExportDTO dto,
+                                         final List<AnnualStatisticGroup> groups) throws IOException {
 
-            for (final AnnualStatisticItemGroup group : groups) {
-                writeTitle(this.localiser.getTranslation(group.getTitle()));
+            for (final AnnualStatisticGroup group : groups) {
+                writeTitle(this.localiser.getTranslation(group));
                 writeEmptyLine();
 
-                for (final AnnualStatisticItemMeta statisticMeta : group.getItemMetadatas()) {
-                    writeStatisticItem(dto, statisticMeta);
+                for (final AnnualStatisticItem item : group.getItems()) {
+                    writeStatisticItem(dto, item);
                 }
 
                 writeEmptyLine();
             }
         }
 
-        private void writeStatisticItem(final AnnualStatisticsExportItemDTO dto,
-                                        final AnnualStatisticItemMeta statisticMeta) throws IOException {
+        private void writeStatisticItem(final AnnualStatisticsExportDTO dto,
+                                        final AnnualStatisticItem item) throws IOException {
 
             this.activeFont = BASIC_FONT;
 
-            final String title =
-                    replaceUnsupportedUnicodeChars(capitalize(this.localiser.getTranslation(statisticMeta.getTitle())));
-            final float indentMultiplier = statisticMeta.isIndentedOnPrintout() ? 2f : 1f;
-            final String value = statisticMeta.extractValueAsText(dto);
+            final String title = replaceUnsupportedUnicodeChars(this.localiser.getTranslation(item));
+            final float indentMultiplier = isIndented(item) ? 2f : 1f;
+            final String value = item
+                    .extractValue(dto)
+                    .getOrElseGet(number -> number == null ? null : NUMBER_FORMATTER.format(number));
 
             writeText(title, (MARGIN_TEXT_LEFT + indentMultiplier * INDENT_UNIT) * DOTS_PER_MM);
             writeTextOnRight(value);

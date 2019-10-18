@@ -1,0 +1,22 @@
+<ul class="nav nav-pills" style="margin-bottom: 20px">
+    <li ng-class="{'active': $ctrl.tab === 'filter'}">
+        <a ng-click="$ctrl.showTab('filter')" translate="harvestpermit.admin.application.menu.filter"></a>
+    </li>
+    <li ng-class="{'active': $ctrl.tab === 'statusTable'}">
+        <a ng-click="$ctrl.showTab('statusTable')" translate="harvestpermit.admin.application.menu.statusTable"></a>
+    </li>
+    <li ng-class="{'active': $ctrl.tab === 'postalQueue'}">
+        <a ng-click="$ctrl.showTab('postalQueue')" translate="harvestpermit.admin.application.menu.postalQueue"></a>
+    </li>
+</ul>
+
+<div ng-switch="$ctrl.tab">
+    <div ng-switch-when="statusTable">
+        <moderator-application-status-table></moderator-application-status-table>
+    </div>
+
+    <div ng-switch-default>
+        <moderator-application-search tab="$ctrl.tab" handlers="$ctrl.handlers"></moderator-application-search>
+    </div>
+</div>
+

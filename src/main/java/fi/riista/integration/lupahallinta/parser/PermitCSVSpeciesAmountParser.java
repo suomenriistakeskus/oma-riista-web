@@ -2,7 +2,7 @@ package fi.riista.integration.lupahallinta.parser;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.validation.FinnishCreditorReferenceValidator;
 import io.vavr.Tuple2;

@@ -4,6 +4,7 @@ import fi.riista.feature.gamediary.GameDiaryEntryDTO;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
+import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDateTime;
@@ -72,7 +73,7 @@ public abstract class SrvaEventDTOBase extends GameDiaryEntryDTO {
     private SrvaResultEnum eventResult;
 
     @Valid
-    private PersonWithNameDTO authorInfo;
+    private PersonWithHunterNumberDTO authorInfo;
 
     @Valid
     private List<SrvaSpecimenDTO> specimens;
@@ -174,11 +175,11 @@ public abstract class SrvaEventDTOBase extends GameDiaryEntryDTO {
         this.eventResult = eventResult;
     }
 
-    public PersonWithNameDTO getAuthorInfo() {
+    public PersonWithHunterNumberDTO getAuthorInfo() {
         return authorInfo;
     }
 
-    public void setAuthorInfo(PersonWithNameDTO authorInfo) {
+    public void setAuthorInfo(PersonWithHunterNumberDTO authorInfo) {
         this.authorInfo = authorInfo;
     }
 

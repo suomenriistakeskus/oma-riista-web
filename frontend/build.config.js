@@ -39,13 +39,16 @@ module.exports = {
             '../node_modules/font-awesome/fonts/*'
         ],
         other: [
-            '../node_modules/lodash/index.js',
+            '../node_modules/lodash/lodash.min.js',
             '../node_modules/moment/min/moment.min.js',
             '../node_modules/leaflet/dist/leaflet.js',
             '../node_modules/leaflet.markercluster/dist/leaflet.markercluster.js',
             '../node_modules/drmonty-leaflet-awesome-markers/js/leaflet.awesome-markers.min.js',
-            './vendor/Leaflet.VectorGrid.bundled.min.js',
+            '../node_modules/leaflet.vectorgrid/dist/Leaflet.VectorGrid.bundled.js',
             '../node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.min.js',
+            '../node_modules/leaflet-draw/dist/leaflet.draw.js',
+            '../node_modules/leaflet-geometryutil/src/leaflet.geometryutil.js',
+            '../node_modules/leaflet-snap/leaflet.snap.js',
             '../node_modules/proj4/dist/proj4.js',
             '../node_modules/proj4leaflet/src/proj4leaflet.js',
             './app/leaflet/leaflet-projection.js',
@@ -94,9 +97,6 @@ module.exports = {
             '../node_modules/angular-http-auth/src/http-auth-interceptor.js',
             '../node_modules/angular-dropzone/lib/angular-dropzone.js',
             '../node_modules/ng-idle/angular-idle.min.js',
-            '../node_modules/rangy/lib/rangy-core.js',
-            '../node_modules/rangy/lib/rangy-selectionsaverestore.js',
-            '../node_modules/textangular/dist/textAngular.min.js',
             '../node_modules/diff/dist/diff.min.js',
             '../node_modules/angular-file-saver/dist/angular-file-saver.bundle.min.js',
             // This must be the last dependency due to packaging issues

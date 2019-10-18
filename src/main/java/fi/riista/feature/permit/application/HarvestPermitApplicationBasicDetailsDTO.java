@@ -1,6 +1,8 @@
 package fi.riista.feature.permit.application;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
+import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.util.DtoUtil;
 import org.joda.time.LocalDateTime;
@@ -13,10 +15,11 @@ public class HarvestPermitApplicationBasicDetailsDTO extends BaseEntityDTO<Long>
 
     private HarvestPermitApplication.Status status;
     private PersonContactInfoDTO contactPerson;
-    private HarvestPermitApplicationSummaryDTO.PermitHolderDTO permitHolder;
+    private PermitHolderDTO permitHolder;
+    private OrganisationNameDTO huntingClub;
     private Integer applicationNumber;
     private String applicationName;
-    private String permitTypeCode;
+    private HarvestPermitCategory harvestPermitCategory;
     private int huntingYear;
     private LocalDateTime submitDate;
 
@@ -26,15 +29,16 @@ public class HarvestPermitApplicationBasicDetailsDTO extends BaseEntityDTO<Long>
         this.status = entity.getStatus();
         this.applicationNumber = entity.getApplicationNumber();
         this.applicationName = entity.getApplicationName();
-        this.permitTypeCode = entity.getPermitTypeCode();
-        this.huntingYear = entity.getHuntingYear();
+        this.harvestPermitCategory = entity.getHarvestPermitCategory();
+        this.huntingYear = entity.getApplicationYear();
         this.submitDate = entity.getSubmitDate() != null ? entity.getSubmitDate().toLocalDateTime() : null;
         this.contactPerson = Optional.ofNullable(entity.getContactPerson())
                 .map(PersonContactInfoDTO::create)
                 .orElse(null);
         this.permitHolder = entity.getPermitHolder() != null ?
-                new HarvestPermitApplicationSummaryDTO.PermitHolderDTO(entity.getPermitHolder())
+                PermitHolderDTO.createFrom(entity.getPermitHolder())
                 : null;
+        this.huntingClub = OrganisationNameDTO.createWithOfficialCode(entity.getHuntingClub());
     }
 
     @Override
@@ -73,12 +77,20 @@ public class HarvestPermitApplicationBasicDetailsDTO extends BaseEntityDTO<Long>
         this.contactPerson = contactPerson;
     }
 
-    public HarvestPermitApplicationSummaryDTO.PermitHolderDTO getPermitHolder() {
+    public PermitHolderDTO getPermitHolder() {
         return permitHolder;
     }
 
-    public void setPermitHolder(final HarvestPermitApplicationSummaryDTO.PermitHolderDTO permitHolder) {
+    public void setPermitHolder(final PermitHolderDTO permitHolder) {
         this.permitHolder = permitHolder;
+    }
+
+    public OrganisationNameDTO getHuntingClub() {
+        return huntingClub;
+    }
+
+    public void setHuntingClub(final OrganisationNameDTO huntingClub) {
+        this.huntingClub = huntingClub;
     }
 
     public Integer getApplicationNumber() {
@@ -97,12 +109,12 @@ public class HarvestPermitApplicationBasicDetailsDTO extends BaseEntityDTO<Long>
         this.applicationName = applicationName;
     }
 
-    public String getPermitTypeCode() {
-        return permitTypeCode;
+    public HarvestPermitCategory getHarvestPermitCategory() {
+        return harvestPermitCategory;
     }
 
-    public void setPermitTypeCode(final String permitTypeCode) {
-        this.permitTypeCode = permitTypeCode;
+    public void setHarvestPermitCategory(HarvestPermitCategory harvestPermitCategory) {
+        this.harvestPermitCategory = harvestPermitCategory;
     }
 
     public int getHuntingYear() {

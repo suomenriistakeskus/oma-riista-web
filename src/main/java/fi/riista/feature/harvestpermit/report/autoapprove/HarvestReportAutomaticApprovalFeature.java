@@ -27,10 +27,15 @@ import java.util.Map;
 public class HarvestReportAutomaticApprovalFeature {
     private static final Logger LOG = LoggerFactory.getLogger(HarvestReportAutomaticApprovalFeature.class);
 
+    private static final LocalDate HUNTING_YEAR_2017 = new LocalDate(2017, 8, 1);
+    private static final LocalDate HUNTING_YEAR_2018 = new LocalDate(2018, 8, 1);
+
     private static final Map<Integer, LocalDate> AUTO_APPROVE_ENABLED = ImmutableMap.of(
-            GameSpecies.OFFICIAL_CODE_WILD_BOAR, new LocalDate(2017, 8, 1),
-            GameSpecies.OFFICIAL_CODE_ROE_DEER, new LocalDate(2017, 8, 1)
-    );
+            GameSpecies.OFFICIAL_CODE_WILD_BOAR, HUNTING_YEAR_2017,
+            GameSpecies.OFFICIAL_CODE_ROE_DEER, HUNTING_YEAR_2017,
+            GameSpecies.OFFICIAL_CODE_GREY_SEAL, HUNTING_YEAR_2018,
+            GameSpecies.OFFICIAL_CODE_BEAN_GOOSE, HUNTING_YEAR_2018,
+            GameSpecies.OFFICIAL_CODE_EUROPEAN_POLECAT, HUNTING_YEAR_2018);
 
     public static final String AUTO_ACCEPT_REASON = "Automaattihyväksytty";
 

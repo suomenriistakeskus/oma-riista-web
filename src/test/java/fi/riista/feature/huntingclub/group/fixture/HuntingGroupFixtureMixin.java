@@ -14,6 +14,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.application.PermitHolder;
 
 import java.util.function.Consumer;
 
@@ -31,13 +32,13 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
                                          final GameSpecies species,
                                          final Consumer<HuntingGroupFixture> consumer) {
 
-        consumer.accept(new HuntingGroupFixture(getEntitySupplier(), rhy, species, false));
+        consumer.accept(new HuntingGroupFixture(getEntitySupplier(), rhy, species));
     }
 
     default void withHuntingGroupFixture(final HarvestPermitSpeciesAmount speciesAmount,
                                          final Consumer<HuntingGroupFixture> consumer) {
 
-        consumer.accept(new HuntingGroupFixture(getEntitySupplier(), speciesAmount, false, false));
+        consumer.accept(new HuntingGroupFixture(getEntitySupplier(), speciesAmount, false));
     }
 
     class HuntingGroupFixture {
@@ -64,24 +65,21 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
         public final Occupation groupMemberOccupation;
 
         public HuntingGroupFixture(final EntitySupplier es) {
-            this(es, es.newRiistanhoitoyhdistys(), es.newGameSpeciesMoose(), true);
+            this(es, es.newRiistanhoitoyhdistys(), es.newGameSpeciesMoose());
         }
 
         public HuntingGroupFixture(final EntitySupplier es,
                                    final Riistanhoitoyhdistys rhy,
-                                   final GameSpecies species,
-                                   final boolean createMooselikePrice) {
+                                   final GameSpecies species) {
 
-            this(es, es.newHarvestPermitSpeciesAmount(es.newMooselikePermit(rhy), species), createMooselikePrice, true);
+            this(es, es.newHarvestPermitSpeciesAmount(es.newMooselikePermit(rhy), species), true);
         }
 
         public HuntingGroupFixture(final EntitySupplier es,
                                    final HarvestPermitSpeciesAmount speciesAmount,
-                                   final boolean createMooselikePrice,
                                    final boolean setClubAsPermitHolder) {
 
             this.speciesAmount = speciesAmount;
-            speciesAmount.setCreditorReference(es.creditorReference());
 
             species = speciesAmount.getGameSpecies();
             permit = speciesAmount.getHarvestPermit();
@@ -90,14 +88,13 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
             club = es.newHuntingClub(rhy);
             permit.getPermitPartners().add(club);
             if (setClubAsPermitHolder) {
-                permit.setPermitHolder(club);
+                permit.setHuntingClub(club);
+                permit.setPermitHolder(PermitHolder.createHolderForClub(club));
+            } else {
+                permit.setPermitHolder(PermitHolder.createHolderForPerson(permit.getOriginalContactPerson()));
             }
 
             group = es.newHuntingClubGroup(club, speciesAmount);
-
-            if (createMooselikePrice) {
-                es.newMooselikePrice(group.getHuntingYear(), species);
-            }
 
             zoneCentroid = es.geoLocation(GeoLocation.Source.MANUAL);
             clubArea = es.newHuntingClubArea(club, "fi", "sv", group.getHuntingYear());

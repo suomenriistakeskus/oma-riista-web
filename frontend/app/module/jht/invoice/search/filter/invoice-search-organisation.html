@@ -1,0 +1,10 @@
+<div class="form-group">
+    <label translate="jht.invoice.search.selectOrganisation"></label>
+
+    <organisation-selection
+            ng-if="!$ctrl.isDisabled()"
+            show-rk="true"
+            show-rka="true"
+            area-code="$ctrl.filters.rkaOfficialCode"
+            rhy-code="$ctrl.filters.rhyOfficialCode"></organisation-selection>
+</div>

@@ -1,6 +1,6 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
-import fi.riista.util.DateUtil;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
 
@@ -17,22 +17,24 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
 public class HuntingControlStatistics
-        implements AnnualStatisticsFieldsetStatus, HasLastModificationStatus<HuntingControlStatistics>, Serializable {
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<HuntingControlStatistics>,
+        Serializable {
 
     public static final HuntingControlStatistics reduce(@Nullable final HuntingControlStatistics a,
                                                         @Nullable final HuntingControlStatistics b) {
 
         final HuntingControlStatistics result = new HuntingControlStatistics();
-        result.setHuntingControlEvents(nullsafeSumAsInt(a, b, HuntingControlStatistics::getHuntingControlEvents));
-        result.setHuntingControlCustomers(nullsafeSumAsInt(a, b, HuntingControlStatistics::getHuntingControlCustomers));
-        result.setProofOrders(nullsafeSumAsInt(a, b, HuntingControlStatistics::getProofOrders));
-        result.setHuntingControllers(nullsafeSumAsInt(a, b, HuntingControlStatistics::getHuntingControllers));
+        result.setHuntingControlEvents(nullableIntSum(a, b, HuntingControlStatistics::getHuntingControlEvents));
+        result.setHuntingControlCustomers(nullableIntSum(a, b, HuntingControlStatistics::getHuntingControlCustomers));
+        result.setProofOrders(nullableIntSum(a, b, HuntingControlStatistics::getProofOrders));
+        result.setHuntingControllers(nullableIntSum(a, b, HuntingControlStatistics::getHuntingControllers));
         result.setLastModified(nullsafeMax(a, b, HuntingControlStatistics::getLastModified));
         return result;
     }
@@ -77,7 +79,7 @@ public class HuntingControlStatistics
     }
 
     public HuntingControlStatistics(@Nonnull final HuntingControlStatistics that) {
-        Objects.requireNonNull(that);
+        requireNonNull(that);
 
         this.huntingControlEvents = that.huntingControlEvents;
         this.huntingControlCustomers = that.huntingControlCustomers;
@@ -87,17 +89,26 @@ public class HuntingControlStatistics
     }
 
     @Override
-    public boolean isEqualTo(final HuntingControlStatistics other) {
-        // Includes manually updateable fields only.
-
-        return Objects.equals(huntingControlEvents, other.huntingControlEvents) &&
-                Objects.equals(huntingControlCustomers, other.huntingControlCustomers) &&
-                Objects.equals(proofOrders, other.proofOrders);
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.HUNTING_CONTROL;
     }
 
     @Override
-    public void updateModificationStatus() {
-        lastModified = DateUtil.now();
+    public boolean isEqualTo(@Nonnull final HuntingControlStatistics that) {
+        // Includes manually updateable fields only.
+
+        return Objects.equals(huntingControlEvents, that.huntingControlEvents) &&
+                Objects.equals(huntingControlCustomers, that.huntingControlCustomers) &&
+                Objects.equals(proofOrders, that.proofOrders);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final HuntingControlStatistics that) {
+        // Includes manually updateable fields only.
+
+        this.huntingControlEvents = that.huntingControlEvents;
+        this.huntingControlCustomers = that.huntingControlCustomers;
+        this.proofOrders = that.proofOrders;
     }
 
     @Override
@@ -144,10 +155,12 @@ public class HuntingControlStatistics
         this.huntingControllers = huntingControllers;
     }
 
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

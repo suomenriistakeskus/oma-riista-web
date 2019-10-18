@@ -19,6 +19,9 @@ public class HunterExamTrainingStatisticsDTO {
 
         dto.setHunterExamTrainingParticipants(entity.getHunterExamTrainingParticipants());
         dto.setLastModified(entity.getLastModified());
+
+        dto.setHunterExamTrainingParticipantsOverridden(entity.isHunterExamTraininingParticipantsOverridden());
+
         return dto;
     }
 
@@ -37,6 +40,8 @@ public class HunterExamTrainingStatisticsDTO {
     private Integer hunterExamTrainingParticipants;
 
     private DateTime lastModified;
+
+    private Boolean hunterExamTrainingParticipantsOverridden;
 
     @AssertTrue
     public boolean isHunterExamTrainingEventsDefinedExclusively() {
@@ -75,5 +80,13 @@ public class HunterExamTrainingStatisticsDTO {
 
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
+    }
+
+    public Boolean getHunterExamTrainingParticipantsOverridden() {
+        return hunterExamTrainingParticipantsOverridden;
+    }
+
+    public void setHunterExamTrainingParticipantsOverridden(final Boolean hunterExamTrainingParticipantsOverridden) {
+        this.hunterExamTrainingParticipantsOverridden = hunterExamTrainingParticipantsOverridden;
     }
 }

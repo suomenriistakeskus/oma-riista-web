@@ -1,5 +1,14 @@
 package fi.riista.feature.permit.application.search;
 
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
+import fi.riista.feature.permit.application.bird.ProtectedAreaType;
+import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonType;
+import fi.riista.feature.permit.decision.methods.ForbiddenMethodType;
+import org.springframework.data.domain.PageRequest;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.util.Set;
@@ -18,6 +27,10 @@ public class HarvestPermitApplicationSearchDTO {
         PUBLISHED
     }
 
+    private Integer page;
+
+    private Integer size;
+
     @Pattern(regexp = "^\\d{0,3}$")
     private String rhyOfficialCode;
 
@@ -27,13 +40,59 @@ public class HarvestPermitApplicationSearchDTO {
     @Min(2017)
     private Integer huntingYear;
 
+    private HarvestPermitCategory harvestPermitCategory;
+
     private Integer gameSpeciesCode;
 
     private Long handlerId;
 
     private Set<StatusSearch> status;
 
+    private Set<PermitDecision.DecisionType> decisionType;
+
+    private Set<PermitDecision.AppealStatus> appealStatus;
+
+    private Set<PermitDecision.GrantStatus> grantStatus;
+
+    private Set<PermitDecisionDerogationReasonType> derogationReason;
+
+    private Set<ProtectedAreaType> protectedArea;
+
+    private Set<ForbiddenMethodType> forbiddenMethod;
+
     private Integer applicationNumber;
+
+    @Nullable
+    public PageRequest asPageRequest() {
+        return page != null && size != null
+                ? new PageRequest(page, size)
+                : null;
+    }
+
+    @AssertTrue
+    public boolean isPageInfoValidWhenPresent() {
+        return (page == null && size == null) || isPageInfoPresent();
+    }
+
+    public boolean isPageInfoPresent() {
+        return page != null && size != null;
+    }
+
+    public Integer getPage() {
+        return page;
+    }
+
+    public void setPage(final Integer page) {
+        this.page = page;
+    }
+
+    public Integer getSize() {
+        return size;
+    }
+
+    public void setSize(final Integer size) {
+        this.size = size;
+    }
 
     public String getRhyOfficialCode() {
         return rhyOfficialCode;
@@ -59,6 +118,14 @@ public class HarvestPermitApplicationSearchDTO {
         this.huntingYear = huntingYear;
     }
 
+    public HarvestPermitCategory getHarvestPermitCategory() {
+        return harvestPermitCategory;
+    }
+
+    public void setHarvestPermitCategory(final HarvestPermitCategory harvestPermitCategory) {
+        this.harvestPermitCategory = harvestPermitCategory;
+    }
+
     public Integer getGameSpeciesCode() {
         return gameSpeciesCode;
     }
@@ -81,6 +148,54 @@ public class HarvestPermitApplicationSearchDTO {
 
     public void setStatus(final Set<StatusSearch> status) {
         this.status = status;
+    }
+
+    public Set<PermitDecision.DecisionType> getDecisionType() {
+        return decisionType;
+    }
+
+    public void setDecisionType(final Set<PermitDecision.DecisionType> decisionType) {
+        this.decisionType = decisionType;
+    }
+
+    public Set<PermitDecision.AppealStatus> getAppealStatus() {
+        return appealStatus;
+    }
+
+    public void setAppealStatus(final Set<PermitDecision.AppealStatus> appealStatus) {
+        this.appealStatus = appealStatus;
+    }
+
+    public Set<PermitDecision.GrantStatus> getGrantStatus() {
+        return grantStatus;
+    }
+
+    public void setGrantStatus(final Set<PermitDecision.GrantStatus> grantStatus) {
+        this.grantStatus = grantStatus;
+    }
+
+    public Set<PermitDecisionDerogationReasonType> getDerogationReason() {
+        return derogationReason;
+    }
+
+    public void setDerogationReason(final Set<PermitDecisionDerogationReasonType> derogationReason) {
+        this.derogationReason = derogationReason;
+    }
+
+    public Set<ProtectedAreaType> getProtectedArea() {
+        return protectedArea;
+    }
+
+    public void setProtectedArea(final Set<ProtectedAreaType> protectedArea) {
+        this.protectedArea = protectedArea;
+    }
+
+    public Set<ForbiddenMethodType> getForbiddenMethod() {
+        return forbiddenMethod;
+    }
+
+    public void setForbiddenMethod(final Set<ForbiddenMethodType> forbiddenMethod) {
+        this.forbiddenMethod = forbiddenMethod;
     }
 
     public Integer getApplicationNumber() {

@@ -1,0 +1,39 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="harvestpermit.decision.payment"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group">
+            <label class="col-xs-4 control-label">
+                <span translate="harvestpermit.decision.payment"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default form-control-static"
+                           ng-repeat="a in $ctrl.amounts"
+                           ng-model="$ctrl.amount"
+                           uib-btn-radio="a">
+
+                        <span class="text-primary fa fa-check" ng-show="$ctrl.amount === a"></span>
+                        &nbsp;
+                        <span ng-bind="a"></span>&nbsp;<span>EUR</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

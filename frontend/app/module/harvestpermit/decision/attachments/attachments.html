@@ -1,24 +1,22 @@
 <div class="modal-header">
     <button riista-modal-close></button>
-    <h3 class="modal-title">Muokkaa päätöksen liitteitä</h3>
+    <h3 class="modal-title" translate="harvestpermit.decision.attachment.title"></h3>
 </div>
 
 <div class="modal-body" style="min-height: 480px;">
     <uib-tabset type="pills" justified="true" active="$ctrl.activeTabIndex">
         <uib-tab>
             <uib-tab-heading>
-                <span class="fa fa-list"></span>
-                &nbsp;
-                Listaus
+                <span class="fa fa-fw fa-list"></span>
+                <span translate="harvestpermit.decision.attachment.listing.title"></span>
             </uib-tab-heading>
 
-            <div class="row" style="margin-top: 20px">
+            <div ng-if="$ctrl.showDefaultMooseAttachmentButton" class="row" style="margin-top: 20px">
                 <div class="col-xs-12 text-right">
                     <button type="button" class="btn btn-default"
                             ng-click="$ctrl.addDefaultMooseAttachment()">
-                        <span class="fa fa-file-text"></span>
-                        &nbsp;
-                        Lisää valtakunnallinen liite
+                        <span class="fa fa-fw fa-file-text"></span>
+                        <span translate="harvestpermit.decision.attachment.addDefaultMooseAttachment"></span>
                     </button>
                 </div>
             </div>
@@ -27,9 +25,9 @@
                 <table class="table">
                     <thead>
                     <tr>
-                        <th class="col-xs-1">Järjestys</th>
-                        <th class="col-xs-5">Teksti päätöksellä</th>
-                        <th class="col-xs-3">Liite numeroituna päätöksellä</th>
+                        <th class="col-xs-1" translate="harvestpermit.decision.attachment.listing.order"></th>
+                        <th class="col-xs-5" translate="harvestpermit.decision.attachment.listing.description"></th>
+                        <th class="col-xs-3" translate="harvestpermit.decision.attachment.listing.asNumberedInDecision"></th>
                         <th>&nbsp;</th>
                     </tr>
                     </thead>
@@ -50,8 +48,8 @@
                             <label class="checkbox-inline">
                                 <input type="checkbox" ng-model="a.hasOrdering"
                                        ng-change="$ctrl.attachmentChanged = true">
-                                <span ng-show="a.hasOrdering">Kyllä</span>
-                                <span ng-show="!a.hasOrdering">Ei</span>
+                                <span ng-show="a.hasOrdering" translate="global.yes"></span>
+                                <span ng-show="!a.hasOrdering" translate="global.no"></span>
                             </label>
                         </td>
                         <td class="col-xs-1 text-right vcenter">
@@ -61,22 +59,22 @@
                         </td>
                     </tr>
                     <tr ng-show="!$ctrl.decisionAttachments || $ctrl.decisionAttachments.length === 0">
-                        <td colspan="2"><span class="text-muted">Ei liitteitä</span></td>
+                        <td colspan="2"><span class="text-muted" translate="harvestpermit.decision.attachment.listing.noAttachments"></span></td>
                     </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="alert alert-warning" style="margin-top: 20px" ng-show="$ctrl.attachmentChanged">
-                Muistathan tallentaa muutokset ennen uuden liitteen lisäämistä!
-            </div>
+            <div class="alert alert-warning"
+                 style="margin-top: 20px"
+                 ng-show="$ctrl.attachmentChanged"
+                 translate="harvestpermit.decision.attachment.listing.reminder"></div>
         </uib-tab>
 
         <uib-tab>
             <uib-tab-heading>
-                <span class="fa fa-upload"></span>
-                &nbsp;
-                Lisää uusi liitetiedosto
+                <span class="fa fa-fw fa-upload"></span>
+                <span translate="harvestpermit.decision.attachment.upload.title"></span>
             </uib-tab-heading>
 
             <hr class="invisible">
@@ -89,7 +87,7 @@
             <div class="form-horizontal">
 
                 <div class="form-group">
-                    <label class="control-label col-xs-3">Tiedosto</label>
+                    <label class="control-label col-xs-3" translate="harvestpermit.decision.attachment.upload.file"></label>
 
                     <div class="col-xs-9">
                         <form method="post" enctype="multipart/form-data"
@@ -108,7 +106,7 @@
 
                 <form name="attachmentForm">
                     <div class="form-group" show-errors>
-                        <label class="control-label col-xs-3" for="attachmentDescription">Teksti päätöksellä</label>
+                        <label class="control-label col-xs-3" for="attachmentDescription" translate="harvestpermit.decision.attachment.upload.description"></label>
 
                         <div class="col-xs-6">
                         <textarea class="form-control" name="attachmentDescription" id="attachmentDescription"

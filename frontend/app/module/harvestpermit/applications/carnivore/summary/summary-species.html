@@ -1,0 +1,25 @@
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+        <tr>
+            <th class="col-xs-3" translate="harvestpermit.wizard.species.table.headerSpecies"></th>
+            <th translate="harvestpermit.wizard.species.table.headerAmount"></th>
+            <th translate="harvestpermit.wizard.carnivore.species.huntingPeriod"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                <span ng-bind="$ctrl.species.gameSpeciesCode | translateSpeciesCode"></span>
+            </td>
+            <td>
+                <span ng-bind="$ctrl.species.amount"></span>
+                <span translate="global.pcs"></span>
+            </td>
+            <td>
+                <span ng-bind="$ctrl.species.begin | date:'dd.MM.yyyy'"></span> - <span
+                    ng-bind="$ctrl.species.end | date:'dd.MM.yyyy'"></span></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

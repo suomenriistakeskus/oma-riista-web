@@ -1,0 +1,75 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="harvestpermit.decision.action.titleReadonlyList"></h3>
+</div>
+
+<div class="modal-body" style="min-height: 500px;">
+    <div class="row">
+        <div class="col-xs-12 text-center" ng-if="$ctrl.pager.total > $ctrl.pager.pageSize">
+            <ul uib-pagination
+                ng-model="$ctrl.pager.currentPage"
+                total-items="$ctrl.pager.total"
+                items-per-page="$ctrl.pager.pageSize"
+                ng-change="$ctrl.updatePager()"
+                boundary-links="false"
+                direction-links="true"
+                rotate="false"
+                previous-text="{{'global.pager.previous' | translate}}"
+                next-text="{{'global.pager.next' | translate}}"
+                class="pagination-md">
+            </ul>
+        </div>
+    </div>
+
+    <div class="alert alert-info" ng-show="$ctrl.pager.total === 0" translate="harvestpermit.decision.action.noActions"></div>
+
+    <div ng-repeat="action in $ctrl.page" style="padding-top: 15px; margin-top: 15px; border-top: 1px solid #ddd">
+        <div class="row">
+            <div class="col-xs-6">
+                <p><strong translate="harvestpermit.decision.action.pointOfTime"></strong></p>
+                <p ng-bind="::action.pointOfTime | date:'d.M.yyyy HH:mm'"></p>
+            </div>
+
+            <div class="col-xs-6">
+                <p><strong translate="harvestpermit.decision.action.type"></strong></p>
+
+                <p>
+                    <span ng-bind="::('harvestpermit.decision.action.actionType.' + action.actionType) | translate"></span>
+                    <span ng-if="action.communicationType">/</span>
+                    <span ng-if="action.communicationType"
+                          ng-bind="::('harvestpermit.decision.action.communicationType.' + action.communicationType) | translate"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 15px; margin-bottom: 15px;">
+            <div class="col-xs-6">
+                <p><strong translate="harvestpermit.decision.action.decisionText"></strong></p>
+
+                <p ng-bind="::action.decisionText"></p>
+            </div>
+
+            <div class="col-xs-6">
+                <p><strong translate="harvestpermit.decision.action.text"></strong></p>
+
+                <p ng-bind="::action.text"></p>
+
+                <hr>
+
+                <a class="btn btn-primary"
+                   ng-if="::(action.attachmentCount > 0)"
+                   ng-click="$ctrl.showAttachments(action)">
+                    <span class="fa fa-fw fa-download"></span>
+                    <span translate="harvestpermit.decision.action.attachments.showAttachmentsButton"></span>
+                    <strong ng-bind="'(' + action.attachmentCount + ' ' + ('global.pcs' | translate) + ')'"></strong>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary"
+            ng-click="$ctrl.close()"
+            translate="global.button.close"></button>
+</div>

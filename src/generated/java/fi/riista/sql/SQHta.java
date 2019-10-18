@@ -41,6 +41,8 @@ public class SQHta extends RelationalPathSpatial<SQHta> {
 
     public final com.querydsl.sql.PrimaryKey<SQHta> htaPkey = createPrimaryKey(gid);
 
+    public final com.querydsl.sql.ForeignKey<SQPermitDecision> _permitDecisionHtaFk = createInvForeignKey(gid, "hta_id");
+
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> _harvestPermitMooseAreaFk = createInvForeignKey(gid, "moose_area_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitAreaHta> _harvestPermitAreaHtaRefFk = createInvForeignKey(gid, "hta_id");

@@ -70,10 +70,6 @@ body {
 
 /*-------------- COMMON -------------------------- */
 
-li {
-    margin: 6pt 0;
-}
-
 h1 {
     margin-top: 80pt;
     margin-bottom: 8pt;
@@ -119,7 +115,7 @@ hr {
 
 .logo {
     float: right;
-    background: url('/static/application-pdf/logo.png') no-repeat 0 0;
+    background: url('/static/common/logo.png') no-repeat 0 0;
     background-clip: border-box;
     background-size: 48pt auto;
     width: 48pt;
@@ -177,11 +173,21 @@ hr {
     margin-top: 8pt;
 }
 
+.layout-container ul > li {
+    margin: 6pt 0;
+}
+
+.layout-container ol {
+    list-style-type: decimal;
+    list-style-position: inside;
+}
+
 /*-------------- TABLE -------------------------- */
 
 .layout-container table {
     min-width: 8cm;
     margin-bottom: 6pt;
+    width: 100%;
 }
 
 .layout-container table > tbody > tr {
@@ -191,10 +197,12 @@ hr {
 .layout-container table > tbody > tr > td {
     border-collapse: collapse;
     min-width: 1.5cm;
+    max-width: 9cm;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
-.layout-container table > tbody > tr > td:nth-child(1) {
-    min-width: 2.5cm;
+.layout-container table > tbody > tr > td[align='right']:nth-child(1) {
     padding-right: 6pt;
 }
 

@@ -20,7 +20,6 @@ public class HarvestPermitApplicationLockedCondition {
 
     private static boolean canUpdate(final HarvestPermitApplication application,
                                      final UserInfo activeUserInfo) {
-
         switch (application.getStatus()) {
             case DRAFT:
                 return true;
@@ -28,7 +27,7 @@ public class HarvestPermitApplicationLockedCondition {
                 return activeUserInfo.isAdminOrModerator();
             default:
             case ACTIVE:
-            case CANCELLED:
+            case HIDDEN:
                 return false;
         }
     }

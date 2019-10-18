@@ -1,7 +1,7 @@
 package fi.riista.feature.harvestpermit.search;
 
-import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitNotFoundException;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
@@ -25,12 +25,12 @@ public class HarvestPermitSearchFeatureTest extends EmbeddedDatabaseTest {
         assertEquals(permit.getId(), dto.getId());
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test(expected = HarvestPermitNotFoundException.class)
     public void testFindPermitNumber_forNonExistingPermit() {
         harvestPermitSearchFeature.findPermitNumber("1234567");
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test(expected = HarvestPermitNotFoundException.class)
     public void testFindPermitNumber_forMooselikePermit() {
         withRhy(rhy -> withPerson(person -> {
 
@@ -43,7 +43,7 @@ public class HarvestPermitSearchFeatureTest extends EmbeddedDatabaseTest {
         }));
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test(expected = HarvestPermitNotFoundException.class)
     public void testFindPermitNumber_forAmendmentPermit() {
         withPerson(person -> {
 

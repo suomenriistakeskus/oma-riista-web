@@ -1,9 +1,8 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import fi.riista.util.DateUtil;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
-import fi.riista.util.NumberUtils;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -19,20 +18,22 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
 public class LukeStatistics
-        implements AnnualStatisticsFieldsetStatus, HasLastModificationStatus<LukeStatistics>, Serializable {
+        implements AnnualStatisticsFieldsetReadiness, AnnualStatisticsNonComputedFields<LukeStatistics>, Serializable {
 
     public static final LukeStatistics reduce(@Nullable final LukeStatistics a, @Nullable final LukeStatistics b) {
         final LukeStatistics result = new LukeStatistics();
-        result.setWinterGameTriangles(nullsafeSumAsInt(a, b, LukeStatistics::getWinterGameTriangles));
-        result.setSummerGameTriangles(nullsafeSumAsInt(a, b, LukeStatistics::getSummerGameTriangles));
-        result.setFieldTriangles(nullsafeSumAsInt(a, b, LukeStatistics::getFieldTriangles));
-        result.setWaterBirds(nullsafeSumAsInt(a, b, LukeStatistics::getWaterBirds));
+        result.setWinterGameTriangles(nullableIntSum(a, b, LukeStatistics::getWinterGameTriangles));
+        result.setSummerGameTriangles(nullableIntSum(a, b, LukeStatistics::getSummerGameTriangles));
+        result.setFieldTriangles(nullableIntSum(a, b, LukeStatistics::getFieldTriangles));
+        result.setWaterBirdBroods(nullableIntSum(a, b, LukeStatistics::getWaterBirdBroods));
+        result.setWaterBirdCouples(nullableIntSum(a, b, LukeStatistics::getWaterBirdCouples));
+        result.setCarnivoreContactPersons(nullableIntSum(a, b, LukeStatistics::getCarnivoreContactPersons));
         result.setLastModified(nullsafeMax(a, b, LukeStatistics::getLastModified));
         return result;
     }
@@ -64,10 +65,20 @@ public class LukeStatistics
     @Column(name = "luke_field_triangles")
     private Integer fieldTriangles;
 
-    // Vesilintujen laskentapisteet
+    // Lasketut vesilintujen laskentapisteet poikuelaskennoissa
     @Min(0)
-    @Column(name = "luke_water_birds")
-    private Integer waterBirds;
+    @Column(name = "luke_water_bird_broods")
+    private Integer waterBirdBroods;
+
+    // Lasketut vesilintujen laskentapisteet parilaskennoissa
+    @Min(0)
+    @Column(name = "luke_water_bird_couples")
+    private Integer waterBirdCouples;
+
+    // Suurpetohavaintoja kirjanneiden petoyhdyshenkilöiden määrä, hlö
+    @Min(0)
+    @Column(name = "luke_carnivore_contact_persons")
+    private Integer carnivoreContactPersons;
 
     // Updated when any of the manually updateable fields is changed.
     @Column(name = "luke_game_calculations_last_modified")
@@ -77,28 +88,44 @@ public class LukeStatistics
     }
 
     public LukeStatistics(@Nonnull final LukeStatistics that) {
-        Objects.requireNonNull(that);
+        requireNonNull(that);
 
         this.winterGameTriangles = that.winterGameTriangles;
         this.summerGameTriangles = that.summerGameTriangles;
         this.fieldTriangles = that.fieldTriangles;
-        this.waterBirds = that.waterBirds;
+        this.waterBirdBroods = that.waterBirdBroods;
+        this.waterBirdCouples = that.waterBirdCouples;
+        this.carnivoreContactPersons = that.carnivoreContactPersons;
         this.lastModified = that.lastModified;
     }
 
     @Override
-    public boolean isEqualTo(final LukeStatistics other) {
-        // Includes manually updateable fields only.
-
-        return Objects.equals(winterGameTriangles, other.winterGameTriangles) &&
-                Objects.equals(summerGameTriangles, other.summerGameTriangles) &&
-                Objects.equals(fieldTriangles, other.fieldTriangles) &&
-                Objects.equals(waterBirds, other.waterBirds);
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.LUKE;
     }
 
     @Override
-    public void updateModificationStatus() {
-        lastModified = DateUtil.now();
+    public boolean isEqualTo(@Nonnull final LukeStatistics that) {
+        // Includes manually updateable fields only.
+
+        return Objects.equals(winterGameTriangles, that.winterGameTriangles) &&
+                Objects.equals(summerGameTriangles, that.summerGameTriangles) &&
+                Objects.equals(fieldTriangles, that.fieldTriangles) &&
+                Objects.equals(waterBirdBroods, that.waterBirdBroods) &&
+                Objects.equals(waterBirdCouples, that.waterBirdCouples) && 
+                Objects.equals(carnivoreContactPersons, that.carnivoreContactPersons);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final LukeStatistics that) {
+        // Includes manually updateable fields only.
+
+        this.winterGameTriangles = that.winterGameTriangles;
+        this.summerGameTriangles = that.summerGameTriangles;
+        this.fieldTriangles = that.fieldTriangles;
+        this.waterBirdBroods = that.waterBirdBroods;
+        this.waterBirdCouples = that.waterBirdCouples;
+        this.carnivoreContactPersons = that.carnivoreContactPersons;
     }
 
     @Override
@@ -108,19 +135,23 @@ public class LukeStatistics
 
     @Override
     public boolean isCompleteForApproval() {
-        return F.allNotNull(winterGameTriangles, summerGameTriangles, fieldTriangles, waterBirds);
+        return F.allNotNull(
+                winterGameTriangles, summerGameTriangles, fieldTriangles, waterBirdBroods, waterBirdCouples,
+                carnivoreContactPersons);
     }
 
-    public int sumOfWinterAndSummerGameTriangles() {
-        return NumberUtils.getIntValueOrZero(winterGameTriangles) + NumberUtils.getIntValueOrZero(summerGameTriangles);
+    public Integer sumOfWinterAndSummerGameTriangles() {
+        return nullableIntSum(winterGameTriangles, summerGameTriangles);
+    }
+
+    public Integer sumOfWaterBirdCalculationLocations() {
+        return nullableIntSum(waterBirdBroods, waterBirdCouples);
     }
 
     @JsonGetter(value = "sum")
-    public int sumOfAllLukeCalculations() {
-        return Stream
-                .of(winterGameTriangles, summerGameTriangles, fieldTriangles, waterBirds)
-                .mapToInt(NumberUtils::getIntValueOrZero)
-                .sum();
+    public Integer sumOfAllLukeCalculations() {
+        return nullableIntSum(
+                winterGameTriangles, summerGameTriangles, fieldTriangles, waterBirdBroods, waterBirdCouples);
     }
 
     // Accessors -->
@@ -149,18 +180,36 @@ public class LukeStatistics
         this.fieldTriangles = fieldTriangles;
     }
 
-    public Integer getWaterBirds() {
-        return waterBirds;
+    public Integer getWaterBirdBroods() {
+        return waterBirdBroods;
     }
 
-    public void setWaterBirds(final Integer waterBirds) {
-        this.waterBirds = waterBirds;
+    public void setWaterBirdBroods(final Integer waterBirdBroods) {
+        this.waterBirdBroods = waterBirdBroods;
     }
 
+    public Integer getWaterBirdCouples() {
+        return waterBirdCouples;
+    }
+
+    public void setWaterBirdCouples(final Integer waterBirdCouples) {
+        this.waterBirdCouples = waterBirdCouples;
+    }
+
+    public Integer getCarnivoreContactPersons() {
+        return carnivoreContactPersons;
+    }
+
+    public void setCarnivoreContactPersons(final Integer carnivoreContactPersons) {
+        this.carnivoreContactPersons = carnivoreContactPersons;
+    }
+
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

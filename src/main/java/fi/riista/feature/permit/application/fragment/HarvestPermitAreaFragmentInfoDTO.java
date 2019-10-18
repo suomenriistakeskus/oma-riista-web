@@ -1,68 +1,42 @@
 package fi.riista.feature.permit.application.fragment;
 
+import fi.riista.feature.gis.zone.TotalLandWaterSizeDTO;
+
+import java.util.List;
+
 public class HarvestPermitAreaFragmentInfoDTO {
     private final String hash;
-    private final Double areaSize;
-    private final Double waterAreaSize;
-    private final Double valtionmaaAreaSize;
-    private final Double valtionmaaWaterAreaSize;
-    private final String propertyNumber;
-    private final Double propertyArea;
-    private final Integer propertyId;
-    private boolean metsahallitus;
+    private final TotalLandWaterSizeDTO bothSize;
+    private final TotalLandWaterSizeDTO stateSize;
+    private final TotalLandWaterSizeDTO privateSize;
+    private final List<HarvestPermitAreaFragmentPropertyDTO> propertyNumbers;
 
-    public HarvestPermitAreaFragmentInfoDTO(final String hash,
-                                            final Double areaSize, final Double waterAreaSize,
-                                            final Double valtionmaaAreaSize, final Double valtionmaaWaterAreaSize,
-                                            final String propertyNumber, final Double propertyArea,
-                                            final Integer propertyId) {
-        this.hash = hash;
-        this.areaSize = areaSize;
-        this.waterAreaSize = waterAreaSize;
-        this.valtionmaaAreaSize = valtionmaaAreaSize;
-        this.valtionmaaWaterAreaSize = valtionmaaWaterAreaSize;
-        this.propertyNumber = propertyNumber;
-        this.propertyArea = propertyArea;
-        this.propertyId = propertyId;
+    public HarvestPermitAreaFragmentInfoDTO(final HarvestPermitAreaFragmentSizeDTO dto,
+                                            final List<HarvestPermitAreaFragmentPropertyDTO> propertyNumbers) {
+        this.hash = dto.getHash();
+        this.bothSize = dto.getBothSize();
+        this.stateSize = dto.getStateSize();
+        this.privateSize = dto.getPrivateSize();
+        this.propertyNumbers = propertyNumbers;
     }
 
     public String getHash() {
         return hash;
     }
 
-    public Double getAreaSize() {
-        return areaSize;
+    public TotalLandWaterSizeDTO getBothSize() {
+        return bothSize;
     }
 
-    public Double getWaterAreaSize() {
-        return waterAreaSize;
+    public TotalLandWaterSizeDTO getStateSize() {
+        return stateSize;
     }
 
-    public Double getValtionmaaAreaSize() {
-        return valtionmaaAreaSize;
+    public TotalLandWaterSizeDTO getPrivateSize() {
+        return privateSize;
     }
 
-    public Double getValtionmaaWaterAreaSize() {
-        return valtionmaaWaterAreaSize;
-    }
-
-    public String getPropertyNumber() {
-        return propertyNumber;
-    }
-
-    public Double getPropertyArea() {
-        return propertyArea;
-    }
-
-    public Integer getPropertyId() {
-        return propertyId;
-    }
-
-    public boolean isMetsahallitus() {
-        return metsahallitus;
-    }
-
-    public void setMetsahallitus(final boolean metsahallitus) {
-        this.metsahallitus = metsahallitus;
+    public List<HarvestPermitAreaFragmentPropertyDTO> getPropertyNumbers() {
+        return propertyNumbers;
     }
 }

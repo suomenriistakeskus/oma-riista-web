@@ -1,11 +1,24 @@
-<div class="row">
-    <div class="col-md-6">
-        <account-my-applications applications="$ctrl.applications" diary-parameters="$ctrl.diaryParameters">
-        </account-my-applications>
-    </div>
+<div class="r-account-permits">
+    <uib-tabset type="pills" active="$ctrl.activeTab">
+        <uib-tab index="0" select="$ctrl.onTabSelected(0)">
+            <uib-tab-heading>
+                <span translate="harvestpermit.mine.tab.riistakeskus"></span>
+            </uib-tab-heading>
 
-    <div class="col-md-6">
-        <account-my-permits permits="$ctrl.permits" todo="$ctrl.todoPermitIds">
-        </account-my-permits>
-    </div>
+            <account-list-riistakeskus-permit
+                    applications-and-decisions="$ctrl.applicationsAndDecisions"
+                    todo-permit-ids="$ctrl.todoPermitIds">
+            </account-list-riistakeskus-permit>
+        </uib-tab>
+
+        <uib-tab index="1" select="$ctrl.onTabSelected(1)" ng-if="$ctrl.metsahallitusPermits.length > 0">
+            <uib-tab-heading>
+                <span translate="harvestpermit.mine.tab.metsahallitus"></span>
+            </uib-tab-heading>
+
+            <account-list-metsahallitus-permit
+                    metsahallitus-permits="$ctrl.metsahallitusPermits">
+            </account-list-metsahallitus-permit>
+        </uib-tab>
+    </uib-tabset>
 </div>

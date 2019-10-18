@@ -3,29 +3,47 @@ package fi.riista.feature.organization.person;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+import java.util.Optional;
+
+import static java.lang.String.format;
+
+@ResponseStatus(value = HttpStatus.NOT_FOUND)
 public class PersonNotFoundException extends RuntimeException {
+
     public static PersonNotFoundException create(final PersonWithHunterNumberDTO dto) {
-        if (dto.getId() != null) {
-            return new PersonNotFoundException(dto.getId());
-        } else {
-            return new PersonNotFoundException(dto.getHunterNumber());
-        }
+        return Optional
+                .ofNullable(dto.getId())
+                .map(personId -> byPersonId(personId))
+                .orElseGet(() -> byHunterNumber(dto.getHunterNumber()));
+    }
+
+    public static PersonNotFoundException byHunterNumber(final String hunterNumber) {
+        final String errorMessage = format("Person not found by hunterNumber: %s", hunterNumber);
+        return new PersonNotFoundException(errorMessage, hunterNumber, null);
+    }
+
+    public static PersonNotFoundException byPersonId(final Long personId) {
+        final String errorMessage = format("Person not found by personId: %s", personId);
+        return new PersonNotFoundException(errorMessage, null, personId);
+    }
+
+    public static PersonNotFoundException bySsn(final String ssn) {
+        return new PersonNotFoundException("Person not found by SSN", null, null);
+    }
+
+    public static PersonNotFoundException foreignPersonNotEligible(final Person person) {
+        final long personId = person.getId();
+        final String errorMessage = format("Found person (id=%d) but foreigner is not eligible", personId);
+        return new PersonNotFoundException(errorMessage, person.getHunterNumber(), personId);
     }
 
     private final String hunterNumber;
     private final Long personId;
 
-    public PersonNotFoundException(String hunterNumber) {
-        super(String.format("Person not found by hunterNumber: %s", hunterNumber));
+    private PersonNotFoundException(final String errorMessage, final String hunterNumber, final Long personId) {
+        super(errorMessage);
         this.hunterNumber = hunterNumber;
-        this.personId = null;
-    }
-
-    public PersonNotFoundException(long personId) {
-        super(String.format("Person not found by personId: %d", personId));
         this.personId = personId;
-        this.hunterNumber = null;
     }
 
     public String getHunterNumber() {

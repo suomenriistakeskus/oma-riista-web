@@ -12,6 +12,25 @@ public class PublicOccupationSearchParametersTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void testPageSizeMissingPageNumber() {
+        PublicOccupationSearchParameters.builder()
+                .withPageSize(3).build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPageNumberMissingPageSize() {
+        PublicOccupationSearchParameters.builder()
+                .withPageNumber(3).build();
+    }
+
+    @Test
+    public void testPageNumberAndPageSizeAreSufficient() {
+        PublicOccupationSearchParameters.builder()
+                .withPageNumber(3)
+                .withPageSize(3).build();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void testOccupationTypeMissingOrganisationType() {
         PublicOccupationSearchParameters.builder()
                 .withOccupationType(OccupationType.SRVA_YHTEYSHENKILO)

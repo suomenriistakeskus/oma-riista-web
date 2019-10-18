@@ -1,11 +1,11 @@
 package fi.riista.feature.gis.zone.query;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.riista.feature.common.entity.PropertyIdentifier;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.util.GISUtils;
+import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
-import org.geojson.FeatureCollection;
+import org.geojson.GeoJsonObject;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
@@ -17,7 +17,7 @@ import java.util.List;
 public class GetPalstaFeatureCollectionQuery {
     private static final String SQL = "SELECT " +
             " a.palsta_id AS id," +
-            " ST_AsGeoJSON(ST_Transform(a.geom, :crs), :precision, 0) AS geom," +
+            " ST_AsBinary(ST_Transform(a.geom, :crs)) AS geom," +
             " ST_Area(a.geom) AS area_size," +
             " a.palsta_tunnus AS tunnus," +
             " b.nimi AS nimi," +
@@ -27,23 +27,21 @@ public class GetPalstaFeatureCollectionQuery {
             " a.new_palsta_tunnus" +
             " FROM zone_palsta a " +
             " LEFT JOIN kiinteisto_nimet b ON (b.tunnus = a.palsta_tunnus)" +
-            " WHERE a.zone_id = :zoneId";
+            " WHERE a.zone_id = :zoneId" +
+            " ORDER BY a.palsta_id";
 
     private final NamedParameterJdbcOperations jdbcOperations;
-    private final ObjectMapper objectMapper;
 
-    public GetPalstaFeatureCollectionQuery(final NamedParameterJdbcOperations jdbcOperations,
-                                           final ObjectMapper objectMapper) {
+    public GetPalstaFeatureCollectionQuery(final NamedParameterJdbcOperations jdbcOperations) {
         this.jdbcOperations = jdbcOperations;
-        this.objectMapper = objectMapper;
     }
 
     @Nonnull
-    private Feature mapResultToFeature(final ResultSet rs) throws SQLException {
+    private Feature mapResultToFeature(final ResultSet rs, final GISUtils.SRID srid) throws SQLException {
         final Feature feature = new Feature();
 
         feature.setId(String.valueOf(rs.getLong("id")));
-        feature.setGeometry(GISUtils.parseGeoJSONGeometry(objectMapper, rs.getString("geom")));
+        feature.setGeometry(readGeometry(rs.getBytes("geom"), srid));
         feature.setProperty(GeoJSONConstants.PROPERTY_NUMBER,
                 PropertyIdentifier.formatPropertyIdentifier(rs.getLong("tunnus")));
         feature.setProperty(GeoJSONConstants.PROPERTY_NAME, rs.getString("nimi"));
@@ -60,19 +58,16 @@ public class GetPalstaFeatureCollectionQuery {
         return feature;
     }
 
-    public FeatureCollection execute(final Long zoneId, final GISUtils.SRID srid) {
+    private static GeoJsonObject readGeometry(final byte[] wkb, final GISUtils.SRID srid) {
+        return PolygonConversionUtil.javaToGeoJSON(GISUtils.readFromPostgisWkb(wkb, srid));
+    }
+
+    public List<Feature> execute(final Long zoneId, final GISUtils.SRID srid) {
         final MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("zoneId", zoneId)
                 .addValue("crs", srid.getValue())
                 .addValue("precision", srid.getDecimalPrecision());
 
-        final List<Feature> features = jdbcOperations.query(SQL, params, (rs, i) -> mapResultToFeature(rs));
-        final FeatureCollection featureCollection = new FeatureCollection();
-
-        if (features != null) {
-            featureCollection.setFeatures(features);
-        }
-
-        return featureCollection;
+        return jdbcOperations.query(SQL, params, (rs, i) -> mapResultToFeature(rs, srid));
     }
 }

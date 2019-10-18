@@ -1,6 +1,5 @@
 package fi.riista.feature.organization.jht.training;
 
-import com.google.common.base.Preconditions;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.SystemUser;
@@ -32,6 +31,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkState;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.EHDOLLA;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.ESITETTY;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.NIMITETTY;
@@ -75,16 +75,18 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
             entity.setTrainingDate(dto.getTrainingDate());
             entity.setTrainingLocation(dto.getTrainingLocation());
             entity.setTrainingType(dto.getTrainingType());
-            entity.setPerson(personLookupService.findById(dto.getPerson().getId())
-                    .orElseThrow(() -> new PersonNotFoundException(dto.getPerson().getId())));
+
+            final Long personId = dto.getPerson().getId();
+            entity.setPerson(personLookupService
+                    .findById(personId, JHTTraining.FOREIGN_PERSON_ELIGIBLE_FOR_JHT_TRAINING)
+                    .orElseThrow(() -> PersonNotFoundException.byPersonId(personId)));
         }
     }
 
     @Override
     protected void delete(final JHTTraining entity) {
-        Preconditions.checkState(entity.getExternalId() == null,
-                "cannot delete when externalId != null");
-        Preconditions.checkState(entity.getTrainingType() == JHTTraining.TrainingType.LAHI,
+        checkState(entity.getExternalId() == null, "cannot delete when externalId != null");
+        checkState(entity.getTrainingType() == JHTTraining.TrainingType.LAHI,
                 "cannot delete when trainingType != LAHI");
         super.delete(entity);
     }
@@ -140,7 +142,8 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
 
     private Optional<Person> getPerson(@Nonnull final JHTTrainingSearchDTO dto) {
         if (StringUtils.hasText(dto.getHunterNumber())) {
-            return personLookupService.findByHunterNumber(dto.getHunterNumber());
+            return personLookupService
+                    .findByHunterNumber(dto.getHunterNumber(), JHTTraining.FOREIGN_PERSON_ELIGIBLE_FOR_JHT_TRAINING);
         }
 
         if (StringUtils.hasText(dto.getSsn())) {
@@ -155,10 +158,10 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
     }
 
     @Transactional
-    public OccupationNomination propose(final Long jhtTrainingId,
-                                        final Long rhyOrganisationId) {
+    public OccupationNomination propose(final Long jhtTrainingId, final Long rhyOrganisationId) {
         final JHTTraining jhtTraining = requireEntity(jhtTrainingId, JHTTrainingAuthorization.Permission.PROPOSE);
-        final Riistanhoitoyhdistys rhy = requireEntityService.requireRiistanhoitoyhdistys(rhyOrganisationId, EntityPermission.READ);
+        final Riistanhoitoyhdistys rhy =
+                requireEntityService.requireRiistanhoitoyhdistys(rhyOrganisationId, EntityPermission.READ);
 
         final Person person = jhtTraining.getPerson();
         final OccupationType occupationType = jhtTraining.getOccupationType();

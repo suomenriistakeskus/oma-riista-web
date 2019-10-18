@@ -1,7 +1,5 @@
 package fi.riista.feature.account.mobile;
 
-import fi.riista.feature.gamediary.mobile.MobileOccupationDTO;
-import fi.riista.feature.gamediary.mobile.MobileOrganisationDTO;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.person.Person;

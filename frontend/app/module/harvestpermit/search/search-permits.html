@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-md-3">
             <div class="form-group">
-                <label for="permitType" translate="harvestpermit.admin.permitType"
+                <label for="permitType" translate="harvestpermit.admin.permit.permitType"
                        class="control-label"></label>
                 <select class="form-control"
                         id="permitType"
@@ -14,7 +14,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="yearSearch" translate="harvestpermit.admin.year"
+                <label for="yearSearch" translate="harvestpermit.admin.permit.year"
                        class="control-label"></label>
                 <input id="yearSearch" type="text" class="form-control"
                        maxlength="4"
@@ -24,7 +24,7 @@
         </div>
         <div class="col-md-3">
             <div class="form-group">
-                <label for="speciesSearch" translate="harvestpermit.admin.species"
+                <label for="speciesSearch" translate="harvestpermit.admin.permit.species"
                        class="control-label"></label>
                 <select class="form-control"
                         id="speciesSearch"
@@ -40,17 +40,17 @@
                 <input id="permitNumberSearch" type="text" class="form-control"
                        maxlength="18"
                        ng-model="$ctrl.searchParams.permitNumber">
-                <p class="help-block" translate="harvestpermit.admin.permitNumberHelp"></p>
+                <p class="help-block" translate="harvestpermit.admin.permit.permitNumberHelp"></p>
             </div>
         </div>
         <div class="col-md-3">
             <div class="form-group">
-                <label for="permitStateSearch" translate="harvestpermit.admin.stateTitle"
+                <label for="permitStateSearch" translate="harvestpermit.admin.permit.stateTitle"
                        class="control-label"></label>
                 <select class="form-control"
                         id="permitStateSearch"
                         ng-model="$ctrl.searchParams.state"
-                        ng-options="a as ('harvestpermit.admin.state.' + a | translate) for a in $ctrl.states"
+                        ng-options="a as ('harvestpermit.admin.permit.state.' + a | translate) for a in $ctrl.states"
                         ie10-optgroup-fix>
                     <option value=""></option>
                 </select>
@@ -58,12 +58,12 @@
         </div>
         <div class="col-md-3">
             <div class="form-group">
-                <label for="permitValiditySearch" translate="harvestpermit.admin.validityTitle"
+                <label for="permitValiditySearch" translate="harvestpermit.admin.permit.validityTitle"
                        class="control-label"></label>
                 <select class="form-control"
                         id="permitValiditySearch"
                         ng-model="$ctrl.searchParams.validity"
-                        ng-options="a as ('harvestpermit.admin.validity.' + a | translate) for a in $ctrl.validity"
+                        ng-options="a as ('harvestpermit.admin.permit.validity.' + a | translate) for a in $ctrl.validity"
                         ie10-optgroup-fix>
                     <option value=""></option>
                 </select>
@@ -90,7 +90,7 @@
                         <input type="radio" name="sortingType"
                                ng-model="$ctrl.searchSort.sortingType"
                                value="NORMAL">
-                        <span translate="harvestpermit.admin.sort.type.NORMAL"></span>
+                        <span translate="harvestpermit.admin.permit.sort.type.NORMAL"></span>
                     </label>
                 </div>
                 <div class="radio">
@@ -98,21 +98,21 @@
                         <input type="radio" name="sortingType"
                                ng-model="$ctrl.searchSort.sortingType"
                                value="SPECIAL">
-                        <span translate="harvestpermit.admin.sort.type.SPECIAL"></span>
+                        <span translate="harvestpermit.admin.permit.sort.type.SPECIAL"></span>
                     </label>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="form-group" ng-if="$ctrl.searchSort.sortingType == 'NORMAL'">
-                <label translate="harvestpermit.admin.sort.permitNumber" class="control-label"></label>
+                <label translate="harvestpermit.admin.permit.sort.permitNumber" class="control-label"></label>
                 <div class="radio">
                     <label>
                         <input type="radio" name="permitNumberSort"
                                ng-model="$ctrl.searchSort.permitNumberSort"
                                value="ASC">
                         <span class="glyphicon glyphicon-sort-by-attributes"></span>
-                        <span translate="harvestpermit.admin.sort.direction.ASC"></span>
+                        <span translate="harvestpermit.admin.permit.sort.direction.ASC"></span>
                     </label>
                 </div>
                 <div class="radio">
@@ -121,19 +121,19 @@
                                ng-model="$ctrl.searchSort.permitNumberSort"
                                value="DESC">
                         <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
-                        <span translate="harvestpermit.admin.sort.direction.DESC"></span>
+                        <span translate="harvestpermit.admin.permit.sort.direction.DESC"></span>
                     </label>
                 </div>
             </div>
             <div class="form-group" ng-if="$ctrl.searchSort.sortingType == 'SPECIAL'">
-                <label translate="harvestpermit.admin.sort.year" class="control-label"></label>
+                <label translate="harvestpermit.admin.permit.sort.year" class="control-label"></label>
                 <div class="radio">
                     <label>
                         <input type="radio" name="yearSort"
                                ng-model="$ctrl.searchSort.yearSort"
                                value="ASC">
                         <span class="glyphicon glyphicon-sort-by-attributes"></span>
-                        <span translate="harvestpermit.admin.sort.direction.ASC"></span>
+                        <span translate="harvestpermit.admin.permit.sort.direction.ASC"></span>
                     </label>
                 </div>
                 <div class="radio">
@@ -142,21 +142,21 @@
                                ng-model="$ctrl.searchSort.yearSort"
                                value="DESC">
                         <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
-                        <span translate="harvestpermit.admin.sort.direction.DESC"></span>
+                        <span translate="harvestpermit.admin.permit.sort.direction.DESC"></span>
                     </label>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="form-group" ng-if="$ctrl.searchSort.sortingType == 'SPECIAL'">
-                <label translate="harvestpermit.admin.sort.ordinal" class="control-label"></label>
+                <label translate="harvestpermit.admin.permit.sort.ordinal" class="control-label"></label>
                 <div class="radio">
                     <label>
                         <input type="radio" name="ordinalSort"
                                ng-model="$ctrl.searchSort.ordinalSort"
                                value="ASC">
                         <span class="glyphicon glyphicon-sort-by-attributes"></span>
-                        <span translate="harvestpermit.admin.sort.direction.ASC"></span>
+                        <span translate="harvestpermit.admin.permit.sort.direction.ASC"></span>
                     </label>
                 </div>
                 <div class="radio">
@@ -165,7 +165,7 @@
                                ng-model="$ctrl.searchSort.ordinalSort"
                                value="DESC">
                         <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
-                        <span translate="harvestpermit.admin.sort.direction.DESC"></span>
+                        <span translate="harvestpermit.admin.permit.sort.direction.DESC"></span>
                     </label>
                 </div>
             </div>

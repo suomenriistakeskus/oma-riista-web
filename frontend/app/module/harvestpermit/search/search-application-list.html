@@ -1,15 +1,17 @@
-<div ng-if="$ctrl.results.length === 0" class="alert alert-info">Ei tuloksia</div>
+<div ng-if="$ctrl.results.length === 0" class="alert alert-info"
+     translate="harvestpermit.admin.application.noResults"></div>
 
 <table ng-if="$ctrl.results.length > 0" class="table table-condensed table-striped">
     <thead>
     <tr>
-        <th class="col-xs-1">Hakemusnumero</th>
-        <th class="col-xs-1">Jätetty</th>
-        <th class="col-xs-2">Hakemuksen nimi</th>
-        <th class="col-xs-2">Yhteyshenkilö</th>
-        <th class="col-xs-2">Luvansaaja</th>
-        <th class="col-xs-2">Käsittelijä</th>
-        <th class="col-xs-1">Tila</th>
+        <th>&nbsp;</th>
+        <th translate="harvestpermit.admin.application.applicationNumber"></th>
+        <th class="col-xs-1" translate="harvestpermit.admin.application.submitDate"></th>
+        <th class="col-xs-2" translate="harvestpermit.admin.application.applicationName"></th>
+        <th class="col-xs-2" translate="harvestpermit.admin.application.contactPerson"></th>
+        <th class="col-xs-2" translate="harvestpermit.admin.application.permitHolder"></th>
+        <th class="col-xs-2" translate="harvestpermit.admin.application.handler"></th>
+        <th class="col-xs-1" translate="harvestpermit.admin.application.status"></th>
         <th class="col-xs-1"></th>
     </tr>
     </thead>
@@ -17,25 +19,33 @@
     <tbody>
     <tr ng-repeat="application in $ctrl.results">
         <td>
+            <span ng-show="::application.deliveryByMail"
+                  class="fa fa-fw fa-envelope"
+                  uib-tooltip="Postitoimitus"></span>
+            <span ng-hide="::application.deliveryByMail"
+                  class="fa fa-fw fa-at"
+                  uib-tooltip="Sähköinen"></span>
+        </td>
+        <td>
             <span ng-bind="::application.applicationNumber"></span>
         </td>
         <td>
             <span ng-class="{'text-danger': $ctrl.isLateApplication(application)}"
-                  ng-bind="::application.submitDate | date:'dd.MM.yyyy'"></span>
+                  ng-bind="::application.submitDate | date:'d.M.yyyy'"></span>
             <span ng-bind="::application.submitDate | date:'HH:mm'"></span>
         </td>
         <td>
             <span ng-bind="::$ctrl.getApplicationName(application)"></span>
         </td>
         <td>
-            <span ng-bind="::application.contactPerson.byName"></span>
             <span ng-bind="::application.contactPerson.lastName"></span>
+            <span ng-bind="::application.contactPerson.byName"></span>
         </td>
         <td>
-            <span ng-show="application.permitHolder" ng-bind="::application.permitHolder.officialCode"></span>
-            <span ng-show="application.permitHolder" ng-bind="::application.permitHolder | rI18nNameFilter"></span>
-            <span ng-show="!application.permitHolder" ng-bind="::application.contactPerson.byName"></span>
+            <span ng-show="application.permitHolder" ng-bind="::application.permitHolder.code"></span>
+            <span ng-show="application.permitHolder" ng-bind="::application.permitHolder.name"></span>
             <span ng-show="!application.permitHolder" ng-bind="::application.contactPerson.lastName"></span>
+            <span ng-show="!application.permitHolder" ng-bind="::application.contactPerson.byName"></span>
         </td>
         <td>
             <span ng-show="application.handler" ng-bind="::application.handler.lastName"></span>
@@ -44,10 +54,12 @@
         <td>
             <span translate="harvestpermit.decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus(application)}}"></span>
         </td>
-        <td>
+        <td class="text-right">
             <button type="button"
-                    class="btn btn-primary btn-block"
-                    ng-click="$ctrl.openApplication(application)">Avaa</button>
+                    class="btn btn-sm btn-primary"
+                    ng-click="$ctrl.openApplication(application)">
+                <span class="fa fa-lg fa-chevron-right"></span>
+            </button>
         </td>
     </tr>
     </tbody>

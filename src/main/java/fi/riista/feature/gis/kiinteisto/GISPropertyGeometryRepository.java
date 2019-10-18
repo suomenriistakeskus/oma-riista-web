@@ -2,7 +2,6 @@ package fi.riista.feature.gis.kiinteisto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.riista.feature.gis.GISBounds;
-import fi.riista.feature.gis.GISPoint;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.util.GISUtils;
 import org.apache.commons.lang.StringUtils;
@@ -21,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 @Component
 public class GISPropertyGeometryRepository {
@@ -30,7 +30,7 @@ public class GISPropertyGeometryRepository {
             " a.tunnus," +
             " b.nimi as nimi," +
             " ST_Area(a.geom) as area_size," +
-            " ST_AsGeoJSON(ST_Transform(a.geom, 4326), 7, 5) AS geom" +
+            " ST_AsGeoJSON(ST_Transform(a.geom, :srid), 7, 5) AS geom" +
             " FROM palstaalue a" +
             " LEFT JOIN kiinteisto_nimet b ON (a.tunnus = b.tunnus)";
 
@@ -42,29 +42,44 @@ public class GISPropertyGeometryRepository {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public FeatureCollection findOne(final Long id) {
+    public FeatureCollection findOne(final Long id, final GISUtils.SRID srid) {
         final String sql = SELECT_FROM + " WHERE a.id = :id";
 
-        return query(sql, new MapSqlParameterSource().addValue("id", id));
+        return query(sql, new MapSqlParameterSource()
+                .addValue("id", id)
+                .addValue("srid", srid.getValue()));
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public FeatureCollection findByPropertyIdentifier(final String propertyIdentifier) {
+    public FeatureCollection findAll(final List<Long> ids, final GISUtils.SRID srid) {
+        final String sql = SELECT_FROM + " WHERE a.id IN (:ids)";
+
+        return query(sql, new MapSqlParameterSource()
+                .addValue("ids", ids)
+                .addValue("srid", srid.getValue()));
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public FeatureCollection findByPropertyIdentifier(final String propertyIdentifier, final GISUtils.SRID srid) {
         final String sql = SELECT_FROM + " WHERE a.tunnus = :propertyIdentifier";
 
         return query(sql, new MapSqlParameterSource()
-                .addValue("propertyIdentifier", Long.parseLong(propertyIdentifier)));
+                .addValue("propertyIdentifier", Long.parseLong(propertyIdentifier))
+                .addValue("srid", srid.getValue()));
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public FeatureCollection findIntersectingWithPoint(GISPoint gisPoint) {
-        final String sql = SELECT_FROM + " WHERE ST_Contains(a.geom, ST_GeomFromText(:point, 3067))";
+    public FeatureCollection findIntersectingWithPoint(final double lat, final double lng, final GISUtils.SRID srid) {
+        final String sql = SELECT_FROM + " WHERE ST_Contains(a.geom, ST_Transform(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326), 3067))";
 
-        return query(sql, new MapSqlParameterSource().addValue("point", gisPoint.toWellKnownText()));
+        return query(sql, new MapSqlParameterSource()
+                .addValue("lat", lat)
+                .addValue("lng", lng)
+                .addValue("srid", srid.getValue()));
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public FeatureCollection findByBounds(final GISBounds bounds, int maxResults) {
+    public FeatureCollection findByBounds(final GISBounds bounds, int maxResults, final GISUtils.SRID srid) {
         final String sql = SELECT_FROM + " WHERE ST_Intersects(a.geom, ST_Transform(" +
                 "ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326), 3067))" +
                 " LIMIT :maxResults;";
@@ -74,7 +89,8 @@ public class GISPropertyGeometryRepository {
                 .addValue("minLat", bounds.getMinLat())
                 .addValue("maxLon", bounds.getMaxLng())
                 .addValue("maxLat", bounds.getMaxLat())
-                .addValue("maxResults", maxResults));
+                .addValue("maxResults", maxResults)
+                .addValue("srid", srid.getValue()));
     }
 
     private FeatureCollection query(final String sql, MapSqlParameterSource parameterSource) {

@@ -22,10 +22,10 @@ import static fi.riista.integration.fivaldi.FivaldiConstants.FIVALDI_CUSTOMER_ID
 import static fi.riista.integration.fivaldi.FivaldiConstants.FIVALDI_CUSTOMER_ID_PAYTRAIL;
 import static fi.riista.integration.fivaldi.FivaldiConstants.FIVALDI_PAYMENT_TERMS_CODE;
 import static fi.riista.integration.fivaldi.FivaldiConstants.FIVALDI_VAT_CODE;
-import static fi.riista.integration.fivaldi.FivaldiHelper.asString;
-import static fi.riista.integration.fivaldi.FivaldiHelper.scaleMonetaryAmount;
 import static fi.riista.integration.fivaldi.FivaldiReslasLine.RESLAS_RECORD_TYPE;
 import static fi.riista.integration.fivaldi.FivaldiRestapLine.RESTAP_RECORD_TYPE;
+import static fi.riista.util.fixedformat.FixedFormatHelper.asString;
+import static fi.riista.util.fixedformat.FixedFormatHelper.scaleMonetaryAmount;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 

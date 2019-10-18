@@ -21,6 +21,7 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.gis.GISBounds;
 import io.vavr.Tuple2;
 import org.geojson.Crs;
 import org.geojson.Feature;
@@ -257,6 +258,27 @@ public final class GISUtils {
         }
 
         return getGeometryFactory(srid).createPolygon(coordinates);
+    }
+
+    @Nonnull
+    public static Polygon createPolygon(final GISBounds bounds, final SRID srid) {
+        final double[] bbox = bounds.toBBox();
+
+        final double west = bbox[0];
+        final double south = bbox[1];
+        final double east = bbox[2];
+        final double north = bbox[3];
+
+        final Coordinate lowLeft = new Coordinate(west, south);
+        final Coordinate topLeft = new Coordinate(west, north);
+        final Coordinate topRight = new Coordinate(east, north);
+        final Coordinate lowRight = new Coordinate(east, south);
+
+        final GeometryFactory geometryFactory = getGeometryFactory(srid);
+
+        return geometryFactory.createPolygon(geometryFactory.createLinearRing(new Coordinate[]{
+                lowLeft, lowRight, topRight, topLeft, lowLeft
+        }));
     }
 
     public static GeoJsonObject parseGeoJSONGeometry(@Nonnull final ObjectMapper objectMapper,

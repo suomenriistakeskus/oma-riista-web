@@ -4,8 +4,8 @@ import fi.riista.config.IntegrationTestApplicationContext;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.BaseEntity;
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.common.entity.EntityPersister;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.huntingclub.support.ClubGroupUserFunctionsBuilder;
@@ -35,6 +35,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -89,9 +90,10 @@ public abstract class SpringContextIntegrationTest extends SpringRuleConfigurer
         SecurityContextHolder.clearContext();
 
         transientEntityList.clear();
+        getNumberGenerator().reset();
 
         riistakeskusSupplier = Lazy.of(() -> {
-            final Riistakeskus rk = new Riistakeskus("Riistakeskus", "Riistakeskus");
+            final Riistakeskus rk = new Riistakeskus("Riistakeskus", "Viltcentralen");
             transientEntityList.add(rk);
             return rk;
         });
@@ -109,6 +111,12 @@ public abstract class SpringContextIntegrationTest extends SpringRuleConfigurer
         return entitySupplier.newUser(role, passwordEncoder);
     }
 
+    protected SystemUser createNewUser(final SystemUser.Role role, final SystemUserPrivilege... privileges) {
+        final SystemUser u = createNewUser(role);
+        Arrays.stream(privileges).forEach(u.getPrivileges()::add);
+        return u;
+    }
+
     protected SystemUser createNewUser() {
         return createNewUser(SystemUser.Role.ROLE_USER);
     }
@@ -121,14 +129,16 @@ public abstract class SpringContextIntegrationTest extends SpringRuleConfigurer
         return createNewUser(SystemUser.Role.ROLE_MODERATOR);
     }
 
+    protected SystemUser createNewModerator(final SystemUserPrivilege... privileges) {
+        return createNewUser(SystemUser.Role.ROLE_MODERATOR, privileges);
+    }
+
     protected SystemUser createNewApiUser() {
         return createNewUser(SystemUser.Role.ROLE_REST);
     }
 
-    protected SystemUser createNewApiUser(final SystemUserPrivilege privilege) {
-        final SystemUser u = createNewApiUser();
-        u.getPrivileges().add(privilege);
-        return u;
+    protected SystemUser createNewApiUser(final SystemUserPrivilege... privileges) {
+        return createNewUser(SystemUser.Role.ROLE_REST, privileges);
     }
 
     protected SystemUser createNewUserWithPasswordAndPerson(

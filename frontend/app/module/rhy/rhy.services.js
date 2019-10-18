@@ -29,18 +29,12 @@ angular.module('app.rhy.services', [])
             listMoosePermits: {
                 method: 'GET',
                 url: 'api/v1/riistanhoitoyhdistys/:id/moosepermit',
-                params: {year: '@year', species: '@species'},
                 isArray: true
             },
             searchParamOrganisations: {
                 method: 'GET',
                 url: 'api/v1/riistanhoitoyhdistys/searchparams/orgs',
                 params: {id: '@id'},
-                isArray: true
-            },
-            moosepermitStatistics: {
-                method: 'GET',
-                url: 'api/v1/riistanhoitoyhdistys/:id/moosepermit/statistics',
                 isArray: true
             }
         });

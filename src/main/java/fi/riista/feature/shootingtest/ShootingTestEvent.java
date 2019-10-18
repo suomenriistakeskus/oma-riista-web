@@ -2,6 +2,7 @@ package fi.riista.feature.shootingtest;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.calendar.CalendarEvent;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficial;
 import fi.riista.util.DateUtil;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
@@ -23,16 +24,16 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static fi.riista.feature.shootingtest.ShootingTest.DAYS_OF_EVENT_UPDATEABLE_BY_OFFICIAL;
 import static fi.riista.util.DateUtil.today;
+import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(value = AccessType.FIELD)
 public class ShootingTestEvent extends LifecycleEntity<Long> {
-
-    public static final Days DAYS_UPDATEABLE_BY_OFFICIAL = Days.days(7);
 
     private Long id;
 
@@ -55,16 +56,19 @@ public class ShootingTestEvent extends LifecycleEntity<Long> {
     }
 
     public ShootingTestEvent(@Nonnull final CalendarEvent calendarEvent) {
-        this.calendarEvent = Objects.requireNonNull(calendarEvent);
-        assertState(!getEventDate().isAfter(today()), "Cannot open shooting test event into the future");
+        checkArgument(calendarEvent.getCalendarEventType().isShootingTest());
+        this.calendarEvent = requireNonNull(calendarEvent);
+
+        assertState(!calendarEvent.getDateAsLocalDate().isAfter(today()),
+                "Cannot open shooting test event into the future");
     }
 
     public boolean hasOccurredWithinLastWeek() {
-        final LocalDate eventDate = getEventDate();
+        final LocalDate eventDate = calendarEvent.getDateAsLocalDate();
         final LocalDate today = today();
 
         return !today.isBefore(eventDate)
-                && !Days.daysBetween(eventDate, today).isGreaterThan(DAYS_UPDATEABLE_BY_OFFICIAL);
+                && !Days.daysBetween(eventDate, today).isGreaterThan(DAYS_OF_EVENT_UPDATEABLE_BY_OFFICIAL);
     }
 
     public boolean isClosed() {
@@ -81,7 +85,7 @@ public class ShootingTestEvent extends LifecycleEntity<Long> {
         this.lockedTime = null;
     }
 
-    void assertOpen(final String errorMessage) {
+    public void assertOpen(final String errorMessage) {
         assertState(!isClosed(), errorMessage);
     }
 
@@ -89,10 +93,6 @@ public class ShootingTestEvent extends LifecycleEntity<Long> {
         if (!expectedCondition) {
             throw new IllegalShootingTestEventStateException(errorMessage);
         }
-    }
-
-    private LocalDate getEventDate() {
-        return DateUtil.toLocalDateNullSafe(calendarEvent.getDate());
     }
 
     // Accessors -->

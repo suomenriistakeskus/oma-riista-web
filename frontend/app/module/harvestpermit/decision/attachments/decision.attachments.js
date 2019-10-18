@@ -35,7 +35,7 @@ angular.module('app.harvestpermit.decision.attachments', [])
         }
     })
     .service('PermitDecisionAttachmentsModal', function ($uibModal) {
-        this.open = function (decisionId) {
+        this.open = function (decisionId, showDefaultMooseAttachmentButton) {
             return $uibModal.open({
                 templateUrl: 'harvestpermit/decision/attachments/attachments.html',
                 controllerAs: '$ctrl',
@@ -43,6 +43,7 @@ angular.module('app.harvestpermit.decision.attachments', [])
                 size: 'lg',
                 resolve: {
                     decisionId: _.constant(decisionId),
+                    showDefaultMooseAttachmentButton: _.constant(showDefaultMooseAttachmentButton),
                     decisionAttachments: function (PermitDecisionAttachmentService) {
                         return PermitDecisionAttachmentService.loadAttachments(decisionId);
                     }
@@ -52,7 +53,7 @@ angular.module('app.harvestpermit.decision.attachments', [])
 
         function ModalController($uibModalInstance, $scope, $timeout,
                                  PermitDecision, PermitDecisionAttachmentService,
-                                 decisionId, decisionAttachments) {
+                                 decisionId, decisionAttachments, showDefaultMooseAttachmentButton) {
             var $ctrl = this;
 
             $ctrl.dropzone = null;
@@ -60,6 +61,7 @@ angular.module('app.harvestpermit.decision.attachments', [])
             $ctrl.$onInit = function () {
                 $ctrl.activeTabIndex = 0;
                 $ctrl.decisionAttachments = decisionAttachments;
+                $ctrl.showDefaultMooseAttachmentButton = showDefaultMooseAttachmentButton;
                 $ctrl.attachmentDescription = '';
                 $ctrl.attachmentChanged = false;
 
@@ -150,7 +152,7 @@ angular.module('app.harvestpermit.decision.attachments', [])
             };
 
             function moveArrayElement(arr, id, delta) {
-                var ndx = _.findIndex(arr, 'id', id);
+                var ndx = _.findIndex(arr, ['id', id]);
 
                 if (ndx !== -1) {
                     var tmp = arr.splice(ndx, 1);

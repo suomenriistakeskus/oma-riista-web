@@ -17,12 +17,12 @@ public class InvoiceSearchFeature {
     private static final int MAX_SEARCH_RESULTS = 200;
 
     @Resource
-    private InvoiceRepository invoiceRepo;
+    private InvoiceRepository invoiceRepository;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public List<InvoiceSearchResultDTO> searchInvoices(@Nonnull final InvoiceSearchFilterDTO dto) {
-        return invoiceRepo.search(dto, MAX_SEARCH_RESULTS)
+        return invoiceRepository.search(dto, MAX_SEARCH_RESULTS)
                 .stream()
                 .map(invoice -> InvoiceSearchResultDTO.create(invoice, invoice.getRecipientAddress()))
                 .collect(toList());

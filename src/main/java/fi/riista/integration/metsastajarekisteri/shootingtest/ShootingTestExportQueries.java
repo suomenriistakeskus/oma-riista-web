@@ -1,14 +1,13 @@
 package fi.riista.integration.metsastajarekisteri.shootingtest;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.calendar.QCalendarEvent;
-import fi.riista.feature.organization.person.QPerson;
 import fi.riista.feature.shootingtest.QShootingTestAttempt;
 import fi.riista.feature.shootingtest.QShootingTestEvent;
 import fi.riista.feature.shootingtest.QShootingTestParticipant;
+import fi.riista.feature.shootingtest.ShootingTest;
 import fi.riista.feature.shootingtest.ShootingTestType;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
@@ -21,12 +20,12 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.SortedMap;
 
-import static fi.riista.feature.shootingtest.ShootingTestAttempt.SHOOTING_TEST_VALIDITY_PERIOD;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.QUALIFIED;
 import static fi.riista.util.Collect.mappingAndCollectingFirst;
 import static fi.riista.util.Collect.toImmutableSortedMap;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.requireNonNull;
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
@@ -42,62 +41,56 @@ public class ShootingTestExportQueries {
     private JPQLQueryFactory jpqlQueryFactory;
 
     @Transactional(readOnly = true)
-    public SortedMap<Long, MR_Person> fetchPersonsWithIdGreaterThan(final long exclusiveLowerBoundForPersonId,
-                                                                    final long numberOfPersonsToFetch,
-                                                                    @Nonnull final LocalDate searchPeriodEndDate) {
+    public SortedMap<String, MR_Person> fetchPersonsWithHunterNumberGreaterThan(@Nonnull final String exclusiveLowerBoundForHunterNumber,
+                                                                                final long numberOfPersonsToFetch,
+                                                                                @Nonnull final LocalDate searchPeriodEndDate) {
 
-        requireNonNull(searchPeriodEndDate);
+        requireNonNull(exclusiveLowerBoundForHunterNumber, "exclusiveLowerBoundForHunterNumber is null");
+        requireNonNull(searchPeriodEndDate, "searchPeriodEndDate is null");
 
-        final QPerson PERSON = QPerson.person;
         final QShootingTestParticipant PARTICIPANT = QShootingTestParticipant.shootingTestParticipant;
         final QShootingTestEvent EVENT = QShootingTestEvent.shootingTestEvent;
         final QCalendarEvent CALENDAR_EVENT = QCalendarEvent.calendarEvent;
 
-        final SortedMap<Long, MR_Person> personsById = jpqlQueryFactory
-                .select(PERSON.id, PERSON.hunterNumber)
-                .distinct()
+        final SortedMap<String, MR_Person> personMap = jpqlQueryFactory
+                .select(PARTICIPANT.hunterNumber).distinct()
                 .from(PARTICIPANT)
-                .join(PARTICIPANT.person, PERSON)
                 .join(PARTICIPANT.shootingTestEvent, EVENT)
                 .join(EVENT.calendarEvent, CALENDAR_EVENT)
                 .where(createDatePredicate(CALENDAR_EVENT, searchPeriodEndDate),
                         EVENT.lockedTime.isNotNull(),
                         PARTICIPANT.completed.isTrue(),
-                        // Using person ID predicate instead of SQL offset
-                        // parameter guarantees use of database index.
-                        PERSON.id.gt(exclusiveLowerBoundForPersonId))
-                .orderBy(PERSON.id.asc())
+                        PARTICIPANT.hunterNumber.isNotNull(),
+                        PARTICIPANT.hunterNumber.gt(exclusiveLowerBoundForHunterNumber))
+                .orderBy(PARTICIPANT.hunterNumber.asc())
                 .limit(numberOfPersonsToFetch)
                 .fetch()
                 .stream()
-                .collect(toImmutableSortedMap(
-                        t -> t.get(PERSON.id),
-                        t -> new MR_Person()
-                                .withHunterNumber(t.get(PERSON.hunterNumber))
-                                .withValidTests(new MR_ShootingTestList())));
+                .collect(toImmutableSortedMap(identity(), hunterNumber -> new MR_Person()
+                        .withHunterNumber(hunterNumber)
+                        .withValidTests(new MR_ShootingTestList())));
 
-        if (!personsById.isEmpty()) {
-            final long minPersonId = personsById.firstKey();
-            final long maxPersonId = personsById.lastKey();
+        if (!personMap.isEmpty()) {
+            final String minHunterNumber = personMap.firstKey();
+            final String maxHunterNumber = personMap.lastKey();
 
-            fetchShootingTests(searchPeriodEndDate, minPersonId, maxPersonId).forEach((personId, shootingTestMap) -> {
-
-                personsById.get(personId)
-                        .getValidTests()
-                        .withShootingTest(shootingTestMap
-                                .values()
-                                .stream()
-                                .sorted(MR_SHOOTING_TEST_ORDERING)
-                                .collect(toList()));
-            });
+            fetchShootingTests(searchPeriodEndDate, minHunterNumber, maxHunterNumber)
+                    .forEach((hunterNumber, shootingTestMap) -> personMap
+                            .get(hunterNumber)
+                            .getValidTests()
+                            .withShootingTest(shootingTestMap
+                                    .values()
+                                    .stream()
+                                    .sorted(MR_SHOOTING_TEST_ORDERING)
+                                    .collect(toList())));
         }
 
-        return personsById;
+        return personMap;
     }
 
-    private Map<Long, Map<ShootingTestType, MR_ShootingTest>> fetchShootingTests(final LocalDate searchPeriodEndDate,
-                                                                                 final long minPersonId,
-                                                                                 final long maxPersonId) {
+    private Map<String, Map<ShootingTestType, MR_ShootingTest>> fetchShootingTests(final LocalDate searchPeriodEndDate,
+                                                                                   final String minHunterNumber,
+                                                                                   final String maxHunterNumber) {
 
         final QShootingTestAttempt ATTEMPT = QShootingTestAttempt.shootingTestAttempt;
         final QShootingTestParticipant PARTICIPANT = QShootingTestParticipant.shootingTestParticipant;
@@ -105,13 +98,11 @@ public class ShootingTestExportQueries {
         final QCalendarEvent CALENDAR_EVENT = QCalendarEvent.calendarEvent;
         final QOrganisation RHY = QOrganisation.organisation;
 
-        final NumberPath<Long> personId = PARTICIPANT.person.id;
-
         return jpqlQueryFactory
                 .select(ATTEMPT.id,
                         ATTEMPT.type,
                         PARTICIPANT.id,
-                        personId,
+                        PARTICIPANT.hunterNumber,
                         EVENT.id,
                         CALENDAR_EVENT.date,
                         RHY.officialCode)
@@ -124,12 +115,12 @@ public class ShootingTestExportQueries {
                         EVENT.lockedTime.isNotNull(),
                         PARTICIPANT.completed.isTrue(),
                         PARTICIPANT.totalDueAmount.eq(PARTICIPANT.paidAmount),
-                        personId.between(minPersonId, maxPersonId),
+                        PARTICIPANT.hunterNumber.between(minHunterNumber, maxHunterNumber),
                         ATTEMPT.result.eq(QUALIFIED))
                 .fetch()
                 .stream()
                 .collect(groupingBy(
-                        t -> t.get(personId),
+                        t -> t.get(PARTICIPANT.hunterNumber),
                         // Collect the most recent shooting test for each ShootingTestType.
                         groupingBy(
                                 t -> t.get(ATTEMPT.type),
@@ -141,7 +132,7 @@ public class ShootingTestExportQueries {
                                     return new MR_ShootingTest()
                                             .withType(t.get(ATTEMPT.type).toExportType())
                                             .withValidityBegin(validityBegin)
-                                            .withValidityEnd(validityBegin.plus(SHOOTING_TEST_VALIDITY_PERIOD))
+                                            .withValidityEnd(validityBegin.plus(ShootingTest.VALIDITY_PERIOD))
                                             .withRHY(t.get(RHY.officialCode))
                                             .withEventId(t.get(EVENT.id))
                                             .withParticipantId(t.get(PARTICIPANT.id))
@@ -153,7 +144,7 @@ public class ShootingTestExportQueries {
     private static BooleanExpression createDatePredicate(final QCalendarEvent calendarEventMeta,
                                                          final LocalDate searchPeriodEndDate) {
 
-        final LocalDate searchPeriodBeginDate = searchPeriodEndDate.minus(SHOOTING_TEST_VALIDITY_PERIOD);
+        final LocalDate searchPeriodBeginDate = searchPeriodEndDate.minus(ShootingTest.VALIDITY_PERIOD);
 
         return calendarEventMeta.date.between(searchPeriodBeginDate.toDate(), searchPeriodEndDate.toDate());
     }

@@ -1,15 +1,20 @@
 package fi.riista.feature.huntingclub.area;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.gis.zone.GISZone;
+import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.util.DtoUtil;
+import fi.riista.validation.DoNotValidate;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.Range;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDateTime;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -34,13 +39,11 @@ public class HuntingClubAreaDTO extends BaseEntityDTO<Long> {
 
         if (zoneWithSize != null) {
             dto.setZoneId(zoneWithSize.getId());
-            dto.setComputedAreaSize(zoneWithSize.getSize().getAll().getTotal());
-            dto.setWaterAreaSize(zoneWithSize.getSize().getAll().getWater());
             dto.setSourceType(zoneWithSize.getSourceType());
+            dto.setSize(zoneWithSize.getSize());
         } else {
-            dto.setWaterAreaSize(0);
-            dto.setComputedAreaSize(0);
             dto.setSourceType(GISZone.SourceType.LOCAL);
+            dto.setSize(GISZoneSizeDTO.createEmpty());
         }
 
         return dto;
@@ -54,10 +57,12 @@ public class HuntingClubAreaDTO extends BaseEntityDTO<Long> {
     @NotNull
     private Long clubId;
 
-    @Range(min = 2000, max = 2100)
+    @Min(HuntingClubArea.MIN_YEAR)
+    @Max(HuntingClubArea.MAX_YEAR)
     private int huntingYear;
 
-    @Range(min = 2000, max = 2100)
+    @Min(HuntingClubArea.MIN_YEAR)
+    @Max(HuntingClubArea.MAX_YEAR)
     private Integer metsahallitusYear;
 
     @NotBlank
@@ -77,8 +82,10 @@ public class HuntingClubAreaDTO extends BaseEntityDTO<Long> {
     // Read-only properties
 
     private Long zoneId;
-    private double computedAreaSize;
-    private double waterAreaSize;
+
+    @JsonIgnore
+    @DoNotValidate
+    private GISZoneSizeDTO size;
     private GISZone.SourceType sourceType;
 
     private boolean canEdit;
@@ -176,20 +183,14 @@ public class HuntingClubAreaDTO extends BaseEntityDTO<Long> {
         this.externalId = externalId;
     }
 
-    public double getComputedAreaSize() {
-        return computedAreaSize;
+    @JsonProperty
+    public GISZoneSizeDTO getSize() {
+        return size;
     }
 
-    public void setComputedAreaSize(final double computedAreaSize) {
-        this.computedAreaSize = computedAreaSize;
-    }
-
-    public double getWaterAreaSize() {
-        return waterAreaSize;
-    }
-
-    public void setWaterAreaSize(final double waterAreaSize) {
-        this.waterAreaSize = waterAreaSize;
+    @JsonIgnore
+    public void setSize(final GISZoneSizeDTO size) {
+        this.size = size;
     }
 
     public GISZone.SourceType getSourceType() {

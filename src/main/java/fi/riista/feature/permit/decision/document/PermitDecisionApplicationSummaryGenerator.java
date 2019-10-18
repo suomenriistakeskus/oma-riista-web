@@ -7,15 +7,26 @@ import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhyDTO;
 import fi.riista.util.Locales;
 
+import javax.annotation.Nonnull;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.function.BiFunction;
 
+import static java.util.Objects.requireNonNull;
+
 public class PermitDecisionApplicationSummaryGenerator {
-    public static String generate(final Locale locale,
-                                  final HarvestPermitApplication application,
-                                  final GISZoneSizeDTO areaSize) {
+    private PermitDecisionApplicationSummaryGenerator() {
+        throw new AssertionError();
+    }
+
+    public static String generate(final @Nonnull Locale locale,
+                                  final @Nonnull HarvestPermitApplication application,
+                                  final @Nonnull GISZoneSizeDTO areaSize) {
+        requireNonNull(locale);
+        requireNonNull(application);
+        requireNonNull(areaSize);
+
         return generate(new PermitDecisionApplicationSummaryModel(locale, application, areaSize));
     }
 
@@ -37,20 +48,20 @@ public class PermitDecisionApplicationSummaryGenerator {
 
         for (final PermitDecisionApplicationSummaryModel.SpeciesAmount speciesAmount : model.getSpeciesAmounts()) {
             sb.append(speciesAmount.getName());
-            sb.append("|");
+            sb.append('|');
             sb.append(df.format(speciesAmount.getAmount()));
-            sb.append(" ");
+            sb.append(' ');
             sb.append(i18n.apply("kpl", "st."));
-            sb.append("\n");
+            sb.append('\n');
         }
 
-        sb.append("\n");
+        sb.append('\n');
         sb.append(i18n.apply("Alue:", "Område:"));
-        sb.append("\n");
+        sb.append('\n');
         sb.append(i18n.apply(
                 "Hakemus sijaitsee seuraavien riistanhoitoyhdistysten alueilla:",
                 "Ansökningsområdet är på följande jaktvårdsföreningars områden:"));
-        sb.append("\n");
+        sb.append('\n');
 
         for (final HarvestPermitAreaRhyDTO rhyDTO : model.getRhys()) {
             sb.append(rhyDTO.getRhy().getNameLocalisation().getTranslation(model.getLocale()));
@@ -58,41 +69,41 @@ public class PermitDecisionApplicationSummaryGenerator {
             sb.append(i18n.apply(
                     "karttaan rajattu alue",
                     "på kartan avgränsat område"));
-            sb.append("\n");
+            sb.append('\n');
         }
 
-        sb.append("\n");
+        sb.append('\n');
         sb.append(i18n.apply("Alueen tunnus", "Områdets kod"));
-        sb.append(" ");
+        sb.append(' ');
         sb.append(model.getAreaExternalCode());
-        sb.append("\n");
+        sb.append('\n');
 
         sb.append(i18n.apply("Alueen pinta-ala:", "Areal:"));
         sb.append("\n\n");
 
         sb.append("---|---:\n");
         sb.append(i18n.apply("Maapinta-ala", "Markareal"));
-        sb.append("|");
+        sb.append('|');
         sb.append(HandlebarsHelperSource.hectaresRounded(model.getLandAreaSize()));
-        sb.append("\n");
+        sb.append('\n');
 
         sb.append(i18n.apply("Vesipinta-ala", "Vattenareal"));
-        sb.append("|");
+        sb.append('|');
         sb.append(HandlebarsHelperSource.hectaresRounded(model.getWaterAreaSize()));
-        sb.append("\n");
+        sb.append('\n');
 
         sb.append(i18n.apply("Kokonaispinta-ala", "Areal"));
-        sb.append("|");
+        sb.append('|');
         sb.append(HandlebarsHelperSource.hectaresRounded(model.getTotalAreaSize()));
-        sb.append("\n");
+        sb.append('\n');
 
         sb.append(i18n.apply("Valtionmaiden maapinta-ala", "Statsägda områdens areal"));
-        sb.append("|");
+        sb.append('|');
         sb.append(HandlebarsHelperSource.hectaresRounded(model.getStateLandAreaSize()));
-        sb.append("\n");
+        sb.append('\n');
 
         sb.append(i18n.apply("Yksityismaiden maapinta-ala", "Privatägda områdens areal"));
-        sb.append("|");
+        sb.append('|');
         sb.append(HandlebarsHelperSource.hectaresRounded(model.getPrivateLandAreaSize()));
         sb.append("\n\n");
 
@@ -101,11 +112,11 @@ public class PermitDecisionApplicationSummaryGenerator {
             sb.append(i18n.apply(
                     "Lupaosakkaiden määrä,",
                     "Antal licensdelägare,"));
-            sb.append("|");
+            sb.append('|');
             sb.append(model.getPartnerCount());
-            sb.append(" ");
+            sb.append(' ');
             sb.append(i18n.apply("kpl", "st."));
-            sb.append("\n");
+            sb.append('\n');
 
             sb.append(i18n.apply(
                     "asiakasnumerot ja nimet",
@@ -114,11 +125,11 @@ public class PermitDecisionApplicationSummaryGenerator {
 
             for (OrganisationNameDTO club : model.getPartners()) {
                 sb.append(club.getOfficialCode());
-                sb.append("|");
+                sb.append('|');
                 sb.append(club.getNameFI());
-                sb.append("\n");
+                sb.append('\n');
             }
-            sb.append("\n");
+            sb.append('\n');
         }
 
         if (model.isFreeHunting()) {
@@ -126,27 +137,27 @@ public class PermitDecisionApplicationSummaryGenerator {
             sb.append(i18n.apply(
                     "Ampujat, jotka eivät kuulu muuhun pyyntilupaa hakevaan seuraan / seurueeseen",
                     "Skyttar som inte hör till annan förening / annat sällskap som ansöker om jaktlicens"));
-            sb.append("|");
+            sb.append('|');
             sb.append(model.getShooterOnlyClub());
-            sb.append(" ");
+            sb.append(' ');
             sb.append(i18n.apply("kpl", "st."));
-            sb.append("\n");
+            sb.append('\n');
 
             sb.append(i18n.apply(
                     "Ampujat, jotka kuuluvat muuhun hirveä metsästävään seuraan / seurueeseen, mutta eivät metsästä siellä tulevana metsästyskautena",
                     "Skyttar som hör till en annan förening / annat sällskap som jagar älg men som inte jagar där under den aktuella jaktsäsongen"));
-            sb.append("|");
+            sb.append('|');
             sb.append(model.getShooterOtherClubPassive());
-            sb.append(" ");
+            sb.append(' ');
             sb.append(i18n.apply("kpl", "st."));
-            sb.append("\n");
+            sb.append('\n');
 
             sb.append(i18n.apply(
                     "Ampujat, jotka kuuluvat muuhun hirveä metsästävään seuraan / seurueeseen, ja metsästävät siellä tulevana metsästyskautena",
                     "Skyttar som hör till en annan förening / annat sällskap som jagar älg och som jagar där under den aktuella jaktsäsongen"));
-            sb.append("|");
+            sb.append('|');
             sb.append(model.getShooterOtherClubActive());
-            sb.append(" ");
+            sb.append(' ');
             sb.append(i18n.apply("kpl", "st."));
             sb.append("\n\n");
         }
@@ -157,34 +168,30 @@ public class PermitDecisionApplicationSummaryGenerator {
             sb.append(i18n.apply(
                     "Metsähallituksen aluelupia",
                     "Områdeslicens JL"));
-            sb.append("|");
+            sb.append('|');
             sb.append(model.getAreaPermitCount());
-            sb.append(" ");
+            sb.append(' ');
             sb.append(i18n.apply("kpl", "st."));
-            sb.append("\n");
+            sb.append('\n');
 
             sb.append(i18n.apply(
                     "Ampujaluetteloita",
                     "Skytteförteckningar"));
-            sb.append("|");
+            sb.append('|');
             sb.append(model.getShooterListCount());
-            sb.append(" ");
+            sb.append(' ');
             sb.append(i18n.apply("kpl", "st."));
-            sb.append("\n");
+            sb.append('\n');
         }
 
         sb.append(i18n.apply(
                 "Muita liitteitä",
                 "Övriga bilagor"));
-        sb.append("|");
+        sb.append('|');
         sb.append(model.getOtherAttachmentCount());
-        sb.append(" ");
+        sb.append(' ');
         sb.append(i18n.apply("kpl", "st."));
 
         return sb.toString();
-    }
-
-    private PermitDecisionApplicationSummaryGenerator() {
-        throw new AssertionError();
     }
 }

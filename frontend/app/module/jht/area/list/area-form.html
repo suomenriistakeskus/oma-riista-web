@@ -1,0 +1,90 @@
+<form name="moderatorAreaForm" role="form"
+      class="form form-horizontal"
+      autocomplete="off">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <div class="modal-title h3" ng-switch="$ctrl.isUpdate">
+            <span ng-switch-when="true" translate="account.areas.editArea"></span>
+            <span ng-switch-when="false" translate="account.areas.create"></span>
+        </div>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="areaName" class="col-xs-4 control-label">
+                <span translate="account.areas.areaName"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input type="text" name="areaName" id="areaName"
+                       class="form-control"
+                       minlength="1" maxlength="255"
+                       ng-model="$ctrl.areaName"
+                       focus-me
+                       required>
+
+                <p class="help-block has-error"
+                   ng-show="moderatorAreaForm.areaName.$invalid"
+                   ng-messages="moderatorAreaForm.areaName.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="year" class="col-xs-4 control-label">
+                <span translate="global.selectCalendarYear"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input type="number" name="year" id="year"
+                       class="form-control"
+                       ng-model="$ctrl.year"
+                       min="2000" max="{{$ctrl.maxYear}}"
+                       required>
+
+                <p class="help-block has-error"
+                   ng-show="moderatorAreaForm.year.$invalid"
+                   ng-messages="moderatorAreaForm.year.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="rkaCode" class="col-xs-4 control-label">
+                <span translate="organisation.organisationType.RKA"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <select class="form-control"
+                        name="rkaCode" id="rkaCode"
+                        required
+                        ng-model="$ctrl.rkaCode"
+                        ng-options="a.officialCode as a.name for a in $ctrl.rkaList">
+                </select>
+
+                <p class="help-block has-error"
+                   ng-show="moderatorAreaForm.rkaCode.$invalid"
+                   ng-messages="moderatorAreaForm.rkaCode.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save(moderatorAreaForm)"
+                ng-disabled="moderatorAreaForm.$invalid"
+                translate="global.button.ok"></button>
+    </div>
+</form>

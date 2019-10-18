@@ -16,11 +16,11 @@ import javax.validation.constraints.NotNull;
  *
  * Alkupäivämäärä on sen hetkinen päivämäärä paitsi vuonna 2016 ennen 1.8.2016 asetetaan 1.8.2016
  *
- * Loppupäivämäärä on aina 31.7. sitä vuotta, joka on enemmän kuin neljä,
- * mutta vähemmän tai yhtäsuuri kuin viisi vuotta ko. alkupäivämäärästä lähtien.
+ * Loppupäivämäärä on aina 31.7. sitä vuotta, joka on vähemmän tai yhtäsuuri
+ * kuin viisi vuotta ko. alkupäivämäärästä lähtien.
  *
- * Eli: jos nimitys esim. 10.8.2016-31.7.2017 välisenä aikana niin nimitys päättyy aina 31.7.2021.
- * Jos nimityspäivä 1.8.2017-31.7.2018, nimitys päättyy aina 31.7.2022.
+ * Eli: jos nimitys esim. 10.8.2016-31.7.2017 välisenä aikana niin nimitys päättyy 31.7. vuonna 2017-2021.
+ * Jos nimityspäivä 1.8.2017-31.7.2018, nimitys päättyy 31.7. vuonna 2018-2022.
  */
 public class JHTPeriod {
     @NotNull
@@ -47,9 +47,10 @@ public class JHTPeriod {
 
         final Period occupationPeriod = new Duration(start, end).toPeriodFrom(start);
 
-        return occupationPeriod.getYears() == 4 || (occupationPeriod.getYears() == 5
-                && occupationPeriod.getMonths() == 0
-                && occupationPeriod.getDays() == 0);
+        return (
+            (occupationPeriod.getYears() >= 0 && occupationPeriod.getYears() < 5) ||
+            (occupationPeriod.getYears() == 5 && occupationPeriod.getMonths() == 0 && occupationPeriod.getDays() == 0)
+        );
     }
 
     @AssertTrue

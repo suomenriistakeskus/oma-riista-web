@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -71,6 +72,11 @@ public class PdfExport {
             return this;
         }
 
+        public Builder withLanguage(Locale locale) {
+            withLanguage(Locales.isSwedish(locale) ? "sv" : "fi");
+            return this;
+        }
+
         public Builder withLanguage(String language) {
             if (language != null) {
                 this.requestBuilder.replaceQueryParam("lang", language);
@@ -80,6 +86,11 @@ public class PdfExport {
 
         public Builder withHeaderRight(String headerRight) {
             this.pdfParameters.headerRight = headerRight + "     [page] / [toPage]";
+            return this;
+        }
+
+        public Builder withNoHeaderRight() {
+            this.pdfParameters.headerRight = "";
             return this;
         }
 

@@ -74,12 +74,14 @@
     </ul>
 
     <h2>Valituskirjelmän toimittaminen</h2>
-    <p>Valituskirjelmän voi toimittaa hallinto-oikeudelle henkilökohtaisesti, postitse maksettuna postilähetyksenä tai
-        asiamiestä tai lähettiä käyttäen. Postittaminen tapahtuu lähettäjän vastuulla. Valituksen on saavuttava
-        viranomaiselle virka-aikana ennen 30 päivän valitusajan päättymistä, jotta valitus voidaan tutkia. Jos
-        valitusajan
-        viimeinen päivä on pyhäpäivä, lauantai, itsenäisyyspäivä, vapunpäivä, jouluaatto tai juhannusaatto, valitusaika
-        jatkuu kuitenkin vielä seuraavan arkipäivän virka-ajan päättymiseen.</p>
+    <p>
+        Valituskirjelmän voi toimittaa hallinto-oikeudelle henkilökohtaisesti, postitse maksettuna postilähetyksenä,
+        telekopiona, sähköpostilla tai asiamiestä tai lähettiä käyttäen. Postittaminen tai muu toimittaminen tapahtuu
+        lähettäjän vastuulla. Valitusasiakirjojen tulee olla perillä valitusajan viimeisenä päivänä ennen viraston
+        aukioloajan päättymistä. Jos valitusajan viimeinen päivä on pyhäpäivä, lauantai, itsenäisyyspäivä, vapunpäivä,
+        jouluaatto tai juhannusaatto, valitusaika jatkuu kuitenkin vielä seuraavan arkipäivän viraston aukioloajan
+        päättymiseen.
+    </p>
 
     <h2>Käsittelymaksu</h2>
     <p>Hallinto-oikeus perii pääsääntöisesti valitusasian käsittelystä oikeudenkäyntimaksua 250 euroa

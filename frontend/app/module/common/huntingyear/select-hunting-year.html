@@ -1,0 +1,10 @@
+<div class="left">
+    <select name="huntingYearSelect" id="huntingYearSelect"
+            class="form-control"
+            ng-model="$ctrl.selectedHuntingYear"
+            ng-options="year as year.name for year in $ctrl.decoratedYears | orderBy:'year'"
+            ng-change="$ctrl.updateHuntingYear()">
+
+        <option disabled value="">{{'global.selectHuntingYear' | translate}}</option>
+    </select>
+</div>

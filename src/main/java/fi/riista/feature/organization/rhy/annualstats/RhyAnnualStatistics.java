@@ -1,10 +1,10 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
+import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.util.DateUtil;
-import fi.riista.util.NumberUtils;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Access;
@@ -28,9 +28,12 @@ import javax.validation.constraints.NotNull;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Preconditions.checkState;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.APPROVED;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.IN_PROGRESS;
+import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.NOT_STARTED;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.UNDER_INSPECTION;
+import static fi.riista.util.DateUtil.today;
 import static java.util.Comparator.comparingLong;
 import static java.util.Objects.requireNonNull;
 
@@ -38,6 +41,8 @@ import static java.util.Objects.requireNonNull;
 @Table(name = "rhy_annual_statistics", uniqueConstraints = {@UniqueConstraint(columnNames = {"rhy_id", "year"})})
 @Access(value = AccessType.FIELD)
 public class RhyAnnualStatistics extends LifecycleEntity<Long> {
+
+    public static final int FIRST_SUBSIDY_AFFECTING_YEAR = 2018;
 
     private Long id;
 
@@ -101,7 +106,12 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
     @Valid
     @NotNull
     @Embedded
-    private StateAidTrainingStatistics stateAidTraining = new StateAidTrainingStatistics();
+    private HunterTrainingStatistics hunterTraining = new HunterTrainingStatistics();
+
+    @Valid
+    @NotNull
+    @Embedded
+    private YouthTrainingStatistics youthTraining = new YouthTrainingStatistics();
 
     @Valid
     @NotNull
@@ -111,7 +121,7 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
     @Valid
     @NotNull
     @Embedded
-    private OtherTrainingStatistics otherTraining = new OtherTrainingStatistics();
+    private PublicEventStatistics publicEvents = new PublicEventStatistics();
 
     @Valid
     @NotNull
@@ -139,7 +149,7 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
     private MetsahallitusStatistics metsahallitus = new MetsahallitusStatistics();
 
     public RhyAnnualStatistics() {
-        this.state = RhyAnnualStatisticsState.IN_PROGRESS;
+        this.state = NOT_STARTED;
     }
 
     public RhyAnnualStatistics(@Nonnull final Riistanhoitoyhdistys rhy, final int year) {
@@ -155,16 +165,18 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
 
         final DateTime creationTime = new DateTime(getLifecycleFields().getCreationTime());
 
+        basicInfo.setLastModified(creationTime);
         hunterExams.setLastModified(creationTime);
         shootingTests.setLastModified(creationTime);
         huntingControl.setLastModified(creationTime);
         gameDamage.setLastModified(creationTime);
         otherPublicAdmin.setLastModified(creationTime);
         jhtTraining.setLastModified(creationTime);
-        stateAidTraining.setLastModified(creationTime);
+        hunterTraining.setLastModified(creationTime);
+        youthTraining.setLastModified(creationTime);
         hunterExamTraining.setLastModified(creationTime);
         otherHunterTraining.setLastModified(creationTime);
-        otherTraining.setLastModified(creationTime);
+        publicEvents.setLastModified(creationTime);
         otherHuntingRelated.setLastModified(creationTime);
         communication.setLastModified(creationTime);
         shootingRanges.setLastModified(creationTime);
@@ -174,204 +186,11 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
 
     @AssertTrue
     public boolean isYearLessThanOrEqualToCurrentYear() {
-        return DateUtil.today().getYear() >= year;
-    }
-
-    public boolean isUpdateable(final boolean byModerator) {
-        return byModerator ? state != RhyAnnualStatisticsState.APPROVED : state == RhyAnnualStatisticsState.IN_PROGRESS;
-    }
-
-    public boolean canComputedPropertiesBeRefreshed() {
-        return state == RhyAnnualStatisticsState.IN_PROGRESS;
-    }
-
-    public RhyBasicInfo getOrCreateBasicInfo() {
-        return basicInfo != null ? basicInfo : new RhyBasicInfo();
-    }
-
-    public HunterExamStatistics getOrCreateHunterExams() {
-        return hunterExams != null ? hunterExams : new HunterExamStatistics();
-    }
-
-    public AnnualShootingTestStatistics getOrCreateShootingTests() {
-        return shootingTests != null ? shootingTests : new AnnualShootingTestStatistics();
-    }
-
-    public HuntingControlStatistics getOrCreateHuntingControl() {
-        return huntingControl != null ? huntingControl : new HuntingControlStatistics();
-    }
-
-    public GameDamageStatistics getOrCreateGameDamage() {
-        return gameDamage != null ? gameDamage : new GameDamageStatistics();
-    }
-
-    public OtherPublicAdminStatistics getOrCreateOtherPublicAdmin() {
-        return otherPublicAdmin != null ? otherPublicAdmin : new OtherPublicAdminStatistics();
-    }
-
-    public SrvaEventStatistics getOrCreateSrva() {
-        return srva != null ? srva : new SrvaEventStatistics();
-    }
-
-    public HunterExamTrainingStatistics getOrCreateHunterExamTraining() {
-        return hunterExamTraining != null ? hunterExamTraining : new HunterExamTrainingStatistics();
-    }
-
-    public JHTTrainingStatistics getOrCreateJhtTraining() {
-        return jhtTraining != null ? jhtTraining : new JHTTrainingStatistics();
-    }
-
-    public StateAidTrainingStatistics getOrCreateStateAidTraining() {
-        return stateAidTraining != null ? stateAidTraining : new StateAidTrainingStatistics();
-    }
-
-    public OtherHunterTrainingStatistics getOrCreateOtherHunterTraining() {
-        return otherHunterTraining != null ? otherHunterTraining : new OtherHunterTrainingStatistics();
-    }
-
-    public OtherTrainingStatistics getOrCreateOtherTraining() {
-        return otherTraining != null ? otherTraining : new OtherTrainingStatistics();
-    }
-
-    public OtherHuntingRelatedStatistics getOrCreateOtherHuntingRelated() {
-        return otherHuntingRelated != null ? otherHuntingRelated : new OtherHuntingRelatedStatistics();
-    }
-
-    public CommunicationStatistics getOrCreateCommunication() {
-        return communication != null ? communication : new CommunicationStatistics();
-    }
-
-    public ShootingRangeStatistics getOrCreateShootingRanges() {
-        return shootingRanges != null ? shootingRanges : new ShootingRangeStatistics();
-    }
-
-    public LukeStatistics getOrCreateLuke() {
-        return luke != null ? luke : new LukeStatistics();
-    }
-
-    public MetsahallitusStatistics getOrCreateMetsahallitus() {
-        return metsahallitus != null ? metsahallitus : new MetsahallitusStatistics();
-    }
-
-    public int countAllShootingTestAttempts() {
-        return shootingTests != null ? shootingTests.countAllShootingTestAttempts() : 0;
-    }
-
-    public int countHunterExamTrainingEvents() {
-        return hunterExamTraining != null
-                ? NumberUtils.getIntValueOrZero(hunterExamTraining.getHunterExamTrainingEvents())
-                : 0;
-    }
-
-    public int countHunterExamTrainingParticipants() {
-        return hunterExamTraining != null
-                ? NumberUtils.getIntValueOrZero(hunterExamTraining.getHunterExamTrainingParticipants())
-                : 0;
-    }
-
-    public int countJhtTrainingEvents() {
-        return jhtTraining != null ? jhtTraining.countJhtTrainingEvents() : 0;
-    }
-
-    public int countJhtTrainingParticipants() {
-        return jhtTraining != null ? jhtTraining.countJhtTrainingParticipants() : 0;
-    }
-
-    public int countAllStateAidTrainingEvents() {
-        return stateAidTraining != null ? stateAidTraining.countAllStateAidTrainingEvents() : 0;
-    }
-
-    public int countAllStateAidTrainingParticipants() {
-        return stateAidTraining != null ? stateAidTraining.countAllStateAidTrainingParticipants() : 0;
-    }
-
-    public int countOtherHunterTrainingEvents() {
-        return otherHunterTraining != null ? otherHunterTraining.countOtherHunterTrainingEvents() : 0;
-    }
-
-    public int countOtherHunterTrainingParticipants() {
-        return otherHunterTraining != null ? otherHunterTraining.countOtherHunterTrainingParticipants() : 0;
-    }
-
-    public int countOtherTrainingEvents() {
-        return otherTraining != null ? NumberUtils.getIntValueOrZero(otherTraining.getOtherTrainingEvents()) : 0;
-    }
-
-    public int countOtherTrainingParticipants() {
-        return otherTraining != null ? NumberUtils.getIntValueOrZero(otherTraining.getOtherTrainingParticipants()) : 0;
-    }
-
-    public int countAllTrainingEvents() {
-        return countHunterExamTrainingEvents()
-                + countJhtTrainingEvents()
-                + countAllStateAidTrainingEvents()
-                + countOtherHunterTrainingEvents()
-                + countOtherTrainingEvents();
-    }
-
-    public int countAllTrainingParticipants() {
-        return countHunterExamTrainingParticipants()
-                + countJhtTrainingParticipants()
-                + countAllStateAidTrainingParticipants()
-                + countOtherHunterTrainingParticipants()
-                + countOtherTrainingParticipants();
-    }
-
-    public DateTime getTimeOfLastManualModificationToStateAidAffectingQuantities() {
-        final Stream.Builder<DateTime> timestamps = Stream.<DateTime> builder();
-
-        if (huntingControl != null) {
-            timestamps.add(huntingControl.getLastModified());
-        }
-
-        if (hunterExamTraining != null) {
-            timestamps.add(hunterExamTraining.getHunterExamTrainingEventsLastOverridden());
-        }
-
-        if (stateAidTraining != null) {
-            timestamps.add(stateAidTraining.getLastModified());
-        }
-
-        if (luke != null) {
-            timestamps.add(luke.getLastModified());
-        }
-
-        if (metsahallitus != null) {
-            timestamps.add(metsahallitus.getLastModified());
-        }
-
-        return timestamps.build().filter(Objects::nonNull).max(comparingLong(DateTime::getMillis)).orElse(null);
-    }
-
-    public DateTime getTimeOfLastManualModificationToPublicAdministrationTasks() {
-        final Stream.Builder<DateTime> timestamps = Stream.<DateTime> builder();
-
-        if (hunterExams != null) {
-            timestamps.add(hunterExams.getHunterExamEventsLastOverridden());
-        }
-
-        if (shootingTests != null) {
-            timestamps.add(shootingTests.getFirearmTestEventsLastOverridden());
-            timestamps.add(shootingTests.getBowTestEventsLastOverridden());
-        }
-
-        if (gameDamage != null) {
-            timestamps.add(gameDamage.getLastModified());
-        }
-
-        if (huntingControl != null) {
-            timestamps.add(huntingControl.getLastModified());
-        }
-
-        if (otherPublicAdmin != null) {
-            timestamps.add(otherPublicAdmin.getLastModified());
-        }
-
-        return timestamps.build().filter(Objects::nonNull).max(comparingLong(DateTime::getMillis)).orElse(null);
+        return today().getYear() >= year;
     }
 
     @AssertTrue
-    public boolean isValid() {
+    public boolean isStateValid() {
         if (state == APPROVED) {
             return allMandatoryFieldsPresent();
         }
@@ -379,11 +198,208 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
             // exception for year 2017 by intention
             return year == 2017 || requiredFieldsPresentForInspection();
         }
-        return state == IN_PROGRESS;
+
+        return true;
+    }
+
+    public void assertIsUpdateable(final boolean byModerator, @Nonnull final EnumLocaliser localiser) {
+        requireNonNull(localiser);
+        checkState(!isNew(), "updateable check should not be called for new entity");
+
+        if (byModerator) {
+            if (state == APPROVED) {
+                throw AnnualStatisticsLockedException.moderatorUpdatesNotAllowedAfterApproval(localiser);
+            }
+        } else {
+            assertIsUpdateableByCoordinator(localiser);
+        }
+    }
+
+    private void assertIsUpdateableByCoordinator(@Nonnull final EnumLocaliser localiser) {
+        if (!isInCoordinatorUpdateableState()) {
+            throw AnnualStatisticsLockedException.coordinatorUpdatesNotAllowedAfterSubmit(localiser);
+        }
+
+        if (isEndDateForCoordinatorUpdatesPassed()) {
+            throw AnnualStatisticsLockedException.endDateForCoordinatorUpdatesPassed(localiser);
+        }
+    }
+
+    public boolean isUpdateableByCoordinator() {
+        return isInCoordinatorUpdateableState() && !isEndDateForCoordinatorUpdatesPassed();
+    }
+
+    private boolean isInCoordinatorUpdateableState() {
+        return state == NOT_STARTED || state == IN_PROGRESS;
+    }
+
+    private boolean isEndDateForCoordinatorUpdatesPassed() {
+        return today().isAfter(getEndDateForCoordinatorUpdates());
+    }
+
+    // Editing is blocked from coordinator after 15.1. next year.
+    public LocalDate getEndDateForCoordinatorUpdates() {
+        return new LocalDate(year + 1, 1, 15);
+    }
+
+    public RhyBasicInfo getOrCreateBasicInfo() {
+        if (basicInfo == null) {
+            basicInfo = new RhyBasicInfo();
+        }
+        return basicInfo;
+    }
+
+    public HunterExamStatistics getOrCreateHunterExams() {
+        if (hunterExams == null) {
+            hunterExams = new HunterExamStatistics();
+        }
+        return hunterExams;
+    }
+
+    public AnnualShootingTestStatistics getOrCreateShootingTests() {
+        if (shootingTests == null) {
+            shootingTests = new AnnualShootingTestStatistics();
+        }
+        return shootingTests;
+    }
+
+    public HuntingControlStatistics getOrCreateHuntingControl() {
+        if (huntingControl == null) {
+            huntingControl = new HuntingControlStatistics();
+        }
+        return huntingControl;
+    }
+
+    public GameDamageStatistics getOrCreateGameDamage() {
+        if (gameDamage == null) {
+            gameDamage = new GameDamageStatistics();
+        }
+        return gameDamage;
+    }
+
+    public OtherPublicAdminStatistics getOrCreateOtherPublicAdmin() {
+        if (otherPublicAdmin == null) {
+            otherPublicAdmin = new OtherPublicAdminStatistics();
+        }
+        return otherPublicAdmin;
+    }
+
+    public SrvaEventStatistics getOrCreateSrva() {
+        if (srva == null) {
+            srva = new SrvaEventStatistics();
+        }
+        return srva;
+    }
+
+    public HunterExamTrainingStatistics getOrCreateHunterExamTraining() {
+        if (hunterExamTraining == null) {
+            hunterExamTraining = new HunterExamTrainingStatistics();
+        }
+        return hunterExamTraining;
+    }
+
+    public JHTTrainingStatistics getOrCreateJhtTraining() {
+        if (jhtTraining == null) {
+            jhtTraining = new JHTTrainingStatistics();
+        }
+        return jhtTraining;
+    }
+
+    public HunterTrainingStatistics getOrCreateHunterTraining() {
+        if (hunterTraining == null) {
+            hunterTraining = new HunterTrainingStatistics();
+        }
+        return hunterTraining;
+    }
+
+    public YouthTrainingStatistics getOrCreateYouthTraining() {
+        if (youthTraining == null) {
+            youthTraining = new YouthTrainingStatistics();
+        }
+        return youthTraining;
+    }
+
+    public OtherHunterTrainingStatistics getOrCreateOtherHunterTraining() {
+        if (otherHunterTraining == null) {
+            otherHunterTraining = new OtherHunterTrainingStatistics();
+        }
+        return otherHunterTraining;
+    }
+
+    public PublicEventStatistics getOrCreatePublicEvents() {
+        if (publicEvents == null) {
+            publicEvents = new PublicEventStatistics();
+        }
+        return publicEvents;
+    }
+
+    public OtherHuntingRelatedStatistics getOrCreateOtherHuntingRelated() {
+        if (otherHuntingRelated == null) {
+            otherHuntingRelated = new OtherHuntingRelatedStatistics();
+        }
+        return otherHuntingRelated;
+    }
+
+    public CommunicationStatistics getOrCreateCommunication() {
+        if (communication == null) {
+            communication = new CommunicationStatistics();
+        }
+        return communication;
+    }
+
+    public ShootingRangeStatistics getOrCreateShootingRanges() {
+        if (shootingRanges == null) {
+            shootingRanges = new ShootingRangeStatistics();
+        }
+        return shootingRanges;
+    }
+
+    public LukeStatistics getOrCreateLuke() {
+        if (luke == null) {
+            luke = new LukeStatistics();
+        }
+        return luke;
+    }
+
+    public MetsahallitusStatistics getOrCreateMetsahallitus() {
+        if (metsahallitus == null) {
+            metsahallitus = new MetsahallitusStatistics();
+        }
+        return metsahallitus;
+    }
+
+    public DateTime getLastModifiedTimeOfQuantitiesContributingToSubsidy() {
+        final Stream<DateTime> editTimestamps = Stream
+                .<AnnualStatisticsNonComputedFields> of(huntingControl, jhtTraining, hunterTraining, youthTraining,
+                        otherHunterTraining, otherHuntingRelated, luke, metsahallitus)
+                .map(AnnualStatisticsNonComputedFields::getLastModified);
+
+        return Stream
+                .concat(editTimestamps, Stream.of(hunterExamTraining.getHunterExamTrainingEventsLastOverridden()))
+                .filter(Objects::nonNull)
+                .max(comparingLong(DateTime::getMillis))
+                .orElse(null);
+    }
+
+    public DateTime getLastModifiedTimeOfJhtQuantities() {
+        final Stream<DateTime> editTimestamps = Stream
+                .<AnnualStatisticsNonComputedFields> of(gameDamage, huntingControl, otherPublicAdmin)
+                .map(AnnualStatisticsNonComputedFields::getLastModified);
+
+        final Stream<DateTime> moderatorOverrideTmestamps = Stream
+                .of(hunterExams.getHunterExamEventsLastOverridden(),
+                        shootingTests.getFirearmTestEventsLastOverridden(),
+                        shootingTests.getBowTestEventsLastOverridden());
+
+        return Stream
+                .concat(editTimestamps, moderatorOverrideTmestamps)
+                .filter(Objects::nonNull)
+                .max(comparingLong(DateTime::getMillis))
+                .orElse(null);
     }
 
     public boolean isReadyForInspection() {
-        return state == IN_PROGRESS && requiredFieldsPresentForInspection();
+        return isInCoordinatorUpdateableState() && requiredFieldsPresentForInspection();
     }
 
     public boolean isCompleteForApproval() {
@@ -391,17 +407,17 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
     }
 
     private boolean requiredFieldsPresentForInspection() {
-        return streamManuallyEditableFieldsets().allMatch(f -> f != null && f.isReadyForInspection());
+        return streamFieldsets().allMatch(f -> f != null && f.isReadyForInspection());
     }
 
     private boolean allMandatoryFieldsPresent() {
-        return streamManuallyEditableFieldsets().allMatch(f -> f != null && f.isCompleteForApproval());
+        return streamFieldsets().allMatch(f -> f != null && f.isCompleteForApproval());
     }
 
-    private Stream<? extends AnnualStatisticsFieldsetStatus> streamManuallyEditableFieldsets() {
+    private Stream<? extends AnnualStatisticsFieldsetReadiness> streamFieldsets() {
         return Stream.of(
                 basicInfo, hunterExams, shootingTests, gameDamage, huntingControl, otherPublicAdmin, hunterExamTraining,
-                jhtTraining, stateAidTraining, otherHunterTraining, otherTraining, otherHuntingRelated, communication,
+                jhtTraining, hunterTraining, youthTraining, otherHunterTraining, publicEvents, otherHuntingRelated, communication,
                 shootingRanges, luke, metsahallitus);
     }
 
@@ -458,21 +474,15 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
     }
 
     public void setHuntingControl(@Nonnull final HuntingControlStatistics huntingControl) {
-        requireNonNull(huntingControl);
-        huntingControl.updateModificationStatusIfNotEqualTo(getOrCreateHuntingControl());
-        this.huntingControl = huntingControl;
+        this.huntingControl = requireNonNull(huntingControl);
     }
 
     public void setGameDamage(@Nonnull final GameDamageStatistics gameDamage) {
-        requireNonNull(gameDamage);
-        gameDamage.updateModificationStatusIfNotEqualTo(getOrCreateGameDamage());
-        this.gameDamage = gameDamage;
+        this.gameDamage = requireNonNull(gameDamage);
     }
 
     public void setOtherPublicAdmin(@Nonnull final OtherPublicAdminStatistics otherPublicAdmin) {
-        requireNonNull(otherPublicAdmin);
-        otherPublicAdmin.updateModificationStatusIfNotEqualTo(getOrCreateOtherPublicAdmin());
-        this.otherPublicAdmin = otherPublicAdmin;
+        this.otherPublicAdmin = requireNonNull(otherPublicAdmin);
     }
 
     public void setSrva(@Nonnull final SrvaEventStatistics srva) {
@@ -484,56 +494,42 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
     }
 
     public void setJhtTraining(@Nonnull final JHTTrainingStatistics jhtTraining) {
-        requireNonNull(jhtTraining);
-        jhtTraining.updateModificationStatusIfNotEqualTo(getOrCreateJhtTraining());
-        this.jhtTraining = jhtTraining;
+        this.jhtTraining = requireNonNull(jhtTraining);
     }
 
-    public void setStateAidTraining(@Nonnull final StateAidTrainingStatistics stateAidTraining) {
-        requireNonNull(stateAidTraining);
-        stateAidTraining.updateModificationStatusIfNotEqualTo(getOrCreateStateAidTraining());
-        this.stateAidTraining = stateAidTraining;
+    public void setHunterTraining(@Nonnull final HunterTrainingStatistics hunterTraining) {
+        this.hunterTraining = requireNonNull(hunterTraining);
+    }
+
+    public void setYouthTraining(@Nonnull final YouthTrainingStatistics youthTraining) {
+        this.youthTraining = requireNonNull(youthTraining);
     }
 
     public void setOtherHunterTraining(@Nonnull final OtherHunterTrainingStatistics otherHunterTraining) {
-        requireNonNull(otherHunterTraining);
-        otherHunterTraining.updateModificationStatusIfNotEqualTo(getOrCreateOtherHunterTraining());
-        this.otherHunterTraining = otherHunterTraining;
+        this.otherHunterTraining = requireNonNull(otherHunterTraining);
     }
 
-    public void setOtherTraining(@Nonnull final OtherTrainingStatistics otherTraining) {
-        requireNonNull(otherTraining);
-        otherTraining.updateModificationStatusIfNotEqualTo(getOrCreateOtherTraining());
-        this.otherTraining = otherTraining;
+    public void setPublicEvents(@Nonnull final PublicEventStatistics publicEvents) {
+        this.publicEvents = requireNonNull(publicEvents);
     }
 
     public void setOtherHuntingRelated(@Nonnull final OtherHuntingRelatedStatistics otherHuntingRelated) {
-        requireNonNull(otherHuntingRelated);
-        otherHuntingRelated.updateModificationStatusIfNotEqualTo(getOrCreateOtherHuntingRelated());
-        this.otherHuntingRelated = otherHuntingRelated;
+        this.otherHuntingRelated = requireNonNull(otherHuntingRelated);
     }
 
     public void setCommunication(@Nonnull final CommunicationStatistics communication) {
-        requireNonNull(communication);
-        communication.updateModificationStatusIfNotEqualTo(getOrCreateCommunication());
-        this.communication = communication;
+        this.communication = requireNonNull(communication);
     }
 
     public void setShootingRanges(@Nonnull final ShootingRangeStatistics shootingRanges) {
-        requireNonNull(shootingRanges);
-        shootingRanges.updateModificationStatusIfNotEqualTo(getOrCreateShootingRanges());
-        this.shootingRanges = shootingRanges;
+        this.shootingRanges = requireNonNull(shootingRanges);
     }
 
     public void setLuke(@Nonnull final LukeStatistics luke) {
-        requireNonNull(luke);
-        luke.updateModificationStatusIfNotEqualTo(getOrCreateLuke());
-        this.luke = luke;
+        this.luke = requireNonNull(luke);
     }
 
     public void setMetsahallitus(@Nonnull final MetsahallitusStatistics metsahallitus) {
-        requireNonNull(metsahallitus);
-        metsahallitus.updateModificationStatusIfNotEqualTo(getOrCreateMetsahallitus());
-        this.metsahallitus = metsahallitus;
+        this.metsahallitus = requireNonNull(metsahallitus);
     }
 }

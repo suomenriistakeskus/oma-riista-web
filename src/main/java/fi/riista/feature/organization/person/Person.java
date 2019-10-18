@@ -45,6 +45,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Arrays;
@@ -72,9 +73,11 @@ public class Person extends LifecycleEntity<Long> {
     private DeletionCode deletionCode;
 
     @FinnishSocialSecurityNumber
-    @NotBlank
-    @Column(unique = true, nullable = false, length = 11)
+    @Column(unique = true, length = 11)
     private String ssn;
+
+    @Column
+    private LocalDate dateOfBirth;
 
     @NotBlank
     @Size(max = 255)
@@ -216,14 +219,6 @@ public class Person extends LifecycleEntity<Long> {
     @Column(length = 2)
     private String magazineLanguageCode;
 
-    // Metsästäjärekisteri: Postitusesto / markkinointikielto
-    @Column(nullable = false)
-    private boolean denyPost;
-
-    // Metsästäjärekisteri: Osoitteenluovutuskielto
-    @Column(nullable = false)
-    private boolean denyTransmit;
-
     // Metsästäjärekisteri: Ei Metsästäjä-lehteä ("rasti ruutuun”)
     @Column(nullable = false)
     private boolean denyMagazine;
@@ -246,6 +241,11 @@ public class Person extends LifecycleEntity<Long> {
     @Column
     private Boolean enableShootingTests;
 
+    @AssertTrue
+    public boolean isSsnOrDateOfBirthSet() {
+        return ssn != null || dateOfBirth != null;
+    }
+
     public static String maskSsn(final String ssn) {
         return StringUtils.isEmpty(ssn) ? StringUtils.EMPTY : StringUtils.substring(ssn, 0, 6) + "*****";
     }
@@ -255,7 +255,13 @@ public class Person extends LifecycleEntity<Long> {
     }
 
     public LocalDate parseDateOfBirth() {
-        return this.ssn != null ? FinnishSocialSecurityNumberValidator.parseBirthDate(this.ssn) : null;
+        // TODO: Handle date of birth for Finnish persons also
+        if (isForeignPerson()) {
+            return dateOfBirth;
+        } else {
+            return this.ssn != null ? FinnishSocialSecurityNumberValidator.parseBirthDate(this.ssn) : null;
+
+        }
     }
 
     public boolean isAdult() {
@@ -263,7 +269,11 @@ public class Person extends LifecycleEntity<Long> {
     }
 
     public boolean isArtificialPerson() {
-        return ssn.charAt(7) == '9';
+        return ssn != null && ssn.charAt(7) == '9';
+    }
+
+    public boolean isForeignPerson() {
+        return ssn == null;
     }
 
     public String getFullName() {
@@ -306,10 +316,12 @@ public class Person extends LifecycleEntity<Long> {
 
     public void deactivate() {
         for (SystemUser systemUser : systemUsers) {
-            if (isRoleUser(systemUser)) {
-                systemUser.setActive(false);
-            }
+            systemUser.setActive(false);
         }
+    }
+
+    public boolean hasHunterNumber() {
+        return StringUtils.isNotBlank(this.hunterNumber);
     }
 
     public List<String> listUsernames() {
@@ -348,9 +360,11 @@ public class Person extends LifecycleEntity<Long> {
             throw new IllegalStateException("Payment PDF generation is not allowed");
         }
 
-        return getInvoiceReferenceForHuntingYear(huntingYear)
-                .flatMap(invoiceReference -> HuntingPaymentInfo.create(huntingYear, invoiceReference))
-                .orElseThrow(() -> new RuntimeException("Could not calculate paymentInfo"));
+        final LocalDate dateOfBirth = parseDateOfBirth();
+        final String invoiceReference = getInvoiceReferenceForHuntingYear(huntingYear)
+                .orElseThrow(() -> new IllegalArgumentException("Could not calculate paymentInfo"));
+
+        return HuntingPaymentInfo.create(huntingYear, dateOfBirth, invoiceReference);
     }
 
     public Optional<LocalDate> getHuntingPaymentDateForNextOrCurrentSeason() {
@@ -406,7 +420,7 @@ public class Person extends LifecycleEntity<Long> {
     }
 
     public boolean canPrintCertificate() {
-        return StringUtils.isNotBlank(this.hunterNumber) &&
+        return hasHunterNumber() &&
                 !this.isDeleted() && this.deletionCode == null &&
                 this.rhyMembership != null &&
                 isHuntingCardValidNow() &&
@@ -432,14 +446,14 @@ public class Person extends LifecycleEntity<Long> {
 
     public List<Occupation> getClubSpecificOccupations() {
         return occupations.stream()
-                .filter(o -> o.getOccupationType().isClubSpecific())
+                .filter(o -> o.getOccupationType().isClubOrGroupOccupation())
                 .filter(o -> o.isValidNow() && !o.isDeleted())
                 .collect(Collectors.toList());
     }
 
     public Iterable<Occupation> getNotClubSpecificOccupations() {
         return occupations.stream()
-                .filter(o -> !o.getOccupationType().isClubSpecific())
+                .filter(o -> !o.getOccupationType().isClubOrGroupOccupation())
                 .filter(o -> o.isValidNow() && !o.isDeleted())
                 .collect(Collectors.toList());
     }
@@ -507,6 +521,14 @@ public class Person extends LifecycleEntity<Long> {
 
     public void setSsn(final String ssn) {
         this.ssn = ssn != null ? ssn.trim().toUpperCase() : null;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(final LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     public String getFirstName() {
@@ -743,22 +765,6 @@ public class Person extends LifecycleEntity<Long> {
 
     public void setMagazineLanguageCode(final String magazineLanguageCode) {
         this.magazineLanguageCode = magazineLanguageCode;
-    }
-
-    public boolean isDenyPost() {
-        return denyPost;
-    }
-
-    public void setDenyPost(final boolean denyPost) {
-        this.denyPost = denyPost;
-    }
-
-    public boolean isDenyTransmit() {
-        return denyTransmit;
-    }
-
-    public void setDenyTransmit(final boolean denyTransmit) {
-        this.denyTransmit = denyTransmit;
     }
 
     public boolean isDenyMagazine() {

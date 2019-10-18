@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-@PropertySource("classpath:configuration/db.properties")
+@PropertySource({"classpath:configuration/db.properties", "classpath:configuration/aws.properties"})
 public class DataSourceProperties {
 
     @Value("${db.driver}")
@@ -93,7 +93,7 @@ public class DataSourceProperties {
 
             return response.getDBInstances().get(0);
 
-        } catch (DBInstanceNotFoundException e) {
+        } catch (final DBInstanceNotFoundException e) {
             throw new IllegalStateException("Could not find DB instance!");
         }
     }

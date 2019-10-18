@@ -23,7 +23,7 @@
                 </div>
 
                 <div class="col-xs-4 text-right">
-                    <strong ng-bind="area.computedAreaSize | prettyAreaSize"></strong>
+                    <strong ng-bind="area.size.all.total | prettyAreaSize:0"></strong>
                     <br/>
                     <span class="text-danger glyphicon glyphicon-lock"
                           ng-show="area.sourceType === 'EXTERNAL'"></span>

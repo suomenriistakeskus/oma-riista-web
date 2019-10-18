@@ -49,8 +49,7 @@ public class PermitDecisionRevisionDownloadFeature {
             throw new IllegalStateException("invalid revision for decisionId: " + decision.getId());
         }
 
-        final String permitNumber = decision.getApplication().getPermitNumber();
-        final String filename = PermitDecision.getFileName(decision.getLocale(), permitNumber);
+        final String filename = PermitDecision.getFileName(decision.getLocale(), decision.createPermitNumber());
 
         fileDownloadService.downloadUsingTemporaryFile(revision.getPdfMetadata(), filename, response);
     }

@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.SimpleExpression;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
 import com.querydsl.spatial.GeometryExpression;
 import com.querydsl.spatial.GeometryExpressions;
@@ -15,6 +16,16 @@ import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.SQLQueryFactory;
 import fi.riista.feature.account.user.QSystemUser;
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.QHarvest;
+import fi.riista.feature.gamediary.harvest.specimen.QHarvestSpecimen;
+import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
+import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
+import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
+import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
+import fi.riista.feature.permit.application.amendment.QAmendmentApplicationData;
 import fi.riista.feature.permit.application.conflict.HarvestPermitApplicationConflictPalsta;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchDTO;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchQueryBuilder;
@@ -29,12 +40,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.geolatte.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
 
 @Repository
 public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitApplicationRepositoryCustom {
@@ -46,27 +64,6 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
 
     @Resource
     private JPQLQueryFactory jpqlQueryFactory;
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<HarvestPermitApplication> listByRevisionCreator(final Long userId) {
-        final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
-        final QPermitDecisionRevision REV = QPermitDecisionRevision.permitDecisionRevision;
-        final QPermitDecision DECISION = QPermitDecision.permitDecision;
-
-        final List<Long> decisionIds = jpqlQueryFactory.select(REV.permitDecision.id)
-                .from(REV)
-                .where(REV.auditFields.createdByUserId.eq(userId))
-                .distinct()
-                .fetch();
-
-        return jpqlQueryFactory.select(APPLICATION)
-                .from(DECISION)
-                .join(DECISION.application, APPLICATION)
-                .where(DECISION.id.in(decisionIds))
-                .orderBy(APPLICATION.huntingYear.desc(), APPLICATION.applicationNumber.desc())
-                .fetch();
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -88,25 +85,86 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
                 .from(DECISION)
                 .join(DECISION.application, APPLICATION)
                 .where(DECISION.id.in(decisionIds))
-                .orderBy(APPLICATION.huntingYear.desc(), APPLICATION.applicationNumber.desc())
+                .orderBy(APPLICATION.applicationYear.desc(), APPLICATION.applicationNumber.desc())
                 .fetch();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<HarvestPermitApplication> search(final HarvestPermitApplicationSearchDTO dto) {
+    public List<Harvest> findNonEdibleHarvestsByPermit(final HarvestPermit original) {
+        final QHarvest HARVEST = QHarvest.harvest;
+        final QHarvestSpecimen SPECIMEN = QHarvestSpecimen.harvestSpecimen;
+        final QGroupHuntingDay GROUP_HUNTING_DAY = QGroupHuntingDay.groupHuntingDay;
+        final QHuntingClubGroup GROUP = QHuntingClubGroup.huntingClubGroup;
+
+        final JPQLQuery<GroupHuntingDay> days = jpqlQueryFactory.selectFrom(GROUP_HUNTING_DAY)
+                .join(GROUP_HUNTING_DAY.group, GROUP)
+                .where(GROUP.harvestPermit.eq(original));
+
+        return jpqlQueryFactory.select(HARVEST).from(SPECIMEN)
+                .join(SPECIMEN.harvest, HARVEST)
+                .join(HARVEST.huntingDayOfGroup, GROUP_HUNTING_DAY)
+                .where(GROUP_HUNTING_DAY.in(days))
+                .where(SPECIMEN.notEdible.isTrue())
+                .fetch();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HarvestPermitApplication> findByOriginalPermit(final HarvestPermit originalPermit) {
+        QAmendmentApplicationData DATA = QAmendmentApplicationData.amendmentApplicationData;
+        QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
+        return jpqlQueryFactory.select(APPLICATION)
+                .from(DATA)
+                .join(DATA.application, APPLICATION)
+                .where(DATA.originalPermit.eq(originalPermit))
+                .fetch();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Slice<HarvestPermitApplication> search(final HarvestPermitApplicationSearchDTO dto,
+                                                  final Pageable pageRequest) {
         if (dto.getApplicationNumber() != null) {
-            final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
-            return jpqlQueryFactory
-                    .selectFrom(APPLICATION)
-                    .where(APPLICATION.applicationNumber.eq(dto.getApplicationNumber()))
-                    .fetch();
+            return new SliceImpl<>(findByApplicationNumber(dto), pageRequest, false);
         }
-        return baseSearchQueryApplications(dto)
-                .withMaxQueryResults(StringUtils.isBlank(dto.getRhyOfficialCode())
-                        && StringUtils.isBlank(dto.getRkaOfficialCode())
-                        ? 1000 : -1)
-                .list();
+
+        return baseSearchQueryApplications(dto).slice(pageRequest);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HarvestPermitApplication> search(final HarvestPermitApplicationSearchDTO dto) {
+        return baseSearchQueryApplications(dto).list();
+    }
+
+    private List<HarvestPermitApplication> findByApplicationNumber(final HarvestPermitApplicationSearchDTO dto) {
+        final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
+        return jpqlQueryFactory
+                .selectFrom(APPLICATION)
+                .where(APPLICATION.applicationNumber.eq(dto.getApplicationNumber()))
+                .fetch();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HarvestPermitApplication> searchForRhy(@Nonnull final String officialCode,
+                                                       final int year,
+                                                       @Nullable final Integer gameSpeciesCode) {
+        requireNonNull(officialCode);
+
+        final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
+        final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
+
+        return jpqlQueryFactory.selectFrom(APPLICATION)
+                .join(APPLICATION.rhy, RHY)
+                .where(APPLICATION.rhy.officialCode.eq(officialCode))
+                .where(APPLICATION.applicationYear.eq(year))
+                .where(APPLICATION.harvestPermitCategory.eq(HarvestPermitCategory.MOOSELIKE))
+                .where(APPLICATION.status.eq(HarvestPermitApplication.Status.ACTIVE))
+                .where(gameSpeciesCode != null
+                        ? APPLICATION.speciesAmounts.any().gameSpecies.officialCode.eq(gameSpeciesCode)
+                        : null).fetch();
     }
 
     @Override
@@ -131,6 +189,13 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
     private HarvestPermitApplicationSearchQueryBuilder baseSearchQueryApplications(final HarvestPermitApplicationSearchDTO dto) {
         final HarvestPermitApplicationSearchQueryBuilder builder = new HarvestPermitApplicationSearchQueryBuilder(jpqlQueryFactory)
                 .withStatus(dto.getStatus())
+                .withDecisionType(dto.getDecisionType())
+                .withAppealStatus(dto.getAppealStatus())
+                .withGrantStatus(dto.getGrantStatus())
+                .withProtectedArea(dto.getProtectedArea())
+                .withDerogationReason(dto.getDerogationReason())
+                .withForbiddenMethod(dto.getForbiddenMethod())
+                .withHarvestPermitCategory(dto.getHarvestPermitCategory())
                 .withGameSpeciesCode(dto.getGameSpeciesCode())
                 .withHuntingYear(dto.getHuntingYear())
                 .withHandler(dto.getHandlerId());

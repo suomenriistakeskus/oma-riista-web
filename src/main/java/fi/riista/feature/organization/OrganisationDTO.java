@@ -1,6 +1,6 @@
 package fi.riista.feature.organization;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 
 import org.hibernate.validator.constraints.SafeHtml;

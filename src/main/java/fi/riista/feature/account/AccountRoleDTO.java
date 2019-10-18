@@ -93,7 +93,7 @@ public class AccountRoleDTO {
         this.context = Objects.requireNonNull(context);
     }
 
-    private boolean ageIsLessThanDays(final Date creationTime, final Duration minDuration) {
+    private static boolean ageIsLessThanDays(final Date creationTime, final Duration minDuration) {
         return new Duration(new DateTime(creationTime), DateUtil.now()).compareTo(minDuration) < 0;
     }
 

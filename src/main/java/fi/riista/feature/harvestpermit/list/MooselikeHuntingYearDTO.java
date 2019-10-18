@@ -1,12 +1,11 @@
 package fi.riista.feature.harvestpermit.list;
 
 import fi.riista.feature.gamediary.GameSpeciesDTO;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.HarvestPermit;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.groupingBy;
@@ -15,8 +14,10 @@ import static java.util.stream.Collectors.toList;
 
 public class MooselikeHuntingYearDTO {
 
-    public static List<MooselikeHuntingYearDTO> create(final Stream<HarvestPermitSpeciesAmount> spas) {
-        return spas
+    public static List<MooselikeHuntingYearDTO> create(final List<HarvestPermit> permitList) {
+        return permitList.stream()
+                .flatMap(spa -> spa.getSpeciesAmounts().stream())
+                .filter(spa -> spa.getGameSpecies().isMooseOrDeerRequiringPermitForHunting())
                 .flatMap(spa -> spa.collectClosedRangeHuntingYears().mapToObj(y -> Tuple.of(y, spa.getGameSpecies())))
                 .distinct()
                 .collect(groupingBy(Tuple2::_1, mapping(Tuple2::_2, toList())))

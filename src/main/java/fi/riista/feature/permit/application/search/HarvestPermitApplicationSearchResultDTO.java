@@ -1,10 +1,12 @@
 package fi.riista.feature.permit.application.search;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.gis.zone.GISZoneSizeDTO;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.decision.PermitDecision;
 import org.joda.time.LocalDateTime;
 
@@ -16,16 +18,18 @@ public class HarvestPermitApplicationSearchResultDTO extends BaseEntityDTO<Long>
     private Integer rev;
 
     private HarvestPermitApplication.Status status;
+    private boolean deliveryByMail;
     private int huntingYear;
     private LocalDateTime submitDate;
     private Integer applicationNumber;
-    private String permitTypeCode;
+    private HarvestPermitCategory harvestPermitCategory;
     private boolean hasPermitArea;
     private GISZoneSizeDTO areaSize;
     private Set<Integer> gameSpeciesCodes;
 
     private PersonWithNameDTO contactPerson;
-    private OrganisationNameDTO permitHolder;
+    private PermitHolderDTO permitHolder;
+    private OrganisationNameDTO huntingClub;
 
     private OrganisationNameDTO rhy;
     private PersonWithNameDTO handler;
@@ -59,6 +63,14 @@ public class HarvestPermitApplicationSearchResultDTO extends BaseEntityDTO<Long>
         this.status = status;
     }
 
+    public boolean isDeliveryByMail() {
+        return deliveryByMail;
+    }
+
+    public void setDeliveryByMail(final boolean deliveryByMail) {
+        this.deliveryByMail = deliveryByMail;
+    }
+
     public int getHuntingYear() {
         return huntingYear;
     }
@@ -67,12 +79,12 @@ public class HarvestPermitApplicationSearchResultDTO extends BaseEntityDTO<Long>
         this.huntingYear = huntingYear;
     }
 
-    public String getPermitTypeCode() {
-        return permitTypeCode;
+    public HarvestPermitCategory getHarvestPermitCategory() {
+        return harvestPermitCategory;
     }
 
-    public void setPermitTypeCode(final String permitTypeCode) {
-        this.permitTypeCode = permitTypeCode;
+    public void setHarvestPermitCategory(HarvestPermitCategory harvestPermitCategory) {
+        this.harvestPermitCategory = harvestPermitCategory;
     }
 
     public LocalDateTime getSubmitDate() {
@@ -123,12 +135,20 @@ public class HarvestPermitApplicationSearchResultDTO extends BaseEntityDTO<Long>
         this.contactPerson = contactPerson;
     }
 
-    public OrganisationNameDTO getPermitHolder() {
+    public PermitHolderDTO getPermitHolder() {
         return permitHolder;
     }
 
-    public void setPermitHolder(final OrganisationNameDTO permitHolder) {
+    public void setPermitHolder(final PermitHolderDTO permitHolder) {
         this.permitHolder = permitHolder;
+    }
+
+    public OrganisationNameDTO getHuntingClub() {
+        return huntingClub;
+    }
+
+    public void setHuntingClub(OrganisationNameDTO huntingClub) {
+        this.huntingClub = huntingClub;
     }
 
     public OrganisationNameDTO getRhy() {

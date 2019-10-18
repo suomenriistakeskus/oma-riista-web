@@ -6,9 +6,9 @@ import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.mail.MailService;
-import fi.riista.feature.organization.EmailResolver;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.util.EmailSanitizer;
 import fi.riista.util.Locales;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -19,7 +19,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Resource;
 import java.text.MessageFormat;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 
 @Service
@@ -49,8 +50,8 @@ public class NotifyJhtOccupationNominationToRkaService {
 
             final String occupationName = enumLocaliser.getTranslation(notification.getOccupationType(), Locales.FI);
             final String rhyName = notification.getRhyName().getAnyTranslation(Locales.FI);
-            final String rkaEmail = Objects.requireNonNull(EmailResolver
-                    .sanitizeEmail(notification.getRkaEmail()), "rkaEmail is null");
+            final String rkaEmail = requireNonNull(EmailSanitizer
+                    .getSanitizedOrNull(notification.getRkaEmail()), "rkaEmail is null");
 
             final ImmutableMap.Builder<String, Object> model = ImmutableMap.<String, Object>builder()
                     .put("occupationName", occupationName)

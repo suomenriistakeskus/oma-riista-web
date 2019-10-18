@@ -1,0 +1,93 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="harvestpermit.wizard.amendment.title"></h3>
+</div>
+
+<div class="modal-body" style="min-height: 350px;">
+
+    <div class="amendment-modal-section">
+        <h5 translate="harvestpermit.wizard.amendment.titleIncomplete"></h5>
+        <div class="amendment-modal-row" ng-repeat="a in $ctrl.incomplete">
+            <span ng-bind="$ctrl.applicationAsText(a)"></span>
+
+            <a class="amendment-modal-row-action" ng-click="$ctrl.viewApplication(a.id)">
+                <span class="fa fa-fw fa-pencil"></span>
+                <span translate="global.button.open"></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="amendment-modal-section">
+        <h5 translate="harvestpermit.wizard.amendment.titleNonEdibles"></h5>
+        <div class="amendment-modal-row" ng-repeat="a in $ctrl.nonedibles">
+            <span ng-bind="$ctrl.applicationAsText(a)"></span>
+
+            <a class="amendment-modal-row-action" ng-click="$ctrl.createByHarvest(a.nonEdibleHarvestId)">
+                <span class="fa fa-fw fa-plus"></span>
+                <span translate="harvestpermit.wizard.amendment.create"></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="amendment-modal-section">
+        <h5 translate="harvestpermit.wizard.amendment.titleApplicationWithoutExistingHarvest"></h5>
+
+        <div class="help-block"
+             translate="harvestpermit.wizard.amendment.titleApplicationWithoutExistingHarvestHelpText"></div>
+
+        <a class="amendment-modal-create-without-existing"
+           ng-repeat="s in $ctrl.permitSpecies"
+           ng-click="$ctrl.createBySpecies(s)">
+
+            <span ng-bind="::(s.name | rI18nNameFilter | capitalize)"></span>
+        </a>
+    </div>
+
+    <div class="amendment-modal-section form-horizontal" ng-if="$ctrl.sent && $ctrl.sent.length > 0">
+        <h5 translate="harvestpermit.wizard.amendment.titleSubmitted"></h5>
+        <div class="form-group">
+            <div class="col-xs-9">
+                <select name="sent" id="sent"
+                        class="form-control"
+                        ng-model="$ctrl.selectedSentApplication"
+                        ng-options="a as ($ctrl.applicationAsText(a)) for a in $ctrl.sent"></select>
+            </div>
+
+            <div class="col-xs-3">
+                <div class="btn-group" uib-dropdown>
+                    <button type="button"
+                            class="btn btn-primary"
+                            ng-disabled="!$ctrl.selectedSentApplication"
+                            uib-dropdown-toggle>
+                        <span class="fa fa-download"></span>
+                        <span translate="global.button.download"></span>
+                        <span class="fa fa-caret-down">
+                            </span>
+                    </button>
+
+                    <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+                        <li>
+                            <a ng-click="$ctrl.pdf()">
+                                <span class="fa fa-fw fa-file-pdf-o"></span>
+                                PDF
+                            </a>
+                        </li>
+                        <li>
+                            <a ng-click="$ctrl.zip()">
+                                <span class="fa fa-fw fa-file-archive-o"></span>
+                                ZIP
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-click="$close()">
+        <span translate="global.button.cancel"></span>
+    </button>
+</div>

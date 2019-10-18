@@ -11,7 +11,6 @@ import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.integration.mml.dto.MMLRekisteriyksikonTietoja;
 import fi.riista.util.DateUtil;
-import io.vavr.Tuple2;
 
 import javax.annotation.Nonnull;
 import java.util.Map;

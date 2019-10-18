@@ -8,8 +8,8 @@
             <table class="table table-condensed">
                 <tbody>
                 <tr>
-                    <th class="col-xs-6" translate="global.person.ssn"></th>
-                    <td ng-bind="::$ctrl.profile.ssnMasked"></td>
+                    <th class="col-xs-6" translate="global.person.dateOfBirth"></th>
+                    <td ng-bind="::$ctrl.profile.dateOfBirth"></td>
                 </tr>
                 <tr>
                     <th class="col-xs-6" translate="global.person.lastName"></th>
@@ -32,13 +32,14 @@
         </div>
 
         <div>
-            <p class="text-right info">
-                <span ng-show="::($ctrl.profile.addressSource != 'METSASTAJAREKISTERI')"
+            <div ng-switch="::($ctrl.profile.addressSource === 'METSASTAJAREKISTERI' || $ctrl.profile.foreignPerson)">
+                <p class="text-right info">
+                <span ng-switch-when="false"
                       translate="account.profile.sourcePopulationInformationSystem"></span>
-
-                <span ng-show="::($ctrl.profile.addressSource == 'METSASTAJAREKISTERI')"
-                      translate="account.profile.sourceHunterRegistry"></span>
-            </p>
+                    <span ng-switch-when="true"
+                          translate="account.profile.sourceHunterRegistry"></span>
+                </p>
+            </div>
         </div>
     </div>
 </div>

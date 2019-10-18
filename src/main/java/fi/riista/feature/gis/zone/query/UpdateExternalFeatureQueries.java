@@ -1,6 +1,6 @@
 package fi.riista.feature.gis.zone.query;
 
-import fi.riista.feature.huntingclub.area.zone.HuntingClubAreaFeatureDTO;
+import fi.riista.integration.koiratutka.HuntingClubAreaImportFeatureDTO;
 import fi.riista.util.GISUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcOperations;
@@ -19,14 +19,14 @@ public class UpdateExternalFeatureQueries {
 
     public void insertZoneFeatures(final long zoneId,
                                    final GISUtils.SRID crs,
-                                   final List<HuntingClubAreaFeatureDTO> featureCollection) {
+                                   final List<HuntingClubAreaImportFeatureDTO> featureCollection) {
         final String insertSql = "INSERT INTO zone_feature(zone_id, property_identifier, included_species, geom)" +
                 " VALUES (?, ?, ?, ST_Buffer(ST_Transform(ST_GeomFromText(?, ?), 3067), 0))";
 
         jdbcOperations.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(final PreparedStatement ps, final int i) throws SQLException {
-                final HuntingClubAreaFeatureDTO feature = featureCollection.get(i);
+                final HuntingClubAreaImportFeatureDTO feature = featureCollection.get(i);
                 ps.setLong(1, zoneId);
                 ps.setLong(2, Long.parseLong(feature.getPropertyIdentifier()));
                 if (feature.getValidSpecies().isEmpty()) {

@@ -1,7 +1,7 @@
 package fi.riista.feature.shootingtest;
 
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.dto.IdRevisionDTO;
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.util.DtoUtil;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;

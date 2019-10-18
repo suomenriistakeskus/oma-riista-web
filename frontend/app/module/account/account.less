@@ -32,33 +32,87 @@
 // -------------------------
 
 input.ng-pristine + ul#strength {
-  display:none;
+  display: none;
 }
+
 ul#r-pw-strength {
-  display:block;
-  list-style:none;
+  display: block;
+  list-style: none;
   margin: 10px 0 0 5px;
-  padding:0;
-  vertical-align:2px;
+  padding: 0;
+  vertical-align: 2px;
 }
+
 .r-pw-point {
-  background:#DDD;
+  background: #DDD;
   border: 1px solid #bbb;
-  border-radius:3px;
-  display:inline-block;
-  height:10px;
-  margin-right:2px;
-  width:10%;
+  border-radius: 3px;
+  display: inline-block;
+  height: 10px;
+  margin-right: 2px;
+  width: 10%;
 }
+
 .r-pw-point-last {
-  margin:0 !important;
+  margin: 0 !important;
 }
 
 .r-account-todo {
   .r-badge-red;
   margin-left: 8px;
 }
+
 .r-account-todo-yellow {
   .r-badge-yellow;
   margin-left: 8px;
+}
+
+.r-account-danger-panel {
+  .alert;
+  border: 2px solid #c92424;
+}
+
+.r-account-success-panel {
+  .alert;
+  border: 2px solid #009a49;
+}
+
+.account-areas-container {
+  .alert {
+    background-color: #F7F7F7;
+    border-color: @table-border-color;
+    margin: 10px 0 20px;
+    padding: 15px 15px 10px;
+    color: #555;
+    overflow: auto;
+
+    a {
+      color: #000;
+    }
+
+    .alert-content {
+      margin-left: 60px;
+    }
+
+    .alert-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .fa-info-circle {
+      color: @brand-info;
+      font-size: 48px;
+      float: left;
+    }
+
+    .fa-exclamation-triangle {
+      color: @brand-danger;
+      font-size: 32px;
+      float: left;
+    }
+
+    .fa-remove {
+      color: @brand-danger;
+    }
+  }
 }

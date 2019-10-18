@@ -11,8 +11,13 @@ angular.module('app.harvestpermit.management', [])
                     permitId: function ($stateParams) {
                         return _.parseInt($stateParams.permitId);
                     },
-                    permit: function (HarvestPermits, Harvest, permitId) {
-                        return HarvestPermits.get({id: permitId}).$promise;
+                    permit: function ($state, HarvestPermits, permitId) {
+                        return HarvestPermits.get({id: permitId}).$promise.then(function (p) {
+                            if (p.permitTypeCode === '190') {
+                                return $state.go('permitmanagement.dashboard', {permitId: p.originalPermitId});
+                            }
+                            return p;
+                        });
                     },
                     isMooselikePermit: function (permit) {
                         return permit.permitTypeCode === '100';
@@ -27,15 +32,26 @@ angular.module('app.harvestpermit.management', [])
                     },
                     duePaymentsCount: function (duePayments) {
                         return _.size(duePayments);
+                    },
+                    partiallyPaidInvoiceCount: function (PermitInvoice, permitId) {
+                        return PermitInvoice.listPaidByPermit({permitId: permitId}).$promise
+                            .then(function (paidInvoices) {
+                                return _.chain(paidInvoices)
+                                    .filter(function (invoice) {
+                                        return invoice.amount !== invoice.paidAmount;
+                                    })
+                                    .size()
+                                    .value();
+                            });
                     }
                 },
                 controllerAs: '$navCtrl',
-                controller: function (isMooselikePermit, duePaymentsCount) {
+                controller: function (isMooselikePermit, duePaymentsCount, partiallyPaidInvoiceCount) {
                     var $navCtrl = this;
 
                     $navCtrl.$onInit = function () {
                         $navCtrl.isMooselikePermit = isMooselikePermit;
-                        $navCtrl.duePaymentsCount = duePaymentsCount;
+                        $navCtrl.paymentAlertCount = duePaymentsCount + partiallyPaidInvoiceCount;
                     };
                 }
             })
@@ -52,18 +68,15 @@ angular.module('app.harvestpermit.management', [])
                         permit.gameSpeciesCodes.sort();
 
                         var gameSpeciesCode = _.parseInt($stateParams.gameSpeciesCode);
-                        return gameSpeciesCode ? gameSpeciesCode : _.first(permit.gameSpeciesCodes);
-                    },
-                    speciesAmounts: function (HarvestPermits, permitId) {
-                        return HarvestPermits.getSpeciesUsage({id: permitId}).$promise;
+                        return gameSpeciesCode ? gameSpeciesCode : _.head(permit.gameSpeciesCodes);
                     },
                     attachmentList: function (HarvestPermits, permitId) {
                         return HarvestPermits.getAttachmentList({id: permitId}).$promise;
                     },
                     duePayment: function (duePayments) {
                         return _.chain(duePayments)
-                            .sortByAll(['dueDate'])
-                            .first()
+                            .sortBy(['dueDate'])
+                            .head()
                             .value();
                     }
                 }
@@ -74,7 +87,7 @@ angular.module('app.harvestpermit.management', [])
                 controller: 'HarvestPermitUsageController',
                 controllerAs: '$ctrl',
                 resolve: {
-                    speciesAmounts: function (HarvestPermits, permitId) {
+                    permitUsage: function (HarvestPermits, permitId) {
                         return HarvestPermits.getSpeciesUsage({id: permitId}).$promise;
                     },
                     harvestList: function (HarvestPermits, Harvest, permitId) {
@@ -86,7 +99,7 @@ angular.module('app.harvestpermit.management', [])
 
                                     return new Harvest(harvest);
                                 })
-                                .sortByOrder(['pointOfTime'], ['desc'])
+                                .orderBy(['pointOfTime'], ['desc'])
                                 .value();
                         });
                     }
@@ -96,55 +109,104 @@ angular.module('app.harvestpermit.management', [])
                 url: '/map?gameSpeciesCode&huntingYear',
                 templateUrl: 'harvestpermit/moosepermit/map/permit-map.html',
                 controller: 'MoosePermitMapController',
-                controllerAs: 'ctrl',
+                controllerAs: '$ctrl',
                 bindToController: true,
                 wideLayout: true,
-                params: {
-                    gameSpeciesCode: null,
-                    huntingYear: null
-                },
                 resolve: {
                     club: _.constant({rhy: {}}),
-                    harvests: function (MoosePermitHarvest, permitId, $stateParams) {
+                    huntingYear: function ($stateParams) {
+                        return _.parseInt($stateParams.huntingYear);
+                    },
+                    gameSpeciesCode: function ($stateParams) {
+                        return _.parseInt($stateParams.gameSpeciesCode);
+                    },
+                    harvests: function (MoosePermitHarvest, permitId, huntingYear, gameSpeciesCode) {
                         return MoosePermitHarvest.query({
                             permitId: permitId,
-                            huntingYear: $stateParams.huntingYear,
-                            gameSpeciesCode: $stateParams.gameSpeciesCode
+                            huntingYear: huntingYear,
+                            gameSpeciesCode: gameSpeciesCode
                         }).$promise;
                     },
-                    featureCollection: function (MoosePermits, permitId, $stateParams) {
+                    featureCollection: function (MoosePermits, permitId, huntingYear, gameSpeciesCode) {
                         return MoosePermits.partnerAreaFeatures({
                             permitId: permitId,
-                            huntingYear: $stateParams.huntingYear,
-                            gameSpeciesCode: $stateParams.gameSpeciesCode
+                            huntingYear: huntingYear,
+                            gameSpeciesCode: gameSpeciesCode
                         }).$promise;
                     },
                     mapBounds: function (MapBounds, club, featureCollection) {
                         var bounds = MapBounds.getBoundsFromGeoJsonFeatureCollection(featureCollection);
                         return bounds || MapBounds.getBoundsOfFinland();
+                    },
+                    goBackFn: function ($state, permitId, gameSpeciesCode) {
+                        return function () {
+                            $state.go('permitmanagement.dashboard', {
+                                permitId: permitId,
+                                gameSpeciesCode: gameSpeciesCode
+                            }, {reload: true});
+                        };
+                    }
+                }
+            })
+            .state('permitmanagement.amendment', {
+                url: '/amendment/{applicationId:[0-9]{1,8}}?decisionId',
+                templateUrl: 'harvestpermit/applications/amendment/amendment.html',
+                controller: 'HarvestPermitAmendmentController',
+                controllerAs: '$ctrl',
+                resolve: {
+                    applicationId: function ($stateParams) {
+                        return _.parseInt($stateParams.applicationId);
+                    },
+                    decisionId: function ($stateParams) {
+                        return $stateParams.decisionId;
+                    },
+                    application: function (HarvestPermitAmendmentApplications, applicationId) {
+                        return HarvestPermitAmendmentApplications.get({id: applicationId}).$promise;
+                    },
+                    attachments: function (HarvestPermitApplications, applicationId) {
+                        return applicationId ? HarvestPermitApplications.getAttachments({id: applicationId}).$promise : [];
+                    },
+                    species: function (HarvestPermitAmendmentApplications, permitId) {
+                        return HarvestPermitAmendmentApplications.listSpecies({id: permitId}).$promise;
+                    },
+                    partners: function (HarvestPermitAmendmentApplications, permitId) {
+                        return HarvestPermitAmendmentApplications.listPartners({id: permitId}).$promise;
+                    },
+                    diaryParameters: function (GameDiaryParameters) {
+                        return GameDiaryParameters.query().$promise;
                     }
                 }
             });
     })
-    .controller('HarvestPermitDashboardController', function ($state, $location, FormPostService,
+    .controller('HarvestPermitDashboardController', function ($state, $location, FormPostService, NotificationService,
                                                               EditHarvestPermitContactPersonsModal,
-                                                              MoosePermitPdfUrl, MooseHarvestReportModal,
-                                                              MoosePermitLeadersService,
-                                                              PermitEndOfHuntingReportService,
-                                                              permit, isMooselikePermit, attachmentList,
-                                                              speciesAmounts, duePayment,
-                                                              getGameSpeciesName, selectedGameSpeciesCode) {
+                                                              HarvestPermitPdfUrl, HarvestPermitAttachmentUrl,
+                                                              MoosePermitLeadersService, ActiveRoleService,
+                                                              PermitEndOfHuntingReportModal,
+                                                              HarvestPermitAmendmentApplicationService,
+                                                              permit, isMooselikePermit, attachmentList, duePayment,
+                                                              getGameSpeciesName, selectedGameSpeciesCode,
+                                                              partiallyPaidInvoiceCount) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
+            $ctrl.isModerator = ActiveRoleService.isModerator();
             $ctrl.permit = permit;
-            $ctrl.speciesAmounts = speciesAmounts;
             $ctrl.attachmentList = attachmentList;
             $ctrl.duePayment = duePayment;
             $ctrl.isMooselikePermit = isMooselikePermit;
-            $ctrl.canEditMooseHarvestReport = isMooselikePermit && _.parseInt(permit.permitNumber.substring(0,4)) < 2018;
+            $ctrl.huntingYear = _.parseInt(permit.permitNumber.substring(0, 4));
             $ctrl.getGameSpeciesName = getGameSpeciesName;
             $ctrl.selectedGameSpeciesCode = selectedGameSpeciesCode;
+            $ctrl.partiallyPaidInvoiceCount = partiallyPaidInvoiceCount;
+
+            $ctrl.getSelectedSpeciesName = function () {
+                return getGameSpeciesName($ctrl.selectedGameSpeciesCode);
+            };
+        };
+
+        var reloadState = function () {
+            $state.reload();
         };
 
         $ctrl.changeGameSpeciesCode = function (gameSpeciesCode) {
@@ -152,12 +214,12 @@ angular.module('app.harvestpermit.management', [])
             $location.search({gameSpeciesCode: gameSpeciesCode});
         };
 
-        $ctrl.downloadPdf = function () {
-            FormPostService.submitFormUsingBlankTarget(MoosePermitPdfUrl.get(permit.permitNumber));
+        $ctrl.downloadPdf = function (permitNumber) {
+            FormPostService.submitFormUsingBlankTarget(HarvestPermitPdfUrl.get(permitNumber));
         };
 
         $ctrl.downloadAttachment = function (a) {
-            FormPostService.submitFormUsingBlankTarget('api/v1/harvestpermit/' + permit.id + '/attachment/' + a.id);
+            FormPostService.submitFormUsingBlankTarget(HarvestPermitAttachmentUrl.get(permit.id, a.id));
         };
 
         $ctrl.startPayment = function () {
@@ -168,53 +230,61 @@ angular.module('app.harvestpermit.management', [])
         };
 
         $ctrl.editContactPersons = function () {
-            EditHarvestPermitContactPersonsModal.showModal($ctrl.permit.id).finally(function () {
-                $state.reload();
-            });
+            EditHarvestPermitContactPersonsModal.showModal($ctrl.permit.id).finally(reloadState);
         };
 
-        $ctrl.editAllocations = function (gameSpeciesCode) {
+        $ctrl.editAllocations = function () {
             $state.go('permitmanagement.allocation', {
                 permitId: permit.id,
-                gameSpeciesCode: gameSpeciesCode
+                gameSpeciesCode: $ctrl.selectedGameSpeciesCode
             });
         };
 
-        $ctrl.showHuntingGroupLeaders = function (gameSpeciesCode) {
-            var huntingYear = _.parseInt(permit.permitNumber.substring(0, 4));
-
+        $ctrl.showHuntingGroupLeaders = function () {
             MoosePermitLeadersService.showLeaders({
                 id: permit.id,
-                huntingYear: huntingYear,
-                gameSpeciesCode: gameSpeciesCode
+                huntingYear: $ctrl.huntingYear,
+                gameSpeciesCode: $ctrl.selectedGameSpeciesCode
             });
         };
 
-        $ctrl.showMap = function (gameSpeciesCode) {
-            var huntingYear = _.parseInt(permit.permitNumber.substring(0, 4));
+        $ctrl.showMap = function () {
             $state.go('permitmanagement.map', {
                 permitId: permit.id,
-                gameSpeciesCode: gameSpeciesCode,
-                huntingYear: huntingYear
+                gameSpeciesCode: $ctrl.selectedGameSpeciesCode,
+                huntingYear: $ctrl.huntingYear
             });
         };
 
-        $ctrl.showTables= function (gameSpeciesCode) {
+        $ctrl.showUsage = function () {
+            var currentState = $state.current;
+            $state.go('permitmanagement.usage', {
+                permitId: permit.id
+            }).catch(function () {
+                $state.go(currentState.name, currentState.params);
+                NotificationService.showDefaultFailure();
+            });
+        };
+
+        $ctrl.showTables = function () {
             $state.go('permitmanagement.tables', {
                 permitId: permit.id,
-                gameSpeciesCode: gameSpeciesCode
-            });
-        };
-
-        $ctrl.showMooseHarvestReport = function (gameSpeciesCode) {
-            MooseHarvestReportModal.openModal(permit.id, gameSpeciesCode).finally(function () {
-                $state.reload();
+                gameSpeciesCode: $ctrl.selectedGameSpeciesCode
             });
         };
 
         $ctrl.showEndOfHuntingReport = function () {
-            PermitEndOfHuntingReportService.openModal(permit.id).finally(function () {
-                $state.reload();
+            PermitEndOfHuntingReportModal.openModal(permit.id).finally(reloadState);
+        };
+
+        $ctrl.endHuntingForMooselikePermit = function () {
+            $state.go('permitmanagement.endofmooselikehunting', {
+                permitId: permit.id,
+                gameSpeciesCode: $ctrl.selectedGameSpeciesCode
             });
+        };
+
+        $ctrl.listAmendmentApplications = function () {
+            HarvestPermitAmendmentApplicationService.openModal(permit);
         };
     });

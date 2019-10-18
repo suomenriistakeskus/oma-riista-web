@@ -6,6 +6,5 @@ angular.module('app.rhy', [
     'app.rhy.annualstats',
     'app.rhy.application',
     'app.rhy.club',
-    'app.rhy.harvestmap',
-    'app.rhy.moosepermitstats',
+    'app.rhy.harvestmap'
 ]);

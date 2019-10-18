@@ -41,6 +41,10 @@ public class SQRhy extends RelationalPathSpatial<SQRhy> {
 
     public final StringPath nimiSv = createString("nimiSv");
 
+    public final StringPath nuts2Id = createString("nuts2Id");
+
+    public final StringPath nuts3Id = createString("nuts3Id");
+
     public final NumberPath<java.math.BigInteger> vesiAla = createNumber("vesiAla", java.math.BigInteger.class);
 
     public final com.querydsl.sql.PrimaryKey<SQRhy> rhyPkey = createPrimaryKey(gid);
@@ -78,6 +82,8 @@ public class SQRhy extends RelationalPathSpatial<SQRhy> {
         addMetadata(maaAla, ColumnMetadata.named("maa_ala").withIndex(3).ofType(Types.NUMERIC).withSize(131089));
         addMetadata(nimiFi, ColumnMetadata.named("nimi_fi").withIndex(5).ofType(Types.VARCHAR).withSize(50));
         addMetadata(nimiSv, ColumnMetadata.named("nimi_sv").withIndex(6).ofType(Types.VARCHAR).withSize(50));
+        addMetadata(nuts2Id, ColumnMetadata.named("nuts2_id").withIndex(9).ofType(Types.VARCHAR).withSize(4));
+        addMetadata(nuts3Id, ColumnMetadata.named("nuts3_id").withIndex(10).ofType(Types.VARCHAR).withSize(5));
         addMetadata(vesiAla, ColumnMetadata.named("vesi_ala").withIndex(2).ofType(Types.NUMERIC).withSize(131089));
     }
 

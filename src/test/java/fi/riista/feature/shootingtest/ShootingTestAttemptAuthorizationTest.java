@@ -4,7 +4,7 @@ import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import org.junit.Test;
 
 import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA;
-import static fi.riista.feature.shootingtest.ShootingTestEvent.DAYS_UPDATEABLE_BY_OFFICIAL;
+import static fi.riista.feature.shootingtest.ShootingTest.DAYS_OF_EVENT_UPDATEABLE_BY_OFFICIAL;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.DELETE;
 import static fi.riista.security.EntityPermission.READ;
@@ -32,7 +32,7 @@ public class ShootingTestAttemptAuthorizationTest
     public void testActiveShootingTestOfficial() {
         withPerson(person -> {
             model().newOccupation(getRhy(), person, AMPUMAKOKEEN_VASTAANOTTAJA);
-            onSavedAndAuthenticated(createUser(person), this::assertPermittedAsUnassignedOfficial);
+            onSavedAndAuthenticated(createUser(person), () -> testAllPermissions(false));
         });
     }
 
@@ -47,10 +47,10 @@ public class ShootingTestAttemptAuthorizationTest
     @Test
     public void testAssignedOfficial_afterOneWeek() {
         withPerson(person -> {
-            event.getCalendarEvent().setDate(today().minus(DAYS_UPDATEABLE_BY_OFFICIAL).minusDays(1).toDate());
+            event.getCalendarEvent().setDate(today().minus(DAYS_OF_EVENT_UPDATEABLE_BY_OFFICIAL).minusDays(1).toDate());
             model().newShootingTestOfficial(event, person);
 
-            onSavedAndAuthenticated(createUser(person), this::assertPermittedAsUnassignedOfficial);
+            onSavedAndAuthenticated(createUser(person), this::assertOnlyReadPermitted);
         });
     }
 
@@ -65,8 +65,8 @@ public class ShootingTestAttemptAuthorizationTest
         testPermission(CREATE, permitted, maxQueryCount);
     }
 
-    private void assertPermittedAsUnassignedOfficial() {
-        testPermission(READ, true, 3);
+    private void assertOnlyReadPermitted() {
+        testPermission(READ, true, 4);
         testPermission(UPDATE, false, 4);
         testPermission(DELETE, false, 4);
 

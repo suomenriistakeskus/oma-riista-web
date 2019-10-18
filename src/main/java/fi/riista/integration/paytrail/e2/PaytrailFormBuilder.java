@@ -3,6 +3,7 @@ package fi.riista.integration.paytrail.e2;
 import fi.riista.api.external.PaytrailController;
 import fi.riista.integration.paytrail.auth.PaytrailAuthCodeBuilder;
 import fi.riista.integration.paytrail.auth.PaytrailAuthCodeDigest;
+import fi.riista.integration.paytrail.auth.PaytrailCredentials;
 import fi.riista.integration.paytrail.e2.model.Payment;
 import fi.riista.integration.paytrail.e2.model.Product;
 import fi.riista.util.LocalisedString;
@@ -18,6 +19,14 @@ import java.util.Set;
 
 // ref: https://docs.paytrail.com/en/ch04s03.html
 public class PaytrailFormBuilder {
+    public static Map<String, String> createForm(final PaytrailCredentials paytrailApiCredentials,
+                                                 final Payment payment) {
+        return new PaytrailFormBuilder(payment)
+                .withMerchantId(paytrailApiCredentials.getMerchantId())
+                .withMerchantSecret(paytrailApiCredentials.getMerchantSecret())
+                .build();
+    }
+
     private static final LocalisedString SUPPORTED_LOCALES = new LocalisedString("fi_FI", "sv_SE", "en_US");
 
     private final Payment model;
@@ -51,6 +60,12 @@ public class PaytrailFormBuilder {
     }
 
     private void validateModel() {
+        if (model.getCallbacks() == null ||
+                model.getCallbacks().getSuccessUri() == null ||
+                model.getCallbacks().getCancelUri() == null) {
+            throw new IllegalArgumentException("missing callbacks");
+        }
+
         if (StringUtils.isBlank(merchantId)) {
             throw new IllegalArgumentException("missing merchantId");
         }
@@ -118,8 +133,8 @@ public class PaytrailFormBuilder {
         final PaytrailForm form = new PaytrailForm();
 
         form.addRequiredField(PaytrailFormFieldType.MERCHANT_ID, merchantId);
-        form.addRequiredField(PaytrailFormFieldType.URL_SUCCESS, model.getSuccessUri());
-        form.addRequiredField(PaytrailFormFieldType.URL_CANCEL, model.getCancelUri());
+        form.addRequiredField(PaytrailFormFieldType.URL_SUCCESS, model.getCallbacks().getSuccessUri());
+        form.addRequiredField(PaytrailFormFieldType.URL_CANCEL, model.getCallbacks().getCancelUri());
         form.addRequiredField(PaytrailFormFieldType.ORDER_NUMBER, model.getOrderNumber());
         form.addRequiredField(PaytrailFormFieldType.PARAMS_IN, "");
         form.addRequiredField(PaytrailFormFieldType.PARAMS_OUT, paramsOut);
@@ -136,7 +151,7 @@ public class PaytrailFormBuilder {
         form.addOptionalField(PaytrailFormFieldType.MSG_SETTLEMENT_MERCHANT, model.getMsgSettlementMerchant());
         form.addOptionalField(PaytrailFormFieldType.MSG_UI_PAYMENT_METHOD, model.getPaymentMethods());
         form.addOptionalField(PaytrailFormFieldType.MSG_UI_MERCHANT_PANEL, model.getMsgUiMerchantPanel());
-        form.addOptionalField(PaytrailFormFieldType.URL_NOTIFY, model.getNotifyUri());
+        form.addOptionalField(PaytrailFormFieldType.URL_NOTIFY, model.getCallbacks().getNotifyUri());
         if (model.getLocale() != null) {
             form.addRequiredField(PaytrailFormFieldType.LOCALE, SUPPORTED_LOCALES.getAnyTranslation(model.getLocale()));
         }

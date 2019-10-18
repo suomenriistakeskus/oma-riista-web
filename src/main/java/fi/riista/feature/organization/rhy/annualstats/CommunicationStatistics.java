@@ -1,6 +1,6 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
-import fi.riista.util.DateUtil;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
@@ -19,21 +19,23 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
 public class CommunicationStatistics
-        implements AnnualStatisticsFieldsetStatus, HasLastModificationStatus<CommunicationStatistics>, Serializable {
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<CommunicationStatistics>,
+        Serializable {
 
     public static final CommunicationStatistics reduce(@Nullable final CommunicationStatistics a,
                                                        @Nullable final CommunicationStatistics b) {
 
         final CommunicationStatistics result = new CommunicationStatistics();
-        result.setInterviews(nullsafeSumAsInt(a, b, CommunicationStatistics::getInterviews));
-        result.setAnnouncements(nullsafeSumAsInt(a, b, CommunicationStatistics::getAnnouncements));
-        result.setOmariistaAnnouncements(nullsafeSumAsInt(a, b, CommunicationStatistics::getOmariistaAnnouncements));
+        result.setInterviews(nullableIntSum(a, b, CommunicationStatistics::getInterviews));
+        result.setAnnouncements(nullableIntSum(a, b, CommunicationStatistics::getAnnouncements));
+        result.setOmariistaAnnouncements(nullableIntSum(a, b, CommunicationStatistics::getOmariistaAnnouncements));
         result.setLastModified(nullsafeMax(a, b, CommunicationStatistics::getLastModified));
         return result;
     }
@@ -89,7 +91,7 @@ public class CommunicationStatistics
     }
 
     public CommunicationStatistics(@Nonnull final CommunicationStatistics that) {
-        Objects.requireNonNull(that);
+        requireNonNull(that);
 
         this.interviews = that.interviews;
         this.announcements = that.announcements;
@@ -101,19 +103,30 @@ public class CommunicationStatistics
     }
 
     @Override
-    public boolean isEqualTo(final CommunicationStatistics other) {
-        // Includes manually updateable fields only.
-
-        return Objects.equals(interviews, other.interviews) &&
-                Objects.equals(announcements, other.announcements) &&
-                Objects.equals(someInfo, other.someInfo) &&
-                Objects.equals(homePage, other.homePage) &&
-                Objects.equals(info, other.info);
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.COMMUNICATION;
     }
 
     @Override
-    public void updateModificationStatus() {
-        lastModified = DateUtil.now();
+    public boolean isEqualTo(@Nonnull final CommunicationStatistics that) {
+        // Includes manually updateable fields only.
+
+        return Objects.equals(interviews, that.interviews) &&
+                Objects.equals(announcements, that.announcements) &&
+                Objects.equals(someInfo, that.someInfo) &&
+                Objects.equals(homePage, that.homePage) &&
+                Objects.equals(info, that.info);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final CommunicationStatistics that) {
+        // Includes manually updateable fields only.
+
+        this.interviews = that.interviews;
+        this.announcements = that.announcements;
+        this.someInfo = that.someInfo;
+        this.homePage = that.homePage;
+        this.info = that.info;
     }
 
     @Override
@@ -176,10 +189,12 @@ public class CommunicationStatistics
         this.info = info;
     }
 
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

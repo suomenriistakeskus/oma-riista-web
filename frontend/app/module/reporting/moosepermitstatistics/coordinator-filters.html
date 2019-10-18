@@ -1,0 +1,15 @@
+<form>
+    <div class="r-rhy-year-species-menu">
+        <r-hunting-year-and-species-selection
+                hunting-years="$ctrl.huntingYears"
+                available-species="$ctrl.availableSpecies"
+                preselect-current-hunting-year="true"
+                on-hunting-year-or-species-changed="$ctrl.selectHuntingYearAndSpeciesCode(huntingYear, speciesCode)">
+        </r-hunting-year-and-species-selection>
+    </div>
+
+    <organisation-select-by-rhy
+            tabs="$ctrl.tabs"
+            organisation-changed="$ctrl.onOrganisationSelect(type, code)">
+    </organisation-select-by-rhy>
+</form>

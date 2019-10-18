@@ -45,4 +45,14 @@ public class MetsahallitusPienriistaRepository {
                 .where(MH_PIENRIISTA.vuosi.eq(year), MH_PIENRIISTA.geom.intersects(GISUtils.createPointWithDefaultSRID(geoLocation)))
                 .fetchFirst();
     }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Integer findLatestYear() {
+        final SQMhPienriista MH_PIENRIISTA = SQMhPienriista.mhPienriista;
+
+        return sqlQueryFactory
+                .select(MH_PIENRIISTA.vuosi.max())
+                .from(MH_PIENRIISTA)
+                .fetchOne();
+    }
 }

@@ -38,9 +38,7 @@ public class FinnishBusinessIdValidator implements ConstraintValidator<FinnishBu
     }
 
     public static boolean validate(final String value, final boolean verifyChecksum) {
-        if (!verifyChecksum) {
-            return true;
-        }
+
         if (!StringUtils.hasText(value)) {
             return true;
         }
@@ -53,10 +51,12 @@ public class FinnishBusinessIdValidator implements ConstraintValidator<FinnishBu
             return false;
         }
 
-        final char calculatedChecksum = calculateChecksum(value);
-        if (calculatedChecksum == '1') {
-            return false;
+        if (!verifyChecksum) {
+            return true;
         }
+
+        final char calculatedChecksum = calculateChecksum(value);
+
         final char checksum = value.charAt(value.length() - 1);
         return checksum == calculatedChecksum;
     }

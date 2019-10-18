@@ -1,0 +1,43 @@
+<table class="table">
+    <tbody>
+    <tr>
+        <th style="width:30%" translate="harvestpermit.wizard.bird.map.areaName"></th>
+        <td ng-bind="$ctrl.protectedArea.name"></td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.bird.map.streetAddress"></th>
+        <td ng-bind="$ctrl.protectedArea.streetAddress"></td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.bird.map.postalCode"></th>
+        <td ng-bind="$ctrl.protectedArea.postalCode"></td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.bird.map.city"></th>
+        <td ng-bind="$ctrl.protectedArea.city"></td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.bird.map.areaSize"></th>
+        <td>
+            <span ng-bind="$ctrl.protectedArea.protectedAreSize"></span>
+            <span translate="global.hectares"></span>
+        </td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.bird.map.areaType"></th>
+        <td translate="harvestpermit.derogation.area.type.{{$ctrl.protectedArea.protectedAreaType}}"></td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.bird.map.descriptionOfRights"></th>
+        <td ng-bind="$ctrl.protectedArea.descriptionOfRights"></td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.bird.summary.attachments"></th>
+        <td>
+            <p ng-repeat="a in ::$ctrl.attachments">
+                <a ng-click="$ctrl.downloadAttachment(a.id)" ng-bind="::a.name"></a>
+            </p>
+        </td>
+    </tr>
+    </tbody>
+</table>

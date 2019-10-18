@@ -8,7 +8,6 @@ import javax.annotation.Resource;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
-import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 import static fi.riista.feature.shootingtest.AbstractShootingTestEntityAuthorization.Role.ASSIGNED_SHOOTING_TEST_OFFICIAL;
 import static fi.riista.security.EntityPermission.CREATE;
@@ -23,7 +22,7 @@ public class ShootingTestParticipantAuthorization
     private JPAQueryFactory queryFactory;
 
     public ShootingTestParticipantAuthorization() {
-        allow(READ, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, AMPUMAKOKEEN_VASTAANOTTAJA);
+        allow(READ, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, ASSIGNED_SHOOTING_TEST_OFFICIAL);
         allow(CREATE, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, ASSIGNED_SHOOTING_TEST_OFFICIAL);
         allow(UPDATE, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, ASSIGNED_SHOOTING_TEST_OFFICIAL);
     }

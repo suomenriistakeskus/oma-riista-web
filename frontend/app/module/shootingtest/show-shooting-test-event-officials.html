@@ -1,0 +1,39 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="panel-title">
+            <span class="panel-title" translate="shootingTest.overview.titleListOfficials"></span>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tbody>
+                    <tr ng-repeat="official in $ctrl.sortedOfficials track by official.id">
+                        <td class="col-xs-6 col-md-9 col-lg-8">
+                            <span ng-bind="::official.lastName"></span>
+                            <span ng-bind="::official.firstName"></span>
+                        </td>
+                        <td show-in-development>
+                            <div ng-switch="official.shootingTestResponsible">
+                                <span ng-switch-when="true"
+                                      class="shooting-test-responsible-official"></span>
+                                <span ng-switch-default
+                                      ng-click="$ctrl.updateResponsibleOfficial(official)"
+                                      class="shooting-test-responsible-official-empty"
+                                      ng-disabled="::(!$ctrl.canUpdateOfficials)"></span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-right">
+            <button class="btn btn-primary"
+                    translate="shootingTest.overview.assignOfficials"
+                    ng-if="::$ctrl.canUpdateOfficials"
+                    ng-click="$ctrl.openOfficialUpdateDialog()"></button>
+        </div>
+    </div>
+</div>

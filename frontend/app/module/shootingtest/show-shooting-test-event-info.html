@@ -1,0 +1,45 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="panel-title">
+            <span class="panel-title" translate="shootingTest.overview.timeAndPlace"></span>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <div>
+            <strong>
+                <span ng-bind="'event.type.' + $ctrl.event.calendarEventType | translate"></span>
+                <span ng-bind="::$ctrl.event.name | truncateCharacters:50"></span>
+                <span ng-bind="::$ctrl.event.date |date:'d.M.yyyy'"></span>
+                <span ng-bind="::$ctrl.event.beginTime"></span>
+                <span ng-if="::$ctrl.event.endTime"> - {{$ctrl.event.endTime}}</span>
+            </strong>
+        </div>
+
+        <br/>
+
+        <div ng-bind="::$ctrl.event.venue.name | truncateCharacters:50"></div>
+        <div ng-bind="::$ctrl.event.venue.address.streetAddress | truncateCharacters:30"></div>
+        <div ng-bind="::$ctrl.event.venue.address.postalCode"></div>
+        <div ng-bind="::$ctrl.event.venue.address.city | truncateCharacters:30" class="r-city"></div>
+
+        <div class="text-right" ng-if="::$ctrl.isAnyLifecycleButtonVisible">
+            <br/>
+
+            <button class="btn btn-primary"
+                    translate="shootingTest.overview.open"
+                    ng-if="::$ctrl.canOpenEvent"
+                    ng-click="$ctrl.openOfficialAssignDialog()"></button>
+
+            <button class="btn btn-primary"
+                    translate="shootingTest.overview.close"
+                    ng-if="::$ctrl.canCloseEvent"
+                    ng-confirm-click ng-confirm-click-action="$ctrl.closeEvent()"></button>
+
+            <button class="btn btn-primary"
+                    translate="shootingTest.overview.reopen"
+                    ng-if="::$ctrl.canReopenEvent"
+                    ng-confirm-click ng-confirm-click-action="$ctrl.reopenEvent()"></button>
+        </div>
+    </div>
+</div>

@@ -2,7 +2,6 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import fi.riista.util.F;
-import fi.riista.util.NumberUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,7 +20,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
@@ -37,12 +36,12 @@ public class SrvaEventStatistics implements Serializable {
         result.setDeportation(reduceSpeciesCounts(first, second, SrvaEventStatistics::getDeportation));
         result.setInjury(reduceSpeciesCounts(first, second, SrvaEventStatistics::getInjury));
 
-        result.setTrafficAccidents(nullsafeSumAsInt(first, second, SrvaEventStatistics::getTrafficAccidents));
-        result.setRailwayAccidents(nullsafeSumAsInt(first, second, SrvaEventStatistics::getRailwayAccidents));
-        result.setOtherAccidents(nullsafeSumAsInt(first, second, SrvaEventStatistics::getOtherAccidents));
+        result.setTrafficAccidents(nullableIntSum(first, second, SrvaEventStatistics::getTrafficAccidents));
+        result.setRailwayAccidents(nullableIntSum(first, second, SrvaEventStatistics::getRailwayAccidents));
+        result.setOtherAccidents(nullableIntSum(first, second, SrvaEventStatistics::getOtherAccidents));
 
-        result.setTotalSrvaWorkHours(nullsafeSumAsInt(first, second, SrvaEventStatistics::getTotalSrvaWorkHours));
-        result.setSrvaParticipants(nullsafeSumAsInt(first, second, SrvaEventStatistics::getSrvaParticipants));
+        result.setTotalSrvaWorkHours(nullableIntSum(first, second, SrvaEventStatistics::getTotalSrvaWorkHours));
+        result.setSrvaParticipants(nullableIntSum(first, second, SrvaEventStatistics::getSrvaParticipants));
 
         return result;
     }
@@ -157,26 +156,15 @@ public class SrvaEventStatistics implements Serializable {
     }
 
     @JsonGetter(value = "allEvents")
-    public int countAllSrvaEvents() {
-        return accident.countAll() + deportation.countAll() + injury.countAll();
+    @Nullable
+    public Integer countAllSrvaEvents() {
+        return nullableIntSum(accident.countAll(), deportation.countAll(), injury.countAll());
     }
 
     @JsonGetter(value = "allMooselikes")
-    public int countMooselikes() {
-        return accident.countMooselikes() + deportation.countMooselikes() + injury.countMooselikes();
-    }
-
-    @JsonGetter(value = "allLargeCarnivores")
-    public int countLargeCarnivores() {
-        return accident.countLargeCarnivores() + deportation.countLargeCarnivores() + injury.countLargeCarnivores();
-    }
-
-    @JsonGetter(value = "allWildBoars")
-    public int countWildBoars() {
-        return Stream
-                .of(accident.getWildBoars(), deportation.getWildBoars(), injury.getWildBoars())
-                .mapToInt(NumberUtils::getIntValueOrZero)
-                .sum();
+    @Nullable
+    public Integer countMooselikes() {
+        return nullableIntSum(accident.countMooselikes(), deportation.countMooselikes(), injury.countMooselikes());
     }
 
     // Accessors -->

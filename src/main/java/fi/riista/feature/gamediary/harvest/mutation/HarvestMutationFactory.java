@@ -22,6 +22,7 @@ import fi.riista.feature.gamediary.harvest.mutation.report.HarvestMutationForRep
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
 import fi.riista.feature.gis.GISQueryService;
 import fi.riista.feature.gis.RhyNotResolvableByGeoLocationException;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusAreaLookupResult;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitNotFoundException;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
@@ -36,7 +37,7 @@ import fi.riista.integration.mml.dto.MMLRekisteriyksikonTietoja;
 import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,9 +46,13 @@ import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.util.Objects;
 
-@Service
+import static fi.riista.feature.gamediary.GameDiaryEntry.FOREIGN_PERSON_ELIGIBLE_AS_ACTOR;
+import static fi.riista.feature.gamediary.GameDiaryEntry.FOREIGN_PERSON_ELIGIBLE_AS_AUTHOR;
+
+@Component
 @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
 public class HarvestMutationFactory {
+
     private static final Logger LOG = LoggerFactory.getLogger(HarvestMutationFactory.class);
 
     @Resource
@@ -74,21 +79,21 @@ public class HarvestMutationFactory {
         final Riistanhoitoyhdistys rhyByLocation = gisQueryService.findRhyByLocation(location);
 
         if (rhyByLocation == null) {
-            // Outside Finland or inside finnish economic zone, skip other GIS with null result expected
+            // Outside Finland or inside Finnish economic zone, skip other GIS with null result expected
             final Riistanhoitoyhdistys rhyForEconomicZone = gisQueryService.findRhyForEconomicZone(location);
 
-            return new HarvestGISMutation(rhyForEconomicZone, null, null);
+            return new HarvestGISMutation(rhyForEconomicZone, null, null, null);
         }
 
         final Municipality municipality = gisQueryService.findMunicipality(location);
         final MMLRekisteriyksikonTietoja rekisteriyksikonTietoja = gisQueryService.findPropertyByLocation(location).orElse(null);
+        final MetsahallitusAreaLookupResult metsahallitusArea = gisQueryService.findMetsahallitusAreas(location);
 
-        return new HarvestGISMutation(rhyByLocation, municipality, rekisteriyksikonTietoja);
+        return new HarvestGISMutation(rhyByLocation, municipality, rekisteriyksikonTietoja, metsahallitusArea);
     }
 
     @Transactional
-    public HarvestCommonMutation createCommonMutation(final HarvestMutationRole mutationRole,
-                                                      final HarvestDTO dto) {
+    public HarvestCommonMutation createCommonMutation(final HarvestMutationRole mutationRole, final HarvestDTO dto) {
         final GameSpecies species = gameSpeciesService.requireByOfficialCode(dto.getGameSpeciesCode());
         return new HarvestCommonMutation(dto, species, mutationRole);
     }
@@ -107,11 +112,17 @@ public class HarvestMutationFactory {
                                                                 final HarvestPreviousState previousState) {
         if (mutationRole == HarvestMutationRole.MODERATOR) {
             return HarvestAuthorActorMutation.createForModerator(
-                    personLookupService.findPerson(dto.getAuthorInfo()).orElseThrow(() -> new IllegalArgumentException("authorInfo is required")),
-                    personLookupService.findPerson(dto.getActorInfo()).orElseThrow(() -> new IllegalArgumentException("actorInfo is required")));
+                    personLookupService
+                            .findPerson(dto.getAuthorInfo(), FOREIGN_PERSON_ELIGIBLE_AS_AUTHOR)
+                            .orElseThrow(() -> new IllegalArgumentException("authorInfo is required")),
+                    personLookupService
+                            .findPerson(dto.getActorInfo(), FOREIGN_PERSON_ELIGIBLE_AS_ACTOR)
+                            .orElseThrow(() -> new IllegalArgumentException("actorInfo is required")));
         }
 
-        final Person actor = personLookupService.findPerson(dto.getActorInfo()).orElse(null);
+        final Person actor =
+                personLookupService.findPerson(dto.getActorInfo(), FOREIGN_PERSON_ELIGIBLE_AS_ACTOR).orElse(null);
+
         return HarvestAuthorActorMutation.createForNormalUser(activePerson, actor, previousState.getPreviousAuthor());
     }
 

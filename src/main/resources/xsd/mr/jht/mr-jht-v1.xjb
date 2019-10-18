@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               schemaLocation="mr-jht-v1.xsd"
+               version="2.1">
+
+    <jaxb:schemaBindings>
+        <jaxb:package name="fi.riista.integration.metsastajarekisteri.jht"/>
+
+        <jaxb:nameXmlTransform>
+            <jaxb:typeName prefix="MR_JHT_"/>
+            <jaxb:anonymousTypeName prefix="MR_JHT_"/>
+            <jaxb:elementName prefix="MR_JHT_"/>
+        </jaxb:nameXmlTransform>
+
+    </jaxb:schemaBindings>
+
+    <jaxb:globalBindings>
+        <xjc:javaType adapter="fi.riista.integration.support.LocalDateAdapter"
+                      name="org.joda.time.LocalDate"
+                      xmlType="xsd:date"/>
+        <xjc:javaType adapter="fi.riista.integration.support.LocalDateTimeAdapter"
+                      name="org.joda.time.LocalDateTime"
+                      xmlType="xsd:dateTime"/>
+        <xjc:javaType adapter="fi.riista.integration.support.LocalTimeAdapter"
+                      name="org.joda.time.LocalTime"
+                      xmlType="xsd:time"/>
+    </jaxb:globalBindings>
+</jaxb:bindings>

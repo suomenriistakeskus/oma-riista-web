@@ -127,7 +127,7 @@ angular.module('app.diary.srva', [])
         };
 
         this.addOtherSpecies = function (species) {
-            if (_.isArray(species) && !_.find(species, 'id', otherSpeciesCode)) {
+            if (_.isArray(species) && !_.find(species, {code: otherSpeciesCode})) {
                 species.push(otherSpecies);
             }
             return species;

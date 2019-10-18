@@ -1,0 +1,14 @@
+<div ng-if="$ctrl.errors.incompatibleFileType"
+     class="alert alert-danger">
+    <span translate="harvestpermit.wizard.attachments.incompatibleFileType"></span>
+</div>
+
+<form method="post" enctype="multipart/form-data"
+      class="dropzone"
+      ng-dropzone
+      dropzone="$ctrl.dropzone"
+      dropzone-config="$ctrl.dropzoneConfig"
+      event-handlers="$ctrl.dropzoneEventHandlers">
+    <input type="hidden" spring-csrf-cookie/>
+    <div class="dz-message" translate="harvestpermit.wizard.attachments.uploadButton"></div>
+</form>

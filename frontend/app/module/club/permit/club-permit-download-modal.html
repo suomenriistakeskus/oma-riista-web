@@ -1,0 +1,42 @@
+<div class="modal-header">
+    <p class="modal-title" translate="club.permit.download.title"></p>
+</div>
+
+<div class="modal-body">
+    <div class="row">
+        <div class="col-xs-6">
+            <h4 translate="club.permit.download.permitList"></h4>
+
+            <ul class="fa-ul">
+                <li ng-repeat="p in $ctrl.harvestPermitList"
+                    class="permit-download">
+                    <i class="fa-li fa fa-file-pdf-o"></i>
+                    <a ng-click="$ctrl.downloadPermit(p)">
+                        <span ng-bind="::p.text"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-xs-6">
+            <h4 translate="club.permit.download.attachmentList"></h4>
+
+            <ul class="fa-ul">
+                <li ng-repeat="a in ::$ctrl.attachmentList">
+                    <i class="fa-li fa fa-file-pdf-o"></i>
+                    <a ng-click="$ctrl.downloadAttachment(a)">
+                        <span ng-bind="::a.description"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button"
+            class="btn btn-default"
+            ng-click="$ctrl.close()"
+            translate="global.button.close"></button>
+</div>
+

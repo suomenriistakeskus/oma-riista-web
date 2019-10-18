@@ -1,7 +1,6 @@
 package fi.riista.feature.common.entity;
 
 import org.joda.time.LocalDate;
-import org.springframework.data.domain.Persistable;
 
 import javax.annotation.Nullable;
 import javax.persistence.Access;
@@ -14,7 +13,7 @@ import javax.persistence.Id;
 
 @Entity
 @Access(value = AccessType.FIELD)
-public class DateTestEntity implements HasBeginAndEndDate, HasID<Long>, Persistable<Long> {
+public class DateTestEntity extends LifecycleEntity<Long> implements HasBeginAndEndDate {
 
     private Long id;
 
@@ -48,6 +47,7 @@ public class DateTestEntity implements HasBeginAndEndDate, HasID<Long>, Persista
         return id;
     }
 
+    @Override
     public void setId(final Long id) {
         this.id = id;
     }
@@ -69,5 +69,4 @@ public class DateTestEntity implements HasBeginAndEndDate, HasID<Long>, Persista
     public void setEndDate(final LocalDate endDate) {
         this.endDate = endDate;
     }
-
 }

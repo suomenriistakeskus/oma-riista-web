@@ -1,0 +1,23 @@
+<div class="row">
+    <div class="col-xs-6 col-md-3">
+        <show-invoice-money title-key="'global.sum'" sum="::$ctrl.invoice.paymentAmount"></show-invoice-money>
+    </div>
+
+    <div class="col-xs-6 col-md-4">
+        <show-invoice-itemization invoice="::$ctrl.invoice"></show-invoice-itemization>
+    </div>
+
+    <div class="col-xs-6 col-md-5">
+        <show-invoice-recipient recipient="::$ctrl.invoice.invoiceRecipient"></show-invoice-recipient>
+    </div>
+
+    <div class="col-xs-6 col-md-offset-3 col-md-4">
+        <show-invoice-fivaldi-state fivaldi-state="::$ctrl.invoice.fivaldiState"></show-invoice-fivaldi-state>
+    </div>
+
+    <div class="col-xs-6 col-md-5">
+        <show-invoice-details invoice="$ctrl.invoice"></show-invoice-details>
+    </div>
+</div>
+
+<show-invoice-actions actions="$ctrl.invoice.actions"></show-invoice-actions>

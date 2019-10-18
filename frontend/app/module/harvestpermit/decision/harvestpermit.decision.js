@@ -5,6 +5,7 @@ angular.module('app.harvestpermit.decision', [])
         var apiPrefix = 'api/v1/decision/:id';
 
         return $resource(apiPrefix, {id: '@id', spaId: '@spaId'}, {
+            hasArea: {method: 'GET', url: apiPrefix + '/hasarea'},
             getApplication: {method: 'GET', url: apiPrefix + '/application'},
             getDocument: {method: 'GET', url: apiPrefix + '/document'},
             updateDocument: {method: 'PUT', url: apiPrefix + '/document'},
@@ -13,38 +14,60 @@ angular.module('app.harvestpermit.decision', [])
                 url: apiPrefix + '/generate/:sectionId',
                 params: {id: '@id', sectionId: '@sectionId'}
             },
+            generateAndPersistText: {
+                method: 'POST',
+                url: apiPrefix + '/generate/:sectionId',
+                params: {id: '@id', sectionId: '@sectionId'}
+            },
             getCompleteStatus: {method: 'GET', url: apiPrefix + '/complete'},
             updateCompleteStatus: {method: 'PUT', url: apiPrefix + '/complete'},
+            getPaymentOptions: {method: 'GET', url: apiPrefix + '/payment', isArray: true},
             updatePayment: {method: 'PUT', url: apiPrefix + '/payment'},
             getReference: {method: 'GET', url: apiPrefix + '/reference'},
             updateReference: {method: 'PUT', url: apiPrefix + '/reference'},
-            searchReferences: {method: 'POST', url: apiPrefix + '/search/references', isArray: true},
+            searchReferences: {method: 'POST', url: apiPrefix + '/search/references'},
             getRevisions: {method: 'GET', url: apiPrefix + '/revisions', isArray: true},
             assign: {method: 'POST', url: apiPrefix + '/assign'},
+            unassign: {method: 'POST', url: apiPrefix + '/unassign'},
             lock: {method: 'POST', url: apiPrefix + '/lock'},
             unlock: {method: 'POST', url: apiPrefix + '/unlock'},
-            updatePosted:  {
+            updatePosted: {
                 method: 'POST',
                 url: apiPrefix + '/revisions/:revisionId/posted',
                 params: {id: '@id', revisionId: '@revisionId'}
             },
-            updateNotPosted:  {
+            updateNotPosted: {
                 method: 'POST',
                 url: apiPrefix + '/revisions/:revisionId/notposted',
                 params: {id: '@id', revisionId: '@revisionId'}
             },
+            getLegalFields: {method: 'GET', url: apiPrefix + '/legal'},
+            updateLegalFields: {method: 'POST', url: apiPrefix + '/legal'},
             getAttachments: {method: 'GET', url: apiPrefix + '/attachment', isArray: true},
             addDefaultMooseAttachment: {method: 'POST', url: apiPrefix + '/moose-attachment'},
             updateAttachmentOrder: {method: 'PUT', url: apiPrefix + '/attachment-order'},
+            getDocumentSettings: {method: 'GET', url: apiPrefix + '/document-settings'},
+            updateDocumentSettings: {method: 'PUT', url: apiPrefix + '/document-settings'},
             getPublishSettings: {method: 'GET', url: apiPrefix + '/publish-settings'},
             updatePublishSettings: {method: 'PUT', url: apiPrefix + '/publish-settings'},
+            getAppealSettings: {method: 'GET', url: apiPrefix + '/appeal-settings'},
+            updateAppealSettings: {method: 'PUT', url: apiPrefix + '/appeal-settings'},
             getDeliveries: {method: 'GET', url: apiPrefix + '/delivery', isArray: true},
             updateDeliveries: {method: 'POST', url: apiPrefix + '/delivery'},
             getAuthorities: {method: 'GET', url: apiPrefix + '/authorities'},
             updateAuthorities: {method: 'POST', url: apiPrefix + '/authorities'}
         });
     })
+    .factory('PermitDecisionDerogation', function ($resource) {
+        var apiPrefix = '/api/v1/decision/derogation/:id';
 
+        return $resource(apiPrefix, {id: '@id'}, {
+            getReasons: {method: 'GET', url: apiPrefix + '/reasons'},
+            updateReasons: {method: 'POST', url: apiPrefix + '/reasons'},
+            getProtectedAreaTypes: {method: 'GET', url: apiPrefix + '/area'},
+            updateProtectedAreaTypes: {method: 'POST', url: apiPrefix + '/area'}
+        });
+    })
     .config(function ($stateProvider) {
         $stateProvider
             .state('jht.decision', {
@@ -54,22 +77,18 @@ angular.module('app.harvestpermit.decision', [])
                 resolve: {
                     decisionId: function ($stateParams) {
                         return _.parseInt($stateParams.decisionId);
-                    }
-                }
-            })
-            .state('jht.decision.conflicts', {
-                url: '/conflicts?firstApplicationId&secondApplicationId',
-                templateUrl: 'harvestpermit/applications/conflict/conflict-resolution.html',
-                controllerAs: '$ctrl',
-                controller: 'HarvestPermitApplicationConflictResolutionController',
-                wideLayout: true,
-                resolve: {
-                    firstApplicationId: function ($stateParams) {
-                        return _.parseInt($stateParams.firstApplicationId);
                     },
-                    secondApplicationId: function ($stateParams) {
-                        return _.parseInt($stateParams.secondApplicationId);
+                    hasArea: function (PermitDecision, decisionId) {
+                        return PermitDecision.hasArea({id: decisionId}).$promise.then(function (res) {
+                            return res.hasArea;
+
+                        });
                     }
+                },
+                controllerAs: '$ctrl',
+                controller: function (hasArea) {
+                    var $ctrl = this;
+                    $ctrl.hasArea = hasArea;
                 }
             });
     })
@@ -82,23 +101,15 @@ angular.module('app.harvestpermit.decision', [])
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.decisionName = 'Hirvieläinten pyyntilupa';
-
                 if ($ctrl.decision) {
-                    $ctrl.permitHolderName = $ctrl.decision.permitHolder
-                        ? formatClub($ctrl.decision.permitHolder)
-                        : formatContactPerson($ctrl.decision.contactPerson);
+                    $ctrl.permitHolderName = $ctrl.decision.permitHolder.name + getCodeSuffix($ctrl.decision.permitHolder);
                 }
 
                 $ctrl.isLocked = $ctrl.decision && $ctrl.decision.status !== 'DRAFT';
             };
 
-            function formatClub(permitHolder) {
-                return permitHolder.nameFI + ' - ' + permitHolder.officialCode;
-            }
-
-            function formatContactPerson(contactPerson) {
-                return contactPerson.firstName + ' ' + contactPerson.lastName;
+            function getCodeSuffix(h) {
+                return h.code ? (' ' + h.code) : '';
             }
         }
     });

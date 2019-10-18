@@ -23,10 +23,12 @@ angular.module('app.harvestpermit.management.payment', [])
                     }
                 },
                 controllerAs: '$navCtrl',
-                controller: function ($state) {
+                controller: function ($state, duePaymentsCount, partiallyPaidInvoiceCount) {
                     var $navCtrl = this;
 
                     $navCtrl.$onInit = function () {
+                        $navCtrl.duePaymentsCount = duePaymentsCount;
+                        $navCtrl.partiallyPaidInvoiceCount = partiallyPaidInvoiceCount;
                     };
 
                     $navCtrl.showNav = function () {
@@ -106,8 +108,7 @@ angular.module('app.harvestpermit.management.payment', [])
         };
     })
 
-    .controller('HarvestPermitPaymentPaidListController', function (FormPostService,
-                                                                    permitId, paymentList) {
+    .controller('HarvestPermitPaymentPaidListController', function (FormPostService, paymentList, permitId) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
@@ -119,8 +120,7 @@ angular.module('app.harvestpermit.management.payment', [])
         };
     })
 
-    .controller('HarvestPermitPaymentConfirmationController', function (PermitInvoice, FormPostService,
-                                                                        $http, permitId, invoice, paymentForm) {
+    .controller('HarvestPermitPaymentConfirmationController', function (FormPostService, invoice, paymentForm) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
@@ -132,8 +132,7 @@ angular.module('app.harvestpermit.management.payment', [])
         };
     })
 
-    .controller('HarvestPermitPaymentReceiptController', function (PermitInvoice, FormPostService,
-                                                                   $http, permitId, invoice) {
+    .controller('HarvestPermitPaymentReceiptController', function (FormPostService, permitId, invoice) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {

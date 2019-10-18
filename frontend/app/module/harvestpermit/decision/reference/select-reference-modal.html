@@ -1,0 +1,176 @@
+<form name="form" role="form" class="form" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title">Valitse referenssi</h3>
+    </div>
+
+    <div class="modal-body" style="height: 860px; overflow: scroll">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label translate="harvestpermit.application.selectedYear"></label>
+                    <select name="yearSelect" id="yearSelect"
+                            class="form-control"
+                            ng-model="$ctrl.filters.huntingYear"
+                            ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-options="year.year as year.name for year in $ctrl.huntingYears | orderBy:'year'">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="harvestPermitCategory" translate="harvestpermit.admin.application.permitType"></label>
+
+                    <select name="harvestPermitCategory" id="harvestPermitCategory"
+                            class="form-control"
+                            ng-model="$ctrl.filters.harvestPermitCategory"
+                            ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-options="s.category as (s.translationKey | translate) for s in $ctrl.permitCategoryList">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label translate="harvestpermit.admin.application.selectOrganisation"></label>
+                    <organisation-selection
+                            ng-if="!$ctrl.filters.applicationNumber"
+                            show-rk="true"
+                            show-rka="true"
+                            area-code="$ctrl.filters.rkaOfficialCode"
+                            rhy-code="$ctrl.filters.rhyOfficialCode"></organisation-selection>
+                </div>
+                <div class="form-group">
+                    <label for="decisionStatus" translate="harvestpermit.decision.grantStatus.title"></label>
+
+                    <select name="decisionStatus" id="decisionStatus"
+                            class="form-control"
+                            ng-model="$ctrl.filters.grantStatus"
+                            ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-options="s as ('harvestpermit.decision.grantStatus.' + s | translate) for s in $ctrl.grantStatusList">
+                        <option value="" translate="global.showAll"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label translate="harvestpermit.admin.application.status"></label>
+                    <select name="statusText" id="statusText"
+                            class="form-control"
+                            ng-model="$ctrl.filters.statusText"
+                            ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-options="'harvestpermit.decision.unifiedStatus.' + t | translate for t in $ctrl.statusList">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label translate="harvestpermit.admin.application.handler"></label>
+                    <select name="handler" id="handler"
+                            class="form-control"
+                            ng-model="$ctrl.filters.handlerId"
+                            ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-options="t.handlerId as t.name for t in $ctrl.handlers">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label translate="harvestpermit.admin.application.applicationNumber"></label>
+                    <input name="applicationNumber" id="applicationNumber"
+                           type="number"
+                           min="10000"
+                           class="form-control"
+                           ng-model="$ctrl.filters.applicationNumber">
+                </div>
+                <div class="form-group">
+                    <label translate="harvestpermit.application.selectedSpecies"></label>
+                    <select name="gameSpecies" id="gameSpecies"
+                            class="form-control"
+                            ng-model="$ctrl.filters.gameSpeciesCode"
+                            ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-options="s.code as (s.name | rI18nNameFilter:'translated') for s in $ctrl.availableSpecies | orderBy:'name.translated' track by s.code">
+                        <option value="" translate="harvestpermit.application.showAllSpecies"></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 20px">
+            <div class="col-xs-9"></div>
+            <div class="col-xs-3">
+                <button type="submit"
+                        ng-click="$ctrl.loadPage(0)"
+                        class="btn btn-primary btn-block">
+                    <span class="glyphicon glyphicon-search"></span> &nbsp;
+                    <span translate="harvestreport.admin.button.search"></span>
+                </button>
+            </div>
+        </div>
+
+        <div ng-if="$ctrl.results.content.length === 0" class="alert alert-info"
+             translate="harvestpermit.admin.application.noResults"></div>
+
+        <slice-pager slice="$ctrl.results" load-page="$ctrl.loadPage(page)"></slice-pager>
+
+        <table ng-if="$ctrl.results.content.length > 0" class="table table-condensed">
+            <thead>
+            <tr>
+                <th class="col-xs-1" translate="harvestpermit.admin.application.applicationNumber"></th>
+                <th class="col-xs-4" translate="harvestpermit.admin.application.permitHolder"></th>
+                <th class="col-xs-3" translate="harvestpermit.admin.application.handler"></th>
+                <th class="col-xs-2" translate="harvestpermit.admin.application.status"></th>
+                <th class="col-xs-2"></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr ng-repeat-start="reference in $ctrl.results.content"
+                ng-click="$ctrl.togglePreview(reference.id)"
+                style="cursor: pointer">
+
+                <td>
+                    <span class="glyphicon glyphicon-chevron-right"
+                          ng-if="$ctrl.previewEnabledId !== reference.id"></span>
+                    <span class="glyphicon glyphicon-chevron-down"
+                          ng-if="$ctrl.previewEnabledId === reference.id"></span>
+                    <span ng-bind="::reference.applicationNumber"></span>
+                </td>
+                <td>
+                    <span ng-show="reference.permitHolder" ng-bind="::reference.permitHolder.code"></span>
+                    <span ng-show="reference.permitHolder" ng-bind="::reference.permitHolder.name"></span>
+                    <span ng-show="!reference.permitHolder" ng-bind="::reference.contactPerson.byName"></span>
+                    <span ng-show="!reference.permitHolder" ng-bind="::reference.contactPerson.lastName"></span>
+                </td>
+                <td>
+                    <span ng-show="reference.handler" ng-bind="::reference.handler.lastName"></span>
+                    <span ng-show="reference.handler" ng-bind="::reference.handler.byName"></span>
+                </td>
+                <td>
+                    <span translate="harvestpermit.decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus(reference)}}"></span>
+
+                    <span ng-if="reference.decisionStatus !== 'DRAFT'"
+                          translate="harvestpermit.decision.grantStatus.{{reference.grantStatus}}"></span>
+                </td>
+                <td>
+                    <button type="button"
+                            class="btn btn-primary btn-block"
+                            ng-click="$ctrl.selectReference(reference)"
+                            translate="global.button.select"></button>
+                </td>
+            </tr>
+            <tr ng-repeat-end ng-if="$ctrl.previewEnabledId === reference.id">
+                <td colspan="5">
+                    <iframe height="350px" width="100%" style="border:0;"
+                            ng-src="{{$ctrl.previewUrl(reference.id)}}"></iframe>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+    </div>
+</form>

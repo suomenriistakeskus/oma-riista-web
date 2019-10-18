@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import fi.riista.feature.common.entity.HasID;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.junit.Test;
@@ -22,6 +24,7 @@ import static fi.riista.util.Collect.mappingAndCollectingFirst;
 import static fi.riista.util.Collect.mappingTo;
 import static fi.riista.util.Collect.nullSafeGroupingBy;
 import static fi.riista.util.Collect.nullSafeGroupingByIdOf;
+import static fi.riista.util.Collect.tuplesToMap;
 import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 import static org.junit.Assert.assertEquals;
@@ -187,6 +190,20 @@ public class CollectTest {
         final A a4 = new A(null);
 
         assertNull(Stream.of(a4).collect(mappingAndCollectingFirst(A::getB)));
+    }
+
+    @Test
+    public void testTuplesToMap() {
+        final B b1 = new B();
+        final B b2 = new B();
+
+        final A a1 = new A(b1);
+        final A a2 = new A(b1);
+        final A a3 = new A(b2);
+
+        final Stream<Tuple2<A, B>> input = Stream.of(a1, a2, a3).map(a -> Tuple.of(a, a.getB()));
+
+        assertEquals(ImmutableMap.of(a1, b1, a2, b1, a3, b2), input.collect(tuplesToMap()));
     }
 
     private static class A implements HasID<Integer> {

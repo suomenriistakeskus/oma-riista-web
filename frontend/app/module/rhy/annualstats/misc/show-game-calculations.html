@@ -24,8 +24,20 @@
                         <td num-pieces="::$ctrl.luke.fieldTriangles"></td>
                     </tr>
                     <tr>
-                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.waterBirds"></td>
-                        <td num-pieces="::$ctrl.luke.waterBirds"></td>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.misc.luke.totalWaterBirds"></td>
+                        <td num-pieces="::([$ctrl.luke.waterBirdBroods, $ctrl.luke.waterBirdCouples] | sumFinite)"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.waterBirdBroods"></td>
+                        <td num-pieces="::$ctrl.luke.waterBirdBroods"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.waterBirdCouples"></td>
+                        <td num-pieces="::$ctrl.luke.waterBirdCouples"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.carnivoreContactPersons"></td>
+                        <td num-persons="::$ctrl.luke.carnivoreContactPersons"></td>
                     </tr>
                 </tbody>
             </table>

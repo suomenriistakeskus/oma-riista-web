@@ -22,6 +22,10 @@ public class HarvestPermitApplicationConflictPalsta extends LifecycleEntity<Long
     private Long id;
 
     @NotNull
+    @Column(nullable = false)
+    private Long batchId;
+
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private HarvestPermitApplication firstApplication;
 
@@ -59,6 +63,14 @@ public class HarvestPermitApplicationConflictPalsta extends LifecycleEntity<Long
     @Override
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(final Long batchId) {
+        this.batchId = batchId;
     }
 
     public HarvestPermitApplication getFirstApplication() {

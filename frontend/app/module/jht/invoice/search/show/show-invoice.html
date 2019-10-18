@@ -1,0 +1,68 @@
+<div class="invoice-view">
+    <div class="modal-header">
+        <h3 class="modal-title modal-title-invoice">
+            <div class="row">
+                <div ng-class="::$ctrl.invoice.type === 'PERMIT_HARVEST' ? 'col-xs-4' : 'col-xs-6 col-md-3'">
+                    <span translate="invoice.invoice"></span>
+                    <span ng-bind="::$ctrl.invoice.invoiceNumber"></span>
+                </div>
+                <div ng-class="::$ctrl.invoice.type === 'PERMIT_HARVEST' ? 'col-xs-4' : 'col-xs-5'">
+                    <invoice-state-representation state="$ctrl.invoice.state"></invoice-state-representation>
+                </div>
+            </div>
+        </h3>
+        <button riista-modal-close></button>
+    </div>
+
+    <div class="modal-body" ng-switch="::$ctrl.invoice.type">
+        <div growl inline="true"></div>
+
+        <div ng-switch-when="PERMIT_PROCESSING">
+            <show-processing-invoice-details invoice="$ctrl.invoice"></show-processing-invoice-details>
+        </div>
+        <div ng-switch-when="PERMIT_HARVEST">
+            <show-harvest-invoice-details invoice="$ctrl.invoice"
+                                          payment-alter-permission-granted="$ctrl.paymentAlterPermissionGranted"
+                                          add-payment="$ctrl.addPayment()"
+                                          remove-payment="$ctrl.removePayment(paymentId)">
+            </show-harvest-invoice-details>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-danger"
+                ng-if="$ctrl.canDisableElectronicInvoicing()"
+                ng-confirm-click="{{'jht.invoice.show.confirm.disableElectronicInvoicing' | translate}}"
+                ng-confirm-click-action="$ctrl.disableElectronicInvoicing()">
+
+            <span class="fa fa-fw fa-exclamation-triangle"></span>
+            <span translate="jht.invoice.show.button.disableElectronicInvoicing"></span>
+        </button>
+
+        <button type="button" class="btn btn-danger"
+                ng-if="$ctrl.isPrintReminderButtonVisible()"
+                ng-confirm-click="{{'jht.invoice.show.confirm.printReminder' | translate}}"
+                ng-confirm-click-action="$ctrl.printReminder()">
+
+            <span class="fa fa-fw fa-file-pdf-o"></span>
+            <span translate="jht.invoice.show.button.printReminder"></span>
+        </button>
+
+        <button type="button" class="btn btn-primary"
+                ng-if="!$ctrl.invoice.electronicInvoicingEnabled"
+                ng-click="$ctrl.downloadPdf()">
+
+            <span class="fa fa-fw fa-file-pdf-o"></span>
+            <span translate="global.button.downloadPdf"></span>
+        </button>
+
+        <button type="button" class="btn btn-default" ng-click="$ctrl.openPermitDecision()">
+            <span translate="jht.invoice.show.button.openPermitDecision"></span>
+            <span class="fa fa-fw fa-chevron-right"></span>
+        </button>
+
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.close()"
+                translate="global.button.close"></button>
+    </div>
+</div>

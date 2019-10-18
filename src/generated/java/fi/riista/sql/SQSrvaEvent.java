@@ -63,6 +63,8 @@ public class SQSrvaEvent extends RelationalPathSpatial<SQSrvaEvent> {
 
     public final StringPath geolocationSource = createString("geolocationSource");
 
+    public final GeometryPath<org.geolatte.geom.Geometry> geom = createGeometry("geom", org.geolatte.geom.Geometry.class);
+
     public final NumberPath<Integer> latitude = createNumber("latitude", Integer.class);
 
     public final NumberPath<Integer> longitude = createNumber("longitude", Integer.class);
@@ -95,25 +97,25 @@ public class SQSrvaEvent extends RelationalPathSpatial<SQSrvaEvent> {
 
     public final com.querydsl.sql.PrimaryKey<SQSrvaEvent> srvaEventPkey = createPrimaryKey(srvaEventId);
 
+    public final com.querydsl.sql.ForeignKey<SQPerson> srvaEventAuthorFk = createForeignKey(authorId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQSrvaEventName> srvaEventEventFk = createForeignKey(eventName, "name");
+
     public final com.querydsl.sql.ForeignKey<SQGameSpecies> srvaEventGameSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
+
+    public final com.querydsl.sql.ForeignKey<SQSrvaResultType> srvaEventEventResultFk = createForeignKey(eventResult, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> srvaEventRhyFk = createForeignKey(rhyId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQSystemUser> srvaEventApproverAsUserFk = createForeignKey(approverAsUserId, "user_id");
+
+    public final com.querydsl.sql.ForeignKey<SQSrvaEventState> srvaEventStateFk = createForeignKey(state, "name");
 
     public final com.querydsl.sql.ForeignKey<SQPerson> srvaEventApproverAsPersonFk = createForeignKey(approverAsPersonId, "person_id");
 
     public final com.querydsl.sql.ForeignKey<SQGeolocationSource> srvaEventGeolocationSourceFk = createForeignKey(geolocationSource, "name");
 
-    public final com.querydsl.sql.ForeignKey<SQSrvaResultType> srvaEventEventResultFk = createForeignKey(eventResult, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQPerson> srvaEventAuthorFk = createForeignKey(authorId, "person_id");
-
-    public final com.querydsl.sql.ForeignKey<SQSystemUser> srvaEventApproverAsUserFk = createForeignKey(approverAsUserId, "user_id");
-
-    public final com.querydsl.sql.ForeignKey<SQOrganisation> srvaEventRhyFk = createForeignKey(rhyId, "organisation_id");
-
     public final com.querydsl.sql.ForeignKey<SQSrvaEventType> srvaEventEventTypeFk = createForeignKey(eventType, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQSrvaEventState> srvaEventStateFk = createForeignKey(state, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQSrvaEventName> srvaEventEventFk = createForeignKey(eventName, "name");
 
     public final com.querydsl.sql.ForeignKey<SQGameDiaryImage> _gameDiaryImageSrvaEventFk = createInvForeignKey(srvaEventId, "srva_event_id");
 
@@ -165,14 +167,15 @@ public class SQSrvaEvent extends RelationalPathSpatial<SQSrvaEvent> {
         addMetadata(fromMobile, ColumnMetadata.named("from_mobile").withIndex(29).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(gameSpeciesId, ColumnMetadata.named("game_species_id").withIndex(13).ofType(Types.BIGINT).withSize(19));
         addMetadata(geolocationSource, ColumnMetadata.named("geolocation_source").withIndex(20).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(geom, ColumnMetadata.named("geom").withIndex(34).ofType(Types.OTHER).withSize(2147483647).notNull());
         addMetadata(latitude, ColumnMetadata.named("latitude").withIndex(14).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(longitude, ColumnMetadata.named("longitude").withIndex(15).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(mobileClientRefId, ColumnMetadata.named("mobile_client_ref_id").withIndex(30).ofType(Types.BIGINT).withSize(19));
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
-        addMetadata(otherMethodDescription, ColumnMetadata.named("other_method_description").withIndex(21).ofType(Types.VARCHAR).withSize(255));
-        addMetadata(otherSpeciesDescription, ColumnMetadata.named("other_species_description").withIndex(31).ofType(Types.VARCHAR).withSize(255));
-        addMetadata(otherTypeDescription, ColumnMetadata.named("other_type_description").withIndex(22).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(otherMethodDescription, ColumnMetadata.named("other_method_description").withIndex(21).ofType(Types.VARCHAR).withSize(2147483647));
+        addMetadata(otherSpeciesDescription, ColumnMetadata.named("other_species_description").withIndex(31).ofType(Types.VARCHAR).withSize(2147483647));
+        addMetadata(otherTypeDescription, ColumnMetadata.named("other_type_description").withIndex(22).ofType(Types.VARCHAR).withSize(2147483647));
         addMetadata(personCount, ColumnMetadata.named("person_count").withIndex(23).ofType(Types.INTEGER).withSize(10));
         addMetadata(pointOfTime, ColumnMetadata.named("point_of_time").withIndex(12).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(rhyId, ColumnMetadata.named("rhy_id").withIndex(16).ofType(Types.BIGINT).withSize(19).notNull());

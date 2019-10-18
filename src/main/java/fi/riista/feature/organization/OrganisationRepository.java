@@ -27,6 +27,11 @@ public interface OrganisationRepository extends BaseRepository<Organisation, Lon
             " where o.organisationType = :orgType")
     List<Organisation> findByOrganisationType(@Param("orgType") OrganisationType organisationType, Sort sort);
 
+    @Query("SELECT o FROM #{#entityName} o" +
+            " LEFT JOIN FETCH o.address a" +
+            " WHERE o.organisationType = :orgType AND o.active = true")
+    List<Organisation> findActiveByOrganisationType(@Param("orgType") OrganisationType organisationType, Sort sort);
+
     @Query("select distinct o from #{#entityName} o" +
             " where o.organisationType = ?1" +
             " and o.officialCode = ?2")
@@ -35,12 +40,13 @@ public interface OrganisationRepository extends BaseRepository<Organisation, Lon
     @Query("select o from #{#entityName} o" +
             " where o.organisationType in ?2 " +
             " and (trgm_dist(?1, o.nameFinnish) < ?3) order by trgm_dist(?1, o.nameFinnish)")
-    List<Organisation> findByFinnishFuzzyNameMatch(String searchQuery, Set<OrganisationType> type,
-                                                   double maxDistance, Pageable page);
+    List<Organisation> findByFuzzyFullNameMatch(String searchQuery, Set<OrganisationType> type,
+                                                double maxDistance, Pageable page);
 
     @Query("select o from #{#entityName} o" +
             " where o.organisationType in ?2 " +
             " and (trgm_dist(?1, o.nameSwedish) < ?3) order by trgm_dist(?1, o.nameSwedish)")
     List<Organisation> findBySwedishFuzzyNameMatch(String searchQuery, Set<OrganisationType> type,
                                                    double maxDistance, Pageable page);
+
 }

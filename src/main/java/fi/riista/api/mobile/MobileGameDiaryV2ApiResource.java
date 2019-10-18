@@ -8,10 +8,11 @@ import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.mobile.MobileGameDiaryFeature;
 import fi.riista.feature.gamediary.mobile.MobileGameSpeciesCodesetDTO;
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
-import fi.riista.feature.gamediary.mobile.MobileHarvestPermitExistsDTO;
 import fi.riista.feature.gamediary.mobile.MobileObservationDTO;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.metadata.ObservationMetadataDTO;
+import fi.riista.feature.harvestpermit.mobile.MobileHarvestPermitExistsDTO;
+import fi.riista.feature.harvestpermit.mobile.MobileHarvestPermitFeature;
 import fi.riista.util.Patterns;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
@@ -79,6 +80,9 @@ public class MobileGameDiaryV2ApiResource {
 
     @Resource
     private MobileGameDiaryFeature feature;
+
+    @Resource
+    private MobileHarvestPermitFeature mobileHarvestPermitFeature;
 
     @Resource
     private GameDiaryImageFeature gameDiaryImageFeature;
@@ -236,11 +240,11 @@ public class MobileGameDiaryV2ApiResource {
 
     @PostMapping(value = CHECK_PERMIT_NUMBER)
     public MobileHarvestPermitExistsDTO checkPermitNumber(@RequestParam final String permitNumber) {
-        return feature.findPermitNumber(permitNumber);
+        return mobileHarvestPermitFeature.findPermitNumber(permitNumber);
     }
 
     @GetMapping(value = PRELOAD_PERMITS)
     public List<MobileHarvestPermitExistsDTO> preloadPermits() {
-        return feature.preloadPermits();
+        return mobileHarvestPermitFeature.preloadPermits();
     }
 }

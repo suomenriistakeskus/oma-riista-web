@@ -1,0 +1,42 @@
+<h3 translate="harvestpermit.new.instructions.mooselikeCategory"></h3>
+<p translate="harvestpermit.new.instructions.mooselike"></p>
+
+<div class="row">
+    <div class="col-md-6 col-xs-12 text-center"
+         ng-repeat="t in $ctrl.moosetypes">
+        <application-type type="t" on-select-type="$ctrl.onSelect({applicationType: t})"></application-type>
+    </div>
+
+    <div class="col-md-6 col-xs-12 text-center">
+        <div class="col-md-6 text-center fa-border">
+            <img ng-src="/static/elainlajikuvat/512x512/47503.jpg" width="192" height="192"/>
+
+        </div>
+        <div class="col-md-6 col-xs-12 text-center">
+            <p>
+                <strong translate="harvestpermit.new.amendmentTitle"></strong>
+            </p>
+            <p translate="harvestpermit.new.amendmentInstruction"></p>
+        </div>
+    </div>
+</div>
+
+<hr class="invisible">
+<hr class="invisible">
+
+<div ng-if="$ctrl.derogationTypes && $ctrl.derogationTypes.length > 0">
+
+    <h3 translate="harvestpermit.new.instructions.derogationCategory"></h3>
+
+    <hr class="invisible">
+
+    <div class="row">
+        <div class="col-md-6 col-xs-12 text-center"
+             ng-repeat="t in $ctrl.derogationTypes">
+            <application-type type="t" on-select-type="$ctrl.onSelect({applicationType: t})"></application-type>
+        </div>
+    </div>
+
+    <hr class="invisible">
+    <hr class="invisible">
+</div>

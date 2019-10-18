@@ -2,7 +2,8 @@ package fi.riista.feature.account;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.account.user.SystemUserPrivilege;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.address.AddressSource;
@@ -17,6 +18,7 @@ import org.joda.time.LocalDate;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -34,6 +36,8 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     private boolean active;
 
+    private boolean foreignPerson;
+
     private boolean allowPrintCertificate;
 
     @Size(min = 2, max = 63)
@@ -41,6 +45,9 @@ public class AccountDTO extends BaseEntityDTO<Long> {
     private String username;
 
     private SystemUser.Role role;
+
+
+    private Set<SystemUserPrivilege> privileges = Collections.emptySet();
 
     @DoNotValidate
     private List<AccountRoleDTO> accountRoles;
@@ -65,7 +72,7 @@ public class AccountDTO extends BaseEntityDTO<Long> {
     private Locale locale;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String ssnMasked;
+    private String dateOfBirth;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String homeMunicipality;
@@ -114,8 +121,6 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String magazineLanguageCode;
-
-    private boolean denyPost;
 
     private boolean denyMagazine;
 
@@ -228,12 +233,12 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         this.personId = personId;
     }
 
-    public String getSsnMasked() {
-        return ssnMasked;
+    public String getDateOfBirth() {
+        return dateOfBirth;
     }
 
-    public void setSsnMasked(final String ssnMasked) {
-        this.ssnMasked = ssnMasked;
+    public void setDateOfBirth(final String dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     public String getHomeMunicipality() {
@@ -396,14 +401,6 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         this.magazineLanguageCode = magazineLanguageCode;
     }
 
-    public boolean isDenyPost() {
-        return denyPost;
-    }
-
-    public void setDenyPost(final boolean denyPost) {
-        this.denyPost = denyPost;
-    }
-
     public boolean isDenyMagazine() {
         return denyMagazine;
     }
@@ -452,6 +449,14 @@ public class AccountDTO extends BaseEntityDTO<Long> {
         this.active = active;
     }
 
+    public boolean isForeignPerson() {
+        return foreignPerson;
+    }
+
+    public void setForeignPerson(final boolean foreignPerson) {
+        this.foreignPerson = foreignPerson;
+    }
+
     public boolean isAllowPrintCertificate() {
         return allowPrintCertificate;
     }
@@ -474,5 +479,13 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     public void setEnableShootingTests(final boolean enableShootingTests) {
         this.enableShootingTests = enableShootingTests;
+    }
+
+    public Set<SystemUserPrivilege> getPrivileges() {
+        return privileges;
+    }
+
+    public void setPrivileges(final Set<SystemUserPrivilege> privileges) {
+        this.privileges = privileges;
     }
 }

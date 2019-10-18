@@ -5,13 +5,13 @@
     </a>
 
     <ul class="dropdown-menu r-lang-nav-dropdown-menu" uib-dropdown-menu>
-        <li ng-show="{'active': $ctrl.isSelected('fi')}">
+        <li ng-class="{'active': $ctrl.isSelectedLanguage('fi')}">
             <a ng-click="$ctrl.changeLanguage('fi')"><span translate="global.language.fi"></span></a>
         </li>
-        <li ng-show="{'active': $ctrl.isSelected('sv')}">
+        <li ng-class="{'active': $ctrl.isSelectedLanguage('sv')}">
             <a ng-click="$ctrl.changeLanguage('sv')"><span translate="global.language.sv"></span></a>
         </li>
-        <li ng-show="{'active': $ctrl.isSelected('en')}" show-in-development>
+        <li ng-class="{'active': $ctrl.isSelectedLanguage('en')}" show-in-development>
             <a ng-click="$ctrl.changeLanguage('en')"><span translate="global.language.en"></span></a>
         </li>
     </ul>

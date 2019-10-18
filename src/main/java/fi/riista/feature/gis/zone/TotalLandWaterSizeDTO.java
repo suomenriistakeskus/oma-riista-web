@@ -1,11 +1,14 @@
 package fi.riista.feature.gis.zone;
 
-public class TotalLandWaterSizeDTO {
+import java.io.Serializable;
+
+public class TotalLandWaterSizeDTO implements Serializable {
     private final double total;
     private final double land;
     private final double water;
 
     public TotalLandWaterSizeDTO(final double total, final double land, final double water) {
+        // Prevent negative values due to rounding errors using Math.max()
         this.total = Math.max(0, total);
         this.land = Math.max(0, land);
         this.water = Math.max(0, water);

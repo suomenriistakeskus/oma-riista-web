@@ -1,17 +1,28 @@
 <nav class="navbar r-subnav-navbar" role="navigation">
     <div class="container">
-        <div class="navbar-collapse collapse" class="in">
-            <ul class="nav navbar-nav r-subnav-nav" ng-show="authenticated">
-                <li ui-sref-active="active"><a ui-sref=".show" translate="organisation.menu.main"></a></li>
-                <li ui-sref-active="active" ng-show="showOccupationMenu"><a ui-sref=".occupations" translate="organisation.menu.occupations"></a></li>
-                <li ui-sref-active="active"><a ui-sref=".events" translate="organisation.menu.events"></a></li>
-                <li ui-sref-active="active"><a ui-sref=".locations" translate="organisation.menu.venues"></a></li>
-                <li ui-sref-active="active" ng-show="showDecisionrecipients"><a ui-sref=".decisionrecipients" translate="organisation.menu.decisionrecipients"></a></li>
-                <li ui-sref-active="active" ng-show="showDecisionauthorities"><a ui-sref=".decisionauthorities" translate="organisation.menu.decisionauthorities"></a></li>
-            </ul>
-        </div>
+        <ul class="nav navbar-nav r-subnav-nav">
+            <li ui-sref-active="active">
+                <a ui-sref=".show" translate="organisation.menu.main"></a>
+            </li>
+            <li ui-sref-active="active" ng-show="showOccupationMenu">
+                <a ui-sref=".occupations" translate="organisation.menu.occupations"></a>
+            </li>
+            <li ui-sref-active="active">
+                <a ui-sref=".events" translate="organisation.menu.events"></a>
+            </li>
+            <li ui-sref-active="active">
+                <a ui-sref=".locations" translate="organisation.menu.venues"></a>
+            </li>
+            <li ui-sref-active="active" ng-show="showDecisionrecipients">
+                <a ui-sref=".decisionrecipients" translate="organisation.menu.decisionrecipients"></a>
+            </li>
+            <li ui-sref-active="active" ng-show="showDecisionauthorities">
+                <a ui-sref=".decisionauthorities" translate="organisation.menu.decisionauthorities"></a>
+            </li>
+        </ul>
     </div>
 </nav>
+
 <div class="container">
     <div growl inline="true"></div>
 

@@ -1,12 +1,12 @@
 package fi.riista.integration.metsastajarekisteri.shootingtest;
 
 import fi.riista.feature.organization.calendar.CalendarEvent;
+import fi.riista.feature.shootingtest.ShootingTest;
 import fi.riista.feature.shootingtest.ShootingTestAttempt;
 import fi.riista.feature.shootingtest.ShootingTestEvent;
 import fi.riista.feature.shootingtest.ShootingTestFixtureMixin;
 import fi.riista.feature.shootingtest.ShootingTestParticipant;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static fi.riista.feature.shootingtest.ShootingTestAttempt.SHOOTING_TEST_VALIDITY_PERIOD;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.QUALIFIED;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.REBATED;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.TIMED_OUT;
@@ -212,23 +211,50 @@ public class ShootingTestExportServiceTest extends EmbeddedDatabaseTest implemen
         }))));
     }
 
+    @Test
+    public void testExportShootingTestData_verifyingBothFinnishAndForeignHuntersIncluded() {
+        final LocalDate today = today();
+
+        withRhy(rhy -> {
+
+            final ShootingTestEvent event1 = openEvent(rhy, today);
+            final ShootingTestAttempt attempt1 = createParticipantWithOneAttempt(event1);
+            final ShootingTestAttempt attempt2 = createForeignParticipantWithOneAttempt(event1);
+
+            final ShootingTestEvent event2 = openEvent(rhy, today.minusDays(1));
+            final ShootingTestAttempt attempt3 = createParticipantWithOneAttempt(event2);
+
+            final ShootingTestEvent event3 = openEvent(rhy, today.minusDays(2));
+            final ShootingTestAttempt attempt4 = createForeignParticipantWithOneAttempt(event3);
+
+            Stream.of(event1, event2, event3).forEach(ShootingTestEvent::close);
+
+            persistInNewTransaction();
+            assertResult(today, attempt1, attempt2, attempt3, attempt4);
+        });
+    }
+
     private static List<MR_Person> createExpectedPersonList(final List<ShootingTestAttempt> attempts) {
         final Map<String, List<MR_ShootingTest>> map = attempts
                 .stream()
                 .collect(groupingBy(
-                        attempt -> attempt.getParticipant().getPerson().getHunterNumber(),
+                        attempt -> {
+                            final ShootingTestParticipant participant = attempt.getParticipant();
+
+                            return participant.getPerson().getHunterNumber();
+                        },
                         mapping(attempt -> {
 
                             final ShootingTestParticipant participant = attempt.getParticipant();
                             final ShootingTestEvent event = participant.getShootingTestEvent();
                             final CalendarEvent calEvent = event.getCalendarEvent();
 
-                            final LocalDate validityBegin = DateUtil.toLocalDateNullSafe(calEvent.getDate());
+                            final LocalDate validityBegin = calEvent.getDateAsLocalDate();
 
                             return new MR_ShootingTest()
                                     .withType(attempt.getType().toExportType())
                                     .withValidityBegin(validityBegin)
-                                    .withValidityEnd(validityBegin.plus(SHOOTING_TEST_VALIDITY_PERIOD))
+                                    .withValidityEnd(validityBegin.plus(ShootingTest.VALIDITY_PERIOD))
                                     .withRHY(calEvent.getOrganisation().getOfficialCode())
                                     .withEventId(event.getId())
                                     .withParticipantId(participant.getId())

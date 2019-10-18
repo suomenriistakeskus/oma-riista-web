@@ -3,7 +3,6 @@ package fi.riista.feature.gamediary.summary;
 import com.google.common.base.Stopwatch;
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
-import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
 import fi.riista.feature.gamediary.observation.ObservationDTO;
@@ -11,6 +10,7 @@ import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenDTO;
 import fi.riista.feature.gamediary.srva.SrvaEventDTO;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
+import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysNameDTO;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 
@@ -41,18 +42,20 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
     private final List<ObservationDTO> observations;
     private final List<SrvaEventDTO> srvaEvents;
     private final Map<Integer, LocalisedString> species;
+    private final Map<Long, RiistanhoitoyhdistysNameDTO> rhyNameMapping;
 
     public AdminGameDiarySummaryExcelView(final EnumLocaliser localiser,
                                           final Map<Integer, LocalisedString> species,
+                                          final Map<Long, RiistanhoitoyhdistysNameDTO> rhyNameMapping,
                                           final List<HarvestDTO> harvests,
                                           final List<ObservationDTO> observations,
                                           final List<SrvaEventDTO> srvaEvents) {
-        this.localiser = localiser;
-
-        this.species = species;
-        this.harvests = harvests;
-        this.observations = observations;
-        this.srvaEvents = srvaEvents;
+        this.localiser = requireNonNull(localiser);
+        this.species = requireNonNull(species);
+        this.rhyNameMapping = requireNonNull(rhyNameMapping);
+        this.harvests = requireNonNull(harvests);
+        this.observations = requireNonNull(observations);
+        this.srvaEvents = requireNonNull(srvaEvents);
     }
 
     private static String createFilename() {
@@ -158,8 +161,27 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
                 .appendNumberCell(observation.getMooselikeUnknownSpecimenAmount());
     }
 
-    private void addCommonColumns(final ExcelHelper helper, final HuntingDiaryEntryDTO entry) {
+    private void addCommonColumns(final ExcelHelper helper, final HarvestDTO entry) {
+        final RiistanhoitoyhdistysNameDTO rhyRka = rhyNameMapping.get(entry.getRhyId());
+
         helper.appendNumberCell(entry.getId())
+                .appendTextCell(localiser.getTranslation(rhyRka.getRhyName()))
+                .appendTextCell(localiser.getTranslation(rhyRka.getRkaName()))
+                .appendDateCell(entry.getPointOfTime().toDate())
+                .appendTimeCell(entry.getPointOfTime().toDate())
+                .appendTextCell(localiser.getTranslation(entry.getGeoLocation().getSource()))
+                .appendNumberCell(entry.getGeoLocation().getAccuracy())
+                .appendNumberCell(entry.getGeoLocation().getLatitude())
+                .appendNumberCell(entry.getGeoLocation().getLongitude())
+                .appendTextCell(localiser.getTranslation(species.get(entry.getGameSpeciesCode())));
+    }
+
+    private void addCommonColumns(final ExcelHelper helper, final ObservationDTO entry) {
+        final RiistanhoitoyhdistysNameDTO rhyRka = rhyNameMapping.get(entry.getRhyId());
+
+        helper.appendNumberCell(entry.getId())
+                .appendTextCell(localiser.getTranslation(rhyRka.getRhyName()))
+                .appendTextCell(localiser.getTranslation(rhyRka.getRkaName()))
                 .appendDateCell(entry.getPointOfTime().toDate())
                 .appendTimeCell(entry.getPointOfTime().toDate())
                 .appendTextCell(localiser.getTranslation(entry.getGeoLocation().getSource()))
@@ -189,10 +211,14 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
         ));
 
         for (final SrvaEventDTO entry : srvaEvents) {
+            final RiistanhoitoyhdistysNameDTO rhyRka = rhyNameMapping.get(entry.getRhyId());
+
             helper
                     // Common fields
                     .appendRow()
                     .appendNumberCell(entry.getId())
+                    .appendTextCell(localiser.getTranslation(rhyRka.getRhyName()))
+                    .appendTextCell(localiser.getTranslation(rhyRka.getRkaName()))
                     .appendDateCell(entry.getPointOfTime().toDate())
                     .appendTimeCell(entry.getPointOfTime().toDate())
                     .appendTextCell(localiser.getTranslation(entry.getGeoLocation().getSource()))
@@ -236,7 +262,7 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
 
     private static String[] getCommonHeaders() {
         return new String[]{
-                "commonId", "date", "clockTime", "geolocationSource", "geolocationAccuracy", "latitude", "longitude",
+                "commonId", "rhy", "rka", "date", "clockTime", "geolocationSource", "geolocationAccuracy", "latitude", "longitude",
                 "species"
         };
     }

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -51,6 +52,7 @@ public class ShootingTestExportService {
         this.batchSize = batchSize;
     }
 
+    @Transactional(readOnly = true, rollbackFor = {IOException.class, XMLStreamException.class})
     public byte[] exportShootingTestData(final LocalDate registerDate) throws IOException, XMLStreamException {
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
 
@@ -68,15 +70,17 @@ public class ShootingTestExportService {
     }
 
     private void addPersons(final XMLStreamWriter xsw, final LocalDate registerDate) throws IOException {
-        long lastPersonIdAlreadyProcessed = 0;
-        SortedMap<Long, MR_Person> personIndex = null;
+        String lastHunterNumberAlreadyProcessed = "10000000"; // lower than any valid hunter number
+        SortedMap<String, MR_Person> personIndex = null;
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         do {
-            // Persons need to be fetched from database by ascending ID order because of the XML
-            // structure. Shooting test attempts for one person need to serialized all at once.
+            // Persons need to be fetched from database by ascending hunter number order.
+            // Because of the XML structure shooting test attempts for one person need to be
+            // serialized all at once.
 
-            personIndex = queries.fetchPersonsWithIdGreaterThan(lastPersonIdAlreadyProcessed, batchSize, registerDate);
+            personIndex = queries.fetchPersonsWithHunterNumberGreaterThan(
+                    lastHunterNumberAlreadyProcessed, batchSize, registerDate);
 
             if (!personIndex.isEmpty()) {
                 for (final MR_Person person : personIndex.values()) {
@@ -86,11 +90,12 @@ public class ShootingTestExportService {
                 }
 
                 // Reset offset for next round.
-                lastPersonIdAlreadyProcessed = personIndex.lastKey();
+                lastHunterNumberAlreadyProcessed = personIndex.lastKey();
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Processed a batch of {} persons, took {} ms.", personIndex.size(), stopwatch.elapsed(MILLISECONDS));
+                final long elapsed = stopwatch.elapsed(MILLISECONDS);
+                LOG.debug("Processed a batch of {} persons, took {} ms.", personIndex.size(), elapsed);
 
                 // Reset Stopwatch object for next round.
                 stopwatch = Stopwatch.createStarted();

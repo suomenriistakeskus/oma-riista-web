@@ -5,6 +5,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.RuntimeEnvironmentUtil;
+import fi.riista.feature.account.AccountSessionService;
 import fi.riista.feature.account.audit.AccountAuditService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
@@ -19,8 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.session.FindByIndexNameSessionRepository;
-import org.springframework.session.Session;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -31,8 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Objects;
-
-import static org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME;
 
 @Component
 public class PasswordResetFeature {
@@ -57,6 +54,9 @@ public class PasswordResetFeature {
     private AccountAuditService accountAuditService;
 
     @Resource
+    private AccountSessionService accountSessionService;
+
+    @Resource
     private Handlebars handlebars;
 
     @Resource
@@ -64,9 +64,6 @@ public class PasswordResetFeature {
 
     @Resource
     private UserRepository userRepository;
-
-    @Resource
-    private FindByIndexNameSessionRepository<? extends Session> sessionRepository;
 
     @Resource
     private RuntimeEnvironmentUtil runtimeEnvironmentUtil;
@@ -134,8 +131,8 @@ public class PasswordResetFeature {
         final SystemUser systemUser = Objects.requireNonNull(emailToken.getUser());
 
         if (systemUser.isActive()) {
-            // Make sure all existing rememberMe logins are revoked
-            removeOtherActiveSessions(systemUser, request);
+            // Make sure all other sessions are logged out
+            accountSessionService.deleteOtherActiveSessions(systemUser.getUsername(), request);
 
             // Log account activity
             accountAuditService.auditPasswordResetDone(systemUser, request);
@@ -146,15 +143,6 @@ public class PasswordResetFeature {
                 activeUserService.loginWithoutCheck(systemUser);
             }
         }
-    }
-
-    private void removeOtherActiveSessions(final SystemUser systemUser, final HttpServletRequest request) {
-        final String activeSessionId = request.getRequestedSessionId();
-        final String username = systemUser.getUsername();
-
-        sessionRepository.findByIndexNameAndIndexValue(PRINCIPAL_NAME_INDEX_NAME, username).keySet().stream()
-                .filter(id -> !Objects.equals(id, activeSessionId))
-                .forEach(sessionRepository::delete);
     }
 
     @Transactional(readOnly = true)

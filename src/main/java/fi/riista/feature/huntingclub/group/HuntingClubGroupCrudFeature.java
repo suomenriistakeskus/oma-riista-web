@@ -8,6 +8,7 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
+import fi.riista.feature.harvestpermit.HarvestPermitNotFoundException;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
@@ -19,7 +20,7 @@ import fi.riista.feature.huntingclub.hunting.ClubHuntingStatusService;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportRepository;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
+import fi.riista.feature.huntingclub.permit.endofhunting.HuntingFinishingService;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.storage.FileStorageService;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
@@ -51,7 +52,7 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
     private ClubHuntingStatusService clubHuntingStatusService;
 
     @Resource
-    private HuntingClubPermitService huntingClubPermitService;
+    private HuntingFinishingService huntingFinishingService;
 
     @Resource
     private CopyClubGroupService copyClubGroupService;
@@ -99,14 +100,10 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
             throw new CannotDeleteHuntingGroupWithHuntingDataException();
         }
 
-        final boolean adminOrModerator = activeUserService.isModeratorOrAdmin();
-
-        if (!adminOrModerator && harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(group.getHarvestPermit(), group.getHuntingYear())) {
-            throw new HuntingGroupWithPermitLockedException();
-        }
+        assertPermitNotLocked(group);
 
         if (group.isFromMooseDataCard()) {
-            if (!adminOrModerator) {
+            if (!activeUserService.isModeratorOrAdmin()) {
                 throw new CannotModifyMooseDataCardHuntingGroupException("Cannot delete moose data card group as non-moderator");
             }
 
@@ -140,8 +137,7 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
         final boolean equalHuntingYear = dto.getHuntingYear() == group.getHuntingYear();
         final boolean equalSpeciesCode = Objects.equals(dto.getGameSpeciesCode(),
                 group.getSpecies() != null ? group.getSpecies().getOfficialCode() : null);
-        final boolean equalHuntingArea = Objects.equals(dto.getHuntingAreaId(),
-                F.getId(group.getHuntingArea()));
+        final boolean equalHuntingArea = Objects.equals(dto.getHuntingAreaId(), F.getId(group.getHuntingArea()));
         final boolean equalPermitNumber = Objects.equals(
                 dto.hasPermitNumber() ? dto.getPermit().getPermitNumber() : null,
                 group.getHarvestPermit() != null ? group.getHarvestPermit().getPermitNumber() : null);
@@ -154,18 +150,18 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
         if (group.isFromMooseDataCard()) {
             throw new CannotModifyMooseDataCardHuntingGroupException("Can not update");
         }
-        if (!activeUserService.isModeratorOrAdmin() && harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(group.getHarvestPermit(), group.getHuntingYear())) {
-            throw new HuntingGroupWithPermitLockedException();
-        }
+
+        assertPermitNotLocked(group);
+
+        final int huntingYear = dto.getHuntingYear();
 
         if (group.isNew()) {
             final HuntingClub club = huntingClubRepository.getOne(dto.getClubId());
             group.setParentOrganisation(club);
 
             if (GameSpecies.isMoose(dto.getGameSpeciesCode()) &&
-                    huntingClubGroupRepository.isClubUsingMooseDataCardForPermit(club, dto.getHuntingYear())) {
-                throw new CannotCreateManagedGroupWhenMooseDataCardGroupExists(
-                        club.getOfficialCode(), dto.getHuntingYear());
+                    huntingClubGroupRepository.isClubUsingMooseDataCardForPermit(club, huntingYear)) {
+                throw new CannotCreateManagedGroupWhenMooseDataCardGroupExists(club.getOfficialCode(), huntingYear);
             }
 
         } else if (changeDetectedToFieldsLockedAfterHuntingStarted(group, dto)) {
@@ -173,12 +169,12 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
                 throw new CannotModifyLockedFieldsForGroupWithHuntingDataException();
             }
 
-            if (huntingClubPermitService.hasClubHuntingFinished(group)) {
+            if (huntingFinishingService.hasPermitPartnerFinishedHunting(group)) {
                 throw new ClubHuntingFinishedException("Requested update of hunting group is not allowed after hunting is finished");
             }
         }
 
-        group.setHuntingYear(dto.getHuntingYear());
+        group.setHuntingYear(huntingYear);
         group.setNameFinnish(dto.getNameFI());
         group.setNameSwedish(dto.getNameSV());
         group.setSpecies(gameSpeciesService.requireByOfficialCode(dto.getGameSpeciesCode()));
@@ -189,6 +185,12 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
         });
     }
 
+    private void assertPermitNotLocked(final HuntingClubGroup group) {
+        if (!activeUserService.isModeratorOrAdmin() && harvestPermitLockedByDateService.isPermitLocked(group)) {
+            throw new HuntingGroupWithPermitLockedException();
+        }
+    }
+
     private HuntingClubArea getHuntingArea(final HuntingClubGroupDTO dto) {
         return Optional.ofNullable(dto.getHuntingAreaId())
                 .map(huntingAreaId -> requireEntityService.requireHuntingClubArea(huntingAreaId, EntityPermission.READ))
@@ -196,10 +198,18 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
     }
 
     private HarvestPermit getHarvestPermit(final HuntingClubGroupDTO dto) {
-        // Attach to new permit
-        return dto.hasPermitNumber()
-                ? Objects.requireNonNull(harvestPermitRepository.findByPermitNumber(dto.getPermit().getPermitNumber()))
-                : null;
+        if (!dto.hasPermitNumber()) {
+            return null;
+        }
+
+        final String permitNumber = dto.getPermit().getPermitNumber();
+        final HarvestPermit harvestPermit = harvestPermitRepository.findByPermitNumber(permitNumber);
+
+        if (harvestPermit == null) {
+            throw new HarvestPermitNotFoundException(permitNumber);
+        }
+
+        return harvestPermit;
     }
 
     private boolean groupHasHuntingData(final HuntingClubGroup group) {

@@ -4,6 +4,9 @@ import org.springframework.http.MediaType;
 
 public class MediaTypeExtras {
 
+    public final static String TEXT_PLAIN_UTF8_VALUE = "text/plain;charset=UTF-8";
+    public final static MediaType TEXT_PLAIN_UTF8 = MediaType.parseMediaType("text/plain;charset=UTF-8");
+
     public static final String IMAGE_TIFF_VALUE = "image/tiff";
     public static final MediaType IMAGE_TIFF = MediaType.parseMediaType(IMAGE_TIFF_VALUE);
 

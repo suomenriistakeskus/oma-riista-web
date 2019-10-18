@@ -120,8 +120,9 @@
         },
 
         convertPointsToLatLngs: function convertPointsToLatLngs(points) {
+            var self = this;
             return _.map(points, function (point) {
-                return this.map.containerPointToLatLng(point);
+                return self.map.containerPointToLatLng(point);
             }, this);
         }
     });

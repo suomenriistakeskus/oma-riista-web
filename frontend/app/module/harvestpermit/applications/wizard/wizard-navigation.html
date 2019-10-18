@@ -1,24 +1,23 @@
-<hr />
-<div class="row">
-    <div class="col-xs-8 col-xs-offset-2 text-center">
-        <button type="button" class="btn btn-default btn-lg"
-                ng-disabled="$ctrl.previousDisabled()"
-                ng-click="$ctrl.previous()">
-            <span class="glyphicon glyphicon-chevron-left"></span>
-            <span translate="global.pager.previous"></span>
-        </button>
+<div class="permit-application-wizard-navigation">
+    <button type="button" class="btn btn-default btn-lg"
+            ng-disabled="$ctrl.previousDisabled()"
+            ng-click="$ctrl.previous()">
+        <span class="fa fa-fw fa-chevron-left"></span>
+        <span translate="global.pager.previous"></span>
+    </button>
 
-        <button type="button" class="btn btn-warning btn-lg"
-                ng-click="$ctrl.exit()">
-            <span translate="harvestpermit.wizard.navigation.exit"></span>
-        </button>
+    <button type="button" class="btn btn-default btn-lg"
+            ng-click="$ctrl.exit()">
+        <span class="fa fa-"></span>
+        <span translate="harvestpermit.wizard.navigation.exit"></span>
+    </button>
 
-        <button type="button" class="btn btn-primary btn-lg"
-                ng-disabled="$ctrl.nextDisabled()"
-                ng-click="$ctrl.next()">
-            <span ng-if="!$ctrl.nextTitle" translate="global.pager.next"></span>
-            <span ng-if="$ctrl.nextTitle" ng-bind="::$ctrl.nextTitle | translate"></span>
-            <span class="glyphicon glyphicon-chevron-right"></span>
-        </button>
-    </div>
+    <button type="button" class="btn btn-primary btn-lg"
+            ng-disabled="$ctrl.nextDisabled()"
+            ng-click="$ctrl.next()">
+        <span ng-if="!$ctrl.nextTitle" translate="global.pager.next"></span>
+        <!-- Asynchronous issues with one time binding for ctrl.nextTitle translation-->
+        <span ng-if="$ctrl.nextTitle" ng-bind="$ctrl.nextTitle | translate"></span>
+        <span class="fa fa-fw fa-chevron-right"></span>
+    </button>
 </div>

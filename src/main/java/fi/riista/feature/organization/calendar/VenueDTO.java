@@ -1,6 +1,6 @@
 package fi.riista.feature.organization.calendar;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.util.DtoUtil;
 import org.hibernate.validator.constraints.NotBlank;
@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
+import java.util.Objects;
 
 public class VenueDTO extends BaseEntityDTO<Long> {
 
@@ -37,6 +38,30 @@ public class VenueDTO extends BaseEntityDTO<Long> {
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String info;
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof VenueDTO)) {
+            return false;
+        } else {
+            final VenueDTO that = (VenueDTO) o;
+
+            return Objects.equals(this.id, that.id)
+                    && Objects.equals(this.rev, that.rev)
+                    && Objects.equals(this.name, that.name)
+                    && Objects.equals(this.info, that.info)
+                    && Objects.equals(this.address, that.address);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, rev, name, info, address);
+    }
+
+    // Accessors -->
 
     @Override
     public Long getId() {

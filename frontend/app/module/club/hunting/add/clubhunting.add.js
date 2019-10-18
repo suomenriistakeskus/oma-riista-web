@@ -100,7 +100,7 @@ angular.module('app.clubhunting.add', [])
                     .filter({occupationType: 'RYHMAN_METSASTYKSENJOHTAJA', callOrder: 0})
                     .map('person')
                     .map(_.partialRight(_.pick, ['id', 'hunterNumber']))
-                    .first();
+                    .head();
             }
 
             if (diaryEntry.isHarvest()) {

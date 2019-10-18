@@ -5,7 +5,8 @@ import fi.riista.feature.huntingclub.HuntingClub;
 
 import java.util.List;
 
-public interface HuntingClubMemberInvitationRepository extends BaseRepository<HuntingClubMemberInvitation, Long> {
+public interface HuntingClubMemberInvitationRepository
+        extends BaseRepository<HuntingClubMemberInvitation, Long>, HuntingClubMemberInvitationRepositoryCustom {
 
     List<HuntingClubMemberInvitation> getByHuntingClub(HuntingClub club);
 }

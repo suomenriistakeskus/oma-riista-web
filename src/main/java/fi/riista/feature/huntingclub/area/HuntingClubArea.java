@@ -1,12 +1,13 @@
 package fi.riista.feature.huntingclub.area;
 
-import fi.riista.feature.gis.zone.AreaEntity;
+import com.querydsl.core.annotations.QueryDelegate;
+import fi.riista.feature.common.entity.HasID;
+import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.RandomStringUtil;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.Range;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,16 +23,24 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.security.SecureRandom;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @Access(value = AccessType.FIELD)
-public class HuntingClubArea extends AreaEntity<Long> {
+public class HuntingClubArea extends LifecycleEntity<Long> {
 
     public static final String ID_COLUMN_NAME = "hunting_club_area_id";
+
+    public static final int MIN_YEAR = 2000;
+    public static final int MAX_YEAR = 2100;
 
     public static int calculateMetsahallitusYear(final int huntingYear, final int latestMetsahallitusYear) {
         return huntingYear <= latestMetsahallitusYear ? huntingYear : latestMetsahallitusYear;
@@ -44,11 +53,13 @@ public class HuntingClubArea extends AreaEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private HuntingClub club;
 
-    @Range(min = 2000, max = 2100)
+    @Min(MIN_YEAR)
+    @Max(MAX_YEAR)
     @Column(nullable = false)
     private int huntingYear;
 
-    @Range(min = 2000, max = 2100)
+    @Min(MIN_YEAR)
+    @Max(MAX_YEAR)
     @Column(nullable = false)
     private int metsahallitusYear;
 
@@ -73,10 +84,13 @@ public class HuntingClubArea extends AreaEntity<Long> {
     @JoinColumn(unique = true)
     private GISZone zone;
 
-    @Override
     @Nonnull
     public LocalisedString getNameLocalisation() {
         return LocalisedString.of(nameFinnish, nameSwedish);
+    }
+
+    public Optional<Set<Long>> getZoneIdSet() {
+        return Optional.ofNullable(getZone()).map(HasID::getId).map(Collections::singleton);
     }
 
     public boolean isGeometryEmpty() {
@@ -105,6 +119,22 @@ public class HuntingClubArea extends AreaEntity<Long> {
         this.metsahallitusYear = metsahallitusYear;
         this.externalId = externalId;
     }
+
+    public void generateAndStoreExternalId(final SecureRandom random) {
+        if (this.externalId != null) {
+            throw new IllegalStateException("Cannot update existing externalId");
+        }
+        this.externalId = RandomStringUtil.generateExternalId(random);
+    }
+
+    // QueryDSL delegates -->
+
+    @QueryDelegate(HuntingClubArea.class)
+    public static fi.riista.util.QLocalisedString nameLocalisation(final QHuntingClubArea area) {
+        return new fi.riista.util.QLocalisedString(area.nameFinnish, area.nameSwedish);
+    }
+
+    // Accessors -->
 
     @Override
     @Id
@@ -172,20 +202,11 @@ public class HuntingClubArea extends AreaEntity<Long> {
         return externalId;
     }
 
-    @Override
     public GISZone getZone() {
         return this.zone;
     }
 
-    @Override
     public void setZone(GISZone zone) {
         this.zone = zone;
-    }
-
-    public void generateAndStoreExternalId(final SecureRandom random) {
-        if (this.externalId != null) {
-            throw new IllegalStateException("Cannot update existing externalId");
-        }
-        this.externalId = RandomStringUtil.generateExternalId(random);
     }
 }

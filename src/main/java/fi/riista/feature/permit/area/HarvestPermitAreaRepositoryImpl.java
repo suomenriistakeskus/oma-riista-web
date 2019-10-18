@@ -3,9 +3,12 @@ package fi.riista.feature.permit.area;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.gis.zone.QGISZone;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.area.QHuntingClubArea;
+import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.permit.area.partner.QHarvestPermitAreaPartner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,39 +22,40 @@ public class HarvestPermitAreaRepositoryImpl implements HarvestPermitAreaReposit
 
     @Override
     @Transactional(readOnly = true)
-    public List<Integer> listHuntingYears(final HuntingClub club) {
+    public List<HarvestPermitArea> listActiveApplicationAreas(final HuntingClub club, final int huntingYear) {
+        final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
         final QHarvestPermitArea PERMIT_AREA = QHarvestPermitArea.harvestPermitArea;
         final QHarvestPermitAreaPartner PARTNER = QHarvestPermitAreaPartner.harvestPermitAreaPartner;
         final QHuntingClubArea CLUB_AREA = QHuntingClubArea.huntingClubArea;
 
         final JPQLQuery<HuntingClubArea> subAllClubAreas = JPAExpressions.selectFrom(CLUB_AREA).where(CLUB_AREA.club.eq(club));
-        final JPQLQuery<Long> subAreaIdsAsPartner = JPAExpressions.select(PARTNER.harvestPermitArea.id)
+        final JPQLQuery<HarvestPermitArea> subAreaIdsAsPartner = JPAExpressions.select(PARTNER.harvestPermitArea)
                 .from(PARTNER)
                 .where(PARTNER.sourceArea.in(subAllClubAreas));
 
-        return jpqlQueryFactory.select(PERMIT_AREA.huntingYear).from(PERMIT_AREA)
-                .where(PERMIT_AREA.club.eq(club).or(PERMIT_AREA.id.in(subAreaIdsAsPartner)))
-                .orderBy(PERMIT_AREA.huntingYear.asc())
-                .distinct()
+        return jpqlQueryFactory.select(PERMIT_AREA)
+                .from(APPLICATION)
+                .join(APPLICATION.area, PERMIT_AREA)
+                .where(APPLICATION.applicationYear.eq(huntingYear),
+                        APPLICATION.status.eq(HarvestPermitApplication.Status.ACTIVE),
+                        PERMIT_AREA.in(subAreaIdsAsPartner))
                 .fetch();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<HarvestPermitArea> listByClub(final HuntingClub club, final int huntingYear) {
-        final QHarvestPermitArea PERMIT_AREA = QHarvestPermitArea.harvestPermitArea;
+    public List<Long> findPartnerZoneIds(final HarvestPermitArea permitArea) {
         final QHarvestPermitAreaPartner PARTNER = QHarvestPermitAreaPartner.harvestPermitAreaPartner;
         final QHuntingClubArea CLUB_AREA = QHuntingClubArea.huntingClubArea;
+        final QGISZone ZONE = QGISZone.gISZone;
 
-        final JPQLQuery<HuntingClubArea> subAllClubAreas = JPAExpressions.selectFrom(CLUB_AREA).where(CLUB_AREA.club.eq(club));
-        final JPQLQuery<Long> subAreaIdsAsPartner = JPAExpressions.select(PARTNER.harvestPermitArea.id)
+        return jpqlQueryFactory
+                .select(ZONE.id)
                 .from(PARTNER)
-                .where(PARTNER.sourceArea.in(subAllClubAreas));
-
-        return jpqlQueryFactory.selectFrom(PERMIT_AREA)
-                .where(PERMIT_AREA.huntingYear.eq(huntingYear),
-                        PERMIT_AREA.club.eq(club).or(PERMIT_AREA.id.in(subAreaIdsAsPartner)),
-                        PERMIT_AREA.lifecycleFields.deletionTime.isNull())
+                .join(PARTNER.sourceArea, CLUB_AREA)
+                .join(CLUB_AREA.zone, ZONE)
+                .where(PARTNER.harvestPermitArea.eq(permitArea))
                 .fetch();
     }
+
 }

@@ -7,7 +7,6 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.OutOfBoundsSpecimenAmountException;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
 import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import io.vavr.Lazy;

@@ -1,17 +1,21 @@
 package fi.riista.feature.permit.application.archive;
 
 import com.vividsolutions.jts.geom.Geometry;
-import fi.riista.api.HarvestPermitApplicationPdfController;
+import fi.riista.api.application.HarvestPermitApplicationPdfController;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.common.PdfExportFactory;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
-import fi.riista.feature.permit.application.pdf.HarvestPermitApplicationMapPdfFeature;
+import fi.riista.feature.permit.area.mml.HarvestPermitAreaMmlPdfController;
+import fi.riista.feature.permit.area.mml.HarvestPermitAreaMmlPdfFeature;
+import fi.riista.feature.permit.area.pdf.PermitAreaMapPdfFeature;
 import fi.riista.feature.storage.FileStorageService;
+import fi.riista.integration.mapexport.MapPdfBasemap;
 import fi.riista.integration.mapexport.MapPdfModel;
 import fi.riista.integration.mapexport.MapPdfParameters;
+import fi.riista.integration.mapexport.MapPdfRemoteService;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.GISUtils;
 import fi.riista.util.Locales;
@@ -48,11 +52,20 @@ public class PermitApplicationArchiveExportService {
     private FileStorageService fileStorageService;
 
     @Resource
-    private HarvestPermitApplicationMapPdfFeature harvestPermitApplicationMapPdfFeature;
+    private PermitAreaMapPdfFeature permitAreaMapPdfFeature;
 
-    public void exportApplicationPdf(final long applicationId, final Path tempFile) throws IOException {
+    @Resource
+    private MapPdfRemoteService mapPdfRemoteService;
+
+    @Resource
+    private HarvestPermitAreaMmlPdfFeature harvestPermitAreaMmlPdfFeature;
+
+    public void exportApplicationPdf(final PermitApplicationArchiveDTO dto,
+                                     final Path tempFile) throws IOException {
         pdfExportFactory.create()
-                .withHtmlPath(HarvestPermitApplicationPdfController.getHtmlPath(applicationId))
+                .withHeaderRight(Integer.toString(dto.getApplicationNumber()))
+                .withHtmlPath(HarvestPermitApplicationPdfController.getHtmlPath(dto.getId()))
+                .withLanguage(dto.getLocale())
                 .build()
                 .export(tempFile);
     }
@@ -64,10 +77,9 @@ public class PermitApplicationArchiveExportService {
                 .requireHarvestPermitApplication(applicationId, EntityPermission.READ);
 
         for (final HarvestPermitApplicationAttachment attachment : application.getAttachments()) {
-            if (attachment.getAttachmentMetadata() != null) {
-                final Path attachmentPath = generator.addAttachment(attachment.getName());
-                fileStorageService.downloadTo(attachment.getAttachmentMetadata().getId(), attachmentPath);
-            }
+            final String originalFilename = attachment.getAttachmentMetadata().getOriginalFilename();
+            final Path attachmentPath = generator.addAttachment(originalFilename);
+            fileStorageService.downloadTo(attachment.getAttachmentMetadata().getId(), attachmentPath);
         }
     }
 
@@ -94,17 +106,26 @@ public class PermitApplicationArchiveExportService {
 
     @Transactional(readOnly = true, rollbackFor = IOException.class)
     public void exportMapPdf(final long applicationId, final Path tempFile) throws IOException {
-        final MapPdfModel model = harvestPermitApplicationMapPdfFeature.getModel(applicationId, Locales.FI);
+        final MapPdfModel model = permitAreaMapPdfFeature.getModelForApplication(applicationId, null, Locales.FI);
 
         final MapPdfParameters parameters = new MapPdfParameters();
-        parameters.setPaperDpi(300);
+        parameters.setLayer(MapPdfBasemap.MAASTOKARTTA);
         parameters.setPaperSize(MapPdfParameters.PaperSize.A3);
         parameters.setPaperOrientation(model.isPreferLandscape()
                 ? MapPdfParameters.PaperOrientation.LANDSCAPE
                 : MapPdfParameters.PaperOrientation.PORTRAIT);
 
-        final byte[] mapPdfData = harvestPermitApplicationMapPdfFeature.renderPdf(parameters, model);
+        final byte[] mapPdfData = mapPdfRemoteService.renderPdf(parameters, model);
 
         Files.copy(new ByteArrayInputStream(mapPdfData), tempFile, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    @Transactional(readOnly = true, rollbackFor = IOException.class)
+    public void exportMmlPdf(final PermitApplicationArchiveDTO dto, final Path tempFile) throws IOException {
+        pdfExportFactory.create()
+                .withHtmlPath(HarvestPermitAreaMmlPdfController.getHtmlPath(dto.getId()))
+                .withLanguage(dto.getLocale())
+                .build()
+                .export(tempFile);
     }
 }

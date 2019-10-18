@@ -10,7 +10,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 public final class CreditorReferenceCalculator {
 
     private static final ImmutableMap<Integer, Integer> OFFICIAL_SPECIES_CODE_TO_CREDITOR_REFERENCE_PART = ImmutableMap
-            .<Integer, Integer> builder()
+            .<Integer, Integer>builder()
             .put(GameSpecies.OFFICIAL_CODE_MOOSE, 1)
             .put(GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER, 2)
             .put(GameSpecies.OFFICIAL_CODE_ROE_DEER, 3)
@@ -21,11 +21,11 @@ public final class CreditorReferenceCalculator {
             .put(GameSpecies.OFFICIAL_CODE_MUFFLON, 9)
             .build();
 
-    public static CreditorReference computeReferenceForPermitDecisionProcessingInvoice(final int huntingYear,
+    public static CreditorReference computeReferenceForPermitDecisionProcessingInvoice(final int decisionYear,
                                                                                        final int harvestPermitApplicationNumber) {
-        checkArguments(huntingYear, harvestPermitApplicationNumber);
+        checkArguments(decisionYear, harvestPermitApplicationNumber);
 
-        final int year = huntingYear % 100;
+        final int year = decisionYear % 100;
         final String base = String.format("%d%08d", year, harvestPermitApplicationNumber);
         final char checksum = FinnishCreditorReferenceValidator.calculateChecksum(base);
 

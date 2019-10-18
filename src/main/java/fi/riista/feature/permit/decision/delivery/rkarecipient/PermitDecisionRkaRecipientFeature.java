@@ -80,7 +80,7 @@ public class PermitDecisionRkaRecipientFeature {
         updateEntity(dto, entity);
     }
 
-    private void updateEntity(final PermitDecisionRkaRecipientDTO dto, final PermitDecisionRkaRecipient entity) {
+    private static void updateEntity(final PermitDecisionRkaRecipientDTO dto, final PermitDecisionRkaRecipient entity) {
         entity.setNameFinnish(dto.getNameFI());
         entity.setNameSwedish(dto.getNameSV());
         entity.setEmail(dto.getEmail());

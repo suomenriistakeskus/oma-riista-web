@@ -11,6 +11,7 @@
     <include file="db.changelog-2016.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2017.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2018.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-2019.xml" relativeToChangelogFile="true"/>
 
     <include file="db.h2.xml" relativeToChangelogFile="true" />
     <include file="db.audit.xml" relativeToChangelogFile="true" />

@@ -1,0 +1,17 @@
+<div class="form-group">
+    <button type="button" class="btn btn-block btn-default"
+            ng-click="$ctrl.onSelectMethod({sendByMail:false})">
+        <span class="text-primary fa fa-fw fa-check"
+              ng-show="$ctrl.deliveryByMail === false"></span>
+        <span translate="harvestpermit.wizard.summary.delivery.email"></span>
+    </button>
+</div>
+
+<div class="form-group">
+    <button type="button" class="btn btn-block btn-default"
+            ng-click="$ctrl.onSelectMethod({sendByMail:true})">
+        <span class="text-primary fa fa-fw fa-check"
+              ng-show="$ctrl.deliveryByMail === true"></span>
+        <span translate="harvestpermit.wizard.summary.delivery.mail"></span>
+    </button>
+</div>

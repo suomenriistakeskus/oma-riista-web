@@ -1,7 +1,7 @@
 package fi.riista.feature.organization.occupation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.person.ContactInfoShare;

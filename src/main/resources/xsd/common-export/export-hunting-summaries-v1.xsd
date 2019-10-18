@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/common/export/2018/10"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/common/export/2018/10"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:include schemaLocation="geolocation-v1.xsd"/>
+
+    <xs:element name="hunting-summaries">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="hunting-summary" type="ClubHuntingSummary" minOccurs="0"
+                            maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="ClubHuntingSummary">
+        <xs:annotation>
+            <xs:documentation>Permit partner's summary for a hunting permit.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="permitNumber" type="xs:string"/>
+            <xs:element name="permitYear" type="xs:int"/>
+            <xs:element name="clubOfficialCode" type="xs:string"/>
+            <xs:element name="clubNameFinnish" type="xs:string"/>
+            <xs:element name="gameSpeciesCode" type="xs:int"/>
+            <xs:element name="rhyOfficialCode" type="xs:string"/>
+            <xs:element name="huntingEndDate" type="xs:date" minOccurs="0"/>
+            <xs:element name="geoLocation" type="geoLocation" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Location of the permit</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="totalLandAreaSize" minOccurs="0" type="xs:int">
+                <xs:annotation>
+                    <xs:documentation>Area (total) size in full hectares</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="areaLandEffectiveSize" minOccurs="0" type="xs:int">
+                <xs:annotation>
+                    <xs:documentation>Area (effective) size in full hectares</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="remainingPopulationInTotalLandArea" minOccurs="0" type="xs:int"/>
+            <xs:element name="remainingPopulationInEffectiveLandArea" minOccurs="0" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

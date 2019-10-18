@@ -1,8 +1,8 @@
 package fi.riista.api.external;
 
-import fi.riista.feature.huntingclub.area.transfer.HuntingClubAreaExportFeature;
-import fi.riista.integration.gis.ExternalHuntingClubAreaExportRequest;
-import fi.riista.util.MediaTypeExtras;
+import fi.riista.integration.koiratutka.export.ExportRequestDTO;
+import fi.riista.integration.koiratutka.export.HuntingClubAreaExportFeature;
+import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,22 +25,19 @@ public class ExternalHuntingClubAreaExportController {
     private HuntingClubAreaExportFeature huntingClubAreaExportFeature;
 
     @RequestMapping(value = "/api/v1/export/hunting-area-by-id/{externalId}",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
-    public ResponseEntity<?> getSeuraAlueGeoJson(
-            final @Valid @ModelAttribute ExternalHuntingClubAreaExportRequest body,
+            method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> exportGeoJson(
+            final @Valid @ModelAttribute ExportRequestDTO dto,
             final WebRequest request) {
 
         try {
-            return huntingClubAreaExportFeature.exportCombinedGeoJson(body, request);
+            return huntingClubAreaExportFeature.export(dto, request);
 
         } catch (Exception ex) {
             LOG.error("Export error", ex);
+            Sentry.capture(ex);
 
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error");
         }
     }
 }

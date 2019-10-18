@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/common/export/2018/10"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/common/export/2018/10"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:include schemaLocation="geolocation-v1.xsd"/>
+
+
+    <xs:element name="srvaEvents">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="srvaEvent" type="SRVAEvent" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="srvaSpecimen" type="SRVASpecimen" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="SRVAEvent">
+        <xs:sequence>
+            <xs:element name="srvaEventId" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>
+                        Uniques identifier of this SRVA event.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="rhyNumber" type="xs:string"/>
+            <xs:element name="pointOfTime" type="xs:dateTime"/>
+            <xs:element name="geoLocation" type="geoLocation"/>
+            <xs:element name="totalSpecimenAmount" type="xs:int"/>
+            <xs:element name="gameSpeciesCode" type="xs:int" minOccurs="0"/>
+            <xs:element name="otherSpeciesDescription" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Present when OTHER species is present in the gameSpeciesCode. Free form description for the
+                        OTHER species.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="name" type="SRVAEventName">
+                <xs:annotation>
+                    <xs:documentation>
+                        The type of the event.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="eventType" type="SRVAEventType">
+                <xs:annotation>
+                    <xs:documentation>
+                        The more detailed type of the event.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="otherTypeDescription" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Present when OTHER type is present in the eventType. Free form description for the
+                        OTHER type.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="method" type="SRVAMethod" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Methods used in this event.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="otherMethodDescription" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Present when OTHER method is present in the methods. Free form description for the
+                        OTHER method.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="result" type="SRVAEventResult"/>
+            <xs:element name="numberOfParticipants" type="xs:int" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Number of persons participated in this SRVA event.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="numberOfWorkHours" type="xs:int" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Total number of work hours spent by all participants on this SRVA event.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SRVASpecimen">
+        <xs:sequence>
+            <xs:element name="SRVAEventId" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>
+                        Refers to the SRVA event id.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="gender" type="gameGender"/>
+            <xs:element name="age" type="gameAge"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="SRVAEventName">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ACCIDENT"/>
+            <xs:enumeration value="DEPORTATION"/>
+            <xs:enumeration value="INJURED_ANIMAL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SRVAEventResult">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ANIMAL_FOUND_DEAD"/>
+            <xs:enumeration value="ANIMAL_FOUND_AND_TERMINATED"/>
+            <xs:enumeration value="ANIMAL_FOUND_AND_NOT_TERMINATED"/>
+            <xs:enumeration value="ACCIDENT_SITE_NOT_FOUND"/>
+            <xs:enumeration value="ANIMAL_TERMINATED"/>
+            <xs:enumeration value="ANIMAL_DEPORTED"/>
+            <xs:enumeration value="ANIMAL_NOT_FOUND"/>
+            <xs:enumeration value="UNDUE_ALARM"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SRVAEventType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="TRAFFIC_ACCIDENT"/>
+            <xs:enumeration value="RAILWAY_ACCIDENT"/>
+            <xs:enumeration value="ANIMAL_NEAR_HOUSES_AREA"/>
+            <xs:enumeration value="ANIMAL_AT_FOOD_DESTINATION"/>
+            <xs:enumeration value="INJURED_ANIMAL"/>
+            <xs:enumeration value="ANIMAL_ON_ICE"/>
+            <xs:enumeration value="OTHER"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SRVAMethod">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="DOG"/>
+            <xs:enumeration value="PAIN_EQUIPMENT"/>
+            <xs:enumeration value="SOUND_EQUIPMENT"/>
+            <xs:enumeration value="TRACED_WITH_DOG"/>
+            <xs:enumeration value="TRACED_WITHOUT_DOG"/>
+            <xs:enumeration value="OTHER"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameAge">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ADULT"/>
+            <xs:enumeration value="YOUNG"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameGender">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="FEMALE"/>
+            <xs:enumeration value="MALE"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

@@ -76,7 +76,7 @@
                 <input id="permitNumber" type="text" class="form-control" maxlength="18"
                        ng-model="$ctrl.searchData.permitNumber">
 
-                <p class="help-block" translate="harvestpermit.admin.permitNumberHelp"></p>
+                <p class="help-block" translate="harvestpermit.admin.permit.permitNumberHelp"></p>
             </div>
 
             <div class="row">
@@ -148,7 +148,7 @@
                         <span ng-bind="::harvest.pointOfTime | date:'d.M.yyyy HH:mm'"></span>
                     </td>
                     <td>
-                        <span name-translated="::harvest.gameSpecies.name"></span>
+                        <span ng-bind="::harvest.gameSpeciesCode | translateSpeciesCode"></span>
 
                         <div ng-if="::(harvest.specimens && harvest.specimens.length === 1)">
                                 <span ng-if="::harvest.specimens[0].gender"

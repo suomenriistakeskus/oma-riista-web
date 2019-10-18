@@ -26,6 +26,18 @@ public class HarvestPermitAllocationRepositoryImpl implements HarvestPermitAlloc
 
     @Override
     @Transactional(readOnly = true)
+    public double countAllocatedPermitCount(final HarvestPermit permit, final GameSpecies species) {
+        final MapSqlParameterSource queryParams = new MapSqlParameterSource();
+        queryParams.addValue("permitId", permit.getId());
+        queryParams.addValue("speciesId", species.getId());
+
+        return jdbcTemplate.queryForObject("SELECT COALESCE(SUM(adult_males + adult_females + young / 2.0), 0)" +
+                " FROM harvest_permit_allocation a" +
+                " WHERE a.harvest_permit_id = :permitId AND a.game_species_id = :speciesId", queryParams, double.class);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<MoosePermitAllocationDTO> getAllocationsIncludeMissingPartnerDTO(final HarvestPermit permit, final GameSpecies species) {
         Objects.requireNonNull(permit, "permit is null");
         Objects.requireNonNull(species, "species is null");

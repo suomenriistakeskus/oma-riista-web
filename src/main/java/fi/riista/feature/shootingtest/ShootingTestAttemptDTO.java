@@ -1,11 +1,12 @@
 package fi.riista.feature.shootingtest;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.util.DtoUtil;
-import org.hibernate.validator.constraints.Range;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 public class ShootingTestAttemptDTO extends BaseEntityDTO<Long> {
@@ -22,7 +23,8 @@ public class ShootingTestAttemptDTO extends BaseEntityDTO<Long> {
     @NotNull
     private ShootingTestAttemptResult result;
 
-    @Range(min = 0, max = 4)
+    @Min(0)
+    @Max(4)
     private int hits;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)

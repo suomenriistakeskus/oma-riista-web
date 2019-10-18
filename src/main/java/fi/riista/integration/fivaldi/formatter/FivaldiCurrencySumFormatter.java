@@ -3,7 +3,7 @@ package fi.riista.integration.fivaldi.formatter;
 import com.ancientprogramming.fixedformat4j.format.AbstractFixedFormatter;
 import com.ancientprogramming.fixedformat4j.format.FormatInstructions;
 import com.google.common.base.Strings;
-import fi.riista.integration.fivaldi.FivaldiHelper;
+import fi.riista.util.fixedformat.FixedFormatHelper;
 import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
@@ -26,7 +26,7 @@ public class FivaldiCurrencySumFormatter extends AbstractFixedFormatter<BigDecim
         final Matcher matcher = PATTERN.matcher(input);
 
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("Invalid currency sum: " + FivaldiHelper.asString(input));
+            throw new IllegalArgumentException("Invalid currency sum: " + FixedFormatHelper.asString(input));
         }
 
         final BigDecimal number = new BigDecimal(matcher.group(1)).movePointLeft(2);

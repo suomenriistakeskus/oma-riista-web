@@ -1,6 +1,16 @@
+
 <div class="row">
-    <div class="col-xs-offset-6 col-xs-6 col-sm-offset-7 col-sm-5 col-md-offset-8 col-md-4 col-lg-offset-9 col-lg-3">
-        <shooting-test-payment-summary total-paid-amount="$ctrl.event.totalPaidAmount"></shooting-test-payment-summary>
+    <div>
+        <div class="col-xs-6 col-sm-7 col-md-8 col-lg-9" uib-dropdown>
+            <button type="button" ng-click="$ctrl.loadPaymentSummaryPdf()" class="btn btn-primary"
+                    ng-hide="!$ctrl.event.isClosed()">
+                <span translate="account.profile.shootingTests.downloadPaymentSummary"></span>
+            </button>
+        </div>
+        <div class="col-xs-6 col-sm-5 col-md-4 col-lg-3">
+            <shooting-test-payment-summary
+                    total-paid-amount="$ctrl.event.totalPaidAmount"></shooting-test-payment-summary>
+        </div>
     </div>
 </div>
 
@@ -13,7 +23,7 @@
         <th class="text-right" translate="global.pcs"></th>
         <th class="text-right visible-xs visible-sm" translate="shootingTest.payment.payments"></th>
         <th class="text-right visible-md visible-lg" translate="global.total"></th>
-        <th class="text-right visible-md visible-lg" translate="shootingTest.payment.paid"></th>
+        <th class="text-right visible-md visible-lg" translate="payment.paid"></th>
         <th class="text-right visible-md visible-lg" translate="shootingTest.payment.remaining"></th>
         <th ng-if="$ctrl.event.isOpen()"></th>
     </tr>
@@ -34,8 +44,8 @@
             </div>
             <div ng-if="participant.completed">
                 <div ng-switch="$ctrl.hasIncompletePayment(participant)">
-                    <span ng-switch-when="true" class="shooting-test-status-badge-red" translate="shootingTest.payment.unpaid"></span>
-                    <span ng-switch-when="false" class="shooting-test-status-badge-green" translate="shootingTest.payment.paid"></span>
+                    <span ng-switch-when="true" class="shooting-test-status-badge-red" translate="payment.unpaid"></span>
+                    <span ng-switch-when="false" class="shooting-test-status-badge-green" translate="payment.paid"></span>
                 </div>
             </div>
         </td>
@@ -61,7 +71,7 @@
                 <span class="payment-col2" ng-bind="participant.totalDueAmount | currency : '&euro;' : 2"></span>
             </div>
             <div class="row">
-                <span class="payment-col1" translate="shootingTest.payment.paid"></span>
+                <span class="payment-col1" translate="payment.paid"></span>
                 <span class="payment-col2" ng-bind="participant.paidAmount | currency : '&euro;' : 2"></span>
             </div>
             <div class="row">

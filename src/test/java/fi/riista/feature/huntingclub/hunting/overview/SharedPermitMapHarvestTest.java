@@ -46,7 +46,7 @@ public class SharedPermitMapHarvestTest extends EmbeddedDatabaseTest {
             this(model, true);
         }
 
-        public SimpleFixture(final EntitySupplier model, final boolean createOccupation) {
+        public SimpleFixture(final EntitySupplier model, final boolean addClubMembershipForTestPerson) {
             final Riistanhoitoyhdistys rhy = model.newRiistanhoitoyhdistys();
 
             this.huntingYear = DateUtil.huntingYear();
@@ -56,14 +56,14 @@ public class SharedPermitMapHarvestTest extends EmbeddedDatabaseTest {
             // Person with club membership
             this.person = model.newPerson();
 
-            if (createOccupation) {
+            if (addClubMembershipForTestPerson) {
                 model.newOccupation(huntingClub, person, OccupationType.SEURAN_JASEN);
             }
 
             // Permit with club as partner
-            this.harvestPermit = model.newMooselikePermit(rhy);
+            this.harvestPermit = model.newMooselikePermit(rhy, huntingYear);
             this.harvestPermit.getPermitPartners().add(huntingClub);
-            this.speciesAmount = model.newHarvestPermitSpeciesAmount(harvestPermit, gameSpecies, huntingYear);
+            this.speciesAmount = model.newHarvestPermitSpeciesAmount(harvestPermit, gameSpecies);
 
             this.huntingClubGroup = model.newHuntingClubGroup(huntingClub, speciesAmount);
             this.groupHuntingDay = model.newGroupHuntingDay(huntingClubGroup, DateUtil.today());

@@ -115,8 +115,9 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
     protected void updateEntity(final Occupation entity, final OccupationDTO dto) {
         if (entity.isNew()) {
             final HuntingClubGroup group = huntingClubGroupRepository.getOne(dto.getOrganisationId());
-            final Person person = personLookupService.findById(dto.getPersonId())
-                    .orElseThrow(() -> new PersonNotFoundException(dto.getPersonId()));
+            final Person person = personLookupService
+                    .findById(dto.getPersonId(), Occupation.FOREIGN_PERSON_ELIGIBLE_FOR_OCCUPATION)
+                    .orElseThrow(() -> PersonNotFoundException.byPersonId(dto.getPersonId()));
 
             entity.setOrganisationAndOccupationType(group, dto.getOccupationType());
 
@@ -187,15 +188,15 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
     }
 
     @Transactional(readOnly = true)
-    public List<OccupationDTO> listMembers(final long orgId) {
-        final Organisation org = requireEntityService.requireOrganisation(orgId, EntityPermission.READ);
+    public List<OccupationDTO> listMembers(final long groupId) {
+        final HuntingClubGroup group = requireEntityService.requireHuntingGroup(groupId, EntityPermission.READ);
 
         final Comparator<Occupation> sort = OccupationSort.BY_TYPE
                 .thenComparing(OccupationSort.BY_CALL_ORDER)
                 .thenComparing(OccupationSort.BY_LAST_NAME)
                 .thenComparing(OccupationSort.BY_BYNAME);
 
-        final List<Occupation> occupations = occupationRepository.findActiveByOrganisation(org);
+        final List<Occupation> occupations = occupationRepository.findActiveByOrganisation(group);
 
         return clubOccupationDTOTransformer.apply(occupations.stream().sorted(sort).collect(toList()));
     }
@@ -242,9 +243,7 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
     }
 
     private void assertPermitIsNotLocked(HuntingClubGroup group) {
-        if (!activeUserService.isModeratorOrAdmin()
-                && harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(group.getHarvestPermit(), group.getHuntingYear())) {
-
+        if (!activeUserService.isModeratorOrAdmin() && harvestPermitLockedByDateService.isPermitLocked(group)) {
             throw new CannotModifyLockedClubOccupationException(String.format(
                     "Group attached to permit but permit %s locked for hunting year %d",
                     group.getHarvestPermit().getPermitNumber(),

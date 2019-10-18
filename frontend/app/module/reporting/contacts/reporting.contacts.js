@@ -121,7 +121,7 @@ angular.module('app.reporting.contacts', [])
 
         $scope.submit = function () {
             var data = [];
-            _.each($scope.opts, function (opt) {
+            _.forEach($scope.opts, function (opt) {
                 var areaCode = opt.area ? opt.area.officialCode : undefined;
                 var rhyCode = opt.rhy ? opt.rhy.officialCode : undefined;
                 var v = {
@@ -206,7 +206,7 @@ angular.module('app.reporting.contacts', [])
 
         $scope.submit = function () {
             var data = [];
-            _.each($scope.opts, function (opt) {
+            _.forEach($scope.opts, function (opt) {
                 var areaCode = opt.area ? opt.area.officialCode : undefined;
                 var rhyCode = opt.rhy ? opt.rhy.officialCode : undefined;
                 var v = {areaCode: areaCode, rhyCode: rhyCode};
@@ -241,7 +241,7 @@ angular.module('app.reporting.contacts', [])
             if (!angular.isString(emailAttributeName)) {
                 emailAttributeName = 'email';
             }
-            return _(data).pluck(emailAttributeName).filter(nonEmptyStr).uniq().value().join('; ');
+            return _(data).map(emailAttributeName).filter(nonEmptyStr).uniq().value().join('; ');
         };
         var showEmails = function (data, emailAttributeName) {
             var emails = extractEmails(data, emailAttributeName);

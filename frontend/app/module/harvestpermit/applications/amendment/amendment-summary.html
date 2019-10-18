@@ -1,0 +1,221 @@
+<uib-accordion close-others="false">
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.a"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.a"></span>
+                        <span translate="harvestpermit.wizard.summary.summaryTitle"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-6 text-right">
+                    <div class="panel-title"
+                         translate="harvestpermit.wizard.summary.permitCategory.MOOSELIKE_NEW"></div>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <table class="table">
+            <tbody>
+            <tr>
+                <th class="col-xs-3" translate="harvestpermit.wizard.summary.permitTypeTitle"></th>
+                <td translate="harvestpermit.wizard.summary.permitCategory.MOOSELIKE_NEW"></td>
+            </tr>
+            <tr>
+                <th translate="harvestpermit.wizard.applicant.contactPerson"></th>
+                <td>
+                    <permit-application-wizard-contact-person
+                            person="$ctrl.application.contactPerson"></permit-application-wizard-contact-person>
+                </td>
+            </tr>
+            <tr>
+                <th translate="harvestpermit.wizard.applicant.permitHolder"></th>
+                <td>
+                    <permit-application-wizard-applicant-type
+                            subtype="$ctrl.application.permitHolder.type">
+                    </permit-application-wizard-applicant-type>
+                </td>
+            </tr>
+            <tr>
+                <th></th>
+                <td ng-switch="!!$ctrl.application.permitHolder">
+                    <div ng-switch-when="true">
+                        <span ng-bind="$ctrl.application.permitHolder.code"></span>
+                        -
+                        <span ng-bind="$ctrl.application.permitHolder.name"></span>
+                    </div>
+
+                    <div ng-switch-when="false">
+                        <permit-application-wizard-contact-person
+                                person="$ctrl.application.contactPerson"></permit-application-wizard-contact-person>
+                    </div>
+
+                </td>
+            </tr>
+            <tr>
+                <th>Alkuperäinen lupa</th>
+                <td ng-bind="::$ctrl.amendmentApplication.originalPermitNumber"></td>
+            </tr>
+            <tr>
+                <th>Päivä ja aika</th>
+                <td ng-bind="::$ctrl.amendmentApplication.pointOfTime | date:'d.M.yyyy HH:mm'"></td>
+            </tr>
+            <tr>
+                <th>Ikä ja sukupuoli</th>
+                <td>
+                    <span>{{'gamediary.age.' + $ctrl.amendmentApplication.age | translate}}</span>
+                    <span>{{'gamediary.gender.' + $ctrl.amendmentApplication.gender | translate}}</span>
+                </td>
+            </tr>
+            <tr>
+                <th>Ampuja</th>
+                <td ng-if="$ctrl.amendmentApplication.shooter">
+                    <span ng-bind="::$ctrl.amendmentApplication.shooter.lastName"></span>
+                    <span ng-bind="::$ctrl.amendmentApplication.shooter.byName"></span>
+                    <span ng-bind="::$ctrl.amendmentApplication.shooter.hunterNumber"></span>
+                </td>
+                <td ng-if="!$ctrl.amendmentApplication.shooter">
+                    -
+                </td>
+            </tr>
+            <tr>
+                <th>Osakkaan nimi</th>
+                <td>
+                    <span ng-bind="$ctrl.amendmentApplication.partner | rI18nNameFilter"></span>
+                </td>
+            </tr>
+            <tr>
+                <th>Sijainti</th>
+                <td>
+                    <leaflet class="r-cursor-pointer"
+                             id="viewHarvestMap"
+                             defaults="$ctrl.mapDefaults"
+                             layers="$ctrl.mapDefaults.mmlLayers"
+                             controls="$ctrl.mapDefaults.controls"
+                             lf-center="$ctrl.mapState.center"
+                             r-geolocation-marker="$ctrl.amendmentApplication.geoLocation"
+                             r-geolocation-editable="false"
+                             r-geolocation-marker-force-finland="true"
+                             height="300px">
+                    </leaflet>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.b"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.b"></span>
+                        <span translate="harvestpermit.wizard.navigation.species"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-6 text-right">
+                    <div class="panel-title">
+                        <div ng-repeat="spa in ::$ctrl.application.speciesAmounts track by spa.gameSpeciesCode">
+                            <span ng-bind="::(spa.gameSpeciesCode | translateSpeciesCode)"></span>
+                            <span ng-bind="::spa.amount"></span>
+                            <span translate="global.pcs"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th style="width: 15%" translate="harvestpermit.wizard.species.table.headerSpecies"></th>
+                    <th style="width: 15%" translate="harvestpermit.wizard.species.table.headerAmount"></th>
+                    <th translate="harvestpermit.wizard.species.description"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="spa in ::$ctrl.application.speciesAmounts track by spa.gameSpeciesCode">
+                    <td>
+                        <strong ng-bind="::(spa.gameSpeciesCode | translateSpeciesCode)"></strong>
+                    </td>
+                    <td>
+                        <span ng-bind="spa.amount"></span>
+                        <span translate="global.pcs"></span>
+                    </td>
+                    <td>
+                        <span ng-bind="::spa.description"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.d"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.d"></span>
+                        <span translate="harvestpermit.wizard.summary.originalApplicationArea"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-3 text-right">
+                    <span class="panel-title">
+                        <span ng-bind="::$ctrl.permitArea.size.all.land | prettyAreaSize:0"></span>
+                    </span>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <mooselike-permit-application-area-details
+                permit-area="$ctrl.permitArea"
+                on-export-mml-excel="$ctrl.exportMmlExcel()"></mooselike-permit-application-area-details>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.e"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.e"></span>
+                        <span translate="harvestpermit.wizard.navigation.attachments"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-3 text-right">
+                    <span class="panel-title">
+                        <span ng-bind="::$ctrl.getAttachmentCount()"></span>
+                        <span translate="global.pcs"></span>
+                    </span>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <h5 translate="harvestpermit.wizard.amendment.officialStatementAttachments"></h5>
+
+        <permit-application-attachment-list attachment-type="'OFFICIAL_STATEMENT'"
+                                            attachments="$ctrl.application.attachments"
+                                            attachment-config="$ctrl.attachmentConfig">
+        </permit-application-attachment-list>
+
+        <h5 translate="harvestpermit.wizard.attachments.otherList"></h5>
+
+        <permit-application-attachment-list attachment-type="'OTHER'"
+                                            attachments="$ctrl.application.attachments"
+                                            attachment-config="$ctrl.attachmentConfig">
+        </permit-application-attachment-list>
+    </div>
+</uib-accordion>

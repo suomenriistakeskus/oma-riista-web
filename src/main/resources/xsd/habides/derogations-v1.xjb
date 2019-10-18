@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               schemaLocation="derogations-v1.xsd"
+               version="2.1">
+
+    <jaxb:schemaBindings>
+        <jaxb:package name="fi.riista.integration.habides.export.derogations"/>
+
+        <jaxb:nameXmlTransform>
+            <jaxb:typeName prefix="DERO_"/>
+            <jaxb:anonymousTypeName prefix="DERO_"/>
+            <jaxb:elementName prefix="DERO_"/>
+
+        </jaxb:nameXmlTransform>
+    </jaxb:schemaBindings>
+
+    <jaxb:globalBindings>
+        <xjc:javaType adapter="fi.riista.integration.support.LocalDateAdapter"
+                      name="org.joda.time.LocalDate"
+                      xmlType="xsd:date"/>
+        <xjc:javaType adapter="fi.riista.integration.support.DateTimeAdapter"
+                      name="org.joda.time.DateTime"
+                      xmlType="xsd:dateTime"/>
+    </jaxb:globalBindings>
+</jaxb:bindings>

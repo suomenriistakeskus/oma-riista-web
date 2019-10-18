@@ -12,10 +12,12 @@ angular.module('app.clubgroup.directives', [])
             var $ctrl = this;
 
             function getGroups(speciesCode) {
-                var found = _.find($ctrl.years.values, 'year', $ctrl.years.selected);
+                var found = _.find($ctrl.years.values, {
+                    year: $ctrl.years.selected
+                });
                 var groups = found ? found.groups : null;
                 if (speciesCode) {
-                    return _.filter(groups, 'gameSpeciesCode', speciesCode);
+                    return _.filter(groups, _.matchesProperty('gameSpeciesCode', speciesCode));
                 }
                 return groups;
             }
@@ -23,8 +25,8 @@ angular.module('app.clubgroup.directives', [])
             $ctrl.$onInit = function () {
                 $ctrl.groups = getGroups($ctrl.selectedSpeciesCode);
                 $ctrl.speciesForYear = SpeciesSortByName.sort(_(getGroups())
-                    .pluck('species')
-                    .uniq('code')
+                    .map('species')
+                    .uniqBy('code')
                     .value());
             };
 

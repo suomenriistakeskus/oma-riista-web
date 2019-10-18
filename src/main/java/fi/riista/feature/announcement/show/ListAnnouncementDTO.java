@@ -4,12 +4,13 @@ import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementSenderType;
 import fi.riista.feature.announcement.AnnouncementSubscriber;
-import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
+import fi.riista.util.F;
 import org.joda.time.LocalDate;
 
 import java.util.List;
@@ -77,6 +78,7 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
         dto.setSubject(announcement.getSubject());
         dto.setSenderType(announcement.getSenderType());
         dto.setVisibleToAll(announcement.isVisibleToAll());
+        dto.setVisibleToRhyMembers(announcement.getRhyMembershipSubscriber() != null);
 
         if (fromOrganisation != null) {
             dto.setFromOrganisation(OrganisationDTO.create(fromOrganisation));
@@ -87,10 +89,7 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
         }
 
         if (subscribers != null) {
-            dto.setOccupationTypes(subscribers.stream()
-                    .map(AnnouncementSubscriber::getOccupationType)
-                    .distinct()
-                    .collect(toSet()));
+            dto.setOccupationTypes(F.mapNonNullsToSet(subscribers, AnnouncementSubscriber::getOccupationType));
 
             dto.setSubscriberOrganisations(subscribers.stream()
                     .map(AnnouncementSubscriber::getOrganisation)
@@ -111,6 +110,7 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
     private String subject;
     private String body;
     private boolean visibleToAll;
+    private boolean visibleToRhyMembers;
     private Set<OccupationType> occupationTypes;
     private Set<OrganisationDTO> subscriberOrganisations;
 
@@ -133,7 +133,6 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
     public void setRev(final Integer rev) {
         this.rev = rev;
     }
-
 
     public OrganisationDTO getFromOrganisation() {
         return fromOrganisation;
@@ -189,6 +188,14 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
 
     public void setVisibleToAll(final boolean visibleToAll) {
         this.visibleToAll = visibleToAll;
+    }
+
+    public boolean isVisibleToRhyMembers() {
+        return visibleToRhyMembers;
+    }
+
+    public void setVisibleToRhyMembers(final boolean visibleToRhyMembers) {
+        this.visibleToRhyMembers = visibleToRhyMembers;
     }
 
     public Set<OccupationType> getOccupationTypes() {

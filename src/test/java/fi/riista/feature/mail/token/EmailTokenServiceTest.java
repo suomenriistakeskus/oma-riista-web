@@ -3,6 +3,8 @@ package fi.riista.feature.mail.token;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
+import fi.riista.util.MockTimeProvider;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -12,6 +14,7 @@ import javax.annotation.Resource;
 import java.util.UUID;
 
 public class EmailTokenServiceTest extends EmbeddedDatabaseTest {
+
     @Resource
     private EmailTokenService emailTokenService;
 
@@ -25,6 +28,11 @@ public class EmailTokenServiceTest extends EmbeddedDatabaseTest {
         final MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRemoteAddr("192.168.1.1");
         return request;
+    }
+
+    @After
+    public void tearDown() {
+        MockTimeProvider.resetMock();
     }
 
     private String createEmailToken(final SystemUser user) {
@@ -59,6 +67,8 @@ public class EmailTokenServiceTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testExpired() {
+        MockTimeProvider.mockTime();
+
         thrown.expect(EmailTokenException.class);
         thrown.expectMessage("expired");
 
@@ -66,7 +76,11 @@ public class EmailTokenServiceTest extends EmbeddedDatabaseTest {
         persistInNewTransaction();
         final String token = createEmailToken(user);
 
+        MockTimeProvider.advance();
+
         expire(token);
+
+        MockTimeProvider.advance();
 
         emailTokenService.validate(token);
     }

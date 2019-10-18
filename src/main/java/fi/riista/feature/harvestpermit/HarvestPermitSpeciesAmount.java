@@ -5,11 +5,11 @@ import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.jpa.JPAExpressions;
-import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.QGameSpecies;
+import fi.riista.feature.harvestpermit.endofhunting.MooselikeHuntingFinishedException;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.joda.time.LocalDate;
@@ -17,7 +17,6 @@ import org.joda.time.LocalDate;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -26,13 +25,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
 @Entity
 @Access(AccessType.FIELD)
 public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements Has2BeginEndDates {
+
+    public static final String ID_COLUMN_NAME = "harvest_permit_species_amount_id";
 
     public enum RestrictionType {
         /**
@@ -84,9 +84,13 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
     @Column
     private Float restrictionAmount;
 
-    @Valid
-    @Embedded
-    private CreditorReference creditorReference;
+    // Permit holder has finished hunting
+    @Column(nullable = false)
+    private boolean mooselikeHuntingFinished;
+
+    // Hunting has been finished by moderator
+    @Column(nullable = false)
+    private boolean huntingFinishedByModerator;
 
     public HarvestPermitSpeciesAmount() {
     }
@@ -97,8 +101,7 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
                                       final RestrictionType restrictionType,
                                       final Float restrictionAmount,
                                       final LocalDate beginDate,
-                                      final LocalDate endDate,
-                                      final CreditorReference creditorReference) {
+                                      final LocalDate endDate) {
         this.harvestPermit = harvestPermit;
         this.gameSpecies = gameSpecies;
         this.amount = amount;
@@ -106,12 +109,11 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
         this.restrictionAmount = restrictionAmount;
         this.beginDate = beginDate;
         this.endDate = endDate;
-        this.creditorReference = creditorReference;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "harvest_permit_species_amount_id", nullable = false)
+    @Column(name = ID_COLUMN_NAME, nullable = false)
     @Access(value = AccessType.PROPERTY)
     @Override
     public Long getId() {
@@ -163,14 +165,6 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
         this.restrictionAmount = restrictionAmount;
     }
 
-    public CreditorReference getCreditorReference() {
-        return creditorReference;
-    }
-
-    public void setCreditorReference(CreditorReference creditorReference) {
-        this.creditorReference = creditorReference;
-    }
-
     @Override
     public LocalDate getBeginDate() {
         return beginDate;
@@ -211,6 +205,22 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
         this.endDate2 = endDate2;
     }
 
+    public boolean isMooselikeHuntingFinished() {
+        return mooselikeHuntingFinished;
+    }
+
+    public void setMooselikeHuntingFinished(final boolean mooselikeHuntingFinished) {
+        this.mooselikeHuntingFinished = mooselikeHuntingFinished;
+    }
+
+    public boolean isHuntingFinishedByModerator() {
+        return huntingFinishedByModerator;
+    }
+
+    public void setHuntingFinishedByModerator(final boolean huntingFinishedByModerator) {
+        this.huntingFinishedByModerator = huntingFinishedByModerator;
+    }
+
     public boolean matches(final int gameSpeciesCode, final LocalDate date) {
         return this.gameSpecies != null &&
                 this.gameSpecies.getOfficialCode() == gameSpeciesCode &&
@@ -223,19 +233,23 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
                 .orElse(null);
     }
 
+    public void assertMooselikeHuntingNotFinished() {
+        if (isMooselikeHuntingFinished()) {
+            throw new MooselikeHuntingFinishedException();
+        }
+    }
+
     // Querydsl delegates -->
 
     @QueryDelegate(HarvestPermitSpeciesAmount.class)
-    public static BooleanExpression matchesSpeciesAndHuntingYear(QHarvestPermitSpeciesAmount spa,
-                                                                 Path<HarvestPermit> permit,
-                                                                 int gameSpeciesCode,
-                                                                 int year) {
+    public static BooleanExpression matchesSpecies(QHarvestPermitSpeciesAmount spa,
+                                                   Path<HarvestPermit> permit,
+                                                   int gameSpeciesCode) {
         final QGameSpecies gameSpecies = new QGameSpecies("gameSpecies_matchesSpeciesAndHuntingYear");
         return JPAExpressions.selectFrom(spa)
                 .join(spa.gameSpecies, gameSpecies)
                 .where(spa.harvestPermit.eq(permit)
                         .and(gameSpecies.officialCode.eq(gameSpeciesCode))
-                        .and(validOnHuntingYear(spa, year))
                 ).exists();
     }
 

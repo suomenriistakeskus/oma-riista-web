@@ -1,0 +1,42 @@
+<div class="row">
+    <div class="col-xs-4">
+        <show-invoice-money title-key="::($ctrl.invoice.isPaymentAmountCorrected ? 'invoice.correctedAmount' : 'global.sum')"
+                            sum="::$ctrl.invoice.paymentAmount"></show-invoice-money>
+    </div>
+
+    <div class="col-xs-4">
+        <show-invoice-money title-key="'jht.invoice.show.receivedAmount'" sum="$ctrl.invoice.receivedAmount"></show-invoice-money>
+    </div>
+
+    <div class="col-xs-4">
+        <show-invoice-money title-key="'jht.invoice.amountDifference'"
+                            sum="$ctrl.invoice.paymentAmount - $ctrl.invoice.receivedAmount">
+        </show-invoice-money>
+    </div>
+</div>
+
+<hr class="invisible"/>
+
+<div class="row">
+    <div class="col-xs-6 col-md-4">
+        <show-invoice-itemization invoice="::$ctrl.invoice"></show-invoice-itemization>
+    </div>
+
+    <div class="col-xs-6 col-md-4">
+        <show-invoice-recipient recipient="::$ctrl.invoice.invoiceRecipient"></show-invoice-recipient>
+    </div>
+
+    <div class="col-xs-6 col-md-4">
+        <show-invoice-details invoice="$ctrl.invoice"></show-invoice-details>
+    </div>
+</div>
+
+<p></p>
+
+<show-invoice-payments payments="$ctrl.invoice.payments"
+                       payment-alter-permission-granted="$ctrl.paymentAlterPermissionGranted"
+                       add-payment="$ctrl.addPayment()"
+                       remove-payment="$ctrl.removePayment({paymentId: paymentId})">
+</show-invoice-payments>
+
+<show-invoice-actions actions="$ctrl.invoice.actions"></show-invoice-actions>

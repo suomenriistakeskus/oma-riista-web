@@ -19,6 +19,7 @@
 package fi.riista.util;
 
 import com.google.common.base.Strings;
+import com.querydsl.core.annotations.QueryProjection;
 
 import javax.annotation.Nonnull;
 import java.util.LinkedHashMap;
@@ -53,12 +54,14 @@ public class LocalisedString {
         return of(map.get(Locales.FI_LANG), map.get(Locales.SV_LANG), map.get(Locales.EN_LANG));
     }
 
+    @QueryProjection
     public LocalisedString(final String finnish, final String swedish) {
         this.finnish = finnish;
         this.swedish = swedish;
         this.english = null;
     }
 
+    @QueryProjection
     public LocalisedString(final String finnish, final String swedish, final String english) {
         this.finnish = finnish;
         this.swedish = swedish;

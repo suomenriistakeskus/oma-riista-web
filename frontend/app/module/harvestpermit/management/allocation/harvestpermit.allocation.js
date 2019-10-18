@@ -34,12 +34,11 @@ angular.module('app.harvestpermit.management.allocation', [])
             var i18n = $filter('rI18nNameFilter');
             $ctrl.moosePermit = moosePermit;
             $ctrl.gameSpeciesName = gameSpeciesName;
-            $ctrl.allocations = _.sortBy(moosePermit.allocations, function (a) {
+            $ctrl.moosePermit.partners = _.sortBy($ctrl.moosePermit.partners, function (a) {
                 return i18n(a.huntingClubName);
             });
-            $ctrl.harvestCounts = moosePermit.harvestCounts;
-            $ctrl.counter = MoosePermitCounterService.create($ctrl.moosePermit, $ctrl.allocations);
-            $ctrl.permitTotal = moosePermit.speciesAmount.amount + _.sum(_.values(moosePermit.amendmentPermits));
+            $ctrl.counter = MoosePermitCounterService.create($ctrl.moosePermit);
+            $ctrl.permitTotal = moosePermit.totalAmount;
             $ctrl.permitUnallocated = 0;
             $ctrl.permitAllocated = 0;
             $ctrl.recalculate();
@@ -53,28 +52,44 @@ angular.module('app.harvestpermit.management.allocation', [])
             });
         };
 
-        $ctrl.floor = _.floor;
+        $ctrl.getMaxAdultMale = function (partner) {
+            return _.floor($ctrl.permitUnallocated + partner.allocation.adultMales);
+        };
 
-        $ctrl.countUsedPermitForPartner = function (clubId) {
-            var c = $ctrl.harvestCounts[clubId];
+        $ctrl.getMaxAdultFemale = function (partner) {
+            return _.floor($ctrl.permitUnallocated + partner.allocation.adultFemales);
+        };
+
+        $ctrl.getMaxYoung = function (partner) {
+            return _.floor($ctrl.permitUnallocated + partner.allocation.young);
+        };
+
+        $ctrl.countUsedPermitForPartner = function (partner) {
+            var c = partner.harvestCount;
             return _.isObject(c) ? c.adultMales + c.adultFemales + 0.5 * (c.youngMales + c.youngFemales) : 0;
         };
 
         $ctrl.recalculate = function () {
-            _.each($ctrl.allocations, function (a) {
-                a.total = (a.adultMales || 0) + (a.adultFemales || 0) + (a.young || 0) / 2;
+            _.forEach($ctrl.moosePermit.partners, function (partner) {
+                var allocation = partner.allocation;
+
+                allocation.total = (allocation.adultMales || 0)
+                    + (allocation.adultFemales || 0)
+                    + (allocation.young || 0) / 2;
             });
 
-            $ctrl.permitAllocated = _.sum($ctrl.allocations, 'total');
+            $ctrl.permitAllocated = _.sumBy($ctrl.moosePermit.partners, 'allocation.total');
             $ctrl.permitUnallocated = $ctrl.permitTotal - $ctrl.permitAllocated;
         };
 
         $ctrl.saveAllocations = function () {
+            var allocations = _.map($ctrl.moosePermit.partners, 'allocation');
+
             return MoosePermits.updateAllocations({
                 permitId: permitId,
                 gameSpeciesCode: gameSpeciesCode
 
-            }, $ctrl.allocations).$promise.then(function () {
+            }, allocations).$promise.then(function () {
                 NotificationService.showDefaultSuccess();
 
                 $ctrl.cancel();

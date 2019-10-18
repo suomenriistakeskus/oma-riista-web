@@ -88,6 +88,7 @@ public class AnnualStatisticsResolver {
     private final Supplier<Map<SrvaEventTypeEnum, Integer>> srvaAccidentCountsSupplier;
     private final Supplier<Integer> harvestPermitApplicationCountSupplier;
     private final Supplier<Integer> announcementCountSupplier;
+    private final Supplier<Map<CalendarEventType, Integer>> eventParticipantCountSupplier;
 
     public AnnualStatisticsResolver(@Nonnull final Riistanhoitoyhdistys rhy,
                                     final int calendarYear,
@@ -142,6 +143,11 @@ public class AnnualStatisticsResolver {
         this.announcementCountSupplier = Lazy.of(() -> {
             return Long.valueOf(countAnnouncements(rhy, calendarYear, jpaQueryFactory)).intValue();
         });
+
+        this.eventParticipantCountSupplier = Lazy.of(() -> {
+            final LocalDate lastDate = today.isBefore(lastDayOfYear) ? today : lastDayOfYear;
+            return eventRepository.countEventParticipants(rhy, firstDayOfYear, lastDate);
+        });
     }
 
     public int getCalendarYear() {
@@ -175,9 +181,13 @@ public class AnnualStatisticsResolver {
         return eventTypeCountsSupplier.get().getOrDefault(eventType, 0L).intValue();
     }
 
+    public int getEventParticipantsCount(final CalendarEventType eventType) {
+        return eventParticipantCountSupplier.get().getOrDefault(eventType, 0).intValue();
+    }
+
     public int getShootingTestTotalCount(final ShootingTestType testType) {
         final Tuple2<Integer, Integer> tuple = shootingTestCountsSupplier.get().get(testType);
-        return tuple == null ? 0 : tuple._1 + tuple._2;
+        return tuple == null ? 0 : tuple._1;
     }
 
     public int getShootingTestQualifiedCount(final ShootingTestType testType) {
@@ -253,13 +263,12 @@ public class AnnualStatisticsResolver {
                                                 final JPAQueryFactory queryFactory) {
 
         final QRhyAnnualStatistics ANNUAL_STATISTICS = QRhyAnnualStatistics.rhyAnnualStatistics;
-        final int prevYear = calendarYear - 1;
 
         return queryFactory
                 .select(ANNUAL_STATISTICS.basicInfo.iban)
                 .from(ANNUAL_STATISTICS)
                 .where(ANNUAL_STATISTICS.rhy.eq(rhy))
-                .where(ANNUAL_STATISTICS.year.eq(prevYear))
+                .where(ANNUAL_STATISTICS.year.eq(calendarYear - 1))
                 .fetchOne();
     }
 
@@ -310,6 +319,7 @@ public class AnnualStatisticsResolver {
                 .join(EVENT.calendarEvent, CALENDAR_EVENT)
                 .where(CALENDAR_EVENT.organisation.eq(rhy))
                 .where(CALENDAR_EVENT.date.year().eq(calendarYear))
+                .where(CALENDAR_EVENT.excludedFromStatistics.ne(true))
                 .where(ATTEMPT.result.ne(REBATED))
                 .groupBy(ATTEMPT.type)
                 .fetch()
@@ -392,7 +402,7 @@ public class AnnualStatisticsResolver {
                 .join(APPLICATION.permitPartners, CLUB)
                 .where(APPLICATION.rhy.eq(rhy))
                 .where(APPLICATION.status.eq(ACTIVE))
-                .where(APPLICATION.permitNumber.startsWith(String.valueOf(calendarYear)))
+                .where(APPLICATION.applicationYear.eq(calendarYear))
                 .fetchCount();
     }
 

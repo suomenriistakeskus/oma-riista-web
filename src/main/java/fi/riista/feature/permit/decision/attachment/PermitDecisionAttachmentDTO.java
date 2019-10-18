@@ -1,5 +1,7 @@
 package fi.riista.feature.permit.decision.attachment;
 
+import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionAttachment;
+
 public class PermitDecisionAttachmentDTO {
     private final long id;
     private final Integer orderingNumber;
@@ -9,6 +11,12 @@ public class PermitDecisionAttachmentDTO {
         this.id = attachment.getId();
         this.orderingNumber = attachment.getOrderingNumber();
         this.description = attachment.getDescription();
+    }
+
+    public PermitDecisionAttachmentDTO(final PermitDecisionRevisionAttachment attachment) {
+        this.id = attachment.getDecisionAttachment().getId();
+        this.orderingNumber = attachment.getOrderingNumber();
+        this.description = attachment.getDecisionAttachment().getDescription();
     }
 
     public long getId() {

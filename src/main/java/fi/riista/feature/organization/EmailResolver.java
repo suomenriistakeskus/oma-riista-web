@@ -1,17 +1,22 @@
 package fi.riista.feature.organization;
 
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.util.EmailSanitizer;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toSet;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 @Component
 public class EmailResolver {
@@ -19,36 +24,22 @@ public class EmailResolver {
     @Resource
     private OccupationRepository occupationRepository;
 
-    public Set<String> findClubContactEmails(Organisation club) {
-        return sanitizeAndCollectToSet(streamPersonEmailOfOccupationType(club, OccupationType.SEURAN_YHDYSHENKILO));
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Set<String> findEmailsOfOccupiedPersons(@Nonnull final Organisation organisation,
+                                                   @Nonnull final OccupationType occupationType) {
+
+        requireNonNull(organisation);
+        requireNonNull(occupationType);
+
+        final List<String> emails = streamPersonEmailOfOccupations(organisation, occupationType).collect(toList());
+        return EmailSanitizer.sanitize(emails);
     }
 
-    public Set<String> findRhyContactEmails(Organisation rhy) {
-        return sanitizeAndCollectToSet(findRhyContactEmailStream(rhy));
-    }
-
-    private Stream<String> findRhyContactEmailStream(Organisation rhy) {
-        if (rhy.getEmail() != null) {
-            return Stream.of(rhy.getEmail());
-        }
-        return streamPersonEmailOfOccupationType(rhy, OccupationType.TOIMINNANOHJAAJA);
-    }
-
-    private Stream<String> streamPersonEmailOfOccupationType(Organisation club, OccupationType type) {
-        return occupationRepository.findActiveByOrganisationAndOccupationType(club, type)
+    private Stream<String> streamPersonEmailOfOccupations(final Organisation organisation, final OccupationType type) {
+        return occupationRepository
+                .findActiveByOrganisationAndOccupationType(organisation, type)
                 .stream()
                 .map(Occupation::getPerson)
                 .map(Person::getEmail);
     }
-
-    private static Set<String> sanitizeAndCollectToSet(Stream<String> stream) {
-        return stream.map(EmailResolver::sanitizeEmail)
-                .filter(StringUtils::hasText)
-                .collect(toSet());
-    }
-
-    public static String sanitizeEmail(final String email) {
-        return email != null && email.contains("@") ? email.trim().toLowerCase() : null;
-    }
-
 }

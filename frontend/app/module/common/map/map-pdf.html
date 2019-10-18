@@ -8,49 +8,127 @@
     </div>
 
     <div class="modal-body">
-        <div class="form-group" show-errors>
-            <label for="paperSize" class="col-xs-4 control-label">
+
+        <div class="form-group">
+            <label class="col-xs-4 control-label">
+                <span translate="global.map.map"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default"
+                           required
+                           uib-btn-radio="'MAASTOKARTTA'"
+                           ng-model="$ctrl.request.layer">
+                        <span translate="global.map.layer.terrain"></span>
+                    </label>
+
+                    <label class="btn btn-default"
+                           required
+                           uib-btn-radio="'TAUSTAKARTTA'"
+                           ng-model="$ctrl.request.layer">
+                        <span translate="global.map.layer.background"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-xs-4 control-label">
+                <span translate="global.map.print.stateOverlay"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default"
+                           required
+                           uib-btn-radio="'NONE'"
+                           ng-model="$ctrl.request.overlay">
+                        <span translate="global.no"></span>
+                    </label>
+
+                    <label class="btn btn-default"
+                           required
+                           uib-btn-radio="'VALTIONMAA'"
+                           ng-model="$ctrl.request.overlay">
+                        <span translate="global.yes"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="form-group">
+            <label class="col-xs-4 control-label">
                 <span translate="global.map.print.paperSizeLabel"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
             <div class="col-xs-8">
-                <select name="paperSize" id="paperSize" class="form-control"
-                        ng-model="$ctrl.request.paperSize" required>
-                    <option value="A4">A4</option>
-                    <option value="A3">A3</option>
-                </select>
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default"
+                           required
+                           uib-btn-radio="'A4'"
+                           ng-model="$ctrl.request.paperSize">
+                        A4
+                    </label>
+
+                    <label class="btn btn-default"
+                           required
+                           uib-btn-radio="'A3'"
+                           ng-model="$ctrl.request.paperSize">
+                        A3
+                    </label>
+
+                    <label class="btn btn-default"
+                           required
+                           uib-btn-radio="'A2'"
+                           ng-model="$ctrl.request.paperSize">
+                        A2
+                    </label>
+
+                    <label class="btn btn-default"
+                           required
+                           show-in-development
+                           uib-btn-radio="'A1'"
+                           ng-model="$ctrl.request.paperSize">
+                        A1
+                    </label>
+
+                    <label class="btn btn-default"
+                           required
+                           show-in-development
+                           uib-btn-radio="'A0'"
+                           ng-model="$ctrl.request.paperSize">
+                        A0
+                    </label>
+                </div>
             </div>
         </div>
 
-        <div class="form-group" show-errors>
-            <label for="paperOrientation" class="col-xs-4 control-label">
+        <div class="form-group">
+            <label class="col-xs-4 control-label">
                 <span translate="global.map.print.paperOrientationLabel"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
             <div class="col-xs-8">
-                <select name="paperOrientation" id="paperOrientation" class="form-control"
-                        ng-model="$ctrl.request.paperOrientation" required>
-                    <option value="PORTRAIT" translate="global.map.print.paperOrientation.portrait"></option>
-                    <option value="LANDSCAPE" translate="global.map.print.paperOrientation.landscape"></option>
-                </select>
-            </div>
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default"
+                           required
+                           uib-btn-radio="'PORTRAIT'"
+                           ng-model="$ctrl.request.paperOrientation">
+                        <span translate="global.map.print.paperOrientation.portrait"></span>
+                    </label>
 
-        </div>
-
-        <div class="form-group" show-errors>
-            <label for="paperDpi" class="col-xs-4 control-label">
-                <span translate="global.map.print.paperDpiLabel"></span>
-                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
-            </label>
-
-            <div class="col-xs-8">
-                <select name="paperDpi" id="paperDpi" class="form-control"
-                        ng-model="$ctrl.request.paperDpi" required>
-                    <option value="150">150 dpi</option>
-                    <option value="300">300 dpi</option>
-                </select>
+                    <label class="btn btn-default"
+                           required
+                           uib-btn-radio="'LANDSCAPE'"
+                           ng-model="$ctrl.request.paperOrientation">
+                        <span translate="global.map.print.paperOrientation.landscape"></span>
+                    </label>
+                </div>
             </div>
         </div>
     </div>

@@ -1,19 +1,20 @@
 package fi.riista.feature.permit.application.search;
 
 import com.google.common.collect.ImmutableList;
-import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -27,36 +28,14 @@ public class HarvestPermitApplicationSearchFeature {
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
-    @Resource
-    private ActiveUserService activeUserService;
-
     @Transactional(readOnly = true)
-    public List<HarvestPermitApplicationSearchResultDTO> search(final HarvestPermitApplicationSearchDTO dto) {
+    public Slice<HarvestPermitApplicationSearchResultDTO> search(final HarvestPermitApplicationSearchDTO dto) {
         userAuthorizationHelper.assertCoordinatorAnywhereOrModerator();
 
-        final List<HarvestPermitApplication> results = harvestPermitApplicationRepository.search(dto);
+        final PageRequest pageRequest = Objects.requireNonNull(dto.asPageRequest());
+        final Slice<HarvestPermitApplication> results = harvestPermitApplicationRepository.search(dto, pageRequest);
 
-        return harvestPermitApplicationSearchResultDTOTransformer.apply(results);
-    }
-
-    @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MODERATOR')")
-    @Transactional(readOnly = true)
-    public List<HarvestPermitApplicationSearchResultDTO> listApplicationsAssignedToMe() {
-        final HarvestPermitApplicationSearchDTO dto = new HarvestPermitApplicationSearchDTO();
-        dto.setStatus(EnumSet.of(HarvestPermitApplicationSearchDTO.StatusSearch.DRAFT));
-        dto.setHandlerId(activeUserService.requireActiveUserId());
-
-        final List<HarvestPermitApplication> results = harvestPermitApplicationRepository.search(dto);
-
-        return harvestPermitApplicationSearchResultDTOTransformer.apply(results);
-    }
-
-    @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MODERATOR')")
-    @Transactional(readOnly = true)
-    public List<HarvestPermitApplicationSearchResultDTO> listDecisionsAssignedToMe() {
-        final List<HarvestPermitApplication> results = harvestPermitApplicationRepository.listByRevisionCreator(activeUserService.requireActiveUserId());
-
-        return harvestPermitApplicationSearchResultDTOTransformer.apply(results);
+        return harvestPermitApplicationSearchResultDTOTransformer.apply(results, pageRequest);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MODERATOR')")
@@ -83,13 +62,12 @@ public class HarvestPermitApplicationSearchFeature {
 
         userAuthorizationHelper.assertCoordinatorAnywhereOrModerator();
 
-        final HarvestPermitApplicationSearchDTO dto = new HarvestPermitApplicationSearchDTO();
-        dto.setStatus(EnumSet.allOf(HarvestPermitApplicationSearchDTO.StatusSearch.class));
-        dto.setRhyOfficialCode(officialCode);
-        dto.setHuntingYear(year);
-        dto.setGameSpeciesCode(gameSpeciesCode);
+        final List<HarvestPermitApplication> results =
+                harvestPermitApplicationRepository.searchForRhy(officialCode, year, gameSpeciesCode);
+        final List<HarvestPermitApplicationSearchResultDTO> dtos =
+                harvestPermitApplicationSearchResultDTOTransformer.apply(results);
 
-        return ImmutableList.sortedCopyOf(createRhyResultOrdering(officialCode, locale), search(dto));
+        return ImmutableList.sortedCopyOf(createRhyResultOrdering(officialCode, locale), dtos);
     }
 
     private static Comparator<HarvestPermitApplicationSearchResultDTO> createRhyResultOrdering(
@@ -103,7 +81,7 @@ public class HarvestPermitApplicationSearchFeature {
 
         final Comparator<HarvestPermitApplicationSearchResultDTO> byPermitHolderName = Comparator.comparing(dto ->
                 dto.getPermitHolder() != null
-                        ? dto.getPermitHolder().getNameLocalisation().getAnyTranslation(locale)
+                        ? dto.getPermitHolder().getName()
                         : dto.getContactPerson().getLastName() + dto.getContactPerson().getByName());
 
         return sameRhyFirst.thenComparing(byPermitHolderName);

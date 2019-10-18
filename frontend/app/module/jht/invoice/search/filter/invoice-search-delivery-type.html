@@ -1,0 +1,10 @@
+<div class="form-group" show-errors>
+    <label for="deliveryType" translate="invoice.deliveryType"></label>
+
+    <select name="deliveryType" id="deliveryType" class="form-control"
+            ng-model="$ctrl.filters.deliveryType"
+            ng-options="('invoice.deliveryTypes.' + option | translate) for option in $ctrl.deliveryTypes"
+            ng-disabled="$ctrl.isDisabled()">
+        <option value="" translate="jht.invoice.search.showAllDeliveryTypes"></option>
+    </select>
+</div>

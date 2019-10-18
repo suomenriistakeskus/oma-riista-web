@@ -146,9 +146,9 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
         });
     }
 
-    private boolean isContactInPermitHolderClub(HarvestPermit permit, Person person) {
-        return permit.getPermitHolder() != null && userAuthorizationHelper.hasRoleInOrganisation(
-                permit.getPermitHolder(), person, OccupationType.SEURAN_YHDYSHENKILO);
+    private boolean isContactInPermitHolderClub(final HarvestPermit permit, final Person person) {
+        return permit.getHuntingClub() != null && userAuthorizationHelper.hasRoleInOrganisation(
+                permit.getHuntingClub(), person, OccupationType.SEURAN_YHDYSHENKILO);
     }
 
     private boolean isContactInPermitPartnerClub(HarvestPermit permit, Person person) {
@@ -156,9 +156,9 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
                 permit.getPermitPartners(), person, EnumSet.of(OccupationType.SEURAN_YHDYSHENKILO));
     }
 
-    private boolean isLeaderInPermitHolderClubGroup(HarvestPermit permit, Person person) {
-        return permit.getPermitHolder() != null && userAuthorizationHelper.hasAnyOfRolesInOrganisations(
-                huntingClubGroupRepository.findByPermitAndClubs(permit, singleton(permit.getPermitHolder())),
+    private boolean isLeaderInPermitHolderClubGroup(final HarvestPermit permit, final Person person) {
+        return permit.getHuntingClub() != null && userAuthorizationHelper.hasAnyOfRolesInOrganisations(
+                huntingClubGroupRepository.findByPermitAndClubs(permit, singleton(permit.getHuntingClub())),
                 person, EnumSet.of(OccupationType.RYHMAN_METSASTYKSENJOHTAJA));
     }
 
@@ -168,9 +168,9 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
                 person, EnumSet.of(OccupationType.RYHMAN_METSASTYKSENJOHTAJA));
     }
 
-    private boolean isMemberOfPermitHolder(HarvestPermit permit, Person person) {
-        return permit.getPermitHolder() != null && userAuthorizationHelper.hasAnyOfRolesInOrganisation(
-                permit.getPermitHolder(), person,
+    private boolean isMemberOfPermitHolder(final HarvestPermit permit, final Person person) {
+        return permit.getHuntingClub() != null && userAuthorizationHelper.hasAnyOfRolesInOrganisation(
+                permit.getHuntingClub(), person,
                 EnumSet.of(OccupationType.SEURAN_JASEN, OccupationType.SEURAN_YHDYSHENKILO));
     }
 

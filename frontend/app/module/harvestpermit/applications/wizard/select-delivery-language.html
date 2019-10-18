@@ -1,0 +1,17 @@
+<div class="form-group">
+    <button type="button" class="btn btn-block btn-default"
+            ng-click="$ctrl.onSelectLanguage({lang: 'fi'})">
+        <span class="text-primary fa fa-fw fa-check"
+              ng-show="$ctrl.selectedLanguage === 'fi'"></span>
+        <span translate="harvestpermit.wizard.summary.delivery.finnish"></span>
+    </button>
+</div>
+
+<div class="form-group">
+    <button type="button" class="btn btn-block btn-default"
+            ng-click="$ctrl.onSelectLanguage({lang: 'sv'})">
+        <span class="text-primary fa fa-fw fa-check"
+              ng-show="$ctrl.selectedLanguage === 'sv'"></span>
+        <span translate="harvestpermit.wizard.summary.delivery.swedish"></span>
+    </button>
+</div>

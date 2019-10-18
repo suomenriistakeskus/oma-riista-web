@@ -1,0 +1,57 @@
+<div class="rhy-sidebar-layout sidebar-layout">
+
+    <riista-sidebar-collapse></riista-sidebar-collapse>
+
+    <div class="left-column">
+        <div ng-switch="$ctrl.moderatorView">
+            <moose-permit-statistics-moderator-filters
+                    ng-switch-when="true"
+                    on-filter-change="$ctrl.onFilterChange(filters)"
+                    tabs="$ctrl.tabs"
+                    hunting-years="$ctrl.huntingYears"
+                    available-species="$ctrl.availableSpecies">
+            </moose-permit-statistics-moderator-filters>
+
+            <moose-permit-statistics-coordinator-filters
+                    ng-switch-when="false"
+                    on-filter-change="$ctrl.onFilterChange(filters)"
+                    tabs="$ctrl.tabs"
+                    hunting-years="$ctrl.huntingYears"
+                    available-species="$ctrl.availableSpecies">
+            </moose-permit-statistics-coordinator-filters>
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-xs-12 text-right">
+                <button type="button"
+                        class="btn btn-default"
+                        ng-click="$ctrl.exportToExcel()">
+                    <span class="fa fa-file-excel-o"></span>
+                    &nbsp;
+                    <span translate="reporting.common.toExcel"></span>
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        ng-hide="$ctrl.tooManyResults()"
+                        ng-click="$ctrl.search()">
+                    <span class="fa fa-search"></span>
+                    &nbsp;
+                    <span translate="global.button.search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-column">
+        <div class="container-fluid">
+            <moose-permit-statistics-table
+                    statistics="$ctrl.statistics"
+                    can-navigate-to-permit="$ctrl.canNavigateToPermit()"
+                    navigate-to-permit="$ctrl.navigateToPermit(permitId)">
+            </moose-permit-statistics-table>
+        </div>
+    </div>
+</div>

@@ -1,16 +1,15 @@
 <li class="r-main-search">
     <a class="r-main-search-title"
-       ng-disabled="!$ctrl.activeSearch"
-       ng-click="$ctrl.activeSearchClicked()">
-        <span>{{$ctrl.activeSearch.title || ('global.menu.search' | translate)}}</span>
+       ng-click="$ctrl.onActiveSearchClick()">
+        <span ng-bind="$ctrl.getActiveSearchTitle()"></span>
     </a>
 
-    <ui-select ng-model="$ctrl.searchModel"
+    <ui-select ng-model="$ctrl.uiSelectModel"
                theme="select2"
-               on-select="$ctrl.doSelect()">
+               on-select="$ctrl.onSearchResultSelect()">
 
         <ui-select-match>
-            <span ng-bind="$ctrl.searchModel.description"></span>
+            <span ng-bind="$ctrl.uiSelectModel.description"></span>
         </ui-select-match>
 
         <ui-select-choices repeat="item in $ctrl.searchResults"
@@ -22,13 +21,13 @@
         </ui-select-choices>
 
         <ui-select-no-choice>
-            <div ng-show="!$ctrl.searching">
-                <div ng-show="$ctrl.inputTooShort($select.search)"
-                     translate="search.formatInputTooShort"
-                     translate-values="{count: 3 - $select.search.length}"></div>
-                <div ng-show="!$ctrl.inputTooShort($select.search)"
-                     translate="search.formatNoMatches"></div>
-            </div>
+            <div ng-show="!$ctrl.searching && $ctrl.search.length < 3"
+                 translate="search.formatInputTooShort"
+                 translate-values="{count: 3 - $select.search.length}"></div>
+
+            <div ng-show="!$ctrl.searching && $ctrl.searchResults.length === 0"
+                 translate="search.formatNoMatches"></div>
+
             <div ng-show="$ctrl.searching">
                 <span class="fa fa-spinner fa-spin"></span>
                 <span translate="search.formatSearching"></span>

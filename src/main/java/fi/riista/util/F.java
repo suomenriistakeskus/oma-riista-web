@@ -1,5 +1,6 @@
 package fi.riista.util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.ObjectArrays;
@@ -12,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,6 +21,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,12 +39,12 @@ import java.util.stream.StreamSupport;
 import static fi.riista.util.Collect.idList;
 import static fi.riista.util.Collect.idSet;
 import static fi.riista.util.Collect.indexingBy;
+import static java.util.Collections.addAll;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 import static java.util.Comparator.nullsLast;
 import static java.util.Objects.requireNonNull;
-import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.partitioningBy;
@@ -119,6 +122,18 @@ public final class F {
     public static <T> HashSet<T> newSetWithExpectedSizeOf(@Nonnull final Iterable<?> iterable) {
         final OptionalInt sizeOpt = sizeMaybe(iterable);
         return sizeOpt.isPresent() ? Sets.newHashSetWithExpectedSize(sizeOpt.getAsInt()) : new HashSet<>();
+    }
+
+    @SafeVarargs
+    @Nonnull
+    public static <E> LinkedHashSet<E> newLinkedHashSet(@Nullable final E... elements) {
+        if (elements == null) {
+            return Sets.newLinkedHashSetWithExpectedSize(0);
+        }
+
+        final LinkedHashSet<E> result = Sets.newLinkedHashSetWithExpectedSize(elements.length);
+        addAll(result, elements);
+        return result;
     }
 
     @Nonnull
@@ -356,6 +371,11 @@ public final class F {
     }
 
     @Nonnull
+    public static <K, V> Map.Entry<K, V> entry(K key, V value) {
+        return new AbstractMap.SimpleEntry<>(key, value);
+    }
+
+    @Nonnull
     public static <ID, T extends HasID<ID>> Map<ID, T> indexById(@Nonnull final Iterable<? extends T> iterable) {
         return index(iterable, HasID::getId);
     }
@@ -515,7 +535,7 @@ public final class F {
         requireNonNull(optional, "optional is null");
         requireNonNull(leftSupplier, "leftSupplier is null");
 
-        return optional.<Either<L, R>> map(Either::right).orElseGet(() -> Either.left(leftSupplier.get()));
+        return optional.<Either<L, R>>map(Either::right).orElseGet(() -> Either.left(leftSupplier.get()));
     }
 
     @Nonnull
@@ -529,10 +549,9 @@ public final class F {
                 : requireNonNull(second.get(), "Second Optional is null").map(Either::right);
     }
 
-    @Nullable
-    public static <T, U extends T, V extends T> T reduceToCommonBase(@Nonnull final Either<U, V> either) {
-        requireNonNull(either);
-        return either.fold(identity(), identity());
+    @Nonnull
+    public static <T> List<T> listFromOptional(@Nonnull Optional<T> optional) {
+        return optional.map(ImmutableList::of).orElseGet(ImmutableList::of);
     }
 
     private F() {

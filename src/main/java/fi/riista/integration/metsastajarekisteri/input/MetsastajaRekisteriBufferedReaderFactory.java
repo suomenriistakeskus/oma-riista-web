@@ -39,8 +39,7 @@ public class MetsastajaRekisteriBufferedReaderFactory implements BufferedReaderF
                 throw new IllegalStateException("Password is not defined");
             }
 
-            inputStream = new OpenSSLPBEInputStream(inputStream, CIPHER, 1,
-                    encryptionPassword.toCharArray());
+            inputStream = new OpenSSLPBEInputStream(inputStream, CIPHER, 1, encryptionPassword.toCharArray());
         }
 
         if (filename.endsWith(".gz") || filename.endsWith("gz.enc")) {

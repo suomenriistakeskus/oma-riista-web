@@ -1,14 +1,39 @@
-<div class="r-event-list">
+<div>
+    <div class="row">
+        <div class="form-group col-xs-12 col-sm-3 col-md-2">
+            <label for="yearSelection" class="control-label">
+                <span translate="global.year"></span>
+            </label>
 
-    <ul class="nav nav-pills">
-        <li class="pull-right">
-            <button type="button" ng-click="addEvent()" class="btn btn-primary">
+            <select name="yearSelection" id="yearSelection"
+                    class="form-control r-event-selection-width-auto"
+                    ng-model="calendarYear"
+                    ng-options="year for year in availableYears"
+                    ng-change="onSelectedYearChanged()">
+
+                <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
+            </select>
+        </div>
+        <div class="form-group col-xs-12 col-sm-6 col-md-6">
+            <label for="eventType" translate="event.event"
+                   class="control-label"></label>
+
+            <select class="form-control r-event-selection-width-auto"
+                    id="eventType"
+                    ng-model="eventTypeFilter"
+                    ng-options="('event.type.'+o|translate) for o in eventTypes"
+                    ng-change="onEventTypeChanged()"
+                    ie10-optgroup-fix>
+                <option value="" translate="event.all"></option>
+            </select>
+        </div>
+        <div class="col-xs-12 col-sm-4 col-md-4">
+            <button type="button" ng-click="addEvent()" class="btn btn-primary r-event-add-button">
                 <span class="glyphicon glyphicon-plus"></span> &nbsp;
                 <span translate="event.button.add"></span>
             </button>
-        </li>
-    </ul>
-
+        </div>
+    </div>
     <hr class="invisible"/>
 
     <div class="table-responsive">
@@ -18,7 +43,8 @@
                 <th class="col-xs-1" translate="event.date"></th>
                 <th class="col-xs-2" translate="event.event"></th>
                 <th class="col-xs-2" translate="event.venue"></th>
-                <th class="col-xs-6" translate="event.description"></th>
+                <th class="col-xs-4" translate="event.description"></th>
+                <th class="col-xs-2" translate="event.participants"></th>
                 <th class="col-xs-1">&nbsp;</th>
             </tr>
             </thead>
@@ -44,17 +70,25 @@
                     </div>
                 </td>
                 <td ng-bind="event.description | truncateCharacters:200"></td>
+                <td ng-bind="event.participants"></td>
                 <td class="text-right r-table-actions-cell">
                     <button type="button" ng-click="clone(event)" class="btn btn-link">
                         <span class="fa fa-clone" title="{{'event.button.clone' | translate}}"></span>
                     </button>
-                    <button type="button" ng-click="show(event)" class="btn btn-link">
-                        <span class="glyphicon glyphicon-edit" title="{{'event.button.edit' | translate}}"></span>
-                    </button>
-                    <button type="button" ng-click="remove(event)" class="btn btn-link">
-                        <span class="glyphicon glyphicon-remove "
-                              title="{{'event.button.remove' | translate}}"></span>
-                    </button>
+                    <div class="r-btn-placeholder">
+                        <button type="button" ng-click="show(event)" class="btn btn-link" ng-if="!event.lockedAsPastStatistics">
+                            <span class="glyphicon glyphicon-edit" title="{{'event.button.edit' | translate}}"></span>
+                        </button>
+                    </div>
+                    <div class="r-btn-placeholder">
+                        <button type="button" class="btn btn-link"
+                                ng-click="remove(event)"
+                                ng-if="!event.lockedAsPastCalendarEvent && !event.lockedAsPastStatistics">
+
+                            <span class="glyphicon glyphicon-remove"
+                                  title="{{'event.button.remove' | translate}}"></span>
+                        </button>
+                    </div>
                 </td>
             </tr>
             </tbody>

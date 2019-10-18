@@ -4,7 +4,7 @@ angular.module('app.diary.specimen', [])
     .service('DiaryEntrySpecimenFormService', function (offCanvasStack) {
         var self = this;
 
-        this.MAX_SPECIMEN_AMOUNT = 999;
+        this.MAX_SPECIMEN_AMOUNT = 9999;
         this.MAX_VISIBLE_AMOUNT = 25;
 
         this.getMaxSpecimenCountForHarvest = function (gameDiaryParameters, gameSpeciesCode) {
@@ -44,6 +44,8 @@ angular.module('app.diary.specimen', [])
                 } else {
                     entry.specimens.length = count;
                 }
+            } else {
+                entry.specimens = null;
             }
         };
 

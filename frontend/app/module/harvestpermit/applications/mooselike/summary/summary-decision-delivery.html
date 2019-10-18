@@ -1,0 +1,29 @@
+<table class="table">
+    <tbody>
+    <tr>
+        <th class="col-xs-3" translate="harvestpermit.decision.summary.applicationSummary.delivery"></th>
+        <td>
+            <div ng-switch="!!$ctrl.application.deliveryByMail">
+                <!-- Email delivery -->
+                <div ng-switch-when="false">
+                    <span translate="harvestpermit.decision.summary.applicationSummary.deliveryEmail"></span>
+                </div>
+                <!-- Mail delivery -->
+                <div ng-switch-when="true">
+                    <span translate="harvestpermit.decision.summary.applicationSummary.deliveryPaper"></span>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.summary.decisionLanguage"></th>
+        <td>
+            <div ng-switch="$ctrl.application.decisionLanguage">
+                <span ng-switch-when="fi" translate="harvestpermit.wizard.summary.decisionLanguageFinnish"></span>
+                <span ng-switch-when="sv" translate="harvestpermit.wizard.summary.decisionLanguageSwedish"></span>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+

@@ -44,9 +44,12 @@
     </tr>
     <tr>
         <td class="col-md-3" translate="club.group.form.harvestPermit"></td>
-        <td>
-            <span ng-show="group.permit" ng-bind="group.permit.permitNumber"></span>
-            <span ng-hide="group.permit" translate="club.group.form.harvestPermitNotSet"></span>
+        <td ng-switch="!!group.permit">
+            <span ng-switch-when="true" ng-bind="group.permit.permitNumber"></span>
+            <div ng-switch-when="false">
+                <span class="fa fa-warning text-danger" uib-tooltip="{{'club.group.permitMissing' | translate}}"></span>
+                <span ng-hide="group.permit" class="text-danger" translate="club.group.form.harvestPermitNotSet"></span>
+            </div>
         </td>
     </tr>
     <tr>

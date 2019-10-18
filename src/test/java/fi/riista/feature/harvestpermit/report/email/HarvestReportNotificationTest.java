@@ -159,9 +159,7 @@ public class HarvestReportNotificationTest extends EmbeddedDatabaseTest {
     }
 
     private static HarvestPermit createHarvestPermit() {
-        HarvestPermit harvestPermit = new HarvestPermit();
-        harvestPermit.setPermitNumber("2013-3-450-00260-2");
-
+        HarvestPermit harvestPermit = HarvestPermit.create("2013-3-450-00260-2");
         return harvestPermit;
     }
 

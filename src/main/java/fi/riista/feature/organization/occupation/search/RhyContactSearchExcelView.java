@@ -18,6 +18,7 @@ import java.util.Map;
 public class RhyContactSearchExcelView extends AbstractXlsxView {
 
     private static final String[] HEADERS_FI = {
+            "RHY-numero",
             "RHY",
             "Sähköpostiosoite",
             "Puhelinnumero",
@@ -28,6 +29,7 @@ public class RhyContactSearchExcelView extends AbstractXlsxView {
     };
 
     private static final String[] HEADERS_SV = {
+            "JVF-nummer",
             "JVF",
             "E-Postadress",
             "Telefonnummer",
@@ -45,6 +47,7 @@ public class RhyContactSearchExcelView extends AbstractXlsxView {
 
     private static String[] createRow(RhyContactSearchResultDTO result) {
         return new String[] {
+                result.getOfficialCode(),
                 result.getRhyName(),
                 result.getEmail(),
                 result.getPhoneNumber(),

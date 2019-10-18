@@ -1,7 +1,6 @@
 package fi.riista.feature.permit.application.partner;
 
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.huntingclub.members.HuntingClubContactService;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.OrganisationType;
@@ -13,7 +12,6 @@ import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerDTO;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerService;
 import fi.riista.security.EntityPermission;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,9 +35,6 @@ public class ListPermitApplicationAreaPartnersFeature {
 
     @Resource
     private HuntingClubContactService huntingClubContactService;
-
-    @Resource
-    private MessageSource messageSource;
 
     @Resource
     private OccupationRepository occupationRepository;
@@ -68,16 +63,6 @@ public class ListPermitApplicationAreaPartnersFeature {
         final HarvestPermitArea applicationArea = requirePermitAreaForRead(applicationId);
 
         return harvestPermitAreaPartnerService.listPartners(applicationArea, locale);
-    }
-
-    @Transactional(readOnly = true)
-    public PermitApplicationPartnerExcelView listPartnersExcel(final long applicationId, final Locale locale) {
-        final HarvestPermitArea applicationArea = requirePermitAreaForRead(applicationId);
-        final List<HarvestPermitAreaPartnerDTO> dtoList = harvestPermitAreaPartnerService
-                .listPartners(applicationArea, locale);
-
-        return new PermitApplicationPartnerExcelView(new EnumLocaliser(messageSource, locale),
-                applicationArea.getExternalId(), dtoList);
     }
 
     @Transactional(readOnly = true)

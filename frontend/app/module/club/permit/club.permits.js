@@ -2,17 +2,7 @@
 
 angular.module('app.club.permits', [])
     .factory('ClubPermits', function ($resource) {
-        return $resource('/api/v1/club/:clubId/permit', {'clubId': '@clubId'}, {
-            query: {
-                method: 'GET',
-                params: {year: '@year', species: '@species'},
-                isArray: true
-            },
-            get: {
-                method: 'GET',
-                url: '/api/v1/club/:clubId/permit/:permitId',
-                params: {'clubId': '@clubId', 'permitId': '@permitId'}
-            },
+        return $resource('/api/v1/club/:clubId/permit/:permitId', {clubId: '@clubId', permitId: '@permitId'}, {
             huntingYears: {
                 method: 'GET',
                 url: '/api/v1/club/:clubId/permit/huntingyears',
@@ -20,9 +10,8 @@ angular.module('app.club.permits', [])
             },
             todos: {
                 method: 'GET',
-                url: '/api/v1/club/:clubId/permit/todo',
-                params: {'clubId': '@clubId', 'year': '@year'}
-            },
+                url: '/api/v1/club/:clubId/permit/todo'
+            }
         });
     })
 
@@ -49,30 +38,32 @@ angular.module('app.club.permits', [])
                         templateUrl: 'harvestpermit/moosepermit/layout.html'
                     },
                     'left@club.permit': {
-                        templateUrl: 'harvestpermit/moosepermit/list.html',
+                        templateUrl: 'harvestpermit/moosepermit/list/list.html',
                         controller: 'MoosePermitListController',
                         controllerAs: '$ctrl',
                         resolve: {
-                            permits: function (ClubPermits, selectedYearAndSpecies, clubId) {
-                                if (!selectedYearAndSpecies.species) {
-                                    return _.constant([]);
+                            permits: function ($q, ClubPermits, selectedYearAndSpecies, clubId) {
+                                if (!selectedYearAndSpecies.species || !selectedYearAndSpecies.huntingYear) {
+                                    return $q.when([]);
                                 }
-                                return ClubPermits.query({clubId: clubId}, {
+
+                                return ClubPermits.query({
+                                    clubId: clubId,
                                     year: selectedYearAndSpecies.huntingYear,
                                     species: selectedYearAndSpecies.species
                                 }).$promise.then(function (permits) {
-                                    return _.sortByAll(permits, ['permitNumber', 'id']);
+                                    return _.sortBy(permits, ['permitNumber', 'id']);
                                 });
                             }
                         }
                     }
                 }
             })
-            .state('club.permit.show', {
-                url: '/{permitId:[0-9]{1,8}}/show',
+            .state('club.permit.table', {
+                url: '/{permitId:[0-9]{1,8}}/table',
                 wideLayout: true,
-                templateUrl: 'harvestpermit/moosepermit/show.html',
-                controller: 'MoosePermitShowController',
+                templateUrl: 'harvestpermit/moosepermit/table/permit-tables.html',
+                controller: 'MoosePermitTableController',
                 controllerAs: '$ctrl',
                 resolve: {
                     permitId: function ($stateParams, MoosePermitSelection) {
@@ -83,12 +74,6 @@ angular.module('app.club.permits', [])
                             clubId: clubId,
                             permitId: permitId,
                             species: selectedYearAndSpecies.species
-                        }).$promise;
-                    },
-                    todos: function (MoosePermits, permitId, selectedYearAndSpecies) {
-                        return MoosePermits.listTodos({
-                            permitId: permitId,
-                            speciesCode: selectedYearAndSpecies.species
                         }).$promise;
                     }
                 }
@@ -111,7 +96,7 @@ angular.module('app.club.permits', [])
                 url: '/{permitId:[0-9]{1,8}}/map',
                 templateUrl: 'harvestpermit/moosepermit/map/permit-map.html',
                 controller: 'MoosePermitMapController',
-                controllerAs: 'ctrl',
+                controllerAs: '$ctrl',
                 bindToController: true,
                 wideLayout: true,
                 resolve: {
@@ -135,12 +120,15 @@ angular.module('app.club.permits', [])
                     mapBounds: function (MapBounds, club, featureCollection) {
                         var bounds = MapBounds.getBoundsFromGeoJsonFeatureCollection(featureCollection);
                         return bounds || MapBounds.getRhyBounds(club.rhy.officialCode);
+                    },
+                    goBackFn: function () {
+                        return null;
                     }
                 }
             })
             .state('club.permit.rhystats', {
                 url: '/{permitId:[0-9]{1,8}}/rhy-stats',
-                template: '<moose-permit-stats-table statistics="$ctrl.statistics"></moose-permit-stats-table>',
+                template: '<moose-permit-statistics-simple-table statistics="$ctrl.statistics"></moose-permit-statistics-simple-table>',
                 controller: function (statistics) {
                     this.statistics = statistics;
                 },
@@ -152,9 +140,70 @@ angular.module('app.club.permits', [])
                         return MoosePermitSelection.updateSelectedPermitId($stateParams);
                     },
                     statistics: function (MoosePermits, permitId, selectedYearAndSpecies) {
-                        var params = {permitId: permitId, speciesCode: selectedYearAndSpecies.species};
-                        return MoosePermits.rhyStatistics(params).$promise;
+                        return MoosePermits.rhyStatistics({
+                            permitId: permitId,
+                            speciesCode: selectedYearAndSpecies.species
+                        }).$promise;
                     }
                 }
             });
+    })
+    .service('MoosePermitPartnerDownloadModal', function ($uibModal, FormPostService, HarvestPermits,
+                                                          HarvestPermitPdfUrl, HarvestPermitAttachmentUrl) {
+
+        this.showModal = function (moosePermit) {
+            return $uibModal.open({
+                controller: ModalController,
+                controllerAs: '$ctrl',
+                templateUrl: 'club/permit/club-permit-download-modal.html',
+                resolve: {
+                    moosePermit: _.constant(moosePermit),
+                    attachmentList: function () {
+                        return HarvestPermits.getAttachmentList({id: moosePermit.id}).$promise;
+                    }
+                }
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, $translate, moosePermit, attachmentList) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.harvestPermitList = collectPermitNumbers(moosePermit);
+                $ctrl.attachmentList = attachmentList;
+            };
+
+            $ctrl.close = function () {
+                $uibModalInstance.dismiss('close');
+            };
+
+            $ctrl.downloadPermit = function (p) {
+                FormPostService.submitFormUsingBlankTarget(HarvestPermitPdfUrl.get(p.permitNumber));
+            };
+
+            $ctrl.downloadAttachment = function (a) {
+                FormPostService.submitFormUsingBlankTarget(HarvestPermitAttachmentUrl.get(moosePermit.id, a.id));
+            };
+
+            function collectPermitNumbers(permit) {
+                var permitPrefix = $translate.instant('club.permit.permitName');
+                var amendmentPermitPrefix = $translate.instant('club.permit.amendmentPermitName');
+
+                var keys = _(permit.amendmentPermits)
+                    .sort()
+                    .map(function (amendmentPermitNumber) {
+                        return {
+                            text: amendmentPermitPrefix + ' ' + amendmentPermitNumber,
+                            permitNumber: amendmentPermitNumber
+                        };
+                    }).value();
+
+                keys.unshift({
+                    text: permitPrefix + ' ' + permit.permitNumber,
+                    permitNumber: permit.permitNumber
+                });
+
+                return keys;
+            }
+        }
     });

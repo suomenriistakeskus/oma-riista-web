@@ -1,6 +1,5 @@
 package fi.riista.integration.paytrail.auth;
 
-import fi.riista.integration.paytrail.rest.client.PaytrailApiCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,11 +15,11 @@ import java.util.stream.Collectors;
 public class PaytrailAuthCodeVerifier {
     private static final Logger LOG = LoggerFactory.getLogger(PaytrailAuthCodeVerifier.class);
 
-    private final PaytrailApiCredentials paytrailApiCredentials;
+    private final PaytrailCredentials paytrailApiCredentials;
     private final PaytrailAuthCodeDigest paytrailAuthCodeDigest;
     private final Duration paymentTimeoutDuration;
 
-    public PaytrailAuthCodeVerifier(final PaytrailApiCredentials paytrailApiCredentials,
+    public PaytrailAuthCodeVerifier(final PaytrailCredentials paytrailApiCredentials,
                                     final PaytrailAuthCodeDigest paytrailAuthCodeDigest,
                                     final Duration paymentTimeoutDuration) {
         this.paytrailApiCredentials = Objects.requireNonNull(paytrailApiCredentials);

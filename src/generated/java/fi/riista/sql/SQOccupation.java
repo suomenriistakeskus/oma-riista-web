@@ -65,11 +65,13 @@ public class SQOccupation extends RelationalPathSpatial<SQOccupation> {
 
     public final com.querydsl.sql.ForeignKey<SQPerson> occupationPersonFk = createForeignKey(personId, "person_id");
 
-    public final com.querydsl.sql.ForeignKey<SQContactInfoShare> occupationContactInfoShareFk = createForeignKey(contactInfoShare, "name");
-
     public final com.querydsl.sql.ForeignKey<SQOrganisation> occupationOrganisationFk = createForeignKey(organisationId, "organisation_id");
 
     public final com.querydsl.sql.ForeignKey<SQOccupationType> occupationTypeFk = createForeignKey(occupationType, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQContactInfoShare> occupationContactInfoShareFk = createForeignKey(contactInfoShare, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQShootingTestOfficial> _shootingTestOfficialOccupationFk = createInvForeignKey(occupationId, "occupation_id");
 
     public final com.querydsl.sql.ForeignKey<SQOccupationNomination> _occupationNominationOccupationIdFk = createInvForeignKey(occupationId, "occupation_id");
 

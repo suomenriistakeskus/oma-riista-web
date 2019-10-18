@@ -1,7 +1,7 @@
 package fi.riista.feature.huntingclub.moosedatacard.converter;
 
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
-import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardExtractor;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardHuntingDay;

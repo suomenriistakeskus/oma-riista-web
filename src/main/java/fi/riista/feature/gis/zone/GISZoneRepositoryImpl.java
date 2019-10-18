@@ -1,7 +1,7 @@
 package fi.riista.feature.gis.zone;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.jpa.sql.JPASQLQuery;
@@ -10,25 +10,30 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
-import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.feature.gis.GISBounds;
-import fi.riista.feature.gis.geojson.PalstaFeatureCollection;
+import fi.riista.feature.gis.geojson.PalstaFeatureCollectionDifference;
 import fi.riista.feature.gis.zone.query.CalculateCombinedGeometryQueries;
 import fi.riista.feature.gis.zone.query.CalculateZoneAreaSizeQueries;
 import fi.riista.feature.gis.zone.query.CopyZoneGeometryQueries;
+import fi.riista.feature.gis.zone.query.GetBoundsQueries;
 import fi.riista.feature.gis.zone.query.GetCombinedFeatureCollectionQuery;
 import fi.riista.feature.gis.zone.query.GetGeometryQuery;
 import fi.riista.feature.gis.zone.query.GetInvertedGeometryQuery;
+import fi.riista.feature.gis.zone.query.GetOtherFeatureCollectionQuery;
 import fi.riista.feature.gis.zone.query.GetPalstaFeatureCollectionQuery;
 import fi.riista.feature.gis.zone.query.GetPolygonFeatureCollectionQuery;
+import fi.riista.feature.gis.zone.query.GetStateGeometryQuery;
 import fi.riista.feature.gis.zone.query.UpdateExternalFeatureQueries;
+import fi.riista.feature.gis.zone.query.UpdateOtherFeatureQueries;
 import fi.riista.feature.gis.zone.query.UpdatePalstaFeatureQueries;
-import fi.riista.feature.huntingclub.area.zone.HuntingClubAreaFeatureDTO;
+import fi.riista.integration.koiratutka.HuntingClubAreaImportFeatureDTO;
 import fi.riista.sql.SQZone;
-import fi.riista.util.F;
 import fi.riista.util.GISUtils;
 import fi.riista.util.JdbcTemplateEnhancer;
+import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -38,7 +43,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -48,22 +53,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static fi.riista.util.Collect.idSet;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
 @Repository
 public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
+    private static final Logger LOG = LoggerFactory.getLogger(GISZoneRepositoryImpl.class);
 
     private JdbcOperations jdbcTemplate;
     private NamedParameterJdbcOperations namedParameterJdbcTemplate;
-    private NamedParameterJdbcOperations enchancedJdbcTemplate;
-
-    @Resource
-    private CustomJacksonObjectMapper objectMapper;
+    private NamedParameterJdbcOperations enhancedJdbcTemplate;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -71,12 +72,16 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     @Resource
     private SQLTemplates queryDslSqlTemplates;
 
+    private GetBoundsQueries getBoundsQueries;
     private GetPalstaFeatureCollectionQuery getPalstaFeatureCollectionQuery;
+    private GetOtherFeatureCollectionQuery getOtherFeatureCollectionQuery;
     private GetCombinedFeatureCollectionQuery getCombinedFeatureCollectionQuery;
     private GetPolygonFeatureCollectionQuery getPolygonFeatureCollectionQuery;
     private GetGeometryQuery getGeometryQuery;
     private GetInvertedGeometryQuery getInvertedGeometryQuery;
+    private GetStateGeometryQuery getStateGeometryQuery;
     private UpdatePalstaFeatureQueries updatePalstaFeatureQueries;
+    private UpdateOtherFeatureQueries updateOtherFeatureQueries;
     private UpdateExternalFeatureQueries updateExternalFeatureQueries;
     private CalculateZoneAreaSizeQueries calculateZoneAreaSizeQueries;
     private CalculateCombinedGeometryQueries calculateCombinedGeometryQueries;
@@ -86,46 +91,45 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(this.jdbcTemplate);
-        this.enchancedJdbcTemplate = JdbcTemplateEnhancer.wrap(this.namedParameterJdbcTemplate);
-        this.getPalstaFeatureCollectionQuery = new GetPalstaFeatureCollectionQuery(namedParameterJdbcTemplate, objectMapper);
+        this.enhancedJdbcTemplate = JdbcTemplateEnhancer.wrap(this.namedParameterJdbcTemplate);
+        this.getBoundsQueries = new GetBoundsQueries(namedParameterJdbcTemplate);
+        this.getPalstaFeatureCollectionQuery = new GetPalstaFeatureCollectionQuery(namedParameterJdbcTemplate);
+        this.getOtherFeatureCollectionQuery = new GetOtherFeatureCollectionQuery(namedParameterJdbcTemplate);
         this.getCombinedFeatureCollectionQuery = new GetCombinedFeatureCollectionQuery(namedParameterJdbcTemplate);
         this.getPolygonFeatureCollectionQuery = new GetPolygonFeatureCollectionQuery(namedParameterJdbcTemplate);
         this.getGeometryQuery = new GetGeometryQuery(namedParameterJdbcTemplate);
         this.getInvertedGeometryQuery = new GetInvertedGeometryQuery(namedParameterJdbcTemplate);
+        this.getStateGeometryQuery = new GetStateGeometryQuery(namedParameterJdbcTemplate);
         this.updatePalstaFeatureQueries = new UpdatePalstaFeatureQueries(jdbcTemplate);
+        this.updateOtherFeatureQueries = new UpdateOtherFeatureQueries(jdbcTemplate);
         this.updateExternalFeatureQueries = new UpdateExternalFeatureQueries(jdbcTemplate);
-        this.calculateCombinedGeometryQueries = new CalculateCombinedGeometryQueries(this.enchancedJdbcTemplate);
-        this.calculateZoneAreaSizeQueries = new CalculateZoneAreaSizeQueries(enchancedJdbcTemplate);
+        this.calculateCombinedGeometryQueries = new CalculateCombinedGeometryQueries(this.enhancedJdbcTemplate);
+        this.calculateZoneAreaSizeQueries = new CalculateZoneAreaSizeQueries(enhancedJdbcTemplate);
         this.copyZoneGeometryQueries = new CopyZoneGeometryQueries(namedParameterJdbcTemplate);
     }
 
     @Override
     @Transactional(readOnly = true)
     public GISBounds getBounds(final long zoneId, final GISUtils.SRID srid) {
-        final String sql = "WITH extent AS " +
-                "(SELECT ST_Extent(ST_Transform(geom, :srid)) AS e FROM zone WHERE zone_id = :zoneId)" +
-                " SELECT ST_XMin(e) AS xmin, ST_YMin(e) AS ymin, ST_XMax(e) AS xmax, ST_YMax(e) AS ymax FROM extent";
-
-        return namedParameterJdbcTemplate.queryForObject(sql, new MapSqlParameterSource()
-                .addValue("srid", srid.getValue())
-                .addValue("zoneId", zoneId), (rs, rowNum) -> {
-            final double xmin = rs.getDouble("xmin");
-            boolean wasNull = rs.wasNull();
-            final double ymin = rs.getDouble("ymin");
-            wasNull = wasNull || rs.wasNull();
-            final double xmax = rs.getDouble("xmax");
-            wasNull = wasNull || rs.wasNull();
-            final double ymax = rs.getDouble("ymax");
-            wasNull = wasNull || rs.wasNull();
-
-            return wasNull ? null : new GISBounds(xmin, ymin, xmax, ymax);
-        });
+        return getBoundsQueries.getBounds(zoneId, srid);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public FeatureCollection getPalstaFeatures(final long zoneId, final GISUtils.SRID srid) {
+    public Map<Long, GISBounds> getBounds(final Collection<Long> zoneIds, final GISUtils.SRID srid) {
+        return getBoundsQueries.getBounds(zoneIds, srid);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Feature> getPalstaFeatures(final long zoneId, final GISUtils.SRID srid) {
         return getPalstaFeatureCollectionQuery.execute(zoneId, srid);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Feature> getOtherFeatures(final long zoneId, final GISUtils.SRID srid) {
+        return getOtherFeatureCollectionQuery.execute(zoneId, srid);
     }
 
     @Override
@@ -153,37 +157,43 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Geometry getStateGeometry(final long zoneId, final GISUtils.SRID srid) {
+        return getStateGeometryQuery.execute(zoneId, srid);
+    }
+
+    @Override
+    @Transactional
+    public void calculateCombinedGeometry(final long zoneId) {
+        calculateCombinedGeometryQueries.updateGeometry(zoneId);
+    }
+
+    @Override
     @Transactional
     public void updatePalstaFeatures(final long zoneId, final FeatureCollection featureCollection) {
-        final List<Integer> currentPalstaIds = jdbcTemplate.queryForList(
-                "SELECT palsta_id FROM zone_palsta WHERE zone_id = ?", Integer.class, zoneId);
+        final List<Integer> existingIds = updatePalstaFeatureQueries.list(zoneId);
+        final PalstaFeatureCollectionDifference palstaFeatureCollection =
+                PalstaFeatureCollectionDifference.create(featureCollection, existingIds);
 
-        final PalstaFeatureCollection palstaFeatureCollection =
-                new PalstaFeatureCollection(featureCollection, currentPalstaIds);
-
-        updateExternalFeatureQueries.removeZoneFeatures(zoneId);
-        updatePalstaFeatureQueries.removeZonePalsta(zoneId, palstaFeatureCollection.getToRemove());
-        updatePalstaFeatureQueries.updateZonePalstaList(zoneId, palstaFeatureCollection.getToAdd());
-        calculateCombinedGeometryQueries.updateGeometry(zoneId);
+        updatePalstaFeatureQueries.removeById(zoneId, palstaFeatureCollection.getRemovable());
+        updatePalstaFeatureQueries.insert(zoneId, palstaFeatureCollection.getInsertable());
     }
 
     @Override
     @Transactional
-    public void updateFeatures(final long zoneId,
-                               final GISUtils.SRID srid,
-                               final List<HuntingClubAreaFeatureDTO> features) {
-        updatePalstaFeatureQueries.removeZonePalsta(zoneId);
-        updateExternalFeatureQueries.removeZoneFeatures(zoneId);
-        updateExternalFeatureQueries.insertZoneFeatures(zoneId, srid, features);
-        calculateCombinedGeometryQueries.updateGeometry(zoneId);
+    public void updateOtherFeatures(long zoneId, FeatureCollection featureCollection, final GISUtils.SRID srid) {
+        updateOtherFeatureQueries.removeZoneFeatures(zoneId);
+        updateOtherFeatureQueries.insertOtherFeatures(zoneId, featureCollection, srid);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public <E extends AreaEntity<Long>> Function<E, GISZoneWithoutGeometryDTO> getAreaMapping(final Iterable<E> iterable) {
-        final Set<Long> zoneIds = F.stream(iterable).map(AreaEntity::getZone).collect(idSet());
-        final Map<Long, GISZoneWithoutGeometryDTO> mapping = fetchWithoutGeometry(zoneIds);
-        return a -> a.getZone() != null ? mapping.get(F.getId(a.getZone())) : null;
+    @Transactional
+    public void updateExternalFeatures(final long zoneId,
+                                       final GISUtils.SRID srid,
+                                       final List<HuntingClubAreaImportFeatureDTO> features) {
+        updatePalstaFeatureQueries.removeAll(zoneId);
+        updateExternalFeatureQueries.removeZoneFeatures(zoneId);
+        updateExternalFeatureQueries.insertZoneFeatures(zoneId, srid, features);
     }
 
     @Override
@@ -212,6 +222,7 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
                 }));
     }
 
+    @Nullable
     @Override
     @Transactional(readOnly = true)
     public GISZoneSizeDTO getAreaSize(final long zoneId) {
@@ -227,10 +238,16 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
         return createSizeDTO(tuple);
     }
 
-    @Nonnull
-    private GISZoneSizeDTO createSizeDTO(final Tuple tuple) {
+    @Nullable
+    private static GISZoneSizeDTO createSizeDTO(final Tuple tuple) {
         final double computedAreaSize = tuple.get(SQZone.zone.computedAreaSize);
         final double waterAreaSize = tuple.get(SQZone.zone.waterAreaSize);
+
+        if (computedAreaSize < 0 || waterAreaSize < 0) {
+            // Area size has not been calculated yet
+            return null;
+        }
+
         final Double stateLandAreaSize = tuple.get(SQZone.zone.stateLandAreaSize);
         final Double privateLandAreaSize = tuple.get(SQZone.zone.privateLandAreaSize);
         final TotalLandWaterSizeDTO total = new TotalLandWaterSizeDTO(
@@ -241,6 +258,7 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
                 privateLandAreaSize != null ? privateLandAreaSize : 0);
     }
 
+    @Nullable
     @Override
     @Transactional(readOnly = true)
     public GISZoneSizeDTO getAdjustedAreaSize(final long zoneId) {
@@ -266,13 +284,22 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
 
     @Override
     @Transactional
-    public void calculateAreaSize(final long zoneId) {
+    public void calculateAreaSize(final long zoneId, final boolean onlyStateLand) {
         final TotalLandWaterSizeDTO all = calculateLandAndWaterAreaSize(zoneId);
-        final double stateLandAreaSize = calculateZoneAreaSizeQueries.getSumOfStateLandAreaSize(zoneId);
-        final double privateLandAreaSize = all.getLand() - stateLandAreaSize;
 
-        calculateZoneAreaSizeQueries.updateAreaSize(zoneId,
-                new GISZoneSizeDTO(all, stateLandAreaSize, privateLandAreaSize));
+        final GISZoneSizeDTO dto;
+
+        if (!onlyStateLand) {
+            final double stateLandAreaSize = calculateZoneAreaSizeQueries.getSumOfStateLandAreaSize(zoneId);
+            final double privateLandAreaSize = Math.max(0, all.getLand() - stateLandAreaSize);
+            dto = new GISZoneSizeDTO(all, stateLandAreaSize, privateLandAreaSize);
+
+        } else {
+            LOG.warn("Setting zone privateLandAreaSize explicitly to zero for zoneId={}", zoneId);
+            dto = new GISZoneSizeDTO(all, all.getLand(), 0);
+        }
+
+        calculateZoneAreaSizeQueries.updateAreaSize(zoneId, dto);
     }
 
     private TotalLandWaterSizeDTO calculateLandAndWaterAreaSize(final long zoneId) {
@@ -285,8 +312,14 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
 
     @Override
     @Transactional(readOnly = true)
-    public List<GISZoneSizeRhyDTO> calculateRhyAreaSize(final long zoneId) {
+    public List<GISZoneSizeByOfficialCodeDTO> calculateRhyAreaSize(final long zoneId) {
         return calculateZoneAreaSizeQueries.getSumOfAreaSizeByRhy(zoneId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GISZoneSizeByOfficialCodeDTO> calculateVerotusLohkoAreaSize(long zoneId) {
+        return calculateZoneAreaSizeQueries.getSumOfAreaSizeByVerotusLohko(zoneId);
     }
 
     @Override
@@ -303,8 +336,11 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
         to.setSourceType(from.getSourceType());
         to.setExcludedGeom(from.getExcludedGeom());
         to.setComputedAreaSize(from.getComputedAreaSize());
-        to.setMetsahallitusHirvi(new HashSet<>(from.getMetsahallitusHirvi()));
         to.setWaterAreaSize(from.getWaterAreaSize());
+        to.setStateLandAreaSize(from.getStateLandAreaSize());
+        to.setPrivateLandAreaSize(from.getPrivateLandAreaSize());
+        to.setMetsahallitusHirvi(new HashSet<>(from.getMetsahallitusHirvi()));
+
         entityManager.persist(to);
         entityManager.flush();
 
@@ -345,7 +381,7 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     @Transactional
     public void removeZonePalstaAndFeatures(final GISZone zone) {
         if (zone.getId() != null) {
-            updatePalstaFeatureQueries.removeZonePalsta(zone.getId());
+            updatePalstaFeatureQueries.removeAll(zone.getId());
             updateExternalFeatureQueries.removeZoneFeatures(zone.getId());
         }
     }
@@ -358,4 +394,57 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
                 " JOIN mh_hirvi mh ON (zmh.mh_hirvi_id = mh.gid)" +
                 " WHERE zmh.zone_id = :zoneId;", new MapSqlParameterSource("zoneId", zoneId), Integer.class));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GISZoneMmlPropertyIntersectionDTO> findIntersectingPalsta(final long zoneId) {
+        final MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("chunkSize", 16384)
+                .addValue("minimumIntersectionArea", 100)
+                .addValue("zoneId", zoneId);
+
+
+        // - Divide zone geometry for performance
+        final String querySplices = "SELECT " +
+                "    ST_MakeValid(ST_SubDivide((ST_Dump(zone.geom)).geom, :chunkSize)) AS geom " +
+                "  FROM zone " +
+                "  WHERE zone.zone_id = :zoneId ";
+
+        // - Sum up intersection with zone by palsta
+        final String queryPalstaIntersection = "SELECT " +
+                "    pa.id AS id, " +
+                "    SUM(ST_Area(ST_Intersection(pa.geom, splices.geom))) AS area " +
+                "  FROM splices " +
+                "  INNER JOIN palstaalue pa ON ST_Intersects(pa.geom, splices.geom) " +
+                "  GROUP BY pa.id";
+
+
+        final String sql = "WITH " +
+                "splices AS ( " + querySplices + "), " +
+                "palstaIntersection AS ( " + queryPalstaIntersection + " ) " +
+                // - Select palstas with intersection at least on 'minimumIntersectionArea' and join property name
+                "SELECT " +
+                "  pa2.tunnus AS tunnus, " +
+                "  pa2.id AS id, " +
+                "  k.nimi AS name, " +
+                "  palstaIntersection.area AS area " +
+                "FROM palstaIntersection " +
+                "INNER JOIN palstaalue pa2 ON pa2.id = palstaIntersection.id " +
+                "LEFT JOIN kiinteisto_nimet k ON pa2.tunnus = k.tunnus " +
+                "WHERE ( palstaIntersection.area > :minimumIntersectionArea ) ";
+
+        return ImmutableList.copyOf(enhancedJdbcTemplate.query(
+                sql,
+                params,
+                (resultSet, i) -> new GISZoneMmlPropertyIntersectionDTO(
+                        zoneId,
+                        resultSet.getLong("tunnus"),
+                        resultSet.getInt("id"),
+                        resultSet.getString("name"),
+                        resultSet.getDouble("area")
+                )
+        ));
+    }
+
 }
+

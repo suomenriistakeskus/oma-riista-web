@@ -29,6 +29,7 @@ public class PermittedMethod implements Serializable {
 
         // Muu
         OTHER("9999");
+
         private String code;
 
         Method(String code) {

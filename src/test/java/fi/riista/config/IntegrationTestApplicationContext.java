@@ -43,7 +43,7 @@ public class IntegrationTestApplicationContext {
 
         marshaller.setMarshallerProperties(JaxbUtils.getDefaultMarshallerProperties(true));
         marshaller.setContextPath("fi.riista.integration.metsastajarekisteri.shootingtest");
-        marshaller.setSchema(new ClassPathResource("/xsd/mr/ShootingTestExport.xsd"));
+        marshaller.setSchema(new ClassPathResource("/xsd/mr/shootingtest/ShootingTestExport.xsd"));
 
         marshaller.setValidationEventHandler(event -> {
             final Throwable linkedException = event.getLinkedException();

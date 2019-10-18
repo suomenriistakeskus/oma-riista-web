@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
 import static fi.riista.feature.shootingtest.AbstractShootingTestEntityAuthorization.Role.ASSIGNED_SHOOTING_TEST_OFFICIAL;
+import static fi.riista.security.EntityPermission.READ;
 
 public abstract class AbstractShootingTestEntityAuthorization<T extends BaseEntity<?>>
         extends AbstractEntityAuthorization<T> {
@@ -33,8 +34,12 @@ public abstract class AbstractShootingTestEntityAuthorization<T extends BaseEnti
         helper.collectAllRhyRoles(event.getCalendarEvent().getOrganisation(), collector, userInfo);
 
         if (!collector.hasPermission()) {
-            collector.addAuthorizationRole(ASSIGNED_SHOOTING_TEST_OFFICIAL,
-                    () -> helper.isPermittedAsAssignedOfficial(event, userInfo));
+            collector.addAuthorizationRole(ASSIGNED_SHOOTING_TEST_OFFICIAL, () -> {
+                final boolean isAssignedOfficial = helper.isAssignedShootingTestOfficial(event, userInfo);
+
+                return isAssignedOfficial &&
+                        (event.hasOccurredWithinLastWeek() || collector.getRequestedPermission() == READ);
+            });
         }
     }
 }

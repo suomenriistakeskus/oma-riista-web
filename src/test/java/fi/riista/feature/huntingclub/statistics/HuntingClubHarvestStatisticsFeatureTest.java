@@ -21,7 +21,6 @@ import org.junit.Test;
 import javax.annotation.Resource;
 import java.util.Map;
 
-import static fi.riista.util.DateUtil.huntingYearBeginDate;
 import static fi.riista.util.DateUtil.today;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertNotNull;

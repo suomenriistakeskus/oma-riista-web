@@ -1,0 +1,10 @@
+<div class="form-group" show-errors>
+    <label for="yearSelect" translate="global.huntingYear"></label>
+
+    <select name="yearSelect" id="yearSelect"
+            class="form-control"
+            ng-model="$ctrl.filters.huntingYear"
+            ng-disabled="$ctrl.isDisabled()"
+            ng-options="year.year as year.name for year in $ctrl.huntingYears | orderBy:'year'">
+    </select>
+</div>

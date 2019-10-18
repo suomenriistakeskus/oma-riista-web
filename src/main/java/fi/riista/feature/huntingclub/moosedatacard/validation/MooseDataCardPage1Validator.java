@@ -65,9 +65,10 @@ public class MooseDataCardPage1Validator {
 
         return Stream.of(validationOfHunterNumberAndSsn, validationOfRest)
                 .collect(flattenErrorsOrElseGet(() -> {
-                    final Tuple3<String, String, GeoLocation> t = validationOfRest.get();
 
-                    return new MooseDataCardPage1Validation(validationOfHunterNumberAndSsn.get(), t._1, t._2, t._3);
+                    return Tuple.of(validationOfHunterNumberAndSsn.get())
+                            .concat(validationOfRest.get())
+                            .apply(MooseDataCardPage1Validation::new);
                 }));
     }
 

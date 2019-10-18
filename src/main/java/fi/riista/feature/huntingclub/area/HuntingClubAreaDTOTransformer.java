@@ -6,8 +6,8 @@ import com.google.common.collect.ImmutableSet;
 import com.querydsl.jpa.impl.JPAQuery;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.account.user.UserRepository;
-import fi.riista.feature.common.entity.LifecycleEntity;
+import fi.riista.feature.common.dto.LastModifierDTO;
+import fi.riista.feature.common.service.LastModifierService;
 import fi.riista.feature.gis.GISQueryService;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
@@ -19,14 +19,9 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.person.PersonRepository;
-import fi.riista.util.Collect;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.ListTransformer;
 import fi.riista.util.jpa.CriteriaUtils;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -34,7 +29,6 @@ import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -43,32 +37,31 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static fi.riista.util.Collect.groupingByIdOf;
-import static java.util.stream.Collectors.toList;
+import static fi.riista.util.Collect.idSet;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toSet;
 
 @Component
 public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubArea, HuntingClubAreaDTO> {
 
     @Resource
-    private ActiveUserService activeUserService;
+    private HuntingClubRepository huntingClubRepository;
 
     @Resource
-    private HuntingClubRepository huntingClubRepository;
+    private GISZoneRepository zoneRepository;
 
     @Resource
     private OccupationRepository occupationRepository;
 
     @Resource
+    private ActiveUserService activeUserService;
+
+    @Resource
     private GISQueryService gisQueryService;
 
     @Resource
-    private GISZoneRepository gisZoneRepository;
-
-    @Resource
-    private UserRepository userRepository;
-
-    @Resource
-    private PersonRepository personRepository;
+    private LastModifierService lastModifierService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -82,59 +75,50 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
     @Override
     protected List<HuntingClubAreaDTO> transform(@Nonnull final List<HuntingClubArea> list) {
         if (list.isEmpty()) {
-            return Collections.emptyList();
+            return emptyList();
         }
 
         final SystemUser activeUser = activeUserService.requireActiveUser();
+        final boolean activeUserIsAdminOrModerator = activeUser.isModeratorOrAdmin();
         final Map<Long, List<Occupation>> occupationByOrganisationId = findValidActiveUserOccupations(activeUser);
 
         final Function<HuntingClubArea, HuntingClub> areaToClubMapping = getAreaToClubMapping(list);
-        final Function<HuntingClubArea, GISZoneWithoutGeometryDTO> areaToZoneMapping = gisZoneRepository.getAreaMapping(list);
+        final Function<HuntingClubArea, GISZoneWithoutGeometryDTO> areaToZoneMapping = createAreaSizeMapping(list);
         final Set<Long> zonesWithChanges = findChangedZonesForAreas(list);
         final List<Long> attachedAreas = listAreaWithAttachedGroup(list);
 
-        final Map<Long, SystemUser> modifierUsers = findModifierUsers(list);
-        final Function<SystemUser, Person> userToPerson = findUserToPerson(modifierUsers.values());
+        final Map<HuntingClubArea, LastModifierDTO> lastModifierMapping = lastModifierService.getLastModifiers(list);
 
-        return list.stream().map(area -> {
+        return F.mapNonNullsToList(list, area -> {
+
             final HuntingClub huntingClub = areaToClubMapping.apply(area);
             final GISZoneWithoutGeometryDTO zone = areaToZoneMapping.apply(area);
 
             final HuntingClubAreaDTO dto = HuntingClubAreaDTO.create(area, huntingClub, zone);
 
-            dto.setLastModifiedDate(DateUtil.toLocalDateTimeNullSafe(area.getLifecycleFields().getModificationTime()));
+            final LastModifierDTO modifier = lastModifierMapping.get(area);
 
-            final Tuple2<String, Boolean> modifier = getModifier(area, modifierUsers, userToPerson);
-            dto.setLastModifierName(modifier._1);
-            dto.setLastModifierRiistakeskus(modifier._2);
+            dto.setLastModifiedDate(modifier.getTimestampAsLocalDateTime());
+            dto.setLastModifierName(modifier.getFullName());
+            dto.setLastModifierRiistakeskus(modifier.isAdminOrModerator());
 
             dto.setHasPendingZoneChanges(zonesWithChanges.contains(F.getId(zone)));
             dto.setAttachedToGroup(attachedAreas.contains(area.getId()));
 
-            if (activeUser.isModeratorOrAdmin()) {
+            if (activeUserIsAdminOrModerator) {
                 dto.setCanEdit(true);
             } else {
                 resolvePermissions(occupationByOrganisationId, area, dto);
             }
 
             return dto;
-        }).collect(toList());
+        });
     }
 
-    private static Tuple2<String, Boolean> getModifier(final HuntingClubArea area,
-                                                       final Map<Long, SystemUser> modifierUsers,
-                                                       final Function<SystemUser, Person> userToPerson) {
-
-        final SystemUser user = modifierUsers.get(area.getModifiedByUserId());
-        if (user != null) {
-            final Person person = userToPerson.apply(user);
-            if (person != null) {
-                return Tuple.of(person.getFullName(), false);
-            }
-            return Tuple.of(user.getFullName(), true);
-        }
-        // user might be null for example when area is copied by scheduled task
-        return Tuple.of(null, true);
+    private Function<HuntingClubArea, GISZoneWithoutGeometryDTO> createAreaSizeMapping(final Iterable<HuntingClubArea> iterable) {
+        final Set<Long> zoneIds = F.stream(iterable).map(HuntingClubArea::getZone).collect(idSet());
+        final Map<Long, GISZoneWithoutGeometryDTO> mapping = zoneRepository.fetchWithoutGeometry(zoneIds);
+        return a -> a.getZone() != null ? mapping.get(F.getId(a.getZone())) : null;
     }
 
     private List<Long> listAreaWithAttachedGroup(final Collection<HuntingClubArea> list) {
@@ -157,7 +141,7 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
         final Person person = activeUser.getPerson();
 
         return person == null
-                ? Collections.emptyMap()
+                ? emptyMap()
                 : findClubOccupations(person).stream().collect(groupingByIdOf(Occupation::getOrganisation));
     }
 
@@ -168,37 +152,29 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
     private static void resolvePermissions(final Map<Long, List<Occupation>> occupationByOrganisationId,
                                            final HuntingClubArea area,
                                            final HuntingClubAreaDTO dto) {
+
         final Long clubId = F.getId(area.getClub());
 
         if (clubId == null || occupationByOrganisationId.isEmpty()) {
             return;
         }
 
-        final List<Occupation> clubOccupations = occupationByOrganisationId.getOrDefault(clubId, Collections.emptyList());
+        final List<Occupation> clubOccupations = occupationByOrganisationId.getOrDefault(clubId, emptyList());
 
         dto.setCanEdit(hasAnyOccupationWithType(clubOccupations, EnumSet.of(OccupationType.SEURAN_YHDYSHENKILO)));
     }
 
     private static boolean hasAnyOccupationWithType(final Collection<Occupation> occupations,
                                                     final EnumSet<OccupationType> occupationType) {
+
         return occupations.stream().anyMatch(o -> occupationType.contains(o.getOccupationType()));
     }
 
     private Set<Long> findChangedZonesForAreas(final Collection<HuntingClubArea> areas) {
-        final Set<Long> zoneIds = areas.stream().map(HuntingClubArea::getZone).collect(Collect.idSet());
+        final Set<Long> zoneIds = areas.stream().map(HuntingClubArea::getZone).collect(idSet());
 
         return changedZoneCache.get().stream()
                 .filter(zoneIds::contains)
                 .collect(toSet());
-    }
-
-    private Map<Long, SystemUser> findModifierUsers(List<HuntingClubArea> list) {
-        final Set<Long> modifierIds = F.mapNonNullsToSet(list, LifecycleEntity::getModifiedByUserId);
-
-        return F.indexById(userRepository.findAll(modifierIds));
-    }
-
-    private Function<SystemUser, Person> findUserToPerson(Collection<SystemUser> users) {
-        return CriteriaUtils.singleQueryFunction(users, SystemUser::getPerson, personRepository, false);
     }
 }

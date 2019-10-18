@@ -45,9 +45,11 @@ public class CopyZoneGeometryQueries {
 
     public void copyZoneCombinedGeometry(final GISZone from, final GISZone to) {
         jdbcOperations.update("UPDATE zone " +
-                " SET geom = z2.geom FROM zone z2" +
-                " WHERE zone.zone_id = :to_zone_id" +
-                " AND z2.zone_id = :from_zone_id", copyParameters(from, to));
+                " SET geom = ( " +
+                "   SELECT z2.geom " +
+                "   FROM zone AS z2 " +
+                "   WHERE z2.zone_id = :from_zone_id) " +
+                " WHERE zone_id = :to_zone_id", copyParameters(from, to));
     }
 
     private static MapSqlParameterSource copyParameters(final GISZone from, final GISZone to) {

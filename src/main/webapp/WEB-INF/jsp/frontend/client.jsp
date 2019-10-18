@@ -1,16 +1,26 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" session="true" trimDirectiveWhitespaces="true" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
     <meta name="description" content="'Oma riista' on Suomen riistakeskuksen helppokäyttöinen sähköisen asioinnin palvelu metsästäjille ja rhy toiminnanohjaajille.">
     <meta name="author" content="Suomen riistakeskus"/>
-    <link rel="shortcut icon" href="/favicon.ico?v=1" />
+    <meta name="google" content="notranslate">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png?v=2">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png?v=2">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png?v=2">
+    <link rel="manifest" href="/static/site.webmanifest?v=2">
+    <link rel="mask-icon" href="/static/safari-pinned-tab.svg?v=2" color="#00a300">
+    <link rel="shortcut icon" href="/static/favicon.ico?v=2">
+    <meta name="apple-mobile-web-app-title" content="Oma riista">
+    <meta name="application-name" content="Oma riista">
+    <meta name="msapplication-TileColor" content="#00a300">
+    <meta name="msapplication-config" content="/static/browserconfig.xml?v=2">
+    <meta name="theme-color" content="#00a300">
     <title>'Oma riista' on Suomen riistakeskuksen helppokäyttöinen sähköisen asioinnin palvelu metsästäjille ja rhy toiminnanohjaajille.</title>
     <spring:eval var="rev" expression="@runtimeEnvironmentUtil.revision"/>
     <spring:eval var="environmentId" expression="@runtimeEnvironmentUtil.environmentId"/>
@@ -21,9 +31,9 @@
         <%@ include file="/frontend/js/lib/angular-loader.min.js" %>
         <%@ include file="/frontend/js/lib/loadjs.min.js" %>
         loadjs([
-            'css!https://fonts.googleapis.com/css?family=Open+Sans:300,400,700|Roboto+Slab:700',
+            'css!https://fonts.googleapis.com/css?family=Open+Sans:300,400,700|Roboto+Slab:400,700',
             'css!/v/${styleVersion}/css/app.css',
-            'https://cdn.ravenjs.com/3.20.1/raven.min.js',
+            'https://cdn.ravenjs.com/3.27.0/raven.min.js',
             '/v/${vendorOtherVersion}/js/vendor.other.min.js',
             '/v/${vendorAngularVersion}/js/vendor.angular.min.js',
             '/v/${templatesVersion}/js/templates.js',
@@ -37,8 +47,13 @@
 
                 if (sentryDsn) {
                     // configure the SDK as you normally would
-                    Raven.config(sentryDsn).install();
+                    Raven.config(sentryDsn, {
+                        release: '${rev}',
+                        environment: '${environmentId}-frontend'
+                    }).install();
                 }
+
+                Dropzone.autoDiscover = false;
 
                 Raven.context(function () {
                     angular.module('app.metadata', [])
@@ -55,8 +70,11 @@
     </script>
 </head>
 <body>
-<div class="hidden">'Oma riista' on Suomen riistakeskuksen helppokäyttöinen sähköisen asioinnin palvelu metsästäjille ja rhy toiminnanohjaajille.</div>
-<div class="hidden" ng-controller="IdleController"></div>
+<div style="display: none">
+    'Oma riista' on Suomen riistakeskuksen helppokäyttöinen sähköisen asioinnin palvelu metsästäjille ja rhy
+    toiminnanohjaajille.
+</div>
+<div style="display: none" ng-controller="IdleController"></div>
 <noscript>
     <div class="no-js">
         <div class="well">
@@ -103,16 +121,13 @@
 
 <site-nav></site-nav>
 
-<div class="wrapper" ng-cloak>
-    <span id="scrollToTop"></span>
-
+<div class="wrapper">
     <div class="site-background"></div>
 
     <div class="main-content" ui-view autoscroll="false"></div>
 </div>
 
-<footer ng-cloak class="ng-cloak"
-        riista-footer-css
+<footer riista-footer-css
         ng-include="'layout/footer.html'">
 </footer>
 

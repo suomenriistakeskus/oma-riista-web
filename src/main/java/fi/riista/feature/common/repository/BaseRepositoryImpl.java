@@ -43,6 +43,16 @@ public class BaseRepositoryImpl<T, ID extends Serializable>
         return toSlice(querydsl.applySorting(page.getSort(), query).fetch(), page);
     }
 
+    @Override
+    public Slice<T> findAllAsSlice(final Predicate predicate, final Pageable page, final OrderSpecifier<?>... orders) {
+        final JPQLQuery<T> query = createQuery(predicate)
+                .select(path)
+                .offset(page.getOffset())
+                .orderBy(orders)
+                .limit(page.getPageSize() + 1);
+        return toSlice(querydsl.applySorting(page.getSort(), query).fetch(), page);
+    }
+
     public static <S> Slice<S> toSlice(final List<S> results, final Pageable page) {
         boolean hasNext = false;
         if (results.size() > page.getPageSize()) {

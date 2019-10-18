@@ -91,39 +91,135 @@
             "selectAll": "Välj alla",
             "accept": "Föreslå",
             "reject": "Avslå",
+            "return": "Gå tillbaka",
             "submit": "Skicka",
-            "amend": "Täydennä",
+            "amend": "Komplettera",
             "copy": "Kopiera",
             "create": "Skapa",
-            "downloadPdf": "Ladda PDF"
+            "download": "Ladda",
+            "downloadPdf": "Ladda PDF",
+            "downloadZip": "Ladda ZIP",
+            "exportToExcel": "För till Excel-fil",
+            "exportToXml": "För till XML-fil",
+            "print": "Skriv ut"
         },
         "map": {
             "map": "Karta",
             "toggleLayers": "Visa / dölj alla",
             "propertyIdentifier": "Fastighetsregisternummer",
             "areaSize": "Arealen",
+            "areaExternalId": "Områdets kod",
+            "lastModifier": "Den senaste redigeraren",
             "layer": {
                 "empty": "Ingen bakgrundskarta",
                 "terrain": "Terrängkarta",
                 "background": "Grundkarta",
                 "aerial": "Ortofoton"
             },
+            "overlay": {
+                "hirvi": "Forststyrelsen älgområdena",
+                "pienriista": "Forststyrelsen småviltområdena",
+                "metsahallitus": "Statens mark",
+                "riistakolmiot": "Vilttrianglar",
+                "rhy": "JVF-gränser"
+            },
+            "size": {
+                "calculating": "Beräknar...",
+                "landAreaSize": "Markyta",
+                "waterAreaSize": "Vattenarealen",
+                "totalAreaSize": "Areal",
+                "stateLandAreaSize": "Statsägda områdens areal",
+                "privateLandAreaSize": "Privatägda områdens areal"
+            },
             "print": {
                 "modalTitle": "Skriv ut ömrådet",
                 "paperSizeLabel": "Arkstorlek",
                 "paperDpiLabel": "Utskriftsupplösning",
                 "paperOrientationLabel": "Pappersorientering",
+                "stateOverlay": "Markera statens mark",
                 "paperOrientation": {
                     "portrait": "Portrait sidan",
                     "landscape": "Liggande sidan"
                 },
                 "submitButton": "Skriv ut"
+            },
+            "status": "Områdets situation",
+            "editor": {
+                "selectedArea": {
+                    "areaCode": "Kod",
+                    "areaName": "Namn",
+                    "areaSize": "Areal",
+                    "changeTitle": "Ändringar",
+                    "changeAmount": "Ändring"
+                },
+                "tab": {
+                    "mml": {
+                        "title": "Fastigheter",
+                        "emptySelection": "Inte valda fastigheter",
+                        "showOnlyChanged": "Visa och reparera den förändrade fastighets",
+                        "changedHelpText": "Du observerar väl, att tjänstens korrigeringsförslag görs kalkylmässigt och de är därför endast riktgivande. Ändringen av arealen syns med rött under den ursprungliga arealen. Om fastighetsnumret har bytts, så visas ett eventuellt ersättande fastighetsnummer under det.",
+                        "tooltipPropertyNumber": "Ursprungligt och ersättande fastighetsnummer",
+                        "tooltipAreaSize": "Ursprunglig areal och storleken av ändringen",
+                        "massInsert": "Öppna massinmatning ...",
+                        "fix": "Korrigera"
+                    },
+                    "metsahallitus": {
+                        "title": "Forststyrelse",
+                        "search": "Sök",
+                        "emptySelection": "Inte valda forststyrelseområden"
+                    },
+                    "draw": {
+                        "title": "Övriga",
+                        "emptySelection": "Inga tecknade geometrier"
+                    },
+                    "massInsert": {
+                        "title": "Massinmatning",
+                        "inputPropertyIdentifier": "Mata in fastighetsbeteckningen",
+                        "placeholder": "Skriv in i formatet 111-222-3333-4444 eller 1-2-3-4 eller 11122233334444",
+                        "okPropertyCount": "Val av  {{count}} st fastigheter lyckades",
+                        "propertyIdentifiersNotFound": "Följande fastighetssignum hittas inte: "
+                    }
+                },
+                "toolbar": {
+                    "move": "Flyttning av kartan",
+                    "palsta": {
+                        "add": {
+                            "single": "Lägg till / radera-verktyg",
+                            "marquee": "Måla (lägg till)"
+                        },
+                        "remove": {
+                            "marquee": "Måla (radera)"
+                        }
+                    },
+                    "draw": {
+                        "title": "Rita",
+                        "add": "Lägg till",
+                        "edit": "Redigera"
+                    },
+                    "exclude": {
+                        "title": "Klipp ut delar av skiftet ",
+                        "lasso": {
+                            "add": "Rita (frihandslinje)",
+                            "remove": "Radera (frihandslinje)"
+                        },
+                        "polyLasso": {
+                            "add": "Rita (linje med kopplingspunkter)",
+                            "remove": "Radera (linje med kopplingspunkter)"
+                        }
+                    }
+                },
+                "legend": {
+                    "realEstate": "Fastighet",
+                    "metsahallitus": "Forststyrelseområde",
+                    "changed": "Förändrade fastighet",
+                    "selected": "Det markerade området"
+                }
             }
         },
         "messages": {
             "error": "Uppdateringen av uppgifterna misslyckades. Försök på nytt senare",
             "success": "Uppgifterna har uppdaterats",
-            "appRevisionChanged": "Sidan har uppdaterats. Var god och <a href='#restart'>uppdatera sidan</a>",
+            "appRevisionChanged": "Sidan har uppdaterats. Var god och <a href='#/restart'>uppdatera sidan</a>",
             "invalid": "Givet värde är inte giltigt.",
             "notSet": "Ej fastställts"
         },
@@ -147,6 +243,11 @@
             "ARN": "Regionalt viltråd",
             "RHY": "Jaktvårdsförening",
             "CLUB": "Förening"
+        },
+        "gameCategory": {
+            "FOWL": "Viltfågel",
+            "GAME_MAMMAL": "Viltdäggdjur",
+            "UNPROTECTED": "Icke fredade djur"
         },
         "address": {
             "streetAddress": "Gatuadress",
@@ -203,11 +304,15 @@
         "date": "Datum",
         "beginDate": "Startdatum",
         "endDate": "Slutdatum",
+        "pointOfTime": "Fångsttid",
+        "amount": "Mängd",
         "year": "År",
         "huntingYear": "Jaktår",
         "financialYear": "Verksamhetsår",
         "selectCalendarYear": "Välj år",
+        "selectHuntingYear": "Välj jaktår",
         "selectSpecies": "Välj djur",
+        "selectPermit": "Välj licensen",
         "state": "Status",
         "marking": "Märkning",
         "total": "Totalt",
@@ -244,6 +349,7 @@
         "phoneNumber": "Ange det lagliga telefonnumret",
         "hunterNumber": "Ogiltigt jägarnummer",
         "finnishPersonalIdentity": "Oduglig personbeteckning",
+        "finnishBusinessId": "FO-signumet duger inte",
         "duplicate": "Duplicate"
     },
     "main": {
@@ -275,7 +381,7 @@
         "recoverPassword": "Har du glömt ditt lösenord?",
         "emailChanged": "Har e-postadressen bytts?",
         "instructionsTitle": "Anvisningar för användning av tjänsten",
-        "instructionsLink": "http://riista.fi/sv/viltforvaltningen/elektroniska-tjanster/",
+        "instructionsLink": "https://www.riistainfo.fi/sv/oma-riista-anvisningar/",
         "form": {
             "usernamePlaceholder": "E-postadress",
             "passwordPlaceholder": "Lösenord",
@@ -430,13 +536,41 @@
             "admins": "Huvudanvändare",
             "moderators": "Moderatorer",
             "rest_users": "Gränssnittsanvändare",
-            "privileges": "Rättigheter för användaren av gränsytor"
+            "privileges": "Rättigheter för användaren",
+            "showOnlyActive": "Visa bara aktiv användar"
         }
     },
     "account": {
         "announcements": {
             "title": "Meddelanden",
             "messageFrom": "Avsändare:"
+        },
+        "areas": {
+            "create": "Lägg till område",
+            "editMap": "Redigera kartan",
+            "editArea": "Redigera område",
+            "areaName": "Namn på område",
+            "singleAreas": "Områden",
+            "personalAreaUnions": "Samlicensområden"
+        },
+        "personalAreaUnion": {
+            "setAreaReady": "Lås området",
+            "setAreaIncomplete": "Öppna området för redigering",
+            "areaExternalId": "Kod för samlicensområdet",
+            "addPartnerArea": "Lägg till delägarområde",
+            "messages": {
+                "addUnionAreas": "Lägg till områden",
+                "partnerAreaHasChanged": "<strong>Delägarområdet har ändrats.</strong> Kontrollera delägarområdena.",
+                "personalAreaUnionHelp": "Du kan skapa ett samlicensområde endast av föreningarnas eller sällskapens områden. Områdena måste vara skapade för samma jaktår. Du kan lägga till delägarområden med den tiosiffriga områdeskoden. Ta tillvara samlicensens områdeskod och totala arealen för ansökan om licens/dispens."
+            },
+            "areaStatus": {
+                "INCOMPLETE": "Ofullständig",
+                "READY": "Klar att bifogas till licensen/dispensen",
+                "LOCKED": "Låst",
+                "PENDING": "Väntar på beräkning",
+                "PROCESSING": "Beräknas...",
+                "PROCESSING_FAILED": "Beräkningen misslyckades"
+            }
         },
         "edit": {
             "title": "Redigera adressuppgifter",
@@ -461,9 +595,10 @@
             "menu": {
                 "profile": "Egna uppgifter",
                 "gameDiary": "Viltdagbok",
+                "harvestRegistry": "Bytesregister",
+                "harvestRegistryInfoDialogText": "Enligt jaktlagens 38 b § för Finlands viltcentral ett fångstregister som ska användas för att följa viltbestånden och planera hur de ska utnyttjas samt för jaktövervakning och statistik.",
                 "announcements": "Meddelanden",
-                "harvestReportInfoTitle": "Bytesmeddelandena/-anmälningarna har ändrats",
-                "harvestReportInfo": "I fortsättningen görs de lagstadgade bytesmeddelandena/-anmälningarna i viltdagboken via \"Anteckna byte\"-tangenten. Någon separat åtgärd för bytesanmälningar finns inte längre."
+                "areas": "Områden"
             },
             "title": {
                 "personDetails": "Personuppgifter",
@@ -483,7 +618,7 @@
             "sourcePopulationInformationSystem": "Uppgifterna har hämtats från Befolkningsdatasystemet",
             "sourceHunterRegistry": "Uppgifterna kommer från Jägarregistret",
             "modifyUsingItella": "Du kan göra adressändringen genom att göra en <strong><a href='http://www.posti.fi/muuttoilmoitus/' target='_blank'>flyttningsanmälan till posten</a></strong>.",
-            "modifyUsingMetsastajarekisteri": "Uppgifterna angående Tidningen, Tidningens språk och Marknadsföringsförbud kommer direkt från Jägarregistret. Om du vill ändra de uppgifterna, ta då direkt kontakt med Jägarregistret (metsastajarekisteri@innofactor.com).",
+            "modifyUsingMetsastajarekisteri": "Uppgifterna angående Tidningen och Tidningens språk kommer direkt från Jägarregistret. Om du vill ändra de uppgifterna, ta då direkt kontakt med Jägarregistret (metsastajarekisteri@innofactor.com).",
             "deactivate": {
                 "title": "Deaktivera användarkontot",
                 "info1": "Deaktivering av användarkontot hindrar personen att registrera sig i systemet.",
@@ -504,7 +639,6 @@
                 "denyMagazine": "Tidning",
                 "denyMagazineYes": "Nej",
                 "denyMagazineNo": "Ja",
-                "denyMarketing": "Marknadsföringsförbud",
                 "huntingBan": "Jaktförbud i kraft"
             },
             "pdf": {
@@ -586,13 +720,40 @@
                     "validity": "Giltighetstid",
                     "rhy": "Plats där prestationen avlagts",
                     "expired": "Förfallit"
-                }
+                },
+                "downloadPaymentSummary": "Ladda Avräkningssammandrag"
             }
         },
         "roleselection": {
             "title": "Välj uppdrag",
             "selectRole": "Välj"
         }
+    },
+    "harvestRegistry": {
+        "allSpecies": "Alla arter",
+        "selectSpecies": "Välj art",
+        "deselectAllSpecies": "Ta bort allt",
+        "infoText": "Enligt jaktlagens 38 b § för Finlands viltcentral ett fångstregister som ska användas för att följa viltbestånden och planera hur de ska utnyttjas samt för jaktövervakning och statistik. I registret registreras följande uppgifter utifrån de fångstanmälningar som avses i eller i enlighet med jaktlagen; jägarens namn, jägarnumret, uppgifter om bytet samt tid och plats för fångsten. Om offentligheten för och utlämnande av uppgifter föreskrivs det i lagen om offentlighet, allmänna dataskyddsförordningen och dataskyddslagen.",
+        "item": {
+            "species": "Art",
+            "date": "Datum",
+            "timeOfDay": "Kl",
+            "age": "Ålder",
+            "shooterName": "Jägare",
+            "shooterSearchPlaceHolder": "Sök med namn eller jägarnummer",
+            "municipalitySearchPlaceHolder": "Sök med namn eller kommunkod",
+            "shooterHunterNumber": "Jägarnummer",
+            "amount": "Mängd",
+            "gender": "Kön",
+            "weight": "Vikt",
+            "geoLocation": "Position",
+            "harvestArea": "Kvotområde",
+            "municipality": "Kommun",
+            "rka": "Viltcentralens område",
+            "rhy": "Jaktvårdsförening",
+            "shooterAddress": "Kontaktinformation"
+        },
+        "toExcel": "För till Excel-fil"
     },
     "occupation": {
         "type": {
@@ -635,6 +796,7 @@
         "ending": "till och med",
         "registered": "Personen är registrerad som användare av tjänsten",
         "unregistered": "Personen är inte registerad som användare av tjänsten",
+        "all": "Alla",
         "button": {
             "current": "Nuvarande",
             "future": "Kommande",
@@ -713,7 +875,7 @@
                 "rejectSelected": "Förkasta valda"
             },
             "message": {
-                "periodTooLong": "Tidsintervallen är över 5 år eller under 4 år lång!"
+                "periodTooLong": "Tidsintervallen är över 5 år lång!"
             },
             "organisationSearch": {
                 "chooseRka": "Välj område",
@@ -731,6 +893,7 @@
                 "rhy": "SVF"
             },
             "list": {
+                "organisationFilter": "Organisation",
                 "noResults": "Inga sökresultat",
                 "alertUnderage": "Personen kan inte väljas, för personen är minderårig.",
                 "alertHuntingBan": "Personen kan inte väljas, för personen har i kraftvarande jaktförbud."
@@ -743,8 +906,8 @@
             "occupations": "Uppdrag",
             "events": "Evenemang",
             "venues": "Platser",
-            "decisionrecipients": "Päätösten vastaanottajat",
-            "decisionauthorities": "Päätösten esittelijät"
+            "decisionrecipients": "Beslutens mottagare",
+            "decisionauthorities": "Beslutens föredragare"
         },
         "parentOrganisation": "Huvudorganisation",
         "organisation": "Organisation",
@@ -776,7 +939,7 @@
             "mooselikePermits": "Tillstånd",
             "mooselikeStats": "Statistik",
             "mooselikeApplications": "Ansökningar",
-            "annualStatistics": "Statistikbilaga"
+            "annualStatistics": "Verksamhetsuppgifter"
         },
         "edit": {
             "title": "Redigera kontaktinformation",
@@ -802,6 +965,15 @@
         "button": {
             "editContactInfo": "Redigera kontaktinformation"
         },
+        "organisationSelect": {
+            "chooseOrganisation": "Välj...",
+            "type": {
+                "RKA": "Viltcentralens område",
+                "HTA": "Älgförvaltningsområde",
+                "RHY": "Jaktvårdsförening",
+                "RK": "Hela Finland"
+            }
+        },
         "club": {
             "contacts": {
                 "menuTitle": "Kontaktpersoner"
@@ -823,67 +995,11 @@
             "filterByAreaIntersection": "från JVF:s område",
             "filterByPermit": "till JVF:s licenser"
         },
-        "moosePermitStats": {
-            "buttons": {
-                "RKA": "Viltcentralens område",
-                "HTA": "Älgförvaltningsområde",
-                "RHY": "Jaktvårdsförening"
-            },
-            "totalRowTitle": "Sammanlagt",
-            "permit": "Licensnummer",
-            "permitTotalTop": "Beviljade",
-            "permitTotal": "Licenser<br>totalt",
-            "permitTotalTooltip": "Beviljade licenser totalt",
-            "permitUsedTop": "Byte",
-            "a": "V<br>TOT",
-            "aTooltip": "Fällda vuxna totalt",
-            "au": "VT",
-            "auTooltip": "Fällda tjurar",
-            "an": "VK",
-            "anTooltip": "Fällda kor",
-            "v": "K<br>TOT",
-            "vTooltip": "Fällda kalvar totalt",
-            "vu": "TK",
-            "vuTooltip": "Fällda kalvtjurar",
-            "vn": "KK",
-            "vnTooltip": "Fällda kokalvar",
-            "total": "Alla<br>tot",
-            "totalTooltip": "Alla fällda totalt",
-            "permitUsedPercentage": "Av licenserna <br>använts %",
-            "permitUsedPercentageTooltip": "Av licenserna använts %",
-            "vPercentage": "K%",
-            "vPercentageTooltip": "Kalvprocenten av alla",
-            "auPercentage": "VT%",
-            "auPercentageTooltip": "Tjurprocenten av alla fullvuxna",
-            "area": {
-                "top": "Areal",
-                "total": "Storlek",
-                "totalTooltip": "Totala arealen",
-                "effective": "Anv",
-                "effectiveTooltip": "Till jakten använd areal"
-            },
-            "remainingPer1000": {
-                "top": "Kvar / 1000 HA",
-                "total": "Storlek",
-                "totalTooltip": "Kvar / 1000 HA hela arealen",
-                "effective": "Anv",
-                "effectiveTooltip": "Kvar / 1000 HA till jakt använd areal"
-            },
-            "remaining": {
-                "top": "Stam<br>kvar",
-                "topTooltip": "Stam kvar",
-                "total": "Storlek",
-                "totalTooltip": "Stam kvar på hela området",
-                "effective": "Anv",
-                "effectiveTooltip": "Stam kvar på området som användes för jakt"
-            },
-            "huntingFinished": "Jakten upphört"
-        },
         "annualStats": {
             "state": {
-                "NOT_CREATED": "Aloittamattomat",
-                "IN_PROGRESS": "Käsittelyssä",
-                "UNDER_INSPECTION": "Täydennyksessä",
+                "NOT_STARTED": "Inte påbörjat",
+                "IN_PROGRESS": "För JVF att komplettera",
+                "UNDER_INSPECTION": "Skickad",
                 "APPROVED": "Godkänn"
             },
             "category": {
@@ -894,18 +1010,29 @@
                 "misc": "Övriga"
             },
             "button": {
+                "showTable": "Visa tabellen",
                 "exportToFile": "För till filen",
                 "exportRhyToExcel": "Jaktvårdsförening (Excel)",
                 "exportRhyToPDF": "Jaktvårdsförening (PDF)",
                 "exportAllToExcel": "Hela Finland (Excel)",
                 "exportAllWithRkaGroupingToExcel": "Hela Finland grupperade enligt VCO (Excel)",
-                "submitForInspection": "Lähetä täydennettäväksi",
-                "approve": "Merkitse valmiiksi"
+                "submitForInspection": "Skicka",
+                "approve": "Godkänna",
+                "cancelApproval": "Annullera godkännande"
             },
-            "confirmation": {
-                "submitForInspection": "Olet lähettämässä tilastoliitteen Riistakeskuksen tarkistettavaksi ja täydennettäväksi. Haluatko jatkaa?",
-                "approval": "Olet hyväksymässä tilastoliitteen. Haluatko jatkaa?"
+            "message": {
+                "submitConfirmation": "Du kan inte ändra verksamhetsuppgifterna efter att du skickat dem. Vill du sända verksamhetsuppgifterna för att ansöka om statsunderstöd?",
+                "submitSucceeded": "Finlands viltcentral har mottagit verksamhetsuppgifterna som ansökan om statsunderstöd.",
+                "approvalConfirmation": "Du är håller på att godkänna verksamhetsuppgifterna. Vill du fortsätta?",
+                "cancelApprovalConfirmation": "Du är i färd med att returnera verksamhetsuppgifterna för komplettering. Vill du fortsätta? ",
+                "approvalCancelled": "Verksamhetsuppgifterna returnerades för komplettering."
             },
+            "tooltip": {
+                "forState": {
+                    "UNDER_INSPECTION": "Lukes och Forststyrelsens statistikuppgifter som saknas kompletteras av Viltcentralen"
+                }
+            },
+            "submitEvent": "Lähetyshetki",
             "overview": {
                 "basicInfo": {
                     "title": "Grunduppgifter",
@@ -917,30 +1044,29 @@
                         "operationalLandAreaSize": "Verksamhetsområdets landareal"
                     }
                 },
-                "stateAidCriteria": {
-                    "title": "Sammandrag från statistiksidorna",
+                "subsidySummary": {
+                    "title": "Verksamhetsuppgifter som inverkar på statsunderstödet",
                     "needForCoordinationService": "Verksamhetsledningens servicebehov",
                     "rhyMembers": "JVF:s medlemsantal 31.12.",
                     "trainingAndYouthWork": "Utbildning och ungdomsarbete",
-                    "hunterExamTrainingEvents": "Antal jägarexamensutbildningar",
-                    "stateAidHunterTrainingEvents": "Antal utbildningstillfällen för jägarna",
-                    "schoolAndCollegeTrainingEvents": "Antal evenemang ordnade för skolor och läroanstalter",
+                    "hunterExamTrainingEvents": "Antal förberedande utbildningar för jägarexamen",
+                    "otherTrainingEvents": "Antal övriga utbildningstillfällen",
+                    "otherTrainingEventsTooltip": "OFU-utbildningar, Jägarutbildningar och Övriga Jägarutbildningar utom Skolor, Läroanstalt och Övriga utbildningar riktade till ungdomar",
+                    "studentAndYouthTrainingEvents": "Antal evenemang avsedda för skolor, läroanstalter och övriga ungdomsgrupper",
                     "huntingControl": "Jaktövervakning",
                     "huntingControlEvents": "Antal jaktövervakningstillfällen",
                     "encouragementToGameCalculation": "Uppmuntran till viltinventeringar",
                     "sumOfLukeCalculations": "Inventerade vilt- och fälttrianglar samt antal sjöfågelpunkttaxeringar",
+                    "lukeCarnivoreContactPersons": "Antal rovdjurskontaktpersoner som antecknat stora rovdjursobservationer",
                     "populationManagementOfLargeGameSpecies": "Skötsel av storviltbestånd",
-                    "harvestPermitApplicationPartners": "Antal samlicensdeltagare i hjortdjurslicensansökningarna",
-                    "wolfTerritoryWorkgroupLeads": "Grundande av vargrevirsamarbetsgrupp och fortsättandet av verksamheten",
-                    "srvaEvents": "SRVA-händelsernas antal",
-                    "allMooselikes": "Hjortdjur totalt",
-                    "allLargeCarnivores": "Stora rovdjur totalt",
-                    "allWildBoars": "Vildsvin totalt",
+                    "mooselikeTaxationPlanningEvents": "Hjortdjurbeskattningsplaneringstillfällen för samdeltagarna",
+                    "wolfTerritoryWorkgroups": "Deltagande i vargrevirsamarbetsgruppens verksamhet",
+                    "mooselikeSrvaEvents": "SRVA-händelsernas antal, hjortdjur",
                     "serviceNeedForNorthernArea": "Servicebehov som förutsätts i norr i enlighet med JL8 §",
                     "smallGameLicensesSoldByMetsahallitus": "Av Forststyrelsen sålda småviltslicenser"
                 },
-                "other": {
-                    "title": "Övriga uppgifter från statistiksidorna",
+                "otherSummary": {
+                    "title": "Övriga uppgifter från verksamhetsuppgifter -sidan",
                     "publicAdministrationTasks": "Offentliga förvaltningsuppgifter",
                     "hunterExamEvents": "Jägarexamenstillfällen",
                     "shootingTestEvents": "Skjutprovstillfällen",
@@ -1019,10 +1145,6 @@
                         "shootingTestType": "Provform",
                         "allAttempts": "Alla",
                         "qualifiedAttempts": "Godkända",
-                        "mooseTitle": "Älg och hjort, prestationsförsök",
-                        "bearTitle": "Björn, prestationsförsök",
-                        "roeDeerTitle": "Rådjur, prestationsförsök",
-                        "bowTitle": "Pilbåge, prestationsförsök",
                         "moderatorOverriddenFirearmTestEvents": "Prov med räfflat kulgevär (fastslagna av moderatorn)",
                         "moderatorOverriddenBowTestEvents": "Pilbågsprov (fastslagna av moderatorn)"
                     }
@@ -1099,7 +1221,7 @@
                         "huntingControlTitle": "Jaktövervakare"
                     }
                 },
-                "stateAid": {
+                "hunter": {
                     "title": "Jägarutbildningar",
                     "hunterTrainings": "Jägarutbildningar",
                     "huntingLeaderTrainings": "Jaktledarutbildningar",
@@ -1117,12 +1239,6 @@
                     "carnivoreContactPersonTrainingParticipants": "Rovdjurskontaktpersonutbildning, deltagare",
                     "accidentPreventionTrainingEvents": "Förebyggande av skador &#8209;utbildning",
                     "accidentPreventionTrainingParticipants": "Förebyggande av skador &#8209;utbildning, deltagare",
-                    "schoolTrainingEvents": "Skolor-utbildningar",
-                    "schoolTrainingParticipants": "Skolor-utbildningar, deltagare",
-                    "collegeTrainingEvents": "Läroanstalt-utbildningar",
-                    "collegeTrainingParticipants": "Läroanstalt-utbildningar, deltagare",
-                    "otherYouthTargetedTrainingEvents": "Övriga utbildningar riktade till ungdomar",
-                    "otherYouthTargetedTrainingParticipants": "Övriga utbildningar riktade till ungdomar, deltagare",
                     "form": {
                         "title": "Redigera jägarutbildningar",
                         "header0": "Typ av utbildning",
@@ -1134,13 +1250,28 @@
                         "carnivoreHuntingLeaderTitle": "Stora rovdjursjägare &#8209;ledarutbildning",
                         "srvaTitle": "SRVA-utbildning",
                         "carnivoreContactPersonTitle": "Rovdjurskontaktpersonutbildning",
-                        "accidentPreventionTitle": "Förebyggande av skador",
-                        "schoolTitle": "Skolor",
-                        "collegeTitle": "Läroanstalt",
-                        "otherYouthTargetedTitle": "Övriga utbildningar riktade till ungdomar"
+                        "accidentPreventionTitle": "Förebyggande av skador"
                     }
                 },
-                "otherHunterTraining": {
+                "youth": {
+                    "title": "Evenemang avsedda för skolor, läroanstalter och övriga ungdomsgrupper",
+                    "schoolTrainingEvents": "Skolor &#8209;evenemang",
+                    "schoolTrainingParticipants": "Skolor &#8209;evenemang, deltagare",
+                    "collegeTrainingEvents": "Läroanstalt &#8209;evenemang",
+                    "collegeTrainingParticipants": "Läroanstalt &#8209;evenemang, deltagare",
+                    "otherYouthTargetedTrainingEvents": "Övriga evenemang riktade till ungdomar",
+                    "otherYouthTargetedTrainingParticipants": "Övriga evenemang riktade till ungdomar, deltagare",
+                    "form": {
+                        "title": "Redigera evenemang avsedda för skolor, läroanstalter och övriga ungdomsgrupper",
+                        "header0": "Typ av evenemang",
+                        "header1": "Tillfällen",
+                        "header2": "Deltagare",
+                        "schoolTitle": "Skolor",
+                        "collegeTitle": "Läroanstalt",
+                        "otherYouthTargetedTitle": "Övriga evenemang riktade till ungdomar"
+                    }
+                },
+                "otherHunter": {
                     "title": "Övriga Jägarutbildningar",
                     "smallCarnivoreHuntingTrainingEvents": "Fångst av smårovdjur &#8209;utbildning",
                     "smallCarnivoreHuntingTrainingParticipants": "Fångst av smårovdjur &#8209;utbildning, deltagare",
@@ -1152,8 +1283,8 @@
                     "gameEnvironmentalCareTrainingParticipants": "Skötsel av viltets biotoper &#8209;utbildning, deltagare",
                     "otherGamekeepingTrainingEvents": "Övrig viltvårdsutbildning",
                     "otherGamekeepingTrainingParticipants": "Övrig viltvårdsutbildning, deltagare",
-                    "otherShootingTrainingEvents": "Övrig skytteutbildning",
-                    "otherShootingTrainingParticipants": "Övrig skytteutbildning, deltagare",
+                    "shootingTrainingEvents": "Skytteutbildning",
+                    "shootingTrainingParticipants": "Skytteutbildning, deltagare",
                     "trackerTrainingEvents": "Eftersöksutbildning",
                     "trackerTrainingParticipants": "Eftersöksutbildning, deltagare",
                     "form": {
@@ -1166,20 +1297,20 @@
                         "gamePopulationManagementTitle": "Skötsel av viltstammar",
                         "gameEnvironmentalCareTitle": "Skötsel av viltbiotoper",
                         "otherGamekeepingTitle": "Övrig viltvårdsutbildning",
-                        "otherShootingTitle": "Övrig skytteutbildning",
+                        "shootingTitle": "Skytteutbildning",
                         "trackerTitle": "Eftersöksutbildning"
                     }
                 },
-                "otherTraining": {
-                    "title": "Övriga utbildningar",
-                    "otherTrainingEvents": "Övriga utbildnings- och publiktillställningar",
-                    "otherTrainingParticipants": "Övriga utbildnings- och publiktillställningar, deltagare",
+                "publicEvents": {
+                    "title": "Publiktillställningar",
+                    "publicEvents": "Publiktillställningar",
+                    "publicEventParticipants": "Publiktillställningar, deltagare",
                     "form": {
-                        "title": "Redigera övriga utbildningar",
-                        "header0": "Typ av utbildning",
+                        "title": "Redigera publiktillställningar",
+                        "header0": "Typ av tillställning",
                         "header1": "Tillfällen",
                         "header2": "Deltagare",
-                        "otherTitle": "Övriga utbildnings- och publiktillställningar"
+                        "publicEventsTitle": "Publiktillställningar"
                     }
                 }
             },
@@ -1187,10 +1318,12 @@
                 "otherHuntingRelated": {
                     "title": "Övriga till jakten hörande uppgifter",
                     "harvestPermitApplicationPartners": "Antal samlicensdeltagare i hjortdjurslicensansökningarna",
-                    "wolfTerritoryWorkgroupLeads": "Grundande av vargrevirsamarbetsgrupp och fortsättandet av verksamheten",
+                    "mooselikeTaxationPlanningEvents": "Hjortdjurbeskattningsplaneringstillfällen för samdeltagarna",
+                    "wolfTerritoryWorkgroups": "Deltagande i vargrevirsamarbetsgruppens verksamhet",
                     "form": {
                         "title": "Redigera övriga till jakten hörande uppgifter",
-                        "wolfTerritoryWorkgroupLeads": "Grundande av vargrevirsamarbetsgrupp och fortsättandet av verksamheten"
+                        "mooselikeTaxationPlanningEvents": "Hjortdjurbeskattningsplaneringstillfällen för samdeltagarna",
+                        "wolfTerritoryWorkgroups": "Deltagande i vargrevirsamarbetsgruppens verksamhet"
                     }
                 },
                 "communication": {
@@ -1230,13 +1363,18 @@
                     "winterGameTriangles": "Inventerade vintervilttrianglar",
                     "summerGameTriangles": "Inventerade sommarvilttrianglar",
                     "fieldTriangles": "Inventerade fälttrianglar",
-                    "waterBirds": "Inventerade sjöfågeltaxeringspunkter",
+                    "totalWaterBirds": "Inventerade sjöfågelpunkter totalt",
+                    "waterBirdBroods": "I kullinventeringen inventerade sjöfågelpunkter",
+                    "waterBirdCouples": "I parinventeringen inventerade sjöfågelpunkter",
+                    "carnivoreContactPersons": "Antal rovdjurskontaktpersoner som antecknat stora rovdjursobservationer",
                     "form": {
                         "title": "Redigera viltinventeringar",
                         "winterGameTriangles": "Inventerade vintervilttrianglar",
                         "summerGameTriangles": "Inventerade sommarvilttrianglar",
                         "fieldTriangles": "Inventerade fälttrianglar",
-                        "waterBirds": "Inventerade sjöfågeltaxeringspunkter"
+                        "waterBirdBroods": "I kullinventeringen inventerade sjöfågelpunkter",
+                        "waterBirdCouples": "I parinventeringen inventerade sjöfågelpunkter",
+                        "carnivoreContactPersons": "Antal rovdjurskontaktpersoner som antecknat stora rovdjursobservationer"
                     }
                 },
                 "metsahallitus": {
@@ -1282,12 +1420,15 @@
             "add": "Lägg till händelse",
             "clone": "Kopiera för nytt evenemang",
             "edit": "Redigera händelse",
-            "remove": "Radera händelse"
+            "remove": "Radera händelse",
+            "addAdditionalEvent": "Lägg till tid"
         },
         "date": "Tid",
         "event": "Händelse",
         "venue": "Plats",
         "description": "Beskrivning",
+        "participants": "Deltagare",
+        "all": "Alla",
         "type": {
             "AMPUMAKOE": "Skjutprov",
             "JOUSIAMPUMAKOE": "Bågskytteprov",
@@ -1300,7 +1441,30 @@
             "AMPUMAKILPAILU": "Skyttetävling",
             "RIISTAPOLKUKILPAILU": "Jaktstigtävling",
             "ERATAPAHTUMA": "Vildmarkstillfällen",
-            "HARJOITUSAMMUNTA": "Träningsskytte"
+            "HARJOITUSAMMUNTA": "Träningsskytte",
+            "METSASTYKSENJOHTAJA_HIRVIELAIMET": "Jaktledarutbildningar, Hjortdjur",
+            "METSASTYKSENJOHTAJA_SUURPEDOT": "Jaktledarutbildningar, Stora rovdjur",
+            "METSASTAJAKOULUTUS_HIRVIELAIMET": "Jägarutbildningar, Hjortdjur",
+            "METSASTAJAKOULUTUS_SUURPEDOT": "Jägarutbildningar, Stora rovdjur",
+            "SRVAKOULUTUS": "SRVA-utbildning",
+            "PETOYHDYSHENKILO_KOULUTUS": "Rovdjurskontaktpersonutbildning",
+            "VAHINKOKOULUTUS": "Förebyggande av skador -utbildning",
+            "TILAISUUS_KOULUILLE": "Utbildning riktade till skolor",
+            "OPPILAITOSTILAISUUS": "Utbildning riktade till läroanstalt",
+            "NUORISOTILAISUUS": "Övrig utbildning riktade till ungdomar",
+            "AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS": "Utbildning för mottagare av skjutprov",
+            "METSASTAJATUTKINNONVASTAANOTTAJA_KOULUTUS": "Utbildning för mottagare av jägarexamen",
+            "RIISTAVAHINKOTARKASTAJA_KOULUTUS": "Utbildning för terränggranskare av viltskador",
+            "METSASTYKSENVALVOJA_KOULUTUS": "Utbildning för jaktövervakare",
+            "PIENPETOJEN_PYYNTI_KOULUTUS": "Fångst av smårovdjur -utbildning",
+            "RIISTALASKENTA_KOULUTUS": "Viltinventeringsutbildning",
+            "RIISTAKANTOJEN_HOITO_KOULUTUS": "Skötsel av viltstammar -utbildning",
+            "RIISTAN_ELINYMPARISTON_HOITO_KOULUTUS": "Skötsel av viltets biotoper -utbildning",
+            "MUU_RIISTANHOITOKOULUTUS": "Övrig viltvårdsutbildning",
+            "AMPUMAKOULUTUS": "Skytteutbildning",
+            "JALJESTAJAKOULUTUS": "Eftersöksutbildning",
+            "MUU_TAPAHTUMA": "Övrig evenemang",
+            "RHY_HALLITUKSEN_KOKOUS": "Jvf:s styrelsemöte"
         },
         "form": {
             "titleAdd": "Lägg till händelse",
@@ -1312,7 +1476,12 @@
             "beginTime": "Starttid",
             "endTime": "Sluttid",
             "name": "Evenemangets namn",
-            "description": "Beskrivning"
+            "description": "Beskrivning",
+            "visible": "Visas inte på riista.fi -sidans evenemang",
+            "excludedFromStatistics": "Inte inom jvf:s verksamhetsområde",
+            "participants": "Deltagare",
+            "dateTooFarInThePast": "Evenemanget för långt tillbaka i tiden",
+            "hunterExamTrainingInfo": "En anteckning som berättigar till statsunderstöd får man för jägarexamensutbildning, om utbildningen varat minst 12 timmar inom jaktvårdsföreningens verksamhetsområde."
         },
         "remove": {
             "title": "Radera händelse?",
@@ -1332,50 +1501,106 @@
     },
     "jht": {
         "menu": {
-            "mooselikeApplications": "Hakemukset ja päätökset",
+            "applicationsAndDecisions": "Ansökningar och beslut",
             "permits": "Licenser",
             "occupationNominations": "OFU-utnämningar",
-            "annualStats": "JVF-statistikbilagor",
+            "areas": "Alueet",
+            "annualStats": "JVF-verksamhetsuppgifter",
+            "mooselike": "Älglicenser",
+            "hirviJyvitys": "Älglicensernas fördelning",
             "mooseDataCard": "Älg infokort",
             "payments": "Betalnings",
-            "invoices": "Laskut",
-            "fivaldi": "Fivaldi"
+            "processingInvoiceSearch": "Handläggningsavgifter",
+            "harvestInvoiceSearch": "Licensavgifter",
+            "fivaldi": "Fivaldi",
+            "harvestRegistry": "Bytesregister"
         },
-        "annualStats": {
-            "button": {
-                "copyEmails": "Kopioi sähköpostiosoitteet keskeneräisistä"
+        "areas": {
+            "list": {
+                "mine": "Omat",
+                "searchText": "Hae nimellä tai alueen tunnuksella"
             }
         },
-        "payments": {
-            "invoice": {
-                "byNumberSearchType": "Hakutapa",
-                "selectByNumberSearchType": "Valitse hakutapa",
+        "annualStats": {
+            "readyForInspection": "Klar för komplettering",
+            "completeForApproval": "Klar för godkännande",
+            "batchApprovalConfirmation": "Du är i färd med att godkänna alla skickade och kompletterade statistikbilagor som färdiga. Vill du fortsätta?",
+            "button": {
+                "copyEmails": "Kopiera e-postadresser från halvfärdiga",
+                "batchApprove": "Färdig",
+                "exportSubsidyAllocation": "Tulosta valtionapulaskelma",
+                "exportSenders": "För till Excel-fil"
+            },
+            "exportSubsidyAllocationDialog": {
+                "title": "Tulosta valtionapulaskelma",
+                "totalSubsidyAmount": "Jaettava summa"
+            },
+            "submitTime": "Tid",
+            "submitAuthor": "Anmälare"
+        },
+        "invoice": {
+            "amountDifference": "Differens",
+            "search": {
+                "byNumberSearchType": "Ansökningssätt",
+                "selectByNumberSearchType": "Välj söksätt",
                 "byNumberSearchTypes": {
                     "invoiceNumber": "Fakturanummer",
                     "creditorReference": "Referensnummer",
                     "applicationNumber": "Ansökningsnummer"
                 },
+                "paymentState": "Betalningsstatus",
+                "showAllPaymentStates": "Alla",
+                "paymentStates": {
+                    "PAID": "Betald",
+                    "PAYMENT_SUM_DIFFERS": "Betalats med en annan summa",
+                    "OTHER": "Andra"
+                },
+                "selectOrganisation": "Välj organisation",
+                "gameSpecies": "Djurart",
+                "showAllSpecies": "Visa alla djurarter",
+                "showAllDeliveryTypes": "Alla",
                 "invoiceType": "Typ",
                 "invoiceDate": "Dat",
-                "paymentDetails": "Tiedot",
-                "events": "Händelser",
+                "receivedAmount": "Betald"
+            },
+            "show": {
+                "receivedAmount": "Betalningar",
+                "paymentDetails": "Uppgifter",
+                "payments": "Betalningar",
+                "noPaymentsExist": "Inga betalningstransaktioner",
+                "verifiedFromAccountStatement": "Kontoutdrag",
+                "paymentLineAuthor": "Registrerare",
+                "actions": "Händelser",
+                "action": "Händelse",
+                "actor": "Aktör",
                 "button": {
-                    "openPermitDecision": "Siirry päätökseen",
-                    "disableElectronicInvoicing": "Vaihda paperilaskuksi",
-                    "printReminder": "Tulosta maksumuistutus"
+                    "addPaymentLine": "Lägg till betalning",
+                    "openPermitDecision": "Gå till beslutet",
+                    "disableElectronicInvoicing": "Byt till pappersfaktura",
+                    "printReminder": "Skriv ut betalningspåminnelse"
                 },
                 "confirm": {
-                    "disableElectronicInvoicing": "Haluatko varmasti kytkeä pois luvan pääkäyttäjältä laskun sähköisen maksutoiminnon Paytrailin kautta?",
-                    "printReminder": "Haluatko varmasti tulostaa maksumuistutuslaskun?"
+                    "removePaymentLine": "Vill du säkert radera raden med betalningsprestation från fakturan?",
+                    "disableElectronicInvoicing": "Är det säkert att du vill byta fakturan till pappersfaktura och samtidigt koppla bort huvudanvändarens tillstånd till elektroniska Paytrail-betalningsfunktionen?",
+                    "printReminder": "Är det säkert att du vill skriva ut en betalningspåminnelsefaktura?"
+                },
+                "paymentLineDialog": {
+                    "title": "Lägg till betalningsprestation",
+                    "paymentSum": "Summa"
                 }
             },
             "fivaldi": {
-                "newBatches": "Uudet Fivaldi-aineistot",
-                "previousBatches": "Edelliset aineistolataukset",
-                "creationTime": "Luontipäivä",
-                "creationMonth": "Luontikuukausi",
+                "newBatches": "Nytt Fivaldi-material",
+                "previousBatches": "Tidigare dataöverfört material",
+                "creationTime": "Datum för uppgörande",
+                "creationMonth": "Månad för uppgörande",
                 "selectYearAndMonthSelection": "Välj år och månad"
             }
+        },
+        "hirviJyvitys": {
+            "title": "Ladda ner älglicensernas fördelningstabell",
+            "chooseRka": "Välj område",
+            "chooseRhy": "Välj jaktvårdsförening"
         }
     },
     "reporting": {
@@ -1383,7 +1608,10 @@
             "contacts": "Kontakt information",
             "occupations": "Uppdrag",
             "rhys": "Jaktvårdsföreningar",
-            "clubs": "Föreningar"
+            "clubs": "Föreningar",
+            "moosePermitStatistics": "Älglicensrapportering",
+            "paymentControl": "Betalningskontroll",
+            "habides": "Habides"
         },
         "common": {
             "toExcel": "För till Excel-fil",
@@ -1408,45 +1636,95 @@
                 "unacceptedFileExtension": "Vid inläsning av älginformationskorten godkänns endast pdf- och xml-filer. Du försökte skicka en fil,  vars ändelse är: {{ extension }}"
             }
         },
-        "huntingSummary": {
-            "overridden": "Viltcentralen har sparat uppgifterna",
-            "title": "Avslutande av jakten",
-            "selectedSpecies": "Väljd art",
-            "disclaimer": "Genom att köra över av samdeltagaren själv meddelade uppgifter om att samdeltagarnas jakt är avslutad lämnar informationen kvar i systemet men dessa beaktas inte officiellt.",
-            "completeHuntingOfPermit": "Avsluta alla samdeltagares jakt och jakt med licensen",
-            "completeOnlyHuntingOfSelectedPartners": "Avsluta endast valda samdeltagares jakt, avsluta inte jakten med licensen",
-            "huntingPartner": "Samsöksdeltagare",
-            "override": "Kör över",
-            "moderatorOverridden": "Överkörd",
+        "moosePermitStatistics": {
+            "reportType": {
+                "BY_PERMIT": "Administrativt",
+                "BY_LOCATION": "Enligt positionering"
+            },
+            "reportTypeTooltip": {
+                "BY_PERMIT": "Bytet allokeras enligt jaktlicens",
+                "BY_LOCATION": "Bytet allokeras enligt den reella positioneringen"
+            },
+            "groupBy": {
+                "RHY_PERMIT": "Licensmottagare / JVF",
+                "HTA_PERMIT": "Licensmottagare / ÄFO",
+                "RKA": "VCO totalt ",
+                "RHY": "JVF totalt",
+                "HTA": "ÄFO totalt",
+                "HTA_RHY": "JVF / ÄFO"
+            },
+            "areaFilter": "Områdesavgränsning",
+            "harvestMapping": "Allokering av byten",
+            "groupByLabel": "Rapporteringsnivå",
+            "totalRowTitle": "Sammanlagt",
+            "permit": "Licensnummer",
+            "permitTotalTop": "Beviljade",
+            "permitTotal": "Totalt",
+            "permitTotalTooltip": "Beviljade licenser totalt",
+            "permitTotalPer1000ha": "ANTAL <br>/ 1000 HA",
+            "permitTotalPer1000haTooltip": "Beviljat / 1000 HA",
+            "applicationTop": "Ansökt",
+            "applicationPermitAmount": "ANTAL",
+            "applicationPermitAmountTooltip": "Ansökta jaktlicenser totalt",
+            "applicationPermitsPer1000ha": "ANTAL <br>/ 1000 HA",
+            "applicationPermitsPer1000haTooltip": "Ansökta jaktlicenser totalt / 1000 HA",
+            "harvestCountTop": "Byte",
+            "permitUsedTop": "Av licenserna <br>använts",
+            "restrictionTop": "Begränsning",
+            "permitHolder": "Licensmottagare",
+            "partnerCount": "Samsöksdeltagare",
+            "originalPermitAmount": "Jaktlicenser",
+            "originalPermitAmountTooltip": "Jaktlicenser",
+            "amendmentPermitAmount": "JL 28§",
+            "amendmentPermitAmountTooltip": "Ny licens (JL 28§)",
+            "restrictionPermitAmountAdult": "V",
+            "restrictionPermitAmountAdultTooltip": "Av vuxna högst",
+            "restrictionPermitAmountAdultMale": "VT",
+            "restrictionPermitAmountAdultMaleTooltip": "Av vuxna tjurar högst",
+            "restrictedYoungPercentage": "Kalv %",
+            "restrictedYoungPercentageTooltip": "Kalv % på grund av begränsningsvillkor",
+            "rhyRkaHta": "JVF / VCO / ÄFÖ",
+            "a": "V<br>TOT",
+            "aTooltip": "Fällda vuxna totalt",
+            "au": "VT",
+            "auTooltip": "Fällda tjurar",
+            "an": "VK",
+            "anTooltip": "Fällda kor",
+            "v": "K<br>TOT",
+            "vTooltip": "Fällda kalvar totalt",
+            "vu": "TK",
+            "vuTooltip": "Fällda kalvtjurar",
+            "vn": "KK",
+            "vnTooltip": "Fällda kokalvar",
+            "total": "Alla<br>tot",
+            "totalTooltip": "Alla fällda totalt",
+            "totalPer1000ha": "Alla fällda <br>/ 1000 HA",
+            "permitUsedTooltip": "Av licenserna använts pcs",
+            "permitUsedPercentage": "%",
+            "permitUsedPercentageTooltip": "Av licenserna använts %",
+            "vPercentage": "K%",
+            "vPercentageTooltip": "Kalvprocenten av alla",
+            "vuPercentage": "TK%",
+            "vuPercentageTooltip": "Tjurkalvarnas andel av alla kalvar %",
+            "auPercentage": "VT%",
+            "auPercentageTooltip": "Tjurprocenten av alla fullvuxna",
             "area": {
-                "top": "Jaktområde",
-                "topTooltip": "Jaktområdets areal",
-                "total": "STORLEK",
-                "totalTooltip": "Hela jaktområdets areal",
-                "effective": "ANV",
-                "effectiveTooltip": "Arealen för jaktområde som använts"
+                "top": "Areal",
+                "total": "Storlek",
+                "totalTooltip": "Totala markarealen",
+                "effective": "Anv",
+                "effectiveTooltip": "Till jakten använd markareal",
+                "permitLandAreaSize": "Beslut",
+                "permitLandAreaSizeTooltip": "Beslutets land-areal ha"
             },
-            "harvestedSpecimens": {
-                "top": "Erhållet byte<br>(individer)",
-                "topTooltip": "Byte som fåtts (individer)",
-                "au": "VT",
-                "auTooltip": "Byte som fåtts (individer) vuxna tjurar",
-                "an": "VK",
-                "anTooltip": "Byte som fåtts (individer) vuxna kor",
-                "vu": "TK",
-                "vuTooltip": "Byte som fåtts (individer) tjurkalvar",
-                "vn": "KK",
-                "vnTooltip": "Byte som fåtts (individer) kokalvar"
+            "remainingPer1000": {
+                "top": "Kvar / 1000 HA",
+                "total": "Storlek",
+                "totalTooltip": "Kvar / 1000 HA hela arealen",
+                "effective": "Anv",
+                "effectiveTooltip": "Kvar / 1000 HA till jakt använd areal"
             },
-            "notEdible": {
-                "top": "Olämpl.<br>som människoföda",
-                "topTooltip": "Av erhållet byte olämpliga som människoföda",
-                "a": "V",
-                "aTooltip": "Av erhållet byte olämpliga som människoföda vuxna",
-                "v": "K",
-                "vTooltip": "Av erhållet byte olämpliga som människoföda kalvar"
-            },
-            "remainingPopulation": {
+            "remaining": {
                 "top": "Stam<br>kvar",
                 "topTooltip": "Stam kvar",
                 "total": "Storlek",
@@ -1454,10 +1732,17 @@
                 "effective": "Anv",
                 "effectiveTooltip": "Stam kvar på området som användes för jakt"
             },
-            "delete": "Ta bort ändringarna",
-            "deleteConfirmationMessage": "Är du säker på, att du vill ta bort av moderatorn gjorda anmälningar om att jakten avslutats för hela licensen?",
-            "onSavedNotification": "Sparandet av anmälningen om att jakten avslutats lyckades.",
-            "onDeletedNotification": "Avlägsnandet av moderatorn gjorda anmälningar om att jakten avslutats lyckades. "
+            "huntingFinished": "Jakten upphört"
+        },
+        "paymentControl": {
+            "button": {
+                "exportUnfinishedMoosePermits": "Exportera öppna hjortdjurslicenser till filen",
+                "exportMooselikeHarvestPaymentSummary": "Saaliiden ja suoritusten kohdentaminen alueittain"
+            }
+        },
+        "habides": {
+            "calendarYear": "Kalenterivuosi",
+            "species": "Laji"
         }
     },
     "observation": {
@@ -1503,7 +1788,7 @@
             "MUUTON_AIKAINEN_LEPAILYALUE": "Viloplats för flyttande fågel",
             "RIISTANKULKUPAIKKA": "Viltpassage",
             "POIKUEYMPARISTO": "Livsmiljö för skogshönsfågelkullar",
-            "VAIHTELEVARAKENTEINEN_MUSTIKKAMETSA" : "Blåbärsskog med varierande struktur",
+            "VAIHTELEVARAKENTEINEN_MUSTIKKAMETSA": "Blåbärsskog med varierande struktur",
             "KUUSISEKOTTEINEN_METSA": "Granblandad skog (putsning)",
             "VAIHTELEVARAKENTEINEN_MANTYSEKOTTEINEN_METSA": "Tallblandad skog med varierande struktur",
             "VAIHTELEVARAKENTEINEN_LEHTIPUUSEKOTTEINEN_METSA": "Lövträdsblandad skog med varierad struktur",
@@ -1879,7 +2164,8 @@
         },
         "admin": {
             "button": {
-                "search": "Sök"
+                "search": "Sök",
+                "downloadCertificate": "Ladda ner intyget"
             },
             "menu": "Bytesanmälningar",
             "all": "Alla",
@@ -1903,6 +2189,10 @@
     },
     "harvestpermit": {
         "mine": {
+            "tab": {
+                "riistakeskus": "Viltcentralens licenser",
+                "metsahallitus": "Forststyrelsens licenser"
+            },
             "applications": {
                 "title": "Ansökningar",
                 "create": "Skapa ny tillståndsansökan",
@@ -1913,49 +2203,249 @@
                 "submitDate": "Ansökning inlämnad",
                 "areaExternalId": "Områdeskod",
                 "species": "Arter",
-                "zipButton": "Ladda ner ZIP",
+                "download": "Ladda ner",
+                "zipButton": "ZIP",
                 "pdfButton": "PDF",
                 "mapButton": "Skriv ut arealen",
+                "deleteConfirmation": "Du håller på att radera en halvfärdig ansökan. Funktionen kan inte ångras. Är du säker på att du vill radera den halvfärdiga ansökningen?",
                 "permitHolder": {
                     "person": "Tillståndsmottagare privatperson",
                     "club": "Tillståndsmottagare förening"
                 },
-                "permitTypeCode": {
-                    "100": "Jaktlicens för hjortdjur"
+                "permitCategory": {
+                    "MOOSELIKE": "Jaktlicens för hjortdjur",
+                    "MOOSELIKE_NEW": "Ny licens (JL 28§)",
+                    "BIRD": "Dispens för viltfåglar och icke fredade fåglar",
+                    "LARGE_CARNIVORE_BEAR": "Dispens för björn, stamvårdande",
+                    "LARGE_CARNIVORE_LYNX": "Dispens för  lodjur, stamvårdande",
+                    "LARGE_CARNIVORE_LYNX_PORONHOITO": "Dispens för  lodjur, stamvårdande, inom renskötselområdet",
+                    "LARGE_CARNIVORE_WOLF": "Dispens för  varg, stamvårdande"
                 }
             },
             "permits": {
                 "title": "Beslut",
                 "openManagement": "Öppna hantering av licensen"
+            },
+            "metsahallitus": {
+                "area": "Område",
+                "type": "Typ av licens",
+                "time": "Tid",
+                "url": "Skick  jaktrespons",
+                "openUrlDialogTitle": "Obs",
+                "openUrlDialogText": "<strong>Du håller på att flytta dig från Oma riista -tjänsten till Forststyrelsens fångstresponssystem.</strong></br></br>Om det uppstår problem vid givandet av fångstresponsen eller om du vill ha tilläggsinformation om ärendet, ta kontakt med kundtjänsten för vildmarkstillstånd vid Forststyrelsen, t. 020 69 2424 (vardagar kl. 9-16) eller per e-post till adressen eraluvat@metsa.fi."
             }
         },
-        "new":  {
-            "createButton": "Skapa ny ansökan",
+        "new": {
+            "selectTypeButton": "Välj",
+            "createButton": "Skapa ansökan",
+            "applicationPeriod": "Licensansökning:",
             "instructionsTitle": "Ny ansökan",
-            "instructions": "Innan tillstånd söks ska föreningen eller sällskapet ange sitt jaktområde. Föreningens områdeskod behövs för ansökan. Vid samlicens bör den förvaltningsmässiga innehavaren ha delägarföreningarnas områdeskoder.",
-            "nameModal":  {
+            "instructions": {
+                "derogationCategory": "Dispenser",
+                "mooselikeCategory": "Jaktlicens",
+                "birdPath": "i18n/bird-permit-instructions-sv.html",
+                "carnivorePath": "i18n/carnivore-permit-instructions-sv.html",
+                "mooselikePath": "i18n/mooselike-permit-instructions-sv.html",
+                "mooselike": "Innan tillstånd söks ska föreningen eller sällskapet ange sitt jaktområde. Föreningens områdeskod behövs för ansökan. Vid samlicens bör den förvaltningsmässiga innehavaren ha delägarföreningarnas områdeskoder."
+            },
+            "nameModal": {
                 "title": "Skapa ny ansökan",
                 "instructions": "Du kan ändra namnet på ansökan, så att du lättare kan känna igen den senare.",
                 "nameLabel": "Ansökans namn",
                 "ok": "Fortsätt",
                 "cancel": "Avbryt"
-            }
+            },
+            "amendmentTitle": "Ny jaktlicens för hjortdjur",
+            "amendmentInstruction": "Ansökan görs via sidan för hortdjurslicensens huvudanvändare"
         },
         "wizard": {
+            "bird": {
+                "attachments": {
+                    "instruction1": "Bilagor",
+                    "instruction2": "Som stöd för din ansökan kan du bifoga utlåtanden och övriga utredningar. Vid Finlands viltcentrals prövning om dispens är till exempel ett utlåtande av en hälsoinspektör eller djuruppfödningsgårdens veterinär  nödvändigt för bedömning av  sjukdomsrisker  som fåglarna sprider. Även vid exempelvis ansökan om dispens för flera objekt i samma ansökan, kan du ge en utredning per fastighet om antal skadegörande fåglar,  skador som de förorsakar, åtgärder som vidtagits för att förhindra skador och deras inverkan samt den ansökta dispensmängden. Du kan bifoga fler filer.",
+                    "attachmentDescription": "Bilagans tilläggsuppgifter"
+                },
+                "cause": {
+                    "instruction1": "Välj den undantagsmotivering, med stöd av vilken du ansöker om dispens.",
+                    "instruction2": "Du kan även väja flera undantagsgrunder. Observera,  att med stöd av de tre sista undantagsgrunderna i listan kan man inte söka om anmälningsförfarande.",
+                    "selectionInstruction": "Välj undantagsgrund från listan",
+                    "causePublicHealth": "för att trygga folkhälsan",
+                    "causePublicSafety": "för att trygga den allmänna säkerheten",
+                    "causeAviationSafety": "för att trygga flygsäkerheten",
+                    "causeCropsDamage": "för att förhindra allvarliga skador på odlingar",
+                    "causeDomesticPets": "för att förhindra allvarliga skador på husdjur",
+                    "causeForestDamage": "för att förhindra allvarliga skador på skogar",
+                    "causeFishing": "för att förhindra allvarliga skador på fiskevatten",
+                    "causeWaterSystem": "för att förhindra allvarliga skador på vattendrag",
+                    "causeFlora": "för att skydda växter",
+                    "causeFauna": "för att skydda djur",
+                    "causeResearch": "i forsknings- och utbildningssyfte, för att öka och återinföra stammen",
+                    "nonLimitlessCauseToolTip": "Anmälningsförfarandet inte möjligt"
+                },
+                "damage": {
+                    "instruction1": "Skador",
+                    "instruction2": "Beskriv omsorgsfullt de skador som skett på området och framtida skadehot separat för varje i ansökan nämnd art. Uppskatta skadans storlek även i euro. Beskriv även på området utförda fördrivnings- och skyddsmetoder eller andra  åtgärder som utförts för att förhindra skada och deras inverkan separat för varje i ansökan nämnd art.",
+                    "instruction3": "Utredning över skadan eller annat som ligger till grund för ansökan. (Ange uppgifterna separat för varje nämnd art i ansökan):",
+                    "damageAmount": "Skadans storlek",
+                    "damageDescription": "Utredning om skadan",
+                    "performedMeasures": "Fördrivnings- och skyddsmetoder eller åtgärder som vidtagits för att förebygga skadan (ange uppgifterna separat för varje i ansökan nämnd art):",
+                    "evictionMeasureDescription": "Metod eller åtgärd",
+                    "evictionMeasureEffect": "Åtgärdens effekter"
+                },
+                "map": {
+                    "instructions": "Fyll i alla fält. Ange det namn som bäst beskriver platsen/platserna som skall skyddas, t.ex. bärodlingens, avfallshanteringsanläggningens eller djurproduktionsgårdens namn. Ge objektets adressuppgifter och skadeobjektens sammanlagda areal. Välj från listan typ av objekt som skall skyddas.",
+                    "areaName": "Objektets namn som skall skyddas",
+                    "streetAddress": "Näradress",
+                    "postalCode": "Postnummer",
+                    "city": "Postanstalt",
+                    "areaSize": "Areal",
+                    "areaType": "Platsen som skall skyddas är",
+                    "typeNotSelected": "Välj…",
+                    "descriptionOfRights": "Utredning om rätten att fånga eller döda i ansökan avsedda djur på området, som i ansökan avses att användas:",
+                    "geoLocationInstruction": "Märk ut den plats som skall skyddas med en punkt på kartan. <br>Ifall det finns flera skadeobjekt, välj det som enligt ditt tycke är den viktigaste (i den här delen kan du kan endast markera ett objekt på kartan.)",
+                    "attachmentInstruction": "Bifoga en karta över området, där området är tydligt markerat. Om det finns flera skadeobjekt, kan du bifoga flera kartor. Bifoga då även en allmän karta, där positionen för alla i ansökan avsedda skadeobjekt framgår. Du kan bifoga kartan med i alla allmänt använda filformat (skanning, foto m.m.)a a vanliga filformat (skanning, foto mm.)"
+                },
+                "methods": {
+                    "instruction1": "Användning av förbjudna metoder",
+                    "instruction2": "Du kan även ansökan om dispens att avvika från användning av förbjudna fångstredskap eller -metoder, ifall det för förhindrande av skada är nödvändigt. Redogör och motivera behovet i fältet för Tilläggsinformation",
+                    "deviate32Label": "Jag ansöker om dispens för att avvika <strong> från begränsningen av användning av motordrivna fordon enligt jaktlagens 32 §</strong> enligt följande:",
+                    "deviate33Label": "Jag ansöker om dispens för att avvika <strong> från bestämmelserna om fångstredskap och fångstmetoder enligt jaktlagens 33 §</strong> enligt följande:",
+                    "deviate34Label": "Jag ansöker om om dispens från bestämmelserna i en förordning av statsrådet som utfärdats med stöd av <strong> jaktlagens 34 §</strong> enligt följande:",
+                    "deviate35Label": "Jag ansöker om dispens från bestämmelserna om transport av jaktvapen enligt <strong>jaktlagens 35 §</strong> enligt följande:",
+                    "deviate51Label": "Jag ansöker om dispens från bestämmelserna om skyldigheten att hålla hundar kopplade enligt <strong>jaktlagens 51 § 1 mom.</strong> enligt följande:",
+                    "deviateAdditionalDetails": "Tilläggsuppgifter:",
+                    "traps": "Fälla som fångar bytet levande",
+                    "tapeRecorders": "Mekanisk anordning som åstadkommer ljud",
+                    "otherMethod": "övrigt, vad",
+                    "methodJustification1": "Orsak till, varför det är nödvändigt att bl.a. använda förbjudna fångstredskap eller fångstmetoder.",
+                    "methodJustification2": "Motivera användningen av de metoder du ansökt om separat för varje art nämnd i ansökan.",
+                    "methodsNotInUseForSpecies": "De ansökta metoderna gäller inte för denna art"
+                },
+                "period": {
+                    "instruction1": "Jakttider",
+                    "instruction2": "Meddela de årliga dispenstiderna artvis i enlighet med det första året. <br> Ifall följande års ansökta dispenstid avviker från det första årets (till exempel pga ansökan inlämnats sent), skriv in det som tilläggsinformation vid fältet för  tidsperiod.",
+                    "instruction3": "Observera, att icke fredade fåglars fredningstid avviker från varandra under häckningstiden i olika delar av Finland. För icke fredade fåglar kan man ansöka om antingen tidsbunden dispens eller om anmälningsförfarande. För viltfåglarnas del kan man inte ansöka om ett s.k. anmälningsförfarande, ansök därför om dispens för viltfåglar och icke fredade fåglar separat om du för de icke fredade fåglarnas del vill ansöka om anmälningsförfarande.",
+                    "beginDate": "Från",
+                    "endDate": "Till",
+                    "tooLongPeriodInfo": "Jakttiden kan vara högst ett år.",
+                    "periodAdditionalInfo": "Tilläggsuppgifter om tidsperioden",
+                    "validityYears": "Giltighetstid",
+                    "yearsNotSelected": "Välj...",
+                    "validity1year": "1 ÅR",
+                    "validity2years": "2 ÅR",
+                    "validity3years": "3 ÅR",
+                    "validity4years": "4 ÅR",
+                    "validity5years": "5 ÅR",
+                    "validityLimitless": "TILLSVIDARE",
+                    "limitlessNotAllowedInfo": "Dispensen kan inte ansökas som ikraftvarande tillsvidare. Granska de valda dispensmotiveringarna, typ av skyddat objekt och djurart."
+                },
+                "population": {
+                    "instruction1": "Stammens situation",
+                    "instruction2": "Beskriv stammens situation (antal individer) och beteende på området för de fågelarter som anges i dispensen eller i anmälningsförfarandet. Ange uppgifterna separat för varje nämnd art i ansökan.",
+                    "populationAmount": "Antal individer",
+                    "populationDescription": "Beskrivning av beteende"
+                },
+                "species": {
+                    "instructions": "Välj djurarter och antal som ansöks",
+                    "addSpecies": "Lägg till art",
+                    "removeSpecies": "Ta bort",
+                    "species": "Djurart",
+                    "speciesAmount": "Dispensmängd som ansöks",
+                    "ravenNotification": "OBS: Dispensen/licensen kan beviljas endast på renskötselområde",
+                    "amountPerYear": "st / år"
+                },
+                "summary": {
+                    "instruction1": "Granska uppgifterna i ansökan",
+                    "instruction2": "Uppgifterna är sparade, om du ännu inte vill skicka in ansökan.",
+                    "areaTitle": "Ansökningsområde",
+                    "causeTitle": "Grund för dispens",
+                    "periodTitle": "Tid",
+                    "methodsTitle": "Förbjudna metoder",
+                    "damagesTitle": "Skada",
+                    "populationTitle": "Stammens tillstånd",
+                    "attachments": "Bilagor",
+                    "noMethodsRequested": "Icke förbjudna metoder."
+                }
+            },
+            "carnivore": {
+                "applicant": {
+                    "instruction": "Den sökande ska vara en person eller ett samfund med rättshandlingsförmåga (t.ex. en registrerad förening). Om dispens ansöks för en registrerad jaktförening, rekommenderar Finlands viltcentral att man anger jaktföreningen som sökande och som kontaktperson för ansökan en person som enligt föreningens stadgar är namntecknare </br></br> Om dispens ansöks för en oregistrerad förening, ska som sökande utses en person som har jakträtt eller jakttillstånd på området. Därtill ska personen vara den samma som kontaktpersonen </br></br> Vid ansökan gällande samlicens ska anges den person som i förvaltningsmässigt hänseende innehar samlicensen, vilket ska vara den samma som kontaktpersonen."
+                },
+                "attachments": {
+                    "instruction1": "Bilagor",
+                    "instruction2": "Du kan bifoga filer som bilagor till motivering för ansökan",
+                    "attachmentDescription": "Bilagans tilläggsuppgifter"
+                },
+                "species": {
+                    "title": "Mängd",
+                    "instructions": "Välj det antal och tid som ansöks . Om du önskar kan du ansöka om kortare jakttid. <br/><br/> Dispens som avses i 41 a § 3 mom. kan beviljas: <br/><br/> 1) för att fånga eller döda varg på renskötselområde från den 1 oktober till den 31 mars och i övriga landet från den 1 november till den 31 mars; <br/>2) för att fånga eller döda björn, med undantag för årsunge samt björnhona som åtföljs av årsunge, från och med den 20 augusti till och med den 31 oktober; <br/> 3) för att fånga eller döda lodjur, med undantag för lodjurshona som åtföljs av årsunge, inom renskötselområdet från och med den 1 oktober till och med den 28 februari, vid skottår till och med den 29 februari och i övriga landet från och med den 1 december till och med den 28 februari, vid skottår till och med den 29 februari. <br/>",
+                    "species": "Djurart",
+                    "huntingPeriod": "Jakttid",
+                    "beginDate": "Från",
+                    "endDate": "Till",
+                    "speciesAmount": "Dispensmängd som ansöks"
+                },
+                "justification": {
+                    "instructionsTitle": "Utredning av grunderna för ansökan",
+                    "instructions": "Man måste svara på nedanstående frågor i motiveringarna till ansökan. Vid mellanbladet Bilagor kan du vid behov ge tilläggsmotiveringar i en separat fil.",
+                    "populationAmount": "Viltdjurartens stam eller stammens situation som är föremål för ansökan på det ansökta dispensområdet.",
+                    "populationDescription": "Viltdjurartens individ eller indivernas beteende som är föremål för ansökan på det ansökta dispensområdet",
+                    "additionalInfo": "Övriga eventuella uppgifter, relaterade till ansökningsgrunderna",
+                    "alternativeMeasures": "Åtgärder, som i stället för dispens kunde förverkligas"
+                },
+                "map": {
+                    "areaSize": "Areal",
+                    "areaTitle": "Område",
+                    "areaDescription": "Förklarande beskrivning i ord av området ",
+                    "instructions": "Ange den totala arealen för dispensområdet. Om du har fastställt området i tjänsten Oma riista, använd den totala areal som tjänsten har beräknat. Klicka på kartan platsen för dispensområdet. Du kan ange dispensområdet genom att lägga till det till de områden som har angetts i tjänsten Oma riista, genom att lägga till kartan som bilaga eller genom att beskriva dispensområdet i ord, till exempel jaktvårdsföreningens eller kommunens område. Avgränsningen av dispensområdet ska vara entydig.",
+                    "geoLocationInstruction": "Markera dispensområdets mittpunkt på kartan.",
+                    "areaDetailsTitle": "Närmare specifiering av området",
+                    "areaDetailsInstruction": "För definition av området måste man välja endast ett sätt <strong>bland följande alternativ</strong>:<br/>1. Lägg till ett samlicensområde <br/>2. Lägg till en privat persons område<br/>3. Lägg till föreningens område, om sökande är en förening<br/>4. Lägg till elektronisk områdesbilaga<br/>5. Verbal definition av området<br/><br/>För definition av området kan du använda samlicensområdet som du har skapat i Oma riista -tjänsten, privatpersonens egna eller föreningens område. Ange endast en områdeskod. Om ansökan består av flera områden skapa då först ett samlicensområde av dessa i vyn OMRÅDEN för privatperson.<br/><br/>Alternativt kan du bifoga en karta över området som bilaga eller beskriva området verbalt.",
+                    "addArea": "Bifoga områdesbilagan från Oma riista -tjänsten",
+                    "addAreaUnion": "Lägg till samlicensområde",
+                    "addPersonalArea": "Lägg till privat persons område",
+                    "addClubArea": "Lägg till föreningens/sällskapets namn",
+                    "addAttachment": "Bifoga en elektronisk områdesbilaga",
+                    "addAreaModal": {
+                        "personalArea": "Eget område",
+                        "title": "Bifoga ett nytt område",
+                        "huntingClub": "Jaktförening:",
+                        "area": "Område:",
+                        "areaCodeInstruction": "Eller områdets kod",
+                        "areaCode": "Områdets kod:",
+                        "invalidCode": "Felaktig kod",
+                        "areaNotFound": "Området hittades inte."
+                    }
+                }
+            },
             "navigation": {
                 "send": "Skick ansökan",
-                "amend": "Täydennä hakemusta",
+                "amend": "Komplettera ansökan",
                 "exit": "Avbryt",
                 "applicant": "Sökande",
                 "species": "Djuruppgifter",
                 "partners": "Delägare",
                 "map": "Ansökningsområde",
+                "justification": "Motiveringar",
+                "deviation": "Grund för dispens",
+                "period": "Tid",
+                "methods": "Förbjudna metoder",
+                "damage": "Skada",
+                "population": "Stammen tillstånd",
                 "attachments": "Bilagor",
-                "summary": "Skicka ansökan"
+                "summary": "Skicka ansökan",
+                "previousConfirmation": {
+                    "title": "Retur",
+                    "body": "De uppgifter som blivit inmatade på den här sidan kan inte sparas, vill du ändå återgå till föregående sida?"
+                },
+                "exitConfirmation": {
+                    "title": "Avbryt",
+                    "body": "De uppgifter som blivit inmatade på den här sidan kan inte sparas, vill du ändå avbryta ifyllandet av ansökan?"
+                }
             },
             "amendConfirm": {
-                "title": "Hakemuksen täydentäminen.",
-                "message": "Syötä syy hakemuksen muutoksille"
+                "title": "Komplettering av ansökan.",
+                "message": "Ange orsaken till ändringar i ansökan"
             },
             "applicant": {
                 "instructionsTitle": "Välj sökande för tillståndet",
@@ -1968,16 +2458,28 @@
                     "person": "person",
                     "club": "sällskap",
                     "business": "företag",
-                    "ry": "RF"
+                    "ry": "RF",
+                    "other": "övrigt"
                 },
-                "selectPermitHolder": "Välj tillståndssökande"
+                "selectPermitHolder": "Välj tillståndssökande",
+                "instructions": "Sökanden ska i första hand vara den skadelidande. Sökanden bör vara en person eller sammanslutning (ex. registrerad förening) som äger rättshandlingsförmåga. Ifall licens/dispens ansöks för sammanslutning, rekommenderar Finlands viltcentral att sammanslutningen antecknas som sökande och som kontaktperson för ansökan, den person som enligt sammanslutningens stadgar har namteckningsrätt. För oregistrerade sammanslutningars del (ex. jaktsällskap) ska sökande vara en person som äger rättshandlingsförmåga. Personen skall vara den samma som kontaktpersonen. Vid samlicensansökan skall man utse en administrativ innehavare, som skall vara den samma som kontaktpersonen.",
+                "person": "Person",
+                "club": "Förening/sällskap",
+                "business": "Företag",
+                "ry": "RF",
+                "other": "Annan",
+                "associationNumber": "Föreningsnummer:",
+                "associationName": "Föreningens namn:",
+                "businessId": "FO-nummer:",
+                "businessName": "Företagets namn:",
+                "otherName": "Namn:"
             },
-            "species":  {
+            "species": {
                 "instructionsTitle": "Välj djurarter för vilka tillstånd söks samt antal",
                 "instructionsOne": "Jaktlicens för ett hjortdjur ger rätt att fälla ett vuxet djur eller två kalvar. Jaktlicensen kan preciseras med bestämmelser om hjortdjurens ålder eller kön, om det är nödvändigt för en ändamålsenlig skötsel av hjortdjursstammen.",
                 "instructionsTwo": "Ansökan kan vid behov motiveras.",
                 "description": "Motiveringar",
-                "table":  {
+                "table": {
                     "headerSpecies": "Art",
                     "headerAmount": "Antal jaktlicenser som söks"
                 }
@@ -1988,6 +2490,7 @@
                 "button": {
                     "addClubArea": "Lägg till område",
                     "updateGeometry": "Uppdatera områdesgeometrin",
+                    "update": "Uppdatera",
                     "functionMenu": "Funktioner",
                     "partnersExcel": "För samdeltagarlistan till Excel-fil"
                 },
@@ -2000,7 +2503,7 @@
                     "totalAreaSize": "Tot.areal",
                     "landAreaSize": "Markareal",
                     "waterAreaSize": "Vattenareal",
-                    "clubAreaChanged": "Föreningens område har uppdaterats efter det, att dess kopia bifogades till licensansökan",
+                    "clubAreaChanged": "Föreningens/sällskapets område har uppdaterats efter att dess kopia bifogats samlicensens område",
                     "rhy": {
                         "title": "Ansökningsområdet är beläget på följande jaktvårdsföreningars områden",
                         "stateAndPrivate": "Alla",
@@ -2011,6 +2514,11 @@
                         "water": "Vatten"
                     },
                     "hta": "Ansökningsområdet är beläget på följande älgförvaltningsområdens områden"
+                },
+                "mml": {
+                    "title": "Fastigheter",
+                    "instruction": "Om du vill, kan du ladda ner en lista över fastigheter, vars delar  ingår i ansökningsområdet.",
+                    "exportToFile": "För fastighetsregisterbeteckningarna till filen (PDF)"
                 },
                 "addClubArea": {
                     "title": "Lägg till föreningens område",
@@ -2038,7 +2546,7 @@
                 },
                 "processingModal": {
                     "title": "Var god och vänta!",
-                    "infoText": "Skapandet av området kan dröja 0 - 15 minuter.",
+                    "infoText": "Skapandet av området kan dröja 0 - 30 minuter.",
                     "waiting": "Inväntar att beräkningen ska börja ...",
                     "processing": "Beräkning pågår ..."
                 },
@@ -2094,19 +2602,44 @@
             "summary": {
                 "summaryTitle": "Tillstånd som ansöks",
                 "permitTypeTitle": "Typ av licens",
+                "permitCategory": {
+                    "MOOSELIKE": "Jaktlicens för hjortdjur",
+                    "MOOSELIKE_NEW": "Ny jaktlicens för hjortdjur",
+                    "BIRD": "Dispens för fågelvilt och icke fredade fåglar",
+                    "LARGE_CARNIVORE_BEAR": "Dispens för björn, stamvårdande",
+                    "LARGE_CARNIVORE_LYNX": "Dispens för  lodjur, stamvårdande",
+                    "LARGE_CARNIVORE_LYNX_PORONHOITO": "Dispens för  lodjur, stamvårdande, inom renskötselområdet",
+                    "LARGE_CARNIVORE_WOLF": "Dispens för  varg, stamvårdande"
+                },
                 "permitType": {
-                    "100" : "Jaktlicens för hjortdjur"
+                    "100": "Jaktlicens för hjortdjur",
+                    "190": "Ny jaktlicens för hjortdjur",
+                    "207": "41 A § Dispens för björn, stamvårdande",
+                    "208": "41 A § Dispens för lodjur, stamvårdande",
+                    "209": "41 A § Dispens för varg, stamvårdande",
+                    "305": "41 B § Dispens för fågelvilt och icke fredade fåglar",
+                    "346": "41 B § Anmälningsförfarande"
                 },
                 "invalid": "Det finns brister i ansökans uppgifter",
                 "instructionsTitle": "Kontrollera uppgifterna i ansökan",
                 "instructions": "Om du inte vill skicka ansökan ännu är uppgifterna sparade",
-                "submitDate": "Paperihakemuksen saapumispäivämäärä",
+                "submitDate": "Pappersansökans ankomstdatum",
+                "originalApplicationArea": "Ansökningsområde för den ursprungliga ansökan",
                 "delivery": {
                     "title": "Leverans av tillståndsbeslut",
                     "instructions": "Beslutet med bilagor kan läsas elektroniskt på tjänsten Oma riista. Du kan också beställa en pappersversion per brevpost.",
                     "mail": "Jag önskar beslutet per brevpost",
-                    "email": "Jag önskar beslutet i elektronisk form"
+                    "email": "Jag önskar beslutet i elektronisk form",
+                    "finnish": "Jag önskar beslutet på finska",
+                    "swedish": "Jag önskar beslutet på svenska",
+                    "recipient": "Mottagare",
+                    "decisionRecipient": "Mottagare av licensbeslutet",
+                    "changeRecipient": "(byt)",
+                    "deliveryAddressMissing": "Adress saknas"
                 },
+                "decisionLanguage": "Licensbeslutets språk",
+                "decisionLanguageFinnish": "finska",
+                "decisionLanguageSwedish": "svenska",
                 "notification": {
                     "title": "Elektronisk distribution",
                     "instructions": "Om du vill skicka ansökan och beslutet till en annan person för kännedom (t.ex. föreningens ordförande), lägg till personens e-postadress nedanför."
@@ -2116,6 +2649,25 @@
                     "body": "Ansökan kan inte ändras efter att den har skickats. Är du säker att du vill skicka ansökan nu?",
                     "bodyLate": "Ansökan är försenad. Vill du trots det skicka den?<p>Ansökan kan inte ändras efter att den har skickats. Är du säker att du vill skicka ansökan nu?"
                 }
+            },
+            "amendment": {
+                "title": "Ny jaktlicens för hjortdjur",
+                "titleIncomplete": "Ofullständiga ansökningar",
+                "titleNonEdibles": "Byten som är odugligt som människoföda, varav ingen ansökan",
+                "create": "Skapa ansökan",
+                "titleApplicationWithoutExistingHarvest": "Fri ansökan",
+                "titleApplicationWithoutExistingHarvestHelpText": "Ifall byte som är odugligt som människoföda inte ännu finns i listan ovan, försök att jaktledaren skriver in den samt godkänner och gör en ansökan enligt den anteckningen. Ifall ni returnerar bytesmeddelanden med älginformationskort, gör ansökan här",
+                "titleSubmitted": "Inlämnade ansökningar",
+                "details": "Djurets uppgifter",
+                "selectShooter": "Välj skytt",
+                "description": "Motiveringar",
+                "descriptionHelp1": "Om ett hjortdjur som har erhållits som byte är så skadat eller sjukt att mer än hälften av det är odugligt som människoföda och detta inte beror på jaktlicenshavarens förfarande, ska Finlands viltcentral avgiftsfritt bevilja en ny jaktlicens i stället för den tidigare jaktlicensen.",
+                "descriptionHelp2": "I ansökan bör det framgå varför man ansöker om ny jaktlicens för hjortdjur, djurets kön och ålder (fullvuxen /kalv), när och var djuret har fällts samt i samsökslicensen samsöksdeltagarens namn. En utredning att det inte beror på jaktlicenshavarens förfarande att bytet är odugligt som människoföda. ",
+                "officialStatementAttachments": "Utlåtanden",
+                "officialStatementAttachmentsHelp": "Till ansökan kan bifogas som utredning veterinärens eller jaktvårdsföreningens utlåtande. Ifall utlåtandet som inte är obligatorisk inte är bifogad till ansökan, kan Finlands viltcentral be en representant för jaktvårdsföreningen att granska det fällda hjortdjurets kondition och ge ett utlåtande om granskningen till Finlands viltcentral.",
+                "otherAttachments": "Bilder, videon och övriga dokument",
+                "otherAttachmentsHelp": "Till ansökan skall bifogas bilder av det fällda djuret: en bild av hela djuret, bilder av det skadade stället/ställena samt vid behov bilder av de inre organen.",
+                "saveIncomplete": "Spara en halvfärdig ansökan"
             }
         },
         "management": {
@@ -2129,6 +2681,7 @@
             },
             "dashboard": {
                 "payments": "Betalningar",
+                "correctedInvoicesExist": "Beslutets land-areal ha",
                 "decisionAndAttachments": {
                     "title": "Beslut och bilagor",
                     "decision": "Beslut",
@@ -2154,29 +2707,35 @@
                     "instruction2": "Jaktledarna väljs genom att lägga till dem i föreningens grupp",
                     "button": "Visa jaktledarna"
                 },
-                "mooseHarvestReport": {
-                    "title": "Att bifoga betalningskvitto",
-                    "instruction": "Du kan bifoga betalningskvittot till arten, när alla deltagare har avslutat jakten för arten",
-                    "button": "Bifoga betalkvitto"
-                },
                 "endOfHunting": {
-                    "instruction": "Här kan du anmäla att jakten med stöd av denna jaktlicens är avslutad"
+                    "title": "Stäng licensen",
+                    "instruction": "Här kan du anmäla att jakten med stöd av denna jaktlicens är avslutad för arten",
+                    "button": "Gå till stängning av licensen"
                 },
                 "partnerMap": {
-                    "title": "Osakaskartta",
-                    "instruction": "Tästä voit tarkastella osakkaiden metsästystä kartalla lajille",
-                    "instruction2": "Kartat ovat osakkaiden ryhmille asettamia alueita",
-                    "button": "Näytä osakaskartta"
+                    "title": "Andelskarta",
+                    "instruction": "Här kan du på kartan granska andelarnas jakt på arten",
+                    "instruction2": "Kartorna är av andelarna uppgjorda områden för grupperna",
+                    "button": "Visa andelskartan"
                 },
                 "tables": {
-                    "title": "Taulukko",
-                    "instruction": "Tästä voit tarkastella osakkaiden metsästystä taulukoissa lajille",
-                    "button": "Näytä taulukko"
+                    "title": "Tabell",
+                    "instruction": "Här kan du i tabellform granska andelarnas jakt på arten",
+                    "button": "Visa tabellen"
+                },
+                "amendmentPermit": {
+                    "title": "Ny jaktlicens",
+                    "instruction": "Här kan du ansöka om ny jaktlicens istället för bytet som är odugligt som människoföda och granska de inlämnade ansökningarna.",
+                    "button": "Ansökan"
                 }
             },
             "invoiceType": {
                 "PERMIT_PROCESSING": "Beslutets handläggningsavgift",
                 "PERMIT_HARVEST": "Licensavgift"
+            },
+            "payments": {
+                "invoiceAmount": "Fakturans summa",
+                "corrected": "Korrigerats"
             },
             "contactPerson": {
                 "modalTitle": "Redigera huvudanvändarna",
@@ -2193,6 +2752,83 @@
                 "createButton": "Meddela jakten som avslutad",
                 "removeButton": "Radera avslutningsanmälan"
             },
+            "endOfMooselikeHunting": {
+                "mainTitle": "Stäng licensen",
+                "permitAmount": "Beviljade licenser",
+                "amendmentAmount": "Nya licenser",
+                "nonEdibleAmount": "Olämpl. som människoföda",
+                "partnerListTitle": "Anmälans status",
+                "partnerName": "Samsöksdeltagare",
+                "huntingFinished": "Jakten avslutad",
+                "huntingEndDate": "Datum",
+                "condition": {
+                    "moderatorOverride": "Viltcentralen har sparat uppgifterna",
+                    "allPartnersFinishedHunting": "Alla samdeltagare har för sin egen del markerat jakten som avslutad",
+                    "amendmentPermitsDoNotMatchHarvests": "Beviljade nya licenser överensstämmer med bytet som markerats som odugligt till människoföda.",
+                    "restriction": "Ställda villkor för beviljad licens och för bytets ålder eller kön överensstämmer",
+                    "permitHolderFinishedHunting": "Licensens jakt har avslutats"
+                },
+                "priceBreakdown": {
+                    "sumOfPayments": "Att betala sammanlagt",
+                    "adults": "Fullvuxna",
+                    "young": "Kalvar"
+                },
+                "button": {
+                    "close": "Stäng licensen",
+                    "cancel": "Annullera avslutandet av jakten"
+                }
+            },
+            "moderatorOverride": {
+                "overridden": "Viltcentralen har sparat uppgifterna",
+                "title": "Avslutande av jakten",
+                "selectedSpecies": "Väljd art",
+                "disclaimer": "Genom att köra över av samdeltagaren själv meddelade uppgifter om att samdeltagarnas jakt är avslutad lämnar informationen kvar i systemet men dessa beaktas inte officiellt.",
+                "completeHuntingOfPermit": "Avsluta alla samdeltagares jakt och jakt med licensen",
+                "completeOnlyHuntingOfSelectedPartners": "Avsluta endast valda samdeltagares jakt, avsluta inte jakten med licensen",
+                "huntingPartner": "Samsöksdeltagare",
+                "override": "Kör över",
+                "moderatorOverridden": "Överkörd",
+                "area": {
+                    "top": "Jaktområde",
+                    "topTooltip": "Jaktområdets areal",
+                    "total": "STORLEK",
+                    "totalTooltip": "Hela jaktområdets markareal",
+                    "effective": "ANV",
+                    "effectiveTooltip": "Markarealen för jaktområde som använts"
+                },
+                "harvestedSpecimens": {
+                    "top": "Erhållet byte<br>(individer)",
+                    "topTooltip": "Byte som fåtts (individer)",
+                    "au": "VT",
+                    "auTooltip": "Byte som fåtts (individer) vuxna tjurar",
+                    "an": "VK",
+                    "anTooltip": "Byte som fåtts (individer) vuxna kor",
+                    "vu": "TK",
+                    "vuTooltip": "Byte som fåtts (individer) tjurkalvar",
+                    "vn": "KK",
+                    "vnTooltip": "Byte som fåtts (individer) kokalvar"
+                },
+                "notEdible": {
+                    "top": "Olämpl.<br>som människoföda",
+                    "topTooltip": "Av erhållet byte olämpliga som människoföda",
+                    "a": "V",
+                    "aTooltip": "Av erhållet byte olämpliga som människoföda vuxna",
+                    "v": "K",
+                    "vTooltip": "Av erhållet byte olämpliga som människoföda kalvar"
+                },
+                "remainingPopulation": {
+                    "top": "Stam<br>kvar",
+                    "topTooltip": "Stam kvar",
+                    "total": "Storlek",
+                    "totalTooltip": "Stam kvar på hela området",
+                    "effective": "Anv",
+                    "effectiveTooltip": "Stam kvar på området som användes för jakt"
+                },
+                "delete": "Ta bort ändringarna",
+                "deleteConfirmationMessage": "Är du säker på, att du vill ta bort av moderatorn gjorda anmälningar om att jakten avslutats för hela licensen?",
+                "onSavedNotification": "Sparandet av anmälningen om att jakten avslutats lyckades.",
+                "onDeletedNotification": "Avlägsnandet av moderatorn gjorda anmälningar om att jakten avslutats lyckades. "
+            },
             "noOpenPayments": "Inga betalningar som förfaller",
             "cancelPayment": "Annulera betalningen",
             "proceedPayment": "Gå till betalning",
@@ -2202,91 +2838,427 @@
             "noPaidPayments": "Obetalda betalningar"
         },
         "decision": {
-            "sectionId": {
-                "general": "Yleistä",
-                "application": "Hakemus",
-                "applicationReasoning": "Hakemuksen perustelut",
-                "processing": "Välitoimenpiteet",
-                "decision": "Päätös",
-                "decisionReasoning": "Päätöksen perustelut",
-                "restriction": "Ehdot",
-                "restrictionExtra": "Ehdot",
-                "execution": "Päätöksen täytäntöönpano",
-                "legalAdvice": "Oikeusohjeet",
-                "notificationObligation": "Tiedoksiantovelvoite",
-                "appeal": "Muutoksenhaku",
-                "additionalInfo": "Lisätiedot",
-                "delivery": "Jakelu",
-                "payment": "Maksu",
-                "administrativeCourt": "Valitusosoitus",
-                "attachments": "Liitteet"
+            "menu": {
+                "back": "Gå tillbaka",
+                "summary": "Framsida",
+                "area": "Områdesgranskning",
+                "decision": "Beslut",
+                "revision": "Publicering"
             },
-            "action": {
-                "actionType": {
-                    "SELVITYSPYYNTO": "Lisäselvityspyyntö",
-                    "SELVITYS": "Lisäselvitys",
-                    "TIETOPYYNTO": "Tietopyyntö",
-                    "TIETOPYYNTOVASTAUS": "Vastaus",
-                    "LAUSUNTOPYYNTO": "Lausuntopyyntö",
-                    "LAUSUNTO": "Lausunto",
-                    "KUULEMINEN": "Kuuleminen",
-                    "VASTASELITYSPYYNTO": "Vastaselityspyyntö",
-                    "VASTASELITYS": "Vastaselitys",
-                    "TAYDENNYS": "Täydennys",
-                    "MUU": "Muu"
+            "settings": {
+                "appeal": {
+                    "title": "Förvaltningsdomstolens uppgifter?",
+                    "isAppealInitiated": "Har man besvärat sig över beslutet?",
+                    "appealStatus": "Status för förvaltningsdomstolens behandling",
+                    "noAppeal": "Inget besvär"
                 },
-                "communicationType": {
-                    "TELEPHONE": "Puhelin",
-                    "EMAIL": "Sähköposti",
-                    "MEETING": "Tapaaminen",
-                    "MAIL": "Kirje"
+                "document": {
+                    "title": "Beslutets inställningar",
+                    "decisionType": "Metoden för beslutsbehandling",
+                    "locale": "Beslutets språk"
+                },
+                "publish": {
+                    "title": "Publiceringsinställningar",
+                    "publishDate": "Datum för publicering",
+                    "publishTime": "Klockslag",
+                    "publishDateInPastWarning": "Tidpunkten är nutid eller tidigare, så från och med låsningen sänds e-post genast till licens-/dispensmottagaren och till mottagare som ska delges för kännedom.",
+                    "appealWarning": "Eftersom beslutet har överklagats, så sänder inte systemet <strong>EI</strong> ut e-post i samband med publiceringen."
                 }
             },
+            "summary": {
+                "applicationSummary": {
+                    "title": "Ansökningens uppgifter",
+                    "applicationNumber": "Ansökningens nummer",
+                    "receivedDate": "Ankommit",
+                    "delivery": "Leveranssätt",
+                    "deliveryPaper": "Leverans på papper",
+                    "deliveryPaperOther": "Leverans på papper till:",
+                    "deliveryEmail": "Elektronisk leverans",
+                    "moderatorCreated": "Skapad av Viltcentralen",
+                    "download": "Ladda ansökan"
+                },
+                "status": {
+                    "title": "Behandlingsstatus",
+                    "status": "Status",
+                    "handler": "Handläggare",
+                    "appealStatus": "Rättsbehandlingens statusinformation",
+                    "showActions": "Visa interimistiska åtgärder",
+                    "assignToMe": "Ta ansökan under behandling",
+                    "unassign": "Frigör ansökan från behandling",
+                    "appealSettings": "Inställningar för besvär"
+                },
+                "amend": "Komplettera ansökan"
+            },
+            "area": {
+                "menu": {
+                    "area": "Område",
+                    "partners": "Samdeltagare",
+                    "fragments": "Ej enhetliga",
+                    "conflicts": "Konflikter"
+                },
+                "buttons": {
+                    "conflicts": "För konflikterna till Excel",
+                    "fragments": "Ej enhetliga till Excel",
+                    "print": "Skriv ut karta för ansökningsområdet"
+                }
+            },
+            "reference": {
+                "referenceDecision": "Referensbeslut",
+                "selectReference": "Välj referens",
+                "changeReference": "Byt referens"
+            },
+            "grantStatus": {
+                "title": "Beslut",
+                "UNCHANGED": "Beviljats enligt ansökan",
+                "RESTRICTED": "Beviljats med begränsning",
+                "REJECTED": "Avslagits"
+            },
+            "buttons": {
+                "lockDecision": "Lås och publicera",
+                "unlockDecision": "Öppna låsningen",
+                "previewMode": "Förhandsgranskningsläge",
+                "editMode": "Redigeringsläge"
+            },
+            "section": {
+                "createAdjustedAreaAction": "Skapa interimistisk åtgärd för i ansökan redigerad areal",
+                "complete": "Klar",
+                "incomplete": "Halvfärdig",
+                "textHeader": "Text på beslutet",
+                "generateText": "Återställ standardtexten",
+                "overwrite": "Skriv över helt och hållet",
+                "hideReference": "Göm referensen",
+                "showReference": "Visa referensen",
+                "reportingOnly": "(för rapportering)",
+                "diff": "Markera skillnaderna jämfört med referensen"
+            },
+            "sectionId": {
+                "general": "Allmänt",
+                "application": "Ansökan",
+                "applicationReasoning": "Motiveringar för ansökan",
+                "processing": "Interimistiska åtgärder",
+                "decision": "Beslut",
+                "decisionExtra": "Beslut extra",
+                "decisionReasoning": "Motiveringar för beslutet",
+                "restriction": "Villkor",
+                "restrictionExtra": "Villkor",
+                "execution": "Verkställighet av beslutet",
+                "legalAdvice": "Rättsnormer",
+                "notificationObligation": "Anmälningsskyldighet",
+                "appeal": "Söka ändring",
+                "additionalInfo": "Tilläggsuppgifter",
+                "delivery": "Distribution",
+                "payment": "Betalning",
+                "administrativeCourt": "Besvär",
+                "attachments": "Bilagor"
+            },
+            "legal": {
+                "deviate32Label": "Beviljas tillstånd att avvika från jaktlagens 32 § om begränsning av användning av motordrivet fordon.",
+                "deviate33Label": "Beviljas dispens att avvika från bestämmelserna om fångstredskap och fångstmetoder enligt jaktlagens 33 §",
+                "deviate34Label": "Beviljas dispens med stöd av jaktlagen 34 § att avvika från bestämmelserna i statsrådets förordning om förbud",
+                "deviate51Label": "Beviljas dispens att avvika från i jaktlagen 51 § 1 moment stadgade skyldighet att hålla hund kopplad"
+            },
+            "action": {
+                "titleList": "Redigera interimistiska åtgärder",
+                "add": "Lägg till interimistisk åtgärd",
+                "titleReadonlyList": "Beslutets interimistiska åtgärder",
+                "titleEdit": "Interimistisk åtgärd",
+                "noActions": "Beslutet har inga interimistiska åtgärder.",
+                "pointOfTime": "Tidpunkt",
+                "date": "Dag",
+                "time": "Klockslag",
+                "type": "Typ",
+                "actionTypeTitle": "Typ av interimistisk åtgärd",
+                "communicationTypeTitle": "Kontaktmetod",
+                "text": "Innehåll",
+                "decisionText": "Text som syns på beslutet",
+                "attachments": {
+                    "showAttachmentsButton": "Bilagor",
+                    "title": "Bilagor till interimistisk åtgärd",
+                    "uploadingInProgress": "Bilagan sparas",
+                    "uploadingComplete": "Bilagan sparad",
+                    "add": "Lägg till en ny bilagefil",
+                    "filename": "Filnamn",
+                    "creationDate": "Lagts till"
+                },
+                "actionType": {
+                    "SELVITYSPYYNTO": "Begäran om tilläggsutredning",
+                    "SELVITYS": "Tilläggsutredning",
+                    "TIETOPYYNTO": "Begäran om information",
+                    "TIETOPYYNTOVASTAUS": "Svar",
+                    "LAUSUNTOPYYNTO": "Begäran om utlåtande",
+                    "LAUSUNTO": "Utlåtande",
+                    "KUULEMINEN": "Hörande",
+                    "VASTASELITYSPYYNTO": "Begäran om genmäle",
+                    "VASTASELITYS": "Genmäle",
+                    "TAYDENNYS": "Komplettering",
+                    "MUU": "Övrigt"
+                },
+                "communicationType": {
+                    "TELEPHONE": "Telefon",
+                    "EMAIL": "E-post",
+                    "MEETING": "Möte",
+                    "MAIL": "Brev"
+                }
+            },
+            "decisionType": {
+                "HARVEST_PERMIT": "Tillståndsbeslutet",
+                "CANCEL_APPLICATION": "Beslut om återkallande av ansökan",
+                "IGNORE_APPLICATION": "Ansökan lämnas utan prövning"
+            },
+            "appealStatus": {
+                "INITIATED": "Besvär över beslutet har anförts",
+                "IGNORED": "Besväret har inte behandlats",
+                "UNCHANGED": "Domstolens utslag, ingen ändring",
+                "REPEALED": "Domstolens utslag, beslutet upphävts",
+                "PARTIALLY_REPEALED": "Domstolens utslag, beslutet upphävts delvis",
+                "RETREATMENT": "Domstolens utslag, återremiterats för ny behandling"
+            },
             "lockConfirm": {
-                "title": "Oletko varma, että haluat lukita päätöksen?",
-                "message": "Olet lukitsemassa pyyntilupapäätöksen. Huomioithan, että mikäli julkaisuaika on nykyhetki tai aiempi, niin lukitsemisesta lähtee sähköposti heti luvansaajalle ja tiedoksisaajille. Oletko varma, että haluat lukita päätöksen?"
+                "title": "Låsning av beslutet",
+                "message": "Är du säker på att du vill låsa beslutet?"
             },
             "unlockConfirm": {
-                "title": "Kirjaa syy lukituksen avaukseen",
-                "message": "Olet avaamassa lukitun pyyntilupapäätöksen. Huomiothan, että valitsemasi julkaisuaika peruuntuu ja siirryt uudelleen käsittelemään päätöstä. Oletko varma, että haluat avata lukituksen? Kirjaa syy lukituksen avaamiseen."
+                "title": "Anteckna orsak för öppnande av låsningen",
+                "message": "Du håller på att öppna ett låst licens-/dispensbeslut. Du observerar väl, att vald publiceringstidpunkt annulleras och du återgår för att behandla beslutet på nytt. Är du säker på att du vill öppna låsningen? Anteckna orsak för upplåsningen."
             },
             "unifiedStatus": {
-                "ACTIVE": "Hakemus jätetty",
-                "DRAFT": "Hakemus käsittelyssä",
-                "AMENDING": "Hakemusta täydennetään",
-                "LOCKED": "Päätös lukittu",
-                "PUBLISHED": "Päätös julkaistu"
+                "ALL": "Visa alla",
+                "ACTIVE": "Ansökan inlämnad",
+                "DRAFT": "Ansökan under behandling",
+                "CANCELLED": "Ansökan annullerad",
+                "AMENDING": "Ansökan kompletteras",
+                "LOCKED": "Beslutet låst",
+                "PUBLISHED": "Beslutet publicerats"
+            },
+            "attachment": {
+                "title": "Redigera bilagor till beslutet",
+                "addDefaultMooseAttachment": "Lägg till nationell bilaga",
+                "listing": {
+                    "title": "Förteckning",
+                    "order": "Ordning",
+                    "description": "Text i beslutet",
+                    "asNumberedInDecision": "Bilagan numrerad i beslutet",
+                    "noAttachments": "Inga bilagor",
+                    "reminder": "Du kommer väl ihåg att spara ändringarna innan en ny bilaga läggs till!"
+                },
+                "upload": {
+                    "title": "Lägg till en ny bilagefil",
+                    "file": "Fil",
+                    "description": "Text i beslutet"
+                }
+            },
+            "selectAdministrativeCourt": "Välj förvaltningsdomstol",
+            "payment": "Betalningens storlek",
+            "authorities": {
+                "title": "Välj beslutsfattare",
+                "fromRka": "Lägg till område från listan",
+                "fromReference": "Kopiera från referensen",
+                "presenter": "Föredragande",
+                "decisionMaker": "Beslutsfattare",
+                "select": "Välj"
+            },
+            "delivery": {
+                "title": "Välj distribution",
+                "fromRka": "Välj mottagare från områdets lista",
+                "fromReference": "Kopiera från referensen",
+                "addAdHoc": "Lägg till ad hoc mottagare",
+                "name": "Namn",
+                "email": "E-postadress"
+            },
+            "forbiddenMethod": {
+                "SNARES": "Snaror",
+                "LIVE_ANIMAL_DECOY": "Levande fåglar som är blinda eller lemlästade och som används som lockfåglar",
+                "TAPE_RECORDERS": "Bandspelare",
+                "ELECTRICAL_DEVICE": "Elektriska anordningar",
+                "ARTIFICIAL_LIGHT": "Artificiella ljuskällor",
+                "MIRRORS": "Speglar",
+                "ILLUMINATION_DEVICE": "Anordningar för belysning av målet",
+                "NIGHT_SHOOTING_DEVICE": "Siktanordningar för mörkerskytte vari elektronisk bildförstärkare eller bildomvandlare ingår",
+                "EXPLOSIVES": "Sprängämnen",
+                "NETS": "Nät",
+                "TRAPS": "Fällor",
+                "POISON": "Gift och beten som innehåller gift eller bedövningsmedel",
+                "GASSING": "Gasning eller utrökning",
+                "AUTOMATIC_WEAPON": "Halv- eller helautomatiska vapen med magasin som rymmer mer än två patroner",
+                "LIMES": "Lim",
+                "HOOKS": "Krokar",
+                "CROSSBOWS": "Armborst",
+                "SPEAR": "Spjut, spjutslunga, harpun eller något annat till de motsvarande vapen",
+                "BLOWPIPE": "Blåsrör",
+                "LEGHOLD_TRAP": "Saxar, som inte dödar direkt",
+                "CONCEALED_WEAPON": "Gropar och fällor, som försetts med skjutvapen eller spjut",
+                "OTHER_SELECTIVE": "Övriga redskap, anläggningar och metoder avsedda för selektivt dödande",
+                "OTHER_NON_SELECTIVE": "Övriga redskap, anläggningar och metoder avsedda för icke selektivt dödande"
+            },
+            "species": {
+                "title": "Redigera djurarter på beslutet",
+                "species": "Art",
+                "modal": {
+                    "title": "Redigera kvoten",
+                    "amountTitle": "Antal licenser",
+                    "applicationAmount": "Ansökt antal",
+                    "decisionAmount": "Antal som ska beviljas",
+                    "restrictionTitle": "Begränsningar",
+                    "restrictionType": "Typ av begränsning",
+                    "noRestriction": "Inga begränsningar",
+                    "restrictionAE": "Fullvuxna högst",
+                    "restrictionAU": "Fullvuxna tjurar",
+                    "restrictionAmount": "Begränsningsantal",
+                    "beginAndEndDate1": "Första tidsperioden",
+                    "beginAndEndDate2": "Andra tidsperioden",
+                    "begin": "Början",
+                    "end": "Slut",
+                    "errorOver365": "Tidsperioden överskrider 365 dagar",
+                    "errorOverlap": "Tidsperioderna går på varandra!"
+                }
+            },
+            "revision": {
+                "notLocked": "Beslutet har inte blivit låst ännu.",
+                "decision": "Beslut",
+                "latest": "senaste",
+                "download": "Ladda beslutet",
+                "moveToPermit": "Gå till beslutet",
+                "locked": "Låst",
+                "published": "Publicerats",
+                "postalDone": "Postats",
+                "postalNotDone": "Inte postats",
+                "postalWaiting": "Postning",
+                "attachments": "Bilagor till beslutet",
+                "noAttachments": "Inga bilagor",
+                "invoiceForms": "Avgifter",
+                "noInvoices": "Inga avgifter",
+                "moveToInvoices": "Gå till fakturor",
+                "downloadProcessingInvoice": "Ladda handläggningsavgift",
+                "processingInvoiceNotCreated": "Handläggningsavgift  har inte ännu upprättats, därför att beslutet inte har publicerats",
+                "downloadHarvestInvoice": "Ladda licens-/dispensavgift",
+                "harvestReportTitle": "Blanketter för bytesmeddelande",
+                "downloadBirdHarvestReport": "Ladda blanketter för bytesmeddelande av fåglar ",
+                "electronicProcessingInvoiceNote": "Betalningsblanketterna går inte att ladda, därför att elektronisk leverans har valts i ansökan.",
+                "deliveryType": "Leveranssätt",
+                "deliveryElectronic": "Elektroniskt",
+                "deliveryElectronicNote": "Beslutet finns att ladda ner i Oma riista -tjänsten.",
+                "deliveryPostal": "Postleverans",
+                "deliveryPostalNote": "Då du sänder beslutet per post, kvittera det då som postat med knappen.",
+                "recipientsContactPerson": "Mottagare av beslutet - Licensens/dispensens kontaktperson",
+                "recipientsDecisionRecipient": "Mottagare av beslutet",
+                "recipientsOther": "Mottagare av beslutet - Övriga aviseringsmottagare",
+                "recipientName": "Namn",
+                "recipientEmail": "E-post",
+                "recipientSent": "Sänts",
+                "recipientPostal": "Postleverans"
+            },
+            "rkaAuthority": {
+                "addButton": "Lägg till beslutets föredragande",
+                "name": "Namn",
+                "title": "Befattning",
+                "telephone": "Telefonnummer",
+                "telephoneNote": "Telefonnumret måste börja med 029",
+                "email": "E-post",
+                "editTitle": "Redigera beslutets föredragande",
+                "addTitle": "Lägg till beslutets föredragande",
+                "firstName": "Förnamn",
+                "lastName": "Efternamn",
+                "titleFinnish": "Befattning på finska",
+                "titleSwedish": "Befattning på svenska"
+            },
+            "rkaRecipient": {
+                "addButton": "Lägg till mottagare av beslutet",
+                "name": "Namn",
+                "email": "E-post",
+                "editTitle": "Redigera mottagare av beslutet",
+                "addTitle": "Lägg till mottagare av beslutet",
+                "nameFinnish": "Namn på finska",
+                "nameSwedish": "Namn på svenska"
+            }
+        },
+        "derogation": {
+            "nothingSelectedInstruction": "Välj minst en.",
+            "derogationReasonTitle": "Förutsättningar för undantag",
+            "protectedAreaTypesTitle": "Typ av objekt som skall skyddas",
+            "legalFieldsTitle": "Beviljade undantag för avvikande från bestämmelserna i jaktlagen",
+            "reason": {
+                "REASON_PUBLIC_HEALTH": "Trygga folkhälsan",
+                "REASON_PUBLIC_SAFETY": "Trygga den allmänna säkerheten",
+                "REASON_AVIATION_SAFETY": "Trygga flygsäkerheten",
+                "REASON_CROPS_DAMAMGE": "Förhindra allvarliga skador på odlingar",
+                "REASON_DOMESTIC_PETS": "Förhindra allvarliga skador på husdjur",
+                "REASON_FOREST_DAMAGE": "Förhindra allvarliga skador på skogar",
+                "REASON_FISHING": "Förhindra allvarliga skador på fiskevatten",
+                "REASON_WATER_SYSTEM": "Förhindra allvarliga skador på vattendrag",
+                "REASON_FLORA": "Skydda växter",
+                "REASON_FAUNA": "Skydda djur",
+                "REASON_RESEARCH": "Forsknings- och utbildningssyfte, öka och återinföra stammen",
+                "REASON_POPULATION_PRESERVATION": "Att vårda stammen"
+            },
+            "area": {
+                "type": {
+                    "OTHER": "Övrigt",
+                    "AIRPORT": "Trafikflygplats som avses i 75 § 1 punkten i luftfartslagen (864/2014)",
+                    "FOOD_PREMISES": "Livsmedelslokal som godkänts i enlighet med livsmedelslagen (23/2006)",
+                    "WASTE_DISPOSAL": "Avfallshanteringsanläggning",
+                    "BERRY_FARM": "Bär- eller grönsaksodling över 1 ha",
+                    "FUR_FARM": "Pälsfarm",
+                    "FISHERY": "Fiskodlingsanläggning",
+                    "ANIMAL_SHELTER": "Skydd för produktionsdjur"
+                }
             }
         },
         "admin": {
-            "species": "Art",
-            "permitNumberHelp": "Licensnumret i formatet 2015-1-123-12345-1",
-            "year": "År",
-            "stateTitle": "Metsästyksen päättymisilmoitus",
-            "validityTitle": "Voimassaolo",
-            "permitType": "Lupatyyppi",
-            "state": {
-                "EMPTY": "Ei jätetty",
-                "SENT_FOR_APPROVAL": "Tillbaka för att vänta på handläggning",
-                "APPROVED": "Godkänn",
-                "REJECTED": "Avslå"
-            },
-            "validity": {
-                "ACTIVE": "Metsästysaika voimassa",
-                "PASSED": "Metsästysaika päättynyt",
-                "FUTURE": "Metsästysaika tulevaisuudessa"
-            },
-            "sort": {
-                "permitNumber": "Koko lupanumero",
-                "year": "Lupanumeron vuosi",
-                "ordinal": "Lupanumeron järjestysnumero",
-                "type": {
-                    "NORMAL": "Lupanumeron mukaan",
-                    "SPECIAL": "Lupanumeron vuosi / #"
+            "application": {
+                "menu": {
+                    "filter": "Filtrering",
+                    "statusTable": "Ansökningarnas behandlingsstatus",
+                    "postalQueue": "Skall postas"
                 },
-                "direction": {
-                    "ASC": "Nouseva",
-                    "DESC": "Laskeva"
+                "filterMine": "Egna",
+                "filterOthers": "Filtering",
+                "status": "Status",
+                "permitType": "Typ av licens",
+                "decisionType": "Typ av beslut",
+                "appealStatus": "Rättsbehandlingens statusinformation",
+                "protectedArea": "Typ av objekt som skall skyddas",
+                "derogationReason": "Förutsättningar för undantag",
+                "forbiddenMethod": "Förbjudna fångstmetod",
+                "selectOrganisation": "Välj organisation",
+                "moreFilters": "Fler alternativ ...",
+                "handler": "Handläggare",
+                "applicationNumber": "Ansökningsnummer",
+                "noResults": "Inga resultat",
+                "submitDate": "Inlämnats",
+                "applicationName": "Ansökningens namn",
+                "contactPerson": "Kontaktperson",
+                "permitHolder": "Licensmottagare"
+            },
+            "permit": {
+                "species": "Art",
+                "permitNumberHelp": "Licensnumret i formatet 2015-1-123-12345-1",
+                "year": "År",
+                "stateTitle": "Meddelande om att jakten upphört",
+                "validityTitle": "Giltighetstid",
+                "permitType": "Typ av licens",
+                "state": {
+                    "EMPTY": "Inte inlämnats",
+                    "SENT_FOR_APPROVAL": "Tillbaka för att vänta på handläggning",
+                    "APPROVED": "Godkänn",
+                    "REJECTED": "Avslå"
+                },
+                "validity": {
+                    "ACTIVE": "Jakttiden ikraft",
+                    "PASSED": "Jakttiden upphört",
+                    "FUTURE": "Jakttiden i framtiden"
+                },
+                "sort": {
+                    "permitNumber": "Hela licensnumret",
+                    "year": "Licensnumrets årtal",
+                    "ordinal": "Licensnumrets ordningsnummer",
+                    "type": {
+                        "NORMAL": "Enligt licensnummer",
+                        "SPECIAL": "Licensnumrets årtal / #"
+                    },
+                    "direction": {
+                        "ASC": "Stigande",
+                        "DESC": "Fallande"
+                    }
                 }
             }
         },
@@ -2322,7 +3294,7 @@
             "application": "Ansökan",
             "conflicts": "Konflikter",
             "selectedSpecies": "Djurart",
-            "selectedYear": "Jaktår",
+            "selectedYear": "År",
             "showAllSpecies": "Visa alla djurarter",
             "noResults": "Inga ansökningar",
             "speciesList": "Art",
@@ -2331,18 +3303,19 @@
             "attachments": "Bilagor",
             "areaSize": "Areal",
             "unionMap": "Licensområde",
-            "fragmentMap": "Karta över oenhetliga områden",
             "partnerMap": "Samdeltagarområden",
             "mapLegend": {
-                "notFragment": "ovan 1000 ha",
-                "fragment": "mindre än 1000 ha",
-                "mh": "Forest Management Agency"
+                "notFragment": "ovan {{ limit }} ha",
+                "fragment": "mindre än {{ limit }} ha"
             },
             "fragment": {
                 "hash": "Beteckning för det oenhetliga området",
+                "mooseFragment": "1000 ha (hirvi)",
+                "deerFragment": "500 ha (peura)",
                 "intersectingProperties": "Fastigheter som  överlappar med oenhetliga områden",
                 "intersectingValtionmaa": "Statens mark som överlappar med oenhetliga områden",
-              "intersectingYksityismaa": "Sirpaleen alueen kanssa päällekkäin menevä yksityismaa",
+                "intersectingYksityismaa": "Privat mark som överlappar med splittrade områden",
+                "printMap": "Skriv ut karta",
                 "exportToExcel": "Licensområdets oenhetliga områden (XLS)"
             },
             "partnerList": {
@@ -2350,17 +3323,17 @@
                 "partnerName": "Samsöksdeltagare",
                 "contactPerson": "Kontaktperson"
             },
-            "conflictList":  {
-                "showOnlyPrivateLand": "Vain yksityismaita sisältävät",
-                "showOnlyMhLand": "Vain valtionmaita sisältävät",
-                "permitNumber": "Licensnummer",
+            "conflictList": {
+                "showOnlyPrivateLand": "Innehållande endast privat mark",
+                "showOnlyMhLand": "Innehållande endast statlig mark",
+                "applicationNumber": "Ansökningsnummer",
                 "rhy": "JVF",
                 "permitHolder": "Licensinnehavaren",
                 "areaName": "Områdets namn",
+                "areaSize": "Sammanlagda överlappade areal",
                 "areaCode": "Områdets beteckning"
             },
-            "conflictResolution":  {
-                "clickToReturn": "Gå tillbaka",
+            "conflictResolution": {
                 "firstApplication": "Ansökan A",
                 "secondApplication": "Ansökan B",
                 "conflictArea": "Överlappande område"
@@ -2381,7 +3354,8 @@
             "sent": "Skickat",
             "showMessage": "Visa meddelande",
             "hideMessage": "Dölja meddelande",
-            "visibleToAll": "Viesti on lähetetty kaikille \"Oma riista\" -käyttäjille.",
+            "visibleToAll": "Meddelandet har sänts till alla \"Oma riista\" -användare",
+            "visibleToRhyMembers": "Meddelandet har sänts till alla JVF medlemmar",
             "subscriberOrganisations": "Mottagande organisationer",
             "subscriberOccupations": "Mottagande uppdrag"
         },
@@ -2394,7 +3368,8 @@
             "chooseOrganisations": "Välj orgnisationer",
             "targetOccupations": "Mottagarna",
             "targetOrganisations": "Mottagarna",
-            "visibleToAll": "Lähetä viesti kaikille",
+            "visibleToAll": "Sänd meddelande till alla",
+            "visibleToRhyMembers": "Sänd meddelande till alla JVF medlemmar",
             "subject": "Rubrik",
             "body": "Meddelande"
         },
@@ -2539,6 +3514,7 @@
             "listTitle": "Grupper",
             "memberOrder": "Ordning",
             "leaderCreated": "Sparats",
+            "permitMissing": "Välj licens",
             "button": {
                 "add": "Lägg till grupp",
                 "remove": "Ta bort grupp",
@@ -2590,17 +3566,17 @@
                 "toChangesExcel": "Lägenheter som ändrats (XLS)",
                 "toGeojson": "Skapa områdesgränser (GeoJSON/zip)",
                 "toGarmin": "Skapa områdesgränser (Garmin)",
-                "activate": "Aktivera",
-                "deactivate": "Deaktivera"
+                "activate": "Avbryt borttagning",
+                "deactivate": "Radera området"
             },
             "messages": {
                 "areaCalculationRunning": "Beräkning av området pågår, vänta en stund och försök igen"
             },
             "list": {
                 "hasPendingChanges": "Uppdateringar i områdesuppgifterna",
-                "areaIsDeactive": "Området har deaktiverats",
+                "areaIsDeactive": "Området har tagits bort",
                 "updateWarning": "Du observerar väl, att uppdateringarna av områdesuppgifterna från Lantmäteriverket eller Forsstyrelsen inte berör de områden som föreningen har fastställt tidigare jaktår.",
-                "showDeactive": "Visa också deaktiverade"
+                "showDeactive": "Vis områden som skall tas bort"
             },
             "import": {
                 "confirmTitle": "Bekräftelse",
@@ -2614,76 +3590,9 @@
                 "titleAdd": "Lägg till område",
                 "titleEdit": "Redigera området",
                 "titleCopy": "Kopiera området",
-                "externalId": "Områdets kod",
                 "copyGroups": "Kopiera också till området anslutna grupper"
             },
-            "map": {
-                "toolbar": {
-                    "move": "Flyttning av kartan",
-                    "palsta": {
-                        "add": {
-                            "single": "Lägg till / radera-verktyg",
-                            "marquee": "Måla (lägg till)"
-                        },
-                        "remove": {
-                            "marquee": "Måla (radera)"
-                        }
-                    },
-                    "exclude": {
-                        "title": "Klipp ut delar av skiftet ",
-                        "lasso": {
-                            "add": "Rita (frihandslinje)",
-                            "remove": "Radera (frihandslinje)"
-                        },
-                        "polyLasso": {
-                            "add": "Rita (linje med kopplingspunkter)",
-                            "remove": "Radera (linje med kopplingspunkter)"
-                        }
-                    }
-                },
-                "legend": {
-                    "realEstate": "Fastighet",
-                    "metsahallitus": "Forststyrelseområde",
-                    "changed": "Förändrade fastighet",
-                    "selected": "Det markerade området"
-                },
-                "selectedArea": {
-                    "areaCode": "Kod",
-                    "areaName": "Namn",
-                    "areaSize": "Areal",
-                    "calculatingAreaSize": "Beräknar...",
-                    "changeTitle": "Ändringar",
-                    "changeAmount": "Ändring"
-                },
-                "tab": {
-                    "realEstates": {
-                        "title": "Fastigheter",
-                        "emptySelection": "Inte valda fastigheter",
-                        "showOnlyChanged": "Visa och reparera den förändrade fastighets",
-                        "changedHelpText": "Du observerar väl, att tjänstens korrigeringsförslag görs kalkylmässigt och de är därför endast riktgivande. Ändringen av arealen syns med rött under den ursprungliga arealen. Om fastighetsnumret har bytts, så visas ett eventuellt ersättande fastighetsnummer under det.",
-                        "tooltipPropertyNumber": "Ursprungligt och ersättande fastighetsnummer",
-                        "tooltipAreaSize": "Ursprunglig areal och storleken av ändringen",
-                        "fix": "Korrigera"
-                    },
-                    "massInsert": {
-                        "title": "Massinmatning",
-                        "inputPropertyIdentifier": "Mata in fastighetsbeteckningen",
-                        "placeholder": "Skriv in i formatet 111-222-3333-4444 eller 1-2-3-4 eller 11122233334444",
-                        "okPropertyCount": "Val av  {{count}} st fastigheter lyckades",
-                        "propertyIdentifiersNotFound": "Följande fastighetssignum hittas inte: "
-                    },
-                    "metsahallitus": {
-                        "title": "Forststyrelse",
-                        "search": "Sök",
-                        "emptySelection": "Inte valda forststyrelseområden"
-                    }
-                }
-            },
-            "landAreaSize": "Markyta",
-            "waterAreaSize": "Vattenarealen",
-            "totalAreaSize": "Areal",
-            "stateLandAreaSize": "Statsägda områdens areal",
-            "privateLandAreaSize": "Privatägda områdens areal",
+            "excelExportMessage": "Vänta, det kan dröja flera minuter att bilda fastighetsförteckningen.",
             "lastModified": "Sista redigera"
         },
         "hunting": {
@@ -2722,7 +3631,6 @@
                 "title": "Korrigera position",
                 "setLocation": "Flytta på kartan"
             },
-            "pointOfTime": "Fångsttid",
             "nextDayHunting": "Följande dygn",
             "huntingDay": {
                 "createTitle": "Skapa en jaktdag",
@@ -2762,8 +3670,8 @@
                 "editTitle": "Komplettera med uppgifter om att jakten avslutats",
                 "finalSubmitDoneTitle": "Jakten avslutats",
                 "huntingFinishingTitle": "Fångsten upphört",
-                "totalHuntingArea": "Jaktområdets totala areal (i hela hektar)",
-                "effectiveHuntingArea": "Det vid jakten använda områdets storlek (i hela hektar)",
+                "totalHuntingArea": "Jaktområdets totala markareal",
+                "effectiveHuntingArea": "Det vid jakten använda områdets markareal",
                 "huntingEndDate": "Fångsten upphört",
                 "saveUnfinished": "Spara oavslutade",
                 "markUnfinished": "Annullera upphörandet",
@@ -2824,8 +3732,8 @@
                 "beaver": "Bäver",
                 "amountOfInhabitedWinterNests": "Antalet bebodda vinterbon på ert jaktområde",
                 "beaverHarvestAmount": "Antalet fällda bävrar på sammanslutningens jaktområde under 12 månader före inventeringen",
-                "areaOfDamage": "Drabbat område (ha)",
-                "areaOccupiedByWater": "Område under vatten (ha)",
+                "areaOfDamage": "Drabbat område",
+                "areaOccupiedByWater": "Område under vatten",
                 "additionalBeaverInfo": "Tilläggsuppgifter"
             },
             "selectGroup": "Välj grupp",
@@ -2875,10 +3783,11 @@
             "permitHolder": "Licensmottagare",
             "originalPermitAmount": "Jaktlicensernas antal",
             "amendmentPermitAmount": "Antalet nya licenser (JL 28§)",
-            "amendmentPermitName": "Ny licens (JL 28§)<br>",
+            "amendmentPermitName": "Ny licens",
             "relatedRhy": "För kännedom",
             "permitName": "Licens",
             "permitAmountTotal": "Licenser sammanlagt",
+            "permitAreaExternalId": "Ansökningsområdets kod",
             "sumTitle": "Totalt",
             "permitUnallocated": "Inte utdelade ",
             "usedPermitCount": "Använda",
@@ -2886,49 +3795,20 @@
             "finishHunting": "Avsluta jakten",
             "huntingFinished": "Jakten är avslutad",
             "finishHuntingByModeratorOverride": "Massainmatning av byten",
+            "permitHolderFinishedHunting": "Licensens jakt har avslutats",
             "amendmentPermitsDoNotMatchHarvests": "Beviljade nya licenser överensstämmer inte med bytet som markerats som odugligt till människoföda.<br><br>Kontrollera att endast de som var odugliga som människoföda, för vilka det beviljats ny licens, markerats. ",
             "restrictionViolated": "Ställda villkor för beviljad licens och för bytets ålder eller kön överensstämmer inte",
-            "mooseHarvestReport": {
-                "menuTitle": "Bifogande av betalkvitto och avslutande av jakt me d licens",
-                "title": "Bifogande av betalkvitto och avslutande av jakt me d licens",
-                "finishPermit": "Avsluta licensen genom att fälla ner kvittot här eller klicka för att välja",
-                "fileTypeNotAccepted": "Filtypen stöds inte",
-                "permitFinished": "Licensens jakt har avslutats",
-                "unfinishPermit": "Ångra avslutandet och ta bort kvittot",
-                "finishedWithoutHarvests": "Jakten avslutats utan byten",
-                "finishWithoutHarvests": "Avsluta jakten utan byten",
-                "downloadReceipt": "Visa kvittot",
-                "paymentRecipientName": "Mottagare",
-                "totalPayment": "Summa att betala",
-                "cannotCreateMooseHarvestReport": {
-                    "header": "Betalningskvittot kan bifogas och licensens jakt avslutas då",
-                    "allPartnersFinishedHunting": "alla samdeltagare har avslutat jakten",
-                    "amendmentPermitsMatchHarvests": "beviljade nya licenser överenstämmer med de som antecknats som odugliga till människoföda"
-                },
-                "priceBreakdown": {
-                    "title": "Betalningsspecifikation",
-                    "eurPerPcs": "&euro; / st.",
-                    "eur": "&euro;",
-                    "pcs": "st.",
-                    "sumOfPayments": "Att betala sammanlagt",
-                    "adults": "Fullvuxna",
-                    "notEdibleAdults": "Fullvuxna icke dugliga som människoföda",
-                    "adultsToBePaid": "Fullvuxna att betala",
-                    "adultPrice": "Pris för fullvuxen",
-                    "adultsPayment": "Summa att betala för fullvuxna",
-                    "young": "Kalvar",
-                    "notEdibleYoung": "Kalvar icke dugliga som människoföda",
-                    "youngToBePaid": "Kalvar att betala ",
-                    "youngPrice": "Pris för kalv",
-                    "youngPayment": "Summa att betala för kalvar"
-                }
-            },
             "button": {
                 "functionMenu": "Funktioner",
                 "table": "Tabell",
                 "lukeReports": "Rapport",
                 "listLeaders": "Jaktledare",
                 "rhyStatistics": "JVF statistik"
+            },
+            "download": {
+                "title": "Licens och bilagor",
+                "permitList": "Licens",
+                "attachmentList": "Bilagor"
             },
             "percentage": {
                 "allocated": "Planerats<br>(utdelade licenser)",
@@ -2963,6 +3843,7 @@
             "tabHunting": "Jakt",
             "tabIndexes": "Index",
             "tabPayments": "Betalningsuppgifter",
+            "tabAreas": "Samdeltagarområden",
             "allocation": {
                 "buttonText": "Dela licenserna",
                 "menuText": "Dela licenserna per samlicensdeltagarna",
@@ -3182,6 +4063,12 @@
             "ROE_DEER": "R",
             "BOW": "BS"
         },
+        "list": {
+            "alerts": {
+                "unfinishedEvent": "Granska uppgifterna för skjutprovet och stäng provtillfället.",
+                "unpopulatedEvent": "Inga händelser har antecknats för skjutprovet, granska uppgifterna för provet."
+            }
+        },
         "tabs": {
             "overview": "Händelse",
             "registration": "Anmälning",
@@ -3189,6 +4076,9 @@
             "payments": "Betalningar"
         },
         "overview": {
+            "timeAndPlace": "Tid och plats",
+            "workflowSummary": "Sammandrag",
+            "lastModifier": "Sista redaktör",
             "open": "Öppna skjutprovstillfället",
             "close": "Stäng skjutprovstillfället",
             "reopen": "Öppna igen",
@@ -3202,12 +4092,13 @@
             "selectTestType": "Välj tilltänkt provform",
             "status": {
                 "HUNTING_PAYMENT_DONE": "Viltvårdsavgiften betald",
-                "HUNTING_PAYMENT_NOT_DONE": "Viltvårdsavgiften obetald",
+                "HUNTING_PAYMENT_NOT_DONE": "Viltvårdsavgiften obetald. Kontrollera från inbetalningskortet och papperskvittot att betalningen är gjord. Om betalningen är erlagd, så lägg till deltagaren på normalt sätt till skjutprovet.",
                 "IN_PROGRESS": "Personen har redan anmält sig men inte ännu bestämt eller betalat skjutprovsprestationen",
                 "COMPLETED": "Personens skjutprovsprestation är avslutad",
                 "DISQUALIFIED_AS_OFFICIAL": "Personen kan inte anmäla sig som deltagare, för att hen är examinator vid samma skjutprovstillfälle",
-                "NO_HUNTER_NUMBER": "Henkilöllä ei ole metsästäjänumeroa",
-                "HUNTING_BAN": "Henkilöllä on voimassa oleva metsästyskielto"
+                "NO_HUNTER_NUMBER": "Personen har ingen jägarnummer",
+                "HUNTING_BAN": "Personen har ett ikraftvarande jaktförbud",
+                "FOREIGN_HUNTER": "Utländsk jägare"
             },
             "button": {
                 "findPerson": "Hämta personens uppgifter",
@@ -3242,8 +4133,6 @@
         "payment": {
             "payments": "Betalningsuppgifter",
             "totalPaidAmount": "Erlagda betalningar",
-            "paid": "Betald",
-            "unpaid": "Ej betald",
             "remaining": "Kvar",
             "incomplete": "Prestation pågår",
             "confirmation": "Vill du anteckna personens <strong>{{firstName}} {{lastName}} ({{hunterNumber}})</strong> skjutprov och betalningar som erlagda?",
@@ -3277,10 +4166,13 @@
         "iban": "IBAN",
         "dueDate": "Förfallodag",
         "paidDate": "Betalningsdag",
+        "bookingDate": "Bokföringsdag",
         "creditorReference": "Referensnummer",
         "payee": "Mottagare",
         "payer": "Betalaren",
         "amount": "Summa",
+        "paid": "Betald",
+        "unpaid": "Ej betald",
         "payButton": "Betala",
         "summary": "Sammandrag över betalningen"
     },
@@ -3291,31 +4183,32 @@
             "PERMIT_HARVEST": "Licensavgift"
         },
         "invoiceNumber": "Fakturanummer",
-        "deliveryType": "Toimitustapa",
+        "deliveryType": "Leveranssätt",
         "deliveryTypes": {
-            "EMAIL": "E-post",
-            "LETTER": "Brevpost"
+            "ELECTRONIC": "Elektronisk",
+            "MAIL": "Brevpost"
         },
         "states": {
             "CREATED": "Oskickad",
             "DELIVERED": "Skickad",
             "PAID": "Betald",
             "OVERDUE": "Obetald",
-            "REMINDER": "Maksumuistutus luotu",
-            "VOID": "Mitätöity",
+            "REMINDER": "Betalningspåminnelse skapats",
+            "VOID": "Makulerad",
             "UNKNOWN": "Okänd"
         },
         "recipient": "Adressat",
         "info": "Uppgifter",
         "items": "Specificering",
+        "correctedAmount": "Korrigerad summa",
         "fivaldiStates": {
-            "NOT_BATCHED": "Ei vielä lisätty aineistoon",
-            "BATCHED": "Ladattavissa",
-            "DOWNLOADED": "Ladattu"
+            "NOT_BATCHED": "Har inte ännu lagts till materialet",
+            "BATCHED": "För nedladdning",
+            "DOWNLOADED": "Nedladdat"
         },
         "stateChangeEventTypes": {
-            "ELECTRONIC_INVOICING_DISABLED": "Sähköinen laskutus kytketty pois ja toimitustapa vaihdettu kirjeeksi.",
-            "OVERDUE_REMINDER_CREATED": "Maksumuistutus tulostettu."
+            "ELECTRONIC_INVOICING_DISABLED": "Elektronisk fakturering kopplats bort och leveranssättet har bytts till brev. ",
+            "OVERDUE_REMINDER_CREATED": "Betalningspåminnelse utskriven."
         }
     }
 }

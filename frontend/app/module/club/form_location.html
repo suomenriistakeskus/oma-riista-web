@@ -24,7 +24,7 @@
     </tr>
     <tr ng-show="$ctrl.club.mooseArea">
         <th class="col-md-3" translate="club.main.general.mooseArea"></th>
-        <td ng-show="!$ctrl.editLocation">{{ $ctrl.club.mooseArea.name }}</td>
+        <td ng-show="!$ctrl.editLocation">{{ $ctrl.club.mooseArea | rI18nNameFilter }}</td>
     </tr>
     </tbody>
 </table>

@@ -7,13 +7,16 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementSubscriber;
+import fi.riista.feature.announcement.AnnouncementSubscriberRepository;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.person.QPerson;
+import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.push.QMobileClientDevice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,6 +32,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
@@ -36,17 +40,65 @@ import static java.util.stream.Collectors.toSet;
 
 @Service
 public class AnnouncementSubscriberPersonResolver {
+
     @Resource
     private JPQLQueryFactory jpqlQueryFactory;
 
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Set<String> collectReceiverEmails(final List<AnnouncementSubscriber> subscribers) {
-        return getEmailsForPersonIds(collectReceiverPersonIds(subscribers));
-    }
+    @Resource
+    private AnnouncementSubscriberRepository announcementSubscriberRepository;
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public List<String> collectReceiverPushTokens(final List<AnnouncementSubscriber> subscribers) {
-        return getPushTokensForPersonIds(collectReceiverPersonIds(subscribers));
+    public AnnouncementNotificationTargets collectTargets(final Announcement announcement,
+                                                          final boolean sendEmail) {
+        if (announcement.isVisibleToAll()) {
+            // Only push notification for global announcements supported for now
+            return new AnnouncementNotificationTargets(emptyList(), collectAllPushTokens());
+        }
+
+        final Set<String> pushTokens = new HashSet<>();
+        final Set<String> emails = new HashSet<>();
+
+        if (announcement.getRhyMembershipSubscriber() != null) {
+            final List<Long> rhyMemberPersonIds =
+                    collectRhyMemberPersonIds(announcement.getRhyMembershipSubscriber().getId());
+
+            if (rhyMemberPersonIds.size() > 0) {
+                pushTokens.addAll(getPushTokensForPersonIds(rhyMemberPersonIds));
+
+                if (sendEmail) {
+                    emails.addAll(getEmailsForPersonIds(rhyMemberPersonIds));
+                }
+            }
+        }
+
+        final List<AnnouncementSubscriber> announcementSubscribers =
+                announcementSubscriberRepository.findByAnnouncement(announcement);
+
+        if (announcementSubscribers.size() > 0) {
+            final List<Long> subscriberPersonIds = collectReceiverPersonIds(announcementSubscribers);
+
+            if (subscriberPersonIds.size() > 0) {
+                pushTokens.addAll(getPushTokensForPersonIds(subscriberPersonIds));
+
+                if (sendEmail) {
+                    emails.addAll(getEmailsForPersonIds(subscriberPersonIds));
+                }
+            }
+        }
+
+        return new AnnouncementNotificationTargets(ImmutableList.copyOf(emails), ImmutableList.copyOf(pushTokens));
+    }
+
+    private List<Long> collectRhyMemberPersonIds(final long rhyId) {
+
+        //OR-4414: Use explicit join to avoid using rhy._super
+        final QPerson PERSON = QPerson.person;
+        final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
+        return jpqlQueryFactory
+                .select(PERSON.id)
+                .from(PERSON)
+                .innerJoin(PERSON.rhyMembership, RHY)
+                .where(RHY.id.eq(rhyId)).fetch();
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
@@ -55,16 +107,15 @@ public class AnnouncementSubscriberPersonResolver {
         final QPerson PERSON = QPerson.person;
 
         return jpqlQueryFactory
-                        .select(MOBILE.pushToken)
-                        .from(MOBILE)
-                        .join(MOBILE.person, PERSON)
-                        .where(PERSON.deletionCode.isNull(),
-                                PERSON.lifecycleFields.deletionTime.isNull())
-                        .fetch();
+                .select(MOBILE.pushToken)
+                .from(MOBILE)
+                .join(MOBILE.person, PERSON)
+                .where(PERSON.deletionCode.isNull(),
+                        PERSON.lifecycleFields.deletionTime.isNull())
+                .fetch();
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public List<Long> collectReceiverPersonIds(final List<AnnouncementSubscriber> subscribers) {
+    private List<Long> collectReceiverPersonIds(final List<AnnouncementSubscriber> subscribers) {
         final Set<Long> allPersonIds = new HashSet<>();
 
         // Group subscribers to reduce number of queries

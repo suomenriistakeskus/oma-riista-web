@@ -63,7 +63,7 @@ public class PermitDecisionRkaAuthorityFeature {
         updateEntity(dto, entity);
     }
 
-    private void updateEntity(final PermitDecisionRkaAuthorityDTO dto, final PermitDecisionRkaAuthority entity) {
+    private static void updateEntity(final PermitDecisionRkaAuthorityDTO dto, final PermitDecisionRkaAuthority entity) {
         entity.setFirstName(dto.getFirstName());
         entity.setLastName(dto.getLastName());
         entity.setTitleFinnish(dto.getTitleFinnish());

@@ -17,6 +17,7 @@ import org.springframework.aop.support.AopUtils;
 
 import javax.persistence.EntityManager;
 import javax.validation.ValidationException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +48,18 @@ public final class TestUtils {
         }
 
         throw new IllegalArgumentException("proxy object does not represent given class: " + clazz.getSimpleName());
+    }
+
+    public static BigDecimal bd(final int amount) {
+        return new BigDecimal(amount);
+    }
+
+    public static BigDecimal bd(final String amount) {
+        return new BigDecimal(amount);
+    }
+
+    public static BigDecimal currency(final int amount) {
+        return new BigDecimal(amount).setScale(2);
     }
 
     public static LocalDate ld(final int year, final int monthOfYear, final int dayOfMonth) {

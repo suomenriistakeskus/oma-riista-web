@@ -313,25 +313,25 @@
                 </p>
             </div>
         </div>
+    </div>
 
-        <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('additionalInfo')">
-            <label for="additionalInfo" class="control-label col-xs-4">
-                <span translate="gamediary.form.additionalInfo"></span>
-                <small ng-if="$ctrl.isFieldRequired('additionalInfo')"
-                       class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
+    <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('additionalInfo')">
+        <label for="additionalInfo" class="control-label col-xs-4">
+            <span translate="gamediary.form.additionalInfo"></span>
+            <small ng-if="$ctrl.isFieldRequired('additionalInfo')"
+                   class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
 
-            <div class="col-xs-8">
-                <textarea name="additionalInfo" id="additionalInfo"
-                          class="form-control"
-                          rows="6"
-                          ng-model="$ctrl.harvest.specimens[0].additionalInfo"
-                          ng-required="$ctrl.isFieldRequired('additionalInfo')"></textarea>
-            </div>
+        <div class="col-xs-8">
+            <textarea name="additionalInfo" id="additionalInfo"
+                      class="form-control"
+                      rows="6"
+                      ng-model="$ctrl.harvest.specimens[0].additionalInfo"
+                      ng-required="$ctrl.isFieldRequired('additionalInfo')"></textarea>
+        </div>
 
-            <div class="col-xs-offset-4 col-xs-8 help-block">
-                <span translate="gamediary.form.additionalInfoHelp"></span>
-            </div>
+        <div class="col-xs-offset-4 col-xs-8 help-block">
+            <span translate="gamediary.form.additionalInfoHelp"></span>
         </div>
     </div>
 </div>

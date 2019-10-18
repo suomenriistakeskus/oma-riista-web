@@ -1,22 +1,8 @@
-(function () {
-    'use strict';
+'use strict';
 
-    angular.module('app.layout.language', [])
-        .controller('LanguageController', LanguageController)
-        .directive('navLanguage', function () {
-            return {
-                restrict: 'E',
-                replace: true,
-                scope: true,
-                bindToController: true,
-                controllerAs: '$ctrl',
-                templateUrl: 'layout/language/nav-language.html',
-                controller: LanguageController
-            };
-        });
-
-    function LanguageController($translate, $http) {
-        this.isSelected = function (value) {
+angular.module('app.layout.language', [])
+    .service('LanguageService', function ($translate, $http) {
+        this.isSelectedLanguage = function (value) {
             return $translate.use() === value;
         };
 
@@ -29,5 +15,22 @@
                 params: {lang: languageKey}
             });
         };
-    }
-})();
+    })
+    .directive('navLanguage', function (LanguageService) {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: true,
+            bindToController: true,
+            controllerAs: '$ctrl',
+            templateUrl: 'layout/language/nav-language.html',
+            controller: function () {
+                var $ctrl = this;
+
+                $ctrl.$onInit = function () {
+                    $ctrl.isSelectedLanguage = LanguageService.isSelectedLanguage;
+                    $ctrl.changeLanguage = LanguageService.changeLanguage;
+                };
+            }
+        };
+    });

@@ -4,55 +4,74 @@
     <div class="col-md-6">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Hakemuksen tiedot</h3>
+                <h3 class="panel-title" translate="harvestpermit.decision.summary.applicationSummary.title"></h3>
             </div>
 
             <div class="panel-body" style="min-height: 185px;">
                 <table class="table">
                     <tbody>
                     <tr>
-                        <th class="col-xs-6">Hakemuksen numero</th>
+                        <th class="col-xs-6"
+                            translate="harvestpermit.decision.summary.applicationSummary.applicationNumber"></th>
                         <td>
-                            <span ng-bind="$ctrl.application.applicationNumber"></span>
+                            <span ng-bind="$ctrl.applicationSummary.applicationNumber"></span>
                         </td>
                     </tr>
                     <tr>
-                        <th>Saapunut</th>
+                        <th translate="harvestpermit.decision.summary.applicationSummary.receivedDate"></th>
                         <td>
                             <span ng-class="{'text-danger': $ctrl.isLateApplication()}"
-                                  ng-bind="$ctrl.application.submitDate | date:'d.M.yyyy HH:mm'"></span>
+                                  ng-bind="$ctrl.applicationSummary.submitDate | date:'d.M.yyyy HH:mm'"></span>
                         </td>
                     </tr>
                     <tr>
-                        <th>Toimitustapa</th>
+                        <th translate="harvestpermit.decision.summary.applicationSummary.delivery"></th>
                         <td>
-                            <span ng-if="$ctrl.application.deliveryByMail === true">Toimitus paperilla</span>
-                            <span ng-if="!$ctrl.application.deliveryByMail === true">Toimitus sähköisesti</span>
+                            <span ng-if="$ctrl.applicationSummary.deliveryByMail === true"
+                                  translate="harvestpermit.decision.summary.applicationSummary.deliveryPaper"></span>
+                            <span ng-if="!$ctrl.applicationSummary.deliveryByMail === true"
+                                  translate="harvestpermit.decision.summary.applicationSummary.deliveryEmail"></span>
                         </td>
                     </tr>
-                    <tr ng-if="$ctrl.application.createdByModeratorName">
-                        <th>Riistakeskuksen luoma</th>
+                    <tr ng-if="$ctrl.applicationSummary.createdByModeratorName">
+                        <th translate="harvestpermit.decision.summary.applicationSummary.moderatorCreated"></th>
                         <td>
-                            <span ng-bind="$ctrl.application.createdByModeratorName"></span>
+                            <span ng-bind="$ctrl.applicationSummary.createdByModeratorName"></span>
                         </td>
                     </tr>
                     </tbody>
                 </table>
 
                 <div class="row">
-                    <div class="col-xs-12 text-right">
-                        <button type="button" class="btn btn-default"
-                                ng-click="$ctrl.loadOriginalZip()">
-                            <span class="fa fa-fw fa-file-zip-o"></span>
-                            &nbsp;
-                            Lataa hakemus (ZIP)
-                        </button>
-                        <button type="button" class="btn btn-primary"
-                                ng-click="$ctrl.loadApplicationPdf()">
-                            <span class="fa fa-fw fa-file-pdf-o"></span>
-                            &nbsp;
-                            Lataa hakemus (PDF)
-                        </button>
+                    <div class="col-xs-6">
+                    </div>
+
+                    <div class="col-xs-6 text-right">
+                        <div class="btn-group" uib-dropdown>
+                            <button type="button" class="btn btn-primary" uib-dropdown-toggle>
+                                <span class="fa fa-download"></span>
+                                &nbsp;
+                                <span translate="harvestpermit.decision.summary.applicationSummary.download"></span>
+                                &nbsp;
+                                <span class="fa fa-caret-down">
+                            </span>
+                            </button>
+
+                            <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+                                <li>
+                                    <a ng-click="$ctrl.loadApplicationPdf()">
+                                        <span class="fa fa-fw fa-file-pdf-o"></span>
+                                        <span translate="global.button.downloadPdf"></span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a ng-click="$ctrl.loadOriginalZip()">
+                                        <span class="fa fa-fw fa-file-archive-o"></span>
+                                        <span translate="global.button.downloadZip"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -61,20 +80,26 @@
     <div class="col-md-6">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Käsittelyn tilanne</h3>
+                <h3 class="panel-title" translate="harvestpermit.decision.summary.status.title"></h3>
             </div>
 
             <div class="panel-body" style="min-height: 185px;">
                 <table class="table">
                     <tbody>
                     <tr>
-                        <th class="col-xs-6">Tila</th>
+                        <th class="col-xs-6" translate="harvestpermit.decision.summary.status.status"></th>
                         <td>
-                            <span translate="harvestpermit.decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus()}}"></span>
+                            <strong translate="harvestpermit.decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus()}}"></strong>
                         </td>
                     </tr>
                     <tr>
-                        <th class="col-xs-6">Käsittelijä:</th>
+                        <th class="col-xs-6" translate="harvestpermit.decision.settings.document.decisionType"></th>
+                        <td>
+                            <span translate="harvestpermit.decision.decisionType.{{$ctrl.decision.decisionType}}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="col-xs-6" translate="harvestpermit.decision.summary.status.handler"></th>
                         <td>
                             <div ng-show="$ctrl.decision.handler">
                                 <span ng-bind="$ctrl.decision.handler.byName"></span>
@@ -82,29 +107,76 @@
                             </div>
                         </td>
                     </tr>
+                    <tr>
+                        <th class="col-xs-6" translate="harvestpermit.decision.summary.status.appealStatus"></th>
+                        <td>
+                            <span ng-if="$ctrl.decision.appealStatus"
+                                  translate="harvestpermit.decision.appealStatus.{{$ctrl.decision.appealStatus}}"></span>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
 
-                <button type="button" class="btn btn-primary btn-block btn-lg"
-                        ng-hide="$ctrl.decision.userIsHandler"
-                        ng-confirm-click
-                        ng-confirm-click-action="$ctrl.assign()">Ota hakemus käsittelyyn</button>
+                <div class="row">
+                    <div class="col-xs-6">
+                        <button type="button" class="btn btn-default pull-left"
+                                ng-click="$ctrl.showActions()">
+                            <span class="fa fa-fw fa-eye"></span>
+                            <span translate="harvestpermit.decision.summary.status.showActions"></span>
+                        </button>
+                    </div>
+                    <div class="col-xs-6">
+                        <assign-decision-handler decision="$ctrl.decision"></assign-decision-handler>
+                    </div>
+                </div>
+                <div class="row" style="padding-top: 5px" ng-if="$ctrl.decision.userIsHandler">
+                    <div class="col-xs-offset-6 col-xs-6">
+                        <button type="button" class="btn btn-primary btn-block"
 
+                                ng-click="$ctrl.editAppealSettings()">
+                            <span class="fa fa-fw fa-cog"></span>
+                            <span translate="harvestpermit.decision.summary.status.appealSettings"></span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<permit-application-summary application="$ctrl.application" permit-area="$ctrl.permitArea"
-                            diary-parameters="$ctrl.diaryParameters"></permit-application-summary>
+<div ng-switch="$ctrl.decision.harvestPermitCategory">
+    <mooselike-application-summary
+            ng-switch-when="MOOSELIKE"
+            application="$ctrl.applicationSummary"
+            permit-area="$ctrl.permitArea">
+    </mooselike-application-summary>
+
+    <amendment-application-summary
+            ng-switch-when="MOOSELIKE_NEW"
+            application="$ctrl.applicationSummary"
+            permit-area="$ctrl.permitArea"
+            amendment-application="$ctrl.mooselikeAmendment">
+    </amendment-application-summary>
+
+    <bird-application-summary
+            ng-switch-when="BIRD"
+            application="$ctrl.applicationSummary">
+    </bird-application-summary>
+
+    <carnivore-application-summary
+            ng-switch-when-separator="|"
+            ng-switch-when="LARGE_CARNIVORE_BEAR|LARGE_CARNIVORE_LYNX|LARGE_CARNIVORE_LYNX_PORONHOITO|LARGE_CARNIVORE_WOLF"
+            application="$ctrl.applicationSummary"></carnivore-application-summary>
+
+</div>
 
 <div class="text-right">
-    <button type="button" class="btn btn-primary btn-lg"
+    <button type="button" class="btn btn-primary"
             ng-disabled="!$ctrl.canEditApplication()"
             ng-confirm-click
             ng-confirm-click-action="$ctrl.editApplication()">
-        <span class="fa fa-edit"></span>
-        &nbsp;
-        Täydennä hakemusta
+        <span class="fa fa-fw fa-edit"></span>
+        <span translate="harvestpermit.decision.summary.amend"></span>
     </button>
 </div>
+

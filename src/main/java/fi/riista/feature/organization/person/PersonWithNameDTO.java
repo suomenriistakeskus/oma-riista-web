@@ -1,6 +1,6 @@
 package fi.riista.feature.organization.person;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.util.DtoUtil;
 import org.hibernate.validator.constraints.SafeHtml;
 

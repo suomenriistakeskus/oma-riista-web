@@ -408,7 +408,7 @@
                 function toggleActivationOfSrvaFeature(enable) {
                     var method = enable ? Account.activateSrvaFeature : Account.deactivateSrvaFeature;
 
-                    method().$promise
+                    method({id: $ctrl.profile.personId}).$promise
                         .then(AuthenticationService.reloadAuthentication)
                         .then(
                             function () {
@@ -421,7 +421,7 @@
                 function toggleActivationOfShootingTestFeature(enable) {
                     var method = enable ? Account.activateShootingTestFeature : Account.deactivateShootingTestFeature;
 
-                    method().$promise
+                    method({id: $ctrl.profile.personId}).$promise
                         .then(AccountService.updateRoles)
                         .then(function () {
                                 NotificationService.showDefaultSuccess();

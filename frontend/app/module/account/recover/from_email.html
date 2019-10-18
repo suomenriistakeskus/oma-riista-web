@@ -9,13 +9,19 @@
     <div class="alert alert-danger" ng-show="doNotMatch" translate="recover_password.from_email.no_match"></div>
 
     <form name="form" role="form" novalidate ng-submit="submit()">
+        <div style="opacity: 0; position: absolute">
+            <!-- Trick browser autofill to fill-in hidden input fields,
+                because autocomplete="off"" always ignores forms with password.-->
+            <input type="text" name="autofill_username" autocomplete="username" tabindex="-1">
+            <input type="password" name="autofill_password" autocomplete="current-password" tabindex="-1">
+        </div>
 
         <div class="form-group" ng-class="getValidationClasses(form.password)">
             <label for="password" translate="change_password.form.newpassword"></label>
 
             <input type="password" name="password" id="password"
                    class="form-control"
-                   autocomplete="false" autocorrect="off" autocapitalize="none"
+                   autocomplete="new-password" autocorrect="off" autocapitalize="none"
                    focus-me
                    required
                    ng-model="password"
@@ -35,7 +41,7 @@
 
             <input type="password" name="confirmPassword" id="confirmPassword"
                    class="form-control"
-                   autocomplete="false" autocorrect="off" autocapitalize="none"
+                   autocomplete="new-password" autocorrect="off" autocapitalize="none"
                    ng-model="confirmPassword" required>
 
             <p class="help-block" ng-show="form.confirmPassword.$error.required && form.confirmPassword.$dirty"

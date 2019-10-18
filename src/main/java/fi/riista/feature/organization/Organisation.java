@@ -1,5 +1,6 @@
 package fi.riista.feature.organization;
 
+import com.querydsl.core.annotations.QueryDelegate;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.address.Address;
@@ -109,6 +110,13 @@ public class Organisation extends LifecycleEntity<Long> {
     @Column(nullable = false)
     private boolean active = true;
 
+    Organisation() {
+    }
+
+    protected Organisation(OrganisationType organisationType) {
+        this.organisationType = organisationType;
+    }
+
     @Nonnull
     public LocalisedString getNameLocalisation() {
         return LocalisedString.of(nameFinnish, nameSwedish);
@@ -151,12 +159,14 @@ public class Organisation extends LifecycleEntity<Long> {
         return result;
     }
 
-    Organisation() {
+    // QueryDSL delegates -->
+
+    @QueryDelegate(Organisation.class)
+    public static fi.riista.util.QLocalisedString nameLocalisation(final QOrganisation org) {
+        return new fi.riista.util.QLocalisedString(org.nameFinnish, org.nameSwedish);
     }
 
-    protected Organisation(OrganisationType organisationType) {
-        this.organisationType = organisationType;
-    }
+    // Accessors -->
 
     @Override
     @Id

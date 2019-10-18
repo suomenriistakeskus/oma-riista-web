@@ -1,0 +1,78 @@
+<form name="carnivoreJustificationForm" r-force-show-errors-check-validity>
+    <div class="alert alert-info">
+        <span class="fa fa-info-circle"></span>
+
+        <div class="alert-content">
+            <p class="alert-title" translate="harvestpermit.wizard.carnivore.justification.instructionsTitle"></p>
+
+            <p translate="harvestpermit.wizard.carnivore.justification.instructions"></p>
+        </div>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="populationAmount"
+               translate="harvestpermit.wizard.carnivore.justification.populationAmount">
+        </label>
+
+        <textarea class="form-control" rows="4"
+                  name="populationAmount"
+                  id="populationAmount"
+                  ng-model="$ctrl.data.populationAmount"
+                  maxlength="255"
+                  required></textarea>
+    </div>
+
+    <hr class="invisible">
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="populationDescription"
+               translate="harvestpermit.wizard.carnivore.justification.populationDescription"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="populationDescription"
+                  id="populationDescription"
+                  ng-model="$ctrl.data.populationDescription"
+                  required></textarea>
+    </div>
+
+    <hr class="invisible">
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="additionalInfo"
+               translate="harvestpermit.wizard.carnivore.justification.additionalInfo"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="additionalInfo"
+                  id="additionalInfo"
+                  ng-model="$ctrl.data.additionalJustificationInfo"
+                  required></textarea>
+    </div>
+
+    <hr class="invisible">
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="alternativeMeasures"
+               translate="harvestpermit.wizard.carnivore.justification.alternativeMeasures">
+        </label>
+
+        <textarea class="form-control" rows="4"
+                  name="alternativeMeasures"
+                  id="alternativeMeasures"
+                  ng-model="$ctrl.data.alternativeMeasures"
+                  required></textarea>
+    </div>
+</form>
+
+<hr class="invisible">
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(carnivoreJustificationForm)"
+        previous="$ctrl.previous(carnivoreJustificationForm)"
+        next-disabled="$ctrl.nextDisabled(carnivoreJustificationForm)"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

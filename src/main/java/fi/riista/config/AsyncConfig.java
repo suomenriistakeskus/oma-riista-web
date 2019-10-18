@@ -1,6 +1,5 @@
 package fi.riista.config;
 
-import com.newrelic.api.agent.NewRelic;
 import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +38,6 @@ public class AsyncConfig extends AsyncConfigurerSupport {
         public void handleUncaughtException(final Throwable ex, final Method method, final Object... params) {
             LOG.error(String.format("Unexpected error occurred invoking async method '%s'.", method), ex);
 
-            NewRelic.noticeError(ex, false);
             Sentry.capture(ex);
         }
     }

@@ -1,7 +1,8 @@
 .r-club-listing > ul.nav {
   padding-bottom: 10px;
   margin-bottom: 20px;
-  border-bottom: 1px solid #d3d3d3;
+  border-bottom: 1px solid @table-border-color;
+
   li {
     margin-left: 2px;
   }
@@ -27,9 +28,11 @@
 .r-club-year-menu {
   .year-species-menu {
     padding-bottom: 10px;
+
     div.left {
       padding-right: 1px;
     }
+
     div.right {
       padding-left: 1px;
     }
@@ -37,16 +40,20 @@
 
   ul {
     span {
-      color: #aaaaaa;
+      :not(text-danger) {
+        color: #aaaaaa;
+      }
     }
+
     margin-top: 20px;
   }
 
   .member-count {
-    float:right;
+    float: right;
     color: #000;
     font-weight: bold;
   }
+
 }
 
 .r-club-member-invite-select-group {
@@ -60,6 +67,7 @@
 .r-club-hunting-reminder-item {
   .alert;
   .alert-warning;
+
   button {
     margin-top: 10px;
   }

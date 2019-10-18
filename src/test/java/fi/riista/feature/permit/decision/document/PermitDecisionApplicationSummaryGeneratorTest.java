@@ -1,32 +1,26 @@
 package fi.riista.feature.permit.decision.document;
 
 import com.google.common.collect.ImmutableSet;
-import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.feature.gis.zone.TotalLandWaterSizeDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.organization.Riistakeskus;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
-import fi.riista.feature.permit.application.species.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhy;
+import fi.riista.test.DefaultEntitySupplierProvider;
 import fi.riista.util.Locales;
-import fi.riista.util.NumberSequence;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
 
-public class PermitDecisionApplicationSummaryGeneratorTest {
-
-    private final EntitySupplier model = new EntitySupplier(NumberSequence.INSTANCE,
-            new ArrayList<>(), () -> new Riistakeskus("", ""));
+public class PermitDecisionApplicationSummaryGeneratorTest implements DefaultEntitySupplierProvider {
 
     @Test
     public void testGenerateAllFieldsFinnish() {
@@ -208,16 +202,16 @@ public class PermitDecisionApplicationSummaryGeneratorTest {
 
     @Nonnull
     private HarvestPermitApplication createApplication(final GISZoneSizeDTO areaSize) {
-        final GISZone zone = model.newGISZone();
+        final GISZone zone = getEntitySupplier().newGISZone();
         zone.setComputedAreaSize(areaSize.getAll().getTotal());
         zone.setWaterAreaSize(areaSize.getAll().getWater());
         zone.setStateLandAreaSize(areaSize.getStateLandAreaSize());
         zone.setPrivateLandAreaSize(areaSize.getPrivateLandAreaSize());
 
-        final Riistanhoitoyhdistys rhy1 = model.newRiistanhoitoyhdistys();
+        final Riistanhoitoyhdistys rhy1 = getEntitySupplier().newRiistanhoitoyhdistys();
         rhy1.setNameFinnish("Puolangan riistanhoitoyhdistys");
         rhy1.setNameSwedish("Puolangan jaktvårdsförening");
-        final Riistanhoitoyhdistys rhy2 = model.newRiistanhoitoyhdistys();
+        final Riistanhoitoyhdistys rhy2 = getEntitySupplier().newRiistanhoitoyhdistys();
         rhy2.setNameFinnish("Suomussalmen riistanhoitoyhdistys");
         rhy2.setNameSwedish("Suomussalmen jaktvårdsförening");
 
@@ -236,32 +230,32 @@ public class PermitDecisionApplicationSummaryGeneratorTest {
                 new TotalLandWaterSizeDTO(2, 3, 4),
                 new TotalLandWaterSizeDTO(3, 4, 5)));
 
-        final HuntingClub club1 = model.newHuntingClub(rhy1);
+        final HuntingClub club1 = getEntitySupplier().newHuntingClub(rhy1);
         club1.setOfficialCode("5000377");
         club1.setNameFinnish("Lassen hirviporukka");
         club1.setNameSwedish("Lassen hirviporukka");
 
-        final HuntingClub club2 = model.newHuntingClub(rhy2);
+        final HuntingClub club2 = getEntitySupplier().newHuntingClub(rhy2);
         club2.setOfficialCode("6000890");
         club2.setNameFinnish("Jennin seurue");
         club2.setNameSwedish("Jennin seurue");
 
         final HarvestPermitApplicationSpeciesAmount spaMoose = new HarvestPermitApplicationSpeciesAmount();
-        spaMoose.setGameSpecies(model.newGameSpeciesMoose());
+        spaMoose.setGameSpecies(getEntitySupplier().newGameSpeciesMoose());
         spaMoose.setAmount(20);
 
-        final GameSpecies deer = model.newGameSpecies();
+        final GameSpecies deer = getEntitySupplier().newGameSpecies();
         deer.setNameFinnish("valkohäntäpeura");
         deer.setNameSwedish("vitsvanshjort");
         final HarvestPermitApplicationSpeciesAmount spaDeer = new HarvestPermitApplicationSpeciesAmount();
         spaDeer.setGameSpecies(deer);
         spaDeer.setAmount(700);
 
-        final HuntingClub permitHolder = model.newHuntingClub();
+        final HuntingClub permitHolder = getEntitySupplier().newHuntingClub();
 
         final HarvestPermitApplication application = new HarvestPermitApplication();
         application.setArea(permitArea);
-        application.setPermitHolder(permitHolder);
+        application.setHuntingClubAndPermitHolder(permitHolder);
         application.setPermitPartners(ImmutableSet.of(club1, club2));
         application.setRhy(rhy1);
         application.setRelatedRhys(new HashSet<>());

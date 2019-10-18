@@ -13,20 +13,12 @@ angular.module('app.rhy.controllers', [])
                     },
                     rhyId: function (orgId) {
                         return orgId;
-                    },
-                    // FIXME when shooting test pilot is over, this can be removed
-                    showPilotShootingTestMenu: function (Rhys, orgId) {
-                        return Rhys.getPublicInfo({id: orgId}).$promise.then(function (rhy) {
-                            return ['602', '459', '666', '161', '163', '106', '108', '110', '112', '114', '472', '101', '105', '113', '211', '121'].indexOf(rhy.officialCode) !== -1;
-                        });
                     }
                 },
                 controllerAs: '$ctrl',
-                controller: function (ActiveRoleService, showPilotShootingTestMenu) {
+                controller: function (ActiveRoleService) {
                     this.coordinatorView = ActiveRoleService.isCoordinator() || ActiveRoleService.isModerator();
                     this.shootingTestOfficialView = ActiveRoleService.isShootingTestOfficial();
-
-                    this.showPilotShootingTestMenu = showPilotShootingTestMenu;
                 }
             })
             .state('rhy.show', {
@@ -179,27 +171,30 @@ angular.module('app.rhy.controllers', [])
                         templateUrl: 'harvestpermit/moosepermit/layout.html'
                     },
                     'left@rhy.moosepermit': {
-                        templateUrl: 'harvestpermit/moosepermit/list.html',
+                        templateUrl: 'harvestpermit/moosepermit/list/list.html',
                         controller: 'MoosePermitListController',
                         controllerAs: '$ctrl',
                         resolve: {
-                            permits: function (Rhys, selectedYearAndSpecies, orgId) {
-                                var year = selectedYearAndSpecies.huntingYear;
-                                var species = selectedYearAndSpecies.species;
-                                if (!species) {
-                                    return _.constant([]);
+                            permits: function ($q, Rhys, selectedYearAndSpecies, orgId) {
+                                if (!selectedYearAndSpecies.species || !selectedYearAndSpecies.huntingYear) {
+                                    return $q.when([]);
                                 }
-                                return Rhys.listMoosePermits({id: orgId}, {year: year, species: species}).$promise;
+
+                                return Rhys.listMoosePermits({
+                                    id: orgId,
+                                    year: selectedYearAndSpecies.huntingYear,
+                                    species: selectedYearAndSpecies.species
+                                }).$promise;
                             }
                         }
                     }
                 }
             })
-            .state('rhy.moosepermit.show', {
-                url: '/{permitId:[0-9]{1,8}}/show',
+            .state('rhy.moosepermit.table', {
+                url: '/{permitId:[0-9]{1,8}}/table',
                 wideLayout: true,
-                templateUrl: 'harvestpermit/moosepermit/show.html',
-                controller: 'MoosePermitShowController',
+                templateUrl: 'harvestpermit/moosepermit/table/permit-tables.html',
+                controller: 'MoosePermitTableController',
                 controllerAs: '$ctrl',
                 resolve: {
                     permitId: function ($stateParams, MoosePermitSelection) {
@@ -209,12 +204,6 @@ angular.module('app.rhy.controllers', [])
                         return MoosePermits.get({
                             permitId: permitId,
                             species: selectedYearAndSpecies.species
-                        }).$promise;
-                    },
-                    todos: function (MoosePermits, permitId, selectedYearAndSpecies) {
-                        return MoosePermits.listTodos({
-                            permitId: permitId,
-                            speciesCode: selectedYearAndSpecies.species
                         }).$promise;
                     }
                 }
@@ -238,7 +227,7 @@ angular.module('app.rhy.controllers', [])
                 url: '/{permitId:[0-9]{1,8}}/map',
                 templateUrl: 'harvestpermit/moosepermit/map/permit-map.html',
                 controller: 'MoosePermitMapController',
-                controllerAs: 'ctrl',
+                controllerAs: '$ctrl',
                 wideLayout: true,
                 resolve: {
                     rhy: function (Rhys, orgId) {
@@ -264,12 +253,15 @@ angular.module('app.rhy.controllers', [])
                     mapBounds: function (MapBounds, featureCollection, rhy) {
                         var bounds = MapBounds.getBoundsFromGeoJsonFeatureCollection(featureCollection);
                         return bounds || MapBounds.getRhyBounds(rhy.officialCode);
+                    },
+                    goBackFn: function () {
+                        return null;
                     }
                 }
             })
             .state('rhy.moosepermit.rhystats', {
                 url: '/{permitId:[0-9]{1,8}}/rhy-stats',
-                template: '<moose-permit-stats-table statistics="$ctrl.statistics"></moose-permit-stats-table>',
+                template: '<moose-permit-statistics-table statistics="$ctrl.statistics"></moose-permit-statistics-table>',
                 controller: function (statistics) {
                     this.statistics = statistics;
                 },
@@ -283,6 +275,29 @@ angular.module('app.rhy.controllers', [])
                     statistics: function (MoosePermits, permitId, selectedYearAndSpecies) {
                         var params = {permitId: permitId, speciesCode: selectedYearAndSpecies.species};
                         return MoosePermits.rhyStatistics(params).$promise;
+                    }
+                }
+            })
+            .state('rhy.moosepermitstatistics', {
+                url: '/moosepermitstatistics',
+                templateUrl: 'reporting/moosepermitstatistics/layout.html',
+                controllerAs: '$ctrl',
+                controller: 'MoosePermitStatisticsController',
+                wideLayout: true,
+                resolve: {
+                    activeRhy: function (Rhys, orgId) {
+                        return Rhys.get({id: orgId}).$promise;
+                    },
+                    availableSpecies: function (MooselikeSpecies) {
+                        return MooselikeSpecies.getPermitBased();
+                    },
+                    huntingYears: function (HuntingYearService) {
+                        var currentHuntingYear = HuntingYearService.getCurrent();
+                        var nextHuntingYear = currentHuntingYear + 1;
+                        return _.range(2016, nextHuntingYear + 1);
+                    },
+                    tabs: function (Rhys, orgId) {
+                        return Rhys.searchParamOrganisations({id: orgId}).$promise;
                     }
                 }
             })
@@ -437,7 +452,13 @@ angular.module('app.rhy.controllers', [])
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.selectTab(_.first($ctrl.tabs));
+                var selectedTab = findSelectedTab();
+
+                if (selectedTab) {
+                    $ctrl.selectTab(selectedTab);
+                } else {
+                    $ctrl.selectTab(_.head($ctrl.tabs));
+                }
             };
 
             $ctrl.selectedOrgCode = null;
@@ -453,6 +474,11 @@ angular.module('app.rhy.controllers', [])
                 $ctrl.selectedOrgCode = code;
                 $ctrl.organisationChanged({'type': $ctrl.selectedTab.type, 'code': code});
             };
+
+            function findSelectedTab() {
+                return _.find($ctrl.tabs, function (tab) {
+                    return _.some(tab.organisations, 'selected');
+                });
+            }
         }
-    })
-;
+    });

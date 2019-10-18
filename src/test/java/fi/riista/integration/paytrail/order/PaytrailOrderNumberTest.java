@@ -29,9 +29,8 @@ public class PaytrailOrderNumberTest {
 
     @Test
     public void testFormatValid() {
-        final Invoice invoice = new Invoice(true);
+        final Invoice invoice = new Invoice(InvoiceType.PERMIT_PROCESSING, true);
         invoice.setInvoiceNumber(1234);
-        invoice.setType(InvoiceType.PERMIT_PROCESSING);
 
         final DateTime now = new LocalDate(2018, 5, 4).toDateTime(new LocalTime(16, 33), Constants.DEFAULT_TIMEZONE);
         final PaytrailOrderNumber paytrailOrderNumber = PaytrailOrderNumber.create(invoice, now);

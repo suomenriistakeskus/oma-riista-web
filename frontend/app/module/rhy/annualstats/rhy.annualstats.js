@@ -5,7 +5,7 @@
         .config(function ($stateProvider) {
             $stateProvider
                 .state('rhy.annualstats', {
-                    url: '/annualstatistics?{year:2[0-9]{3}}&activeTab',
+                    url: '/annualstatistics?{year:20[0-9]{2}}&activeTab',
                     reloadOnSearch: false,
                     params: {
                         year: null,
@@ -16,9 +16,9 @@
                     controllerAs: '$ctrl',
                     wideLayout: false,
                     resolve: {
-                        rhy: function (RhyAnnualStatisticsState, Rhys, rhyId) {
+                        rhy: function (RhyAnnualStatisticsViewState, Rhys, rhyId) {
                             if (_.isFinite(rhyId)) {
-                                RhyAnnualStatisticsState.setRhyId(rhyId);
+                                RhyAnnualStatisticsViewState.setRhyId(rhyId);
                             }
 
                             return Rhys.get({id: rhyId}).$promise;
@@ -26,7 +26,7 @@
                         availableYears: function (AnnualStatisticsAvailableYears) {
                             return AnnualStatisticsAvailableYears.get();
                         },
-                        year: function ($stateParams, RhyAnnualStatisticsState, availableYears) {
+                        year: function ($stateParams, RhyAnnualStatisticsViewState, availableYears) {
                             var yearParam = $stateParams.year;
                             var year;
 
@@ -40,53 +40,125 @@
                                 year = _.last(availableYears);
                             }
 
-                            var activeTabParam = $stateParams.activeTab;
-                            var activeTab = activeTabParam ? _.parseInt(activeTabParam) : 0;
-
-                            RhyAnnualStatisticsState.setYear(year);
-                            RhyAnnualStatisticsState.setActiveTab(activeTab);
-
+                            RhyAnnualStatisticsViewState.setYear(year);
                             return year;
                         },
                         statistics: function (RhyAnnualStatisticsService, year) {
                             return RhyAnnualStatisticsService.getStatistics(year);
                         },
+                        activeTab: function ($stateParams, RhyAnnualStatisticsViewState) {
+                            var activeTabParam = $stateParams.activeTab;
+                            var activeTab = null;
+
+                            if (angular.isString(activeTabParam)) {
+                                var parsedTab = _.parseInt(activeTabParam);
+
+                                if (_.isFinite(parsedTab) && parsedTab >= 0 && parsedTab <= 4) {
+                                    activeTab = parsedTab;
+                                } else {
+                                    activeTab = 0;
+                                }
+                                RhyAnnualStatisticsViewState.setActiveTab(activeTab);
+
+                            } else {
+                                activeTab = RhyAnnualStatisticsViewState.getActiveTab();
+                            }
+
+                            return activeTab;
+                        },
                         allSpeciesNames: function (GameDiaryParameters) {
                             return GameDiaryParameters.query().$promise.then(function (params) {
                                 var ret = {};
 
-                                _.each(params.species, function (species) {
+                                _.forEach(params.species, function (species) {
                                     ret[species.code] = species.name;
                                 });
 
                                 return ret;
                             });
+                        },
+                        permission: function (ActiveRoleService, AvailableRoleService, ModeratorPrivileges,
+                                              RhyAnnualStatisticsPermission) {
+
+                            if (ActiveRoleService.isAdmin()) {
+                                return RhyAnnualStatisticsPermission.MODERATE;
+
+                            } else if (ActiveRoleService.isModerator()) {
+                                if (AvailableRoleService.hasPrivilege(ModeratorPrivileges.moderateRhyAnnualStatistics)) {
+                                    return RhyAnnualStatisticsPermission.MODERATE;
+                                } else {
+                                    return RhyAnnualStatisticsPermission.VIEW;
+                                }
+                            }
+
+                            return RhyAnnualStatisticsPermission.EDIT;
+                        },
+                        isModerator: function (RhyAnnualStatisticsPermission, permission) {
+                            return permission === RhyAnnualStatisticsPermission.MODERATE;
                         }
                     }
                 });
         })
 
-        .constant('RhyAnnualStatisticsStates', [
-            'NOT_CREATED',
-            'IN_PROGRESS',
-            'UNDER_INSPECTION',
-            'APPROVED'
-        ])
+        .constant('RhyAnnualStatisticsState', {
+            NOT_STARTED: 'NOT_STARTED',
+            IN_PROGRESS: 'IN_PROGRESS',
+            UNDER_INSPECTION: 'UNDER_INSPECTION',
+            APPROVED: 'APPROVED'
+        })
+
+        .service('RhyAnnualStatisticsStates', function (RhyAnnualStatisticsState) {
+            var self = this;
+            var states = [
+                RhyAnnualStatisticsState.NOT_STARTED,
+                RhyAnnualStatisticsState.IN_PROGRESS,
+                RhyAnnualStatisticsState.UNDER_INSPECTION,
+                RhyAnnualStatisticsState.APPROVED
+            ];
+
+            self.list = function () {
+                // Clone
+                return states.slice();
+            };
+
+            self.isCompletedByCoordinator = function (state) {
+                return state !== RhyAnnualStatisticsState.NOT_STARTED &&
+                       state !== RhyAnnualStatisticsState.IN_PROGRESS;
+            };
+
+            self.indexOf = function (state) {
+                return _.indexOf(states, state);
+            };
+
+            self.get = function (index) {
+                if (index >= 0 && index < states.length) {
+                    return states[index];
+                }
+                return null;
+            };
+        })
+
+        .constant('RhyAnnualStatisticsPermission', {
+            VIEW: 'VIEW',
+            EDIT: 'EDIT',
+            MODERATE: 'MODERATE'
+        })
 
         .service('AnnualStatisticsAvailableYears', function () {
             this.get = function () {
-                return [2017];
+                return [2017, 2018, 2019];
 
                 // TODO uncomment after annual statistics locking logic is implemented.
                 //return _.range(2017, new Date().getFullYear() + 1);
             };
         })
 
-        .service('RhyAnnualStatisticsState', function ($state) {
-            var self = this,
-                rhyId,
-                year,
-                activeTab;
+        .service('RhyAnnualStatisticsViewState', function ($state) {
+            var self = this;
+
+            self.rhyId = null;
+            self.year = null;
+            self.activeTab = 0;
 
             this.getRhyId = function () {
                 return self.rhyId;
@@ -125,11 +197,6 @@
 
             return $resource('/api/v1/riistanhoitoyhdistys/:rhyId/annualstatistics/:calendarYear', getParams, {
                 getOrCreate: {method: 'GET'},
-                update: {
-                    method: 'PUT',
-                    url: '/api/v1/riistanhoitoyhdistys/annualstatistics/:statisticsId',
-                    params: {statisticsId: '@statisticsId'}
-                },
                 submitForInspection: {
                     method: 'POST',
                     url: '/api/v1/riistanhoitoyhdistys/annualstatistics/:statisticsId/submitforinspection',
@@ -139,52 +206,96 @@
                     method: 'POST',
                     url: '/api/v1/riistanhoitoyhdistys/annualstatistics/:statisticsId/approve',
                     params: {statisticsId: '@statisticsId'}
+                },
+                cancelApproval: {
+                    method: 'POST',
+                    url: '/api/v1/riistanhoitoyhdistys/annualstatistics/:statisticsId/cancelapproval',
+                    params: {statisticsId: '@statisticsId'}
+                },
+                update: {
+                    method: 'PUT',
+                    url: '/api/v1/riistanhoitoyhdistys/annualstatistics/:statisticsId/:urlPostfix',
+                    params: {
+                        statisticsId: '@statisticsId',
+                        urlPostfix: '@urlPostfix'
+                    }
                 }
             });
         })
 
-        .service('RhyAnnualStatisticsService', function ($uibModal, NotificationService, RhyAnnualStatistics,
-                                                         RhyAnnualStatisticsState) {
+        .service('RhyAnnualStatisticsService', function (NotificationService, RhyAnnualStatistics,
+                                                         RhyAnnualStatisticsPermission, RhyAnnualStatisticsState,
+                                                         RhyAnnualStatisticsViewState) {
             var self = this;
 
             this.getStatistics = function (year) {
-                var rhyId = RhyAnnualStatisticsState.getRhyId();
+                var rhyId = RhyAnnualStatisticsViewState.getRhyId();
                 return RhyAnnualStatistics.getOrCreate({rhyId: rhyId, calendarYear: year}).$promise;
             };
 
             this.reloadStatistics = function () {
-                return self.getStatistics(RhyAnnualStatisticsState.getYear());
+                return self.getStatistics(RhyAnnualStatisticsViewState.getYear());
             };
 
-            this.updateStatistics = function (statistics) {
-                return RhyAnnualStatistics.update({statisticsId: statistics.id}, statistics).$promise;
-            };
+            this.isStatisticsEditable = function (state, year, permission) {
+                if (permission === RhyAnnualStatisticsPermission.VIEW ||
+                    state === RhyAnnualStatisticsState.APPROVED) {
 
-            this.isEditable = function (statistics, isModerator) {
-                if (isModerator) {
-                    return statistics.state !== 'APPROVED';
+                    return false;
+
+                } else if (permission === RhyAnnualStatisticsPermission.MODERATE) {
+                    return true;
+
+                } else if (permission === RhyAnnualStatisticsPermission.EDIT &&
+                           state !== RhyAnnualStatisticsState.UNDER_INSPECTION) {
+
+                    // Editing is blocked from coordinator after 15.1. next year.
+
+                    var coordinatorEditableEndDate = moment().year(year + 1).month(0).date(15);
+
+                    if (coordinatorEditableEndDate.isSameOrAfter(new Date(), 'day')) {
+                        return true;
+                    }
                 }
 
-                return statistics.state === 'IN_PROGRESS';
+                return false;
             };
 
             this.submitStatisticsForInspection = function (statistics) {
                 return RhyAnnualStatistics.submitForInspection({statisticsId: statistics.id}, {
                     id: statistics.id,
                     rev: statistics.rev
-                }).$promise;
+                }).$promise.then(function (response) {
+                    NotificationService.flashMessage('rhy.annualStats.message.submitSucceeded', 'success');
+                    return response;
+                });
             };
 
             this.approve = function (statistics) {
                 return RhyAnnualStatistics.approve({statisticsId: statistics.id}, {
                     id: statistics.id,
                     rev: statistics.rev
-                }).$promise;
+                }).$promise.then(function (response) {
+                    NotificationService.flashMessage('global.messages.success', 'success');
+                    return response;
+                });
             };
 
-            // 'onBeforeSaveCallback' function is given the embedded object as the only parameter.
-            this.createOpenEditDialogFunction = function (statistics, embeddedObjectName, templateUrl,
-                                                          onBeforeSaveCallback) {
+            this.cancelApproval = function (statistics) {
+                return RhyAnnualStatistics.cancelApproval({statisticsId: statistics.id}, {
+                    id: statistics.id,
+                    rev: statistics.rev
+                }).$promise.then(function (response) {
+                    NotificationService.flashMessage('rhy.annualStats.message.approvalCancelled', 'success');
+                    return response;
+                });
+            };
+        })
+
+        .service('RhyAnnualStatisticsDialogHelper', function ($uibModal, NotificationService,
+                                                              RhyAnnualStatisticsViewState) {
+
+            this.createOpenEditDialogFunction = function (data, templateUrl, saveDataFn) {
 
                 function showModal(data, modalCtrlOpts) {
                     var modalPromise = $uibModal.open({
@@ -195,38 +306,10 @@
                             data: _.constant(data),
                             modalCtrlOpts: _.constant(modalCtrlOpts)
                         }
-                    }).result.then(saveData);
+                    }).result.then(saveDataFn);
 
                     NotificationService.handleModalPromise(modalPromise).then(function () {
-                        NotificationService.flashMessage('global.messages.success', 'success');
-                        RhyAnnualStatisticsState.reload();
-                    });
-                }
-
-                function saveData(data) {
-                    return self.reloadStatistics().then(function (reloaded) {
-                        if (angular.isFunction(onBeforeSaveCallback)) {
-                            onBeforeSaveCallback(data);
-                        }
-
-                        reloaded[embeddedObjectName] = data;
-
-                        delete reloaded.state;
-                        delete reloaded.allTrainingEvents;
-                        delete reloaded.allTrainingParticipants;
-                        delete reloaded.stateAidHunterTrainingEvents;
-                        delete reloaded.schoolAndCollegeTrainingEvents;
-                        delete reloaded.stateAidAffectingQuantitiesLastModified;
-                        delete reloaded.publicAdministrationTasksLastModified;
-                        delete reloaded.srva;
-                        delete reloaded.shootingTests.allShootingTestEvents;
-                        delete reloaded.gameDamage.totalDamageInspectionLocations;
-                        delete reloaded.gameDamage.totalDamageInspectionExpenses;
-                        delete reloaded.luke.sum;
-                        delete reloaded.readyForInspection;
-                        delete reloaded.completeForApproval;
-
-                        return self.updateStatistics(reloaded);
+                        RhyAnnualStatisticsViewState.reload();
                     });
                 }
 
@@ -245,26 +328,24 @@
                 }
 
                 return function (modalCtrlOpts) {
-                    showModal(statistics[embeddedObjectName], modalCtrlOpts);
+                    showModal(data, modalCtrlOpts);
                 };
             };
         })
 
-        .service('Tuple2ListFormDialog', function (RhyAnnualStatisticsService) {
-            var self = this;
-
+        .service('Tuple2ListFormDialog', function (RhyAnnualStatisticsDialogHelper) {
             /*
              * The following localisation keys need to exist with the given prefix:
              *  - title
-             *  - value1Key
-             *  - value2Key
+             *  - input1Key
+             *  - input2Key
              */
-            this.create = function (statistics, embeddedObjectName, localisationPrefix) {
+            this.create = function (data, localisationPrefix, updateFn) {
                 var upperLimit = 99999;
 
                 var defaults = {
-                    value1UnitKey: 'global.pcs',
-                    value2UnitKey: 'global.pcs',
+                    input1UnitKey: 'global.pcs',
+                    input2UnitKey: 'global.pcs',
                     getValue1Min: function (group) {
                         return 0;
                     },
@@ -300,19 +381,19 @@
                     return opts;
                 }
 
-                var openEditDialogFn = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                    statistics, embeddedObjectName, 'rhy/annualstats/tuple2-list-form.html');
+                var openEditDialogFn = RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    data, 'rhy/annualstats/tuple2-list-form.html', updateFn);
 
                 return {
                     /*
                      * Each group must have the following properties:
                      *  - name
-                     *  - value1Key
-                     *  - value2Key
+                     *  - input1Key
+                     *  - input2Key
                      *
                      * The following properties are supported in 'modalCtrlOpts' parameter:
-                     *  - value1UnitKey (localisation key for unit of the first value)
-                     *  - value2UnitKey (localisation key for unit of the second value)
+                     *  - input1UnitKey (localisation key for unit of the first value)
+                     *  - input2UnitKey (localisation key for unit of the second value)
                      *
                      * Additionally, 'modalCtrlOtps' may contain the following functions overriding the default implementations:
                      *  - getValue1Min(group)
@@ -327,37 +408,307 @@
             };
         })
 
-        .controller('RhyAnnualStatisticsController', function ($state, ActiveRoleService, FormPostService,
-                                                               NotificationService, RhyAnnualStatisticsService,
+        .service('RhyAnnualStatisticsEditDialog', function (RhyAnnualStatistics, RhyAnnualStatisticsDialogHelper,
+                                                            Tuple2ListFormDialog) {
+
+            var update = function (statisticsId, urlPostfix, data) {
+                var pathParams = {statisticsId: statisticsId, urlPostfix: urlPostfix};
+
+                return RhyAnnualStatistics.update(pathParams, data).$promise;
+            };
+
+            this.openBasicInfo = function (statistics) {
+                var updateFn = function (data) {
+                    delete data.rhyMembers;
+                    return update(statistics.id, 'basicinfo', data);
+                };
+
+                return RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.basicInfo, 'rhy/annualstats/overview/edit-rhy-basic-info.html', updateFn);
+            };
+
+            this.openHunterExams = function (statistics, isModerator) {
+                var updateFn = function (data) {
+                    var urlPostfix;
+
+                    if (isModerator) {
+                        urlPostfix = 'moderatedhunterexams';
+                    } else {
+                        urlPostfix = 'hunterexams';
+                        delete data.moderatorOverriddenHunterExamEvents;
+                    }
+
+                    delete data.hunterExamEvents;
+                    delete data.hunterExamOfficials;
+
+                    return update(statistics.id, urlPostfix, data);
+                };
+
+                var openDialog = RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.hunterExams, 'rhy/annualstats/administration/edit-hunter-exams.html', updateFn);
+
+                return function () {
+                    return openDialog({
+                        isModerator: isModerator,
+                        hunterExamEventsOverridden: _.isFinite(statistics.hunterExams.moderatorOverriddenHunterExamEvents)
+                    });
+                };
+            };
+
+            this.openShootingTestsModeratorOverride = function (statistics, isModerator) {
+                var updateFn = function (data) {
+                    var urlPostfix = 'moderatedshootingtests';
+
+                    delete data.allShootingTestEvents;
+                    delete data.firearmTestEvents;
+                    delete data.bowTestEvents;
+                    delete data.shootingTestOfficials;
+
+                    return update(statistics.id, urlPostfix, data);
+                };
+
+                var openDialog = RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.shootingTests, 'rhy/annualstats/administration/edit-shooting-tests.html', updateFn);
+
+                var modalCtrlOpts = {
+                    firearmTestEventsOverridden: _.isFinite(statistics.shootingTests.moderatorOverriddenFirearmTestEvents),
+                    bowTestEventsOverridden: _.isFinite(statistics.shootingTests.moderatorOverriddenBowTestEvents),
+                };
+
+                return function () {
+                    return openDialog(modalCtrlOpts);
+                };
+            };
+
+            this.openHuntingControl = function (statistics) {
+                var updateFn = function (data) {
+                    delete data.huntingControllers;
+                    return update(statistics.id, 'huntingcontrol', data);
+                };
+
+                return RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.huntingControl, 'rhy/annualstats/administration/edit-hunting-control.html', updateFn);
+            };
+
+            this.openGameDamage = function (statistics) {
+                var updateFn = function (data) {
+                    delete data.gameDamageInspectors;
+                    delete data.totalDamageInspectionLocations;
+                    delete data.totalDamageInspectionExpenses;
+
+                    return update(statistics.id, 'gamedamage', data);
+                };
+
+                return RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.gameDamage, 'rhy/annualstats/administration/edit-game-damage.html', updateFn);
+            };
+
+            this.openOtherPublicAdmin = function (statistics) {
+                var updateFn = function (data) {
+                    return update(statistics.id, 'otherpublicadmin', data);
+                };
+
+                return RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.otherPublicAdmin, 'rhy/annualstats/administration/edit-other-admin-data.html', updateFn);
+            };
+
+            this.openHunterExamTraining = function (statistics, isModerator) {
+                var updateFn = function (data) {
+                    var urlPostfix;
+
+                    if (isModerator) {
+                        urlPostfix = 'moderatedhunterexamtraining';
+                    } else {
+                        urlPostfix = 'hunterexamtraining';
+                        delete data.moderatorOverriddenHunterExamTrainingEvents;
+                    }
+
+                    delete data.hunterExamTrainingEvents;
+
+                    return update(statistics.id, urlPostfix, data);
+                };
+
+                var openDialog = RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.hunterExamTraining, 'rhy/annualstats/trainings/edit-hunter-exam-training.html', updateFn);
+
+                return function () {
+                    return openDialog({
+                        isModerator: isModerator,
+                        hunterExamTrainingEventsOverridden: _.isFinite(statistics.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents)
+                    });
+                };
+            };
+
+            var createTrainingFormGroups = function (trainingTypes) {
+                return _.map(trainingTypes, function (trainingType) {
+                    return {
+                        name: trainingType,
+                        input1Key: trainingType + 'TrainingEvents',
+                        input2Key: trainingType + 'TrainingParticipants'
+                    };
+                });
+            };
+
+            var trainingModalCtrlOpts = {
+                input2UnitKey: 'global.personUnit',
+                getValue2Max: function (group) {
+                    if (this.data[group.input1Key] === 0) {
+                        return 0;
+                    }
+                    return 99999;
+                }
+            };
+
+            this.openJhtTraining = function (statistics, trainingTypes) {
+                var updateFn = function (data) {
+                    return update(statistics.id, 'jhttraining', data);
+                };
+
+                var dialog = Tuple2ListFormDialog.create(statistics.jhtTraining, 'rhy.annualStats.trainings.jht.form.', updateFn);
+
+                return dialog.open(createTrainingFormGroups(trainingTypes), trainingModalCtrlOpts);
+            };
+
+            this.openHunterTraining = function (statistics, trainingTypes) {
+                var updateFn = function (data) {
+                    return update(statistics.id, 'huntertraining', data);
+                };
+
+                var dialog = Tuple2ListFormDialog.create(statistics.hunterTraining, 'rhy.annualStats.trainings.hunter.form.', updateFn);
+
+                return dialog.open(createTrainingFormGroups(trainingTypes), trainingModalCtrlOpts);
+            };
+
+            this.openYouthTraining = function (statistics, trainingTypes) {
+                var updateFn = function (data) {
+                    return update(statistics.id, 'youthtraining', data);
+                };
+
+                var dialog = Tuple2ListFormDialog.create(statistics.youthTraining, 'rhy.annualStats.trainings.youth.form.', updateFn);
+
+                return dialog.open(createTrainingFormGroups(trainingTypes), trainingModalCtrlOpts);
+            };
+
+            this.openOtherHunterTraining = function (statistics, trainingTypes) {
+                var updateFn = function (data) {
+                    return update(statistics.id, 'otherhuntertraining', data);
+                };
+
+                var dialog = Tuple2ListFormDialog.create(statistics.otherHunterTraining, 'rhy.annualStats.trainings.otherHunter.form.', updateFn);
+
+                return dialog.open(createTrainingFormGroups(trainingTypes), trainingModalCtrlOpts);
+            };
+
+            this.openPublicEvents = function (statistics) {
+                var updateFn = function (data) {
+                    return update(statistics.id, 'publicevents', data);
+                };
+
+                var formGroups = [{
+                    name: 'publicEvents',
+                    input1Key: 'publicEvents',
+                    input2Key: 'publicEventParticipants'
+                }];
+
+                var dialog = Tuple2ListFormDialog.create(statistics.publicEvents, 'rhy.annualStats.trainings.publicEvents.form.', updateFn);
+
+                return dialog.open(formGroups, trainingModalCtrlOpts);
+            };
+
+            this.openOtherHuntingRelated = function (statistics, isModerator) {
+                var updateFn = function (data) {
+                    var urlPostfix;
+
+                    if (isModerator) {
+                        urlPostfix = 'moderatedotherhuntingrelated';
+                    } else {
+                        urlPostfix = 'otherhuntingrelated';
+                        delete data.wolfTerritoryWorkgroups;
+                    }
+
+                    delete data.harvestPermitApplicationPartners;
+
+                    return update(statistics.id, urlPostfix, data);
+                };
+
+                var openDialog = RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.otherHuntingRelated, 'rhy/annualstats/misc/edit-other-hunting-related.html', updateFn);
+
+                return function () {
+                    return openDialog({isModerator: isModerator});
+                };
+            };
+
+            this.openCommunication = function (statistics) {
+                var updateFn = function (data) {
+                    delete data.omariistaAnnouncements;
+                    return update(statistics.id, 'communication', data);
+                };
+
+                return RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.communication, 'rhy/annualstats/misc/edit-communication.html', updateFn);
+            };
+
+            this.openShootingRanges = function (statistics) {
+                var updateFn = function (data) {
+                    return update(statistics.id, 'shootingranges', data);
+                };
+
+                return RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.shootingRanges, 'rhy/annualstats/misc/edit-shooting-ranges.html', updateFn);
+            };
+
+            this.openLuke = function (statistics) {
+                var updateFn = function (data) {
+                    delete data.sum;
+                    return update(statistics.id, 'luke', data);
+                };
+
+                return RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.luke, 'rhy/annualstats/misc/edit-game-calculations.html', updateFn);
+            };
+
+            this.openMetsahallitus = function (statistics) {
+                var updateFn = function (data) {
+                    return update(statistics.id, 'metsahallitus', data);
+                };
+
+                return RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
+                    statistics.metsahallitus, 'rhy/annualstats/misc/edit-metsahallitus.html', updateFn);
+            };
+        })
+
+        .controller('RhyAnnualStatisticsController', function ($location, FormPostService, RhyAnnualStatisticsService,
                                                                RhyAnnualStatisticsState, RhyAnnualStatisticsStates,
-                                                               allSpeciesNames, availableYears, rhy, statistics,
-                                                               year) {
+                                                               RhyAnnualStatisticsViewState, activeTab,
+                                                               allSpeciesNames, availableYears, isModerator,
+                                                               permission, rhy, statistics, year) {
             var $ctrl = this;
-            var rhyId = rhy.id;
 
             $ctrl.$onInit = function () {
                 $ctrl.rhy = rhy;
                 $ctrl.availableYears = availableYears;
                 $ctrl.calendarYear = year;
+                $ctrl.activeTab = activeTab;
+
                 $ctrl.statistics = statistics;
                 $ctrl.allSpeciesNames = allSpeciesNames;
-                $ctrl.isModerator = ActiveRoleService.isModerator();
+
+                $ctrl.isModerator = isModerator;
+
+                var state = $ctrl.statistics.state;
+                $ctrl.isEditable = RhyAnnualStatisticsService.isStatisticsEditable(state, year, permission);
             };
 
             $ctrl.onSelectedYearChanged = function () {
-                RhyAnnualStatisticsState.setYear($ctrl.calendarYear);
-                RhyAnnualStatisticsState.reload();
+                RhyAnnualStatisticsViewState.setYear($ctrl.calendarYear);
+                RhyAnnualStatisticsViewState.reload();
             };
 
-            $ctrl.getCssClassForStateLabel = function () {
-                var state = _.get($ctrl, 'statistics.state');
-
-                if (state === 'APPROVED') {
-                    return 'r-annual-statistics-approved';
-                } else if (state === 'UNDER_INSPECTION') {
-                    return 'r-annual-statistics-under-inspection';
-                }
-                return 'r-annual-statistics-in-progress';
+            $ctrl.onActiveTabChanged = function (activeTab) {
+                RhyAnnualStatisticsViewState.setActiveTab(activeTab);
+                $ctrl.activeTab = activeTab;
+                $location.search({year: $ctrl.calendarYear, activeTab: activeTab});
             };
 
             var invokeExport = function (url, groupByRka) {
@@ -368,11 +719,6 @@
                 }
 
                 FormPostService.submitFormUsingBlankTarget(url, params);
-            };
-
-            $ctrl.openAnnualStatisticsDashboard = function () {
-                var tabIndex = _.indexOf(RhyAnnualStatisticsStates, $ctrl.statistics.state);
-                $state.go('jht.annualstats', {year: $ctrl.calendarYear, activeTab: tabIndex});
             };
 
             $ctrl.exportToExcel = function () {
@@ -391,47 +737,114 @@
             };
 
             $ctrl.isSubmitForInspectionButtonVisible = function () {
-                return $ctrl.statistics.state === 'IN_PROGRESS';
+                var state = _.get($ctrl, 'statistics.state');
+                return !RhyAnnualStatisticsStates.isCompletedByCoordinator(state);
+            };
+
+            $ctrl.isSubmittingForInspectionDisabled = function () {
+                return !$ctrl.isEditable || !$ctrl.statistics.readyForInspection;
             };
 
             $ctrl.submitForInspection = function () {
                 RhyAnnualStatisticsService.submitStatisticsForInspection($ctrl.statistics)
-                    .then(function () {
-                        NotificationService.flashMessage('global.messages.success', 'success');
-                        RhyAnnualStatisticsState.reload();
-                    });
+                    .then(RhyAnnualStatisticsViewState.reload);
             };
 
             $ctrl.isApproveButtonVisible = function () {
-                return $ctrl.isModerator && $ctrl.statistics.year >= 2018 && $ctrl.statistics.state === 'UNDER_INSPECTION';
+                return $ctrl.isModerator
+                    && $ctrl.statistics.year >= 2018
+                    && $ctrl.statistics.state === RhyAnnualStatisticsState.UNDER_INSPECTION;
+            };
+
+            $ctrl.isCancelApprovalButtonVisible = function () {
+                return $ctrl.isModerator
+                    && $ctrl.statistics.year >= 2018
+                    && $ctrl.statistics.state === RhyAnnualStatisticsState.APPROVED;
             };
 
             $ctrl.approve = function () {
                 RhyAnnualStatisticsService.approve($ctrl.statistics)
-                    .then(function () {
-                        NotificationService.flashMessage('global.messages.success', 'success');
-                        RhyAnnualStatisticsState.reload();
-                    });
+                    .then(RhyAnnualStatisticsViewState.reload);
+            };
+
+            $ctrl.cancelApproval = function () {
+                RhyAnnualStatisticsService.cancelApproval($ctrl.statistics)
+                    .then(RhyAnnualStatisticsViewState.reload);
             };
         })
 
-        .component('annualStatisticsTabset', {
-            templateUrl: 'rhy/annualstats/tabs.html',
+        .component('rhyAnnualStatisticsState', {
+            templateUrl: 'rhy/annualstats/annual-statistics-state.html',
             bindings: {
-                statistics: '<',
-                allSpeciesNames: '<'
+                state: '<',
+                rhy: '<',
+                calendarYear: '<',
+                submitEvent: '<'
             },
-            controller: function ($location, ActiveRoleService, RhyAnnualStatisticsState) {
+            controller: function ($filter, $state, ActiveRoleService, RhyAnnualStatisticsState,
+                                  RhyAnnualStatisticsStates) {
                 var $ctrl = this;
+                var toLowerCase = $filter('lowercase');
 
-                $ctrl.$onInit = function () {
-                    $ctrl.activeTabIndex = RhyAnnualStatisticsState.getActiveTab();
-                    $ctrl.isModerator = ActiveRoleService.isModerator();
+                var kebabcase = function (input) {
+                    if (!_.isString(input) || input.length === 0) {
+                        return input;
+                    }
+
+                    return toLowerCase(input).replace(/_/i, '-');
                 };
 
+                var getIconCssClass = function () {
+                    switch ($ctrl.state) {
+                        case RhyAnnualStatisticsState.NOT_STARTED:
+                            return 'fa-ban';
+                        case RhyAnnualStatisticsState.IN_PROGRESS:
+                            return 'fa-edit';
+                        case RhyAnnualStatisticsState.UNDER_INSPECTION:
+                            return 'fa-envelope';
+                        case RhyAnnualStatisticsState.APPROVED:
+                            return 'fa-check';
+                        default:
+                            return '';
+                    }
+                };
+
+                var getTooltipLocalisationKey = function () {
+                    switch ($ctrl.state) {
+                        case RhyAnnualStatisticsState.UNDER_INSPECTION:
+                            return 'rhy.annualStats.tooltip.forState.' + $ctrl.state;
+                        default:
+                            return null;
+                    }
+                };
+
+                $ctrl.$onInit = function () {
+                    $ctrl.isModerator = ActiveRoleService.isModerator();
+                    $ctrl.colorCssClass = kebabcase($ctrl.state);
+                    $ctrl.iconCssClass = getIconCssClass();
+
+                    $ctrl.isTooltipEnabled = $ctrl.state === RhyAnnualStatisticsState.UNDER_INSPECTION;
+                    $ctrl.tooltipLocalisationKey = getTooltipLocalisationKey();
+                };
+
+                $ctrl.openAnnualStatisticsDashboard = function () {
+                    var tabIndex = RhyAnnualStatisticsStates.indexOf($ctrl.state);
+                    $state.go('jht.annualstats', {year: $ctrl.calendarYear, activeTab: tabIndex});
+                };
+            }
+        })
+
+        .component('rhyAnnualStatisticsTabset', {
+            templateUrl: 'rhy/annualstats/tabs.html',
+            bindings: {
+                activeTab: '<',
+                onActiveTabChanged: '&'
+            },
+            controller: function () {
+                var $ctrl = this;
+
                 $ctrl.onTabSelected = function (activeTab) {
-                    RhyAnnualStatisticsState.setActiveTab(activeTab);
-                    $location.search({year: RhyAnnualStatisticsState.getYear(), activeTab: activeTab});
+                    $ctrl.onActiveTabChanged({activeTab: activeTab});
                 };
             }
         })
@@ -460,16 +873,13 @@
             templateUrl: 'rhy/annualstats/overview/annual-statistics-overview.html',
             bindings: {
                 statistics: '<',
-                isModerator: '<'
+                isEditable: '<'
             },
-            controller: function (RhyAnnualStatisticsService) {
+            controller: function (RhyAnnualStatisticsEditDialog) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.editable = $ctrl.isModerator && $ctrl.statistics.state !== 'APPROVED';
-
-                    $ctrl.editBasicInfo = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'basicInfo', 'rhy/annualstats/overview/edit-rhy-basic-info.html');
+                    $ctrl.editBasicInfo = RhyAnnualStatisticsEditDialog.openBasicInfo($ctrl.statistics);
                 };
             }
         })
@@ -483,8 +893,8 @@
             }
         })
 
-        .component('showStateAidAffectingStatistics', {
-            templateUrl: 'rhy/annualstats/overview/show-state-aid-statistics.html',
+        .component('showSubsidySummary', {
+            templateUrl: 'rhy/annualstats/overview/show-subsidy-summary.html',
             bindings: {
                 statistics: '<'
             },
@@ -497,8 +907,8 @@
             }
         })
 
-        .component('showJhtStatisticsOverview', {
-            templateUrl: 'rhy/annualstats/overview/show-jht-statistics-overview.html',
+        .component('showOtherSummary', {
+            templateUrl: 'rhy/annualstats/overview/show-other-summary.html',
             bindings: {
                 statistics: '<'
             },
@@ -515,81 +925,18 @@
             templateUrl: 'rhy/annualstats/administration/annual-administration-statistics.html',
             bindings: {
                 statistics: '<',
+                isEditable: '<',
                 isModerator: '<'
             },
-            controller: function (RhyAnnualStatisticsService, Tuple2ListFormDialog) {
+            controller: function (RhyAnnualStatisticsEditDialog) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.editable = RhyAnnualStatisticsService.isEditable($ctrl.statistics, $ctrl.isModerator);
-
-                    var openHunterExamsDialog = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'hunterExams', 'rhy/annualstats/administration/edit-hunter-exams.html', function (data) {
-                            if (_.isFinite(data.moderatorOverriddenHunterExamEvents)) {
-                                delete data.hunterExamEvents;
-                            }
-                        });
-
-                    $ctrl.editHunterExams = function () {
-                        return openHunterExamsDialog({
-                            isModerator: $ctrl.isModerator,
-                            hunterExamEventsOverridden: _.isFinite($ctrl.statistics.hunterExams.moderatorOverriddenHunterExamEvents)
-                        });
-                    };
-
-                    $ctrl.editHuntingControl = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'huntingControl', 'rhy/annualstats/administration/edit-hunting-control.html');
-
-                    $ctrl.editGameDamage = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'gameDamage', 'rhy/annualstats/administration/edit-game-damage.html');
-
-                    $ctrl.editOtherPublicAdminData = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'otherPublicAdmin', 'rhy/annualstats/administration/edit-other-admin-data.html');
-
-                    var openShootingTestDialog =  RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'shootingTests', 'rhy/annualstats/administration/edit-shooting-tests.html', function (data) {
-                            if (_.isFinite(data.moderatorOverriddenFirearmTestEvents)) {
-                                delete data.firearmTestEvents;
-                            }
-                            if (_.isFinite(data.moderatorOverriddenBowTestEvents)) {
-                                delete data.bowTestEvents;
-                            }
-                        });
-
-                    var shootingTestTypes = _.map(['moose', 'bear', 'roeDeer', 'bow'], function (shootingTestType) {
-                        var getKey = function (name) {
-                            return name + _.capitalize(shootingTestType) + 'Attempts';
-                        };
-
-                        return {
-                            name: shootingTestType,
-                            value1Key: getKey('all'),
-                            value2Key: getKey('qualified')
-                        };
-                    });
-
-                    var shootingTestModalCtrlOpts = {
-                        shootingTestTypes: shootingTestTypes,
-                        isModerator: $ctrl.isModerator,
-                        firearmTestEventsOverridden: _.isFinite($ctrl.statistics.shootingTests.moderatorOverriddenFirearmTestEvents),
-                        bowTestEventsOverridden: _.isFinite($ctrl.statistics.shootingTests.moderatorOverriddenBowTestEvents),
-                        getTitleKey: function (shootingTestType) {
-                            return 'rhy.annualStats.administration.shootingTests.form.' + shootingTestType.name + 'Title';
-                        },
-                        getValue1Min: function (shootingTestType) {
-                            var qualified = this.data[shootingTestType.value2Key];
-                            return Math.max(0, qualified);
-                        },
-                        getValue2Max: function (shootingTestType) {
-                            var limit = 99999;
-                            var all = this.data[shootingTestType.value1Key];
-                            return _.isFinite(all) ? Math.min(limit, all) : limit;
-                        }
-                    };
-
-                    $ctrl.editShootingTests = function () {
-                        return openShootingTestDialog(shootingTestModalCtrlOpts);
-                    };
+                    $ctrl.editHunterExams = RhyAnnualStatisticsEditDialog.openHunterExams($ctrl.statistics, $ctrl.isModerator);
+                    $ctrl.editShootingTests = RhyAnnualStatisticsEditDialog.openShootingTestsModeratorOverride($ctrl.statistics, $ctrl.isModerator);
+                    $ctrl.editHuntingControl = RhyAnnualStatisticsEditDialog.openHuntingControl($ctrl.statistics);
+                    $ctrl.editGameDamage = RhyAnnualStatisticsEditDialog.openGameDamage($ctrl.statistics);
+                    $ctrl.editOtherPublicAdminData = RhyAnnualStatisticsEditDialog.openOtherPublicAdmin($ctrl.statistics);
                 };
             }
         })
@@ -615,9 +962,10 @@
             bindings: {
                 shootingTests: '<',
                 editable: '<',
-                openEditDialog: '&'
+                openEditDialog: '&',
+                isModerator: '<'
             },
-            controller: function ($uibModal, RhyAnnualStatisticsService) {
+            controller: function () {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
@@ -746,68 +1094,29 @@
             templateUrl: 'rhy/annualstats/trainings/annual-training-statistics.html',
             bindings: {
                 statistics: '<',
+                isEditable: '<',
                 isModerator: '<'
             },
-            controller: function (RhyAnnualStatisticsService, Tuple2ListFormDialog) {
+            controller: function (RhyAnnualStatisticsEditDialog) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.editable = RhyAnnualStatisticsService.isEditable($ctrl.statistics, $ctrl.isModerator);
-
-                    var hunterExamTrainingDialog = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'hunterExamTraining', 'rhy/annualstats/trainings/edit-hunter-exam-training.html', function (data) {
-                            if (_.isFinite(data.moderatorOverriddenHunterExamTrainingEvents)) {
-                                delete data.hunterExamTrainingEvents;
-                            }
-                        });
-
-                    var jhtTrainingDialog = Tuple2ListFormDialog.create(
-                        $ctrl.statistics, 'jhtTraining', 'rhy.annualStats.trainings.jht.form.');
-
-                    var stateAidTrainingDialog = Tuple2ListFormDialog.create(
-                        $ctrl.statistics, 'stateAidTraining', 'rhy.annualStats.trainings.stateAid.form.');
-
-                    var otherHunterTrainingDialog = Tuple2ListFormDialog.create(
-                        $ctrl.statistics, 'otherHunterTraining', 'rhy.annualStats.trainings.otherHunterTraining.form.');
-
-                    var otherTrainingDialog = Tuple2ListFormDialog.create(
-                        $ctrl.statistics, 'otherTraining', 'rhy.annualStats.trainings.otherTraining.form.');
-
-                    $ctrl.editHunterExamTraining = function () {
-                        return hunterExamTrainingDialog({
-                            isModerator: $ctrl.isModerator,
-                            hunterExamTrainingEventsOverridden: _.isFinite($ctrl.statistics.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents)
-                        });
-                    };
-
-                    function createFormGroups(trainingTypes) {
-                        return _.map(trainingTypes, function (trainingType) {
-                            return {
-                                name: trainingType,
-                                value1Key: trainingType + 'TrainingEvents',
-                                value2Key: trainingType + 'TrainingParticipants'
-                            };
-                        });
-                    }
-
-                    var modalCtrlOpts = {
-                        value2UnitKey: 'global.personUnit'
-                    };
+                    $ctrl.editHunterExamTraining = RhyAnnualStatisticsEditDialog.openHunterExamTraining($ctrl.statistics, $ctrl.isModerator);
 
                     $ctrl.editJhtTraining = function (trainingTypes) {
-                        return jhtTrainingDialog.open(createFormGroups(trainingTypes), modalCtrlOpts);
+                        return RhyAnnualStatisticsEditDialog.openJhtTraining($ctrl.statistics, trainingTypes);
                     };
 
-                    $ctrl.editStateAidTraining = function (trainingTypes) {
-                        return stateAidTrainingDialog.open(createFormGroups(trainingTypes), modalCtrlOpts);
+                    $ctrl.editHunterTraining = function (trainingTypes) {
+                        RhyAnnualStatisticsEditDialog.openHunterTraining($ctrl.statistics, trainingTypes);
+                    };
+
+                    $ctrl.editYouthTraining = function (trainingTypes) {
+                        RhyAnnualStatisticsEditDialog.openYouthTraining($ctrl.statistics, trainingTypes);
                     };
 
                     $ctrl.editOtherHunterTraining = function (trainingTypes) {
-                        return otherHunterTrainingDialog.open(createFormGroups(trainingTypes), modalCtrlOpts);
-                    };
-
-                    $ctrl.editOtherTraining = function (trainingTypes) {
-                        return otherTrainingDialog.open(createFormGroups(trainingTypes), modalCtrlOpts);
+                        return RhyAnnualStatisticsEditDialog.openOtherHunterTraining($ctrl.statistics, trainingTypes);
                     };
                 };
             }
@@ -854,10 +1163,10 @@
             }
         })
 
-        .component('showStateAidTrainingStatistics', {
-            templateUrl: 'rhy/annualstats/trainings/show-state-aid-training.html',
+        .component('showHunterTrainingStatistics', {
+            templateUrl: 'rhy/annualstats/trainings/show-hunter-training.html',
             bindings: {
-                stateAidTraining: '<',
+                hunterTraining: '<',
                 editable: '<',
                 openEditDialog: '&'
             },
@@ -866,9 +1175,27 @@
 
                 $ctrl.trainingTypes = [
                     'mooselikeHunting', 'mooselikeHuntingLeader', 'carnivoreHunting', 'carnivoreHuntingLeader', 'srva',
-                    'carnivoreContactPerson', 'accidentPrevention', 'school', 'college', 'otherYouthTargeted'];
+                    'carnivoreContactPerson', 'accidentPrevention'];
 
-                $ctrl.editStateAidTraining = function () {
+                $ctrl.editHunterTraining = function () {
+                    $ctrl.openEditDialog({trainingTypes: $ctrl.trainingTypes});
+                };
+            }
+        })
+
+        .component('showYouthTrainingStatistics', {
+            templateUrl: 'rhy/annualstats/trainings/show-youth-training.html',
+            bindings: {
+                youthTraining: '<',
+                editable: '<',
+                openEditDialog: '&'
+            },
+            controller: function () {
+                var $ctrl = this;
+
+                $ctrl.trainingTypes = ['school', 'college', 'otherYouthTargeted'];
+
+                $ctrl.editYouthTraining = function () {
                     $ctrl.openEditDialog({trainingTypes: $ctrl.trainingTypes});
                 };
             }
@@ -886,7 +1213,7 @@
 
                 $ctrl.trainingTypes = [
                     'smallCarnivoreHunting', 'gameCounting', 'gamePopulationManagement', 'gameEnvironmentalCare',
-                    'otherGamekeeping', 'otherShooting', 'tracker'
+                    'otherGamekeeping', 'shooting', 'tracker'
                 ];
 
                 $ctrl.editHunterTraining = function () {
@@ -895,20 +1222,18 @@
             }
         })
 
-        .component('showOtherTrainingStatistics', {
-            templateUrl: 'rhy/annualstats/trainings/show-other-training.html',
+        .component('showPublicEventStatistics', {
+            templateUrl: 'rhy/annualstats/misc/show-public-events.html',
             bindings: {
-                otherTraining: '<',
+                publicEvents: '<',
                 editable: '<',
                 openEditDialog: '&'
             },
             controller: function () {
                 var $ctrl = this;
 
-                $ctrl.trainingTypes = ['other'];
-
-                $ctrl.editOtherTraining = function () {
-                    $ctrl.openEditDialog({trainingTypes: $ctrl.trainingTypes});
+                $ctrl.editPublicEvents = function () {
+                    return $ctrl.openEditDialog();
                 };
             }
         })
@@ -917,29 +1242,22 @@
             templateUrl: 'rhy/annualstats/misc/annual-misc-statistics.html',
             bindings: {
                 statistics: '<',
+                isEditable: '<',
                 isModerator: '<'
             },
-            controller: function (RhyAnnualStatisticsService) {
+            controller: function (RhyAnnualStatisticsEditDialog) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.editable = RhyAnnualStatisticsService.isEditable($ctrl.statistics, $ctrl.isModerator);
-                    $ctrl.moderatorEditable = $ctrl.isModerator && $ctrl.editable;
+                    $ctrl.editOtherHuntingRelated = RhyAnnualStatisticsEditDialog.openOtherHuntingRelated($ctrl.statistics, $ctrl.isModerator);
+                    $ctrl.editCommunication = RhyAnnualStatisticsEditDialog.openCommunication($ctrl.statistics);
+                    $ctrl.editShootingRanges = RhyAnnualStatisticsEditDialog.openShootingRanges($ctrl.statistics);
+                    $ctrl.editGameCalculations = RhyAnnualStatisticsEditDialog.openLuke($ctrl.statistics);
+                    $ctrl.editMetsahallitusData = RhyAnnualStatisticsEditDialog.openMetsahallitus($ctrl.statistics);
+                    $ctrl.editPublicEvents = function () {
+                        return RhyAnnualStatisticsEditDialog.openPublicEvents($ctrl.statistics);
+                    };
 
-                    $ctrl.editOtherHuntingRelated = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'otherHuntingRelated', 'rhy/annualstats/misc/edit-other-hunting-related.html');
-
-                    $ctrl.editCommunication = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'communication', 'rhy/annualstats/misc/edit-communication.html');
-
-                    $ctrl.editShootingRanges = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'shootingRanges', 'rhy/annualstats/misc/edit-shooting-ranges.html');
-
-                    $ctrl.editGameCalculations = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'luke', 'rhy/annualstats/misc/edit-game-calculations.html');
-
-                    $ctrl.editMetsahallitusData = RhyAnnualStatisticsService.createOpenEditDialogFunction(
-                        $ctrl.statistics, 'metsahallitus', 'rhy/annualstats/misc/edit-metsahallitus.html');
                 };
             }
         })

@@ -1,12 +1,23 @@
-<leaflet id="club-permit-map"
-         class="r-cursor-pointer"
-         defaults="ctrl.mapDefaults"
-         layers="ctrl.mapDefaults.mmlLayers"
-         controls="ctrl.mapDefaults.controls"
-         lf-center="ctrl.mapState.center"
-         bounds="ctrl.mapState.viewBounds"
-         event-broadcast="ctrl.mapEvents"
-         r-viewport-height
-         width="100%">
-    <marker-cluster id="permitMapMarkers" leaflet-markers="ctrl.markers" ></marker-cluster>
-</leaflet>
+<div style="position:relative;">
+    <div class="map-overlay-button-container">
+        <a class="btn btn-primary"
+           ng-if="::$ctrl.showGoBack"
+           ng-click="$ctrl.goBack()">
+            <i class="fa fa-fw fa-arrow-left"></i>
+            <strong translate="global.button.return"></strong>
+        </a>
+    </div>
+
+    <leaflet id="club-permit-map"
+             class="r-cursor-pointer"
+             defaults="$ctrl.mapDefaults"
+             layers="$ctrl.mapDefaults.mmlLayers"
+             controls="$ctrl.mapDefaults.controls"
+             lf-center="$ctrl.mapState.center"
+             bounds="$ctrl.mapState.viewBounds"
+             event-broadcast="$ctrl.mapEvents"
+             r-viewport-height
+             width="100%">
+        <marker-cluster id="permitMapMarkers" leaflet-markers="$ctrl.markers"></marker-cluster>
+    </leaflet>
+</div>

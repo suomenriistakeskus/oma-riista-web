@@ -1,7 +1,7 @@
 package fi.riista.api.external;
 
+import fi.riista.feature.harvestpermit.payment.PermitInvoicePaymentFeature;
 import fi.riista.feature.permit.PermitClientUriFactory;
-import fi.riista.feature.permit.invoice.PermitInvoicePaymentFeature;
 import fi.riista.integration.paytrail.callback.PaytrailCallback;
 import fi.riista.integration.paytrail.callback.PaytrailCallbackParameters;
 import fi.riista.integration.paytrail.callback.PaytrailDispatcher;

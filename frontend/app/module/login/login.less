@@ -18,10 +18,43 @@ body > .wrapper > .main-content > .r-login-container {
     text-decoration: underline;
   }
 
+  .r-login-logo {
+    display: block;
+    width: 154px;
+    height: 138px;
+    margin: 20px auto 0;
+    background: transparent url('../images/oma-riista-logo-white.svg') no-repeat -18px top;
+    background-size: contain;
+    text-indent: -10000px;
+  }
+
   .r-login-main-title {
-    .text-uppercase;
+    display: block;
+    width: 100%;
+    margin-top: 1px;
+    overflow:visible;
+    font-family: @font-family-roboto-slab;
+    font-size: 48px;
+    line-height: 48px;
+    letter-spacing: -1px;
+    font-weight: 400;
+    font-style: normal;
+    text-shadow: 0 0 3px #000;
+    text-align: center;
+    white-space: nowrap;
+    color: #fff;
+  }
+
+  .r-login-sub-title {
+    display: block;
+    width: 100%;
+    overflow: visible;
+    text-align: center;
+    margin: 15px auto 20px;
     font-weight: bold;
     font-size: 12px;
+    text-transform: uppercase;
+    text-shadow: 0 0 3px #000;
     letter-spacing: 1px;
   }
 
@@ -92,7 +125,6 @@ body > .wrapper > .main-content > .r-login-container {
   .r-login-create-account {
     .btn;
     .btn-default;
-    text-shadow: 0;
     background-color: @r-light;
     color: @r-green;
   }

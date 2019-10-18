@@ -1,0 +1,878 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd" />
+    <!--
+
+        XML Schema for HABIDES+ data (the first reporting year 2015)
+
+         Reporting derogations from the species protection requirements under the Article 9 EU Birds
+         and Article 16 Habitats Directives (and equivalent provisions under the Article 9 Bern Convention).
+
+        Reporting obligatios:
+            http://rod.eionet.europa.eu/obligations/276
+            http://rod.eionet.europa.eu/obligations/268
+
+
+        The official location for this schema is http://dd.eionet.europa.eu/schemas/habides-2.0/derogations.xsd
+        Remember to upload when a new version is checked in.
+
+        Authors: Enrko Käsper, Jaak Kapten (TripleDev)
+    -->
+
+    <xs:element name="derogations">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="derogation" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="country" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>ISO 2 country code defined in
+                        http://dd.eionet.europa.eu/vocabulary/habides/habidescountries/view
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="userIdentity" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>user identity - free text field identifying the user who reported the derogation
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="labelLanguage" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>property used by Habides+ reporting tool to identify the label languages in case
+                        of multlingual webform
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute ref="xml:lang" use="required" />
+            <xs:anyAttribute namespace="http://www.w3.org/XML/1998/namespace" processContents="lax"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="derogation" nillable="false">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="species" type="xs:string" minOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>species covered by the derogation - selection box with values defined in:
+                            - Bird species: http://dd.eionet.europa.eu/vocabulary/habides/birdsspecies/view
+                            - Other species: http://dd.eionet.europa.eu/vocabulary/habides/habitatsspecies/view
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="speciesGroup" type="xs:string" minOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>
+                            species group covered by the derogation - Please use this field only in case of derogation
+                            for activities that will not harm
+                            individuals and/or in case the derogation cannot anticipate which species will be affected
+                            (e.g. derogations for ringing of songbirds forscientific purposes, derogations for the
+                            disturbance
+                            and/or killing of birds on airports for security reasons, etc.)
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="coversAllSpecies" type="nullableBoolean" minOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>this derogation covers all species of birds</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="sensitive" type="nullableBoolean" minOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>
+                            "sensitive" derogation not to be published? - A derogation should only be flagged as
+                            "Sensitive"
+                            in very exceptional cases, where its publication is likely to be detrimental to the
+                            conservation status of a species.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="licenseValidFrom" type="nullableDate">
+                    <xs:annotation>
+                        <xs:documentation>derogation valid from (date)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="licenseValidUntil" type="nullableDate">
+                    <xs:annotation>
+                        <xs:documentation>derogation valid to (date)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="licensingAuthority" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>authority granting the derogation free text field</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="regions">
+                    <xs:annotation>
+                        <xs:documentation>
+                            regions(s) - If the derogation only applies to certain parts of a country, please indicate
+                            all NUTS 2 level
+                            regions of the Country where the derogation is applicable. Allowed NUTS 2 level regions are
+                            defined at:
+                            http://dd.eionet.europa.eu/vocabulary/common/nuts/view
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="location" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>location - free text field; Indicate here any information that further
+                            clarifies the location and extent of the area where the derogation is applicable.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="derogationJustifications" type="derogationJustificationsType">
+                    <xs:annotation>
+                        <xs:documentation>why is this derogation necessary? - selection box with values defined in:
+                            http://dd.eionet.europa.eu/vocabulary/habides/derogationjustification/view
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="reasons">
+                    <xs:annotation>
+                        <xs:documentation>legal justification for granting the derogation - selection box with values
+                            defined at:
+                            - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdslegalbasis/view
+                            - Habitats directive: http://dd.eionet.europa.eu/vocabulary/habides/habitatslegalbasis/view
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="derogationJustificationDetails" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>further details on the legal justification - free text; Please provide here
+                            any further information that would be helpful to understand the legal justification chosen
+                            above.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="strictlySupervisedConditions" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>the application of the derogation is subject to "strictly supervised
+                            conditions - free text
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="selectiveBasis" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>The application of the derogation occurs on a "selective basis" - free text
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="smallNumberIndividuals" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>the derogation only applies to a "small, limited number" of individuals - free
+                            text
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="activities">
+                    <xs:annotation>
+                        <xs:documentation>main activity covered by the derogation - selection box with values defined
+                            at:
+                            - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdsmainactivities/view
+                            - Habitats directive:
+                            http://dd.eionet.europa.eu/vocabulary/habides/habitatsmainactivities/view
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="additionalActivities">
+                    <xs:annotation>
+                        <xs:documentation>additional activities covered by the derogation (optional) - selection box
+                            with values defined at:
+                            - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdsmainactivities/view
+                            - Habitats directive:
+                            http://dd.eionet.europa.eu/vocabulary/habides/habitatsmainactivities/view
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="activitiesFurtherDetails" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>further details on the main activities covered by the derogation - free text
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element ref="methods">
+                    <xs:annotation>
+                        <xs:documentation>mean, arrangement or method covered by the derogation - selection box with
+                            values defined at:
+                            - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdsmethods/view
+                            - Habitats directive: http://dd.eionet.europa.eu/vocabulary/habides/habitatsmethods/view
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="furtherDetails" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>further details on the prohibited means, arrangements or methods covered by
+                            the derogation - free text
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="modesOfTransport" type="modesOfTransportType">
+                    <xs:annotation>
+                        <xs:documentation>modes of transport covered by the derogation - selection box with values
+                            defined at:
+                            - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdsmodesoftransport/view
+                            - Habitats directive:
+                            http://dd.eionet.europa.eu/vocabulary/habides/habitatsmodesoftransport/view
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="licensed" type="derogationEntity">
+                    <xs:annotation>
+                        <xs:documentation>maximum number of individuals, eggs, nests, breeding sites, resting sites
+                            covered by the derogation, during the period covered by the derogation report
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="actuallyTaken" type="derogationEntity">
+                    <xs:annotation>
+                        <xs:documentation>number of individuals, eggs, nests, breeding sites, resting sites actually
+                            affected as a result of the derogation, during the period covered by the derogation report
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+
+                <xs:element name="allMeasuresTaken" type="nullableBoolean">
+                    <xs:annotation>
+                        <xs:documentation>by ticking this box, the authority declares that all measures (including
+                            supervisory measures) have been taken to ensure that this derogation is fully compliant with
+                            the legal requirements under the Bern Convention
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="EUAllMeasuresTaken" type="nullableBoolean">
+                    <xs:annotation>
+                        <xs:documentation>by ticking this box the authority declares that all measures (including
+                            supervisory measures) have been taken to ensure that this derogation is fully compliant with
+                            the legal requirements under the EU Birds Directive
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="detrimentalToPopulation" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>if the population affected by the derogation is endangered or declining,
+                            provide evidence that the derogation is not detrimental to the population
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="alternativeToDerogation" type="nullableBoolean">
+                    <xs:annotation>
+                        <xs:documentation>by ticking this box the authority declares that there is no other satisfactory
+                            alternative to the derogation
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="alternativesAssessed" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>if appropriate, provide a reference to alternatives rejected
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="supervisoryMeasure" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>controls carried out and results obtained by the controls</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="comments" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Please use this text field to add any additional information that could be
+                            relevant for a correct understanding of this derogation
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="country" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>ISO 2 country code defined in
+                        http://dd.eionet.europa.eu/vocabulary/habides/habidescountries/view
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="directive" type="directiveType">
+                <xs:annotation>
+                    <xs:documentation>Reporting obligation URL</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="derogation_reference" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>derogation reference - auto-filled unique reference to derogation
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="user_derogation_ref" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>user derogation reference - free text field</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="userIdentity" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>user identity - free text field identifying the user who reported the derogation
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="status" type="statusType">
+                <xs:annotation>
+                    <xs:documentation>status - auto-filled by webform</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="derogationJustificationsType">
+        <xs:sequence>
+            <xs:element name="derogationJustification" type="derogationJustificationType" minOccurs="0"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="modesOfTransportType">
+        <xs:sequence>
+            <xs:element name="modeOfTransport" type="modeOfTransportType" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="regions">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="region" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Allowed NUTS 2 level regions are defined at:
+                            http://dd.eionet.europa.eu/vocabulary/common/nuts/view
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="activities">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="activity" type="activitiesType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="additionalActivities">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="activity" type="activitiesType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="methods">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="method" type="methodType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="reasons">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="reason" type="reasonType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="derogationEntity">
+        <xs:annotation>
+            <xs:documentation>
+                at least one of the 6 first alternatives / or the last alternative (no figure can be provided) must be
+                filled in
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="individuals" type="nullableLong" minOccurs="0"/>
+            <xs:element name="eggs" type="nullableLong" minOccurs="0"/>
+            <xs:element name="nests" type="nullableLong" minOccurs="0"/>
+            <xs:element name="breeding" type="nullableLong" minOccurs="0"/>
+            <xs:element name="resting" type="nullableLong" minOccurs="0"/>
+            <xs:element name="otherType" type="xs:string" minOccurs="0"/>
+            <xs:element name="noFigureProvided" type="nullableBoolean" minOccurs="0"/>
+            <xs:element name="licensedJustification" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>justification, in case no figure can be provided for the maximum number of
+                        individuals, eggs, nests, breeding sites, resting sites covered by the derogation
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="empty-string">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value=""/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="nullableDate">
+        <xs:union memberTypes="xs:date empty-string"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="nullableInteger">
+        <xs:union memberTypes="xs:integer empty-string"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="nullableLong">
+        <xs:union memberTypes="xs:long empty-string"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="nullableBoolean">
+        <xs:union memberTypes="xs:boolean empty-string"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="directiveType">
+        <xs:annotation>
+            <xs:documentation>Birds or Habitats Directive obligation URL</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="http://rod.eionet.europa.eu/obligations/268">
+                <xs:annotation>
+                    <xs:documentation>Habitats Directive</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="http://rod.eionet.europa.eu/obligations/276">
+                <xs:annotation>
+                    <xs:documentation>Birds Directive</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="statusType">
+        <xs:annotation>
+            <xs:documentation>Validation status of the derogation report</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value=""/>
+            <xs:enumeration value="incomplete">
+                <xs:annotation>
+                    <xs:documentation>The report contains validation errors</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="complete">
+                <xs:annotation>
+                    <xs:documentation>The validation is completed without errors</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="derogationJustificationType">
+        <xs:annotation>
+            <xs:documentation>why is this derogation necessary?
+                http://dd.eionet.europa.eu/vocabulary/habides/derogationjustification/view
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value=""/>
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>the species is not a huntable species according to Annex II of the Birds Directive
+                        and/or according to the Bern Convention
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>the derogation is granted for a period that includes the reproductive season of a
+                        bird species or, in the case of migratory birds species, it includes the period of return to
+                        their rearing grounds
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation>the derogation is granted for the use of modes of transport listed in Annex IVb of
+                        the Birds Directive and/or the use non-selective means, arrangement or methods (including those
+                        listed in Annex IVa of the Birds Directive)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation>other reasons</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="reasonType">
+        <xs:annotation>
+            <xs:documentation>The values are defined at:
+                - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdslegalbasis/view
+                - Habitats directive: http://dd.eionet.europa.eu/vocabulary/habides/habitatslegalbasis/view
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value=""/>
+            <!-- Birds Directive -->
+            <xs:enumeration value="10">
+                <xs:annotation>
+                    <xs:documentation>in the interests of public health and safety</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="20">
+                <xs:annotation>
+                    <xs:documentation>in the interests of air safety</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30">
+                <xs:annotation>
+                    <xs:documentation>to prevent serious damage, in particular to crops, livestock, forests, fisheries
+                        and water
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="40">
+                <xs:annotation>
+                    <xs:documentation>for the protection of flora and fauna</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="50">
+                <xs:annotation>
+                    <xs:documentation>for the purposes of research and teaching, and for the breeding necessary for
+                        these purposes
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="55">
+                <xs:annotation>
+                    <xs:documentation>for the purposes of re-population or re-introduction, and for the breeding
+                        necessary for these purposes
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="64">
+                <xs:annotation>
+                    <xs:documentation>to permit, under strictly supervised conditions and on a selective basis, the
+                        capture, keeping or other judicious use of certain birds in small numbers (derogation from the
+                        protection regime for a protected bird species, for purposes other than falconry)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="65">
+                <xs:annotation>
+                    <xs:documentation>to permit, under strictly supervised conditions and on a selective basis, the
+                        capture, keeping or other judicious use of certain birds in small numbers (derogation from the
+                        protection regime for a protected bird species, for the purpose of falconry)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="66">
+                <xs:annotation>
+                    <xs:documentation>to permit, under strictly supervised conditions and on a selective basis, the
+                        capture, keeping or other judicious use of certain birds in small numbers (derogation for
+                        hunting a huntable bird species during a season when its hunting would not be allowed according
+                        to Article 7.4 of the EU Birds Directive)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="67">
+                <xs:annotation>
+                    <xs:documentation>to permit, under strictly supervised conditions and on a selective basis, the
+                        capture, keeping or other judicious use of certain birds in small numbers (derogation for the
+                        use of a forbidden mean, arrangement, method or mode of transport listed in Annex IV of the EU
+                        Birds Directive)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <!-- Habitats Directive -->
+            <xs:enumeration value="11">
+                <xs:annotation>
+                    <xs:documentation>In the interest of protecting wild fauna and flora and conserving natural
+                        habitats
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="31">
+                <xs:annotation>
+                    <xs:documentation>to prevent serious damage, in particular to crops, livestock, forests, fisheries
+                        and water and other types of property
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="41">
+                <xs:annotation>
+                    <xs:documentation>in the interests of public health and safety, or for other imperative reasons of
+                        overriding public interest, including those of a social or economic nature and beneficial
+                        consequences of primary importance for the environment
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="51">
+                <xs:annotation>
+                    <xs:documentation>for the purpose of research and education</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="52">
+                <xs:annotation>
+                    <xs:documentation>for the purposes of repopulating and re-introducing these species and for the
+                        breeding operations necessary for these purposes, including the artificial propagation of plants
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="60">
+                <xs:annotation>
+                    <xs:documentation>to allow, under strictly supervised conditions, on a selective basis and to a
+                        limited extent, the taking or keeping of certain specimens of the species listed in Annex IV (EU
+                        Habitats Directive) in limited numbers specified by the competent national authorities
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="activitiesType">
+        <xs:annotation>
+            <xs:documentation>The values are defined at:
+                - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdsmainactivities/view
+                - Habitats directive: http://dd.eionet.europa.eu/vocabulary/habides/habitatsmainactivities/view
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value=""/>
+            <!-- Birds Directive -->
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>deliberate killing by any method</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>deliberate capture of birds by any method, with the intention of temporarily or
+                        permanently keeping the captured specimens in captivity
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation>deliberate capture of birds by any method, followed by their immediate release of
+                        the captures specimens in an unharmed state
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation>deliberate destruction of, or damage to, their nests or eggs or removal of their
+                        nests / or deliberate destruction of resting sites
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="5">
+                <xs:annotation>
+                    <xs:documentation>taking their eggs in the wild and keeping these eggs even if empty
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="6">
+                <xs:annotation>
+                    <xs:documentation>deliberate disturbance, particularly during the period of breeding and rearing, in
+                        so far as disturbance would be significant with regard to the objectives of the Directive
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="7">
+                <xs:annotation>
+                    <xs:documentation>keeping (alive or dead specimens of) birds of species the hunting and capture of
+                        which is prohibited
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="8">
+                <xs:annotation>
+                    <xs:documentation>sale, transport for sale, keeping for sale and/or offering for sale of live or
+                        dead birds and/or of any readily recognisable parts or derivatives of such birds
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <!-- Habitats Directive -->
+            <xs:enumeration value="10">
+                <xs:annotation>
+                    <xs:documentation>ANIMALS - deliberate killing of specimens in the wild</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="20">
+                <xs:annotation>
+                    <xs:documentation>ANIMALS - deliberate capture of specimens in the wild, with the intention of
+                        temporarily or permanently keeping them in captivity
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="30">
+                <xs:annotation>
+                    <xs:documentation>ANIMALS - deliberate capture of specimens in the wild, followed by their immediate
+                        release in an unharmed state
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="40">
+                <xs:annotation>
+                    <xs:documentation>ANIMALS - deliberate disturbance of specimens, particularly during the period of
+                        breeding, rearing, hibernation and migration
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="50">
+                <xs:annotation>
+                    <xs:documentation>ANIMALS - deliberate destruction or taking of eggs from the wild
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="60">
+                <xs:annotation>
+                    <xs:documentation>ANIMALS - deterioration or destruction of breeding sites or resting places
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="70">
+                <xs:annotation>
+                    <xs:documentation>ANIMALS - keeping, transport and sale or exchange, and offering for sale or
+                        exchange, of specimens taken from the wild
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="80">
+                <xs:annotation>
+                    <xs:documentation>PLANTS - deliberate picking, collecting, cutting, uprooting or destruction of
+                        plants in their natural range in the wild
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="90">
+                <xs:annotation>
+                    <xs:documentation>PLANTS - keeping, transport and sale or exchange and offering for sale or exchange
+                        of specimens of plant species taken in the wild
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="methodType">
+        <xs:annotation>
+            <xs:documentation>The values are defined at:
+                - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdsmethods/view
+                - Habitats directive: http://dd.eionet.europa.eu/vocabulary/habides/habitatsmethods/view
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value=""/>
+            <!-- Birds Directive -->
+            <xs:enumeration value="0">
+                <xs:annotation>
+                    <xs:documentation>a selective mean, arrangement or method not listed in Annex IV (a) of the EU Birds
+                        Directive or Appendix IV of the Bern Convention / or this question is not relevant for this type
+                        of derogation
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>a non-selective mean, arrangement or method not listed in Annex IV (a) of the EU
+                        Birds Directive or Appendix IV of the Bern Convention
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>any of the following: Snares, Limes, Hooks, Live birds used as decoys which are
+                        blind or mutilated, Tape recorders, Electrical devices capable of killing and stunning,
+                        Artificial light sources, Mirrors and other dazzling devices, Devices for illuminating targets,
+                        Sighting devices for night shooting comprising an electronic image magnifier or image converter,
+                        Explosives, Nets, Traps, Poison and bait, Semi-automatic or automatic weapons with a magazine
+                        capable of holding more than two rounds of ammunition
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <!-- Habitats Directive -->
+            <xs:enumeration value="10">
+                <xs:annotation>
+                    <xs:documentation>a mean, arrangement or method not listed in Annex VI (a) of the EU Habitats
+                        Directive or Appendix IV of the Bern Convention / or this question is not relevant for this type
+                        of derogation
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="11">
+                <xs:annotation>
+                    <xs:documentation>any indiscriminate mean capable of causing local disappearance of, or serious
+                        disturbance to, populations of the species, not listed in Annex VI (a) of the EU Habitats
+                        Directive or Appendix IV of the Bern Convention
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="12">
+                <xs:annotation>
+                    <xs:documentation>Mammals: Blind or mutilated animals used as live decoys, Tape recorders,
+                        Electrical and electronic devices capable of killing or stunning, Artificial light sources,
+                        Mirrors and other dazzling devices, Devices for illuminating targets, Sighting devices for night
+                        shooting comprising an electronic image magnifier or image converter, Explosives, Traps or Nets
+                        which are non-selective according to their principle or their conditions of use, Crossbows,
+                        Poisons and poisoned or anaesthetic bait, Gassing or smoking out, Semi-automatic or automatic
+                        weapons with a magazine capable of holding more than two rounds of ammunition
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="13">
+                <xs:annotation>
+                    <xs:documentation>Fish: Explosives, Firearms, Poisons, Anaesthetics, Electricity with Alternating
+                        current, artificial light sources
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="14">
+                <xs:annotation>
+                    <xs:documentation>Crayfish: Explosives, Poisons</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <xs:simpleType name="modeOfTransportType">
+        <xs:annotation>
+            <xs:documentation>The values are defined at:
+                - Birds directive: http://dd.eionet.europa.eu/vocabulary/habides/birdsmodesoftransport/view
+                - Habitats directive: http://dd.eionet.europa.eu/vocabulary/habides/habitatsmodesoftransport/view
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value=""/>
+            <!-- Birds Directive -->
+            <xs:enumeration value="0">
+                <xs:annotation>
+                    <xs:documentation>a mode of transport not listed in Annex IV (b) of the EU Birds Directive or Annex
+                        IV of the Bern Convention / or this question is not relevant for this type of derogation
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>aircraft</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>motor vehicles</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation>boats driven at a speed over 5 km/h on freshwater or coastal waters
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation>motor-boats driven at a speed over 18 km/h on the open sea</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <!-- Habitats Directive -->
+            <!--
+            <xs:enumeration value="0"><xs:annotation><xs:documentation>a mode of transport not listed in Annex IV (b) of the EU Birds Directive or Annex IV of the Bern Convention / or this question is not relevant for this type of derogation</xs:documentation></xs:annotation></xs:enumeration>
+            <xs:enumeration value="1"><xs:annotation><xs:documentation>aircraft</xs:documentation></xs:annotation></xs:enumeration>
+            <xs:enumeration value="2"><xs:annotation><xs:documentation>motor vehicles</xs:documentation></xs:annotation></xs:enumeration>
+            -->
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

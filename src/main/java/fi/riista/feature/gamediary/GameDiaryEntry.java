@@ -37,6 +37,9 @@ import java.util.Optional;
 @Access(value = AccessType.FIELD)
 public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
 
+    public static final boolean FOREIGN_PERSON_ELIGIBLE_AS_AUTHOR = false;
+    public static final boolean FOREIGN_PERSON_ELIGIBLE_AS_ACTOR = true;
+
     @Valid
     @NotNull
     @Embedded

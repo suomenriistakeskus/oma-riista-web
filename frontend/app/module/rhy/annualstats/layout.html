@@ -1,50 +1,34 @@
 <div class="row">
-    <div class="col-xs-6 col-md-5">
-        <div class="h5">
-            <span>{{$ctrl.rhy|rI18nNameFilter}}</span>
-            <span>({{$ctrl.rhy.officialCode}})</span>
-        </div>
-
-        <div class="hidden-md hidden-lg">
-            <button class="r-annual-statistics-state-label {{::$ctrl.getCssClassForStateLabel()}}"
-                    ng-click="$ctrl.openAnnualStatisticsDashboard()"
-                    ng-disabled="!$ctrl.isModerator">
-                <span>{{'rhy.annualStats.state.' + $ctrl.statistics.state | translate}}</span>
-            </button>
-        </div>
+    <div class="col-xs-6">
+        <rhy-annual-statistics-state state="::$ctrl.statistics.state"
+                                     rhy="::$ctrl.rhy"
+                                     calendar-year="::$ctrl.calendarYear"
+                                     submit-event="::$ctrl.statistics.submitEvent">
+        </rhy-annual-statistics-state>
     </div>
 
-    <div class="col-xs-6 col-md-7">
+    <div class="col-xs-6">
         <div class="row">
-            <div class="col-xs-12 col-sm-6 col-md-8 col-lg-9">
-                <div class="row">
-                    <div class="col-md-6 hidden-xs hidden-sm">
-                        <button class="r-annual-statistics-state-label {{::$ctrl.getCssClassForStateLabel()}}"
-                                ng-click="$ctrl.openAnnualStatisticsDashboard()"
-                                ng-disabled="!$ctrl.isModerator">
-                            <span>{{'rhy.annualStats.state.' + $ctrl.statistics.state | translate}}</span>
-                        </button>
-                    </div>
+            <div class="r-annual-statistics-top-control">
+                <div class="form-group">
+                    <label for="yearSelection" class="control-label">
+                        <span translate="global.year"></span>
+                    </label>
 
-                    <div class="col-md-6 text-right">
-                        <span class="hidden-xs hidden-lg" translate="global.year"></span>
-                        <span class="hidden-sm hidden-md" translate="global.financialYear"></span>
-                        <span>&nbsp;&nbsp;</span>
+                    <select name="yearSelection" id="yearSelection"
+                            class="form-control r-annual-statistics-year-select"
+                            ng-model="$ctrl.calendarYear"
+                            ng-options="year for year in $ctrl.availableYears"
+                            ng-change="$ctrl.onSelectedYearChanged()">
 
-                        <select name="yearSelection" id="yearSelection"
-                                class="form-control r-annual-statistics-year-select"
-                                ng-model="$ctrl.calendarYear"
-                                ng-options="year for year in $ctrl.availableYears"
-                                ng-change="$ctrl.onSelectedYearChanged()">
-
-                            <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
-                        </select>
-                    </div>
+                        <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="col-xs-6 col-xs-offset-6 col-sm-6 col-sm-offset-0 col-md-4 col-lg-3">
-                <div class="btn-group pull-right" role="group" uib-dropdown dropdown-append-to-body>
+            <div class="r-annual-statistics-top-control">
+                <div class="btn-group" role="group" uib-dropdown dropdown-append-to-body>
+
                     <button type="button" class="btn btn-default" uib-dropdown-toggle>
                         <span translate="rhy.annualStats.button.exportToFile"></span>
                         &nbsp;
@@ -83,30 +67,69 @@
                     </ul>
                 </div>
             </div>
+
+            <div class="r-annual-statistics-top-control">
+                <button type="button" class="btn btn-block btn-warning"
+                        translate="rhy.annualStats.button.submitForInspection"
+                        ng-confirm-click="{{'rhy.annualStats.message.submitConfirmation' | translate}}"
+                        ng-confirm-click-action="$ctrl.submitForInspection()"
+                        ng-if="$ctrl.isSubmitForInspectionButtonVisible()"
+                        ng-disabled="$ctrl.isSubmittingForInspectionDisabled()"></button>
+
+                <button type="button" class="btn btn-block btn-warning"
+                        translate="rhy.annualStats.button.approve"
+                        ng-confirm-click="{{'rhy.annualStats.message.approvalConfirmation' | translate}}"
+                        ng-confirm-click-action="$ctrl.approve()"
+                        ng-if="$ctrl.isApproveButtonVisible()"
+                        ng-disabled="!$ctrl.statistics.completeForApproval"></button>
+
+                <button type="button" class="btn btn-block btn-warning"
+                        translate="rhy.annualStats.button.cancelApproval"
+                        ng-confirm-click="{{'rhy.annualStats.message.cancelApprovalConfirmation' | translate}}"
+                        ng-confirm-click-action="$ctrl.cancelApproval()"
+                        ng-if="$ctrl.isCancelApprovalButtonVisible()"></button>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="r-annual-statistics-tabset">
-    <annual-statistics-tabset statistics="$ctrl.statistics"
-                              all-species-names="$ctrl.allSpeciesNames">
-    </annual-statistics-tabset>
+    <rhy-annual-statistics-tabset active-tab="$ctrl.activeTab"
+                                  on-active-tab-changed="$ctrl.onActiveTabChanged(activeTab)">
+    </rhy-annual-statistics-tabset>
 </div>
 
-<div class="buttons text-right">
-    <button type="button"
-            class="btn btn-warning"
-            translate="rhy.annualStats.button.submitForInspection"
-            ng-confirm-click="{{'rhy.annualStats.confirmation.submitForInspection' | translate}}"
-            ng-confirm-click-action="$ctrl.submitForInspection()"
-            ng-if="$ctrl.isSubmitForInspectionButtonVisible()"
-            ng-disabled="!$ctrl.statistics.readyForInspection"></button>
+<div>
+    <div ng-show="$ctrl.activeTab === 0">
+        <annual-statistics-overview statistics="::$ctrl.statistics"
+                                    is-editable="::($ctrl.isModerator && $ctrl.isEditable)">
+        </annual-statistics-overview>
+    </div>
 
-    <button type="button"
-            class="btn btn-warning"
-            translate="rhy.annualStats.button.approve"
-            ng-confirm-click="{{'rhy.annualStats.confirmation.approval' | translate}}"
-            ng-confirm-click-action="$ctrl.approve()"
-            ng-if="$ctrl.isApproveButtonVisible()"
-            ng-disabled="!$ctrl.statistics.completeForApproval"></button>
+    <div ng-show="$ctrl.activeTab === 1">
+        <annual-administration-statistics statistics="::$ctrl.statistics"
+                                          is-editable="::$ctrl.isEditable"
+                                          is-moderator="::$ctrl.isModerator">
+        </annual-administration-statistics>
+    </div>
+
+    <div ng-show="$ctrl.activeTab === 2">
+        <annual-srva-statistics statistics="::$ctrl.statistics"
+                                all-species-names="::$ctrl.allSpeciesNames">
+        </annual-srva-statistics>
+    </div>
+
+    <div ng-show="$ctrl.activeTab === 3">
+        <annual-training-statistics statistics="::$ctrl.statistics"
+                                    is-editable="::$ctrl.isEditable"
+                                    is-moderator="::$ctrl.isModerator">
+        </annual-training-statistics>
+    </div>
+
+    <div ng-show="$ctrl.activeTab === 4">
+        <annual-misc-statistics statistics="::$ctrl.statistics"
+                                is-editable="::$ctrl.isEditable"
+                                is-moderator="::$ctrl.isModerator">
+        </annual-misc-statistics>
+    </div>
 </div>

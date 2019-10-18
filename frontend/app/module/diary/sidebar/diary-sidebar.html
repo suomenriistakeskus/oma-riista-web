@@ -8,7 +8,10 @@
         <span ng-if="::entry.isOtherSpecies()"
               class="fa fa-question fa-2x"></span>
 
-        <span class="species-name" ng-bind="::getGameNameWithAmount(entry)"></span>
+        <span class="species-name">
+            <span ng-bind="::entry.gameSpeciesCode | translateSpeciesCode"></span>
+            <span ng-if="entry.totalSpecimenAmount > 1">({{::entry.totalSpecimenAmount}})</span>
+        </span>
 
         <span class="species-name" ng-if="::entry.isOtherSpecies()">&nbsp;-&nbsp;{{::entry.otherSpeciesDescription}}</span>
     </div>
@@ -80,6 +83,9 @@
         <h5 translate="gamediary.author"></h5>
         <span ng-bind="::entry.authorInfo.byName"></span>
         <span ng-bind="::entry.authorInfo.lastName"></span>
+        <span ng-if="::entry.authorInfo.hunterNumber">
+            <span ng-if="::entry.isSrva()">({{::entry.authorInfo.hunterNumber}})</span>
+        </span>
     </div>
 
     <div ng-if="::(entry.isSrva() && entry.approverInfo)">

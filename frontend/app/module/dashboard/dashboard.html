@@ -1,9 +1,9 @@
 <uib-tabset active="active">
 
-    <uib-tab index="0" select="select(0)" heading="Käyttäjät">
-        <div class="fa fa-refresh fa-lg" ng-if="!shouldLoadFirstTab" ng-click="loadFirstTab()"></div>
+    <uib-tab index="0" select="$ctrl.select(0)" heading="Käyttäjät">
+        <div class="fa fa-refresh fa-lg" ng-if="!$ctrl.shouldLoadFirstTab" ng-click="$ctrl.loadFirstTab()"></div>
 
-        <div ng-if="shouldLoadFirstTab && selectedTab === 0">
+        <div ng-if="$ctrl.shouldLoadFirstTab && $ctrl.selectedTab === 0">
             <div class="row">
                 <div class="col-md-5">
                     <h2>Käyttäjät</h2>
@@ -23,20 +23,20 @@
         </div>
     </uib-tab>
 
-    <uib-tab index="1" select="select(1)" heading="Hirvi">
+    <uib-tab index="1" select="$ctrl.select(1)" heading="Hirvi">
         <div class="row">
             <div class="col-md-5">
                 <h2>Hirvieläinten metsästys kuluvana metsästysvuonna</h2>
-                <dashboard-mooselike-hunting ng-if="selectedTab === 1"></dashboard-mooselike-hunting>
+                <dashboard-mooselike-hunting ng-if="$ctrl.selectedTab === 1"></dashboard-mooselike-hunting>
             </div>
         </div>
     </uib-tab>
 
-    <uib-tab index="2" select="select(2)" heading="Saalis">
+    <uib-tab index="2" select="$ctrl.select(2)" heading="Saalis">
         <div class="row">
             <div class="col-md-5">
                 <h2>Saaliskirjaukset ja -ilmoitukset</h2>
-                <dashboard-harvest-observations ng-if="selectedTab === 2"></dashboard-harvest-observations>
+                <dashboard-harvest-observations ng-if="$ctrl.selectedTab === 2"></dashboard-harvest-observations>
             </div>
 
         </div>
@@ -46,34 +46,41 @@
         <dashboard-harvest-summary></dashboard-harvest-summary>
     </uib-tab>
 
-    <uib-tab index="3" select="select(3)" heading="Srva">
+    <uib-tab index="3" select="$ctrl.select(3)" heading="Srva">
         <div class="row">
             <div class="col-md-5">
                 <h2>SRVA-tapahtumat</h2>
-                <dashboard-srva ng-if="selectedTab === 3"></dashboard-srva>
+                <dashboard-srva ng-if="$ctrl.selectedTab === 3"></dashboard-srva>
             </div>
         </div>
     </uib-tab>
 
-    <uib-tab index="4" select="select(4)" heading="Viestit">
+    <uib-tab index="4" select="$ctrl.select(4)" heading="Ampumakoe">
+        <h2>Ampumakokeen sähköiset kirjaukset 1.1.2019 alkaen</h2>
+        <dashboard-shooting-test ng-if="$ctrl.selectedTab === 4"></dashboard-shooting-test>
+    </uib-tab>
+
+    <uib-tab index="5" select="$ctrl.select(5)" heading="MH-luvat">
+        <h2>Metsähallituksen lupamäärät</h2>
+        <dashboard-mh-permits ng-if="$ctrl.selectedTab === 5"></dashboard-mh-permits>
+    </uib-tab>
+
+    <uib-tab index="6" select="$ctrl.select(6)" heading="Viestit">
         <div class="row">
             <div class="col-md-5">
                 <h2>Viestit</h2>
-                <dashboard-announcement ng-if="selectedTab === 4"></dashboard-announcement>
+                <dashboard-announcement ng-if="$ctrl.selectedTab === 6"></dashboard-announcement>
             </div>
         </div>
     </uib-tab>
 
-    <uib-tab index="5" select="select(5)" heading="Mobiili">
+    <uib-tab index="7" select="$ctrl.select(7)" heading="Mobiili">
         <h2>Mobiili kirjautumiset</h2>
-        <dashboard-mobile-login ng-if="selectedTab === 5"></dashboard-mobile-login>
+        <dashboard-mobile-login ng-if="$ctrl.selectedTab === 7"></dashboard-mobile-login>
     </uib-tab>
 
-    <uib-tab index="6" select="select(6)" heading="Muut" ng-if="isAdmin()">
+    <uib-tab index="8" select="$ctrl.select(8)" heading="Muut" ng-if="$ctrl.isAdmin">
         <h2>Muita toimintoja</h2>
-
-        <dashboard-bulk-button></dashboard-bulk-button>
-        <hr>
 
         <h2>Hyväksytyt saalisilmoitukset</h2>
         <dashboard-harvest-reports></dashboard-harvest-reports>

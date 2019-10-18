@@ -70,11 +70,15 @@ angular.module('app.reporting.club', [])
             link: function (scope, element, attrs) {
                 angular.element(element).addClass('reporting-club-statistics');
             },
-            controller: function ($state, $stateParams, $location, $anchorScroll) {
+            controller: function ($state, $stateParams) {
                 var self = this;
 
                 function sumRowCounts(row) {
-                    return _(row).omit(['countAll', 'rka']).sum();
+                    return row.countAreaDefined +
+                        row.countGroupCreated +
+                        row.countGroupLeaderSelect +
+                        row.countMemberInvited +
+                        row.countRegistered;
                 }
 
                 this.printClubRegistrationRatio = function (row) {
@@ -125,19 +129,14 @@ angular.module('app.reporting.club', [])
                     return $state.go($state.current, {
                         rkaId: $stateParams.rkaId,
                         includePermitHolders: !self.showPermitHolders()
-                    }).then(scrollToTop);
+                    });
                 };
 
                 function switchRka(rkaId) {
                     return $state.go($state.current, {
                         rkaId: rkaId,
                         includePermitHolders: $stateParams.includePermitHolders
-                    }).then(scrollToTop);
-                }
-
-                function scrollToTop() {
-                    $location.hash('scrollToTop');
-                    $anchorScroll();
+                    });
                 }
             }
         };

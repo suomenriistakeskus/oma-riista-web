@@ -2,11 +2,38 @@
 
 angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
     .controller('EventListController',
-        function ($scope, $uibModal, Helpers, NotificationService, Events, EventTypes, Venues, orgId) {
+        function ($scope, $uibModal, Helpers, NotificationService, EventsByYear, EventTypes, Venues, orgId, AnnualStatisticsAvailableYears) {
             $scope.events = [];
+            $scope.availableYears = AnnualStatisticsAvailableYears.get();
+            $scope.calendarYear = _.last($scope.availableYears);
+            $scope.eventTypeFilter = null;
+            EventTypes.then(function (result) {
+                $scope.eventTypes = result.data;
+            });
+
+            var filterByEventType = function (eventType) {
+                if (eventType) {
+                    $scope.events = _.filter($scope.allEvents, function (event) {
+                        return event.calendarEventType === eventType;
+                    });
+                } else {
+                    $scope.events = $scope.allEvents;
+                }
+            };
+
             var reloadPage = function () {
-                Events.query({orgId: orgId}).$promise.then(function (data) {
-                    $scope.events = data;
+                EventsByYear.query({orgId: orgId, year: $scope.calendarYear}).$promise.then(function (data) {
+                    $scope.allEvents = data.map(function(event) {
+                        if (event.additionalCalendarEvents && event.additionalCalendarEvents.length > 0) {
+                            var key = 1;
+                            event.additionalCalendarEvents = event.additionalCalendarEvents.map(function(additionalEvent) {
+                                return angular.extend({}, additionalEvent, {key: key++});
+                            });
+                        }
+                        return event;
+                    });
+
+                    filterByEventType($scope.eventTypeFilter);
                 });
             };
             reloadPage();
@@ -23,27 +50,42 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 }
             };
 
+            $scope.onSelectedYearChanged = function () {
+                reloadPage();
+            };
+
+            $scope.onEventTypeChanged = function () {
+                filterByEventType($scope.eventTypeFilter);
+            };
+
             $scope.addEvent = function () {
                 $uibModal.open({
                     templateUrl: 'event/event_form.html',
                     resolve: {
                         orgId: Helpers.wrapToFunction(orgId),
                         eventTypes: Helpers.wrapToFunction(EventTypes),
-                        event: Helpers.wrapToFunction({}),
+                        event: Helpers.wrapToFunction({publicVisibility: true, excludedFromStatistics:false}),
                         venues: function () {
                             return Venues.query({orgId: orgId});
                         }
                     },
-                    controller: 'EventFormController'
+                    controller: 'EventFormController',
+                    size: 'lg'
                 }).result.then(onSuccess, onFailure);
 
             };
 
             $scope.clone = function (event) {
                 var newEvent = angular.copy(event);
+
                 delete newEvent.id;
                 delete newEvent.rev;
                 delete newEvent.date;
+                delete newEvent.lockedAsPastCalendarEvent;
+                delete newEvent.lockedAsPastStatistics;
+
+                newEvent.additionalCalendarEvents = [];
+
                 $scope.show(newEvent);
             };
 
@@ -58,7 +100,8 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                             return Venues.query({orgId: orgId}).$promise;
                         }
                     },
-                    controller: 'EventFormController'
+                    controller: 'EventFormController',
+                    size: 'lg'
                 }).result.then(onSuccess, onFailure);
 
             };
@@ -75,37 +118,219 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
         })
 
     .controller('EventFormController',
-        function ($scope, $uibModalInstance, Events, venues, eventTypes, orgId, event, Helpers) {
+        function ($scope, $uibModalInstance, Events, venues, eventTypes, orgId, event, Helpers, ActiveRoleService) {
             $scope.venues = venues;
-            $scope.event = event;
 
-            for (var i = 0; i < venues.length; i++) {
-                if (venues[i].id === event.venue.id) {
-                    event.venue = venues[i];
-                    break;
+            var findVenue = function (venue) {
+                for (var i = 0; i < venues.length; i++) {
+                    if (venues[i].id === venue.id) {
+                        return venues[i];
+                    }
                 }
-            }
+            };
+
+            var findAdditionalEvent = function (key) {
+                var position = $scope.viewState.event.additionalCalendarEvents.findIndex(function(additionalEvent) {
+                    return additionalEvent.key === key;
+                });
+
+                return position;
+            };
+
+            $scope.isAdditionalEventsAllowed = function () {
+                return $scope.viewState.event.calendarEventType === 'METSASTAJAKURSSI';
+            };
+
+            $scope.isAdditionalEventsTableVisible = function () {
+                return $scope.isAdditionalEventsAllowed() &&
+                    $scope.viewState.event.additionalCalendarEvents.length > 0;
+            };
+
+            $scope.isEventTypeSelectionDisabled = function () {
+                return $scope.viewState.event.lockedAsPastCalendarEvent ||
+                    $scope.isInRowEditMode() ||
+                    ($scope.viewState.event.additionalCalendarEvents && $scope.viewState.event.additionalCalendarEvents.length > 0);
+            };
+
+            $scope.viewState = {
+                event: event,
+                editedEvent: null,
+                cancelEditedEventFunc: $scope.cancelEditEvent
+            };
+            $scope.viewState.event.venue = findVenue($scope.viewState.event.venue);
+
+            var sortDateTime = function (e) {
+                var dateStr = e.date + 'T' + e.beginTime;
+                var date = Helpers.toMoment(dateStr, 'YYYY-MM-DDTHH:mm');
+                return date;
+            };
+            $scope.viewState.event.additionalCalendarEvents =
+                _.sortBy($scope.viewState.event.additionalCalendarEvents, sortDateTime);
+
+            $scope.eventDefaultVisibility = {
+                AMPUMAKOE: true,
+                JOUSIAMPUMAKOE: true,
+                METSASTAJAKURSSI: true,
+                METSASTAJATUTKINTO: true,
+                VUOSIKOKOUS: true,
+                YLIMAARAINEN_KOKOUS: true,
+                AMPUMAKILPAILU: true,
+                RIISTAPOLKUKILPAILU: true,
+                ERATAPAHTUMA: true,
+                HARJOITUSAMMUNTA: true,
+                METSASTYKSENJOHTAJA_HIRVIELAIMET: true,
+                METSASTYKSENJOHTAJA_SUURPEDOT: true,
+                METSASTAJAKOULUTUS_HIRVIELAIMET: true,
+                METSASTAJAKOULUTUS_SUURPEDOT: true,
+                SRVAKOULUTUS: true,
+                PETOYHDYSHENKILO_KOULUTUS: true,
+                VAHINKOKOULUTUS: true,
+                TILAISUUS_KOULUILLLE: true,
+                OPPILAITOSTILAISUUS: true,
+                NUORISOTILAISUUS: true,
+                AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS: true,
+                METSASTAJATUTKINNONVASTAANOTTAJA_KOULUTUS: true,
+                RIISTAVAHINKOTARKASTAJA_KOULUTUS: true,
+                METSASTYKSENVALVOJA_KOULUTUS: true,
+                PIENPETOJEN_PYYNTI_KOULUTUS: true,
+                RIISTALASKENTA_KOULUTUS: true,
+                RIISTAKANTOJEN_HOITO_KOULUTUS: true,
+                RIISTAN_ELINYMPARISTON_HOITO_KOULUTUS: true,
+                MUU_RIISTANHOITOKOULUTUS: true,
+                AMPUMAKOULUTUS: true,
+                JALJESTAJAKOULUTUS: true,
+                MUU_TAPAHTUMA: true,
+                RHY_HALLITUKSEN_KOKOUS: false
+            };
 
             $scope.eventTypes = eventTypes.data;
 
+            $scope.removeAdditionalEvent = function(key) {
+                var elemPos = findAdditionalEvent(key);
+                $scope.viewState.event.additionalCalendarEvents.splice(elemPos, 1);
+
+                $scope.viewState.event.additionalCalendarEvents =
+                    _.sortBy($scope.viewState.event.additionalCalendarEvents, sortDateTime);
+
+                for (var i = 1; i < $scope.viewState.event.additionalCalendarEvents; i++) {
+                    $scope.viewState.event.additionalCalendarEvents[i].key = i;
+                }
+
+                $scope.cancelEditEvent();
+            };
+
+            $scope.addAdditionalEvent = function() {
+                $scope.viewState.cancelEditedEventFunc = $scope.removeAdditionalEvent;
+
+                if (!$scope.viewState.event.additionalCalendarEvents) {
+                    $scope.viewState.event.additionalCalendarEvents = [];
+                }
+
+                var newEvent = {
+                    date: null,
+                    beginTime: null,
+                    endTime: null,
+                    venue: null,
+                    key: $scope.viewState.event.additionalCalendarEvents.length + 1
+                };
+
+                $scope.viewState.event.additionalCalendarEvents.push(newEvent);
+
+                $scope.viewState.editedEvent = newEvent;
+            };
+
+            $scope.isHunterExamTraining = function () {
+                return $scope.viewState.event.calendarEventType === 'METSASTAJAKURSSI';
+            };
+
+            $scope.isInRowEditMode = function () {
+                return $scope.viewState.editedEvent !== null;
+            };
+
+            $scope.cancelEditEvent = function () {
+                $scope.viewState.editedEvent = null;
+            };
+
+            $scope.saveEditEvent = function (key) {
+                var elemPos = findAdditionalEvent(key);
+                $scope.viewState.event.additionalCalendarEvents[elemPos] = angular.copy($scope.viewState.editedEvent);
+                $scope.viewState.event.additionalCalendarEvents =
+                    _.sortBy($scope.viewState.event.additionalCalendarEvents, sortDateTime);
+
+                $scope.viewState.event.additionalCalendarEvents[elemPos].venue =
+                    findVenue($scope.viewState.event.additionalCalendarEvents[elemPos].venue);
+
+                $scope.viewState.editedEvent = null;
+            };
+
+            $scope.editEvent = function (event) {
+                $scope.viewState.cancelEditedEventFunc = $scope.cancelEditEvent;
+
+                var elemPos = findAdditionalEvent(event.key);
+                $scope.viewState.editedEvent = angular.copy($scope.viewState.event.additionalCalendarEvents[elemPos]);
+
+                $scope.viewState.editedEvent.venue = findVenue($scope.viewState.editedEvent.venue);
+            };
+
+            $scope.isParticipantsShown = function() {
+                var e = $scope.viewState.event;
+                if (e) {
+                    if (e.calendarEventType === 'AMPUMAKOE' ||
+                    e.calendarEventType === 'JOUSIAMPUMAKOE' ||
+                    e.calendarEventType === 'METSASTAJATUTKINTO') {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            $scope.onSelectionChange = function() {
+                $scope.viewState.event.publicVisibility = $scope.eventDefaultVisibility[$scope.viewState.event.calendarEventType];
+            };
+
             $scope.isDateRequiredAtLeast7DaysIntoFuture = function () {
-                var e = $scope.event;
+                var e = $scope.viewState.event;
                 if ((e.calendarEventType === 'AMPUMAKOE' || e.calendarEventType === 'JOUSIAMPUMAKOE') && e.date) {
                     return Helpers.toMoment(e.date).subtract(6, 'days').isBefore(moment());
                 }
                 return false;
             };
 
-            $scope.isDateInvalid = function () {
-                return !$scope.event.id && $scope.isDateRequiredAtLeast7DaysIntoFuture();
+            $scope.isDateTooFarInThePast = function() {
+                if (ActiveRoleService.isModerator()) {
+                    return false;
+                }
+
+                var e = $scope.viewState.event;
+
+                if (e.date) {
+                    var eventYear = Helpers.toMoment(e.date).year();
+                    if (eventYear < moment().subtract(15, 'days').year()) {
+                        return true;
+                    }
+                }
+
+                return false;
             };
 
-            $scope.save = function (event) {
-                event = angular.copy(event);// prevent ui showing updated object properties on save
-                event.date = Helpers.dateToString(event.date);
-                var saveMethod = !event.id ? Events.save : Events.update;
+            $scope.isDateInvalid = function () {
+                return !$scope.viewState.event.id && ($scope.isDateRequiredAtLeast7DaysIntoFuture() || $scope.isDateTooFarInThePast());
+            };
 
-                saveMethod({orgId: orgId}, event).$promise
+            $scope.save = function (viewState) {
+                var savedEvent = angular.copy(viewState.event);// prevent ui showing updated object properties on save
+
+                savedEvent.date = Helpers.dateToString(savedEvent.date);
+                if (savedEvent.additionalCalendarEvents) {
+                    savedEvent.additionalCalendarEvents = savedEvent.additionalCalendarEvents.map(function (additionalCalendarEvent) {
+                        delete additionalCalendarEvent.key;
+                        return additionalCalendarEvent;
+                    });
+                }
+
+                var saveMethod = !savedEvent.id ? Events.save : Events.update;
+
+                saveMethod({orgId: orgId}, savedEvent).$promise
                     .then(function() {
                         $uibModalInstance.close();
                     }, function() {
@@ -285,3 +510,4 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 $uibModalInstance.dismiss('cancel');
             };
         });
+

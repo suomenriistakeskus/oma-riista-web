@@ -1,0 +1,109 @@
+<table class="table table-condensed moose-permit-infotable-indexes">
+    <thead>
+    <tr class="topheader">
+        <th colspan="1"></th>
+        <th colspan="1">
+            <r-with-tooltip content-key="club.permit.allocation.huntingDays.top"
+                            tooltip-key="club.permit.allocation.huntingDays.topTooltip"></r-with-tooltip>
+        </th>
+        <th colspan="2">
+            <r-with-tooltip content-key="club.permit.allocation.harvestsPer.top"
+                            tooltip-key="club.permit.allocation.harvestsPer.topTooltip"></r-with-tooltip>
+        </th>
+        <th colspan="2">
+            <r-with-tooltip content-key="club.permit.allocation.observationsPer.top"
+                            tooltip-key="club.permit.allocation.observationsPer.topTooltip"></r-with-tooltip>
+        </th>
+    </tr>
+    <tr class="lowheader">
+        <th translate="club.permit.allocation.partner"></th>
+        <th>
+            <r-with-tooltip content-key="club.permit.allocation.huntingDays.low"
+                            tooltip-key="club.permit.allocation.huntingDays.lowTooltip"></r-with-tooltip>
+        </th>
+
+        <th>
+            <r-with-tooltip content-key="club.permit.allocation.harvestsPer.day"
+                            tooltip-key="club.permit.allocation.harvestsPer.dayTooltip"></r-with-tooltip>
+        </th>
+        <th>
+            <r-with-tooltip content-key="club.permit.allocation.harvestsPer.hunter"
+                            tooltip-key="club.permit.allocation.harvestsPer.hunterTooltip"></r-with-tooltip>
+        </th>
+        <th>
+            <r-with-tooltip content-key="club.permit.allocation.observationsPer.day"
+                            tooltip-key="club.permit.allocation.observationsPer.dayTooltip"></r-with-tooltip>
+        </th>
+        <th>
+            <r-with-tooltip content-key="club.permit.allocation.observationsPer.hunter"
+                            tooltip-key="club.permit.allocation.observationsPer.hunterTooltip"></r-with-tooltip>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="summary">
+        <td translate="club.permit.sumTitle"></td>
+        <td>
+            <r-with-tooltip content-val="{{::$ctrl.totalStatistics.dayCount}}"
+                            tooltip-key="club.permit.allocation.huntingDays.cellTooltip"></r-with-tooltip>
+        </td>
+
+        <td>
+            <r-with-tooltip content-val="{{::($ctrl.totalStatistics.harvestsPerDay | number: 3)}}"
+                            tooltip-key="club.permit.allocation.harvestsPer.dayCellTooltip"></r-with-tooltip>
+        </td>
+        <td>
+            <r-with-tooltip content-val="{{::($ctrl.totalStatistics.harvestsPerHunter | number: 3)}}"
+                            tooltip-key="club.permit.allocation.harvestsPer.hunterCellTooltip"></r-with-tooltip>
+        </td>
+        <td>
+            <r-with-tooltip content-val="{{::($ctrl.totalStatistics.observationsPerDay | number: 3)}}"
+                            tooltip-key="club.permit.allocation.observationsPer.dayCellTooltip"></r-with-tooltip>
+        </td>
+        <td>
+            <r-with-tooltip content-val="{{::($ctrl.totalStatistics.observationsPerHunter | number: 3)}}"
+                            tooltip-key="club.permit.allocation.observationsPer.hunterCellTooltip"></r-with-tooltip>
+        </td>
+    </tr>
+    <tr ng-repeat="partner in ::$ctrl.partners track by partner.huntingClubId"
+        ng-class="{'current-club': $ctrl.isCurrentClub({'partner': partner})}">
+        <td>
+            <span ng-if="::partner.summary.fromMooseDataCard"
+                  class="fa fa-file-text"
+                  uib-tooltip="{{ 'club.permit.allocation.fromMooseDataCard' | translate }}"
+                  tooltip-popup-delay="0"
+                  tooltip-placement="right">
+            </span>
+
+            <moose-permit-todo todo="::partner.todo"></moose-permit-todo>
+
+            <a ng-if="::$ctrl.canNavigateToClub"
+               name-translated="::partner.huntingClubName"
+               ng-click="$ctrl.navigateToClub({'partner': partner})"></a>
+
+            <span ng-if="::(!$ctrl.canNavigateToClub)"
+                  name-translated="::partner.huntingClubName"></span>
+        </td>
+        <td>
+            <r-with-tooltip content-val="{{::partner.statistics.dayCount}}"
+                            tooltip-key="club.permit.allocation.huntingDays.cellTooltip"></r-with-tooltip>
+        </td>
+        <td>
+            <r-with-tooltip content-val="{{::(partner.statistics.harvestsPerDay | number: 3)}}"
+                            tooltip-key="club.permit.allocation.harvestsPer.dayCellTooltip"></r-with-tooltip>
+        </td>
+        <td>
+            <r-with-tooltip content-val="{{::(partner.statistics.harvestsPerHunter | number: 3)}}"
+                            tooltip-key="club.permit.allocation.harvestsPer.hunterCellTooltip"></r-with-tooltip>
+        </td>
+        <td>
+            <r-with-tooltip content-val="{{::(partner.statistics.observationsPerDay | number: 3)}}"
+                            tooltip-key="club.permit.allocation.observationsPer.dayCellTooltip"></r-with-tooltip>
+        </td>
+        <td>
+            <r-with-tooltip content-val="{{::(partner.statistics.observationsPerHunter | number: 3)}}"
+                            tooltip-key="club.permit.allocation.observationsPer.hunterCellTooltip"></r-with-tooltip>
+        </td>
+    </tr>
+    </tbody>
+</table>

@@ -22,6 +22,7 @@ public interface BaseRepository<T, ID extends Serializable> extends
 
     Slice<T> findAllAsSlice(Predicate predicate, Pageable page);
 
+    Slice<T> findAllAsSlice(Predicate predicate, Pageable page, OrderSpecifier<?>... orders);
     // findAll returning list
 
     List<T> findAllAsList(Predicate predicate);

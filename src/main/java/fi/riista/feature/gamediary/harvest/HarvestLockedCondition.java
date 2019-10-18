@@ -32,7 +32,10 @@ public class HarvestLockedCondition {
         Objects.requireNonNull(isContactPersonTester);
 
         if (harvest.isHarvestReportApproved() || harvest.isHarvestReportRejected()) {
-            return false;
+            if (activePerson != null) {
+                // only moderator can  edit harvest reports
+                return false;
+            }
         }
 
         if (activePerson == null
@@ -66,13 +69,16 @@ public class HarvestLockedCondition {
         }
 
         if (harvest.getHarvestPermit() != null && harvest.isAcceptedToHarvestPermit()) {
-            if (harvest.getHarvestPermit().isHarvestReportDone()) {
-                // end of hunting done
+            if (harvest.getHarvestPermit().isHarvestReportApproved() ||
+                    harvest.getHarvestPermit().isHarvestReportRejected()) {
                 return false;
             }
 
-            // contact person or moderator
-            return activePerson == null || isContactPersonTester.test(harvest);
+            if (activePerson == null) {
+                return true;
+            }
+
+            return !harvest.getHarvestPermit().isHarvestReportDone() && isContactPersonTester.test(harvest);
         }
 
         return true;

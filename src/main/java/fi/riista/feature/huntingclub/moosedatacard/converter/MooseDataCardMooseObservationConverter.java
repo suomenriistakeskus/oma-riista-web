@@ -43,8 +43,7 @@ public class MooseDataCardMooseObservationConverter
             observation.setMooselikeFemale3CalfsAmount(F.coalesceAsInt(validInput.getN3(), 0));
             observation.setMooselikeCalfAmount(F.coalesceAsInt(validInput.getY(), 0));
             observation.setMooselikeUnknownSpecimenAmount(F.coalesceAsInt(validInput.getT(), 0));
-
-            observation.setAmountToSumOfMooselikeAmounts();
+            observation.setAmount(observation.getSumOfMooselikeAmounts());
 
             return observation;
         });

@@ -38,97 +38,211 @@
                             if (angular.isString(activeTabParam)) {
                                 var activeTab = _.parseInt(activeTabParam);
 
-                                if (angular.isString(RhyAnnualStatisticsStates[activeTab])) {
+                                if (!!RhyAnnualStatisticsStates.get(activeTab)) {
                                     return activeTab;
                                 }
                             }
 
                             return 0;
                         },
-                        allAnnualStats: function (RhyAnnualStatisticsProgress, year) {
-                            return RhyAnnualStatisticsProgress.get({calendarYear: year}).$promise;
+                        allAnnualStats: function (RhyAnnualStatisticsJhtService, year) {
+                            return RhyAnnualStatisticsJhtService.list(year);
                         }
                     }
                 });
         })
 
-        .factory('RhyAnnualStatisticsProgress', function ($resource) {
-            var params = {
+        .factory('RhyAnnualStatisticsJht', function ($resource) {
+            var defaultParams = {
                 calendarYear: '@calendarYear'
             };
 
-            return $resource('/api/v1/riistanhoitoyhdistys/annualstatistics/year/:calendarYear/progress', params, {
-                get: {method: 'GET', isArray: true}
+            return $resource('/api/v1/riistanhoitoyhdistys/annualstatistics/year/:calendarYear', defaultParams, {
+                list: {
+                    method: 'GET',
+                    isArray: true
+                },
+                batchApprove: {
+                    method: 'POST',
+                    url: '/api/v1/riistanhoitoyhdistys/annualstatistics/year/:calendarYear/approve'
+                }
             });
         })
 
-        .controller('AnnualStatisticsDashboardController', function ($location, $state, RhyAnnualStatisticsStates,
-                                                                     activeTab, allAnnualStats, availableYears, year) {
+        .service('RhyAnnualStatisticsJhtService', function (NotificationService, RhyAnnualStatisticsJht) {
+            var self = this;
+
+            self.list = function (year) {
+                return RhyAnnualStatisticsJht.list({calendarYear: year}).$promise;
+            };
+
+            self.batchApprove = function (year, annualStatisticsIds) {
+                return RhyAnnualStatisticsJht
+                    .batchApprove({calendarYear: year}, annualStatisticsIds).$promise
+                    .then(function (response) {
+                        NotificationService.flashMessage('global.messages.success', 'success');
+                        return response;
+                    });
+            };
+        })
+
+        .controller('AnnualStatisticsDashboardController', function ($location, $state, ExportSubsidyAllocationModal,
+                                                                     RhyAnnualStatisticsJhtService,
+                                                                     RhyAnnualStatisticsState,
+                                                                     RhyAnnualStatisticsStates, activeTab,
+                                                                     allAnnualStats, availableYears, year,
+                                                                     FormPostService) {
             var $ctrl = this;
+
+
+            var exportSendersUnderInspection = function () {
+                var url = '/api/v1/riistanhoitoyhdistys/annualstatistics/year/' +
+                    $ctrl.year + '/sendersexcel/underinspection';
+                return FormPostService.submitFormUsingBlankTarget(url, {});
+            };
+
+            var exportSendersApproved = function () {
+                var url = '/api/v1/riistanhoitoyhdistys/annualstatistics/year/' +
+                    $ctrl.year + '/sendersexcel/approved';
+                return FormPostService.submitFormUsingBlankTarget(url, {});
+            };
 
             $ctrl.$onInit = function () {
                 $ctrl.activeTab = activeTab;
                 $ctrl.year = year;
                 $ctrl.availableYears = availableYears;
 
-                var stateCountsObj = _.countBy(allAnnualStats, 'annualStatsState');
-                $ctrl.stateCounts = _.map(RhyAnnualStatisticsStates, function (state) {
-                    return stateCountsObj[state] || 0;
+                var annualStatisticsStates = RhyAnnualStatisticsStates.list();
+
+                $ctrl.activeState = annualStatisticsStates[activeTab];
+                $ctrl.groupedStats = _.groupBy(allAnnualStats, 'annualStatsState');
+                $ctrl.displayedStatistics = $ctrl.groupedStats[$ctrl.activeState];
+
+                var getStatisticsByState = function (state) {
+                    return $ctrl.groupedStats[state] || [];
+                };
+
+                $ctrl.stateNameCountPairs = _.map(annualStatisticsStates, function (state) {
+                    var count = getStatisticsByState(state).length;
+                    return {name: state, count: count};
                 });
 
-                $ctrl.activeState = RhyAnnualStatisticsStates[activeTab];
+                $ctrl.unsentStatistics = _(annualStatisticsStates)
+                    .filter(function (state) {
+                        return !RhyAnnualStatisticsStates.isCompletedByCoordinator(state);
+                    })
+                    .map(getStatisticsByState)
+                    .flatten()
+                    .value();
 
-                $ctrl.groupedStats = _.groupBy(allAnnualStats, 'annualStatsState');
-                $ctrl.filteredStats = $ctrl.groupedStats[$ctrl.activeState];
+                $ctrl.isCopyEmailsButtonVisible = !RhyAnnualStatisticsStates.isCompletedByCoordinator($ctrl.activeState);
+                $ctrl.isCopyEmailsButtonDisabled = $ctrl.unsentStatistics.length === 0;
 
-                $ctrl.isCopyEmailsButtonActive = $ctrl.stateCounts[0] + $ctrl.stateCounts[1] > 0;
+                $ctrl.approvableStatistics = _(getStatisticsByState(RhyAnnualStatisticsState.UNDER_INSPECTION))
+                    .filter('completeForApproval')
+                    .value();
+
+                $ctrl.isBatchApproveButtonVisible = $ctrl.activeState === RhyAnnualStatisticsState.UNDER_INSPECTION;
+                $ctrl.isBatchApproveButtonDisabled = $ctrl.approvableStatistics.length === 0;
+
+                $ctrl.isExportSubsidyAllocationButtonVisible =
+                    $ctrl.year === 2018 && $ctrl.activeState === RhyAnnualStatisticsState.APPROVED;
+
+                // TODO Switch to outcommented logic.
+                $ctrl.isExportSubsidyAllocationButtonDisabled = $ctrl.unsentStatistics.length > 0;
+                    //$ctrl.stateNameCountPairs[RhyAnnualStatisticsState.APPROVED] > 0;
+
+                $ctrl.isExportSendersButtonVisible =
+                    $ctrl.activeState === RhyAnnualStatisticsState.UNDER_INSPECTION ||
+                    $ctrl.activeState === RhyAnnualStatisticsState.APPROVED;
+                var submittedEvents =
+                    _(getStatisticsByState($ctrl.activeState))
+                    .filter('submitEvent')
+                    .value();
+                $ctrl.isExportSendersButtonDisabled = submittedEvents.length === 0;
+                $ctrl.exportSenders =
+                    $ctrl.activeState === RhyAnnualStatisticsState.UNDER_INSPECTION ? exportSendersUnderInspection :
+                        exportSendersApproved;
 
                 $location.search({year: year, activeTab: activeTab});
             };
 
-            $ctrl.onSelectedYearChanged = function () {
+            var reload = function () {
                 $state.go($state.current, {year: $ctrl.year, activeTab: $ctrl.activeTab}, {reload: true});
             };
 
-            var getStatesUnlockedForCoordinator = function () {
-                return _.slice(RhyAnnualStatisticsStates, 0, 2);
+            $ctrl.onSelectedYearChanged = function () {
+                reload();
             };
 
-            $ctrl.getEntriesNotCompletedByCoordinator = function () {
-                return _(getStatesUnlockedForCoordinator())
-                    .map(_.propertyOf($ctrl.groupedStats))
-                    .flatten()
-                    .value();
+            $ctrl.onActiveTabChanged = function (activeTab) {
+                if ($ctrl.activeTab !== activeTab) {
+                    $ctrl.activeTab = activeTab;
+                    reload();
+                }
+            };
+
+            $ctrl.batchApprove = function () {
+                var annualStatisticsIds = _.map($ctrl.approvableStatistics, 'annualStatsId');
+                RhyAnnualStatisticsJhtService.batchApprove($ctrl.year, annualStatisticsIds).then(reload);
+            };
+
+            $ctrl.openExportSubsidyAllocationDialog = function () {
+                var subsidyYear = $ctrl.year + 1;
+                ExportSubsidyAllocationModal.openDialog(subsidyYear);
+            };
+        })
+
+        .service('ExportSubsidyAllocationModal', function ($q, $uibModal, FormPostService) {
+            var self = this;
+
+            self.openDialog = function (subsidyYear) {
+                var modalInstance = $uibModal.open({
+                    templateUrl: 'jht/annualstats/export-subsidy-allocation.html',
+                    resolve: {
+                    },
+                    controllerAs: '$ctrl',
+                    controller: function ($uibModalInstance) {
+                        var $ctrl = this;
+
+                        $ctrl.data = {
+                            totalSubsidyAmount: null,
+                            subsidyYear: subsidyYear
+                        };
+
+                        $ctrl.export = function () {
+                            $uibModalInstance.close($ctrl.data);
+                        };
+
+                        $ctrl.cancel = function () {
+                            $uibModalInstance.dismiss('cancel');
+                        };
+                    }
+                });
+
+                return modalInstance.result.then(
+                    function (exportInput) {
+                        var url = '/api/v1/riistanhoitoyhdistys/subsidy/excel';
+                        FormPostService.submitFormUsingBlankTarget(url, exportInput);
+                    },
+                    function (errReason) {
+                        return $q.reject(errReason);
+                    });
             };
         })
 
        .component('jhtAnnualStatisticsTabSelection', {
             templateUrl: 'jht/annualstats/tab-selection.html',
             bindings: {
-                tabCounts: '<',
-                activeTabIndex: '<',
-                year: '<'
+                nameCountPairs: '<',
+                activeTab: '<',
+                onActiveTabChanged: '&'
             },
-            controller: function ($state) {
+            controller: function () {
                 var $ctrl = this;
 
-                $ctrl.$onInit = function () {
-                    $ctrl.notCreatedCount = $ctrl.tabCounts[0];
-                    $ctrl.inProgressCount = $ctrl.tabCounts[1];
-                    $ctrl.underInspectionCount = $ctrl.tabCounts[2];
-                    $ctrl.approvedCount = $ctrl.tabCounts[3];
-                };
-
-                $ctrl.selectTab = function (index) {
-                    if ($ctrl.activeTabIndex !== index) {
-
-                        var stateParams = {
-                            year: $ctrl.year,
-                            activeTab: index
-                        };
-
-                        $state.go($state.$current, stateParams, {reload: true});
-                    }
+                $ctrl.selectTab = function (tabIndex) {
+                    $ctrl.onActiveTabChanged({activeTab: tabIndex});
                 };
             }
         })
@@ -140,16 +254,24 @@
                 year: '<',
                 activeState: '<'
             },
-            controller: function ($state) {
+            controller: function ($state, RhyAnnualStatisticsState) {
                 var $ctrl = this;
 
-                $ctrl.isAnnualStatisticsCreated = function (annualStatsEntry) {
-                    return _.isFinite(annualStatsEntry.annualStatsId);
+                $ctrl.$onInit = function () {
+                    $ctrl.inProgressState = $ctrl.activeState === RhyAnnualStatisticsState.IN_PROGRESS;
+                    $ctrl.underInspectionState = $ctrl.activeState === RhyAnnualStatisticsState.UNDER_INSPECTION;
+                    $ctrl.approvedState = $ctrl.activeState === RhyAnnualStatisticsState.APPROVED;
+
+                    $ctrl.isReadinessColumnShown = $ctrl.inProgressState || $ctrl.underInspectionState;
+                    $ctrl.readinessColumnTitleKey =
+                        'jht.annualStats.' + ($ctrl.inProgressState ? 'readyForInspection' : 'completeForApproval');
+
+                    $ctrl.isSenderInfoShown = $ctrl.approvedState || $ctrl.underInspectionState;
                 };
 
                 $ctrl.isReadyForTransitioningToNextState = function (entry) {
-                    return $ctrl.activeState === 'IN_PROGRESS' && entry.readyForInspection ||
-                           $ctrl.activeState === 'UNDER_INSPECTION' && entry.completeForApproval;
+                    return $ctrl.inProgressState && entry.readyForInspection ||
+                           $ctrl.underInspectionState && entry.completeForApproval;
                 };
 
                 $ctrl.openAnnualStatistics = function (rhyId) {

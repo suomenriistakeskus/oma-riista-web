@@ -5,11 +5,10 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="joda" uri="http://www.joda.org/joda/time/tags" %>
 <!DOCTYPE html>
-<html lang="fi">
+<html>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title><c:out value="${model.heading.title} ${model.permitNumber}"/></title>
     <base href="/static/decision-pdf/">
     <link href="style.css" rel="stylesheet"/>
@@ -47,7 +46,7 @@
                     <c:when test="${model.swedish}">
                         <em>Lähettäjä / Avsändare</em><br/>
                         FINLANDS VILTCENTRAL<br/>
-                        Sompiovägen 1<br/>
+                        Sompiovägen 1<br/>
                         00730 HELSINGFORS<br/>
                         029 431 2001
                     </c:when>
@@ -93,13 +92,27 @@
         <div class="col-1 extend">
             <p>
                 <em>Vastaanottaja / Mottagare</em><br/>
-                <span><c:out value="${model.contactPerson.firstName}"/></span>
-                <span><c:out value="${model.contactPerson.lastName}"/></span>
-                <br>
-                <span><c:out value="${model.contactPerson.address.streetAddress}"/></span>
-                <br>
-                <span><c:out value="${model.contactPerson.address.postalCode}"/></span>
-                <span><c:out value="${model.contactPerson.address.city}"/></span>
+                <c:if test="${model.deliveryAddress == null}">
+                    <span><c:out value="${model.contactPerson.firstName}"/></span>
+                    <span><c:out value="${model.contactPerson.lastName}"/></span>
+                    <br>
+                    <span><c:out value="${model.contactPerson.address.streetAddress}"/></span>
+                    <br>
+                    <span><c:out value="${model.contactPerson.address.postalCode}"/></span>
+                    <span><c:out value="${model.contactPerson.address.city}"/></span>
+                </c:if>
+                <c:if test="${model.deliveryAddress != null}">
+                    <span><c:out value="${model.deliveryAddress.recipient}"/></span>
+                    <br>
+                    <span><c:out value="${model.deliveryAddress.streetAddress}"/></span>
+                    <br>
+                    <span><c:out value="${model.deliveryAddress.postalCode}"/></span>
+                    <span><c:out value="${model.deliveryAddress.city}"/></span>
+                    <c:if test="${model.deliveryAddress.country != null}">
+                        <br>
+                        <span><c:out value="${model.deliveryAddress.country}"/></span>
+                    </c:if>
+                </c:if>
             </p>
 
             <h1>
@@ -115,16 +128,10 @@
         </div>
         <div class="col-2">
             <p>
-                <c:choose>
-                    <c:when test="${model.permitHolder != null}">
-                        <span><c:out value="${model.permitHolder.officialCode}"/></span>
-                        <span><c:out value="${model.permitHolder.nameFI}"/></span>
-                    </c:when>
-                    <c:otherwise>
-                        <span><c:out value="${model.contactPerson.firstName}"/></span>
-                        <span><c:out value="${model.contactPerson.lastName}"/></span>
-                    </c:otherwise>
-                </c:choose>
+                <c:if test="${fn:length(model.permitHolder.code) > 0}">
+                    <span><c:out value="${model.permitHolder.code}"/></span>
+                </c:if>
+                <span><c:out value="${model.permitHolder.name}"/></span>
             </p>
         </div>
     </div>
@@ -138,23 +145,27 @@
         </div>
     </div>
 
-    <div class="layout-container" id="applicationReasoning">
-        <div class="col-1">
-            <c:out value="${model.heading.applicationReasoning}"/>
+    <c:if test="${model.includeApplicationReasoning}">
+        <div class="layout-container" id="applicationReasoning">
+            <div class="col-1">
+                <c:out value="${model.heading.applicationReasoning}"/>
+            </div>
+            <div class="col-2">
+                <c:out value="${model.document.applicationReasoning}" escapeXml="false"/>
+            </div>
         </div>
-        <div class="col-2">
-            <c:out value="${model.document.applicationReasoning}" escapeXml="false"/>
-        </div>
-    </div>
+    </c:if>
 
-    <div class="layout-container" id="processing">
-        <div class="col-1">
-            <c:out value="${model.heading.processing}"/>
+    <c:if test="${model.includeProcessing}">
+        <div class="layout-container" id="processing">
+            <div class="col-1">
+                <c:out value="${model.heading.processing}"/>
+            </div>
+            <div class="col-2">
+                <c:out value="${model.document.processing}" escapeXml="false"/>
+            </div>
         </div>
-        <div class="col-2">
-            <c:out value="${model.document.processing}" escapeXml="false"/>
-        </div>
-    </div>
+    </c:if>
 
     <div class="layout-container" id="decision">
         <div class="col-1">
@@ -162,6 +173,7 @@
         </div>
         <div class="col-2">
             <c:out value="${model.document.decision}" escapeXml="false"/>
+            <c:out value="${model.document.decisionExtra}" escapeXml="false"/>
         </div>
     </div>
 
@@ -244,23 +256,27 @@
         </div>
     </div>
 
-    <div class="layout-container" id="payment">
-        <div class="col-1">
-            <c:out value="${model.heading.payment}"/>
+    <c:if test="${model.includePayment}">
+        <div class="layout-container" id="payment">
+            <div class="col-1">
+                <c:out value="${model.heading.payment}"/>
+            </div>
+            <div class="col-2">
+                <c:out value="${model.document.payment}" escapeXml="false"/>
+            </div>
         </div>
-        <div class="col-2">
-            <c:out value="${model.document.payment}" escapeXml="false"/>
-        </div>
-    </div>
+    </c:if>
 
-    <div class="layout-container" id="attachments">
-        <div class="col-1">
-            <c:out value="${model.heading.attachments}"/>
+    <c:if test="${model.includeAttachments}">
+        <div class="layout-container" id="attachments">
+            <div class="col-1">
+                <c:out value="${model.heading.attachments}"/>
+            </div>
+            <div class="col-2">
+                <c:out value="${model.document.attachments}" escapeXml="false"/>
+            </div>
         </div>
-        <div class="col-2">
-            <c:out value="${model.document.attachments}" escapeXml="false"/>
-        </div>
-    </div>
+    </c:if>
 </div>
 
 <c:choose>

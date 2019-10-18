@@ -27,7 +27,7 @@ public class HarvestLocationMutationTest implements VersionedTestExecutionSuppor
     }
 
     @Nonnull
-    private Harvest createExistingHarvest(final GeoLocation location) {
+    private static Harvest createExistingHarvest(final GeoLocation location) {
         final Harvest harvest = new Harvest();
         harvest.setId(1L);
         harvest.setGeoLocation(Objects.requireNonNull(location));

@@ -5,17 +5,15 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermit_;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejection;
+import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.rejection.HarvestRejection;
-import fi.riista.feature.huntingclub.area.HuntingClubArea;
+import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejection;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.jpa.CriteriaUtils;
-
-import org.hibernate.validator.constraints.Range;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -30,6 +28,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.HashSet;
@@ -47,12 +47,16 @@ public class HuntingClubGroup extends Organisation {
     private static final LocalisedString GROUP_NAME_PREFIX_RESERVED_FOR_MOOSE_DATA_CARD_IMPORT =
             LocalisedString.of("hirvitietokortti", "älg data kort", "moose data card");
 
+    public static final int MIN_YEAR = 2000;
+    public static final int MAX_YEAR = 2100;
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "game_species_id", nullable = false)
     private GameSpecies species;
 
-    @Range(min = 2000, max = 2100)
+    @Min(MIN_YEAR)
+    @Max(MAX_YEAR)
     @Column(nullable = false)
     private int huntingYear;
 

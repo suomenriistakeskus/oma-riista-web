@@ -1,10 +1,13 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import javax.annotation.Resource;
 
+import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.NOT_STARTED;
+import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.UNDER_INSPECTION;
 import static fi.riista.util.DateUtil.currentYear;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -15,13 +18,24 @@ public class RhyAnnualStatisticsCrudFeatureTest extends EmbeddedDatabaseTest {
     private RhyAnnualStatisticsCrudFeature feature;
 
     @Test
-    public void testGetOrCreate_whenNotExists() {
+    public void testGetOrCreate_whenNotExists_byModerator() {
+        testGetOrCreate_whenNotExists(true);
+    }
+
+    @Test
+    public void testGetOrCreate_whenNotExists_byCoordinator() {
+        testGetOrCreate_whenNotExists(false);
+    }
+
+    private void testGetOrCreate_whenNotExists(final boolean byModerator) {
         withRhyAndCoordinator((rhy, coordinator) -> {
 
             // Create another RHY to test that annual statistics is created for correct RHY.
             model().newRiistanhoitoyhdistys();
 
-            onSavedAndAuthenticated(createUser(coordinator), () -> {
+            final SystemUser user = byModerator ? createNewModerator() : createUser(coordinator);
+
+            onSavedAndAuthenticated(user, () -> {
 
                 final long rhyId = rhy.getId();
                 final int currentYear = currentYear();
@@ -31,7 +45,7 @@ public class RhyAnnualStatisticsCrudFeatureTest extends EmbeddedDatabaseTest {
                 assertNotNull(dto);
                 assertEquals(rhyId, dto.getRhyId());
                 assertEquals(currentYear, dto.getYear());
-                assertEquals(RhyAnnualStatisticsState.IN_PROGRESS, dto.getState());
+                assertEquals(NOT_STARTED, dto.getState());
             });
         });
     }
@@ -56,7 +70,7 @@ public class RhyAnnualStatisticsCrudFeatureTest extends EmbeddedDatabaseTest {
                 assertEquals(statistics.getId(), dto.getId());
                 assertEquals(rhyId, dto.getRhyId());
                 assertEquals(year, dto.getYear());
-                assertEquals(RhyAnnualStatisticsState.IN_PROGRESS, dto.getState());
+                assertEquals(NOT_STARTED, dto.getState());
             });
         });
     }
@@ -76,16 +90,13 @@ public class RhyAnnualStatisticsCrudFeatureTest extends EmbeddedDatabaseTest {
         withRhyAndCoordinator((rhy, coordinator) -> {
 
             final RhyAnnualStatistics statistics = model().newRhyAnnualStatistics(rhy);
-            statistics.setState(RhyAnnualStatisticsState.UNDER_INSPECTION);
+            statistics.setState(UNDER_INSPECTION);
 
             onSavedAndAuthenticated(createUser(coordinator), () -> invokeUpdate(statistics));
         });
     }
 
     private void invokeUpdate(final RhyAnnualStatistics statistics) {
-        final RhyAnnualStatisticsDTO dto = RhyAnnualStatisticsDTO.create(statistics);
-        dto.setSrva(null);
-
-        feature.update(dto);
+        feature.updateHunterExams(statistics.getId(), statistics.getOrCreateHunterExams());
     }
 }

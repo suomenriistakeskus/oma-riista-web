@@ -3,28 +3,28 @@
 angular.module('app.harvestpermit.management.usage', [])
 
     .component('permitSpeciesAmountUsage', {
-        templateUrl: 'harvestpermit/management/usage/show-species-amounts.html',
+        templateUrl: 'harvestpermit/management/usage/species-amount-usage.html',
         bindings: {
-            speciesAmounts: '<'
+            permitUsage: '<'
         }
     })
 
     .controller('HarvestPermitUsageController', function ($state, $window, FormPostService, MapDefaults, MapBounds,
-                                                  PermitEndOfHuntingReportService, DiaryEntryService,
-                                                  EditHarvestPermitContactPersonsModal, HarvestReportSearchSidebar,
-                                                  Harvest, HarvestReportSearchMarkers,
-                                                  permit, speciesAmounts, harvestList) {
+                                                          PermitEndOfHuntingReportModal, DiaryEntryService,
+                                                          EditHarvestPermitContactPersonsModal, HarvestReportSearchSidebar,
+                                                          Harvest, HarvestReportSearchMarkers,
+                                                          permit, permitUsage, harvestList) {
 
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             $ctrl.showSidebar = HarvestReportSearchSidebar.createSidebar();
             $ctrl.permit = permit;
-            $ctrl.speciesAmounts = speciesAmounts;
+            $ctrl.permitUsage = permitUsage;
             $ctrl.harvestList = harvestList;
             $ctrl.activeTabIndex = 0;
             $ctrl.markers = HarvestReportSearchMarkers.createMarkers(harvestList, function (marker) {
-                $ctrl.showSidebar(_.find(harvestList, 'id', marker));
+                $ctrl.showSidebar(_.find(harvestList, {id: marker}));
             }, function (harvest) {
                 return harvest.harvestReportState || harvest.stateAcceptedToHarvestPermit;
             });

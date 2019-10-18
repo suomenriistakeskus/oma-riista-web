@@ -5,11 +5,10 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="joda" uri="http://www.joda.org/joda/time/tags" %>
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>Hunting Card</title>
     <base href="/static/hunter-certificate/">
     <link href="certificate.css" rel="stylesheet"/>
@@ -155,6 +154,30 @@
         <hr/>
     </c:if>
 
+    <c:if test="${fn:length(model.shootingTests) > 0}">
+        <h2>AMPUMAKOKEET:</h2>
+
+        <table width="100%">
+            <tbody>
+            <c:forEach items="${model.shootingTests}" var="t">
+                <tr>
+                    <td class="shooting-test-entry">
+                        <div>${t.typeName}</div>
+                        <div>${t.rhyName}&nbsp;(${t.rhyCode})</div>
+                    </td>
+                    <td>
+                        Voimassa
+                        <joda:format value="${t.begin}" pattern="d.M.YYYY" />
+                        &dash;
+                        <joda:format value="${t.end}" pattern="d.M.YYYY" />
+                    </td>
+                </tr>
+            </c:forEach>
+            </tbody>
+        </table>
+        <hr/>
+    </c:if>
+
     <h2 style="padding-top: 0;">HUOM!</h2>
 
     <div>
@@ -180,7 +203,7 @@
             Metsästäjärekisteri<br/>
             PL 22<br/>
             00331 Helsinki<br/>
-            puh 029 431 2002 (arkisin 8-18)<br/>
+            puh 029 431 2002 (arkisin marras-kesäkuu: klo 9-16 ja heinä-lokakuu: klo 8-18)<br/>
             e-mail: metsastajarekisteri@innofactor.com
         </address>
     </div>

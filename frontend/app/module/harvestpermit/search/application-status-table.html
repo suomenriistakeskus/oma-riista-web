@@ -1,0 +1,90 @@
+<div class="row">
+    <div class="col-xs-4">
+        <div class="form-group">
+            <span class="hidden-xs">
+                <span translate="global.year"></span>
+                <span>&nbsp;&nbsp;</span>
+            </span>
+            <select name="yearSelection" id="yearSelection"
+                    class="form-control r-annual-statistics-year-select"
+                    ng-model="$ctrl.year"
+                    ng-options="year for year in ::$ctrl.yearOptions"
+                    ng-change="$ctrl.loadStatistics()">
+                <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-xs-offset-4 col-xs-4 text-right">
+        <button type="button" ng-click="$ctrl.exportToExcel()" class="btn btn-primary">
+            <span class="glyphicon glyphicon-search"></span> &nbsp;
+            <span translate="reporting.common.toExcel"></span>
+        </button>
+    </div>
+</div>
+
+<div class="reporting-applications">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th></th>
+            <th colspan="3">Hirvieläimet<br>&nbsp;</th>
+            <th colspan="3">Hirvieläimen<br> uusi lupa</th>
+            <th colspan="3">Poikkeuslupa<br> linnut</th>
+            <th colspan="3">Suurpedot<br>&nbsp;</th>
+        </tr>
+        <tr>
+            <th>Alue</th>
+
+            <th>H</th>
+            <th>K</th>
+            <th>V</th>
+
+            <th>H</th>
+            <th>K</th>
+            <th>V</th>
+
+            <th>H</th>
+            <th>K</th>
+            <th>V</th>
+
+            <th>H</th>
+            <th>K</th>
+            <th>V</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr ng-repeat="stat in $ctrl.stats">
+            <td>
+                <span ng-bind="stat.rka.officialCode"></span>
+                <span name-translated="stat.rka"></span>
+            </td>
+
+            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['MOOSELIKE'].H)}}"
+                      ng-bind="stat.permitCategoryToStatus['MOOSELIKE'].H"></span></td>
+            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['MOOSELIKE'].K)}}"
+                      ng-bind="stat.permitCategoryToStatus['MOOSELIKE'].K"></span></td>
+            <td><span ng-bind="stat.permitCategoryToStatus['MOOSELIKE'].V"></span></td>
+
+            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['MOOSELIKE_NEW'].H)}}"
+                      ng-bind="stat.permitCategoryToStatus['MOOSELIKE_NEW'].H"></span></td>
+            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['MOOSELIKE_NEW'].K)}}"
+                      ng-bind="stat.permitCategoryToStatus['MOOSELIKE_NEW'].K"></span></td>
+            <td><span ng-bind="stat.permitCategoryToStatus['MOOSELIKE_NEW'].V"></span></td>
+
+            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['BIRD'].H)}}"
+                      ng-bind="stat.permitCategoryToStatus['BIRD'].H"></span></td>
+            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['BIRD'].K)}}"
+                      ng-bind="stat.permitCategoryToStatus['BIRD'].K"></span></td>
+            <td><span ng-bind="stat.permitCategoryToStatus['BIRD'].V"></span></td>
+
+            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['LARGE_CARNIVORE'].H)}}"
+                      ng-bind="stat.permitCategoryToStatus['LARGE_CARNIVORE'].H"></span></td>
+            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['LARGE_CARNIVORE'].K)}}"
+                      ng-bind="stat.permitCategoryToStatus['LARGE_CARNIVORE'].K"></span></td>
+            <td><span ng-bind="stat.permitCategoryToStatus['LARGE_CARNIVORE'].V"></span></td>
+
+        </tr>
+        </tbody>
+    </table>
+</div>

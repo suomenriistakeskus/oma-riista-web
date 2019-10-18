@@ -6,7 +6,7 @@ public enum AnnualStatisticsExcelLayout {
 
     // In tranposed layout the data is column-oriented i.e. the cells belonging to a single record
     // are written into one column (instead of one row).
-    TRANSPOSED_WITH_MULTIPLE_SHEETS,
+    TRANSPOSED,
 
     // RHY objects are grouped by RiistakeskuksenAlue
     WITH_RKA_GROUPING

@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.permit;
 
+import fi.riista.feature.huntingclub.permit.statistics.HarvestCountDTO;
 import io.vavr.Tuple;
 import io.vavr.Tuple6;
 
@@ -7,17 +8,17 @@ import javax.validation.constraints.AssertTrue;
 
 public interface HasHarvestCountsForPermit {
 
-    public int getNumberOfAdultMales();
+    int getNumberOfAdultMales();
 
-    public int getNumberOfAdultFemales();
+    int getNumberOfAdultFemales();
 
-    public int getNumberOfYoungMales();
+    int getNumberOfYoungMales();
 
-    public int getNumberOfYoungFemales();
+    int getNumberOfYoungFemales();
 
-    public int getNumberOfNonEdibleAdults();
+    int getNumberOfNonEdibleAdults();
 
-    public int getNumberOfNonEdibleYoungs();
+    int getNumberOfNonEdibleYoungs();
 
     @AssertTrue
     default boolean isValid() {
@@ -31,43 +32,11 @@ public interface HasHarvestCountsForPermit {
     }
 
     static HasHarvestCountsForPermit of(final int numberOfAdultMales, final int numberOfAdultFemales,
-            final int numberOfYoungMales, final int numberOfYoungFemales, final int numberOfNonEdibleAdults,
-            final int numberOfNonEdibleYoungs) {
-
-        return new HasHarvestCountsForPermit() {
-            @Override
-            public int getNumberOfAdultMales() {
-                return numberOfAdultMales;
-            }
-
-            @Override
-            public int getNumberOfAdultFemales() {
-                return numberOfAdultFemales;
-            }
-
-            @Override
-            public int getNumberOfYoungMales() {
-                return numberOfYoungMales;
-            }
-
-            @Override
-            public int getNumberOfYoungFemales() {
-                return numberOfYoungFemales;
-            }
-
-            @Override
-            public int getNumberOfNonEdibleAdults() {
-                return numberOfNonEdibleAdults;
-            }
-
-            @Override
-            public int getNumberOfNonEdibleYoungs() {
-                return numberOfNonEdibleYoungs;
-            }
-        };
-    }
-
-    static HasHarvestCountsForPermit zeros() {
-        return of(0, 0, 0, 0, 0, 0);
+                                        final int numberOfYoungMales, final int numberOfYoungFemales,
+                                        final int numberOfNonEdibleAdults,
+                                        final int numberOfNonEdibleYoungs) {
+        return new HarvestCountDTO(numberOfAdultMales, numberOfAdultFemales, numberOfYoungMales, numberOfYoungFemales,
+                numberOfNonEdibleAdults, 0,
+                numberOfNonEdibleYoungs, 0);
     }
 }

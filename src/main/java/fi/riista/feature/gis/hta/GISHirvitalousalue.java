@@ -1,5 +1,6 @@
 package fi.riista.feature.gis.hta;
 
+import com.querydsl.core.annotations.QueryDelegate;
 import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.util.LocalisedString;
@@ -66,18 +67,6 @@ public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> 
     }
 
     @Override
-    @Id
-    @Access(value = AccessType.PROPERTY)
-    @Column(name = "gid", nullable = false)
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(final Integer id) {
-        this.id = id;
-    }
-
-    @Override
     public boolean isNew() {
         return id != null;
     }
@@ -99,6 +88,27 @@ public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> 
     @Override
     public int hashCode() {
         return null == getId() ? 0 : 17 + getId().hashCode() * 31;
+    }
+
+    // QueryDSL delegates -->
+
+    @QueryDelegate(GISHirvitalousalue.class)
+    public static fi.riista.util.QLocalisedString nameLocalisation(final QGISHirvitalousalue hta) {
+        return new fi.riista.util.QLocalisedString(hta.nameFinnish, hta.nameSwedish);
+    }
+
+    // Accessors -->
+
+    @Override
+    @Id
+    @Access(value = AccessType.PROPERTY)
+    @Column(name = "gid", nullable = false)
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getNumber() {

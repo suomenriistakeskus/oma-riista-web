@@ -2,8 +2,6 @@ package fi.riista.feature.gamediary.observation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import fi.riista.feature.common.dto.CodesetEntryDTO;
-import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.HasAuthorAndActor;
 import fi.riista.feature.gamediary.HasHuntingDayId;
 import fi.riista.feature.organization.Organisation;
@@ -12,7 +10,6 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import fi.riista.validation.DoNotValidate;
 import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
@@ -30,10 +27,6 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
 
     @Valid
     private PersonWithHunterNumberDTO actorInfo;
-
-    @JsonIgnore
-    @DoNotValidate
-    private CodesetEntryDTO gameSpecies;
 
     private Long rhyId;
 
@@ -86,16 +79,6 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
 
     public void setActorInfo(final PersonWithHunterNumberDTO actorInfo) {
         this.actorInfo = actorInfo;
-    }
-
-    @JsonProperty
-    public CodesetEntryDTO getGameSpecies() {
-        return gameSpecies;
-    }
-
-    @JsonIgnore
-    public void setGameSpecies(final CodesetEntryDTO gameSpecies) {
-        this.gameSpecies = gameSpecies;
     }
 
     public Long getRhyId() {
@@ -183,13 +166,6 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
                 dto.setApproverToHuntingDay(PersonWithHunterNumberDTO.create(person));
             }
             return self();
-        }
-
-        @Override
-        public SELF populateWith(@Nonnull final GameSpecies species) {
-            return super.populateWith(species).chain(self -> {
-                dto.setGameSpecies(new CodesetEntryDTO(species.getOfficialCode(), species.getNameLocalisation()));
-            });
         }
 
         // ASSOCIATIONS MUST NOT BE TRAVERSED IN THIS METHOD (except for identifiers that are

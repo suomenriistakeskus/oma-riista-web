@@ -14,34 +14,67 @@
 <table class="table">
     <tbody>
     <tr>
-        <th translate="club.area.form.externalId"></th>
+        <th translate="global.map.areaExternalId"></th>
         <td class="area-external-code" ng-bind="$ctrl.area.externalId"></td>
     </tr>
     <tr>
-        <th translate="club.area.landAreaSize"></th>
-        <td class="text-right">
-            <strong ng-show="$ctrl.area.computedAreaSize < 0"
-                    translate="club.area.map.selectedArea.calculatingAreaSize"></strong>
-            <span ng-show="$ctrl.area.computedAreaSize >= 0"
-                  ng-bind="($ctrl.area.computedAreaSize - $ctrl.area.waterAreaSize) | prettyAreaSize"></span>
+        <th translate="global.map.size.privateLandAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.privateLandAreaSize | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
         </td>
     </tr>
     <tr>
-        <th translate="club.area.waterAreaSize"></th>
-        <td class="text-right">
-            <strong ng-show="$ctrl.area.computedAreaSize < 0"
-                    translate="club.area.map.selectedArea.calculatingAreaSize"></strong>
-            <span ng-show="$ctrl.area.computedAreaSize >= 0"
-                  ng-bind="$ctrl.area.waterAreaSize | prettyAreaSize"></span>
+        <th translate="global.map.size.stateLandAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.stateLandAreaSize | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
         </td>
     </tr>
     <tr>
-        <th translate="club.area.totalAreaSize"></th>
-        <td class="text-right">
-            <strong ng-show="$ctrl.area.computedAreaSize < 0"
-                    translate="club.area.map.selectedArea.calculatingAreaSize"></strong>
-            <span ng-show="$ctrl.area.computedAreaSize >= 0"
-                  ng-bind="$ctrl.area.computedAreaSize | prettyAreaSize"></span>
+        <th translate="global.map.size.landAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.all.land | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
+        </td>
+    </tr>
+    <tr>
+        <th translate="global.map.size.waterAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.all.water | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
+        </td>
+    </tr>
+    <tr>
+        <th translate="global.map.size.totalAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.all.total | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
         </td>
     </tr>
     <tr>

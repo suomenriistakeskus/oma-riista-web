@@ -12,6 +12,7 @@ import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Address;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Amount;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Club;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
@@ -61,23 +63,24 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private void createPermitsNotExported() {
-        Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(this.rka);
-        model().newHarvestPermit(rhy);
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(this.rka);
+        model().newHarvestPermit(rhy, permitNumber(YEAR));
 
-        HarvestPermit otherPermit = model().newHarvestPermit(rhy);
-        createSpeciesAmount(otherPermit, otherSpecies, YEAR);
-        HuntingClub club = model().newHuntingClub(rhy);
-        otherPermit.setPermitHolder(club);
+        final HarvestPermit otherPermit = model().newHarvestPermit(rhy, permitNumber(YEAR));
+        createSpeciesAmount(otherPermit, otherSpecies);
+        final HuntingClub club = model().newHuntingClub(rhy);
+        otherPermit.setHuntingClub(club);
+        otherPermit.setPermitHolder(PermitHolder.createHolderForClub(club));
         otherPermit.getPermitPartners().add(club);
 
-        HuntingClubGroup group = model().newHuntingClubGroup(club, otherSpecies);
+        final HuntingClubGroup group = model().newHuntingClubGroup(club, otherSpecies);
         group.updateHarvestPermit(otherPermit);
     }
 
-    private void createSpeciesAmount(HarvestPermit permit, GameSpecies species, int year) {
-        HarvestPermitSpeciesAmount spa = model().newHarvestPermitSpeciesAmount(permit, species);
-        spa.setBeginDate(new LocalDate(year, 9, 10));
-        spa.setBeginDate(new LocalDate(year, 12, 31));
+    private void createSpeciesAmount(final HarvestPermit permit, final GameSpecies species) {
+        final HarvestPermitSpeciesAmount spa = model().newHarvestPermitSpeciesAmount(permit, species);
+        spa.setBeginDate(new LocalDate(YEAR, 9, 10));
+        spa.setBeginDate(new LocalDate(YEAR, 12, 31));
     }
 
     @Test(expected = AccessDeniedException.class)
@@ -107,8 +110,8 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private HarvestPermit createMoosePermit() {
-        final HarvestPermit permit = model().newMooselikePermit(model().newRiistanhoitoyhdistys(this.rka));
-        createSpeciesAmount(permit, mooseSpecies, YEAR);
+        final HarvestPermit permit = model().newMooselikePermit(model().newRiistanhoitoyhdistys(this.rka), YEAR);
+        createSpeciesAmount(permit, mooseSpecies);
         return permit;
     }
 
@@ -155,7 +158,7 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
 
         assertEquals(entity.getAmount(), dto.getAmount(), 0.01f);
         assertEquals(entity.getRestrictionAmount(), dto.getRestrictedAmount());
-        assertEquals(entity.getRestrictionType(), dto.getRestriction());
+        assertEqualNames(entity.getRestrictionType(), dto.getRestriction());
     }
 
     private static void assertClubs(final Set<HuntingClub> entityClubs, final List<LEM_Club> dtoClubs) {
@@ -172,7 +175,7 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
             // contactPerson?
             assertEquals(entity.getGeoLocation().getLatitude(), dto.getGeoLocation().getLatitude());
             assertEquals(entity.getGeoLocation().getLongitude(), dto.getGeoLocation().getLongitude());
-            assertEquals(entity.getGeoLocation().getSource(), dto.getGeoLocation().getSource());
+            assertEqualNames(entity.getGeoLocation().getSource(), dto.getGeoLocation().getSource());
             assertEquals(entity.getParentOrganisation().getOfficialCode(), dto.getRhyOfficialCode());
             // huntingDays?
             // huntingSummary?
@@ -184,5 +187,10 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
             fail("both must be null or not null");
         }
         return a != null;
+    }
+
+    private static void assertEqualNames(final Enum<?> first, final Enum<?> second) {
+        final Function<Enum<?>, String> nameFn = enumValue -> enumValue == null ? null : enumValue.name();
+        assertEquals(nameFn.apply(first), nameFn.apply(second));
     }
 }

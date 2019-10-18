@@ -223,7 +223,11 @@ angular.module('app.clubhunting', [])
         };
 
         $ctrl.selectEntryById = function (type, id) {
-            $ctrl.selectEntry(ClubHuntingViewData.find(type, id), null);
+            var diaryEntry = ClubHuntingViewData.find(type, id);
+
+            if (diaryEntry) {
+                $ctrl.selectEntry(diaryEntry, null);
+            }
         };
 
         $ctrl.onFilterChange = function (filter) {

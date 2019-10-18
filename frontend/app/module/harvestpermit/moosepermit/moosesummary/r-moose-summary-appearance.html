@@ -1,235 +1,236 @@
 <div class="row">
-    <div class="col-sm-4">
-        <h5>{{ $ctrl.species.name | rI18nNameFilter | capitalize }}</h5>
+    <div class="col-xs-3">
+        <h4 ng-bind="$ctrl.species.name | rI18nNameFilter | capitalize" style="margin:0"></h4>
     </div>
 
-    <div class="col-sm-6">
+    <div class="col-xs-9">
         <div class="form-group" ng-class="{ 'has-error': $ctrl.parentForm[$ctrl.appearedInputId].$invalid }">
-            <label class="control-label">
+            <label class="control-label col-xs-7">
                 <span translate="club.hunting.mooseHuntingSummary.appearance"></span>
                 <small class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
-            <div class="form-control-wrapper">
-                <label class="radio-inline">
-                    <input type="radio"
-                           name="{{ $ctrl.appearedInputId }}"
-                           ng-value="false"
-                           ng-model="$ctrl.appearance.appeared"
-                           required>
-                    {{ 'global.no' | translate }}
+            <div class="col-xs-5">
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default"
+                           uib-btn-radio="false"
+                           required
+                           ng-model="$ctrl.appearance.appeared">
+                        <span translate="global.no"></span>
+                    </label>
+
+                    <label class="btn btn-default"
+                           uib-btn-radio="true"
+                           required
+                           ng-model="$ctrl.appearance.appeared">
+                        <span translate="global.yes"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div ng-if="$ctrl.appearance.appeared">
+            <div class="form-group" show-errors>
+                <label for="{{ $ctrl.trendOfGrowthSelectId }}" class="control-label col-xs-7">
+                    <span class="text-right"
+                          translate="club.hunting.mooseHuntingSummary.trendOfMooselikePopulationGrowth"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
-                <label class="radio-inline">
-                    <input type="radio"
-                           name="{{ $ctrl.appearedInputId }}"
-                           ng-value="true"
-                           ng-model="$ctrl.appearance.appeared"
-                           required>
-                    {{ 'global.yes' | translate }}
+
+                <div class="col-xs-5">
+                    <select name="{{ $ctrl.trendOfGrowthSelectId }}" id="{{ $ctrl.trendOfGrowthSelectId }}"
+                            class="form-control"
+                            ng-model="$ctrl.appearance.trendOfPopulationGrowth"
+                            required
+                            ng-options="('club.hunting.mooseHuntingSummary.populationGrowthTrend.' + t | translate) for t in $ctrl.populationGrowthTrends">
+                        <option disabled value=""></option>
+                    </select>
+
+                    <p class="help-block has-error"
+                       ng-show="$ctrl.parentForm[$ctrl.trendOfGrowthSelectId].$invalid"
+                       ng-messages="$ctrl.parentForm[$ctrl.trendOfGrowthSelectId].$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="!$ctrl.isBeaver">
+                <label for="{{ $ctrl.estimatedAmountOfSpecimensInputId }}" class="control-label col-xs-7">
+                    <span translate="club.hunting.mooseHuntingSummary.estimatedAmountOfSpecimens"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
+
+                <div class="col-xs-5">
+                    <div class="input-group">
+                        <input type="number"
+                               id="{{ $ctrl.estimatedAmountOfSpecimensInputId }}"
+                               name="{{ $ctrl.estimatedAmountOfSpecimensInputId }}"
+                               min="0" max="999999" step="1"
+                               r-decimal-separator-fix
+                               class="form-control no-spinner"
+                               ng-model="$ctrl.appearance.estimatedAmountOfSpecimens"
+                               required/>
+                        <span class="input-group-addon" translate="global.pcs"></span>
+                    </div>
+
+                    <p class="help-block has-error"
+                       ng-show="$ctrl.parentForm[$ctrl.estimatedAmountOfSpecimensInputId].$invalid"
+                       ng-messages="$ctrl.parentForm[$ctrl.estimatedAmountOfSpecimensInputId].$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<div ng-if="$ctrl.appearance.appeared">
-    <div class="col-sm-5 r-moose-summary-mooselike-population-growth">
-        <div class="form-group" show-errors>
-            <label for="{{ $ctrl.trendOfGrowthSelectId }}" class="control-label">
-                <span class="text-right" translate="club.hunting.mooseHuntingSummary.trendOfMooselikePopulationGrowth"></span>
-                <small class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
+            <div class="form-group" show-errors ng-if="$ctrl.isBeaver">
+                <label for="{{ $ctrl.amountOfInhabitedWinterNestsInputId }}" class="control-label col-xs-7">
+                    <span translate="club.hunting.mooseHuntingSummary.amountOfInhabitedWinterNests"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
 
-            <div class="form-control-wrapper">
-                <select name="{{ $ctrl.trendOfGrowthSelectId }}" id="{{ $ctrl.trendOfGrowthSelectId }}"
-                        class="form-control"
-                        ng-model="$ctrl.appearance.trendOfPopulationGrowth"
-                        required
-                        ng-options="('club.hunting.mooseHuntingSummary.populationGrowthTrend.' + t | translate) for t in $ctrl.populationGrowthTrends">
-                    <option disabled value=""></option>
-                </select>
+                <div class="col-xs-5">
+                    <div class="input-group">
+                        <input type="number"
+                               name="{{ $ctrl.amountOfInhabitedWinterNestsInputId }}"
+                               id="{{ $ctrl.amountOfInhabitedWinterNestsInputId }}"
+                               min="0" max="9999" step="1"
+                               r-decimal-separator-fix
+                               class="form-control no-spinner"
+                               ng-model="$ctrl.appearance.amountOfInhabitedWinterNests"
+                               required/>
+                        <span class="input-group-addon" translate="global.pcs"></span>
+                    </div>
 
-                <p class="help-block has-error"
-                    ng-show="$ctrl.parentForm[$ctrl.trendOfGrowthSelectId].$invalid"
-                    ng-messages="$ctrl.parentForm[$ctrl.trendOfGrowthSelectId].$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
+                    <p class="help-block has-error"
+                       ng-show="$ctrl.parentForm[$ctrl.amountOfInhabitedWinterNestsInputId].$invalid"
+                       ng-messages="$ctrl.parentForm[$ctrl.amountOfInhabitedWinterNestsInputId].$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div class="col-sm-7 r-moose-summary-mooselike-estimated-amount" ng-if="!$ctrl.isBeaver">
-        <div class="form-group" show-errors>
-            <label for="{{ $ctrl.estimatedAmountOfSpecimensInputId }}" class="control-label">
-                <span translate="club.hunting.mooseHuntingSummary.estimatedAmountOfSpecimens"></span>
-                <small class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
+            <div class="form-group" show-errors ng-if="$ctrl.isWildBoar">
+                <label for="{{ $ctrl.estimatedAmountOfSowWithPigletsInputId }}" class="control-label col-xs-7">
+                    <span translate="club.hunting.mooseHuntingSummary.estimatedAmountOfSowWithPiglets"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
 
-            <div class="form-control-wrapper">
-                <input type="number"
-                       id="{{ $ctrl.estimatedAmountOfSpecimensInputId }}"
-                       name="{{ $ctrl.estimatedAmountOfSpecimensInputId }}"
-                       min="0" max="999999" step="1"
-                       r-decimal-separator-fix
-                       class="form-control no-spinner"
-                       ng-model="$ctrl.appearance.estimatedAmountOfSpecimens"
-                       required/>
+                <div class="col-xs-5">
+                    <div class="input-group">
+                        <input type="number"
+                               name="{{ $ctrl.estimatedAmountOfSowWithPigletsInputId }}"
+                               id="{{ $ctrl.estimatedAmountOfSowWithPigletsInputId }}"
+                               min="0" max="999999" step="1"
+                               r-decimal-separator-fix
+                               class="form-control no-spinner"
+                               ng-model="$ctrl.appearance.estimatedAmountOfSowWithPiglets"
+                               required/>
+                        <span class="input-group-addon" translate="global.pcs"></span>
+                    </div>
 
-                <p class="help-block has-error"
-                    ng-show="$ctrl.parentForm[$ctrl.estimatedAmountOfSpecimensInputId].$invalid"
-                    ng-messages="$ctrl.parentForm[$ctrl.estimatedAmountOfSpecimensInputId].$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
+                    <p class="help-block has-error"
+                       ng-show="$ctrl.parentForm[$ctrl.estimatedAmountOfSowWithPigletsInputId].$invalid"
+                       ng-messages="$ctrl.parentForm[$ctrl.estimatedAmountOfSowWithPigletsInputId].$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
             </div>
-        </div>
-    </div>
-    <div class="col-sm-7 r-moose-summary-mooselike-estimated-amount" ng-if="$ctrl.isBeaver">
-        <div class="form-group" show-errors>
-            <label for="{{ $ctrl.amountOfInhabitedWinterNestsInputId }}" class="control-label">
-                <span translate="club.hunting.mooseHuntingSummary.amountOfInhabitedWinterNests"></span>
-                <small class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
 
-            <div class="form-control-wrapper">
-                <input type="number"
-                       name="{{ $ctrl.amountOfInhabitedWinterNestsInputId }}"
-                       id="{{ $ctrl.amountOfInhabitedWinterNestsInputId }}"
-                       min="0" max="9999" step="1"
-                       r-decimal-separator-fix
-                       class="form-control no-spinner"
-                       ng-model="$ctrl.appearance.amountOfInhabitedWinterNests"
-                       required/>
+            <div class="form-group" show-errors ng-if="$ctrl.isBeaver">
+                <label for="{{ $ctrl.beaverHarvestAmountInputId }}" class="control-label col-xs-7">
+                    <span translate="club.hunting.mooseHuntingSummary.beaverHarvestAmount"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
 
-                <p class="help-block has-error"
-                    ng-show="$ctrl.parentForm[$ctrl.amountOfInhabitedWinterNestsInputId].$invalid"
-                    ng-messages="$ctrl.parentForm[$ctrl.amountOfInhabitedWinterNestsInputId].$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
+                <div class="col-xs-5">
+                    <div class="input-group">
+                        <input type="number"
+                               name="{{ $ctrl.beaverHarvestAmountInputId }}"
+                               id="{{ $ctrl.beaverHarvestAmountInputId }}"
+                               min="0" max="9999" step="1"
+                               r-decimal-separator-fix
+                               class="form-control no-spinner"
+                               ng-model="$ctrl.appearance.harvestAmount"
+                               required/>
+                        <span class="input-group-addon" translate="global.pcs"></span>
+                    </div>
+
+                    <p class="help-block has-error"
+                       ng-show="$ctrl.parentForm[$ctrl.beaverHarvestAmountInputId].$invalid"
+                       ng-messages="$ctrl.parentForm[$ctrl.beaverHarvestAmountInputId].$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
-<div class="row" ng-if="$ctrl.appearance.appeared">
-    <div class="col-sm-12 r-moose-summary-estimated-amount-of-sows-with-piglets" ng-if="$ctrl.isWildBoar">
-        <div class="form-group" show-errors>
-            <label for="{{ $ctrl.estimatedAmountOfSowWithPigletsInputId }}" class="control-label">
-                <span translate="club.hunting.mooseHuntingSummary.estimatedAmountOfSowWithPiglets"></span>
-                <small class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
 
-            <div class="form-control-wrapper">
-                <input type="number"
-                       name="{{ $ctrl.estimatedAmountOfSowWithPigletsInputId }}"
-                       id="{{ $ctrl.estimatedAmountOfSowWithPigletsInputId }}"
-                       min="0" max="999999" step="1"
-                       r-decimal-separator-fix
-                       class="form-control no-spinner"
-                       ng-model="$ctrl.appearance.estimatedAmountOfSowWithPiglets"
-                       required/>
+            <div class="form-group" show-errors ng-if="$ctrl.isBeaver">
+                <label for="{{ $ctrl.areaOfDamageInputId }}" class="control-label col-xs-7">
+                    <span class="text-right" translate="club.hunting.mooseHuntingSummary.areaOfDamage"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
 
-                <p class="help-block has-error"
-                    ng-show="$ctrl.parentForm[$ctrl.estimatedAmountOfSowWithPigletsInputId].$invalid"
-                    ng-messages="$ctrl.parentForm[$ctrl.estimatedAmountOfSowWithPigletsInputId].$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
+                <div class="col-xs-5">
+                    <div class="input-group">
+                        <input type="number"
+                               id="{{ $ctrl.areaOfDamageInputId }}"
+                               name="{{ $ctrl.areaOfDamageInputId }}"
+                               min="0" max="999999" step="1"
+                               r-decimal-separator-fix
+                               class="form-control no-spinner"
+                               ng-model="$ctrl.appearance.areaOfDamage"
+                               required/>
+                        <span class="input-group-addon" translate="global.hectares"></span>
+                    </div>
+
+                    <p class="help-block has-error"
+                       ng-show="$ctrl.parentForm[$ctrl.areaOfDamageInputId].$invalid"
+                       ng-messages="$ctrl.parentForm[$ctrl.areaOfDamageInputId].$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
-<div class="row" ng-if="$ctrl.appearance.appeared && $ctrl.isBeaver">
-    <div class="col-sm-12 r-moose-summary-beaver-harvest-amount">
-        <div class="form-group" show-errors>
-            <label for="{{ $ctrl.beaverHarvestAmountInputId }}" class="control-label">
-                <span translate="club.hunting.mooseHuntingSummary.beaverHarvestAmount"></span>
-                <small class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
 
-            <div class="form-control-wrapper">
-                <input type="number"
-                       name="{{ $ctrl.beaverHarvestAmountInputId }}"
-                       id="{{ $ctrl.beaverHarvestAmountInputId }}"
-                       min="0" max="9999" step="1"
-                       r-decimal-separator-fix
-                       class="form-control no-spinner"
-                       ng-model="$ctrl.appearance.harvestAmount"
-                       required/>
+            <div class="form-group" show-errors ng-if="$ctrl.isBeaver">
+                <label for="{{ $ctrl.areaOccupiedByWaterInputId }}" class="control-label col-xs-7">
+                    <span translate="club.hunting.mooseHuntingSummary.areaOccupiedByWater"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
 
-                <p class="help-block has-error"
-                    ng-show="$ctrl.parentForm[$ctrl.beaverHarvestAmountInputId].$invalid"
-                    ng-messages="$ctrl.parentForm[$ctrl.beaverHarvestAmountInputId].$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
+                <div class="col-xs-5">
+                    <div class="input-group">
+                        <input type="number"
+                               id="{{ $ctrl.areaOccupiedByWaterInputId }}"
+                               name="{{ $ctrl.areaOccupiedByWaterInputId }}"
+                               min="0" max="999999" step="1"
+                               r-decimal-separator-fix
+                               class="form-control no-spinner"
+                               ng-model="$ctrl.appearance.areaOccupiedByWater"
+                               required/>
+                        <span class="input-group-addon" translate="global.hectares"></span>
+                    </div>
+
+                    <p class="help-block has-error"
+                       ng-show="$ctrl.parentForm[$ctrl.areaOccupiedByWaterInputId].$invalid"
+                       ng-messages="$ctrl.parentForm[$ctrl.areaOccupiedByWaterInputId].$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
-<div class="row" ng-if="$ctrl.appearance.appeared && $ctrl.isBeaver">
-    <div class="col-sm-5 r-moose-summary-area-of-damage">
-        <div class="form-group" show-errors>
-            <label for="{{ $ctrl.areaOfDamageInputId }}" class="control-label">
-                <span class="text-right" translate="club.hunting.mooseHuntingSummary.areaOfDamage"></span>
-                <small class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
 
-            <div class="form-control-wrapper">
-                <input type="number"
-                       id="{{ $ctrl.areaOfDamageInputId }}"
-                       name="{{ $ctrl.areaOfDamageInputId }}"
-                       min="0" max="999999" step="1"
-                       r-decimal-separator-fix
-                       class="form-control no-spinner"
-                       ng-model="$ctrl.appearance.areaOfDamage"
-                       required/>
+            <div ng-if="$ctrl.isBeaver">
+                <div class="form-group" show-errors>
+                    <label for="{{ $ctrl.additionalBeaverInfoInputId }}" class="control-label col-xs-7">
+                        <span translate="club.hunting.mooseHuntingSummary.additionalBeaverInfo"></span>
+                    </label>
 
-                <p class="help-block has-error"
-                    ng-show="$ctrl.parentForm[$ctrl.areaOfDamageInputId].$invalid"
-                    ng-messages="$ctrl.parentForm[$ctrl.areaOfDamageInputId].$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-sm-7 r-moose-summary-area-occupied-by-water">
-        <div class="form-group" show-errors>
-            <label for="{{ $ctrl.areaOccupiedByWaterInputId }}" class="control-label">
-                <span translate="club.hunting.mooseHuntingSummary.areaOccupiedByWater"></span>
-                <small class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
-
-            <div class="form-control-wrapper">
-                <input type="number"
-                       id="{{ $ctrl.areaOccupiedByWaterInputId }}"
-                       name="{{ $ctrl.areaOccupiedByWaterInputId }}"
-                       min="0" max="999999" step="1"
-                       r-decimal-separator-fix
-                       class="form-control no-spinner"
-                       ng-model="$ctrl.appearance.areaOccupiedByWater"
-                       required/>
-
-                <p class="help-block has-error"
-                    ng-show="$ctrl.parentForm[$ctrl.areaOccupiedByWaterInputId].$invalid"
-                    ng-messages="$ctrl.parentForm[$ctrl.areaOccupiedByWaterInputId].$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row" ng-if="$ctrl.appearance.appeared && $ctrl.isBeaver">
-    <div class="col-sm-12 r-moose-summary-additional-beaver-info">
-        <div class="form-group" show-errors>
-            <label for="{{ $ctrl.additionalBeaverInfoInputId }}" class="control-label">
-                <span translate="club.hunting.mooseHuntingSummary.additionalBeaverInfo"></span>
-            </label>
-
-            <div class="form-control-wrapper">
-                <textarea name="{{ $ctrl.additionalBeaverInfoInputId }}"
-                          id="{{ $ctrl.additionalBeaverInfoInputId }}"
-                          class="form-control"
-                          focus-me
-                          ng-model="$ctrl.appearance.additionalInfo"
-                          rows="4"></textarea>
+                    <div class="col-xs-5">
+                        <textarea name="{{ $ctrl.additionalBeaverInfoInputId }}"
+                                  id="{{ $ctrl.additionalBeaverInfoInputId }}"
+                                  class="form-control"
+                                  focus-me
+                                  ng-model="$ctrl.appearance.additionalInfo"
+                                  rows="4"></textarea>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

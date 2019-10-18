@@ -2,13 +2,13 @@ package fi.riista.api.mobile;
 
 import fi.riista.feature.gis.metsahallitus.MetsahallitusGeometryLookupFeature;
 import fi.riista.feature.gis.metsahallitus.MetsahallitusHirviDTO;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusMaterialYear;
 import fi.riista.feature.gis.metsahallitus.MetsahallitusPienriistaDTO;
-import fi.riista.feature.gis.metsahallitus.MetsahallitusProperties;
+import fi.riista.feature.gis.mobile.MobileAreaDTO;
+import fi.riista.feature.gis.mobile.MobileMapFeature;
+import fi.riista.feature.gis.mobile.MobileMapZoneCache;
 import fi.riista.feature.gis.vector.VectorTileService;
 import fi.riista.feature.gis.vector.VectorTileUtil;
-import fi.riista.feature.huntingclub.area.mobile.MobileHuntingClubAreaDTO;
-import fi.riista.feature.huntingclub.area.mobile.MobileMapFeature;
-import fi.riista.feature.huntingclub.area.mobile.MobileMapZoneCache;
 import fi.riista.util.MediaTypeExtras;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -39,16 +39,16 @@ public class MobileMapApiResource {
     private MetsahallitusGeometryLookupFeature metsahallitusGeometryLookupFeature;
 
     @Resource
-    private MetsahallitusProperties metsahallitusProperties;
+    private MetsahallitusMaterialYear metsahallitusMaterialYear;
 
     @GetMapping("/club")
-    public List<MobileHuntingClubAreaDTO> listClubMaps(@RequestParam(required = false) Integer huntingYear) {
+    public List<MobileAreaDTO> listClubMaps(@RequestParam(required = false) Integer huntingYear) {
         return mobileMapFeature.listClubMaps(huntingYear);
     }
 
     @GetMapping("/mh/hirvi")
     public List<MetsahallitusHirviDTO> listMetsahallitusHirvi() {
-        return metsahallitusGeometryLookupFeature.listHirvi(metsahallitusProperties.getLatestMetsahallitusYear());
+        return metsahallitusGeometryLookupFeature.listHirvi(metsahallitusMaterialYear.getLatestHirviYear());
     }
 
     @GetMapping("/mh/hirvi/{year}")
@@ -58,7 +58,7 @@ public class MobileMapApiResource {
 
     @GetMapping("/mh/pienriista")
     public List<MetsahallitusPienriistaDTO> listMetsahallitusPienriista() {
-        return metsahallitusGeometryLookupFeature.listPienriista(metsahallitusProperties.getLatestMetsahallitusYear());
+        return metsahallitusGeometryLookupFeature.listPienriista(metsahallitusMaterialYear.getLatestPienriistaYear());
     }
 
     @GetMapping("/mh/pienriista/{year}")
@@ -67,8 +67,8 @@ public class MobileMapApiResource {
     }
 
     @GetMapping("/code/{externalId}")
-    public ResponseEntity<MobileHuntingClubAreaDTO> findByExternalId(@PathVariable String externalId) {
-        final MobileHuntingClubAreaDTO dto = mobileMapFeature.findByExternalId(externalId);
+    public ResponseEntity<MobileAreaDTO> findByExternalId(@PathVariable String externalId) {
+        final MobileAreaDTO dto = mobileMapFeature.findByExternalId(externalId);
 
         if (dto == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

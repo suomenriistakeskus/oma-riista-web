@@ -1,6 +1,6 @@
 package fi.riista.feature.pub.season;
 
-import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
 import fi.riista.util.F;
 import org.joda.time.LocalDate;

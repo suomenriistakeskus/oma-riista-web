@@ -15,4 +15,5 @@ public interface ShootingTestParticipantRepository
 
     Optional<ShootingTestParticipant> findByShootingTestEventAndPerson(ShootingTestEvent event, Person person);
 
+
 }

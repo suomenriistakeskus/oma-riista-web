@@ -1,3 +1,16 @@
+.permit-application-wizard-navigation {
+  text-align: center;
+  border-top: 1px solid @hr-border;
+  padding-top: 20px;
+  margin-top: 40px;
+
+  @media (min-width: @screen-sm-min) {
+    button + button {
+      margin-left: 30px;
+    }
+  }
+}
+
 .permit-application-wizard-container {
   .panel-group .panel {
     margin-bottom: 15px;
@@ -23,21 +36,41 @@
     padding: 20px 20px 0;
   }
 
-  .alert-info {
+  .alert {
     background-color: #F7F7F7;
     border-color: @table-border-color;
     margin: 10px 0 20px;
-    padding: 20px 20px 10px;
-    color: #444;
+    padding: 15px 15px 10px;
+    color: #555;
+    overflow: auto;
+
+    a {
+      color: #000;
+    }
+
+    .alert-content {
+      margin-left: 60px;
+    }
 
     .alert-title {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
     }
 
     .fa-info-circle {
-      font-size: 50px;
       color: @brand-info;
+      font-size: 48px;
+      float: left;
+    }
+
+    .fa-exclamation-triangle {
+      color: @brand-danger;
+      font-size: 32px;
+      float: left;
+    }
+
+    .fa-remove {
+      color: @brand-danger;
     }
   }
 }

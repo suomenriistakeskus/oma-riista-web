@@ -26,6 +26,40 @@
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+.r-label-red {
+  .label;
+  background-color: #c44d4a;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.r-label-yellow {
+  .label;
+  color: #fff;
+  background-color: #d2ad00;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.r-label-blue {
+  .label;
+  background-color: #006893;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.r-label-green {
+  .label;
+  background-color: @r-green;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.r-tab-alert-badge {
+  .badge;
+  color: #fff !important;
+  background-color: #c44d4a !important;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  margin-top: -3px;
+  margin-left: 3px;
+}
+
 // Typography
 // -------------------------
 
@@ -37,7 +71,7 @@ legend {
   margin-bottom: 20px;
   font-size: 14px;
   color: #777;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid @table-bg-accent;
   padding: 5px 0 5px;
 }
 
@@ -203,7 +237,7 @@ input[type=checkbox].r-non-labeled-checkbox {
 }
 
 .panel-heading {
-  background-color: #f0f0f0;
+  background-color: @table-bg-accent;
 }
 
 // Breadcrumbs
@@ -267,13 +301,13 @@ input[type=checkbox].r-non-labeled-checkbox {
 
 .nav-tabs-riista > li > a {
   color: #555;
-  background-color: #f0f0f0;
+  background-color: @table-bg-accent;
   text-transform: uppercase;
   font-family: @font-family-sans-serif;
   font-size: 14px;
   font-weight: bold;
   padding: 12px 17px;
-  border: solid 1px #f0f0f0;
+  border: solid 1px @table-bg-accent;
   border-bottom: none;
   min-width: 227px;
 }
@@ -303,23 +337,34 @@ input[type=checkbox].r-non-labeled-checkbox {
 }
 
 .table > thead > tr > th {
-  background-color: #f0f0f0;
+  background-color: @table-bg-accent;
   padding: 4px 8px;
   border-bottom: 1px solid @table-border-color;
 }
 
 .table-striped > tbody > tr > th {
-  background-color: #d3d3d3;
+  background-color: @table-border-color;
   padding: 1px 1px 1px 5px;
 }
 
 // swap striped tables even and odd colors, so that there is more contrast between header and first row
-.table-striped > tbody > tr:nth-child(odd) > td, .table-striped > tbody > tr:nth-child(odd) > th {
+.table-striped > tbody > tr:nth-child(odd) > td,
+.table-striped > tbody > tr:nth-child(odd) > th,
+.table-striped.table-striped-2 > tbody > tr:nth-child(4n+1) > td,
+.table-striped.table-striped-2 > tbody > tr:nth-child(4n+2) > td {
   background-color: #fff;
 }
 
-.table-striped > tbody > tr:nth-child(even) > td, .table-striped > tbody > tr:nth-child(even) > th {
+.table-striped > tbody > tr:nth-child(even) > td,
+.table-striped > tbody > tr:nth-child(even) > th,
+.table-striped.table-striped-2 > tbody > tr:nth-child(4n+3) > td,
+.table-striped.table-striped-2 > tbody > tr:nth-child(4n+4) > td {
   background-color: #f3f3f3;
+}
+
+.table-striped.table-striped-2.no-inner-border > tbody > tr:nth-child(4n+2) > td,
+.table-striped.table-striped-2.no-inner-border > tbody > tr:nth-child(4n+4) > td {
+  border-top: 0;
 }
 
 // Row actions column
@@ -329,6 +374,13 @@ input[type=checkbox].r-non-labeled-checkbox {
 
   .btn {
     padding: 6px 6px;
+  }
+
+  // placeholder for hidden button
+  .r-btn-placeholder {
+    // 20px (font-size) + 2 * 6px (padding) + 2 * 1px (transparent border)
+    min-width: 34px;
+    display: inline-block;
   }
 
   .fa, .glyphicon {

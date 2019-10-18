@@ -30,7 +30,7 @@ public class PermitDecisionRkaRecipientListingDTO {
 
     public PermitDecisionRkaRecipientListingDTO(final LocalisedString name,
                                                 final String email,
-                                                final OrganisationNameDTO rka) { ;
+                                                final OrganisationNameDTO rka) {
         this.nameFI = name.getFinnish();
         this.nameSV = name.getSwedish();
         this.email = email;

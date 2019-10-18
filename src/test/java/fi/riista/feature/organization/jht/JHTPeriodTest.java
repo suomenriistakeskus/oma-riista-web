@@ -83,15 +83,22 @@ public class JHTPeriodTest {
     }
 
     @Test
-    public void testInvalidPeriodLength_TooShort() {
-        assertFalse(new JHTPeriod(
+    public void testInvalidPeriodLength_OneDay() {
+        assertTrue(new JHTPeriod(
+                ld(2020, 7, 31),
+                ld(2020, 7, 31)).isPeriodValid());
+    }
+
+    @Test
+    public void testInvalidPeriodLength_OneYear() {
+        assertTrue(new JHTPeriod(
                 ld(2020, 8, 1),
                 ld(2021, 7, 31)).isPeriodValid());
     }
 
     @Test
-    public void testInvalidPeriodLength_TooShort2() {
-        assertFalse(new JHTPeriod(
+    public void testInvalidPeriodLength_FourYears() {
+        assertTrue(new JHTPeriod(
                 ld(2017, 8, 1),
                 ld(2021, 7, 31)).isPeriodValid());
     }

@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface HuntingClubGroupRepositoryCustom {
 
-    List<HuntingClubGroup> findGroupsByAuthorAndActorWuthAreaIntersecting(GameDiaryEntry diaryEntry, int huntingYear);
+    List<HuntingClubGroup> findGroupsByAuthorOrActorWithGroupAreaIntersecting(GameDiaryEntry diaryEntry,
+                                                                              int huntingYear);
 }

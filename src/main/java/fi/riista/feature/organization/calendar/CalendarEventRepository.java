@@ -12,12 +12,11 @@ import java.util.List;
 
 public interface CalendarEventRepository extends BaseRepository<CalendarEvent, Long>, CalendarEventRepositoryCustom {
 
-    @Query("select e from #{#entityName} e" +
-            " inner join fetch e.venue v" +
-            " inner join fetch v.address" +
-            " where e.organisation = ?1" +
-            " order by e.date desc, e.beginTime desc")
+    @Query("select e from #{#entityName} e where e.organisation = ?1 order by e.date desc, e.beginTime desc")
     List<CalendarEvent> findByOrganisation(Organisation organisation);
+
+    @Query("select e from #{#entityName} e where e.organisation = ?1 and e.date between ?2 and ?3 order by e.date desc, e.beginTime desc")
+    List<CalendarEvent> findByOrganisation(Organisation organisation, Date startTime, Date endTime);
 
     @Query("select e from #{#entityName} e" +
             " where e.organisation IN (:organisations)" +

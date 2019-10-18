@@ -39,21 +39,30 @@ public class HarvestPermitApplicationConflictPalstaRepositoryImpl implements Har
 
     @Override
     @Transactional(readOnly = true)
-    public List<HarvestPermitApplicationConflictPalsta> listAll(final HarvestPermitApplication firstApplication,
+    public List<HarvestPermitApplicationConflictPalsta> listAll(final long batchId,
+                                                                final HarvestPermitApplication firstApplication,
                                                                 final HarvestPermitApplication secondApplication) {
-        return jpqlQueryFactory.selectFrom(CONFLICT_PALSTA).where(palstaPredicate(firstApplication, secondApplication)).fetch();
+        return jpqlQueryFactory.selectFrom(CONFLICT_PALSTA)
+                .where(CONFLICT_PALSTA.batchId.eq(batchId))
+                .where(palstaPredicate(firstApplication, secondApplication))
+                .fetch();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<HarvestPermitApplicationConflictPalsta> listAll(final HarvestPermitApplication firstApplication,
+    public List<HarvestPermitApplicationConflictPalsta> listAll(final long batchId,
+                                                                final HarvestPermitApplication firstApplication,
                                                                 final List<HarvestPermitApplication> otherApplicationList) {
-        return jpqlQueryFactory.selectFrom(CONFLICT_PALSTA).where(palstaPredicate(firstApplication, otherApplicationList)).fetch();
+        return jpqlQueryFactory.selectFrom(CONFLICT_PALSTA)
+                .where(CONFLICT_PALSTA.batchId.eq(batchId))
+                .where(palstaPredicate(firstApplication, otherApplicationList))
+                .fetch();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Map<Long, ConfictSummaryDTO> countConflictSummaries(final HarvestPermitApplication application,
+    public Map<Long, ConfictSummaryDTO> countConflictSummaries(final long batchId,
+                                                               final HarvestPermitApplication application,
                                                                final List<HarvestPermitApplication> conflicting) {
         final NumberExpression<Integer> mhCountExpression = new CaseBuilder()
                 .when(CONFLICT_PALSTA.metsahallitus.isTrue()).then(1)
@@ -69,6 +78,7 @@ public class HarvestPermitApplicationConflictPalstaRepositoryImpl implements Har
                 .select(CONFLICT_PALSTA.firstApplication.id, CONFLICT_PALSTA.secondApplication.id,
                         mhCountExpression, privateCountExpression, CONFLICT_PALSTA.conflictAreaSize.sum())
                 .from(CONFLICT_PALSTA)
+                .where(CONFLICT_PALSTA.batchId.eq(batchId))
                 .where(palstaPredicate(application, conflicting))
                 .groupBy(CONFLICT_PALSTA.firstApplication.id, CONFLICT_PALSTA.secondApplication.id)
                 .fetch().stream()

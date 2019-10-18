@@ -12,7 +12,6 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.F;
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.Range;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -34,6 +33,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.HashSet;
@@ -61,7 +62,8 @@ public class SrvaEvent extends LifecycleEntity<Long> {
     private SrvaEventTypeEnum eventType;
 
     @NotNull
-    @Range(min = MIN_AMOUNT, max = MAX_AMOUNT)
+    @Min(MIN_AMOUNT)
+    @Max(MAX_AMOUNT)
     @Column(nullable = false)
     private Integer totalSpecimenAmount;
 

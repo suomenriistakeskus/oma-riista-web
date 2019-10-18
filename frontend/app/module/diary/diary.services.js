@@ -16,7 +16,7 @@ angular.module('app.diary.services', ['ngResource'])
 
         function addFunctions(parameters) {
             parameters.isMultipleSpecimensAllowedForHarvestSpecies = function (gameSpeciesCode) {
-                var selectedSpecies = gameSpeciesCode ? _.find(parameters.species, 'code', gameSpeciesCode) : null;
+                var selectedSpecies = gameSpeciesCode ? _.find(parameters.species, {code: gameSpeciesCode}) : null;
                 return selectedSpecies && selectedSpecies.multipleSpecimenAllowedOnHarvests;
             };
         }

@@ -33,12 +33,16 @@ public class HarvestForPermitMutation implements HarvestMutationForReportType {
             throw HarvestSpecVersionNotSupportedException.permitNotSupported(harvestSpecVersion);
         }
 
-        if (harvestPermit.isHarvestReportDone()) {
-            throw new EndOfHuntingReportExistsException(harvestPermit);
+        if (harvestPermit.isHarvestReportApproved() || harvestPermit.isHarvestReportRejected()) {
+            throw new EndOfHuntingReportExistsException();
+        }
+
+        if (harvestPermit.isHarvestReportDone() && mutationRole != HarvestMutationRole.MODERATOR) {
+            throw new EndOfHuntingReportExistsException();
         }
 
         if (!harvestPermit.hasSpeciesAmount(gameSpeciesCode, harvestDate)) {
-            throw new HarvestPermitSpeciesAmountNotFound(harvestPermit.getPermitNumber(), gameSpeciesCode, harvestDate);
+            throw HarvestPermitSpeciesAmountNotFound.harvestNotValidOn(harvestPermit.getPermitNumber(), gameSpeciesCode, harvestDate);
         }
 
         final Harvest.StateAcceptedToHarvestPermit stateAcceptedToPermit =
@@ -78,12 +82,6 @@ public class HarvestForPermitMutation implements HarvestMutationForReportType {
 
         if (permitChanged && !roleCanChangePermit) {
             throw new HarvestPermitChangeForbiddenException(mutationRole);
-        }
-
-        if (harvest.getHarvestPermit() != null
-                && harvest.getHarvestPermit().isHarvestReportDone()
-                && harvest.isAcceptedToHarvestPermit()) {
-            throw new EndOfHuntingReportExistsException(harvest.getHarvestPermit());
         }
 
         clearSeasonFields(harvest);

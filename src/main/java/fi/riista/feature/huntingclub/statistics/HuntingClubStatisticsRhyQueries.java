@@ -194,10 +194,10 @@ public class HuntingClubStatisticsRhyQueries implements HuntingClubStatisticsQue
     @Override
     public LocalisedString getName() {
         final QRiistakeskuksenAlue rka = QRiistakeskuksenAlue.riistakeskuksenAlue;
-        final Tuple t = queryFactory.from(rka)
+
+        return queryFactory.from(rka)
                 .where(rka.id.eq(rkaId))
-                .select(rka.nameFinnish, rka.nameSwedish)
+                .select(rka.nameLocalisation())
                 .fetchOne();
-        return LocalisedString.of(t.get(rka.nameFinnish), t.get(rka.nameSwedish));
     }
 }

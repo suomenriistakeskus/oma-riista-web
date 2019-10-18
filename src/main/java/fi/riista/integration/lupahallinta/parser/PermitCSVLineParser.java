@@ -2,6 +2,7 @@ package fi.riista.integration.lupahallinta.parser;
 
 import com.google.common.base.Splitter;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.validation.Validators;
 import org.apache.commons.lang.StringUtils;
 
@@ -30,13 +31,13 @@ public class PermitCSVLineParser {
         }
 
         csvLine.setContactPersonSsn(parseSsn(line[0]));
-        csvLine.setPermitHolder(line[1]);
+        csvLine.setPermitHolderClub(line[1]);
         csvLine.setPermitPartners(COMMA_SPLITTER.splitToList(line[2]));
         csvLine.setPermitNumber(parsePermitNumber(line[3]));
         csvLine.setPermitTypeCode(line[4]);
         csvLine.setPermitTypeName(line[5]);
         csvLine.setSpeciesAmounts(amountParser.parse(line[6], line[7], line[8], line[9], line[11], line[12], line[14],
-                HarvestPermit.isMooselikePermitTypeCode(csvLine.getPermitTypeCode())));
+                PermitTypeCode.isMooselikePermitTypeCode(csvLine.getPermitTypeCode())));
         csvLine.setRhyOfficialCode(line[10]);
         csvLine.setOriginalPermitNumber(line[13]);
         csvLine.setPrintingUrl(line[15]);

@@ -15,7 +15,6 @@ import fi.riista.feature.organization.person.Person_;
 import fi.riista.util.F;
 import fi.riista.util.jpa.CriteriaUtils;
 import fi.riista.validation.PhoneNumber;
-import org.hibernate.validator.constraints.Range;
 import org.joda.time.LocalDateTime;
 
 import javax.persistence.Access;
@@ -32,6 +31,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
@@ -45,7 +46,7 @@ import static fi.riista.util.F.coalesceAsInt;
 public class Observation extends GameDiaryEntry {
 
     public static final int MIN_AMOUNT = 1;
-    public static final int MAX_AMOUNT = 999;
+    public static final int MAX_AMOUNT = 9999;
 
     private Long id;
 
@@ -58,7 +59,8 @@ public class Observation extends GameDiaryEntry {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Person observer;
 
-    @Range(min = MIN_AMOUNT, max = MAX_AMOUNT)
+    @Min(MIN_AMOUNT)
+    @Max(MAX_AMOUNT)
     @Column
     private Integer amount;
 
@@ -68,7 +70,8 @@ public class Observation extends GameDiaryEntry {
     /**
      * Etäisyys asumuksesta (<= 100 m)
      */
-    @Range(min = 0, max = 100)
+    @Min(0)
+    @Max(100)
     @Column
     private Integer inYardDistanceToResidence;
 
@@ -98,15 +101,18 @@ public class Observation extends GameDiaryEntry {
     @Column(columnDefinition = "text")
     private String officialAdditionalInfo;
 
-    @Range(min = 0, max = 100)
+    @Min(0)
+    @Max(100)
     @Column
     private Integer mooselikeMaleAmount;
 
-    @Range(min = 0, max = 100)
+    @Min(0)
+    @Max(100)
     @Column
     private Integer mooselikeFemaleAmount;
 
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     @Column
     private Integer mooselikeCalfAmount;
 
@@ -114,7 +120,8 @@ public class Observation extends GameDiaryEntry {
      * Amount of groups of one adult female moose with one calf within one game
      * observation (event).
      */
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     @Column(name = "mooselike_female_1_calf_amount")
     private Integer mooselikeFemale1CalfAmount;
 
@@ -122,7 +129,8 @@ public class Observation extends GameDiaryEntry {
      * Amount of groups of one adult female moose with two calfs within one game
      * observation (event).
      */
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     @Column(name = "mooselike_female_2_calfs_amount")
     private Integer mooselikeFemale2CalfsAmount;
 
@@ -130,7 +138,8 @@ public class Observation extends GameDiaryEntry {
      * Amount of groups of one adult female moose with three calfs within one
      * game observation (event).
      */
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     @Column(name = "mooselike_female_3_calfs_amount")
     private Integer mooselikeFemale3CalfsAmount;
 
@@ -138,11 +147,13 @@ public class Observation extends GameDiaryEntry {
      * Amount of groups of one adult female moose with four calfs within one
      * game observation (event).
      */
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     @Column(name = "mooselike_female_4_calfs_amount")
     private Integer mooselikeFemale4CalfsAmount;
 
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     @Column
     private Integer mooselikeUnknownSpecimenAmount;
 
@@ -238,8 +249,8 @@ public class Observation extends GameDiaryEntry {
                 mooselikeFemale3CalfsAmount, mooselikeUnknownSpecimenAmount);
     }
 
-    public void setAmountToSumOfMooselikeAmounts() {
-        this.amount = coalesceAsInt(mooselikeMaleAmount, 0)
+    public int getSumOfMooselikeAmounts() {
+        return coalesceAsInt(mooselikeMaleAmount, 0)
                 + coalesceAsInt(mooselikeFemaleAmount, 0)
                 + coalesceAsInt(mooselikeCalfAmount, 0)
                 + 2 * coalesceAsInt(mooselikeFemale1CalfAmount, 0)

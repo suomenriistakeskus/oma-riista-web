@@ -5,25 +5,25 @@
         </uib-tab-heading>
     </uib-tab>
 
-    <uib-tab classes="shooting-test-tab" index="1" select="$ctrl.selectTab(1)" disable="!$ctrl.event.isOpen()">
+    <uib-tab classes="shooting-test-tab" index="1" select="$ctrl.selectTab(1)" disable="!$ctrl.isRegistrationEnabled()">
         <uib-tab-heading>
             <span translate="shootingTest.tabs.registration"></span>
         </uib-tab-heading>
     </uib-tab>
 
-    <uib-tab classes="shooting-test-tab" index="2" select="$ctrl.selectTab(2)" disable="!$ctrl.event.isOpen()">
+    <uib-tab classes="shooting-test-tab" index="2" select="$ctrl.selectTab(2)" disable="!$ctrl.isParticipantsViewEnabled()">
         <uib-tab-heading>
             <span translate="shootingTest.tabs.participants"></span>
-            <span class="shooting-test-tab-count-badge"
+            <span class="r-tab-alert-badge"
                   ng-if="$ctrl.event.numberOfParticipantsWithNoAttempts > 0"
                   ng-bind="$ctrl.event.numberOfParticipantsWithNoAttempts"></span>
         </uib-tab-heading>
     </uib-tab>
 
-    <uib-tab classes="shooting-test-tab" index="3" select="$ctrl.selectTab(3)" disable="!$ctrl.event.isOpened()">
+    <uib-tab classes="shooting-test-tab" index="3" select="$ctrl.selectTab(3)" disable="!$ctrl.isPaymentsViewEnabled()">
         <uib-tab-heading>
             <span translate="shootingTest.tabs.payments"></span>
-            <span class="shooting-test-tab-count-badge"
+            <span class="r-tab-alert-badge"
                   ng-if="$ctrl.event.numberOfCompletedParticipants < $ctrl.event.numberOfAllParticipants">
                 {{$ctrl.event.numberOfAllParticipants - $ctrl.event.numberOfCompletedParticipants}}
             </span>

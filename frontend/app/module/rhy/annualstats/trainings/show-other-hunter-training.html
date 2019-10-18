@@ -1,5 +1,5 @@
 <div class="panel panel-default">
-    <timestamped-panel-heading title-key="'rhy.annualStats.trainings.otherHunterTraining.title'"
+    <timestamped-panel-heading title-key="'rhy.annualStats.trainings.otherHunter.title'"
                                last-modified="$ctrl.otherHunterTraining.lastModified">
     </timestamped-panel-heading>
 
@@ -8,11 +8,17 @@
             <table class="table table-condensed">
                 <tbody>
                     <tr ng-repeat-start="type in $ctrl.trainingTypes">
-                        <td class="col-xs-8" translate="{{::('rhy.annualStats.trainings.otherHunterTraining.' + type + 'TrainingEvents')}}"></td>
+                        <td class="col-xs-8" ng-switch="::($ctrl.otherHunterTraining[type + 'TrainingEventsOverridden'])">
+                            <span ng-switch-when="true" translate="{{::('rhy.annualStats.trainings.otherHunter.' + type + 'TrainingEvents')}}"></span>
+                            <div ng-switch-when="false" computed-marker-title="{{::('rhy.annualStats.trainings.otherHunter.' + type + 'TrainingEvents')}}"></div>
+                        </td>
                         <td num-pieces="::($ctrl.otherHunterTraining[type + 'TrainingEvents'])"></td>
                     </tr>
-                    <tr ng-repeat-end>
-                        <td class="col-xs-8" translate="{{::('rhy.annualStats.trainings.otherHunterTraining.' + type + 'TrainingParticipants')}}"></td>
+                    <tr  class="indented-row" ng-repeat-end>
+                        <td class="col-xs-8" ng-switch="::($ctrl.otherHunterTraining[type + 'TrainingParticipantsOverridden'])">
+                            <span ng-switch-when="true" translate="{{::('rhy.annualStats.trainings.otherHunter.' + type + 'TrainingParticipants')}}"></span>
+                            <div ng-switch-when="false" computed-marker-title="{{::('rhy.annualStats.trainings.otherHunter.' + type + 'TrainingParticipants')}}"></div>
+                        </td>
                         <td num-persons="::($ctrl.otherHunterTraining[type + 'TrainingParticipants'])"></td>
                     </tr>
                 </tbody>

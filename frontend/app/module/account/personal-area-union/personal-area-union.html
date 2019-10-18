@@ -1,0 +1,38 @@
+<hr class="invisible">
+
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p translate="account.personalAreaUnion.messages.personalAreaUnionHelp"></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-2">
+        <label translate="global.huntingYear"></label>
+        <select name="yearSelect" id="yearSelect"
+                class="form-control"
+                ng-model="$ctrl.huntingYear"
+                ng-options="year.year as year.name for year in $ctrl.huntingYears | orderBy:'-year'"
+                ng-change="$ctrl.reload()">
+        </select>
+    </div>
+
+    <div class="col-xs-2 col-xs-offset-8">
+        <label class="invisible"></label>
+        <button type="button" class="btn btn-primary btn-block"
+                ng-click="$ctrl.createArea()">
+            <span translate="account.areas.create"></span>
+        </button>
+    </div>
+</div>
+
+<hr class="invisible">
+
+<slice-pager slice="$ctrl.slice" load-page="$ctrl.loadPage(page)"></slice-pager>
+
+<hr class="invisible">
+
+<personal-area-union-list area-list="$ctrl.slice.content" person-id="$ctrl.personId"
+                          reload-page="$ctrl.reload()"></personal-area-union-list>

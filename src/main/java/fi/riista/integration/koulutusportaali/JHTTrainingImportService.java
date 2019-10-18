@@ -1,10 +1,10 @@
 package fi.riista.integration.koulutusportaali;
 
-import fi.riista.feature.organization.person.PersonLookupService;
 import fi.riista.feature.organization.jht.training.JHTTraining;
+import fi.riista.feature.organization.jht.training.JHTTrainingRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.jht.training.JHTTrainingRepository;
+import fi.riista.feature.organization.person.PersonLookupService;
 import fi.riista.integration.koulutusportaali.jht.JHT_Suoritus;
 import fi.riista.integration.koulutusportaali.jht.JHT_TehtavaTyyppi;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Objects;
+
+import static fi.riista.feature.organization.jht.training.JHTTraining.FOREIGN_PERSON_ELIGIBLE_FOR_JHT_TRAINING;
+import static java.util.Objects.requireNonNull;
 
 @Service
 public class JHTTrainingImportService {
@@ -27,11 +29,11 @@ public class JHTTrainingImportService {
     public void importData(final List<JHT_Suoritus> batch) {
         for (final JHT_Suoritus suoritus : batch) {
             final JHTTraining training = new JHTTraining();
-            training.setExternalId(Objects.requireNonNull(suoritus.getId()));
+            training.setExternalId(requireNonNull(suoritus.getId()));
             training.setTrainingType(JHTTraining.TrainingType.SAHKOINEN);
             training.setPerson(requirePerson(suoritus));
-            training.setOccupationType(transformJhtOccupationType(Objects.requireNonNull(suoritus.getTehtavaTyyppi())));
-            training.setTrainingDate(Objects.requireNonNull(suoritus.getSuoritusPvm()));
+            training.setOccupationType(transformJhtOccupationType(requireNonNull(suoritus.getTehtavaTyyppi())));
+            training.setTrainingDate(requireNonNull(suoritus.getSuoritusPvm()));
 
             jhtTrainingRepository.save(training);
         }
@@ -39,13 +41,18 @@ public class JHTTrainingImportService {
 
     private Person requirePerson(final JHT_Suoritus suoritus) {
         if (suoritus.getOmaRiistaPersonId() != null) {
-            return personLookupService.findById(suoritus.getOmaRiistaPersonId())
+            return personLookupService
+                    .findById(suoritus.getOmaRiistaPersonId(), FOREIGN_PERSON_ELIGIBLE_FOR_JHT_TRAINING)
                     .orElseThrow(() -> new IllegalArgumentException("no person found using personId"));
+
         } else if (suoritus.getHetu() != null) {
-            return personLookupService.findBySsnNoFallback(suoritus.getHetu())
+            return personLookupService
+                    .findBySsnNoFallback(suoritus.getHetu())
                     .orElseThrow(() -> new IllegalArgumentException("no person found using ssn"));
+
         } else if (suoritus.getMetsastajaNumero() != null) {
-            return personLookupService.findByHunterNumber(suoritus.getMetsastajaNumero())
+            return personLookupService
+                    .findByHunterNumber(suoritus.getMetsastajaNumero(), FOREIGN_PERSON_ELIGIBLE_FOR_JHT_TRAINING)
                     .orElseThrow(() -> new IllegalArgumentException("no person found using hunterNumber"));
         }
 

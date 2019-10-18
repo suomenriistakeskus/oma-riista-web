@@ -38,6 +38,7 @@ public class HarvestPermitContactPersonFeatureTest extends EmbeddedDatabaseTest 
                     model().newHarvestPermitContactPerson(permit2, person1);
 
             final Person person3 = model().newPerson();
+            person3.setHunterNumber(null);
             final Person person4 = model().newPerson();
 
             onSavedAndAuthenticated(createNewModerator(), () -> {

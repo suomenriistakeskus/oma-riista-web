@@ -1,12 +1,20 @@
 <ul class="nav nav-pills" ng-if="$navCtrl.showNav()">
     <li active-if-state-includes="permitmanagement.payment.due">
-        <a ui-sref="permitmanagement.payment.due"
-           translate="harvestpermit.management.nav.paymentsDue"></a>
+        <a ui-sref="permitmanagement.payment.due">
+            <span translate="harvestpermit.management.nav.paymentsDue"></span>
+            <span class="r-tab-alert-badge"
+                  ng-show="$navCtrl.duePaymentsCount > 0"
+                  ng-bind="$navCtrl.duePaymentsCount"></span>
+        </a>
     </li>
 
     <li active-if-state-includes="permitmanagement.payment.paid">
-        <a ui-sref="permitmanagement.payment.paid"
-           translate="harvestpermit.management.nav.paymentsPaid"></a>
+        <a ui-sref="permitmanagement.payment.paid">
+            <span translate="harvestpermit.management.nav.paymentsPaid"></span>
+            <span class="r-tab-alert-badge"
+                    ng-show="$navCtrl.partiallyPaidInvoiceCount > 0"
+                    ng-bind="$navCtrl.partiallyPaidInvoiceCount"></span>
+        </a>
     </li>
 </ul>
 

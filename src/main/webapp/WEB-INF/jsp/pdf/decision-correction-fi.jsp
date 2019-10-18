@@ -62,11 +62,10 @@
 
     <p>
         Oikaisuvaatimuksen voi toimittaa Suomen riistakeskukselle henkilökohtaisesti, postitse maksettuna
-        postilähetyksenä, sähköpostilla taikka asiamiestä tai lähettiä käyttäen. Postittaminen tai muu toimittaminen
-        tapahtuu lähettäjän vastuulla. Oikaisuvaatimuksen on saavuttava Suomen riistakeskukselle ennen 30 päivän
-        määräajan päättymistä, jotta vaatimus voidaan tutkia. Jos määräajan viimeinen päivä on pyhäpäivä, lauantai,
-        itsenäisyyspäivä, vapunpäivä, jouluaatto tai juhannusaatto, määräaika jatkuu kuitenkin vielä seuraavan
-        arkipäivän laitoksen aukioloajan päättymiseen.
+        postilähetyksenä taikka asiamiestä tai lähettiä käyttäen. Postittaminen tai muu toimittaminen tapahtuu
+        lähettäjän vastuulla. Oikaisuvaatimuksen on saavuttava Suomen riistakeskukselle ennen kuuden kuukauden määräajan
+        päättymistä, jotta vaatimus voidaan tutkia. Jos määräajan viimeinen päivä on pyhäpäivä, lauantai,
+        itsenäisyyspäivä, vapunpäivä, jouluaatto, määräaika jatkuu kuitenkin vielä seuraavan arkipäivän.
     </p>
 
     <h2>Käsittelymaksu</h2>

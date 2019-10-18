@@ -1,0 +1,86 @@
+<div class="map-editor-layout">
+    <div class="main-column">
+        <div class="map-overlay-button-container">
+            <map-editor-toolbar api="$ctrl.editor"></map-editor-toolbar>
+        </div>
+
+        <leaflet id="map-editor-map"
+                 class="r-cursor-arrow"
+                 defaults="$ctrl.mapDefaults"
+                 layers="$ctrl.mapDefaults.mmlLayers"
+                 controls="$ctrl.mapDefaults.controls"
+                 event-broadcast="$ctrl.mapEvents"
+                 lf-center="$ctrl.mapState.center"
+                 bounds="$ctrl.mapState.viewBounds"
+                 r-viewport-height>
+            <leaflet-map-editor editor="$ctrl.editor"></leaflet-map-editor>
+        </leaflet>
+    </div>
+
+    <div class="top-left-column">
+        <div class="buttons">
+            <div class="btn-group btn-group-justified">
+                <div class="btn-group">
+                    <button type="button"
+                            class="btn btn-primary"
+                            ng-click="$ctrl.save()">
+                        <span class="fa fa-fw fa-lg fa-floppy-o"></span>
+                        &nbsp;
+                        <span translate="global.button.save"></span>
+                    </button>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button"
+                            class="btn btn-default"
+                            ng-click="$ctrl.close()">
+                        <span class="fa fa-fw fa-lg fa-sign-out"></span>
+                        &nbsp;
+                        <span translate="global.button.exit"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <p class="area-name" ng-bind="$ctrl.areaName"></p>
+
+        <map-editor-feature-details
+                feature="$ctrl.editor.selection.getActiveFeature()">
+        </map-editor-feature-details>
+
+        <map-editor-sidebar-tabs
+                selected-tab="$ctrl.selectedTab"
+                editor="$ctrl.editor"
+                metsahallitus="$ctrl.metsahallitus">
+        </map-editor-sidebar-tabs>
+    </div>
+
+    <div class="left-column"
+         ng-switch="$ctrl.selectedTab">
+        <div ng-switch-when="a">
+            <map-editor-mml-sidebar
+                    editor="$ctrl.editor"
+                    show-bulk-insert="$ctrl.showBulkInsert()">
+            </map-editor-mml-sidebar>
+        </div>
+
+        <div ng-switch-when="b">
+            <map-editor-metsahallitus-sidebar
+                    editor="$ctrl.editor"
+                    metsahallitus="$ctrl.metsahallitus">
+            </map-editor-metsahallitus-sidebar>
+        </div>
+
+        <div ng-switch-when="c">
+            <map-editor-bulk-sidebar
+                    editor="$ctrl.editor">
+            </map-editor-bulk-sidebar>
+        </div>
+
+        <div ng-switch-when="d">
+            <map-editor-draw-sidebar
+                    editor="$ctrl.editor">
+            </map-editor-draw-sidebar>
+        </div>
+    </div>
+</div>

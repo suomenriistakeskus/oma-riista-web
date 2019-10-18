@@ -2,30 +2,26 @@ package fi.riista.feature.permit.application.fragment;
 
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.common.EnumLocaliser;
-import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.gis.GISPoint;
-import fi.riista.feature.gis.geojson.GeoJSONConstants;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusMaterialYear;
+import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.security.EntityPermission;
+import fi.riista.util.F;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.Collections.emptyList;
 
 @Component
 public class ListApplicationAreaFragmentsFeature {
-
-    @Resource
-    private HarvestPermitAreaFragmentRepository fragmentRepository;
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -33,52 +29,59 @@ public class ListApplicationAreaFragmentsFeature {
     @Resource
     private MessageSource messageSource;
 
+    @Resource
+    private MetsahallitusMaterialYear metsahallitusMaterialYear;
+
+    @Resource
+    private HarvestPermitAreaFragmentRepository harvestPermitAreaFragmentRepository;
+
     @Transactional(readOnly = true)
-    public Map<String, Object> getFragmentInfo(final long applicationId, final GeoLocation location) {
-        final HarvestPermitApplication application = requireEntityService.requireHarvestPermitApplication(
-                applicationId, EntityPermission.READ);
+    public List<HarvestPermitAreaFragmentInfoDTO> getFragmentInfo(final HarvestPermitAreaFragmentRequestDTO dto) {
+        final HarvestPermitApplication application = getApplication(dto.getApplicationId());
 
-        if (application.getArea() == null) {
-            return Collections.emptyMap();
-        }
-
-        final List<HarvestPermitAreaFragmentInfoDTO> infos = fragmentRepository.getFragmentInfoInLocation(
-                application.getId(), GISPoint.create(location));
-
-        if (infos.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        final Map<String, Object> map = new HashMap<>();
-
-        // At given location, there should be only one fragment, therefore any of the dtos should have
-        // same information of the whole fragment.
-        final HarvestPermitAreaFragmentInfoDTO first = infos.get(0);
-        map.put("waterAreaSize", first.getWaterAreaSize());
-        map.put("valtionmaaAreaSize", first.getValtionmaaAreaSize());
-        map.put("valtionmaaWaterAreaSize", first.getValtionmaaWaterAreaSize());
-        map.put("yksityismaaAreaSize", first.getAreaSize() - first.getValtionmaaAreaSize());
-        map.put("yksityismaaWaterAreaSize", first.getWaterAreaSize() - first.getValtionmaaWaterAreaSize());
-        map.put("areaSize", first.getAreaSize());
-        map.put(GeoJSONConstants.PROPERTY_HASH, first.getHash());
-
-        final List<PropertyNumberAreaSizeDTO> properties = infos.stream()
-                .map(i -> new PropertyNumberAreaSizeDTO(i.getPropertyNumber(), i.getPropertyArea(), i.isMetsahallitus()))
-                .collect(toList());
-        map.put("propertyNumbers", properties);
-
-        return map;
+        return listFragments(application, dto);
     }
 
     @Transactional(readOnly = true)
-    public HarvestPermitAreaFragmentExcelView getFragmentExcel(long applicationId) {
-        final HarvestPermitApplication application = requireEntityService.requireHarvestPermitApplication(
-                applicationId, EntityPermission.READ);
-
-        final Locale locale = LocaleContextHolder.getLocale();
+    public HarvestPermitAreaFragmentExcelView getFragmentExcel(final HarvestPermitAreaFragmentRequestDTO dto,
+                                                               final Locale locale) {
+        final HarvestPermitApplication application = getApplication(dto.getApplicationId());
         final EnumLocaliser enumLocaliser = new EnumLocaliser(messageSource, locale);
+        final List<HarvestPermitAreaFragmentInfoDTO> rows = listFragments(application, dto);
 
-        final List<HarvestPermitAreaFragmentInfoDTO> rows = fragmentRepository.getFragmentInfo(application.getId());
-        return new HarvestPermitAreaFragmentExcelView(enumLocaliser, application.getPermitNumber(), rows);
+        return new HarvestPermitAreaFragmentExcelView(enumLocaliser, application.getApplicationNumber(), rows);
+    }
+
+    private List<HarvestPermitAreaFragmentInfoDTO> listFragments(final HarvestPermitApplication application,
+                                                                 final HarvestPermitAreaFragmentRequestDTO requestDTO) {
+        final HarvestPermitAreaFragmentQueryParams params = createParams(application, requestDTO);
+
+        final Map<String, List<HarvestPermitAreaFragmentPropertyDTO>> fragmentPropertyNumbers =
+                harvestPermitAreaFragmentRepository.getFragmentProperty(params);
+
+        return F.mapNonNullsToList(
+                harvestPermitAreaFragmentRepository.getFragmentSize(params),
+                dto -> new HarvestPermitAreaFragmentInfoDTO(
+                        dto, fragmentPropertyNumbers.getOrDefault(dto.getHash(), emptyList())));
+    }
+
+    private HarvestPermitAreaFragmentQueryParams createParams(final HarvestPermitApplication application,
+                                                              final HarvestPermitAreaFragmentRequestDTO dto) {
+        return new HarvestPermitAreaFragmentQueryParams(
+                requireZoneId(application),
+                metsahallitusMaterialYear.getLatestHirviYear(),
+                dto.getFragmentSizeLimit(),
+                dto.getLocation());
+    }
+
+    private HarvestPermitApplication getApplication(final long applicationId) {
+        return requireEntityService.requireHarvestPermitApplication(applicationId, EntityPermission.READ);
+    }
+
+    private static long requireZoneId(final HarvestPermitApplication application) {
+        return Optional.ofNullable(application.getArea())
+                .map(HarvestPermitArea::getZone)
+                .map(GISZone::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Permit area is missing"));
     }
 }

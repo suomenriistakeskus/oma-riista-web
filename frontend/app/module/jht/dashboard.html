@@ -6,10 +6,6 @@
             </div>
 
             <div class="panel-body">
-                <p class="text-muted"
-                   translate="main.logged.message"
-                   translate-values="{username: '{{account.username}} {{account.firstname}} {{account.lastname}}'}"></p>
-
                 <enable-two-factor-authentication-button></enable-two-factor-authentication-button>
             </div>
         </div>
@@ -25,4 +21,18 @@
             </div>
         </div>
     </div>
+</div>
+<div class="row" ng-show="$ctrl.isAuthorizedForBulkMessages()">
+    <div class="col-xs-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Joukkoviestit</h3>
+            </div>
+
+            <div class="panel-body">
+                <dashboard-bulk-button></dashboard-bulk-button>
+            </div>
+        </div>
+    </div>
+
 </div>

@@ -1,9 +1,9 @@
 package fi.riista.feature.permit.decision.reference;
 
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.feature.organization.OrganisationNameDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
+import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
 
@@ -14,9 +14,10 @@ public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
     private Integer rev;
     private Integer applicationNumber;
     private PersonWithNameDTO contactPerson;
-    private OrganisationNameDTO permitHolder;
+    private PermitHolderDTO permitHolder;
     private PersonWithNameDTO handler;
     private PermitDecision.Status decisionStatus;
+    private PermitDecision.GrantStatus grantStatus;
 
     private PermitDecisionDocument document;
 
@@ -29,10 +30,11 @@ public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
 
         dto.setId(decision.getId());
         dto.setRev(decision.getConsistencyVersion());
-        dto.setApplicationNumber(decision.getApplication().getApplicationNumber());
+        dto.setApplicationNumber(decision.getDecisionNumber());
         dto.setContactPerson(PersonWithNameDTO.create(decision.getContactPerson()));
-        dto.setPermitHolder(decision.getPermitHolder() != null ? OrganisationNameDTO.create(decision.getPermitHolder()) : null);
+        dto.setPermitHolder(decision.getPermitHolder() != null ? PermitHolderDTO.createFrom(decision.getPermitHolder()) : null);
         dto.setDecisionStatus(decision.getStatus());
+        dto.setGrantStatus(decision.getGrantStatus());
         dto.setDocument(decision.getDocument() != null ? decision.getDocument() : new PermitDecisionDocument());
 
         final SystemUser h = decision.getHandler();
@@ -81,11 +83,11 @@ public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
         this.contactPerson = contactPerson;
     }
 
-    public OrganisationNameDTO getPermitHolder() {
+    public PermitHolderDTO getPermitHolder() {
         return permitHolder;
     }
 
-    public void setPermitHolder(final OrganisationNameDTO permitHolder) {
+    public void setPermitHolder(final PermitHolderDTO permitHolder) {
         this.permitHolder = permitHolder;
     }
 
@@ -103,6 +105,14 @@ public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
 
     public void setDecisionStatus(final PermitDecision.Status decisionStatus) {
         this.decisionStatus = decisionStatus;
+    }
+
+    public PermitDecision.GrantStatus getGrantStatus() {
+        return grantStatus;
+    }
+
+    public void setGrantStatus(final PermitDecision.GrantStatus grantStatus) {
+        this.grantStatus = grantStatus;
     }
 
     public PermitDecisionDocument getDocument() {

@@ -2,18 +2,24 @@ package fi.riista.api.mobile;
 
 import fi.riista.feature.common.dto.IdRevisionDTO;
 import fi.riista.feature.shootingtest.ParticipantPaymentUpdateDTO;
-import fi.riista.feature.shootingtest.PersonShootingTestRegistrationDTO;
-import fi.riista.feature.shootingtest.SelectedShootingTestTypesDTO;
 import fi.riista.feature.shootingtest.ShootingTestAttemptCrudFeature;
 import fi.riista.feature.shootingtest.ShootingTestAttemptDTO;
 import fi.riista.feature.shootingtest.ShootingTestCalendarEventDTO;
 import fi.riista.feature.shootingtest.ShootingTestFeature;
-import fi.riista.feature.shootingtest.ShootingTestOfficialOccupationDTO;
-import fi.riista.feature.shootingtest.ShootingTestOfficialsDTO;
 import fi.riista.feature.shootingtest.ShootingTestParticipantDTO;
 import fi.riista.feature.shootingtest.ShootingTestParticipantDetailsDTO;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficialFeature;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficialOccupationDTO;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficialsDTO;
+import fi.riista.feature.shootingtest.registration.RegisterParticipantDTO;
+import fi.riista.feature.shootingtest.registration.SelectedShootingTestTypesDTO;
+import fi.riista.feature.shootingtest.registration.ShootingTestRegistrationFeature;
+import fi.riista.feature.shootingtest.registration.ShootingTestRegistrationPersonSearchDTO;
+import fi.riista.util.DateUtil;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
+import org.joda.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -31,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/mobile/v2/shootingtest", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -38,6 +45,12 @@ public class MobileShootingTestV2ApiResource {
 
     @Resource
     private ShootingTestFeature shootingTestFeature;
+
+    @Resource
+    private ShootingTestOfficialFeature officialFeature;
+
+    @Resource
+    private ShootingTestRegistrationFeature registrationFeature;
 
     @Resource
     private ShootingTestAttemptCrudFeature attemptCrudFeature;
@@ -50,8 +63,12 @@ public class MobileShootingTestV2ApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/rhy/{rhyId:\\d+}/officials")
-    public List<ShootingTestOfficialOccupationDTO> listAvailableShootingTestOfficials(@PathVariable final long rhyId) {
-        return shootingTestFeature.listAvailableOfficials(rhyId);
+    public List<ShootingTestOfficialOccupationDTO> listAvailableShootingTestOfficials(
+            @PathVariable final long rhyId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate date) {
+
+        final LocalDate eventDate = Optional.ofNullable(date).orElseGet(DateUtil::today);
+        return officialFeature.listAvailableOfficials(rhyId, eventDate);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -84,13 +101,13 @@ public class MobileShootingTestV2ApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/event/{eventId:\\d+}/qualifyingofficials")
     public List<ShootingTestOfficialOccupationDTO> listQualifyingShootingTestOfficials(@PathVariable final long eventId) {
-        return shootingTestFeature.listQualifyingOfficials(eventId);
+        return officialFeature.listQualifyingOfficials(eventId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/event/{eventId:\\d+}/assignedofficials")
     public List<ShootingTestOfficialOccupationDTO> listAssignedShootingTestOfficials(@PathVariable final long eventId) {
-        return shootingTestFeature.listAssignedOfficials(eventId);
+        return officialFeature.listAssignedOfficials(eventId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -99,30 +116,47 @@ public class MobileShootingTestV2ApiResource {
                                             @RequestBody @Validated final ShootingTestOfficialsDTO dto) {
 
         dto.setShootingTestEventId(eventId);
-        shootingTestFeature.assignOfficials(dto);
+        officialFeature.assignOfficials(dto);
     }
 
+    // TODO Will be removed after an adequate base of mobile app installations is capable of adding foreign hunters.
     @PostMapping(value = "/event/{eventId:\\d+}/findperson/hunternumber")
-    public PersonShootingTestRegistrationDTO findPersonByHunterNumberForRegistration(@PathVariable final long eventId,
-                                                                                     @RequestParam final String hunterNumber) {
+    public ShootingTestRegistrationPersonSearchDTO findFinnishPersonByHunterNumberForRegistration(@PathVariable final long eventId,
+                                                                                                  @RequestParam final String hunterNumber) {
 
-        return shootingTestFeature.findPersonByHunterNumberForRegistration(eventId, hunterNumber);
+        return registrationFeature.findFinnishHunterByHunterNumber(eventId, hunterNumber);
+    }
+
+    @PostMapping(value = "/event/{eventId:\\d+}/findhunter/hunternumber")
+    public ShootingTestRegistrationPersonSearchDTO findPersonByHunterNumberForRegistration(@PathVariable final long eventId,
+                                                                                           @RequestParam final String hunterNumber) {
+
+        return registrationFeature.findHunterByHunterNumber(eventId, hunterNumber);
     }
 
     @PostMapping(value = "/event/{eventId:\\d+}/findperson/ssn")
-    public PersonShootingTestRegistrationDTO findPersonBySsnForRegistration(@PathVariable final long eventId,
-                                                                            @RequestParam final String ssn) {
+    public ShootingTestRegistrationPersonSearchDTO findFinnishPersonBySsnForRegistration(@PathVariable final long eventId,
+                                                                                         @RequestParam final String ssn) {
 
-        return shootingTestFeature.findPersonBySsnForRegistration(eventId, ssn);
+        return registrationFeature.findFinnishHunterBySsn(eventId, ssn);
     }
 
+    // TODO Will be removed after an adequate base of mobile app installations is capable of adding foreign hunters.
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping(value = "/event/{eventId:\\d+}/participant/person/{personId:\\d+}")
     public void registerParticipant(@PathVariable final long eventId,
                                     @PathVariable final long personId,
                                     @RequestBody @Valid final SelectedShootingTestTypesDTO selectedTypes) {
 
-        shootingTestFeature.registerParticipant(eventId, personId, selectedTypes);
+        registrationFeature.registerParticipant(eventId, personId, selectedTypes);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping(value = "/event/{eventId:\\d+}/participant")
+    public void registerParticipant(@PathVariable final long eventId,
+                                    @RequestBody @Valid final RegisterParticipantDTO registration) {
+
+        registrationFeature.registerParticipant(eventId, registration);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

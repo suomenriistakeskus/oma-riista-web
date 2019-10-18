@@ -8,6 +8,7 @@ import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOK
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 import static fi.riista.feature.shootingtest.AbstractShootingTestEntityAuthorization.Role.ASSIGNED_SHOOTING_TEST_OFFICIAL;
 import static fi.riista.feature.shootingtest.ShootingTestEventAuthorization.ShootingTestEventPermission.ASSIGN_OFFICIALS;
+import static fi.riista.feature.shootingtest.ShootingTestEventAuthorization.ShootingTestEventPermission.VIEW_PARTICIPANTS;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.READ;
 import static fi.riista.security.EntityPermission.UPDATE;
@@ -16,7 +17,7 @@ import static fi.riista.security.EntityPermission.UPDATE;
 public class ShootingTestEventAuthorization extends AbstractShootingTestEntityAuthorization<ShootingTestEvent> {
 
     public enum ShootingTestEventPermission {
-        ASSIGN_OFFICIALS
+        ASSIGN_OFFICIALS, VIEW_PARTICIPANTS
     }
 
     public ShootingTestEventAuthorization() {
@@ -24,6 +25,7 @@ public class ShootingTestEventAuthorization extends AbstractShootingTestEntityAu
         allow(CREATE, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, AMPUMAKOKEEN_VASTAANOTTAJA);
         allow(UPDATE, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, ASSIGNED_SHOOTING_TEST_OFFICIAL);
         allow(ASSIGN_OFFICIALS, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, AMPUMAKOKEEN_VASTAANOTTAJA);
+        allow(VIEW_PARTICIPANTS, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, ASSIGNED_SHOOTING_TEST_OFFICIAL);
     }
 
     @Override

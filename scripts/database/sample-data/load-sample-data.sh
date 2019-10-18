@@ -21,4 +21,5 @@ ${PSQL} -f ./sql/harvest_permit_species_amount.sql && \
 ${PSQL} -f ./sql/hunting_club_area.sql && \
 ${PSQL} -f ./sql/hunting_group.sql && \
 ${PSQL} -f ./sql/harvest_permit_area.sql && \
-${PSQL} -f ./sql/harvest_permit_application.sql
+${PSQL} -f ./sql/harvest_permit_application.sql && \
+${PSQL} -f ./sql/rhy_annual_statistics.sql

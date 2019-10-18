@@ -2,10 +2,12 @@ package fi.riista.feature.common.support;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+import fi.riista.feature.account.area.union.PersonalAreaUnion;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementSenderType;
 import fi.riista.feature.announcement.AnnouncementSubscriber;
+import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Municipality;
 import fi.riista.feature.common.entity.Required;
@@ -13,6 +15,7 @@ import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameCategory;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.HarvestChangeHistory;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
@@ -38,16 +41,15 @@ import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.zone.GISZone;
-import fi.riista.feature.gis.zone.TotalLandWaterSizeDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.harvestpermit.HarvestPermitContactPerson;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.allocation.HarvestPermitAllocation;
-import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReport;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
 import fi.riista.feature.harvestpermit.season.HarvestQuota;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
-import fi.riista.feature.harvestpermit.season.MooselikePrice;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -58,18 +60,19 @@ import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejection;
 import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitation;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
 import fi.riista.feature.huntingclub.permit.HasHarvestCountsForPermit;
-import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
-import fi.riista.feature.huntingclub.permit.summary.AreaSizeAndRemainingPopulation;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingAreaType;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
-import fi.riista.feature.huntingclub.permit.summary.SpeciesEstimatedAppearance;
-import fi.riista.feature.huntingclub.permit.summary.TrendOfPopulationGrowth;
+import fi.riista.feature.huntingclub.permit.endofhunting.AreaSizeAndRemainingPopulation;
+import fi.riista.feature.huntingclub.permit.endofhunting.basicsummary.BasicClubHuntingSummary;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingAreaType;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.SpeciesEstimatedAppearance;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.TrendOfPopulationGrowth;
 import fi.riista.feature.organization.AlueellinenRiistaneuvosto;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.Riistakeskus;
 import fi.riista.feature.organization.ValtakunnallinenRiistaneuvosto;
 import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.organization.calendar.AdditionalCalendarEvent;
 import fi.riista.feature.organization.calendar.CalendarEvent;
 import fi.riista.feature.organization.calendar.CalendarEventType;
 import fi.riista.feature.organization.calendar.Venue;
@@ -81,42 +84,78 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics;
+import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState;
+import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsTestDataPopulator;
+import fi.riista.feature.organization.rhy.annualstats.audit.RhyAnnualStatisticsModeratorUpdateEvent;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
+import fi.riista.feature.organization.rhy.annualstats.statechange.RhyAnnualStatisticsStateChangeEvent;
+import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.permit.application.DeliveryAddress;
+import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.PermitHolder;
+import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
+import fi.riista.feature.permit.application.bird.BirdPermitApplication;
+import fi.riista.feature.permit.application.bird.ProtectedAreaType;
+import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedArea;
+import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
+import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
 import fi.riista.feature.permit.area.HarvestPermitArea;
-import fi.riista.feature.permit.area.hta.HarvestPermitAreaHta;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartner;
-import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhy;
+import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.PermitDecisionCompleteStatus;
+import fi.riista.feature.permit.decision.PermitDecisionDocument;
+import fi.riista.feature.permit.decision.delivery.PermitDecisionDelivery;
+import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReason;
+import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonType;
+import fi.riista.feature.permit.decision.derogation.PermitDecisionProtectedAreaType;
+import fi.riista.feature.permit.decision.methods.ForbiddenMethodType;
+import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethod;
+import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
+import fi.riista.feature.permit.invoice.Invoice;
+import fi.riista.feature.permit.invoice.InvoiceState;
+import fi.riista.feature.permit.invoice.InvoiceType;
+import fi.riista.feature.permit.invoice.decision.PermitDecisionInvoice;
+import fi.riista.feature.permit.invoice.harvest.PermitHarvestInvoice;
+import fi.riista.feature.permit.invoice.payment.InvoicePaymentLine;
+import fi.riista.feature.push.MobileClientDevice;
 import fi.riista.feature.shootingtest.ShootingTestAttempt;
 import fi.riista.feature.shootingtest.ShootingTestAttemptResult;
 import fi.riista.feature.shootingtest.ShootingTestEvent;
-import fi.riista.feature.shootingtest.ShootingTestOfficial;
 import fi.riista.feature.shootingtest.ShootingTestParticipant;
 import fi.riista.feature.shootingtest.ShootingTestType;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficial;
 import fi.riista.feature.storage.backend.db.PersistentFileContent;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.feature.storage.metadata.StorageType;
 import fi.riista.integration.common.entity.Integration;
+import fi.riista.integration.metsahallitus.permit.MetsahallitusPermit;
+import fi.riista.integration.mmm.transfer.AccountTransfer;
+import fi.riista.integration.mmm.transfer.AccountTransferBatch;
 import fi.riista.util.DateUtil;
 import fi.riista.util.Locales;
 import fi.riista.util.MediaTypeExtras;
 import fi.riista.util.NumberGenerator;
+import fi.riista.util.NumberUtils;
+import fi.riista.util.Patterns;
 import fi.riista.util.ValueGenerator;
-import fi.riista.util.ValueGeneratorMixin;
+import fi.riista.validation.FinnishCreditorReferenceValidator;
 import io.vavr.Tuple2;
-import org.iban4j.Bic;
-import org.iban4j.CountryCode;
-import org.iban4j.Iban;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.data.domain.Persistable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -124,13 +163,21 @@ import java.util.function.Supplier;
 
 import static fi.riista.feature.gamediary.GameSpecies.isMooseOrDeerRequiringPermitForHunting;
 import static fi.riista.util.DateUtil.currentYear;
+import static fi.riista.util.DateUtil.huntingYear;
+import static fi.riista.util.DateUtil.huntingYearBeginDate;
+import static fi.riista.util.DateUtil.huntingYearEndDate;
 import static fi.riista.util.DateUtil.localDateTime;
+import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.DateUtil.today;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * This class can be used to create @Entity annotated objects or graphs for test code.
  */
-public class EntitySupplier implements ValueGeneratorMixin {
+public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern(Patterns.DATE_YYYYMMDD);
 
     private static final int DEFAULT_PERMIT_AREA_SIZE = 34567;
 
@@ -142,9 +189,9 @@ public class EntitySupplier implements ValueGeneratorMixin {
                           @Nonnull final List<Persistable<?>> transientEntityList,
                           @Nonnull final Supplier<Riistakeskus> riistakeskusSupplier) {
 
-        this.numberGenerator = Objects.requireNonNull(numberGenerator, "numberGenerator is null");
-        this.transientEntityList = Objects.requireNonNull(transientEntityList, "transientEntityList is null");
-        this.riistakeskusSupplier = Objects.requireNonNull(riistakeskusSupplier, "riistakeskusSupplier is null");
+        this.numberGenerator = requireNonNull(numberGenerator, "numberGenerator is null");
+        this.transientEntityList = requireNonNull(transientEntityList, "transientEntityList is null");
+        this.riistakeskusSupplier = requireNonNull(riistakeskusSupplier, "riistakeskusSupplier is null");
     }
 
     @Override
@@ -152,7 +199,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return numberGenerator;
     }
 
-    public SystemUser newUser(String username, PasswordEncoder passwordEncoder) {
+    public SystemUser newUser(final String username, final PasswordEncoder passwordEncoder) {
         return newUser(username, SystemUser.Role.ROLE_USER, passwordEncoder);
     }
 
@@ -170,6 +217,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
         user.setEmail(username + "@invalid");
         user.setRole(role);
         user.setActive(true);
+        user.setFirstName(String.format("%s-%s", "FirstName", serial()));
+        user.setLastName(String.format("%s-%s", "LastName", serial()));
 
         if (passwordEncoder != null) {
             user.setPasswordAsPlaintext(password, passwordEncoder);
@@ -185,7 +234,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public Person newPerson() {
-        int nameNum = serial();
+        String nameNum = zeroPaddedNumber(3);
 
         return newPerson("FirstName-" + nameNum, "LastName-" + nameNum, ssn(), hunterNumber());
     }
@@ -210,6 +259,35 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(person);
     }
 
+    public Person newPersonWithAddress() {
+        final Person person = newPerson();
+        person.setMrAddress(newAddress());
+        return person;
+    }
+
+    public Person newForeignPerson() {
+        int serial = serial();
+
+        Person person = new Person();
+        person.setFirstName("FirstName-" + serial);
+        person.setLastName("LastName-" + serial);
+        person.setByName(person.getFirstName());
+        person.setHunterNumber(hunterNumber());
+        person.setDateOfBirth(new LocalDate(1950, 1, 1).plusDays(serial % (50 * 365)));
+        return add(person);
+    }
+
+    public Person newForeignPerson(final String firstName, final String lastName, final LocalDate dob,
+                                   final String hunterNumber) {
+        Person person = new Person();
+        person.setFirstName(firstName);
+        person.setLastName(lastName);
+        person.setByName(person.getFirstName());
+        person.setHunterNumber(hunterNumber);
+        person.setDateOfBirth(dob);
+        return add(person);
+    }
+
     public Address newAddress() {
         int nameNum = serial();
         return newAddress("street " + nameNum, "city " + nameNum, "country" + nameNum);
@@ -228,7 +306,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(new Address(street, postalCode, city, country));
     }
 
-    public ValtakunnallinenRiistaneuvosto newValtakunnallinenRiistaneuvosto(Riistakeskus rk, String nameFi, String nameSv) {
+    public ValtakunnallinenRiistaneuvosto newValtakunnallinenRiistaneuvosto(Riistakeskus rk, String nameFi,
+                                                                            String nameSv) {
         return add(new ValtakunnallinenRiistaneuvosto(rk, nameFi, nameSv));
     }
 
@@ -367,16 +446,15 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public HarvestPermit newHarvestPermit(Riistanhoitoyhdistys rhy) {
-        Organisation rka = rhy.getParentOrganisation();
-        return newHarvestPermit(rhy, permitNumber(rka.getOfficialCode()));
+        return newHarvestPermit(rhy, permitNumber());
     }
 
-    public HarvestPermit newHarvestPermit(Riistanhoitoyhdistys rhy, String permitNumber) {
-        HarvestPermit permit = new HarvestPermit();
+    public HarvestPermit newHarvestPermit(final Riistanhoitoyhdistys rhy, final String permitNumber) {
+        final HarvestPermit permit = HarvestPermit.create(permitNumber);
+        final Person person = newPersonWithAddress();
         permit.setRhy(rhy);
-        permit.setPermitNumber(permitNumber);
-        permit.setOriginalContactPerson(newPerson());
-
+        permit.setOriginalContactPerson(person);
+        permit.setPermitHolder(PermitHolder.createHolderForPerson(person));
         permit.setPermitTypeCode("200");
         permit.setPermitType("testPermitType " + permit.getPermitTypeCode());
 
@@ -428,15 +506,32 @@ public class EntitySupplier implements ValueGeneratorMixin {
     public HarvestPermit newHarvestPermit(HarvestPermit originalPermit, Person contactPerson, boolean harvestsAsList) {
         HarvestPermit permit = newHarvestPermit(originalPermit.getRhy(), contactPerson);
         permit.setOriginalPermit(originalPermit);
-        permit.setPermitTypeCode(HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE);
+        permit.setPermitTypeCode(PermitTypeCode.MOOSELIKE_AMENDMENT);
         permit.setHarvestsAsList(harvestsAsList);
         return permit;
     }
 
     public HarvestPermit newMooselikePermit(final Riistanhoitoyhdistys rhy) {
-        final HarvestPermit permit = newHarvestPermit(rhy);
+        return newMooselikePermit(rhy, currentYear());
+    }
+
+    public HarvestPermit newMooselikePermit(final Riistanhoitoyhdistys rhy, final int huntingYear) {
+        final HarvestPermit permit = newHarvestPermit(rhy, permitNumber(huntingYear));
         permit.setPermitAreaSize(DEFAULT_PERMIT_AREA_SIZE);
-        permit.setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+        permit.setPermitTypeCode(PermitTypeCode.MOOSELIKE);
+        return permit;
+    }
+
+    public HarvestPermit newMooselikePermit(final PermitDecision decision) {
+        final Person contactPerson = Optional
+                .ofNullable(decision.getContactPerson())
+                .filter(person -> person.getAddress() != null)
+                .orElseGet(this::newPersonWithAddress);
+
+        final HarvestPermit permit = newMooselikePermit(decision.getRhy(), decision.getDecisionYear());
+        permit.setPermitDecision(decision);
+        permit.setOriginalContactPerson(contactPerson);
+
         return permit;
     }
 
@@ -456,6 +551,14 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return newHarvestPermitSpeciesAmount(permit, species, 1f);
     }
 
+    public HarvestPermitSpeciesAmount newHarvestPermitSpeciesAmount(HarvestPermit permit) {
+        return newHarvestPermitSpeciesAmount(permit, newGameSpecies(), permit.getPermitYear());
+    }
+
+    public HarvestPermitSpeciesAmount newHarvestPermitSpeciesAmount(int huntingYear) {
+        return newHarvestPermitSpeciesAmount(newHarvestPermit(), newGameSpecies(), huntingYear);
+    }
+
     public HarvestPermitSpeciesAmount newHarvestPermitSpeciesAmount(
             HarvestPermit permit, GameSpecies species, int huntingYear) {
 
@@ -465,8 +568,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     public HarvestPermitSpeciesAmount newHarvestPermitSpeciesAmount(
             HarvestPermit permit, GameSpecies species, float amount) {
 
-        return newHarvestPermitSpeciesAmount(
-                permit, species, DateUtil.huntingYear(), amount);
+        return newHarvestPermitSpeciesAmount(permit, species, permit.getPermitYear(), amount);
     }
 
     public HarvestPermitSpeciesAmount newHarvestPermitSpeciesAmount(
@@ -475,10 +577,22 @@ public class EntitySupplier implements ValueGeneratorMixin {
         HarvestPermitSpeciesAmount speciesAmount = new HarvestPermitSpeciesAmount();
         speciesAmount.setHarvestPermit(permit);
         speciesAmount.setGameSpecies(species);
-        speciesAmount.setBeginDate(DateUtil.huntingYearBeginDate(huntingYear));
-        speciesAmount.setEndDate(DateUtil.huntingYearEndDate(huntingYear));
+        speciesAmount.setBeginDate(huntingYearBeginDate(huntingYear));
+        speciesAmount.setEndDate(huntingYearEndDate(huntingYear));
         speciesAmount.setAmount(amount);
         return add(speciesAmount);
+    }
+
+    public HarvestPermitSpeciesAmount newHarvestPermitSpeciesAmount(final HarvestPermit permit,
+                                                                    final PermitDecisionSpeciesAmount source) {
+
+        final HarvestPermitSpeciesAmount speciesAmount = newHarvestPermitSpeciesAmount(
+                permit, source.getGameSpecies(), source.resolveHuntingYear(), source.getAmount());
+        speciesAmount.setBeginDate(source.getBeginDate());
+        speciesAmount.setEndDate(source.getEndDate());
+        speciesAmount.setBeginDate2(source.getBeginDate2());
+        speciesAmount.setEndDate2(source.getEndDate2());
+        return speciesAmount;
     }
 
     public HarvestPermitAllocation newHarvestPermitAllocation(
@@ -502,7 +616,9 @@ public class EntitySupplier implements ValueGeneratorMixin {
      * PERSIST BEFORE CALLING THIS!
      * <p>
      * If you do not persist before calling this, then persist will fail to:<br>
-     * Referential integrity constraint violation: "FK_MOOSE_HUNTING_SUMMARY_HARVEST_PERMIT_PARTNERS: PUBLIC.MOOSE_HUNTING_SUMMARY FOREIGN KEY(HARVEST_PERMIT_ID, CLUB_ID) REFERENCES PUBLIC.HARVEST_PERMIT_PARTNERS(HARVEST_PERMIT_ID, ORGANISATION_ID)
+     * Referential integrity constraint violation: "FK_MOOSE_HUNTING_SUMMARY_HARVEST_PERMIT_PARTNERS: PUBLIC
+     * .MOOSE_HUNTING_SUMMARY FOREIGN KEY(HARVEST_PERMIT_ID, CLUB_ID) REFERENCES PUBLIC.HARVEST_PERMIT_PARTNERS
+     * (HARVEST_PERMIT_ID, ORGANISATION_ID)
      * </p>
      * <p>moose_hunting_summary table has foreign key to harvest_permit_partners table.
      * Hibernate has no knowledge of this, therefore it will arrange flushing in a way that moose_hunting_summary is
@@ -596,56 +712,243 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return summary;
     }
 
-    public MooseHarvestReport newMooseHarvestReport(final HarvestPermitSpeciesAmount speciesAmount) {
-        final MooseHarvestReport e = new MooseHarvestReport();
-        e.setSpeciesAmount(speciesAmount);
-        e.setReceiptFileMetadata(newPersistentFileMetadata(StorageType.LOCAL_FOLDER));
-        return add(e);
-    }
-
-    public MooseHarvestReport newMooseHarvestReportModeratorOverride(final HarvestPermitSpeciesAmount speciesAmount) {
-        final MooseHarvestReport e = new MooseHarvestReport();
-        e.setSpeciesAmount(speciesAmount);
-        e.setModeratorOverride(true);
-        return add(e);
-    }
-
     public HarvestPermitArea newHarvestPermitArea() {
-        return newHarvestPermitArea(newHuntingClub());
-    }
-
-    public HarvestPermitArea newHarvestPermitArea(HuntingClub club) {
-        return newHarvestPermitArea(club, DateUtil.huntingYear(), add(new GISZone()));
-    }
-
-    public HarvestPermitArea newHarvestPermitArea(HuntingClub club, int huntingYear, GISZone zone) {
-        final String numberRepr = zeroPaddedNumber(6);
-
         final HarvestPermitArea area = new HarvestPermitArea();
-        area.setClub(club);
-        area.setNameFinnish("HarvestPermitArea-" + numberRepr);
-        area.setNameSwedish("HarvestPermitAreaSV-" + numberRepr);
-        area.setHuntingYear(huntingYear);
-        area.setZone(zone);
+        area.setHuntingYear(huntingYear());
+        area.setZone(add(new GISZone()));
         area.setExternalId(externalAreaId());
 
         return add(area);
     }
 
     public HarvestPermitAreaPartner newHarvestPermitAreaPartner(HarvestPermitArea area, final HuntingClubArea source) {
-        return add(new HarvestPermitAreaPartner(area, source, source.getZone()));
+        return add(new HarvestPermitAreaPartner(area, source, cloneGISZone(source.getZone())));
     }
 
-    public HarvestPermitAreaRhy newHarvestPermitAreaRhy(
-            HarvestPermitArea area, Riistanhoitoyhdistys rhy, double areaSize) {
-        final TotalLandWaterSizeDTO dto = new TotalLandWaterSizeDTO(areaSize, areaSize, 0);
-        return add(new HarvestPermitAreaRhy(area, rhy, dto, dto, dto));
+    public GISZone cloneGISZone(final GISZone from) {
+        final GISZone to = new GISZone();
+        to.setSourceType(from.getSourceType());
+        to.setExcludedGeom(from.getExcludedGeom());
+        to.setComputedAreaSize(from.getComputedAreaSize());
+        to.setWaterAreaSize(from.getWaterAreaSize());
+        to.setStateLandAreaSize(from.getStateLandAreaSize());
+        to.setPrivateLandAreaSize(from.getPrivateLandAreaSize());
+        to.setMetsahallitusHirvi(new HashSet<>(from.getMetsahallitusHirvi()));
+        return add(to);
     }
 
-    public HarvestPermitAreaHta newHarvestPermitAreaHta(
-            HarvestPermitArea area, GISHirvitalousalue hta, double areaSize) {
+    public PermitDecision newPermitDecision(final Riistanhoitoyhdistys rhy) {
+        return newPermitDecision(rhy, newGameSpecies());
+    }
 
-        return add(new HarvestPermitAreaHta(area, hta, areaSize));
+    public PermitDecision newPermitDecision(final Riistanhoitoyhdistys rhy, final GameSpecies species) {
+        return newPermitDecision(rhy, singletonList(species));
+    }
+
+    public PermitDecision newPermitDecision(final Riistanhoitoyhdistys rhy, final List<GameSpecies> speciesList) {
+        return newPermitDecision(newHarvestPermitApplication(rhy, newHarvestPermitArea(), speciesList));
+    }
+
+    public PermitDecision newPermitDecision(final HarvestPermitApplication application) {
+        final PermitDecision decision = PermitDecision.createForApplication(application);
+
+        decision.setHuntingClub(application.getHuntingClub());
+        decision.setLockedDate(now());
+        decision.setPublishDate(now());
+        decision.setGrantStatus(PermitDecision.GrantStatus.UNCHANGED);
+        decision.setPermitTypeCode(PermitTypeCode.getPermitTypeCode(application.getHarvestPermitCategory(), 1));
+
+        final PermitDecisionDocument doc = new PermitDecisionDocument();
+        decision.setDocument(doc);
+        doc.setDecision("-");
+
+        final PermitDecisionCompleteStatus complete = new PermitDecisionCompleteStatus();
+        decision.setCompleteStatus(complete);
+
+        complete.setAdditionalInfo(true);
+        complete.setAdministrativeCourt(true);
+        complete.setAppeal(true);
+        complete.setApplication(true);
+        complete.setApplicationReasoning(true);
+        complete.setAttachments(true);
+        complete.setDecision(true);
+        complete.setDecisionReasoning(true);
+        complete.setDelivery(true);
+        complete.setExecution(true);
+        complete.setLegalAdvice(true);
+        complete.setNotificationObligation(true);
+        complete.setPayment(true);
+        complete.setProcessing(true);
+        complete.setRestriction(true);
+
+        decision.setStatusLocked();
+        decision.setStatusPublished();
+
+        return add(decision);
+    }
+
+
+    public PermitDecisionDelivery newPermitDecisionDelivery(String name, String email) {
+
+        final PermitDecisionDelivery permitDecisionDelivery = new PermitDecisionDelivery();
+        permitDecisionDelivery.setName(name);
+        permitDecisionDelivery.setEmail(email);
+        add(permitDecisionDelivery);
+        return permitDecisionDelivery;
+
+    }
+
+    public DeliveryAddress newDeliveryAddressForPerson(Person person) {
+        final DeliveryAddress deliveryAddress = new DeliveryAddress();
+        deliveryAddress.setRecipient(person.getFullName());
+        deliveryAddress.setStreetAddress(person.getAddress().getStreetAddress());
+        deliveryAddress.setPostalCode(person.getAddress().getPostalCode());
+        deliveryAddress.setCity(person.getAddress().getCity());
+        return deliveryAddress;
+    }
+
+    public PermitDecisionDerogationReason newPermitDecisionDerogationReason(final PermitDecision decision,
+                                                                            final PermitDecisionDerogationReasonType type) {
+        final PermitDecisionDerogationReason permitDecisionDerogationReason =
+                new PermitDecisionDerogationReason(decision, type);
+        add(permitDecisionDerogationReason);
+        return permitDecisionDerogationReason;
+    }
+
+    public PermitDecisionProtectedAreaType newPermitDecisionProtectedAreaType(final PermitDecision decision,
+                                                                              final ProtectedAreaType type) {
+        final PermitDecisionProtectedAreaType permitDecisionProtectedAreaType =
+                new PermitDecisionProtectedAreaType(decision, type);
+        add(permitDecisionProtectedAreaType);
+        return permitDecisionProtectedAreaType;
+    }
+
+    public PermitDecisionSpeciesAmount newPermitDecisionSpeciesAmount(final PermitDecision decision,
+                                                                      final GameSpecies species,
+                                                                      final float amount) {
+
+        final PermitDecisionSpeciesAmount speciesAmount = new PermitDecisionSpeciesAmount();
+        speciesAmount.setPermitDecision(decision);
+        speciesAmount.setGameSpecies(species);
+        speciesAmount.setAmount(amount);
+
+        final LocalDate huntingYearBegin = huntingYearBeginDate(huntingYear());
+        final LocalDate huntingYearEnd = huntingYearEndDate(huntingYear());
+
+        final LocalDate today = today();
+        final LocalDate beginDate = today;
+        final LocalDate endDate = today.plusMonths(1);
+
+        speciesAmount.setBeginDate(huntingYearBegin.isBefore(beginDate) ? beginDate : huntingYearBegin);
+        speciesAmount.setEndDate(huntingYearEnd.isAfter(endDate) ? endDate : huntingYearEnd);
+
+        return add(speciesAmount);
+    }
+
+    public HarvestPermitApplication newHarvestPermitApplication(final Riistanhoitoyhdistys rhy,
+                                                                final HarvestPermitArea permitArea,
+                                                                final HarvestPermitCategory category) {
+        final Person person = newPersonWithAddress();
+        final HarvestPermitApplication application = new HarvestPermitApplication();
+        application.setLocale(Locales.FI);
+        application.setDecisionLocale(Locales.FI);
+        application.setHarvestPermitCategory(category);
+        application.setRhy(rhy);
+        application.setContactPerson(person);
+        application.setDeliveryAddress(newDeliveryAddressForPerson(person));
+        application.setPermitHolder(PermitHolder.createHolderForPerson(person));
+        application.setApplicationNumber(10000 + nextPositiveInt());
+        application.setApplicationYear(currentYear());
+        application.setArea(permitArea);
+        application.setDeliveryByMail(false);
+        application.setUuid(UUID.randomUUID());
+        application.setSubmitDate(now());
+        application.setStatus(HarvestPermitApplication.Status.ACTIVE);
+
+        return add(application);
+    }
+
+    public CarnivorePermitApplication newCarnivorePermitApplication(HarvestPermitApplication application) {
+        final CarnivorePermitApplication carnivorePermitApplication = CarnivorePermitApplication.create(application);
+        carnivorePermitApplication.setAreaSize(1);
+        carnivorePermitApplication.setGeoLocation(geoLocation());
+        return add(carnivorePermitApplication);
+    }
+
+    public BirdPermitApplication newBirdPermitApplication(HarvestPermitApplication application) {
+        final BirdPermitApplication birdPermitApplication = BirdPermitApplication.create(application);
+
+        birdPermitApplication.setProtectedArea(newProtectedArea());
+        birdPermitApplication.setCause(newPermitCauseInfo());
+        return add(birdPermitApplication);
+    }
+
+    public BirdPermitApplicationProtectedArea newProtectedArea() {
+        final BirdPermitApplicationProtectedArea protectedArea = new BirdPermitApplicationProtectedArea();
+        protectedArea.setProtectedAreaType(ProtectedAreaType.BERRY_FARM);
+        protectedArea.setGeoLocation(new GeoLocation(123, 234));
+        protectedArea.setAreaSize(2000);
+        protectedArea.setName("nimi");
+        protectedArea.setStreetAddress("Katu 2");
+        protectedArea.setPostalCode("12345");
+        protectedArea.setCity("Kaupunki");
+        protectedArea.setDescriptionOfRights("Omistaja");
+        return protectedArea;
+    }
+
+    public BirdPermitApplicationCause newPermitCauseInfo() {
+        return new BirdPermitApplicationCause();
+    }
+
+    public HarvestPermitApplication newHarvestPermitApplication(final Riistanhoitoyhdistys rhy,
+                                                                final HarvestPermitArea permitArea,
+                                                                final GameSpecies species) {
+
+        return newHarvestPermitApplication(rhy, permitArea, singletonList(species));
+    }
+
+    public HarvestPermitApplication newHarvestPermitApplication(final Riistanhoitoyhdistys rhy,
+                                                                final HarvestPermitArea permitArea,
+                                                                final List<GameSpecies> speciesList) {
+
+        final HarvestPermitApplication application =
+                newHarvestPermitApplication(rhy, permitArea, HarvestPermitCategory.MOOSELIKE);
+
+        for (int i = 0; i < speciesList.size(); i++) {
+            final float amount = Integer.valueOf(10 + i * 5).floatValue();
+            newHarvestPermitApplicationSpeciesAmount(application, speciesList.get(i), amount);
+        }
+
+        return application;
+    }
+
+    public HarvestPermitApplicationSpeciesAmount newHarvestPermitApplicationSpeciesAmount(final HarvestPermitApplication application,
+                                                                                          final GameSpecies species) {
+
+        return newHarvestPermitApplicationSpeciesAmount(application, species, 10.0f);
+    }
+
+    public HarvestPermitApplicationSpeciesAmount newHarvestPermitApplicationSpeciesAmount(final HarvestPermitApplication application,
+                                                                                          final GameSpecies species,
+                                                                                          final float amount) {
+        return add(new HarvestPermitApplicationSpeciesAmount(application, species, amount));
+    }
+
+    public HarvestPermitApplicationSpeciesAmount newHarvestPermitApplicationSpeciesAmount(final HarvestPermitApplication application,
+                                                                                          final GameSpecies species,
+                                                                                          final float amount,
+                                                                                          final int validityYears) {
+        final HarvestPermitApplicationSpeciesAmount harvestPermitApplicationSpeciesAmount =
+                new HarvestPermitApplicationSpeciesAmount(application, species, amount);
+        harvestPermitApplicationSpeciesAmount.setValidityYears(validityYears);
+
+        for (int i = 0; i < validityYears; ++i) {
+            harvestPermitApplicationSpeciesAmount.setBeginDate(new LocalDate(application.getApplicationYear() + i, 1,
+                    1));
+            harvestPermitApplicationSpeciesAmount.setEndDate(new LocalDate(application.getApplicationYear() + i, 10,
+                    1));
+        }
+        return add(harvestPermitApplicationSpeciesAmount);
     }
 
     public Harvest newHarvest() {
@@ -743,6 +1046,17 @@ public class EntitySupplier implements ValueGeneratorMixin {
         newHarvestSpecimen(harvest, age, gender);
         harvest.setAmount(1);
         return harvest;
+    }
+
+    public HarvestChangeHistory newHarvestChangeHistory(final Harvest harvest, final HarvestReportState state,
+                                                        final SystemUser approver) {
+        final HarvestChangeHistory changeHistory = new HarvestChangeHistory();
+        changeHistory.setPointOfTime(now());
+        changeHistory.setHarvest(harvest);
+        changeHistory.setHarvestReportState(state);
+        changeHistory.setUserId(approver.getId());
+        add(changeHistory);
+        return changeHistory;
     }
 
     public Harvest newMobileHarvest() {
@@ -973,7 +1287,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return newObservation(species, observer, huntingDay, null);
     }
 
-    private Observation newObservation(GameSpecies species, Person observer, GroupHuntingDay huntingDay, Person acceptor) {
+    private Observation newObservation(GameSpecies species, Person observer, GroupHuntingDay huntingDay,
+                                       Person acceptor) {
         final Observation observation = newObservation(species, observer, huntingDay.getStartDate());
         observation.updateHuntingDayOfGroup(huntingDay, acceptor);
         observation.setWithinMooseHunting(true);
@@ -990,7 +1305,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     private Observation newObservation(
-            GameSpecies species, Person author, Person observer, GeoLocation geoLocation, LocalDateTime pointOfTime, int amount) {
+            GameSpecies species, Person author, Person observer, GeoLocation geoLocation, LocalDateTime pointOfTime,
+            int amount) {
 
         final Observation observation = new Observation(author, geoLocation, pointOfTime, species, amount);
 
@@ -1009,7 +1325,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     private Observation newObservation(Person observer, ObservationMetadata metadata, Consumer<Observation> decorator) {
-        Objects.requireNonNull(metadata);
+        requireNonNull(metadata);
 
         final Observation observation = newObservation(metadata.getSpecies(), observer);
         observation.setWithinMooseHunting(metadata.getWithinMooseHunting());
@@ -1046,7 +1362,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
         // TODO Currently setting non-null amount contradicts with metadata settings. This will be
         // fixed soon in a subsequent changeset.
         if (observation.hasMinimumSetOfNonnullAmountsCommonToAllMooselikeSpecies()) {
-            observation.setAmountToSumOfMooselikeAmounts();
+            observation.setAmount(observation.getSumOfMooselikeAmounts());
         }
 
         decorator.accept(observation);
@@ -1150,7 +1466,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public HuntingClubGroup newHuntingClubGroup(HuntingClub club, GameSpecies species) {
-        return newHuntingClubGroup(club, species, DateUtil.huntingYear());
+        return newHuntingClubGroup(club, species, huntingYear());
     }
 
     public HuntingClubGroup newHuntingClubGroup(HuntingClub club, HarvestPermitSpeciesAmount speciesAmount) {
@@ -1233,7 +1549,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     public HuntingClubArea newHuntingClubArea(HuntingClub club) {
-        return newHuntingClubArea(club, "Area", "AreaSV", DateUtil.huntingYear());
+        return newHuntingClubArea(club, "Area", "AreaSV", huntingYear());
     }
 
     public HuntingClubArea newHuntingClubArea(HuntingClub club, GISZone zone) {
@@ -1284,6 +1600,9 @@ public class EntitySupplier implements ValueGeneratorMixin {
     public GISZone newGISZone(double computedAreaSize) {
         final GISZone zone = newGISZone();
         zone.setComputedAreaSize(computedAreaSize);
+        zone.setWaterAreaSize(computedAreaSize / 2);
+        zone.setPrivateLandAreaSize(computedAreaSize / 3);
+        zone.setStateLandAreaSize(computedAreaSize / 4);
         return zone;
     }
 
@@ -1333,24 +1652,39 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return newCalendarEvent(newRiistanhoitoyhdistys(), eventType);
     }
 
-    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys rhy) {
-        return newCalendarEvent(rhy, some(CalendarEventType.class));
+    public CalendarEvent newCalendarEvent(Organisation organisation) {
+        return newCalendarEvent(organisation, some(CalendarEventType.class));
     }
 
-    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys rhy, CalendarEventType eventType) {
-        return newCalendarEvent(rhy, eventType, today());
+    public CalendarEvent newCalendarEvent(Organisation organisation, CalendarEventType eventType) {
+        return newCalendarEvent(organisation, eventType, today());
     }
 
-    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys rhy, CalendarEventType eventType, LocalDate date) {
-        return newCalendarEvent(rhy, eventType, date, newVenue());
+    public CalendarEvent newCalendarEvent(Organisation organisation, CalendarEventType eventType, boolean visibility) {
+        CalendarEvent event = newCalendarEvent(organisation, eventType, today(), newVenue());
+        event.setPublicVisibility(visibility);
+        return event;
     }
 
-    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys rhy, boolean isShootingTestEvent, LocalDate date) {
-        CalendarEventType eventType = some(CalendarEventType.getTypes(isShootingTestEvent));
-        return newCalendarEvent(rhy, eventType, date, newVenue());
+    public CalendarEvent newCalendarEvent(Organisation organisation, CalendarEventType eventType, LocalDate date) {
+        return newCalendarEvent(organisation, eventType, date, newVenue());
     }
 
-    public CalendarEvent newCalendarEvent(Riistanhoitoyhdistys organisation,
+    public CalendarEvent newCalendarEvent(Organisation organisation, CalendarEventType eventType, LocalDate date,
+                                          boolean excludedFromStatistics) {
+        CalendarEvent event = newCalendarEvent(organisation, eventType, date, newVenue());
+        event.setExcludedFromStatistics(excludedFromStatistics);
+        return event;
+    }
+
+    public CalendarEvent newCalendarEvent(Organisation organisation, boolean isShootingTestEvent, LocalDate date) {
+        final EnumSet<CalendarEventType> eventTypes =
+                isShootingTestEvent ? CalendarEventType.shootingTestTypes() : CalendarEventType.nonShootingTestTypes();
+
+        return newCalendarEvent(organisation, some(eventTypes), date, newVenue());
+    }
+
+    public CalendarEvent newCalendarEvent(Organisation organisation,
                                           CalendarEventType eventType,
                                           LocalDate date,
                                           Venue venue) {
@@ -1362,7 +1696,17 @@ public class EntitySupplier implements ValueGeneratorMixin {
                 new CalendarEvent(organisation, venue, eventType, date.toDate(), beginTime, "name", "description");
         event.setEndTime(endTime);
 
+        event.setPublicVisibility(true);
+
         return add(event);
+    }
+
+    public AdditionalCalendarEvent newAdditionalCalendarEvent(CalendarEvent event,
+                                                              LocalDate date,
+                                                              LocalTime beginTime,
+                                                              Venue venue) {
+        AdditionalCalendarEvent additionalCalendarEvent = new AdditionalCalendarEvent(date.toDate(), beginTime, beginTime.plusHours(2), event, venue);
+        return add(additionalCalendarEvent);
     }
 
     public ObservationBaseFields newObservationBaseFields(GameSpecies species, ObservationSpecVersion specVersion) {
@@ -1433,7 +1777,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
         srvaEventEntity.setEventName(some(SrvaEventNameEnum.class));
         srvaEventEntity.setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(srvaEventEntity.getEventName())));
         srvaEventEntity.setGeoLocation(geoLocation());
-        srvaEventEntity.setPointOfTime(DateUtil.now().toDate());
+        srvaEventEntity.setPointOfTime(now().toDate());
         srvaEventEntity.setSpecies(species);
         srvaEventEntity.setTotalSpecimenAmount(1);
         srvaEventEntity.setAuthor(author);
@@ -1473,22 +1817,6 @@ public class EntitySupplier implements ValueGeneratorMixin {
         method.setChecked(isChecked);
 
         return add(method);
-    }
-
-    public MooselikePrice newMooselikePrice(Integer year, GameSpecies species) {
-        return newMooselikePrice(year, species, BigDecimal.TEN, BigDecimal.ONE);
-    }
-
-    public MooselikePrice newMooselikePrice(Integer year, GameSpecies species, BigDecimal adultPrice, BigDecimal youngPrice) {
-        MooselikePrice p = new MooselikePrice();
-        p.setHuntingYear(year);
-        p.setGameSpecies(species);
-        p.setIban(Iban.random(CountryCode.FI));
-        p.setBic(Bic.valueOf("OKOYFIHH"));
-        p.setRecipientName("money or nothing");
-        p.setAdultPrice(adultPrice);
-        p.setYoungPrice(youngPrice);
-        return add(p);
     }
 
     public Announcement newAnnouncement(final SystemUser fromUser,
@@ -1540,6 +1868,17 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(i);
     }
 
+    public MobileClientDevice newMobileClientDevice(final Person person) {
+        final MobileClientDevice device = new MobileClientDevice();
+        device.setPerson(person);
+        device.setClientVersion("1");
+        device.setDeviceName("android");
+        device.setPlatform(MobileClientDevice.Platform.ANDROID);
+        device.setPushToken(UUID.randomUUID().toString());
+
+        return add(device);
+    }
+
     public ShootingTestEvent newShootingTestEvent() {
         return newShootingTestEvent(newCalendarEvent(some(CalendarEventType.shootingTestTypes())));
     }
@@ -1563,7 +1902,8 @@ public class EntitySupplier implements ValueGeneratorMixin {
 
     public ShootingTestOfficial newShootingTestOfficial(ShootingTestEvent event, Person person) {
         Organisation rhy = event.getCalendarEvent().getOrganisation();
-        return add(new ShootingTestOfficial(event, newOccupation(rhy, person, OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA)));
+        return add(new ShootingTestOfficial(event, newOccupation(rhy, person,
+                OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA)));
     }
 
     public ShootingTestParticipant newShootingTestParticipant() {
@@ -1604,17 +1944,292 @@ public class EntitySupplier implements ValueGeneratorMixin {
         return add(new ShootingTestAttempt(participant, type, result, hits, null));
     }
 
+    public RhyAnnualStatistics newRhyAnnualStatistics() {
+        return newRhyAnnualStatistics(newRiistanhoitoyhdistys());
+    }
+
     public RhyAnnualStatistics newRhyAnnualStatistics(Riistanhoitoyhdistys rhy) {
         return newRhyAnnualStatistics(rhy, currentYear());
     }
 
     public RhyAnnualStatistics newRhyAnnualStatistics(Riistanhoitoyhdistys rhy, int year) {
         final RhyAnnualStatistics entity = new RhyAnnualStatistics(rhy, year);
+        populate(entity);
         return add(entity);
     }
 
+    public RhyAnnualStatisticsStateChangeEvent newRhyAnnualStatisticsStateChangeEvent(final RhyAnnualStatistics statistics,
+                                                                                      final RhyAnnualStatisticsState state) {
+
+        return add(new RhyAnnualStatisticsStateChangeEvent(statistics, state));
+    }
+
+    public RhyAnnualStatisticsModeratorUpdateEvent newRhyAnnualStatisticsModeratorUpdateEvent(final RhyAnnualStatistics statistics,
+                                                                                              final AnnualStatisticGroup group,
+                                                                                              final DateTime eventTime,
+                                                                                              final long userId) {
+
+        return add(new RhyAnnualStatisticsModeratorUpdateEvent(statistics, group, eventTime, userId));
+    }
+
+    public PermitDecisionInvoice newPermitDecisionInvoice() {
+        return newPermitDecisionInvoice(newRiistanhoitoyhdistys());
+    }
+
+    public PermitDecisionInvoice newPermitDecisionInvoice(final Riistanhoitoyhdistys rhy) {
+        return newPermitDecisionInvoice(newPermitDecision(rhy));
+    }
+
+    public PermitDecisionInvoice newPermitDecisionInvoice(final PermitDecision decision) {
+        final LocalDate invoiceDate = decision.getPublishDate().toLocalDate();
+        final Invoice invoice = newInvoice(decision, InvoiceType.PERMIT_PROCESSING, invoiceDate, new BigDecimal(90));
+
+        return add(new PermitDecisionInvoice(decision, invoice));
+    }
+
+    public PermitHarvestInvoice newPermitHarvestInvoice(final HarvestPermitSpeciesAmount speciesAmount) {
+        return newPermitHarvestInvoice(speciesAmount, today());
+    }
+
+    public PermitHarvestInvoice newPermitHarvestInvoice(final HarvestPermitSpeciesAmount speciesAmount,
+                                                        final LocalDate invoiceDate) {
+
+        final PermitDecision decision = speciesAmount.getHarvestPermit().getPermitDecision();
+
+        final Invoice invoice = newInvoice(decision, InvoiceType.PERMIT_HARVEST, invoiceDate, new BigDecimal(120));
+
+        return add(new PermitHarvestInvoice(invoice, speciesAmount));
+    }
+
+    public PermitHarvestInvoice newPermitHarvestInvoice() {
+        return newPermitHarvestInvoice(newRiistanhoitoyhdistys(), newGameSpecies(), today());
+    }
+
+    public PermitHarvestInvoice newPermitHarvestInvoice(final Riistanhoitoyhdistys rhy) {
+        return newPermitHarvestInvoice(rhy, newGameSpecies(), today());
+    }
+
+    public PermitHarvestInvoice newPermitHarvestInvoice(final GameSpecies species) {
+        return newPermitHarvestInvoice(newRiistanhoitoyhdistys(), species, today());
+    }
+
+    public PermitHarvestInvoice newPermitHarvestInvoice(final LocalDate invoiceDate) {
+        return newPermitHarvestInvoice(newRiistanhoitoyhdistys(), newGameSpecies(), invoiceDate);
+    }
+
+    public PermitHarvestInvoice newPermitHarvestInvoice(final Riistanhoitoyhdistys rhy, final LocalDate invoiceDate) {
+        return newPermitHarvestInvoice(rhy, newGameSpecies(), invoiceDate);
+    }
+
+    public PermitHarvestInvoice newPermitHarvestInvoice(final Riistanhoitoyhdistys rhy, final GameSpecies species) {
+        return newPermitHarvestInvoice(rhy, species, today());
+    }
+
+    public PermitHarvestInvoice newPermitHarvestInvoice(final Riistanhoitoyhdistys rhy,
+                                                        final GameSpecies species,
+                                                        final LocalDate invoiceDate) {
+
+        final PermitDecision decision = newPermitDecision(rhy, species);
+        final HarvestPermit permit = newMooselikePermit(decision);
+        final HarvestPermitSpeciesAmount speciesAmount = newHarvestPermitSpeciesAmount(permit, species);
+        return newPermitHarvestInvoice(speciesAmount, invoiceDate);
+    }
+
+    public Invoice newInvoice(final PermitDecision decision,
+                              final InvoiceType type,
+                              final LocalDate invoiceDate,
+                              final BigDecimal amount) {
+
+        final HarvestPermitApplication application = decision.getApplication();
+        final boolean electronicInvoicing =
+                type == InvoiceType.PERMIT_HARVEST || !Boolean.TRUE.equals(application.getDeliveryByMail());
+
+        final InvoiceState state;
+
+        if (!NumberUtils.bigDecimalIsPositive(amount)) {
+            state = InvoiceState.VOID;
+        } else if (electronicInvoicing) {
+            state = InvoiceState.DELIVERED;
+        } else {
+            state = InvoiceState.CREATED;
+        }
+
+        final Invoice invoice = new Invoice(type, electronicInvoicing);
+        invoice.setInvoiceNumber(200000 + serial());
+        invoice.updateInvoiceAndDueDate(invoiceDate);
+        invoice.setState(state);
+        invoice.setAmount(amount);
+        invoice.setIbanAndBic(bankAccount());
+        invoice.setCreditorReference(invoiceCreditorReference(decision, type));
+
+        final DeliveryAddress deliveryAddress = requireNonNull(decision.getDeliveryAddress());
+        final Address recipientAddress = new Address();
+        recipientAddress.setStreetAddress(deliveryAddress.getStreetAddress());
+        recipientAddress.setPostalCode(deliveryAddress.getPostalCode());
+        recipientAddress.setCity(deliveryAddress.getCity());
+        recipientAddress.setCountry(deliveryAddress.getCountry());
+        add(recipientAddress);
+
+        invoice.setRecipientName(deliveryAddress.getRecipient());
+        invoice.setRecipientAddress(recipientAddress);
+
+        invoice.setPdfFileMetadata(newPersistentFileContent().getMetadata());
+
+        return add(invoice);
+    }
+
+    protected CreditorReference invoiceCreditorReference(final PermitDecision decision,
+                                                         final InvoiceType type) {
+
+        final StringBuilder creditorRefBuilder = new StringBuilder(decision.getDecisionYear())
+                .append(String.format("%08d", decision.getDecisionNumber()));
+
+        switch (type) {
+            case PERMIT_PROCESSING:
+                break;
+            case PERMIT_HARVEST:
+                // Add unique part to reference since there might exist multiple for one permit decision.
+                creditorRefBuilder.append(serial());
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+
+        final String base = creditorRefBuilder.toString();
+        creditorRefBuilder.append(FinnishCreditorReferenceValidator.calculateChecksum(base));
+        return CreditorReference.fromNullable(creditorRefBuilder.toString());
+    }
+
+    public InvoicePaymentLine newInvoicePaymentLine(final Invoice invoice) {
+        return newInvoicePaymentLine(invoice, invoice.getAmount());
+    }
+
+    public InvoicePaymentLine newInvoicePaymentLine(final Invoice invoice, final BigDecimal amount) {
+        return newInvoicePaymentLine(invoice, amount, today());
+    }
+
+    public InvoicePaymentLine newInvoicePaymentLine(final Invoice invoice,
+                                                    final BigDecimal amount,
+                                                    final LocalDate paymentDate) {
+
+        return add(new InvoicePaymentLine(invoice, paymentDate, amount));
+    }
+
+    public InvoicePaymentLine newInvoicePaymentLine(final Invoice invoice, final AccountTransfer accountTransfer) {
+        return add(new InvoicePaymentLine(invoice, accountTransfer));
+    }
+
+    public AccountTransferBatch newAccountTransferBatch(final LocalDate accountStatementDate) {
+        final String batchName = "accountStatementBatch-" + DATE_FORMATTER.print(accountStatementDate);
+        return add(new AccountTransferBatch(accountStatementDate, batchName, accountStatementDate.plusDays(1)));
+    }
+
+    public AccountTransfer newAccountTransfer(final AccountTransferBatch batch,
+                                              final LocalDate transactionDate,
+                                              final LocalDate bookingDate) {
+
+        final AccountTransfer transfer = new AccountTransfer();
+        transfer.setBatch(batch);
+        transfer.setCreditorIban(iban());
+        transfer.setCreditorReference(creditorReference());
+        transfer.setAmount(new BigDecimal(nextPositiveInt()));
+        transfer.setTransactionDate(transactionDate);
+        transfer.setBookingDate(bookingDate);
+        transfer.setDebtorName("Debtor-" + serial());
+        transfer.setAccountServiceReference("ArchivalID-" + serial());
+        return add(transfer);
+    }
+
+    public AccountTransfer newAccountTransfer(final AccountTransferBatch batch,
+                                              final Invoice invoice,
+                                              final LocalDate transactionDate,
+                                              final LocalDate bookingDate) {
+
+        final AccountTransfer transfer = new AccountTransfer();
+        transfer.setBatch(batch);
+        transfer.setCreditorIban(invoice.getIban());
+        transfer.setCreditorReference(invoice.getCreditorReference());
+        transfer.setAmount(invoice.getAmount());
+        transfer.setTransactionDate(transactionDate);
+        transfer.setBookingDate(bookingDate);
+        transfer.setDebtorName(invoice.getRecipientName());
+        transfer.setAccountServiceReference("ArchivalID-" + serial());
+        return add(transfer);
+    }
+
+    public AccountTransfer newAccountTransfer(final LocalDate transactionDate, final LocalDate bookingDate) {
+        return newAccountTransfer(newAccountTransferBatch(bookingDate), transactionDate, bookingDate);
+    }
+
+    public AccountTransfer newAccountTransfer(final Invoice invoice,
+                                              final LocalDate transactionDate,
+                                              final LocalDate bookingDate) {
+
+        return newAccountTransfer(newAccountTransferBatch(bookingDate), invoice, transactionDate, bookingDate);
+    }
+
+
+    public PersonalAreaUnion newPersonalAreaUnion(final String name, final Person person) {
+        final PersonalAreaUnion personalAreaUnion = new PersonalAreaUnion();
+        personalAreaUnion.setName(name);
+        personalAreaUnion.setHarvestPermitArea(newHarvestPermitArea());
+        personalAreaUnion.setPerson(person);
+        return add(personalAreaUnion);
+
+    }
+    public HarvestPermitApplicationAttachment newHarvestPermitApplicationAttachment(final HarvestPermitApplication application) {
+        final PersistentFileMetadata persistentFileMetadata = newPersistentFileMetadata();
+        final HarvestPermitApplicationAttachment attachment = new HarvestPermitApplicationAttachment();
+        attachment.setHarvestPermitApplication(application);
+        attachment.setAttachmentType(HarvestPermitApplicationAttachment.Type.PROTECTED_AREA);
+        attachment.setAttachmentMetadata(persistentFileMetadata);
+        return add(attachment);
+    }
+
+    public PersistentFileMetadata newPersistentFileMetadata() {
+        final PersistentFileMetadata persistentFileMetadata = new PersistentFileMetadata();
+        persistentFileMetadata.setId(UUID.randomUUID());
+        persistentFileMetadata.setContentType("test");
+        persistentFileMetadata.setStorageType(StorageType.LOCAL_FOLDER);
+        return add(persistentFileMetadata);
+    }
+
+    public MetsahallitusPermit newMetsahallitusPermit() {
+        return newMetsahallitusPermit("Karhulupa", "Karhualue", hunterNumber());
+    }
+
+    public MetsahallitusPermit newMetsahallitusPermit(final String permitType, final String areaName,
+                                                      final String hunterNumber) {
+        final MetsahallitusPermit metsahallitusPermit = new MetsahallitusPermit();
+        metsahallitusPermit.setStatus("160");
+        metsahallitusPermit.setAreaNumber(zeroPaddedNumber(4));
+        metsahallitusPermit.setPermitIdentifier(zeroPaddedNumber(5));
+        metsahallitusPermit.setPermitType(String.format("%s-fi", permitType));
+        metsahallitusPermit.setPermitTypeSwedish(String.format("%s-sv", permitType));
+        metsahallitusPermit.setPermitTypeEnglish(String.format("%s-en", permitType));
+        metsahallitusPermit.setBeginDate(today().minusMonths(1));
+        metsahallitusPermit.setEndDate(today().plusMonths(1));
+        metsahallitusPermit.setAreaName(String.format("%s-fi", areaName));
+        metsahallitusPermit.setAreaNameSwedish(String.format("%s-sv", areaName));
+        metsahallitusPermit.setAreaNameEnglish(String.format("%s-en", areaName));
+        metsahallitusPermit.setUrl("https://riista.fi");
+        metsahallitusPermit.setHarvestReportSubmitted(false);
+        metsahallitusPermit.setHunterNumber(hunterNumber);
+        return add(metsahallitusPermit);
+    }
+
+    public PermitDecisionForbiddenMethod newPermitDecisionForbiddenMethod(final PermitDecision permitDecision,
+                                                                          final GameSpecies gameSpecies,
+                                                                          final ForbiddenMethodType forbiddenMethodType) {
+        final PermitDecisionForbiddenMethod permitDecisionForbiddenMethod = new PermitDecisionForbiddenMethod();
+        permitDecisionForbiddenMethod.setPermitDecision(permitDecision);
+        permitDecisionForbiddenMethod.setGameSpecies(gameSpecies);
+        permitDecisionForbiddenMethod.setMethod(forbiddenMethodType);
+        return add(permitDecisionForbiddenMethod);
+    }
+
     protected <T extends Persistable<?>> T add(@Nonnull final T object) {
-        Objects.requireNonNull(object);
+        requireNonNull(object);
         transientEntityList.add(object);
         return object;
     }
@@ -1628,7 +2243,7 @@ public class EntitySupplier implements ValueGeneratorMixin {
     }
 
     private String generateUsername(SystemUser.Role role) {
-        Objects.requireNonNull(role);
+        requireNonNull(role);
 
         final String basename;
 

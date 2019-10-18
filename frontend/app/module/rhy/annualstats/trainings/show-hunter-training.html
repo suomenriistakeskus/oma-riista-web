@@ -1,0 +1,129 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.trainings.hunter.title'"
+                               last-modified="$ctrl.hunterTraining.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.trainings.hunter.huntingLeaderTrainings"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.mooselikeHuntingLeaderTrainingEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.mooselikeHuntingLeaderTrainingEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.mooselikeHuntingLeaderTrainingEvents"></div>
+                        </td>
+                        <td num-pieces="::$ctrl.hunterTraining.mooselikeHuntingLeaderTrainingEvents"></td>
+                    </tr>
+                    <tr class="indented-row-2">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.mooselikeHuntingLeaderTrainingParticipantsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.mooselikeHuntingLeaderTrainingParticipants"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.mooselikeHuntingLeaderTrainingParticipants"></div>
+                        </td>
+                        <td num-persons="::$ctrl.hunterTraining.mooselikeHuntingLeaderTrainingParticipants"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.carnivoreHuntingLeaderTrainingEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.carnivoreHuntingLeaderTrainingEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.carnivoreHuntingLeaderTrainingEvents"></div>
+                        </td>
+                        <td num-pieces="::$ctrl.hunterTraining.carnivoreHuntingLeaderTrainingEvents"></td>
+                    </tr>
+                    <tr class="indented-row-2">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.carnivoreHuntingLeaderTrainingParticipantsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.carnivoreHuntingLeaderTrainingParticipants"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.carnivoreHuntingLeaderTrainingParticipants"></div>
+                        </td>
+                        <td num-persons="::$ctrl.hunterTraining.carnivoreHuntingLeaderTrainingParticipants"></td>
+                    </tr>
+
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.trainings.hunter.hunterTrainings"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.mooselikeHuntingTrainingEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.mooselikeHuntingTrainingEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.mooselikeHuntingTrainingEvents"></div>
+                        </td>
+                        <td num-pieces="::$ctrl.hunterTraining.mooselikeHuntingTrainingEvents"></td>
+                    </tr>
+                    <tr class="indented-row-2">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.mooselikeHuntingTrainingParticipantsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.mooselikeHuntingTrainingParticipants"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.mooselikeHuntingTrainingParticipants"></div>
+                        </td>
+                        <td num-persons="::$ctrl.hunterTraining.mooselikeHuntingTrainingParticipants"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.carnivoreHuntingTrainingEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.carnivoreHuntingTrainingEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.carnivoreHuntingTrainingEvents"></div>
+                        </td>
+                        <td num-pieces="::$ctrl.hunterTraining.carnivoreHuntingTrainingEvents"></td>
+                    </tr>
+                    <tr class="indented-row-2">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.carnivoreHuntingTrainingParticipantsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.carnivoreHuntingTrainingParticipants"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.carnivoreHuntingTrainingParticipants"></div>
+                        </td>
+                        <td num-persons="::$ctrl.hunterTraining.carnivoreHuntingTrainingParticipants"></td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.srvaTrainingEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.srvaTrainingEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.srvaTrainingEvents"></div>
+                        </td>
+                        <td num-pieces="::$ctrl.hunterTraining.srvaTrainingEvents"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.srvaTrainingParticipantsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.srvaTrainingParticipants"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.srvaTrainingParticipants"></div>
+                        </td>
+                        <td num-persons="::$ctrl.hunterTraining.srvaTrainingParticipants"></td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.carnivoreContactPersonTrainingEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.carnivoreContactPersonTrainingEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.carnivoreContactPersonTrainingEvents"></div>
+                        </td>
+                        <td num-pieces="::$ctrl.hunterTraining.carnivoreContactPersonTrainingEvents"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.carnivoreContactPersonTrainingParticipantsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.carnivoreContactPersonTrainingParticipants"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.carnivoreContactPersonTrainingParticipants"></div>
+                        </td>
+                        <td num-persons="::$ctrl.hunterTraining.carnivoreContactPersonTrainingParticipants"></td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.accidentPreventionTrainingEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.accidentPreventionTrainingEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.accidentPreventionTrainingEvents"></div>
+                        </td>
+                        <td num-pieces="::$ctrl.hunterTraining.accidentPreventionTrainingEvents"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" ng-switch="$ctrl.hunterTraining.accidentPreventionTrainingParticipantsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunter.accidentPreventionTrainingParticipants"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunter.accidentPreventionTrainingParticipants"></div>
+                        </td>
+                        <td num-persons="::$ctrl.hunterTraining.accidentPreventionTrainingParticipants"></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.editHunterTraining()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

@@ -22,24 +22,30 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(final HttpServletRequest request,
                        final HttpServletResponse response,
                        final AccessDeniedException ex) throws IOException {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-
         final boolean sessionExists = request.getSession(false) != null;
+        final int responseStatus;
 
         if (ex instanceof MissingCsrfTokenException) {
+            responseStatus = HttpServletResponse.SC_UNAUTHORIZED;
+
             LOG.warn("Missing CSRF token for requestURI={} for user {} with session={} and message: {}",
                     request.getRequestURI(), getActiveUserInfo(), sessionExists, ex.getMessage());
 
         } else if (ex instanceof CsrfException) {
+            responseStatus = HttpServletResponse.SC_UNAUTHORIZED;
+
             LOG.warn("Invalid CSRF token for requestURI={} for user {} with session={} and message: {}",
                     request.getRequestURI(), getActiveUserInfo(), sessionExists, ex.getMessage());
 
         } else {
+            responseStatus = HttpServletResponse.SC_FORBIDDEN;
+
             LOG.warn("Access denied for requestURI={} for user {} with exception {} message: {}",
                     request.getRequestURI(), getActiveUserInfo(), ex.getClass().getName(), ex.getMessage());
         }
 
         if (!response.isCommitted()) {
+            response.setStatus(responseStatus);
             response.setContentType("application/json");
             response.getWriter().print("{\"status\": \"FORBIDDEN\"}");
             response.getWriter().flush();

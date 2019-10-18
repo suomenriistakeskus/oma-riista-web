@@ -1,0 +1,130 @@
+<div class="btn-toolbar" role="toolbar">
+    <div class="btn-group" role="group">
+        <button type="button"
+                class="btn"
+                ng-class="$ctrl.buttonStyle('move')"
+                ng-click="$ctrl.useTool('move')">
+            <span class="fa fa-fw fa-arrows-alt"></span>
+            <span translate="global.map.editor.toolbar.move"></span>
+        </button>
+    </div>
+
+    <div class="btn-group" uib-dropdown dropdown-append-to-body>
+        <button type="button"
+                ng-click="$ctrl.useTool('palsta.add.single')"
+                ng-class="$ctrl.buttonStyle('palsta')"
+                class="btn">
+            <span class="fa fa-fw fa-plus"></span>
+            <span ng-if="$ctrl.isActiveTool('palsta')">
+                {{ ('global.map.editor.toolbar.' + $ctrl.currentTool) | translate }}
+            </span>
+            <span ng-if="!$ctrl.isActiveTool('palsta')"
+                  translate="global.map.editor.toolbar.palsta.add.single"></span>
+        </button>
+
+        <button type="button"
+                uib-dropdown-toggle
+                ng-class="$ctrl.buttonStyle('palsta')"
+                class="btn">
+            <span class="caret"></span>
+        </button>
+
+        <ul class="dropdown-menu" uib-dropdown-menu>
+            <li>
+                <a ng-click="$ctrl.useTool('palsta.add.single')">
+                    <span translate="global.map.editor.toolbar.palsta.add.single"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="$ctrl.toolStyle('palsta.add.single', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li role="separator" class="divider"></li>
+            <li>
+                <a ng-click="$ctrl.useTool('palsta.add.marquee')">
+                    <span translate="global.map.editor.toolbar.palsta.add.marquee"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="$ctrl.toolStyle('palsta.add.marquee', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li>
+                <a ng-click="$ctrl.useTool('palsta.remove.marquee')">
+                    <span translate="global.map.editor.toolbar.palsta.remove.marquee"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="$ctrl.toolStyle('palsta.remove.marquee', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="btn-group" uib-dropdown dropdown-append-to-body>
+        <button type="button"
+                uib-dropdown-toggle
+                ng-class="$ctrl.buttonStyle('draw')"
+                class="btn">
+            <span class="fa fa-fw fa-pencil"></span>
+            <span translate="global.map.editor.toolbar.draw.title"></span>
+            <span class="caret"></span>
+        </button>
+
+        <ul class="dropdown-menu" uib-dropdown-menu>
+            <li>
+                <a ng-click="$ctrl.useTool('draw.create')">
+                    <span translate="global.map.editor.toolbar.draw.add"></span>
+                    <span class="glyphicon pull-right"
+                          ng-class="$ctrl.toolStyle('draw.create', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li>
+                <a ng-click="$ctrl.useTool('draw.edit')">
+                    <span translate="global.map.editor.toolbar.draw.edit"></span>
+                    <span class="glyphicon pull-right"
+                          ng-class="$ctrl.toolStyle('draw.edit', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="btn-group" uib-dropdown dropdown-append-to-body>
+        <button type="button" uib-dropdown-toggle
+                ng-class="$ctrl.buttonStyle('exclude')"
+                class="btn">
+            <span class="fa fa-fw fa-cut"></span>
+            <span ng-if="$ctrl.isActiveTool('exclude')">
+                {{ ('global.map.editor.toolbar.' + $ctrl.currentTool) | translate }}
+            </span>
+            <span ng-if="!$ctrl.isActiveTool('exclude')"
+                  translate="global.map.editor.toolbar.exclude.title"></span>
+            <span class="caret"></span>
+        </button>
+
+        <ul class="dropdown-menu" uib-dropdown-menu>
+            <li>
+                <a ng-click="$ctrl.useTool('exclude.polyLasso.add')">
+                    <span translate="global.map.editor.toolbar.exclude.polyLasso.add"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="$ctrl.toolStyle('exclude.polyLasso.add', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li>
+                <a ng-click="$ctrl.useTool('exclude.polyLasso.remove')">
+                    <span translate="global.map.editor.toolbar.exclude.polyLasso.remove"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="$ctrl.toolStyle('exclude.polyLasso.remove', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li role="separator" class="divider"></li>
+            <li>
+                <a ng-click="$ctrl.useTool('exclude.lasso.add')">
+                    <span translate="global.map.editor.toolbar.exclude.lasso.add"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="$ctrl.toolStyle('exclude.lasso.add', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>
+            <li>
+                <a ng-click="$ctrl.useTool('exclude.lasso.remove')">
+                    <span translate="global.map.editor.toolbar.exclude.lasso.remove"></span>
+                <span class="glyphicon pull-right"
+                      ng-class="$ctrl.toolStyle('exclude.lasso.remove', 'glyphicon-ok', '')"></span>
+                </a>
+            </li>    </ul>
+    </div>
+</div>

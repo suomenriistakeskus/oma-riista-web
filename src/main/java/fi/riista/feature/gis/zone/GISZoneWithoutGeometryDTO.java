@@ -2,6 +2,7 @@ package fi.riista.feature.gis.zone;
 
 import fi.riista.feature.common.entity.HasID;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
@@ -17,9 +18,9 @@ public class GISZoneWithoutGeometryDTO implements HasID<Long>, Serializable {
                                      final GISZone.SourceType sourceType,
                                      final Date modificationTime) {
         this.id = Objects.requireNonNull(id);
-        this.size = Objects.requireNonNull(size);
         this.sourceType = Objects.requireNonNull(sourceType);
         this.modificationTime = Objects.requireNonNull(modificationTime);
+        this.size = size;
     }
 
     @Override
@@ -27,6 +28,7 @@ public class GISZoneWithoutGeometryDTO implements HasID<Long>, Serializable {
         return id;
     }
 
+    @Nullable
     public GISZoneSizeDTO getSize() {
         return size;
     }

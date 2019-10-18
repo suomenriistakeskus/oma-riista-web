@@ -1,107 +1,76 @@
 package fi.riista.feature.permit.decision;
 
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
-import fi.riista.feature.permit.application.species.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmountRepository;
 import fi.riista.feature.permit.decision.document.PermitDecisionTextService;
-import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
+import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethod;
+import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethodRepository;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmountRepository;
+import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmountService;
+import fi.riista.util.F;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class PermitDecisionAmendUpdater {
 
     @Resource
+    private PermitDecisionSpeciesAmountService permitDecisionSpeciesAmountService;
+
+    @Resource
     private PermitDecisionSpeciesAmountRepository permitDecisionSpeciesAmountRepository;
+
+    @Resource
+    private HarvestPermitApplicationSpeciesAmountRepository harvestPermitApplicationSpeciesAmountRepository;
+
+    @Resource
+    private PermitDecisionForbiddenMethodRepository permitDecisionForbiddenMethodRepository;
 
     @Resource
     private PermitDecisionTextService permitDecisionTextService;
 
+    @Resource
+    private PermitDecisionGrantStatusService permitDecisionGrantStatusService;
+
     @Transactional
     public void updateDecision(final PermitDecision decision) {
+        PermitDecision.amendFromApplication(decision);
+
+        synchronizeSpeciesAmounts(decision);
+        removeInvalidForbiddenSpeciesAmounts(decision);
+
+        permitDecisionTextService.generateDefaultTextSections(decision, true);
+    }
+
+    private void synchronizeSpeciesAmounts(final PermitDecision decision) {
+        // Recreate all decision species amounts, because they only contain amount and dates
+        permitDecisionSpeciesAmountRepository.deleteByPermitDecision(decision);
+        permitDecisionSpeciesAmountRepository.save(permitDecisionSpeciesAmountService.createSpecies(decision));
+        permitDecisionGrantStatusService.updateGrantStatus(decision);
+    }
+
+    private void removeInvalidForbiddenSpeciesAmounts(final PermitDecision decision) {
         final HarvestPermitApplication application = decision.getApplication();
-        decision.setPermitHolder(application.getPermitHolder());
-        decision.setContactPerson(application.getContactPerson());
-        decision.setRhy(application.getRhy());
-        decision.setHta(application.getArea().findLargestHta().orElse(null));
+        final List<HarvestPermitApplicationSpeciesAmount> applicationSpeciesAmounts =
+                harvestPermitApplicationSpeciesAmountRepository.findByHarvestPermitApplication(application);
+        final Set<GameSpecies> applicationSpecies = F.mapNonNullsToSet(applicationSpeciesAmounts,
+                HarvestPermitApplicationSpeciesAmount::getGameSpecies);
 
-        final PermitDecisionDocument document = decision.getDocument();
-        document.setApplication(permitDecisionTextService.generateApplicationSummary(decision));
+        final List<PermitDecisionForbiddenMethod> toDelete = new LinkedList<>();
 
-        final List<PermitDecisionSpeciesAmount> toBeAdded = getSpeciesMissingFromDecision(decision, application);
-        final List<PermitDecisionSpeciesAmount> toBeRemoved = updateCurrentSpecies(decision, application);
-
-        permitDecisionSpeciesAmountRepository.save(toBeAdded);
-        permitDecisionSpeciesAmountRepository.delete(toBeRemoved);
-
-        decision.getSpeciesAmounts().addAll(toBeAdded);
-        decision.getSpeciesAmounts().removeAll(toBeRemoved);
-
-        permitDecisionTextService.fillInBlanks(decision);
-
-        decision.updateGrantStatus();
-    }
-
-    private static List<PermitDecisionSpeciesAmount> updateCurrentSpecies(final PermitDecision decision,
-                                                                          final HarvestPermitApplication application) {
-        final Map<Long, Float> applicationAmountMapping = application.getSpeciesAmounts().stream()
-                .collect(Collectors.toMap(spa -> spa.getGameSpecies().getId(),
-                        HarvestPermitApplicationSpeciesAmount::getAmount));
-
-        final List<PermitDecisionSpeciesAmount> toBeRemoved = new LinkedList<>();
-
-        for (final PermitDecisionSpeciesAmount decisionSpeciesAmount : decision.getSpeciesAmounts()) {
-            final Float applicationAmount = applicationAmountMapping.get(decisionSpeciesAmount.getGameSpecies().getId());
-
-            if (applicationAmount == null) {
-                // Remove species not included in application
-                toBeRemoved.add(decisionSpeciesAmount);
-            } else if (decisionSpeciesAmount.getAmount() > applicationAmount) {
-                // Limit decision species amount to application amount
-                decisionSpeciesAmount.setAmount(applicationAmount);
+        for (final PermitDecisionForbiddenMethod forbiddenMethod : permitDecisionForbiddenMethodRepository.findByPermitDecision(decision)) {
+            if (!applicationSpecies.contains(forbiddenMethod.getGameSpecies())) {
+                toDelete.add(forbiddenMethod);
             }
         }
 
-        return toBeRemoved;
-    }
-
-    private static List<PermitDecisionSpeciesAmount> getSpeciesMissingFromDecision(final PermitDecision decision,
-                                                                                   final HarvestPermitApplication application) {
-        final Set<GameSpecies> currentDecisionSpecies = decision.getSpeciesAmounts().stream()
-                .map(PermitDecisionSpeciesAmount::getGameSpecies)
-                .collect(Collectors.toSet());
-
-        final List<PermitDecisionSpeciesAmount> toBeAdded = new LinkedList<>();
-
-        for (HarvestPermitApplicationSpeciesAmount applicationSpeciesAmount : application.getSpeciesAmounts()) {
-            if (!currentDecisionSpecies.contains(applicationSpeciesAmount.getGameSpecies())) {
-                toBeAdded.add(createDecisionSpecies(applicationSpeciesAmount, decision));
-            }
-        }
-
-        return toBeAdded;
-    }
-
-    private static PermitDecisionSpeciesAmount createDecisionSpecies(final HarvestPermitApplicationSpeciesAmount source,
-                                                                     final PermitDecision decision) {
-        final PermitDecisionSpeciesAmount target = new PermitDecisionSpeciesAmount();
-        target.setPermitDecision(decision);
-        target.setGameSpecies(source.getGameSpecies());
-        target.setAmount(source.getAmount());
-
-        final int huntingYear = decision.getApplication().getHuntingYear();
-        target.setBeginDate(HarvestPermit.getDefaultMooselikeBeginDate(huntingYear));
-        target.setEndDate(HarvestPermit.getDefaultMooselikeEndDate(huntingYear));
-
-        return target;
+        permitDecisionForbiddenMethodRepository.delete(toDelete);
     }
 }

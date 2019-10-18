@@ -1,79 +1,92 @@
 package fi.riista.feature.harvestpermit;
 
-import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.repository.BaseRepository;
-import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpecies_;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import org.springframework.data.jpa.repository.Modifying;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static fi.riista.util.jpa.JpaSpecs.equal;
-import static fi.riista.util.jpa.JpaSpecs.hasRelationWithId;
-import static java.util.stream.Collectors.joining;
+import static fi.riista.util.jpa.JpaSpecs.fetch;
+import static java.util.Objects.requireNonNull;
 import static org.springframework.data.jpa.domain.Specifications.where;
 
 public interface HarvestPermitSpeciesAmountRepository extends BaseRepository<HarvestPermitSpeciesAmount, Long> {
 
     List<HarvestPermitSpeciesAmount> findByHarvestPermit(HarvestPermit harvestPermit);
 
-    default List<HarvestPermitSpeciesAmount> findByHarvestPermitIdAndSpeciesCode(final long harvestPermitId,
-                                                                                 final int speciesCode) {
-        return findAll(
-                where(hasRelationWithId(HarvestPermitSpeciesAmount_.harvestPermit, HarvestPermit_.id, harvestPermitId))
-                        .and(equal(HarvestPermitSpeciesAmount_.gameSpecies, GameSpecies_.officialCode, speciesCode)));
-    }
+    @Modifying
+    void deleteByHarvestPermit(HarvestPermit harvestPermit);
 
-    default List<HarvestPermitSpeciesAmount> findByHarvestPermitAndSpeciesCode(@Nonnull final HarvestPermit harvestPermit,
+    default List<HarvestPermitSpeciesAmount> findByHarvestPermitAndSpeciesCode(final @Nonnull HarvestPermit harvestPermit,
                                                                                final int speciesCode) {
+        requireNonNull(harvestPermit);
 
-        Objects.requireNonNull(harvestPermit);
-        return findByHarvestPermitIdAndSpeciesCode(harvestPermit.getId(), speciesCode);
+        return findAll(where(equal(HarvestPermitSpeciesAmount_.harvestPermit, harvestPermit))
+                .and(equal(HarvestPermitSpeciesAmount_.gameSpecies, GameSpecies_.officialCode, speciesCode)));
     }
 
-    default Optional<HarvestPermitSpeciesAmount> findOneByHarvestPermitIdAndSpeciesCode(final long harvestPermitId,
+    default Optional<HarvestPermitSpeciesAmount> findOneByHarvestPermitIdAndSpeciesCode(final @Nonnull HarvestPermit harvestPermit,
                                                                                         final int speciesCode) {
-        final List<HarvestPermitSpeciesAmount> speciesAmounts =
-                findByHarvestPermitIdAndSpeciesCode(harvestPermitId, speciesCode);
+
+        final List<HarvestPermitSpeciesAmount> speciesAmounts = findByHarvestPermitAndSpeciesCode(harvestPermit, speciesCode);
 
         if (speciesAmounts.size() > 1) {
-            final String huntingYears = Has2BeginEndDates.streamUniqueHuntingYearsSorted(speciesAmounts.stream())
-                    .mapToObj(String::valueOf)
-                    .collect(joining(","));
-
-            throw new IllegalStateException(String.format(
-                    "Cannot resolve HarvestPermitSpeciesAmount unambiguously because multiple instances found for " +
-                            "{ harvestPermitId: %d, speciesCode: %d } for following hunting years: %s",
-                    harvestPermitId, speciesCode, huntingYears));
+            throw HarvestPermitSpeciesAmountNotFound.uniqueHuntingYearNotFound(harvestPermit.getPermitNumber(), speciesCode, speciesAmounts);
         }
 
-        return speciesAmounts.isEmpty() ? Optional.empty() : Optional.of(speciesAmounts.get(0));
+        return speciesAmounts.stream().findFirst();
     }
 
-    default HarvestPermitSpeciesAmount getOneByHarvestPermitIdAndSpeciesCode(final long harvestPermitId,
-                                                                             final int speciesCode) {
-        return findOneByHarvestPermitIdAndSpeciesCode(harvestPermitId, speciesCode)
-                .orElseThrow(() -> new NotFoundException(String.format(
-                        "Could not find HarvestPermitSpeciesAmount by { harvestPermitId: %d, speciesCode: %d }",
-                        harvestPermitId, speciesCode)));
-    }
-
-    default HarvestPermitSpeciesAmount getOneByHarvestPermitAndSpeciesCode(@Nonnull final HarvestPermit harvestPermit,
+    default HarvestPermitSpeciesAmount getOneByHarvestPermitAndSpeciesCode(final @Nonnull HarvestPermit harvestPermit,
                                                                            final int speciesCode) {
-        Objects.requireNonNull(harvestPermit);
-        return getOneByHarvestPermitIdAndSpeciesCode(harvestPermit.getId(), speciesCode);
+        return findOneByHarvestPermitIdAndSpeciesCode(harvestPermit, speciesCode)
+                .orElseThrow(() -> HarvestPermitSpeciesAmountNotFound.notFound(harvestPermit.getPermitNumber(), speciesCode));
     }
 
-    default Optional<HarvestPermitSpeciesAmount> findByHuntingClubGroupPermit(final HuntingClubGroup huntingClubGroup) {
-        final HarvestPermit permit = huntingClubGroup.getHarvestPermit();
-        final GameSpecies species = huntingClubGroup.getSpecies();
+    default List<HarvestPermitSpeciesAmount> findMooseAmounts(final @Nonnull HarvestPermit harvestPermit) {
+        return findByHarvestPermitAndSpeciesCode(harvestPermit, GameSpecies.OFFICIAL_CODE_MOOSE);
+    }
 
-        return permit == null
-                ? Optional.empty()
-                : findOneByHarvestPermitIdAndSpeciesCode(permit.getId(), species.getOfficialCode());
+    default HarvestPermitSpeciesAmount getMooseAmount(final @Nonnull HarvestPermit harvestPermit) {
+        return getOneByHarvestPermitAndSpeciesCode(harvestPermit, GameSpecies.OFFICIAL_CODE_MOOSE);
+    }
+
+    default Optional<HarvestPermitSpeciesAmount> findByHuntingClubGroupPermit(final @Nonnull HuntingClubGroup group) {
+        return Optional
+                .of(group) // throws NPE if null
+                .map(HuntingClubGroup::getHarvestPermit)
+                .flatMap(permit -> findOneByHarvestPermitIdAndSpeciesCode(permit, group.getSpecies().getOfficialCode()));
+    }
+
+    default List<HarvestPermitSpeciesAmount> getAmendmentPermitSpeciesAmounts(final HarvestPermit originalPermit) {
+        return findAll(where(
+                equal(HarvestPermitSpeciesAmount_.harvestPermit, HarvestPermit_.originalPermit, originalPermit))
+                .and(fetch(HarvestPermitSpeciesAmount_.harvestPermit)));
+    }
+
+    default List<HarvestPermitSpeciesAmount> getAmendmentPermitSpeciesAmounts(final HarvestPermit originalPermit,
+                                                                              final GameSpecies species) {
+        return findAll(where(
+                equal(HarvestPermitSpeciesAmount_.harvestPermit, HarvestPermit_.originalPermit, originalPermit))
+                .and(equal(HarvestPermitSpeciesAmount_.gameSpecies, species))
+                .and(fetch(HarvestPermitSpeciesAmount_.harvestPermit)));
+    }
+
+    default Map<String, Float> countAmendmentPermitNumbersAndAmounts(final HarvestPermit permit,
+                                                                     final GameSpecies species) {
+
+        return getAmendmentPermitSpeciesAmounts(permit, species).stream().collect(Collectors.toMap(
+                speciesAmount -> speciesAmount.getHarvestPermit().getPermitNumber(),
+                HarvestPermitSpeciesAmount::getAmount,
+                (u, v) -> u + v,
+                TreeMap::new));
     }
 }

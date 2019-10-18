@@ -64,7 +64,7 @@
         En begäran om omprövning kan personligen lämnas till Finlands viltcentral, sändas med posten som betald
         postförsändelse, e-post eller med ombud eller bud. Postningen eller annan inlämnande sker på avsändarens ansvar.
         För att en begäran om omprövning ska kunna tas upp till prövning ska begäran komma in till Finlands viltcentral
-        innan tidsfristen om 30 dagar löper ut. Om tidsfristens sista dag är en helgdag, lördag, självständighetsdag,
+        innan tidsfristen om sex månader. Om tidsfristens sista dag är en helgdag, lördag, självständighetsdag,
         första maj, julafton eller midsommarafton fortsätter tidsfristen ännu följande vardag till slutet av verkets
         öppethållningstid.
     </p>

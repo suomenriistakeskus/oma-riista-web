@@ -18,7 +18,7 @@ angular.module('app.moosepermit.map', [])
                     var hue = Math.round(index * 256 / zArray.length) % 256;
                     return [value, 'hsl(' + hue + ',100%,40%)'];
                 })
-                .zipObject()
+                .fromPairs()
                 .value();
 
             return {
@@ -85,44 +85,50 @@ angular.module('app.moosepermit.map', [])
     })
     .controller('MoosePermitMapController', function ($scope, $q, leafletData, $translate,
                                                       MapDefaults, MapState, MoosePermitMapService,
-                                                      mapBounds, harvests, featureCollection) {
-        this.harvests = harvests;
-        this.markers = [];
-        this.mapState = MapState.get();
-        this.mapDefaults = MapDefaults.create();
-        this.mapEvents = MapDefaults.getMapBroadcastEvents();
+                                                      mapBounds, harvests, featureCollection, goBackFn) {
+        var $ctrl = this;
 
-        MapState.updateMapBounds(mapBounds, mapBounds, true);
+        $ctrl.$onInit = function () {
+            $ctrl.harvests = harvests;
+            $ctrl.markers = [];
+            $ctrl.mapState = MapState.get();
+            $ctrl.mapDefaults = MapDefaults.create();
+            $ctrl.mapEvents = MapDefaults.getMapBroadcastEvents();
+            $ctrl.goBack = goBackFn;
+            $ctrl.showGoBack = _.isFunction(goBackFn);
 
-        var markerClickHandler = function (markerId) {
-            var parts = markerId.split(':');
+            MapState.updateMapBounds(mapBounds, mapBounds, true);
 
-            if (parts.length === 2) {
-                var diaryEntry = _.findWhere(harvests, {
-                    'type': parts[0],
-                    'id': _.parseInt(parts[1])
-                });
+            var markerClickHandler = function (markerId) {
+                var parts = markerId.split(':');
 
-                if (diaryEntry) {
-                    MoosePermitMapService.showDiaryEntry(diaryEntry);
+                if (parts.length === 2) {
+                    var diaryEntry = _.find(harvests, {
+                        'type': parts[0],
+                        'id': _.parseInt(parts[1])
+                    });
+
+                    if (diaryEntry) {
+                        MoosePermitMapService.showDiaryEntry(diaryEntry);
+                    }
                 }
-            }
+            };
+
+            $ctrl.markers = MoosePermitMapService.createMarkers(harvests, markerClickHandler, $scope);
+
+            leafletData.getMap('club-permit-map').then(function (map) {
+                var userLanguage = $translate.use() === 'sv' ? 'sv' : 'fi';
+                var clubNameProperty = 'properties.clubName.' + userLanguage;
+                var geoJsonLayer = createGeoJsonLayer(featureCollection, clubNameProperty);
+
+                L.control.geoJsonLayerControl(geoJsonLayer, {
+                    textToggleAll: $translate.instant('global.map.toggleLayers'),
+                    layerToLegendTitle: function (layer) {
+                        return _.get(layer.feature, clubNameProperty);
+                    }
+                }).addTo(map);
+            });
         };
-
-        this.markers = MoosePermitMapService.createMarkers(harvests, markerClickHandler, $scope);
-
-        leafletData.getMap('club-permit-map').then(function (map) {
-            var userLanguage = $translate.use() === 'sv' ? 'sv' : 'fi';
-            var clubNameProperty = 'properties.clubName.' + userLanguage;
-            var geoJsonLayer = createGeoJsonLayer(featureCollection, clubNameProperty);
-
-            L.control.geoJsonLayerControl(geoJsonLayer, {
-                textToggleAll: $translate.instant('global.map.toggleLayers'),
-                layerToLegendTitle: function (layer) {
-                    return _.get(layer.feature, clubNameProperty);
-                }
-            }).addTo(map);
-        });
 
         function createGeoJsonLayer(featureCollection, clubNameProperty) {
             featureCollection.features = _.sortBy(featureCollection.features, clubNameProperty);

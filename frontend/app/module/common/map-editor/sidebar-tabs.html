@@ -1,0 +1,25 @@
+<div class="btn-group btn-group-justified">
+    <label class="btn btn-default"
+           ng-model="$ctrl.selectedTab"
+           uib-btn-radio="'a'">
+        <span translate="global.map.editor.tab.mml.title"></span>
+        &nbsp;
+        <span ng-show="$ctrl.hasMMLChanges()"
+              class="glyphicon glyphicon-bell text-danger"></span>
+    </label>
+
+    <label class="btn btn-default"
+           ng-model="$ctrl.selectedTab"
+           uib-btn-radio="'b'">
+        <span translate="global.map.editor.tab.metsahallitus.title"></span>
+        &nbsp;
+        <span ng-show="$ctrl.hasMetsahallitusChanges()"
+              class="glyphicon glyphicon-bell text-danger"></span>
+    </label>
+
+    <label class="btn btn-default"
+           ng-model="$ctrl.selectedTab"
+           uib-btn-radio="'d'">
+        <span translate="global.map.editor.tab.draw.title"></span>
+    </label>
+</div>

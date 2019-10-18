@@ -6,7 +6,7 @@ import fi.riista.feature.gamediary.harvest.specimen.GameAntlersType;
 import fi.riista.feature.gamediary.harvest.specimen.GameFitnessClass;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardCalculatedHarvestAmounts;
-import fi.riista.feature.huntingclub.permit.summary.TrendOfPopulationGrowth;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.TrendOfPopulationGrowth;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardHarvestAreaType;

@@ -1,7 +1,7 @@
 package fi.riista.util;
 
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.BaseEntity;
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.common.entity.HasID;
 import io.vavr.Function2;
 import io.vavr.Tuple;

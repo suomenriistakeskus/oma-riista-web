@@ -1,0 +1,23 @@
+<leaflet class="r-cursor-pointer"
+         id="birdApplicationLocationMap"
+         defaults="$ctrl.mapDefaults"
+         layers="$ctrl.mapDefaults.mmlLayers"
+         controls="$ctrl.mapDefaults.controls"
+         event-broadcast="$ctrl.mapEvents"
+         lf-center="$ctrl.mapState.center"
+         r-geolocation-marker="$ctrl.protectedArea.geoLocation"
+         r-geolocation-editable="true"
+         r-geolocation-marker-force-finland="true"
+         height="400px">
+</leaflet>
+
+<div class="form-group">
+    <div ng-if="$ctrl.protectedArea.geoLocation">
+        <p class="form-control-static text-center">
+            <strong ng-bind="$ctrl.rhy | rI18nNameFilter"></strong>
+            <br>
+            <span translate="global.geoLocation.coordinatesText"
+                  translate-values="$ctrl.protectedArea.geoLocation"></span>
+        </p>
+    </div>
+</div>

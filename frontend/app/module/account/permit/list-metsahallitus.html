@@ -1,0 +1,3 @@
+<div ng-repeat="mhp in $ctrl.metsahallitusPermits | orderBy:'-creationTime' track by mhp.permitIdentifier" class="metsahallitus-permit">
+    <account-my-metsahallitus-permit permit="mhp"></account-my-metsahallitus-permit>
+</div>

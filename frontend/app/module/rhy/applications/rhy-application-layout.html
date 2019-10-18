@@ -50,7 +50,8 @@
                           translate="club.permit.relatedRhy"> </span>
 
                     <span ng-bind="::application.applicationNumber"></span>,
-                    <span ng-if="::application.permitHolder" ng-bind="::application.permitHolder | rI18nNameFilter"></span>
+                    <span ng-if="::application.permitHolder"
+                          ng-bind="::application.permitHolder | rI18nNameFilter"></span>
                     <span ng-if="::!application.permitHolder" ng-bind="::application.contactPerson.lastName"></span>
                     <span ng-if="::!application.permitHolder" ng-bind="::application.contactPerson.byName"></span>
                 </uib-accordion-heading>
@@ -73,10 +74,8 @@
 
                         <ul class="dropdown-menu" uib-dropdown-menu>
                             <li ng-class="{'active': $ctrl.mapStyle === 'vector'}">
-                                <a ng-click="$ctrl.showMap('vector')" translate="harvestpermit.application.unionMap"></a>
-                            </li>
-                            <li ng-class="{'active': $ctrl.mapStyle === 'union'}">
-                                <a ng-click="$ctrl.showMap('union')" translate="harvestpermit.application.fragmentMap"></a>
+                                <a ng-click="$ctrl.showMap('vector')"
+                                   translate="harvestpermit.application.unionMap"></a>
                             </li>
                             <li ng-class="{'active': $ctrl.mapStyle === 'partner'}">
                                 <a ng-click="$ctrl.showMap('partner')"
@@ -101,16 +100,16 @@
             <rhy-application-partners partners="$ctrl.partners"></rhy-application-partners>
         </div>
 
-        <div ng-if="$ctrl.isMapViewActivated()">
-            <decision-application-geojson
-                    ng-if="$ctrl.mapStyle !== 'vector'"
-                    application-id="$ctrl.selectedApplication.id"
-                    map-style="$ctrl.mapStyle"
-                    feature-collection="$ctrl.featureCollection"></decision-application-geojson>
-
-            <decision-application-vector
-                    ng-if="$ctrl.mapStyle === 'vector'"
-                    selected-application="$ctrl.selectedApplication"></decision-application-vector>
+        <div ng-if="$ctrl.isMapViewActivated()"
+             ng-switch="$ctrl.mapStyle">
+            <decision-application-normal-map
+                    ng-switch-when="vector"
+                    application-id="$ctrl.selectedApplication.id">
+            </decision-application-normal-map>
+            <decision-application-partner-map
+                    ng-switch-when="partner"
+                    feature-collection="$ctrl.featureCollection"
+                    application-id="$ctrl.selectedApplication.id"></decision-application-partner-map>
         </div>
     </div>
 </div>

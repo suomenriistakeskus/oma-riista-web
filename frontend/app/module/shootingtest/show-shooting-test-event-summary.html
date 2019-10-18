@@ -1,0 +1,30 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="panel-title">
+            <span class="panel-title" translate="shootingTest.overview.workflowSummary"></span>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tbody>
+                    <tr>
+                        <td class="col-xs-6 col-md-5" translate="shootingTest.payment.totalPaidAmount"></td>
+                        <td class="text-right" ng-bind="::$ctrl.totalPaidAmount | currency : '&euro;' : 2"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-6 col-md-5" translate="shootingTest.overview.lastModifier"></td>
+                        <td class="text-right">
+                            <div ng-bind="::$ctrl.lastModifier.timestamp | date:'d.M.yyyy HH:mm'"></div>
+                            <div>
+                                <span ng-bind="::$ctrl.lastModifier.firstName"></span>
+                                <span ng-bind="::$ctrl.lastModifier.lastName"></span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

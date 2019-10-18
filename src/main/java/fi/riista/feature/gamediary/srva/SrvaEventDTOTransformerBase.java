@@ -14,7 +14,7 @@ import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenRepository;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
-import fi.riista.feature.organization.person.PersonWithNameDTO;
+import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
 import fi.riista.util.F;
 import fi.riista.util.Functions;
 import fi.riista.util.ListTransformer;
@@ -92,7 +92,7 @@ public abstract class SrvaEventDTOTransformerBase<DTO extends SrvaEventDTOBase>
                                    final Person approverAsPerson) {
 
         if (author != null) {
-            dto.setAuthorInfo(PersonWithNameDTO.create(author));
+            dto.setAuthorInfo(PersonWithHunterNumberDTO.create(author));
         }
 
         if (species != null) {

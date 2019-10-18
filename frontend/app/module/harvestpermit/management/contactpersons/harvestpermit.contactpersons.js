@@ -41,7 +41,7 @@ angular.module('app.harvestpermit.management.contactpersons', [])
             };
 
             $ctrl.save = function () {
-                _.each($ctrl.contactPersons, function (p) {
+                _.forEach($ctrl.contactPersons, function (p) {
                     delete p.$isNew;
                 });
 
@@ -64,7 +64,7 @@ angular.module('app.harvestpermit.management.contactpersons', [])
                 PersonSearchModal.searchPerson(ActiveRoleService.isModerator(), false).then(function (personInfo) {
                     $ctrl.changes = true;
 
-                    var existing = _.find($ctrl.contactPersons, 'id', personInfo.id);
+                    var existing = _.find($ctrl.contactPersons, {id: personInfo.id});
 
                     if (existing) {
                         existing.$isNew = true;

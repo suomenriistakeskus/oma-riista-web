@@ -1,6 +1,6 @@
 package fi.riista.feature.permit.area.hta;
 
-import fi.riista.feature.common.entity.BaseEntity;
+import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 
@@ -20,7 +20,7 @@ import java.util.Objects;
 
 @Entity
 @Access(AccessType.FIELD)
-public class HarvestPermitAreaHta extends BaseEntity<Long> {
+public class HarvestPermitAreaHta extends LifecycleEntity<Long> {
     private Long id;
 
     @NotNull

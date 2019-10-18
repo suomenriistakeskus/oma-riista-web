@@ -58,7 +58,7 @@
     .r-hunting-statistics {
       position: relative;
       width: 100%;
-      background-color: #f5f5f5;
+      background-color: @table-bg-accent;
       border: 1px solid #e3e3e3;
       border-radius: 10px;
       font-weight: bold;
@@ -97,7 +97,7 @@
 
       .panel.panel-open {
         .panel-heading {
-          background-color: #f0f0f0;
+          background-color: @table-bg-accent;
         }
       }
 
@@ -191,7 +191,7 @@
               }
 
               td:hover {
-                background-color: #f5f5f5;
+                background-color: @table-bg-accent;
               }
             }
           }
@@ -254,75 +254,8 @@
   }
 }
 
-.make-form-group(@control-label-grid-columns, @form-control-wrapper-grid-columns) {
-  .form-group {
-    .control-label {
-      .make-xs-column(@control-label-grid-columns);
-    }
-
-    .form-control-offset-wrapper {
-      .make-xs-column-offset(@control-label-grid-columns);
-      .make-xs-column(@form-control-wrapper-grid-columns);
-    }
-
-    .form-control-wrapper {
-      .make-xs-column(@form-control-wrapper-grid-columns);
-    }
-  }
-}
-
 .r-club-sidebar-content {
   .make-form-group(5, 7);
-
-  @media (min-width: 768px) {
-    .r-moose-summary-hunting-area {
-      .make-form-group(4, 4.5);
-    }
-
-    .r-dead-moose-count-form-group {
-      .make-form-group(7, 5);
-    }
-
-    .r-two-column-number-fields {
-      .make-form-group(8, 4);
-    }
-
-    .r-cause-of-death-form-group {
-      .make-form-group(2.333, 9.666);
-    }
-
-    .r-moose-summary-mooselike-population-growth {
-      .make-form-group(5.5, 6.5);
-    }
-
-    .r-moose-summary-mooselike-estimated-amount {
-      .make-form-group(7.5, 4.5);
-    }
-
-    .r-moose-summary-estimated-amount-of-sows-with-piglets {
-      .make-form-group(9.225, 2.525);
-    }
-
-    .r-moose-summary-beaver-harvest-amount {
-      .make-form-group(9.225, 2.525);
-    }
-
-    .r-moose-summary-area-of-damage {
-      .make-form-group(6.4, 5.6);
-    }
-
-    .r-moose-summary-area-occupied-by-water {
-      .make-form-group(7.25, 4.3);
-    }
-
-    .r-moose-summary-additional-beaver-info {
-      .make-form-group(2.65, 9.1);
-    }
-
-    .r-moose-summary-deer-fly-population-growth {
-      .make-form-group(3.1, 5.2);
-    }
-  }
 
   table {
     margin-bottom: 0;

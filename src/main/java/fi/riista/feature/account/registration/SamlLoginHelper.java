@@ -21,7 +21,7 @@ public class SamlLoginHelper {
     private SamlLoginParameters samlLoginParameters;
 
     @PostConstruct
-    public void initSettings() throws Exception {
+    public void initSettings() {
         this.samlSettings = samlLoginParameters.buildSettings();
     }
 

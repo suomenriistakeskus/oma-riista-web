@@ -65,7 +65,15 @@ public class SQHarvestPermit extends RelationalPathSpatial<SQHarvestPermit> {
 
     public final NumberPath<Integer> permitAreaSize = createNumber("permitAreaSize", Integer.class);
 
+    public final NumberPath<Long> permitDecisionId = createNumber("permitDecisionId", Long.class);
+
+    public final StringPath permitHolderCode = createString("permitHolderCode");
+
     public final NumberPath<Long> permitHolderId = createNumber("permitHolderId", Long.class);
+
+    public final StringPath permitHolderName = createString("permitHolderName");
+
+    public final StringPath permitHolderType = createString("permitHolderType");
 
     public final StringPath permitNumber = createString("permitNumber");
 
@@ -79,19 +87,23 @@ public class SQHarvestPermit extends RelationalPathSpatial<SQHarvestPermit> {
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestPermit> harvestPermitPkey = createPrimaryKey(harvestPermitId);
 
-    public final com.querydsl.sql.ForeignKey<SQHarvestReportState> harvestPermitReportStateFk = createForeignKey(harvestReportState, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestPermitPermitHolderFk = createForeignKey(permitHolderId, "organisation_id");
+    public final com.querydsl.sql.ForeignKey<SQPerson> harvestPermitOwnerFk = createForeignKey(originalContactPersonId, "person_id");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestPermitRhyFk = createForeignKey(rhyId, "organisation_id");
 
-    public final com.querydsl.sql.ForeignKey<SQHta> harvestPermitMooseAreaFk = createForeignKey(mooseAreaId, "gid");
-
-    public final com.querydsl.sql.ForeignKey<SQPerson> harvestPermitOwnerFk = createForeignKey(originalContactPersonId, "person_id");
-
     public final com.querydsl.sql.ForeignKey<SQPerson> harvestPermitReportAuthorFk = createForeignKey(harvestReportAuthorId, "person_id");
 
+    public final com.querydsl.sql.ForeignKey<SQPermitDecision> harvestPermitPermitDecisionFk = createForeignKey(permitDecisionId, "permit_decision_id");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> harvestPermitPermitHolderFk = createForeignKey(permitHolderId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQHarvestReportState> harvestPermitReportStateFk = createForeignKey(harvestReportState, "name");
+
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> harvestPermitOriginalPermitFk = createForeignKey(originalPermitId, "harvest_permit_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitHolderType> harvestPermitHolderTypeFk = createForeignKey(permitHolderType, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQHta> harvestPermitMooseAreaFk = createForeignKey(mooseAreaId, "gid");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitPartners> _harvestPermitPartnersHarvestPermitFk = createInvForeignKey(harvestPermitId, "harvest_permit_id");
 
@@ -104,6 +116,8 @@ public class SQHarvestPermit extends RelationalPathSpatial<SQHarvestPermit> {
     public final com.querydsl.sql.ForeignKey<SQOrganisation> _organisationHarvestPermitFk = createInvForeignKey(harvestPermitId, "harvest_permit_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitContactPerson> _harvestPermitContactPersonHarvestPermitFk = createInvForeignKey(harvestPermitId, "harvest_permit_id");
+
+    public final com.querydsl.sql.ForeignKey<SQAmendmentApplicationData> _amendmentApplicationDataPermitIdFk = createInvForeignKey(harvestPermitId, "original_permit_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvest> _harvestHarvestPermitFk = createInvForeignKey(harvestPermitId, "harvest_permit_id");
 
@@ -156,7 +170,11 @@ public class SQHarvestPermit extends RelationalPathSpatial<SQHarvestPermit> {
         addMetadata(originalPermitId, ColumnMetadata.named("original_permit_id").withIndex(18).ofType(Types.BIGINT).withSize(19));
         addMetadata(parsingInfo, ColumnMetadata.named("parsing_info").withIndex(12).ofType(Types.VARCHAR).withSize(255));
         addMetadata(permitAreaSize, ColumnMetadata.named("permit_area_size").withIndex(21).ofType(Types.INTEGER).withSize(10));
+        addMetadata(permitDecisionId, ColumnMetadata.named("permit_decision_id").withIndex(26).ofType(Types.BIGINT).withSize(19));
+        addMetadata(permitHolderCode, ColumnMetadata.named("permit_holder_code").withIndex(28).ofType(Types.VARCHAR).withSize(255));
         addMetadata(permitHolderId, ColumnMetadata.named("permit_holder_id").withIndex(17).ofType(Types.BIGINT).withSize(19));
+        addMetadata(permitHolderName, ColumnMetadata.named("permit_holder_name").withIndex(27).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(permitHolderType, ColumnMetadata.named("permit_holder_type").withIndex(29).ofType(Types.VARCHAR).withSize(255));
         addMetadata(permitNumber, ColumnMetadata.named("permit_number").withIndex(10).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(permitType, ColumnMetadata.named("permit_type").withIndex(11).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(permitTypeCode, ColumnMetadata.named("permit_type_code").withIndex(15).ofType(Types.CHAR).withSize(3).notNull());

@@ -23,13 +23,14 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Component
 public class CalculatePermitAreaUnionJob {
     private static final Logger LOG = LoggerFactory.getLogger(CalculatePermitAreaUnionJob.class);
 
     private static final int CONCURRENCY_LIMIT = 1;
-    private static final int TIMEOUT_MINUTES = 15;
+    private static final int TIMEOUT_MINUTES = 30;
 
     private static ThreadPoolExecutor createWorkExecutor() {
         final ThreadFactory threadFactory = new ThreadFactoryBuilder()
@@ -81,7 +82,7 @@ public class CalculatePermitAreaUnionJob {
         optional.ifPresent(zoneId -> {
             try {
                 timeLimiter.callWithTimeout(createTask(zoneId), TIMEOUT_MINUTES, TimeUnit.MINUTES);
-            } catch (UncheckedTimeoutException te) {
+            } catch (TimeoutException | UncheckedTimeoutException te) {
                 LOG.info("Task for zoneId={} caused timeout while processing", zoneId);
 
             } catch (RejectedExecutionException re) {

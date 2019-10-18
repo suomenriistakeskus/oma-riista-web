@@ -1,11 +1,10 @@
 package fi.riista.feature.permit.area.partner;
 
-import fi.riista.feature.gis.zone.AreaEntity;
+import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gis.zone.GISZone;
-import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
+import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.HarvestPermitArea_;
-import fi.riista.util.LocalisedString;
 import fi.riista.util.jpa.CriteriaUtils;
 
 import javax.annotation.Nonnull;
@@ -21,13 +20,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
-
 import java.util.Objects;
-import java.util.Optional;
 
 @Entity
 @Access(AccessType.FIELD)
-public class HarvestPermitAreaPartner extends AreaEntity<Long> {
+public class HarvestPermitAreaPartner extends LifecycleEntity<Long> {
 
     private Long id;
 
@@ -57,11 +54,6 @@ public class HarvestPermitAreaPartner extends AreaEntity<Long> {
         setHarvestPermitArea(Objects.requireNonNull(harvestPermitArea, "harvestPermitArea is null"));
         this.sourceArea = Objects.requireNonNull(sourceArea, "sourceArea is null");
         this.zone = Objects.requireNonNull(zone, "zone is null");
-    }
-
-    @Override
-    public LocalisedString getNameLocalisation() {
-        return Optional.ofNullable(sourceArea).map(HuntingClubArea::getNameLocalisation).orElse(null);
     }
 
     // Accessors -->
@@ -97,12 +89,10 @@ public class HarvestPermitAreaPartner extends AreaEntity<Long> {
         this.sourceArea = sourceArea;
     }
 
-    @Override
     public GISZone getZone() {
         return zone;
     }
 
-    @Override
     public void setZone(final GISZone zone) {
         this.zone = zone;
     }

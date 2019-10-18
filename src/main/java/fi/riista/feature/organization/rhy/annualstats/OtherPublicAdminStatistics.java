@@ -1,6 +1,6 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
-import fi.riista.util.DateUtil;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
 
@@ -17,22 +17,22 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
 public class OtherPublicAdminStatistics
-        implements AnnualStatisticsFieldsetStatus,
-        HasLastModificationStatus<OtherPublicAdminStatistics>,
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<OtherPublicAdminStatistics>,
         Serializable {
 
     public static final OtherPublicAdminStatistics reduce(@Nullable final OtherPublicAdminStatistics a,
                                                           @Nullable final OtherPublicAdminStatistics b) {
 
         final OtherPublicAdminStatistics result = new OtherPublicAdminStatistics();
-        result.setGrantedRecreationalShootingCertificates(nullsafeSumAsInt(a, b, s -> s.getGrantedRecreationalShootingCertificates()));
-        result.setMutualAckShootingCertificates(nullsafeSumAsInt(a, b, s -> s.getMutualAckShootingCertificates()));
+        result.setGrantedRecreationalShootingCertificates(nullableIntSum(a, b, s -> s.getGrantedRecreationalShootingCertificates()));
+        result.setMutualAckShootingCertificates(nullableIntSum(a, b, s -> s.getMutualAckShootingCertificates()));
         result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
         return result;
     }
@@ -74,16 +74,24 @@ public class OtherPublicAdminStatistics
     }
 
     @Override
-    public boolean isEqualTo(final OtherPublicAdminStatistics other) {
-        // Includes manually updateable fields only.
-
-        return Objects.equals(grantedRecreationalShootingCertificates, other.grantedRecreationalShootingCertificates) &&
-                Objects.equals(mutualAckShootingCertificates, other.mutualAckShootingCertificates);
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.OTHER_PUBLIC_ADMIN_TASKS;
     }
 
     @Override
-    public void updateModificationStatus() {
-        lastModified = DateUtil.now();
+    public boolean isEqualTo(@Nonnull final OtherPublicAdminStatistics that) {
+        // Includes manually updateable fields only.
+
+        return Objects.equals(grantedRecreationalShootingCertificates, that.grantedRecreationalShootingCertificates) &&
+                Objects.equals(mutualAckShootingCertificates, that.mutualAckShootingCertificates);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final OtherPublicAdminStatistics that) {
+        // Includes manually updateable fields only.
+
+        this.grantedRecreationalShootingCertificates = that.grantedRecreationalShootingCertificates;
+        this.mutualAckShootingCertificates = that.mutualAckShootingCertificates;
     }
 
     @Override
@@ -114,10 +122,12 @@ public class OtherPublicAdminStatistics
         this.mutualAckShootingCertificates = mutualAckShootingCertificates;
     }
 
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

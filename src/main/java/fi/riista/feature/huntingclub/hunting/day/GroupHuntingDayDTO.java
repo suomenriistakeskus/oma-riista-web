@@ -2,9 +2,9 @@ package fi.riista.feature.huntingclub.hunting.day;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.config.jackson.LocalTimeToStringSerializer;
 import fi.riista.config.jackson.StringToLocalTimeDeserializer;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 

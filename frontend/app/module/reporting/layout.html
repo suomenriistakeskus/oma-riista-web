@@ -1,24 +1,31 @@
 <nav class="navbar r-subnav-navbar" role="navigation">
     <div class="container">
-        <div class="navbar-collapse collapse in">
-            <ul class="nav navbar-nav r-subnav-nav" ng-show="authenticated">
-                <li active-if-state-includes="reporting.home">
-                    <a ui-sref="reporting.home" translate="admin.menu.main"></a>
-                </li>
-                <li active-if-state-includes="reporting.contacts">
-                    <a ui-sref="reporting.contacts.occupation" translate="reporting.menu.contacts"></a>
-                </li>
-                <li active-if-state-includes="reporting.announcements">
-                    <a ui-sref="reporting.announcements" translate="announcements.list.title"></a>
-                </li>
-                <li active-if-state-includes="reporting.club">
-                    <a ui-sref="reporting.club" translate="reporting.menu.clubs"></a>
-                </li>
-                <li active-if-state-includes="reporting.srvaMap">
-                    <a ui-sref="reporting.srvaMap" translate="rhy.menu.srva"></a>
-                </li>
-            </ul>
-        </div>
+        <ul class="nav navbar-nav r-subnav-nav">
+            <li active-if-state-includes="reporting.home">
+                <a ui-sref="reporting.home" translate="admin.menu.main"></a>
+            </li>
+            <li active-if-state-includes="reporting.contacts">
+                <a ui-sref="reporting.contacts.occupation" translate="reporting.menu.contacts"></a>
+            </li>
+            <li active-if-state-includes="reporting.announcements">
+                <a ui-sref="reporting.announcements" translate="announcements.list.title"></a>
+            </li>
+            <li active-if-state-includes="reporting.club">
+                <a ui-sref="reporting.club" translate="reporting.menu.clubs"></a>
+            </li>
+            <li active-if-state-includes="reporting.srvaMap">
+                <a ui-sref="reporting.srvaMap" translate="rhy.menu.srva"></a>
+            </li>
+            <li active-if-state-includes="reporting.moosepermitstatistics">
+                <a ui-sref="reporting.moosepermitstatistics" translate="reporting.menu.moosePermitStatistics"></a>
+            </li>
+            <li active-if-state-includes="reporting.paymentcontrol">
+                <a ui-sref="reporting.paymentcontrol" translate="reporting.menu.paymentControl"></a>
+            </li>
+            <li ng-if="::$ctrl.isAuthorizedForHabides" active-if-state-includes="reporting.habides">
+                <a ui-sref="reporting.habides" translate="reporting.menu.habides"></a>
+            </li>
+        </ul>
     </div>
 </nav>
 

@@ -1,0 +1,69 @@
+<ul class="nav nav-pills">
+    <li ng-repeat="role in $ctrl.roles"
+        ng-class="{ active: $ctrl.isRoleSelected(role) }">
+        <a ng-click="$ctrl.selectRole(role)">
+            <span translate="global.role.{{role}}"></span>
+        </a>
+    </li>
+
+    <li class="pull-right">
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.create()">
+            <span class="glyphicon glyphicon-plus"></span>
+            <span translate="admin.users.create"></span>
+        </button>
+    </li>
+
+    <li class="pull-right">
+        <a ng-click="$ctrl.toggleShowOnlyActive()">
+            <span class="fa fa-fw fa-lg fa-check-square text-muted" ng-show="$ctrl.showOnlyActive"></span>
+            <span class="fa fa-fw fa-lg fa-square-o text-muted" ng-show="!$ctrl.showOnlyActive"></span>
+            <span translate="admin.users.showOnlyActive"></span>
+        </a>
+    </li>
+
+</ul>
+
+<hr class="invisible"/>
+
+<div class="table-responsive">
+    <table class="table table-striped table-condensed">
+        <thead>
+        <tr>
+            <th translate="admin.users.username"></th>
+            <th translate="admin.users.role"></th>
+            <th translate="admin.users.email"></th>
+            <th translate="admin.users.phonenumber"></th>
+            <th translate="admin.users.firstname"></th>
+            <th translate="admin.users.lastname"></th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr ng-repeat="user in ($ctrl.page.content | userfilter: $ctrl.showOnlyActive) track by user.id">
+            <td ng-bind="user.username"></td>
+            <td translate="global.role.{{user.role}}"></td>
+            <td ng-bind="user.email"></td>
+            <td ng-bind="user.phoneNumber"></td>
+            <td ng-bind="user.firstName"></td>
+            <td ng-bind="user.lastName"></td>
+
+            <td class="text-right r-table-actions-cell">
+                <button type="button" class="btn btn-link"
+                        ng-click="$ctrl.edit(user.id)">
+                    <span class="glyphicon glyphicon-edit"
+                          title="{{'admin.users.edit' | translate}}"></span>
+                </button>
+
+                <button type="button" class="btn btn-link"
+                        ng-confirm-click="{{ 'admin.users.delete_confirm' | translate:{'username': user.username} }}"
+                        ng-confirm-click-action="$ctrl.delete(user.id)">
+                    <span class="glyphicon glyphicon-remove "
+                          title="{{'admin.users.delete' | translate}}"></span>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

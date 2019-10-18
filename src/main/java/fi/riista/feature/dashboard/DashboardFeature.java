@@ -10,14 +10,21 @@ import fi.riista.feature.account.user.QSystemUser;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.announcement.AnnouncementSenderType;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
-import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.huntingclub.area.QHuntingClubArea;
+import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.QOrganisation;
+import fi.riista.feature.organization.calendar.QCalendarEvent;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.person.QPerson;
+import fi.riista.feature.organization.rhy.MergedRhyMapping;
+import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.permit.area.QHarvestPermitArea;
+import fi.riista.feature.shootingtest.QShootingTestAttempt;
+import fi.riista.feature.shootingtest.QShootingTestEvent;
+import fi.riista.feature.shootingtest.QShootingTestParticipant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -32,6 +39,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+
+import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.QUALIFIED;
 
 @Component
 @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
@@ -219,7 +228,9 @@ public class DashboardFeature {
 
         final QHarvestPermitApplication PERMIT_APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
         dto.setPermitApplications(queryFactory.from(PERMIT_APPLICATION)
-                .where(PERMIT_APPLICATION.status.eq(HarvestPermitApplication.Status.ACTIVE))
+                .where(PERMIT_APPLICATION.status.notIn(
+                        HarvestPermitApplication.Status.DRAFT,
+                        HarvestPermitApplication.Status.HIDDEN))
                 .fetchCount());
     }
 
@@ -545,6 +556,56 @@ public class DashboardFeature {
                 });
 
         dto.setTotal(dto.getSenderTypeClub() + dto.getSenderTypeCoordinator() + dto.getSenderTypeModerator());
+
+        return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardShootingTestDTO getShootingTestMetrics() {
+        final QShootingTestAttempt ATTEMPT = QShootingTestAttempt.shootingTestAttempt;
+        final QShootingTestParticipant PARTICIPANT = QShootingTestParticipant.shootingTestParticipant;
+        final QShootingTestEvent EVENT = QShootingTestEvent.shootingTestEvent;
+        final QCalendarEvent CALENDAR_EVENT = QCalendarEvent.calendarEvent;
+        final QOrganisation ORGANISATION = QOrganisation.organisation;
+
+        final BooleanExpression calendarEvent2019Predicate = CALENDAR_EVENT.date.year().goe(2019);
+
+        final DashboardShootingTestDTO dto = new DashboardShootingTestDTO();
+
+        // Ampumakoesuorituksia yhteensä
+        dto.setCountOfTotalAttempts(queryFactory
+                .select(ATTEMPT.count())
+                .from(ATTEMPT)
+                .join(ATTEMPT.participant, PARTICIPANT)
+                .join(PARTICIPANT.shootingTestEvent, EVENT)
+                .join(EVENT.calendarEvent, CALENDAR_EVENT)
+                .where(calendarEvent2019Predicate)
+                .where(ATTEMPT.result.eq(QUALIFIED))
+                .fetchOne());
+
+        // Suljettuja ampumakoetapahtumia
+        dto.setCountOfClosedEvents(queryFactory
+                .select(EVENT.count())
+                .from(EVENT)
+                .join(EVENT.calendarEvent, CALENDAR_EVENT)
+                .where(calendarEvent2019Predicate)
+                .fetchOne());
+
+        // RHY:t joissa sähköinen kirjaus otettu käyttöön
+        dto.setCountOfActiveRhy(queryFactory
+                .select(CALENDAR_EVENT.organisation.countDistinct())
+                .from(EVENT)
+                .join(EVENT.calendarEvent, CALENDAR_EVENT)
+                .where(calendarEvent2019Predicate)
+                .fetchOne());
+
+        // RHY:t yhteensä
+        dto.setCountOfTotalRhy(queryFactory
+                .select(ORGANISATION.count())
+                .from(ORGANISATION)
+                .where(ORGANISATION.organisationType.eq(OrganisationType.RHY))
+                .where(ORGANISATION.officialCode.notIn(MergedRhyMapping.getOldRhyCodes()))
+                .fetchOne());
 
         return dto;
     }

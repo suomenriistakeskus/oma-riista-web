@@ -11,7 +11,6 @@ import fi.riista.feature.harvestpermit.season.HarvestQuota;
 import fi.riista.feature.harvestpermit.statistics.HarvestPermitSpecimenSummary;
 import fi.riista.feature.mail.MailService;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.security.EntityPermission;
 import org.apache.commons.lang.StringUtils;
@@ -53,9 +52,6 @@ public class HarvestReportNotificationService {
     private RequireEntityService requireEntityService;
 
     @Resource
-    private OrganisationRepository organisationRepository;
-
-    @Resource
     private MunicipalityRepository municipalityRepository;
 
     @Transactional
@@ -86,7 +82,8 @@ public class HarvestReportNotificationService {
 
     @Transactional
     public void sendNotificationForPermit(final Long harvestPermitId) {
-        final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(harvestPermitId, EntityPermission.NONE);
+        final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(harvestPermitId,
+                EntityPermission.NONE);
 
         final Set<String> targetEmails = getTargetEmailsForPermit(harvestPermit);
         if (targetEmails.isEmpty()) {
@@ -145,23 +142,6 @@ public class HarvestReportNotificationService {
 
     private Organisation findRka(HarvestPermit harvestPermit) {
         Objects.requireNonNull(harvestPermit);
-
-        if (harvestPermit.getPermitNumber().length() == 18) {
-            // example: 2013-3-450-00260-2
-            final String areaCode = harvestPermit.getPermitNumber().substring(7, 10); // 450
-
-            final Organisation result = organisationRepository.findByTypeAndOfficialCode(OrganisationType.RKA, areaCode);
-
-            if (result != null) {
-                return result;
-            }
-        }
-
-        if (harvestPermit.getRhy() != null) {
-            // Fallback to RHY parent RK-alue
-            return harvestPermit.getRhy().getClosestAncestorOfType(OrganisationType.RKA).orElse(null);
-        }
-
-        return null;
+        return harvestPermit.getRhy().getClosestAncestorOfType(OrganisationType.RKA).orElse(null);
     }
 }

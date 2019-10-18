@@ -7,7 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public interface ShootingTestEventRepository extends BaseRepository<ShootingTestEvent, Long> {
+public interface ShootingTestEventRepository
+        extends BaseRepository<ShootingTestEvent, Long>, ShootingTestEventRepositoryCustom {
 
     Optional<ShootingTestEvent> findByCalendarEvent(CalendarEvent calendarEvent);
 

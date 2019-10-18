@@ -7,6 +7,7 @@ import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingReportExistsExce
 import fi.riista.feature.harvestpermit.report.HarvestReportExistsException;
 import fi.riista.feature.harvestpermit.report.HarvestReportNotSupportedException;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.junit.Test;
@@ -234,7 +235,7 @@ public class HarvestPermitAcceptHarvestFeatureTest extends EmbeddedDatabaseTest 
     @Test(expected = HarvestReportNotSupportedException.class)
     public void testAcceptHarvestCantBeCalledForMooselikePermit() {
         withActivePermit((harvest, user) -> {
-            harvest.getHarvestPermit().setPermitTypeCode(HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+            harvest.getHarvestPermit().setPermitTypeCode(PermitTypeCode.MOOSELIKE);
             harvest.setStateAcceptedToHarvestPermit(PROPOSED);
             onSavedAndAuthenticated(user, () -> changeHarvestState(harvest, ACCEPTED));
         });
@@ -243,7 +244,7 @@ public class HarvestPermitAcceptHarvestFeatureTest extends EmbeddedDatabaseTest 
     @Test(expected = HarvestReportNotSupportedException.class)
     public void testAcceptHarvestCantBeCalledForAmendmentPermit() {
         withActivePermit((harvest, user) -> {
-            harvest.getHarvestPermit().setPermitTypeCode(HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE);
+            harvest.getHarvestPermit().setPermitTypeCode(PermitTypeCode.MOOSELIKE_AMENDMENT);
             harvest.setStateAcceptedToHarvestPermit(PROPOSED);
             onSavedAndAuthenticated(user, () -> changeHarvestState(harvest, ACCEPTED));
         });

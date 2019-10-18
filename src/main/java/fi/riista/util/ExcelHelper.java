@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.springframework.util.StringUtils;
@@ -25,6 +26,7 @@ public class ExcelHelper {
     private final CellStyle timeStyle;
     private final CellStyle percentageStyle;
     private final CellStyle currencyStyle;
+    private final CellStyle wrappedTextStyle;
 
     private Row currentRow;
     private int currentRowIndex;
@@ -58,6 +60,14 @@ public class ExcelHelper {
 
         this.currencyStyle = wb.createCellStyle();
         this.currencyStyle.setDataFormat(wb.createDataFormat().getFormat("##,##0.00 €"));
+
+        this.wrappedTextStyle = wb.createCellStyle();
+        this.wrappedTextStyle.setWrapText(true);
+    }
+
+    public ExcelHelper setDefaultColumnWidth(int width) {
+        this.sheet.setDefaultColumnWidth(width);
+        return this;
     }
 
     public ExcelHelper autoSizeColumns() {
@@ -65,6 +75,11 @@ public class ExcelHelper {
         for (int i = 0; i < maxLastCellNum; i++) {
             this.sheet.autoSizeColumn(i);
         }
+        return this;
+    }
+
+    public ExcelHelper autoSizeColumn(int index) {
+        this.sheet.autoSizeColumn(index);
         return this;
     }
 
@@ -102,6 +117,17 @@ public class ExcelHelper {
         return this;
     }
 
+    public ExcelHelper spanCurrentColumn(int colSpan) {
+        if (colSpan > 1) {
+            final int romNum = currentRow.getRowNum();
+            final int spanStart = currentColumnIndex - 1; // Merged cell already added
+            final int spanEnd = spanStart + colSpan - 1;
+            this.sheet.addMergedRegion(new CellRangeAddress(romNum, romNum, spanStart, spanEnd));
+            currentColumnIndex = spanEnd + 1;
+        }
+        return this;
+    }
+
     public ExcelHelper appendNumberCell(final Number value) {
         if (value != null) {
             final Cell cell = currentRow.createCell(currentColumnIndex);
@@ -128,6 +154,12 @@ public class ExcelHelper {
         return this;
     }
 
+    public ExcelHelper appendWrappedTextCell(final String value) {
+        final Optional<Cell> cell = appendTextCellInternal(value);
+        cell.ifPresent(c -> c.setCellStyle(wrappedTextStyle));
+        return this;
+    }
+
     public ExcelHelper appendTextCellBold(final String value) {
         appendTextCellInternal(value).ifPresent(cell -> cell.setCellStyle(boldStyle));
         return this;
@@ -138,6 +170,13 @@ public class ExcelHelper {
             final CellStyle style = cell.getRow().getSheet().getWorkbook().createCellStyle();
             style.setAlignment(aligment);
             cell.setCellStyle(style);
+        });
+        return this;
+    }
+
+    public ExcelHelper appendTextCellWrapping(final String value) {
+        appendTextCellInternal(value).ifPresent(cell -> {
+            cell.setCellStyle(wrappedTextStyle);
         });
         return this;
     }
@@ -211,7 +250,12 @@ public class ExcelHelper {
         return this;
     }
 
-    public ExcelHelper createFreezePane(final int colSplit, final int rowSplit) {
+    public ExcelHelper withFreezedRows(final int numFreezedRows) {
+        sheet.createFreezePane(0, numFreezedRows);
+        return this;
+    }
+
+    public ExcelHelper withFreezePane(final int colSplit, final int rowSplit) {
         sheet.createFreezePane(colSplit, rowSplit);
         return this;
     }

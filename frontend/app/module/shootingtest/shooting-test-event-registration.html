@@ -10,7 +10,7 @@
             <input type="text" name="findByHunterNumber" id="findByHunterNumber"
                    class="form-control"
                    ng-model="$ctrl.hunterNumber"
-                   ng-disabled="$ctrl.isRegistrationDisallowed()"
+                   ng-disabled="$ctrl.isRegistrationDisabled()"
                    valid-hunter-number
                    maxlength="8"
                    autocomplete=off>
@@ -61,28 +61,28 @@
                 <div class="btn-group btn-group-justified">
                     <label class="btn btn-default"
                            ng-model="$ctrl.selectedShootingTestTypes.bearTestIntended"
-                           ng-disabled="$ctrl.isRegistrationDisallowed()"
+                           ng-disabled="$ctrl.isTogglingTestTypesDisabled()"
                            uib-btn-checkbox>
                         <span ng-if="$ctrl.selectedShootingTestTypes.bearTestIntended" class="glyphicon glyphicon-check"></span>
                         <span translate="shootingTest.type.BEAR"></span>
                     </label>
                     <label class="btn btn-default"
                            ng-model="$ctrl.selectedShootingTestTypes.mooseTestIntended"
-                           ng-disabled="$ctrl.isRegistrationDisallowed()"
+                           ng-disabled="$ctrl.isTogglingTestTypesDisabled()"
                            uib-btn-checkbox>
                         <span ng-if="$ctrl.selectedShootingTestTypes.mooseTestIntended" class="glyphicon glyphicon-check"></span>
                         <span translate="shootingTest.type.MOOSE"></span>
                     </label>
                     <label class="btn btn-default"
                            ng-model="$ctrl.selectedShootingTestTypes.roeDeerTestIntended"
-                           ng-disabled="$ctrl.isRegistrationDisallowed()"
+                           ng-disabled="$ctrl.isTogglingTestTypesDisabled()"
                            uib-btn-checkbox>
                         <span ng-if="$ctrl.selectedShootingTestTypes.roeDeerTestIntended" class="glyphicon glyphicon-check"></span>
                         <span translate="shootingTest.type.ROE_DEER"></span>
                     </label>
                     <label class="btn btn-default"
                            ng-model="$ctrl.selectedShootingTestTypes.bowTestIntended"
-                           ng-disabled="$ctrl.isRegistrationDisallowed()"
+                           ng-disabled="$ctrl.isTogglingTestTypesDisabled()"
                            uib-btn-checkbox>
                         <span ng-if="$ctrl.selectedShootingTestTypes.bowTestIntended" class="glyphicon glyphicon-check"></span>
                         <span translate="shootingTest.type.BOW"></span>

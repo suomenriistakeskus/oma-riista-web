@@ -1,0 +1,28 @@
+<div class="panel panel-decision">
+    <div class="panel-heading">
+        <p class="panel-title">
+            <span translate="harvestpermit.derogation.protectedAreaTypesTitle"></span>
+            <span translate="harvestpermit.decision.section.reportingOnly"></span>
+        </p>
+    </div>
+
+    <div class="panel-body">
+        <div class="pull-right">
+            <a ng-show="$ctrl.canEditContent"
+               ng-click="$ctrl.updateProtectedAreaTypes()">
+                <span class="fa fa-2x fa-edit text-primary"></span>
+            </a>
+        </div>
+
+        <p ng-if="$ctrl.protectedAreaTypes.length == 0"
+           class="text-danger"
+           translate="harvestpermit.derogation.nothingSelectedInstruction">
+        </p>
+
+        <ul>
+            <li ng-repeat="type in $ctrl.protectedAreaTypes">
+                <span translate="harvestpermit.derogation.area.type.{{type.areaType}}"></span><br>
+            </li>
+        </ul>
+    </div>
+</div>

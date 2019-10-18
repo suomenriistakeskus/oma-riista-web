@@ -13,7 +13,7 @@ import fi.riista.feature.huntingclub.hunting.rejection.HarvestRejection;
 import fi.riista.feature.huntingclub.hunting.rejection.HarvestRejectionRepository;
 import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejection;
 import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejectionRepository;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
+import fi.riista.feature.huntingclub.permit.endofhunting.HuntingFinishingService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
@@ -45,7 +45,7 @@ public class GroupHuntingDayService {
     private RequireEntityService requireEntityService;
 
     @Resource
-    private HuntingClubPermitService clubPermitService;
+    private HuntingFinishingService huntingFinishingService;
 
     @Resource
     private HarvestRejectionRepository harvestRejectionRepository;
@@ -97,9 +97,9 @@ public class GroupHuntingDayService {
     private boolean isEntryPointOfTimeWithinPermittedDates(final GameDiaryEntry diaryEntry,
                                                            final HuntingClubGroup group) {
 
-        final HarvestPermitSpeciesAmount hpsa = speciesAmountRepository.getOneByHarvestPermitIdAndSpeciesCode(
-                group.getHarvestPermit().getId(),
-                group.getSpecies().getOfficialCode());
+        final HarvestPermitSpeciesAmount hpsa = speciesAmountRepository.getOneByHarvestPermitAndSpeciesCode(
+                group.getHarvestPermit(), group.getSpecies().getOfficialCode());
+
         return hpsa.containsDate(DateUtil.toLocalDateNullSafe(diaryEntry.getPointOfTime()));
     }
 
@@ -116,7 +116,7 @@ public class GroupHuntingDayService {
     }
 
     private void checkClubHuntingNotFinished(final HuntingClubGroup group) {
-        if (clubPermitService.hasClubHuntingFinished(group)) {
+        if (huntingFinishingService.hasPermitPartnerFinishedHunting(group)) {
             throw new ClubHuntingFinishedException(
                     "Cannot link/reject game diary entry to/from hunting day when club hunting is finished");
         }

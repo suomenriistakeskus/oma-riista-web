@@ -28,7 +28,7 @@
                 $ctrl.isModerator = ActiveRoleService.isModerator();
 
                 var groupMooseDataCardImports = function (all) {
-                    $ctrl.notRevoked = _.filter(all, {'revocationTimestamp': null});
+                    $ctrl.notRevoked = _.reject(all, 'revocationTimestamp');
                     $ctrl.revoked = _.filter(all, 'revocationTimestamp');
                 };
 

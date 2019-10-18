@@ -34,7 +34,7 @@ public class ShootingTestAttemptCrudFeatureTest extends EmbeddedDatabaseTest {
         final ShootingTestParticipant participant = model().newShootingTestParticipant();
 
         onSavedAndAuthenticated(createNewModerator(), () -> {
-            for (int i = 0; i < ShootingTestAttempt.MAX_ATTEMPTS_PER_TYPE; i++) {
+            for (int i = 0; i < ShootingTest.MAX_ATTEMPTS_PER_TYPE; i++) {
                 for (ShootingTestType t : ShootingTestType.values()) {
                     testCreate(participant, t, UNQUALIFIED);
                 }
@@ -50,7 +50,7 @@ public class ShootingTestAttemptCrudFeatureTest extends EmbeddedDatabaseTest {
     public void testCreate_attemptCountNotLimitedByRebated() {
         final ShootingTestParticipant participant = model().newShootingTestParticipant();
 
-        for (int i = 0; i < ShootingTestAttempt.MAX_ATTEMPTS_PER_TYPE - 1; i++) {
+        for (int i = 0; i < ShootingTest.MAX_ATTEMPTS_PER_TYPE - 1; i++) {
             model().newShootingTestAttempt(participant, UNQUALIFIED);
         }
         model().newShootingTestAttempt(participant, REBATED);
@@ -86,7 +86,7 @@ public class ShootingTestAttemptCrudFeatureTest extends EmbeddedDatabaseTest {
     public void testUpdate_attemptCountLimitedByType() {
         final ShootingTestParticipant participant = model().newShootingTestParticipant();
 
-        for (int i = 0; i < ShootingTestAttempt.MAX_ATTEMPTS_PER_TYPE; i++) {
+        for (int i = 0; i < ShootingTest.MAX_ATTEMPTS_PER_TYPE; i++) {
             model().newShootingTestAttempt(participant, UNQUALIFIED);
         }
 

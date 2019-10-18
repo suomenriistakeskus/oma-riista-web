@@ -10,10 +10,11 @@
         <div class="table-responsive">
             <table class="table table-striped table-condensed">
                 <tbody>
-                <tr ng-repeat="official in $ctrl.officials|orderBy:['lastName', 'firstName'] track by official.occupationId">
+                <tr ng-repeat="official in $ctrl.officials|orderBy:['shootingTestResponsible', 'lastName', 'firstName'] track by official.occupationId">
                     <td>
                         <span ng-bind="official.lastName"></span>
                         <span ng-bind="official.firstName"></span>
+                        <span show-in-development ng-show="official.shootingTestResponsible === true" class="shooting-test-responsible-official"></span>
                     </td>
                     <td>
                         <button class="btn btn-danger btn-sm pull-right"

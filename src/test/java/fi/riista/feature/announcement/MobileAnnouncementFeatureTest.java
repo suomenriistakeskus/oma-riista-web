@@ -9,6 +9,7 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Test;
@@ -60,7 +61,9 @@ public class MobileAnnouncementFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private List<MobileAnnouncementDTO> listAnnouncements() {
-        return mobileAnnouncementFeature.listMobileAnnouncements(null, new PageRequest(0, 10));
+        return mobileAnnouncementFeature.listMobileAnnouncements(
+                DateUtil.now().minusYears(1),
+                new PageRequest(0, 100));
     }
 
     @Test

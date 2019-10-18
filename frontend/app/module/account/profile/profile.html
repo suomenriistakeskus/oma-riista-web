@@ -19,8 +19,8 @@
                 ng-if="$ctrl.isUserOwnProfile">
         </account-profile-password>
 
-        <account-profile-deactivate
-                profile="$ctrl.profile">
+        <account-profile-deactivate ng-if="!$ctrl.profile.foreignPerson"
+                                    profile="$ctrl.profile">
         </account-profile-deactivate>
     </div>
 
@@ -31,27 +31,27 @@
         <account-profile-shooting-tests
                 shooting-tests="$ctrl.shootingTests"></account-profile-shooting-tests>
 
-        <account-profile-invitation
-                club-invitations="$ctrl.clubInvitations"
-                is-user-own-profile="$ctrl.isUserOwnProfile">
+        <account-profile-invitation ng-if="!$ctrl.profile.foreignPerson"
+                                    club-invitations="$ctrl.clubInvitations"
+                                    is-user-own-profile="$ctrl.isUserOwnProfile">
         </account-profile-invitation>
 
-        <account-profile-clubs
-                club-occupations="$ctrl.profile.clubOccupations"
-                is-user-own-profile="$ctrl.isUserOwnProfile"
-                person-id="$ctrl.personId">
+        <account-profile-clubs ng-if="!$ctrl.profile.foreignPerson"
+                               club-occupations="$ctrl.profile.clubOccupations"
+                               is-user-own-profile="$ctrl.isUserOwnProfile"
+                               person-id="$ctrl.personId">
         </account-profile-clubs>
 
-        <account-profile-occupations
-                occupations="$ctrl.profile.occupations">
+        <account-profile-occupations ng-if="!$ctrl.profile.foreignPerson"
+                                     occupations="$ctrl.profile.occupations">
         </account-profile-occupations>
 
-        <account-profile-jht
-                jht-trainings="$ctrl.jhtTrainings">
+        <account-profile-jht ng-if="!$ctrl.profile.foreignPerson"
+                             jht-trainings="$ctrl.jhtTrainings">
         </account-profile-jht>
 
-        <account-profile-feature-activation
-                profile="$ctrl.profile">
+        <account-profile-feature-activation ng-if="!$ctrl.profile.foreignPerson"
+                                            profile="$ctrl.profile">
         </account-profile-feature-activation>
     </div>
 </div>

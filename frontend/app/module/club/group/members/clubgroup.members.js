@@ -217,8 +217,8 @@
                     $ctrl.members.splice(index + delta, 0, member);
 
                     var ordering = _($ctrl.members)
-                        .filter({'occupationType': 'RYHMAN_METSASTYKSENJOHTAJA'})
-                        .pluck('id')
+                        .filter({occupationType: 'RYHMAN_METSASTYKSENJOHTAJA'})
+                        .map('id')
                         .value();
 
                     // Need to reload, otherwise when callOrder is changed then immediate occupationType change
@@ -242,8 +242,8 @@
 
                 function calculateMaxCallOrder(members) {
                     return _(members)
-                        .filter('occupationType', 'RYHMAN_METSASTYKSENJOHTAJA')
-                        .pluck('callOrder')
+                        .filter({occupationType: 'RYHMAN_METSASTYKSENJOHTAJA'})
+                        .map('callOrder')
                         .max();
                 }
             }

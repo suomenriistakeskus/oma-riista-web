@@ -1,13 +1,10 @@
 package fi.riista.feature.harvestpermit;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
 import fi.riista.feature.common.repository.BaseRepository;
 import fi.riista.feature.harvestpermit.list.MooselikeHuntingYearDTO;
 import fi.riista.feature.permit.decision.PermitDecision;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
 
 public interface HarvestPermitRepository extends BaseRepository<HarvestPermit, Long> {
 
@@ -15,22 +12,38 @@ public interface HarvestPermitRepository extends BaseRepository<HarvestPermit, L
 
     List<HarvestPermit> findByPermitDecision(PermitDecision permitDecision);
 
-    default List<HarvestPermit> listRhyPermitsByHuntingYearAndSpecies(long rhyId, int huntingYear, int gameSpeciesCode) {
-        final QHarvestPermit permit = QHarvestPermit.harvestPermit;
-        final QHarvestPermitSpeciesAmount spa = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
+    default List<HarvestPermit> findMooselikePermits(final int huntingYear, final int gameSpeciesCode) {
+        final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
+        final QHarvestPermitSpeciesAmount SPECIES_AMOUNT = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
 
-        return findAllAsList(permit.isMooselikePermit()
-                .and(permit.hasRhyOrRelatedRhy(rhyId))
-                .and(spa.matchesSpeciesAndHuntingYear(permit, gameSpeciesCode, huntingYear)));
+        return findAllAsList(PERMIT.isMooselikePermit()
+                .and(PERMIT.matchesPermitYear(huntingYear))
+                .and(SPECIES_AMOUNT.matchesSpecies(PERMIT, gameSpeciesCode)));
+    }
+
+    default List<HarvestPermit> findMooselikePermits(final long rhyId,
+                                                     final int huntingYear,
+                                                     final int gameSpeciesCode) {
+
+        final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
+        final QHarvestPermitSpeciesAmount SPECIES_AMOUNT = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
+
+        return findAllAsList(PERMIT.isMooselikePermit()
+                .and(PERMIT.hasRhyOrRelatedRhy(rhyId))
+                .and(PERMIT.matchesPermitYear(huntingYear))
+                .and(SPECIES_AMOUNT.matchesSpecies(PERMIT, gameSpeciesCode)));
     }
 
     default List<MooselikeHuntingYearDTO> listRhyMooselikeHuntingYears(final long rhyId) {
-        final QHarvestPermit permit = QHarvestPermit.harvestPermit;
-        final BooleanExpression predicate = permit.isMooselikePermit().and(permit.hasRhyOrRelatedRhy(rhyId));
+        final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
 
-        try (final Stream<HarvestPermit> stream = findAllAsStream(predicate)) {
-            return MooselikeHuntingYearDTO.create(
-                    stream.map(HarvestPermit::getSpeciesAmounts).flatMap(Collection::stream));
-        }
+        return MooselikeHuntingYearDTO.create(findAllAsList(
+                PERMIT.isMooselikePermit().and(PERMIT.hasRhyOrRelatedRhy(rhyId))));
+    }
+
+    default List<HarvestPermit> findAmendmentPermits(final HarvestPermit originalPermit) {
+        final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
+
+        return findAllAsList(PERMIT.originalPermit.eq(originalPermit));
     }
 }

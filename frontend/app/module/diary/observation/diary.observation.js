@@ -104,7 +104,7 @@ angular.module('app.diary.observation', [])
         return Observation;
     })
 
-    .service('ObservationFieldsMetadata', function ($filter, $resource, $http, $rootScope,
+    .service('ObservationFieldsMetadata', function ($filter, $resource, $http, AuthenticationService,
                                                     ObservationFieldRequirements) {
         var rangeFilter = $filter('range');
 
@@ -114,16 +114,13 @@ angular.module('app.diary.observation', [])
         }
 
         var ObservationFieldsMetadata = $resource('api/v1/gamediary/observation/metadata', {}, {
-            query: {method: 'GET', isArray: true},
             forSpecies: {
                 url: 'api/v1/gamediary/observation/metadata/:gameSpeciesCode',
                 method: 'GET',
                 params: {account: '@account', gameSpeciesCode: '@gameSpeciesCode'},
                 transformResponse: appendTransform($http.defaults.transformResponse, function (data, headersGetter, status) {
-                    if (status === 200 && angular.isObject(data)) {
-                        data.isCarnivoreAuthority = _.some($rootScope.account.occupations, function (occupation) {
-                            return occupation.occupationType === 'PETOYHDYSHENKILO';
-                        });
+                    if (status === 200 && _.isObject(data)) {
+                        data.isCarnivoreAuthority = AuthenticationService.isCarnivoreAuthority();
                         return data;
                     } else {
                         return data || {};
@@ -150,7 +147,7 @@ angular.module('app.diary.observation', [])
         };
 
         ObservationFieldsMetadata.prototype.getAvailableObservationTypes = function (withinMooseHunting) {
-            return _.pluck(_findContextSensitiveFieldSets(this, withinMooseHunting), 'type');
+            return _.map(_findContextSensitiveFieldSets(this, withinMooseHunting), 'type');
         };
 
         var halfStepRange = function (min, max) {
@@ -323,9 +320,15 @@ angular.module('app.diary.observation', [])
         };
 
         ObservationFieldRequirements.prototype.isSumOfAmountFieldsValid = function (observation) {
+            var self = this;
+
             var amountFields = this.getAmountFields();
 
-            if (amountFields.length === 0) {
+            var hasRequiredAmountFields = _.some(amountFields, function(field) {
+                return self.isFieldRequired(field);
+            });
+
+            if ( !hasRequiredAmountFields ) {
                 return true;
             }
 
@@ -422,7 +425,7 @@ angular.module('app.diary.observation', [])
         }
 
         $scope.observationSpecimenTitleVisible = function () {
-            return _.any(ObservationFieldRequirements.getAllAmountFields(), $scope.isFieldVisible);
+            return _.some(ObservationFieldRequirements.getAllAmountFields(), $scope.isFieldVisible);
         };
 
         $scope.getAvailableObservationTypes = function () {
@@ -604,7 +607,7 @@ angular.module('app.diary.observation', [])
         $scope.$watch('entry.totalSpecimenAmount', function (newValue, oldValue) {
             if (newValue) {
                 $scope.entry.totalSpecimenAmount = Math.min(newValue, $scope.maxSpecimenCount);
-                DiaryEntrySpecimenFormService.setSpecimenCount($scope.entry, newValue);
             }
+            DiaryEntrySpecimenFormService.setSpecimenCount($scope.entry, newValue);
         });
     });

@@ -1,11 +1,12 @@
 package fi.riista.servlet.filter;
 
-import com.newrelic.api.agent.NewRelic;
 import io.sentry.Sentry;
-import io.sentry.SentryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.util.NestedServletException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
@@ -22,30 +23,33 @@ public class UncaughtExceptionFilter extends OncePerRequestFilter {
                                     final FilterChain filterChain) {
         try {
             filterChain.doFilter(request, response);
+            return;
 
-        } catch (Throwable e) {
-            LOG.error("Uncaught exception", e);
+        } catch (MultipartException me) {
+            LOG.error("Multipart upload failed", me.getMessage());
 
-            final SentryClient sentry = Sentry.getStoredClient();
+        } catch (NestedServletException nse) {
+            // Should be handled automatically by HandlerExceptionResolver
+            LOG.error("Caught nested servlet exception", nse.getCause());
+            Sentry.capture(nse.getCause());
 
-            if (sentry != null) {
-                sentry.sendException(e);
-            }
+        } catch (Throwable th) {
+            LOG.error("Uncaught exception", th);
+            Sentry.capture(th);
+        }
 
-            NewRelic.noticeError(e, false);
+        if (response.isCommitted()) {
+            LOG.warn("Response is committed, could not send HTTP error response.");
+            return;
+        }
 
-            if (response.isCommitted()) {
-                LOG.warn("Response is committed, could not send HTTP error response.");
-                return;
-            }
+        try (final PrintWriter writer = response.getWriter()) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+            writer.print("{\"status\": \"ERROR\", \"message\": \"uncaught exception\"}");
+            writer.flush();
 
-            try (final PrintWriter writer = response.getWriter()) {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                writer.print("error");
-                writer.flush();
-                writer.close();
-            } catch (IOException ignore) {
-            }
+        } catch (IOException ignore) {
         }
     }
 }

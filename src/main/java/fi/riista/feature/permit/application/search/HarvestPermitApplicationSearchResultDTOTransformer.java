@@ -11,10 +11,10 @@ import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
-import fi.riista.feature.permit.application.species.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.decision.PermitDecision;
-import fi.riista.feature.permit.decision.PermitDecisionRepository;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
@@ -23,15 +23,16 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static fi.riista.util.Collect.idSet;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -39,16 +40,13 @@ public class HarvestPermitApplicationSearchResultDTOTransformer
         extends ListTransformer<HarvestPermitApplication, HarvestPermitApplicationSearchResultDTO> {
 
     @Resource
-    private GISZoneRepository gisZoneRepository;
+    private GISZoneRepository zoneRepository;
 
     @Resource
     private JPQLQueryFactory jpqlQueryFactory;
 
     @Resource
     private ActiveUserService activeUserService;
-
-    @Resource
-    private PermitDecisionRepository permitDecisionRepository;
 
     @Nonnull
     @Override
@@ -60,20 +58,15 @@ public class HarvestPermitApplicationSearchResultDTOTransformer
         }
 
         final boolean moderatorOrAdmin = activeUserService.isModeratorOrAdmin();
-        final ArrayList<HarvestPermitArea> areaList = F.mapNonNullsToList(list, HarvestPermitApplication::getArea);
-        final Function<HarvestPermitArea, GISZoneWithoutGeometryDTO> areaMapping = gisZoneRepository.getAreaMapping(areaList);
+        final Function<HarvestPermitApplication, GISZoneSizeDTO> areaSizeMapping = createAreaSizeMapping(list);
         final Function<HarvestPermitApplication, SystemUser> handlerMapping =
                 moderatorOrAdmin ? createApplicationHandlerMapping(list) : null;
 
         final Function<HarvestPermitApplication, PermitDecision.Status> decisionStatuses =
                 createApplicationDecisionStatusMapping(list);
 
-
         return list.stream().map(application -> {
-            final GISZoneSizeDTO areaSize = Optional.ofNullable(application.getArea())
-                    .map(areaMapping)
-                    .map(GISZoneWithoutGeometryDTO::getSize)
-                    .orElse(null);
+            final GISZoneSizeDTO areaSize = areaSizeMapping.apply(application);
 
             final Set<Integer> gameSpeciesCodes = application.getSpeciesAmounts().stream()
                     .map(HarvestPermitApplicationSpeciesAmount::getGameSpecies)
@@ -83,7 +76,10 @@ public class HarvestPermitApplicationSearchResultDTOTransformer
             final PersonWithNameDTO contactPerson = Optional.ofNullable(application.getContactPerson())
                     .map(PersonWithNameDTO::create).orElse(null);
 
-            final OrganisationNameDTO permitHolder = Optional.ofNullable(application.getPermitHolder())
+            final PermitHolderDTO permitHolder = Optional.ofNullable(application.getPermitHolder())
+                    .map(PermitHolderDTO::createFrom).orElse(null);
+
+            final OrganisationNameDTO club = Optional.ofNullable(application.getHuntingClub())
                     .map(OrganisationNameDTO::createWithOfficialCode).orElse(null);
 
             final OrganisationNameDTO rhy = Optional.ofNullable(application.getRhy())
@@ -95,15 +91,17 @@ public class HarvestPermitApplicationSearchResultDTOTransformer
             DtoUtil.copyBaseFields(application, dto);
 
             dto.setStatus(application.getStatus());
+            dto.setDeliveryByMail(Boolean.TRUE.equals(application.getDeliveryByMail()));
             dto.setDecisionStatus(decisionStatuses.apply(application));
-            dto.setHuntingYear(application.getHuntingYear());
+            dto.setHuntingYear(application.getApplicationYear());
             dto.setSubmitDate(application.getSubmitDate() != null ? application.getSubmitDate().toLocalDateTime() : null);
             dto.setContactPerson(contactPerson);
             dto.setPermitHolder(permitHolder);
+            dto.setHuntingClub(club);
             dto.setGameSpeciesCodes(gameSpeciesCodes);
             dto.setHasPermitArea(application.getArea() != null);
             dto.setAreaSize(areaSize);
-            dto.setPermitTypeCode(application.getPermitTypeCode());
+            dto.setHarvestPermitCategory(application.getHarvestPermitCategory());
             dto.setApplicationNumber(application.getApplicationNumber());
             dto.setRhy(rhy);
 
@@ -119,6 +117,27 @@ public class HarvestPermitApplicationSearchResultDTOTransformer
             return dto;
 
         }).collect(toList());
+    }
+
+    private Function<HarvestPermitApplication, GISZoneSizeDTO> createAreaSizeMapping(
+            final List<HarvestPermitApplication> applicationList) {
+
+        final Set<Long> zoneIds = applicationList.stream()
+                .map(HarvestPermitApplication::getArea)
+                .filter(Objects::nonNull)
+                .map(HarvestPermitArea::getZone)
+                .filter(Objects::nonNull)
+                .collect(idSet());
+
+        final Map<Long, GISZoneWithoutGeometryDTO> mapping = zoneRepository.fetchWithoutGeometry(zoneIds);
+
+        return a -> Optional.of(a)
+                .map(HarvestPermitApplication::getArea)
+                .map(HarvestPermitArea::getZone)
+                .map(F::getId)
+                .map(mapping::get)
+                .map(GISZoneWithoutGeometryDTO::getSize)
+                .orElse(null);
     }
 
     private Function<HarvestPermitApplication, SystemUser> createApplicationHandlerMapping(

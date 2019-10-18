@@ -67,7 +67,8 @@ public class PolygonConversionUtil {
             return javaPolygonToGeoJson(com.vividsolutions.jts.geom.Polygon.class.cast(geometry));
         } else if (geometry instanceof com.vividsolutions.jts.geom.GeometryCollection) {
             return javaGeometryCollectionToGeoJson(com.vividsolutions.jts.geom.GeometryCollection.class.cast(geometry));
-        } else if (geometry instanceof com.vividsolutions.jts.geom.LineString) {
+        } else if (geometry instanceof com.vividsolutions.jts.geom.LineString ||
+                geometry instanceof com.vividsolutions.jts.geom.Point) {
             // TODO: Not required right now...
             return null;
         }

@@ -3,7 +3,6 @@ package fi.riista.feature.organization.rhy.annualstats;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.util.NumberUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,7 +15,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
@@ -27,16 +26,16 @@ public class SrvaSpeciesCountStatistics implements Serializable {
                                                           @Nullable final SrvaSpeciesCountStatistics second) {
 
         final SrvaSpeciesCountStatistics result = new SrvaSpeciesCountStatistics();
-        result.setMooses(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getMooses));
-        result.setWhiteTailedDeers(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getWhiteTailedDeers));
-        result.setRoeDeers(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getRoeDeers));
-        result.setWildForestReindeers(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getWildForestReindeers));
-        result.setFallowDeers(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getFallowDeers));
-        result.setWildBoars(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getWildBoars));
-        result.setLynxes(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getLynxes));
-        result.setBears(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getBears));
-        result.setWolves(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getWolves));
-        result.setWolverines(nullsafeSumAsInt(first, second, SrvaSpeciesCountStatistics::getWolverines));
+        result.setMooses(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getMooses));
+        result.setWhiteTailedDeers(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getWhiteTailedDeers));
+        result.setRoeDeers(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getRoeDeers));
+        result.setWildForestReindeers(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getWildForestReindeers));
+        result.setFallowDeers(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getFallowDeers));
+        result.setWildBoars(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getWildBoars));
+        result.setLynxes(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getLynxes));
+        result.setBears(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getBears));
+        result.setWolves(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getWolves));
+        result.setWolverines(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getWolverines));
         return result;
     }
 
@@ -114,23 +113,21 @@ public class SrvaSpeciesCountStatistics implements Serializable {
     }
 
     @JsonGetter("all")
-    public int countAll() {
-        return Stream
-                .of(mooses, whiteTailedDeers, roeDeers, wildForestReindeers, fallowDeers, wildBoars, lynxes, bears,
-                        wolves, wolverines)
-                .mapToInt(NumberUtils::getIntValueOrZero)
-                .sum();
+    @Nullable
+    public Integer countAll() {
+        return nullableIntSum(
+                mooses, whiteTailedDeers, roeDeers, wildForestReindeers, fallowDeers, wildBoars, lynxes, bears, wolves,
+                wolverines);
     }
 
-    public int countMooselikes() {
-        return Stream
-                .of(mooses, whiteTailedDeers, roeDeers, wildForestReindeers, fallowDeers)
-                .mapToInt(NumberUtils::getIntValueOrZero)
-                .sum();
+    @Nullable
+    public Integer countMooselikes() {
+        return nullableIntSum(mooses, whiteTailedDeers, roeDeers, wildForestReindeers, fallowDeers);
     }
 
-    public int countLargeCarnivores() {
-        return Stream.of(lynxes, bears, wolves, wolverines).mapToInt(NumberUtils::getIntValueOrZero).sum();
+    @Nullable
+    public Integer countLargeCarnivores() {
+        return nullableIntSum(lynxes, bears, wolves, wolverines);
     }
 
     // Accessors -->

@@ -2,13 +2,13 @@
 
 angular.module('app.login.services', [])
     .run(function ($rootScope, $state, $stateParams, httpBuffer,
-                   AuthenticationService, LoginRedirectService,
-                   ActiveRoleService, SiteSearchService) {
+                   AuthenticationService, ActiveRoleService, AvailableRoleService,
+                   PendingRouterStateService, LoginRedirectService, SiteSearchService) {
         $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
             var pendingAuthentication = AuthenticationService.getAuthentication();
             var pendingUsername = pendingAuthentication ? pendingAuthentication.username : null;
 
-            LoginRedirectService.setPendingState(toState, toParams, pendingUsername);
+            PendingRouterStateService.setPendingState(toState, toParams, pendingUsername);
 
             if (AuthenticationService.isAuthenticated()) {
                 return;
@@ -32,85 +32,76 @@ angular.module('app.login.services', [])
 
         // Call when the 401 response is returned by the client
         $rootScope.$on('event:auth-loginRequired', function () {
+            httpBuffer.rejectAll();
+
             AuthenticationService.clearAuthentication();
 
             ActiveRoleService.clearActiveRole();
+            AvailableRoleService.clearAvailableRoles();
             SiteSearchService.clearActiveSearch();
-            updateRootScope(null);
 
-            AuthenticationService.authenticate().catch(function () {
-                $state.go('login', {notify: false});
-            });
+            $state.go('login', {notify: false});
         });
 
         // Called when user has logged out or cancelled login
         $rootScope.$on('event:auth-loginCancelled', function () {
             AuthenticationService.clearAuthentication();
-            LoginRedirectService.clearPendingState();
+            PendingRouterStateService.clearPendingState();
 
             ActiveRoleService.clearActiveRole();
+            AvailableRoleService.clearAvailableRoles();
             SiteSearchService.clearActiveSearch();
-            updateRootScope(null);
         });
 
         // Called after login is successful or when user was already authenticated on page load
         $rootScope.$on('event:auth-loginConfirmed', function (event, account) {
             AuthenticationService.setAuthentication(account);
 
-            SiteSearchService.clearActiveSearch();
-            ActiveRoleService.updateRoles(account);
+            var pendingState = PendingRouterStateService.getPendingState(account.username);
 
-            updateRootScope(account);
+            PendingRouterStateService.clearPendingState();
+            AvailableRoleService.updateAvailableRoles(account);
 
-            var defaultEntryState = _.size(ActiveRoleService.getAvailableRoles()) > 1 ? 'roleselection' : 'main';
-
-            LoginRedirectService.processPendingState(defaultEntryState, account.username);
-        });
-
-        function updateRootScope(account) {
-            if (account) {
-                $rootScope.authenticated = true;
-                $rootScope.account = account;
-
+            if (pendingState) {
+                LoginRedirectService.redirectToPendingState(pendingState.name, pendingState.params);
             } else {
-                $rootScope.authenticated = false;
-                $rootScope.account = null;
+                LoginRedirectService.redirectToDefault();
             }
-        }
+        });
     })
 
-    .service('LoginRedirectService', function ($state) {
+    .service('PendingRouterStateService', function () {
         var pendingState;
         var pendingStateParams;
         var pendingUsername;
 
         this.setPendingState = function (state, params, username) {
-            if (state.authenticate !== false) {
+            if (state.authenticate !== false && state.name !== 'roleselection') {
                 pendingState = state.name;
                 pendingStateParams = params;
                 pendingUsername = username;
             }
         };
 
+        this.getPendingState = function (username) {
+            if (!pendingState) {
+                return null;
+            }
+
+            if (_.isString(pendingUsername) && _.isString(username) && pendingUsername !== username) {
+                return null;
+            }
+
+            return {
+                name: pendingState,
+                params: pendingStateParams || {}
+            };
+        };
+
         this.clearPendingState = function () {
             pendingState = null;
             pendingStateParams = null;
             pendingUsername = null;
-        };
-
-        this.processPendingState = function (defaultState, username) {
-            if (pendingState) {
-                // Do not process pending state if username has changed
-                if (!pendingUsername || pendingUsername === username) {
-                    $state.go(pendingState, pendingStateParams);
-                } else {
-                    $state.go(defaultState);
-                }
-                this.clearPendingState();
-
-            } else {
-                $state.go(defaultState);
-            }
         };
     })
 
@@ -129,9 +120,7 @@ angular.module('app.login.services', [])
             authentication = value;
 
             if (Raven && _.isFunction(Raven.setUserContext)) {
-                Raven.setUserContext(_.pick(value, [
-                    'id', 'username', 'role', 'personId', 'firstName', 'lastName'
-                ]));
+                Raven.setUserContext(_.pick(value, ['id', 'role', 'personId']));
             }
         };
 
@@ -150,10 +139,6 @@ angular.module('app.login.services', [])
         };
 
         this.authenticate = function () {
-            if (authentication !== null) {
-                return $q.when(authentication);
-            }
-
             // Check authentication, 200 = logged in and 401 = logged out
             return $http.get('/api/v1/account', {
                 ignoreAuthModule: 'ignoreAuthModule'
@@ -165,6 +150,12 @@ angular.module('app.login.services', [])
         this.isCurrentPersonId = function (personId) {
             var accountPersonId = authentication ? authentication.personId : null;
             return accountPersonId === personId;
+        };
+
+        this.isCarnivoreAuthority = function () {
+            return authentication && _.some(authentication.occupations, function (occupation) {
+                return occupation.occupationType === 'PETOYHDYSHENKILO';
+            });
         };
     })
 

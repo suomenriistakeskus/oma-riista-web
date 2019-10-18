@@ -24,20 +24,14 @@ import fi.riista.feature.gamediary.observation.metadata.ObservationFieldsMetadat
 import fi.riista.feature.gamediary.observation.metadata.ObservationMetadataDTO;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenService;
-import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitRepository;
-import fi.riista.feature.harvestpermit.HarvestPermit_;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingStatusService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
-import fi.riista.util.jpa.JpaSpecs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,13 +51,6 @@ import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_PENKKA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_SEKA;
-import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.IS_NOT_ANY_MOOSELIKE_PERMIT;
-import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.harvestReportNotDone;
-import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.isPermitContactPerson;
-import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.withHarvestAuthor;
-import static fi.riista.feature.harvestpermit.HarvestPermitSpecs.withHarvestShooter;
-import static fi.riista.util.jpa.JpaSpecs.equal;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.springframework.data.jpa.domain.Specifications.where;
@@ -78,9 +65,6 @@ public class MobileGameDiaryFeature {
 
     @Resource
     private ObservationRepository observationRepository;
-
-    @Resource
-    private HarvestPermitRepository harvestPermitRepository;
 
     @Resource
     private HarvestService harvestService;
@@ -436,43 +420,6 @@ public class MobileGameDiaryFeature {
             LOG.info("deleteGameDiaryImage failed, image not found uuid:" + imageUuid);
             // If image is not found there is nothing that mobile client can do so let's not report this
         }
-    }
-
-    @Transactional(readOnly = true)
-    public MobileHarvestPermitExistsDTO findPermitNumber(final String permitNumber) {
-        return Optional.ofNullable(harvestPermitRepository.findByPermitNumber(permitNumber))
-                .map(MobileHarvestPermitExistsDTO::create)
-                .orElseThrow(NotFoundException::new);
-    }
-
-    @Transactional(readOnly = true)
-    public List<MobileHarvestPermitExistsDTO> preloadPermits() {
-        return MobileHarvestPermitExistsDTO.create(preloadPermitEntities());
-    }
-
-    private List<HarvestPermit> preloadPermitEntities() {
-        final Person person = activeUserService.requireActiveUser().getPerson();
-
-        if (person == null) {
-            return emptyList();
-        }
-
-        final Specifications<HarvestPermit> harvestsAsListAndReportNotDone = Specifications
-                .where(equal(HarvestPermit_.harvestsAsList, Boolean.TRUE))
-                .and(harvestReportNotDone());
-
-        final Specification<HarvestPermit> harvestsNotAsList = equal(HarvestPermit_.harvestsAsList, Boolean.FALSE);
-
-        final Specification<HarvestPermit> contactPersonAndPermitUsable = JpaSpecs.and(
-                isPermitContactPerson(person),
-                JpaSpecs.or(harvestsAsListAndReportNotDone, harvestsNotAsList));
-
-        return harvestPermitRepository.findAll(JpaSpecs.and(
-                JpaSpecs.or(
-                        contactPersonAndPermitUsable,
-                        withHarvestAuthor(person),
-                        withHarvestShooter(person)),
-                IS_NOT_ANY_MOOSELIKE_PERMIT));
     }
 
     protected void assertHarvestDTOIsValid(final MobileHarvestDTO dto, final int apiVersion) {

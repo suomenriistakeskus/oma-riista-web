@@ -1,0 +1,48 @@
+<div class="panel panel-default"
+     ng-repeat="a in $ctrl.areaList">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-xs-8">
+                <a ng-click="$ctrl.toggle(a)" style="padding-right: 10px;">
+                    <span class="fa fa-fw fa-lg fa-chevron-right" ng-show="a.isCollapsed"></span>
+                    <span class="fa fa-fw fa-lg fa-chevron-down" ng-hide="a.isCollapsed"></span>
+                </a>
+
+                <a class="panel-title"
+                   style="line-height: 42px"
+                   ng-click="$ctrl.toggle(a)"
+                   ng-bind="a.name"></a>
+
+                <a ng-click="$ctrl.edit(a)" style="padding-left: 15px;">
+                    <span class="fa fa-pencil" style="font-size: 24px"></span>
+                </a>
+            </div>
+
+            <div class="col-xs-4 text-right">
+                <button type="button" class="btn btn-link" ng-show="$ctrl.canPrintArea(a)"
+                   ng-click="$ctrl.printArea(a)">
+                    <span class="fa fa-2x fa-lg fa-print text-primary"></span>
+                </button>
+
+                <button type="button" class="btn btn-primary"
+                        ng-click="$ctrl.editMap(a)">
+                    <span translate="account.areas.editMap"></span>
+                </button>
+                &nbsp;
+                <moderator-area-functions area="a"></moderator-area-functions>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body" ng-if="!a.isCollapsed">
+        <div class="row">
+            <div class="col-md-6">
+                <moderator-area-list-map area="a"></moderator-area-list-map>
+            </div>
+
+            <div class="col-md-6">
+                <moderator-area-list-info area="a"></moderator-area-list-info>
+            </div>
+        </div>
+    </div>
+</div>

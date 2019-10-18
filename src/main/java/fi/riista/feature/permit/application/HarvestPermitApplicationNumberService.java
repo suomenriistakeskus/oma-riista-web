@@ -27,4 +27,6 @@ public class HarvestPermitApplicationNumberService {
                 .select(SQLExpressions.nextval(Integer.class, APPLICATION_NUMBER_SEQ))
                 .fetchOne());
     }
+
+
 }

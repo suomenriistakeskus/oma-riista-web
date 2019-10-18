@@ -64,7 +64,7 @@ angular.module('app.clubgroup.controllers', ['ui.router', 'app.clubgroup.service
                         if (group.fromMooseDataCard) {
                             return MooseDataCardImports.listForGroup({ groupId: group.id }).$promise;
                         }
-                        return _.constant([]);
+                        return $q.when([]);
                     }
                 }
             });
@@ -93,7 +93,7 @@ angular.module('app.clubgroup.controllers', ['ui.router', 'app.clubgroup.service
                                                      parameters, permits) {
         var $ctrl = this;
 
-        $ctrl.huntingYears = availableHuntingYearsBySpeciesCode[group.gameSpeciesCode];
+        $ctrl.huntingYears = availableHuntingYearsBySpeciesCode[group.gameSpeciesCode] || [];
         $ctrl.species = availableSpecies;
         $ctrl.group = group;
         $ctrl.areas = areas;
@@ -135,14 +135,16 @@ angular.module('app.clubgroup.controllers', ['ui.router', 'app.clubgroup.service
         $ctrl.onGameSpeciesChange = function () {
             var group = $ctrl.group;
 
-            $ctrl.huntingYears = availableHuntingYearsBySpeciesCode[group.gameSpeciesCode];
+            $ctrl.huntingYears = availableHuntingYearsBySpeciesCode[group.gameSpeciesCode] || [];
 
             var selectedYearIncludedInNewlyChangedHuntingYear = _.find($ctrl.huntingYears, function (yearObj) {
                 return yearObj.year === group.huntingYear;
             });
 
             if (!selectedYearIncludedInNewlyChangedHuntingYear) {
-                group.huntingYear = $ctrl.huntingYears[0].year;
+                if ($ctrl.huntingYears.length > 0) {
+                    group.huntingYear = $ctrl.huntingYears[0].year;
+                }
                 reloadAreas();
             }
             reloadPermits();
@@ -229,8 +231,8 @@ angular.module('app.clubgroup.controllers', ['ui.router', 'app.clubgroup.service
         };
 
         $scope.canDelete = function () {
-            return !$scope.group.huntingDaysExist &&
-                ($scope.isModerator || $scope.group.canEdit) && !nonDeletedMooseDataCardImportExists();
+            return !$scope.group.huntingDaysExist && $scope.group.canEdit &&
+                ($scope.isModerator || ActiveRoleService.isClubContact()) && !nonDeletedMooseDataCardImportExists();
         };
 
         $scope.delete = function () {

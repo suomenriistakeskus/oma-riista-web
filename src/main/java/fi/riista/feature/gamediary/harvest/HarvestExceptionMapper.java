@@ -1,6 +1,5 @@
 package fi.riista.feature.gamediary.harvest;
 
-import com.newrelic.api.agent.NewRelic;
 import fi.riista.feature.error.RevisionConflictException;
 import fi.riista.feature.gamediary.GameSpeciesNotFoundException;
 import fi.riista.feature.gamediary.OutOfBoundsSpecimenAmountException;
@@ -39,7 +38,7 @@ public class HarvestExceptionMapper {
     private static final Logger LOG = LoggerFactory.getLogger(HarvestExceptionMapper.class);
 
     @Nonnull
-    private HarvestValidationFailureDTO singleErrorMessage(final LocalisedString msg) {
+    private static HarvestValidationFailureDTO singleErrorMessage(final LocalisedString msg) {
         return new HarvestValidationFailureDTO(Collections.singletonList(HarvestValidationFailureDTO.message(msg)));
     }
 
@@ -51,9 +50,6 @@ public class HarvestExceptionMapper {
     @Nonnull
     public ResponseEntity<HarvestValidationFailureDTO> handleException(final RuntimeException e) {
         final ResponseEntity<HarvestValidationFailureDTO> response = mapExceptionInternal(e);
-
-        NewRelic.noticeError(e, response != null);
-
         final SentryClient sentry = Sentry.getStoredClient();
 
         if (sentry != null) {
@@ -71,7 +67,7 @@ public class HarvestExceptionMapper {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
-    private ResponseEntity<HarvestValidationFailureDTO> mapExceptionInternal(final RuntimeException e) {
+    private static ResponseEntity<HarvestValidationFailureDTO> mapExceptionInternal(final RuntimeException e) {
         if (e instanceof RevisionConflictException) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
 
@@ -158,7 +154,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final HarvestSpecVersionNotSupportedException e) {
+    private static HarvestValidationFailureDTO mapException(final HarvestSpecVersionNotSupportedException e) {
         return singleErrorMessage(LocalisedString.of(
                 "Käyttämäsi ohjelmistoversio ei tue toimintoa",
                 "Din programvara stöder inte den här funktionen",
@@ -166,7 +162,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final RhyNotResolvableByGeoLocationException e) {
+    private static HarvestValidationFailureDTO mapException(final RhyNotResolvableByGeoLocationException e) {
         return singleErrorMessage(LocalisedString.of(
                 String.format("Sijaintia longitude %d latitude %d vastaavaa RHY:tä ei löydy", e.getLongitude(), e.getLatitude()),
                 String.format("Jaktvårdsförening kan inte hittas på longitude %d och latitude %d", e.getLongitude(), e.getLatitude()),
@@ -174,7 +170,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final HarvestPermitNotFoundException e) {
+    private static HarvestValidationFailureDTO mapException(final HarvestPermitNotFoundException e) {
         return singleErrorMessage(LocalisedString.of(
                 String.format("Lupanumeroa ei löydy %s", e.getPermitNumber()),
                 String.format("License med nummer %s kan inte hittas", e.getPermitNumber()),
@@ -182,7 +178,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final HarvestPermitSpeciesAmountNotFound e) {
+    private static HarvestValidationFailureDTO mapException(final HarvestPermitSpeciesAmountNotFound e) {
         return singleErrorMessage(LocalisedString.of(
                 String.format("Eläinlajin %d metsästys ei ole sallittua luvalle %s annettuna päivänä %s", e.getGameSpeciesCode(), e.getPermitNumber(), e.getHarvestDate()),
                 String.format("Jakt på djurslaget %d är inte tillåtet med licens %s på datum %s", e.getGameSpeciesCode(), e.getPermitNumber(), e.getHarvestDate()),
@@ -190,7 +186,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final PersonNotFoundException e) {
+    private static HarvestValidationFailureDTO mapException(final PersonNotFoundException e) {
         if (e.getPersonId() != null) {
             return singleErrorMessage(LocalisedString.of(
                     String.format("Henkilöä id=%d ei löydy", e.getPersonId()),
@@ -212,7 +208,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final GameSpeciesNotFoundException e) {
+    private static HarvestValidationFailureDTO mapException(final GameSpeciesNotFoundException e) {
         return singleErrorMessage(LocalisedString.of(
                 String.format("Tuntematon laji %d", e.getGameSpeciesCode()),
                 String.format("Okänd djurart %d", e.getGameSpeciesCode()),
@@ -220,7 +216,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final HarvestFieldValidationException e) {
+    private static HarvestValidationFailureDTO mapException(final HarvestFieldValidationException e) {
         final List<HarvestValidationFailureDTO.Error> errorList = new ArrayList<>();
 
         for (final HarvestFieldName fieldName : e.getMissingFields()) {
@@ -235,7 +231,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final HarvestSpecimenValidationException e) {
+    private static HarvestValidationFailureDTO mapException(final HarvestSpecimenValidationException e) {
         final List<HarvestValidationFailureDTO.Error> errorList = new ArrayList<>();
 
         for (final HarvestSpecimenFieldName fieldName : e.getMissingFields()) {
@@ -261,7 +257,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final OutOfBoundsSpecimenAmountException e) {
+    private static HarvestValidationFailureDTO mapException(final OutOfBoundsSpecimenAmountException e) {
         return singleErrorMessage(LocalisedString.of(
                 String.format("Syötettyjen yksilöiden määrä %d ei ole välillä %d - %d", e.getGivenAmount(), e.getMinimumAmount(), e.getMaximumAmount()),
                 String.format("Antalet personer som angetts %d är inte mellan %d och %d", e.getGivenAmount(), e.getMinimumAmount(), e.getMaximumAmount()),
@@ -270,7 +266,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private HarvestValidationFailureDTO mapException(final HarvestSpeciesRequiresPermitException e) {
+    private static HarvestValidationFailureDTO mapException(final HarvestSpeciesRequiresPermitException e) {
         return singleErrorMessage(LocalisedString.of(
                 String.format("Lupanumero vaaditaan annetulle lajille %d", e.getGameSpeciesCode()),
                 String.format("Licensnumret krävs för arten %d", e.getGameSpeciesCode()),
@@ -278,7 +274,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private LocalisedString illegalFieldMessage(final String fieldName) {
+    private static LocalisedString illegalFieldMessage(final String fieldName) {
         return LocalisedString.of(
                 "Tietoa ei tueta " + fieldName,
                 "Informationen stöds inte " + fieldName,
@@ -286,7 +282,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private LocalisedString illegalFieldValue(final HarvestSpecimenFieldName fieldName, final String fieldValue) {
+    private static LocalisedString illegalFieldValue(final HarvestSpecimenFieldName fieldName, final String fieldValue) {
         return LocalisedString.of(
                 "Annettu tieto ei kelpaa " + fieldName + " : " + fieldValue,
                 "Data är ogiltig " + fieldName + " : " + fieldValue,
@@ -294,7 +290,7 @@ public class HarvestExceptionMapper {
     }
 
     @Nonnull
-    private LocalisedString missingFieldMessage(final String fieldName) {
+    private static LocalisedString missingFieldMessage(final String fieldName) {
         return LocalisedString.of(
                 "Tieto puuttuu " + fieldName,
                 "Information saknas " + fieldName,

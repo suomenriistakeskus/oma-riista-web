@@ -13,6 +13,11 @@
     </rule>
 
     <rule match-type="regex">
+        <from>^/favicon.ico$</from>
+        <to>/static/favicon.ico</to>
+    </rule>
+
+    <rule match-type="regex">
         <from>^/privacy_policy$</from>
         <to type="redirect">https://riista.fi/riistahallinto/sahkoinen-asiointi/oma-riista-rekisteriseloste/</to>
     </rule>

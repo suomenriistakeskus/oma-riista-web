@@ -1,6 +1,6 @@
 package fi.riista.feature.harvestpermit;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DtoUtil;
 import fi.riista.validation.FinnishHunterNumber;

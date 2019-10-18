@@ -3,6 +3,7 @@ package fi.riista.feature.gis.geojson;
 public class GeoJSONConstants {
     public static final String ID_EXCLUDED = "excluded";
     public static final String ID_PREFIX_MH_HIRVI = "mh-hirvi-";
+    public static final String ID_PREFIX_OTHER = "other-";
 
     public static final String PROPERTY_NUMBER = "number";
     public static final String PROPERTY_NUMBER_NEW = "new_palsta_tunnus";

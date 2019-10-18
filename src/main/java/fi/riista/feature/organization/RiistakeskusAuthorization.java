@@ -12,13 +12,20 @@ import javax.annotation.Resource;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
+import static fi.riista.feature.account.user.SystemUserPrivilege.MODERATE_RHY_ANNUAL_STATISTICS;
+import static fi.riista.feature.organization.RiistakeskusAuthorization.Role.RHY_ANNUAL_STATISTICS_MODERATOR;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 
 @Component
 public class RiistakeskusAuthorization extends AbstractEntityAuthorization<Riistakeskus> {
 
     public enum Permission {
-        LIST_ANNUAL_STATISTICS
+        LIST_ANNUAL_STATISTICS,
+        BATCH_APPROVE_ANNUAL_STATISTICS
+    }
+
+    enum Role {
+        RHY_ANNUAL_STATISTICS_MODERATOR
     }
 
     @Resource
@@ -28,6 +35,7 @@ public class RiistakeskusAuthorization extends AbstractEntityAuthorization<Riist
         allow(EntityPermission.READ, ROLE_ADMIN, ROLE_MODERATOR);
         allow(EntityPermission.UPDATE, ROLE_ADMIN, ROLE_MODERATOR);
         allow(Permission.LIST_ANNUAL_STATISTICS, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA);
+        allow(Permission.BATCH_APPROVE_ANNUAL_STATISTICS, ROLE_ADMIN, RHY_ANNUAL_STATISTICS_MODERATOR);
     }
 
     @Override
@@ -35,8 +43,15 @@ public class RiistakeskusAuthorization extends AbstractEntityAuthorization<Riist
                                    @Nonnull final Riistakeskus rk,
                                    @Nonnull final UserInfo userInfo) {
 
-        collector.addAuthorizationRole(TOIMINNANOHJAAJA, () -> {
-            return userAuthorizationHelper.isCoordinatorAnywhere(userInfo);
-        });
+        if (userInfo.isModerator()) {
+            collector.addAuthorizationRole(RHY_ANNUAL_STATISTICS_MODERATOR, () -> {
+                return userInfo.hasPrivilege(MODERATE_RHY_ANNUAL_STATISTICS);
+            });
+
+        } else {
+            collector.addAuthorizationRole(TOIMINNANOHJAAJA, () -> {
+                return userAuthorizationHelper.isCoordinatorAnywhere(userInfo);
+            });
+        }
     }
 }

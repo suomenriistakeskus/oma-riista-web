@@ -44,12 +44,25 @@ public class Localiser {
      */
     @Nullable
     public String getTranslation(@Nullable final String message) {
-        return getTranslation(message, getLocale());
+        return getTranslation(message, null, getLocale());
+    }
+
+    @Nullable
+    public String getTranslation(@Nullable final String message, @Nullable final Object[] args) {
+        return getTranslation(message, args, getLocale());
     }
 
     @Nullable
     public String getTranslation(@Nullable final String message, @Nullable final Locale locale) {
-        return message == null ? null : messageSource.getMessage(message, null, locale);
+        return getTranslation(message, null, locale);
+    }
+
+    @Nullable
+    public String getTranslation(@Nullable final String message,
+                                 @Nullable final Object[] args,
+                                 @Nullable final Locale locale) {
+
+        return message == null ? null : messageSource.getMessage(message, args, locale);
     }
 
     public String getTranslation(final boolean value) {

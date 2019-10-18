@@ -14,6 +14,7 @@ public enum FileType {
     PERMIT_APPLICATION_ATTACHMENT(StorageType.AWS_S3_BUCKET),
     DECISION_PDF(StorageType.AWS_S3_BUCKET),
     DECISION_ATTACHMENT(StorageType.AWS_S3_BUCKET),
+    DECISION_ACTION_ATTACHMENT(StorageType.AWS_S3_BUCKET),
     INVOICE_PDF(StorageType.AWS_S3_BUCKET),
     FIVALDI_INVOICE_BATCH(StorageType.AWS_S3_BUCKET),
     IMAGE_UPLOAD(StorageType.AWS_S3_BUCKET),
@@ -76,6 +77,9 @@ public enum FileType {
 
             case DECISION_ATTACHMENT:
                 return "permitdecisionattachment/" + formatFilename(metadata);
+
+            case DECISION_ACTION_ATTACHMENT:
+                return "permitdecisionactionattachment/" + formatFilename(metadata);
 
             case INVOICE_PDF:
                 return "invoice/" + formatFilename(metadata);

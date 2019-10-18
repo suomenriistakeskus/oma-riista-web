@@ -19,9 +19,6 @@ public class LocalisationExportToExcel {
             "club.group.mooseDataCardImport.fileDownload",
             "club.hunting.specimenAbbrv.UNKNOWN",
             "club.hunting.specimenAbbrv.UNKNOWN_UNKNOWN",
-            "club.permit.mooseHarvestReport.iban",
-            "club.permit.mooseHarvestReport.bic",
-            "club.permit.mooseHarvestReport.priceBreakdown.eur",
             "payment.bic",
             "payment.iban");
 

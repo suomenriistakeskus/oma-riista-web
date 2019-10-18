@@ -43,6 +43,7 @@ public class ShootingTestParticipantDTO extends IdRevisionDTO {
         public void setQualified(final boolean qualified) {
             this.qualified = qualified;
         }
+
     }
 
     private String firstName;
@@ -166,4 +167,6 @@ public class ShootingTestParticipantDTO extends IdRevisionDTO {
     public void setCompleted(final boolean completed) {
         this.completed = completed;
     }
+
+
 }

@@ -1,5 +1,7 @@
 package fi.riista.feature;
 
+import fi.riista.feature.account.area.PersonalArea;
+import fi.riista.feature.account.area.union.PersonalAreaUnion;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.common.entity.BaseEntity;
@@ -13,8 +15,9 @@ import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
-import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
+import fi.riista.feature.huntingclub.permit.endofhunting.basicsummary.BasicClubHuntingSummary;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
+import fi.riista.feature.moderatorarea.ModeratorArea;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.Riistakeskus;
@@ -24,10 +27,10 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
-import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.invoice.Invoice;
 import fi.riista.feature.permit.invoice.batch.PermitDecisionInvoiceBatch;
+import fi.riista.feature.permit.invoice.payment.InvoicePaymentLine;
 import fi.riista.feature.shootingtest.ShootingTestAttempt;
 import fi.riista.feature.shootingtest.ShootingTestEvent;
 import fi.riista.feature.shootingtest.ShootingTestParticipant;
@@ -108,6 +111,10 @@ public class RequireEntityService {
         return require(id, Invoice.class, permission);
     }
 
+    public InvoicePaymentLine requireInvoicePaymentLine(final Long id, final Enum<?> permission) {
+        return require(id, InvoicePaymentLine.class, permission);
+    }
+
     public HuntingClub requireHuntingClub(final Long id, final Enum<?> permission) {
         return require(id, HuntingClub.class, permission);
     }
@@ -124,8 +131,12 @@ public class RequireEntityService {
         return require(id, HuntingClubArea.class, permission);
     }
 
-    public HarvestPermitArea requireHarvestPermitArea(final Long id, final Enum<?> permission) {
-        return require(id, HarvestPermitArea.class, permission);
+    public PersonalArea requirePersonalArea(final Long id, final Enum<?> permission) {
+        return require(id, PersonalArea.class, permission);
+    }
+
+    public ModeratorArea requireModeratorArea(final Long id, final Enum<?> permission) {
+        return require(id, ModeratorArea.class, permission);
     }
 
     public HarvestPermitApplication requireHarvestPermitApplication(final Long id, final Enum<?> permission) {
@@ -162,6 +173,10 @@ public class RequireEntityService {
 
     public RhyAnnualStatistics requireRhyAnnualStatistics(final Long id, final Enum<?> permission) {
         return require(id, RhyAnnualStatistics.class, permission);
+    }
+
+    public PersonalAreaUnion requireAccountAreaUnion(final Long id, final Enum<?> permission) {
+        return require(id, PersonalAreaUnion.class, permission);
     }
 
     private <T extends BaseEntity<ID>, ID extends java.io.Serializable> T require(final ID id,

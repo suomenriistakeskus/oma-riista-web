@@ -57,7 +57,7 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
                 ALWAYS_FALSE, contactPersonTester));
     }
 
-    private void assertModeratorCanEdit(final boolean expectedResult, final Harvest harvest) {
+    private static void assertModeratorCanEdit(final boolean expectedResult, final Harvest harvest) {
         assertEquals(expectedResult, HarvestLockedCondition.canEdit(
                 null, harvest, null,
                 ALWAYS_FALSE, ALWAYS_FALSE));
@@ -163,7 +163,7 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
             assertMobileCanEdit(false, harvest, specVersion);
         });
 
-        assertModeratorCanEdit(false, harvest);
+        assertModeratorCanEdit(true, harvest);
     }
 
     @Test
@@ -180,7 +180,7 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
             assertMobileCanEdit(false, harvest, specVersion);
         });
 
-        assertModeratorCanEdit(false, harvest);
+        assertModeratorCanEdit(true, harvest);
     }
 
     // PERMIT
@@ -290,7 +290,7 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
             assertMobileCanEdit(false, harvest, specVersion);
         });
 
-        assertModeratorCanEdit(false, harvest);
+        assertModeratorCanEdit(true, harvest);
     }
 
     @Test
@@ -329,7 +329,7 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
             assertMobileCanEdit(false, harvest, specVersion);
         });
 
-        assertModeratorCanEdit(false, harvest);
+        assertModeratorCanEdit(true, harvest);
     }
 
     @Test
@@ -371,7 +371,7 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
             assertMobileCanEdit(false, harvest, specVersion);
         });
 
-        assertModeratorCanEdit(false, harvest);
+        assertModeratorCanEdit(true, harvest);
     }
 
     @Test

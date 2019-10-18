@@ -6,7 +6,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.shootingtest.ShootingTestEvent;
-import fi.riista.feature.shootingtest.ShootingTestOfficialRepository;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficialRepository;
 import fi.riista.security.UserInfo;
 import fi.riista.security.authorization.AuthorizationTokenCollector;
 import org.springframework.stereotype.Component;
@@ -37,8 +37,8 @@ public class RhyAuthorizationHelper {
     private ShootingTestOfficialRepository shootingTestOfficialRepository;
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public boolean isPermittedAsAssignedOfficial(final ShootingTestEvent event, final UserInfo userInfo) {
-        return event != null && event.hasOccurredWithinLastWeek() && userAuthorizationHelper.getPerson(userInfo)
+    public boolean isAssignedShootingTestOfficial(final ShootingTestEvent event, final UserInfo userInfo) {
+        return event != null && userAuthorizationHelper.getPerson(userInfo)
                 .map(person -> {
                     return shootingTestOfficialRepository.findByShootingTestEvent(event)
                             .stream()

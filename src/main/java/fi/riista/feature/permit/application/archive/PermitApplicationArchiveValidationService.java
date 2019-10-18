@@ -41,4 +41,14 @@ public class PermitApplicationArchiveValidationService {
             throw new PermitApplicationArchiveValidationException("Map source missing");
         }
     }
+
+    @Transactional(readOnly = true)
+    public void validateMmlPdf(final Path mmlPdf) {
+        final String textContext = PDFUtil.extractAllText(mmlPdf.toFile()).toLowerCase();
+
+        // Should contain at least column titles with hectare abbreviation
+        if (!textContext.contains("(ha)")) {
+            throw new PermitApplicationArchiveValidationException("Mml palsta information missing");
+        }
+    }
 }

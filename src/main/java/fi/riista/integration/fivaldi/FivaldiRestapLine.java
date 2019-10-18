@@ -3,11 +3,13 @@ package fi.riista.integration.fivaldi;
 import com.ancientprogramming.fixedformat4j.annotation.Field;
 import com.ancientprogramming.fixedformat4j.annotation.Record;
 import fi.riista.integration.fivaldi.formatter.FivaldiCurrencySumFormatter;
-import fi.riista.integration.fivaldi.formatter.FivaldiIntegerFormatter;
+import fi.riista.util.fixedformat.IntegerFormatter;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import java.math.BigDecimal;
+
+import static fi.riista.util.fixedformat.FixedFormatHelper.scaleMonetaryAmount;
 
 @Record
 public class FivaldiRestapLine {
@@ -88,7 +90,7 @@ public class FivaldiRestapLine {
 
     // Accessors -->
 
-    @Field(offset = 1, length = 6, formatter = FivaldiIntegerFormatter.class)
+    @Field(offset = 1, length = 6, formatter = IntegerFormatter.class)
     public Integer getCompanyNumber() {
         return companyNumber;
     }
@@ -115,7 +117,7 @@ public class FivaldiRestapLine {
         this.customerId = customerId;
     }
 
-    @Field(offset = 23, length = 8, formatter = FivaldiIntegerFormatter.class)
+    @Field(offset = 23, length = 8, formatter = IntegerFormatter.class)
     public Integer getInvoiceNumber() {
         return invoiceNumber;
     }
@@ -166,7 +168,7 @@ public class FivaldiRestapLine {
     }
 
     public void setSum(final BigDecimal sum) {
-        this.sum = FivaldiHelper.scaleMonetaryAmount(sum);
+        this.sum = scaleMonetaryAmount(sum);
     }
 
     @Field(offset = 82, length = 19, formatter = FivaldiCurrencySumFormatter.class)
@@ -175,7 +177,7 @@ public class FivaldiRestapLine {
     }
 
     public void setCurrencySum(final BigDecimal sum) {
-        this.currencySum = FivaldiHelper.scaleMonetaryAmount(sum);
+        this.currencySum = scaleMonetaryAmount(sum);
     }
 
     @Field(offset = 101, length = 1)
@@ -202,7 +204,7 @@ public class FivaldiRestapLine {
     }
 
     public void setVatSum(final BigDecimal sum) {
-        this.vatSum = FivaldiHelper.scaleMonetaryAmount(sum);
+        this.vatSum = scaleMonetaryAmount(sum);
     }
 
     @Field(offset = 129, length = 19, formatter = FivaldiCurrencySumFormatter.class)
@@ -211,7 +213,7 @@ public class FivaldiRestapLine {
     }
 
     public void setVatCurrencySum(final BigDecimal sum) {
-        this.vatCurrencySum = FivaldiHelper.scaleMonetaryAmount(sum);
+        this.vatCurrencySum = scaleMonetaryAmount(sum);
     }
 
     @Field(offset = 148, length = 8)

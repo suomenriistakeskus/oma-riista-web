@@ -15,6 +15,7 @@ public class RhyContactSearchResultDTO {
         RhyContactSearchResultDTO dto = new RhyContactSearchResultDTO();
 
         dto.setRhyName(rhy.getNameLocalisation().getAnyTranslation(userLocale));
+        dto.setOfficialCode(rhy.getOfficialCode());
 
         Person person = coordinator != null ? coordinator.getPerson() : null;
 
@@ -64,7 +65,7 @@ public class RhyContactSearchResultDTO {
     private String postalCode;
     private String city;
     private String country;
-
+    private String officialCode;
 
     public String getRhyName() {
         return rhyName;
@@ -120,5 +121,13 @@ public class RhyContactSearchResultDTO {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public String getOfficialCode() {
+        return officialCode;
+    }
+
+    public void setOfficialCode(final String officialCode) {
+        this.officialCode = officialCode;
     }
 }

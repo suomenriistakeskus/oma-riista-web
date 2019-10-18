@@ -5,6 +5,7 @@
                     ng-model="$ctrl.years.selected"
                     ng-change="$ctrl.yearChanged()"
                     ng-options="year.year as year.name for year in $ctrl.years.values | orderBy:'year'">
+                <option disabled value="" translate="global.selectCalendarYear"></option>
             </select>
         </div>
         <div class="col-xs-7 right">
@@ -13,7 +14,7 @@
                     ng-model="$ctrl.selectedSpeciesCode"
                     ng-change="$ctrl.speciesChanged()"
                     ng-options="s.code as (s.name | rI18nNameFilter) for s in $ctrl.speciesForYear">
-                <option value="">{{'global.showAll' | translate}}</option>
+                <option value="" translate="global.showAll"></option>
             </select>
         </div>
     </div>
@@ -23,13 +24,14 @@
             ng-repeat="group in ($ctrl.groups | orderBy:['nameFI','id']) track by group.id"
             ng-click="$ctrl.groupChanged(group)"
             ui-sref-active="active">
-
             <a class="list-group-item-heading"
                name-translated="group"
                ui-sref="club.groups.group({ groupId:group.id} )"></a>
 
             <span ng-bind="group.memberCount"
                   class="member-count"></span>
+            <span ng-if="!group.permit" class="fa fa-warning text-danger"
+                  uib-tooltip="{{'club.group.permitMissing' | translate}}"></span>
         </li>
     </ul>
 

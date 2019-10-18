@@ -78,16 +78,15 @@ angular.module('app.clubgroup.services', [])
 
     .service('ClubGroupAreas', function ($q, ClubAreas) {
         this.loadGroupAreaOptions = function (huntingGroup) {
-            var params = {
-                clubId: huntingGroup.clubId,
-                year: huntingGroup.huntingYear,
+            var clubId = huntingGroup.clubId;
+            var huntingYear = huntingGroup.huntingYear;
+
+            return clubId && huntingYear ? ClubAreas.query({
+                clubId: clubId,
+                year: huntingYear,
                 activeOnly: true,
                 includeEmpty: false
-            };
-
-            return params.clubId && params.year
-                ? ClubAreas.query(params).$promise
-                : $q.when([]);
+            }).$promise : $q.when([]);
         };
 
         this.loadGroupArea = function (huntingGroup) {
@@ -99,11 +98,15 @@ angular.module('app.clubgroup.services', [])
 
     .service('ClubGroupPermits', function ($q, ClubGroups) {
         this.loadGroupPermits = function (huntingGroup) {
-            return ClubGroups.availablePermits({
-                clubId: huntingGroup.clubId,
-                gameSpeciesCode: huntingGroup.gameSpeciesCode,
-                huntingYear: huntingGroup.huntingYear
-            }).$promise;
+            var clubId = huntingGroup.clubId;
+            var gameSpeciesCode = huntingGroup.gameSpeciesCode;
+            var huntingYear = huntingGroup.huntingYear;
+
+            return clubId && gameSpeciesCode && huntingYear ? ClubGroups.availablePermits({
+                clubId: clubId,
+                gameSpeciesCode: gameSpeciesCode,
+                huntingYear: huntingYear
+            }).$promise : $q.when([]);
         };
     })
 
@@ -149,7 +152,7 @@ angular.module('app.clubgroup.services', [])
                             var yearsObj = HuntingYearService.currentAndNextObj();
                             var groupDoesNotHaveId = !(_.get(clubGroup, 'id'));
 
-                            _.forEach(availableSpecies, function(species) {
+                            _.forEach(availableSpecies, function (species) {
                                 var currentYearNotIncludedInSelection = groupDoesNotHaveId &&
                                     mooseDataCardGroupExistsForCurrentYear &&
                                     GameSpeciesCodes.isMoose(species.code);
@@ -196,24 +199,31 @@ angular.module('app.clubgroup.services', [])
 
         this.groupsToYearSelection = function (groups, possiblySelectedYear) {
             var groupsByYear = _.groupBy(groups, 'huntingYear');
-            var years = [];
-            _.forOwn(groupsByYear, function (val, key) {
-                var y = HuntingYearService.toObj(parseInt(key));
-                y.groups = val;
-                years.push(y);
+
+            var huntingYearOptions = _.map(groupsByYear, function (groups, huntingYearStr) {
+                var opt = HuntingYearService.toObj(parseInt(huntingYearStr));
+                opt.groups = groups;
+                return opt;
             });
-            years = _.sortBy(years, function (year) {
-                return -1 * year.year;
-            });
-            var selected = parseInt(possiblySelectedYear) || HuntingYearService.getCurrent();
-            if (years && years.length === 1) {
-                selected = years[0].year;
-            }
+
             return {
-                selected: selected,
-                values: years || []
+                values: _.orderBy(huntingYearOptions, 'year', 'desc'),
+                selected: resolveOptionOrDefault(huntingYearOptions, 'year',
+                    possiblySelectedYear, HuntingYearService.getCurrent())
             };
         };
+
+        function resolveOptionOrDefault(options, keyName, selectedValue, defaultValue) {
+            if (selectedValue && _.some(options, [keyName, selectedValue])) {
+                return selectedValue;
+            }
+
+            if (defaultValue && _.some(options, [keyName, defaultValue])) {
+                return defaultValue;
+            }
+
+            return options.length > 0 ? _.get(options[0], keyName) : null;
+        }
 
         this.copy = function (clubGroup) {
             var groupCopy = angular.copy(clubGroup);

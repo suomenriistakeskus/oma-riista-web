@@ -1,0 +1,59 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="harvestpermit.decision.settings.document.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group">
+            <label class="col-xs-5 control-label" for="decisionType">
+                <span translate="harvestpermit.decision.settings.document.decisionType"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-7">
+                <select name="decisionType" id="decisionType" class="form-control"
+                        ng-model="$ctrl.decisionType">
+                    <option value="HARVEST_PERMIT"
+                            translate="harvestpermit.decision.decisionType.HARVEST_PERMIT"></option>
+                    <option value="CANCEL_APPLICATION"
+                            translate="harvestpermit.decision.decisionType.CANCEL_APPLICATION"></option>
+                    <option value="IGNORE_APPLICATION"
+                            translate="harvestpermit.decision.decisionType.IGNORE_APPLICATION"></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-xs-5 control-label">
+                <span translate="harvestpermit.decision.settings.document.locale"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-7">
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default form-control-static"
+                           ng-repeat="a in $ctrl.localeOptions"
+                           ng-model="$ctrl.locale"
+                           uib-btn-radio="a.code">
+
+                        <span class="text-primary fa fa-fw fa-check" ng-show="$ctrl.locale === a.code"></span>
+                        <span ng-bind="a.localisationKey | translate"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

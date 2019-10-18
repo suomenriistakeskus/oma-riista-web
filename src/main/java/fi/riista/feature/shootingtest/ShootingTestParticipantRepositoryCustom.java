@@ -1,5 +1,7 @@
 package fi.riista.feature.shootingtest;
 
+import fi.riista.config.Constants;
+import fi.riista.feature.organization.person.Person;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
@@ -11,11 +13,13 @@ import java.util.Objects;
 
 public interface ShootingTestParticipantRepositoryCustom {
 
+    Map<Person, Integer> countShootingTestParticipationsForForeignPersons(Collection<Person> foreignPersons);
+
     Map<Long, ParticipantSummary> getParticipantSummaryByShootingTestEventId(Collection<ShootingTestEvent> events);
 
     static class ParticipantSummary {
 
-        public static final ParticipantSummary EMPTY = new ParticipantSummary(0, 0, 0, BigDecimal.ZERO);
+        public static final ParticipantSummary EMPTY = new ParticipantSummary(0, 0, 0, Constants.ZERO_MONETARY_AMOUNT);
 
         final int numberOfAllParticipants;
         final int numberOfCompletedParticipants;

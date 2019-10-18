@@ -23,6 +23,14 @@ import javax.validation.constraints.NotNull;
 @Access(AccessType.FIELD)
 public class PermitDecisionSpeciesAmount extends LifecycleEntity<Long> implements Has2BeginEndDates {
 
+    public static LocalDate getDefaultMooselikeBeginDate(final int huntingYear) {
+        return new LocalDate(huntingYear, 9, 1);
+    }
+
+    public static LocalDate getDefaultMooselikeEndDate(final int huntingYear) {
+        return new LocalDate(huntingYear + 1, 1, 15);
+    }
+
     public enum RestrictionType {
         /**
          * Aikuisia enintään
@@ -73,6 +81,12 @@ public class PermitDecisionSpeciesAmount extends LifecycleEntity<Long> implement
     @Column
     private Float restrictionAmount;
 
+    @Column(nullable = false)
+    private boolean amountComplete;
+
+    @Column(nullable = false)
+    private boolean forbiddenMethodComplete;
+
     public PermitDecisionSpeciesAmount() {
     }
 
@@ -91,6 +105,18 @@ public class PermitDecisionSpeciesAmount extends LifecycleEntity<Long> implement
         this.beginDate = beginDate;
         this.endDate = endDate;
     }
+
+    // Helpers -->
+
+    public int getPermitYear() {
+        return beginDate.getYear();
+    }
+
+    public boolean hasGrantedSpecies() {
+        return amount > 0;
+    }
+
+    // Accessors -->
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -184,5 +210,21 @@ public class PermitDecisionSpeciesAmount extends LifecycleEntity<Long> implement
     @Override
     public void setEndDate2(final LocalDate endDate2) {
         this.endDate2 = endDate2;
+    }
+
+    public boolean isAmountComplete() {
+        return amountComplete;
+    }
+
+    public void setAmountComplete(final boolean amountComplete) {
+        this.amountComplete = amountComplete;
+    }
+
+    public boolean isForbiddenMethodComplete() {
+        return forbiddenMethodComplete;
+    }
+
+    public void setForbiddenMethodComplete(final boolean forbiddenMethodComplete) {
+        this.forbiddenMethodComplete = forbiddenMethodComplete;
     }
 }

@@ -22,7 +22,5 @@ L.CRS.EPSG3067 = new L.Proj.CRS('EPSG:3067',
     }
 );
 
-// Temporary fix for L.Scale control.
-// see https://github.com/kartena/Proj4Leaflet/issues/109
-L.CRS.EPSG3067.distance = L.CRS.Earth.distance;
-L.CRS.EPSG3067.R = 6378137;
+// https://github.com/Leaflet/Leaflet/issues/6496
+L.Icon.Default.imagePath = ' ';

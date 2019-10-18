@@ -1,8 +1,10 @@
 package fi.riista.feature.common.entity;
 
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
 import java.util.OptionalInt;
 
 import static fi.riista.test.TestUtils.ld;
@@ -14,21 +16,49 @@ public class Has2BeginEndDatesTest {
     private static final LocalDate DATE = today();
 
     @Test
-    public void testContainsDate_whenFirstDatesDefined() {
-        final Has2BeginEndDates object = new Has2BeginEndDatesDTO(DATE, DATE);
+    public void testContainsDate_whenOnlyFirstDatesDefined() {
+        final Has2BeginEndDates rangeBoth = new Has2BeginEndDatesDTO(DATE, DATE);
 
-        testContainsDate(object, DATE, true);
-        testContainsDate(object, DATE.minusDays(1), false);
-        testContainsDate(object, DATE.plusDays(1), false);
+        final Has2BeginEndDates rangeOpenClosed =
+                new Has2BeginEndDatesDTO(null, DATE);
+
+        final Has2BeginEndDates rangeClosedOpen =
+                new Has2BeginEndDatesDTO(DATE, null);
+
+        testContainsDate(rangeBoth, DATE, true);
+        testContainsDate(rangeBoth, DATE.minusDays(1), false);
+        testContainsDate(rangeBoth, DATE.plusDays(1), false);
+
+        testContainsDate(rangeOpenClosed, DATE, true);
+        testContainsDate(rangeOpenClosed, DATE.minusDays(1), true);
+        testContainsDate(rangeOpenClosed, DATE.plusDays(1), false);
+
+        testContainsDate(rangeClosedOpen, DATE, true);
+        testContainsDate(rangeClosedOpen, DATE.minusDays(1), false);
+        testContainsDate(rangeClosedOpen, DATE.plusDays(1), true);
     }
 
     @Test
-    public void testContainsDate_whenSecondDatesDefined() {
-        final Has2BeginEndDates object = new Has2BeginEndDatesDTO(null, null, DATE, DATE);
+    public void testContainsDate_whenOnlySecondDatesDefined() {
+        final Has2BeginEndDates rangeBoth = new Has2BeginEndDatesDTO(null, null, DATE, DATE);
 
-        testContainsDate(object, DATE, true);
-        testContainsDate(object, DATE.minusDays(1), false);
-        testContainsDate(object, DATE.plusDays(1), false);
+        final Has2BeginEndDates rangeOpenClosed =
+                new Has2BeginEndDatesDTO(null, null, null, DATE);
+
+        final Has2BeginEndDates rangeClosedOpen =
+                new Has2BeginEndDatesDTO(null, null, DATE, null);
+
+        testContainsDate(rangeBoth, DATE, true);
+        testContainsDate(rangeBoth, DATE.minusDays(1), false);
+        testContainsDate(rangeBoth, DATE.plusDays(1), false);
+
+        testContainsDate(rangeOpenClosed, DATE, true);
+        testContainsDate(rangeOpenClosed, DATE.minusDays(1), true);
+        testContainsDate(rangeOpenClosed, DATE.plusDays(1), false);
+
+        testContainsDate(rangeClosedOpen, DATE, true);
+        testContainsDate(rangeClosedOpen, DATE.minusDays(1), false);
+        testContainsDate(rangeClosedOpen, DATE.plusDays(1), true);
     }
 
     @Test
@@ -53,6 +83,51 @@ public class Has2BeginEndDatesTest {
 
     private static void testContainsDate(final Has2BeginEndDates dates, final LocalDate date, final boolean expected) {
         assertEquals(expected, dates.containsDate(date));
+    }
+
+    @Test
+    public void testIsRangeNonOverlapping_whenNoneDefined() {
+        assertIsRangeNonOverlapping(null, null, null, null, true);
+    }
+
+    @Test
+    public void testIsRangeNonOverlapping_whenOnlyFirstDatesDefined() {
+        assertIsRangeNonOverlapping(DATE, DATE, null, null, true);
+        assertIsRangeNonOverlapping(DATE, null, null, null, true);
+        assertIsRangeNonOverlapping(null, DATE, null, null, true);
+        assertIsRangeNonOverlapping(DATE, DATE.plusDays(1), null, null, true);
+        assertIsRangeNonOverlapping(DATE, DATE.minusDays(1), null, null, true);
+    }
+
+    @Test
+    public void testIsRangeNonOverlapping_whenOnlySecondDatesDefined() {
+        assertIsRangeNonOverlapping(null, null, DATE, DATE, true);
+        assertIsRangeNonOverlapping(null, null, DATE, null, true);
+        assertIsRangeNonOverlapping(null, null, null, DATE, true);
+        assertIsRangeNonOverlapping(null, null, DATE, DATE.plusDays(1), true);
+        assertIsRangeNonOverlapping(null, null, DATE, DATE.minusDays(1), true);
+    }
+
+    @Test
+    public void testIsRangeNonOverlapping_whenAllDatesDefined() {
+        assertIsRangeNonOverlapping(DATE, DATE, DATE.plusDays(1), DATE.plusDays(1), true);
+        assertIsRangeNonOverlapping(DATE, DATE.plusDays(1), DATE.plusDays(2), DATE.plusDays(3), true);
+        assertIsRangeNonOverlapping(DATE, DATE.plusDays(1), DATE.plusDays(1), DATE.plusDays(1), false);
+        assertIsRangeNonOverlapping(DATE, DATE, DATE, DATE.plusDays(1), false);
+
+        assertIsRangeNonOverlapping(DATE, null, DATE.plusDays(1), DATE.plusDays(1), false);
+        assertIsRangeNonOverlapping(DATE, DATE, null, DATE.plusDays(1), false);
+
+        assertIsRangeNonOverlapping(null, DATE, DATE.plusDays(1), DATE.plusDays(1), true);
+        assertIsRangeNonOverlapping(DATE, DATE, DATE.plusDays(1), null, true);
+    }
+
+    private static void assertIsRangeNonOverlapping(@Nullable final LocalDate beginDate,
+                                                    @Nullable final LocalDate endDate,
+                                                    @Nullable final LocalDate beginDate2,
+                                                    @Nullable final LocalDate endDate2,
+                                                    final boolean expected) {
+        assertEquals(expected, new Has2BeginEndDatesDTO(beginDate, endDate, beginDate2, endDate2).isRangeNonOverlapping());
     }
 
     @Test

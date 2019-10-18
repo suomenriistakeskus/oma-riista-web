@@ -4,9 +4,15 @@ import fi.riista.config.BatchConfig;
 import fi.riista.config.Constants;
 import fi.riista.config.DataSourceConfig;
 import fi.riista.config.JPAConfig;
-import fi.riista.integration.metsastajarekisteri.MetsastajaRekisteriImportService;
-import fi.riista.integration.metsastajarekisteri.innofactor.InnofactorImportConfig;
-import fi.riista.integration.metsastajarekisteri.innofactor.InnofactorImportRunner;
+import fi.riista.config.LiquibaseConfig;
+import fi.riista.config.PapertrailConfig;
+import fi.riista.config.SerializationConfig;
+import fi.riista.feature.RuntimeEnvironmentUtil;
+import fi.riista.feature.organization.person.ProcessDeceasedPersonFeature;
+import fi.riista.feature.storage.FileStorageServiceImpl;
+import fi.riista.feature.storage.backend.db.DatabaseFileStorage;
+import fi.riista.integration.metsastajarekisteri.InnofactorImportConfig;
+import fi.riista.integration.metsastajarekisteri.InnofactorImportRunner;
 import fi.riista.integration.metsastajarekisteri.input.PendingImportFile;
 import fi.riista.util.JCEUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -15,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -23,11 +31,31 @@ import java.nio.file.Paths;
 import java.security.Security;
 
 public class MetsastajaRekisteriImportCli {
+
     private static final Logger LOG = LoggerFactory.getLogger(MetsastajaRekisteriImportCli.class);
 
     @PropertySource("configuration/application.properties")
-    @ComponentScan(basePackageClasses = MetsastajaRekisteriImportService.class)
-    @Import({DataSourceConfig.class, JPAConfig.class, BatchConfig.class, InnofactorImportConfig.class})
+    @ComponentScan(
+            basePackageClasses = InnofactorImportConfig.class,
+            excludeFilters = {
+                    @Filter(type = FilterType.REGEX,
+                            pattern = "fi.riista.integration.metsastajarekisteri.jht.*"),
+                    @Filter(type = FilterType.REGEX,
+                            pattern = "fi.riista.integration.metsastajarekisteri.shootingtest.*")
+            })
+    @Import({
+            DataSourceConfig.class,
+            JPAConfig.class,
+            LiquibaseConfig.class,
+            RuntimeEnvironmentUtil.class,
+            BatchConfig.class,
+            DatabaseFileStorage.class,
+            FileStorageServiceImpl.class,
+            ProcessDeceasedPersonFeature.class,
+            SerializationConfig.class,
+            PapertrailConfig.class,
+            InnofactorImportConfig.class
+    })
     public static class CmdBatchJobRunnerContext {
         @Bean
         public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
@@ -35,7 +63,7 @@ public class MetsastajaRekisteriImportCli {
         }
     }
 
-    public static void main(String[] cmdArgs) {
+    public static void main(final String[] cmdArgs) {
         try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext()) {
             ctx.getEnvironment().addActiveProfile(Constants.STANDARD_DATABASE);
             ctx.register(CmdBatchJobRunnerContext.class);
@@ -55,7 +83,7 @@ public class MetsastajaRekisteriImportCli {
                     importRunner.run(pendingImportFile);
                 }
 
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 LOG.error("Job execution has failed with error", e);
             }
         }

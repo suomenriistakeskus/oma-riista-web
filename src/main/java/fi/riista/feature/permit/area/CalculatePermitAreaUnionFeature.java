@@ -1,14 +1,16 @@
 package fi.riista.feature.permit.area;
 
 import com.google.common.base.Stopwatch;
-import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Trace;
 import com.vividsolutions.jts.geom.Geometry;
+import fi.riista.feature.gis.OnlyStateAreaService;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
+import fi.riista.feature.gis.verotuslohko.GISVerotusLohkoDTO;
+import fi.riista.feature.gis.verotuslohko.GISVerotusLohkoRepository;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneRepository;
-import fi.riista.feature.gis.zone.GISZoneSizeRhyDTO;
+import fi.riista.feature.gis.zone.GISZoneSizeByOfficialCodeDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
@@ -16,9 +18,13 @@ import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
 import fi.riista.feature.permit.area.hta.HarvestPermitAreaHta;
 import fi.riista.feature.permit.area.hta.HarvestPermitAreaHtaRepository;
+import fi.riista.feature.permit.area.mml.HarvestPermitAreaMml;
+import fi.riista.feature.permit.area.mml.HarvestPermitAreaMmlRepository;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerRepository;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhy;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhyRepository;
+import fi.riista.feature.permit.area.verotuslohko.HarvestPermitAreaVerotusLohko;
+import fi.riista.feature.permit.area.verotuslohko.HarvestPermitAreaVerotusLohkoRepository;
 import fi.riista.util.F;
 import fi.riista.util.GISUtils;
 import io.sentry.Sentry;
@@ -62,6 +68,9 @@ public class CalculatePermitAreaUnionFeature {
     private HarvestPermitAreaHtaRepository harvestPermitAreaHtaRepository;
 
     @Resource
+    private HarvestPermitAreaVerotusLohkoRepository harvestPermitAreaVerotusLohkoRepository;
+
+    @Resource
     private HarvestPermitApplicationRepository harvestPermitApplicationRepository;
 
     @Resource
@@ -71,10 +80,19 @@ public class CalculatePermitAreaUnionFeature {
     private GISHirvitalousalueRepository hirvitalousalueRepository;
 
     @Resource
+    private GISVerotusLohkoRepository verotusLohkoRepository;
+
+    @Resource
     private GISZoneRepository gisZoneRepository;
 
     @Resource
+    private OnlyStateAreaService onlyStateAreaService;
+
+    @Resource
     private PlatformTransactionManager transactionManager;
+
+    @Resource
+    private HarvestPermitAreaMmlRepository harvestPermitAreaMmlRepository;
 
     // No @Transaction here to avoid long-running transactions during processing
     @Trace
@@ -113,10 +131,10 @@ public class CalculatePermitAreaUnionFeature {
 
             LOG.info("Processing for harvestPermitAreaId={} completed at {}", harvestPermitAreaId, stopwatch);
 
+
         } catch (Exception ex) {
             LOG.error(String.format("Processing harvestPermitAreaId=%d failed with exception", harvestPermitAreaId), ex);
 
-            NewRelic.noticeError(ex, false);
             Sentry.capture(ex);
 
             try {
@@ -154,14 +172,35 @@ public class CalculatePermitAreaUnionFeature {
         permitAreaZone.setGeom(union);
         permitAreaZone.setExcludedGeom(null);
         permitAreaZone.setMetsahallitusHirvi(emptySet());
+        permitAreaZone.setComputedAreaSize(0);
+        permitAreaZone.setWaterAreaSize(0);
+        permitAreaZone.setStateLandAreaSize(null);
+        permitAreaZone.setPrivateLandAreaSize(null);
 
         gisZoneRepository.saveAndFlush(permitAreaZone);
 
         gisZoneRepository.removeZonePalstaAndFeatures(permitAreaZone);
-        gisZoneRepository.calculateAreaSize(permitAreaZone.getId());
+
+        final List<Long> partnerZoneIds = harvestPermitAreaRepository.findPartnerZoneIds(harvestPermitArea);
+        final boolean onlyStateLand = onlyStateAreaService.shouldContainOnlyStateLand(partnerZoneIds);
+
+        gisZoneRepository.calculateAreaSize(permitAreaZone.getId(), onlyStateLand);
 
         final List<HarvestPermitAreaRhy> rhyAreaSizeList = calculateRhyAreaSize(harvestPermitArea, permitAreaZone.getId());
         final List<HarvestPermitAreaHta> htaAreaSizeList = calculateHtaAreaSize(harvestPermitArea, permitAreaZone.getId());
+        final List<HarvestPermitAreaVerotusLohko> verotusLohkoAreaSizeList = calculateVerotusLohkoAreaSize(harvestPermitArea, permitAreaZone.getId());
+        final List<HarvestPermitAreaMml> mmls = F.mapNonNullsToList(
+                gisZoneRepository.findIntersectingPalsta(permitAreaZone.getId()),
+                dto -> new HarvestPermitAreaMml(harvestPermitArea,
+                        dto.getKiinteistoTunnus(),
+                        dto.getPalstaId(),
+                        dto.getName(),
+                        dto.getIntersectionArea()));
+
+        if (onlyStateLand) {
+            rhyAreaSizeList.forEach(HarvestPermitAreaRhy::movePrivateToStateArea);
+            verotusLohkoAreaSizeList.forEach(HarvestPermitAreaVerotusLohko::movePrivateToStateArea);
+        }
 
         // ML 8 § -> state area size inside free hunting municipality > 1000 ha
         final double freeHuntingStateAreaSize = rhyAreaSizeList.stream()
@@ -173,9 +212,13 @@ public class CalculatePermitAreaUnionFeature {
 
         harvestPermitAreaRhyRepository.deleteByHarvestPermitArea(harvestPermitArea);
         harvestPermitAreaHtaRepository.deleteByHarvestPermitArea(harvestPermitArea);
+        harvestPermitAreaVerotusLohkoRepository.deleteByHarvestPermitArea(harvestPermitArea);
+        harvestPermitAreaMmlRepository.deleteByHarvestPermitArea(harvestPermitArea);
 
         harvestPermitAreaRhyRepository.save(rhyAreaSizeList);
         harvestPermitAreaHtaRepository.save(htaAreaSizeList);
+        harvestPermitAreaVerotusLohkoRepository.save(verotusLohkoAreaSizeList);
+        harvestPermitAreaMmlRepository.save(mmls);
 
         updatePermitApplication(harvestPermitArea, rhyAreaSizeList);
     }
@@ -194,9 +237,9 @@ public class CalculatePermitAreaUnionFeature {
                 .collect(Collectors.toList());
     }
 
-    private List<HarvestPermitAreaRhy> calculateRhyAreaSize(final HarvestPermitArea harvestPermitArea, final Long zoneId) {
-        final List<GISZoneSizeRhyDTO> rhyAreaSizeList = gisZoneRepository.calculateRhyAreaSize(zoneId);
-        final Set<String> rhyCodes = F.mapNonNullsToSet(rhyAreaSizeList, GISZoneSizeRhyDTO::getRhyOfficialCode);
+    private List<HarvestPermitAreaRhy> calculateRhyAreaSize(final HarvestPermitArea harvestPermitArea, final long zoneId) {
+        final List<GISZoneSizeByOfficialCodeDTO> rhyAreaSizeList = gisZoneRepository.calculateRhyAreaSize(zoneId);
+        final Set<String> rhyCodes = F.mapNonNullsToSet(rhyAreaSizeList, GISZoneSizeByOfficialCodeDTO::getOfficialCode);
         final List<Riistanhoitoyhdistys> rhyList = rhyCodes.isEmpty()
                 ? Collections.emptyList()
                 : riistanhoitoyhdistysRepository.findByOfficialCode(rhyCodes);
@@ -204,8 +247,28 @@ public class CalculatePermitAreaUnionFeature {
 
         return rhyAreaSizeList.stream()
                 .filter(a -> a.getBothSize().getTotal() >= MIN_MAPPING_AREA_SIZE)
-                .map(dto -> new HarvestPermitAreaRhy(harvestPermitArea, rhyMapping.get(dto.getRhyOfficialCode()),
+                .map(dto -> new HarvestPermitAreaRhy(harvestPermitArea, rhyMapping.get(dto.getOfficialCode()),
                         dto.getBothSize(), dto.getStateSize(), dto.getPrivateSize()))
+                .collect(Collectors.toList());
+    }
+
+    private List<HarvestPermitAreaVerotusLohko> calculateVerotusLohkoAreaSize(final HarvestPermitArea harvestPermitArea,
+                                                                              final long zoneId) {
+        final List<GISZoneSizeByOfficialCodeDTO> verotusLohkoAreaSizeList = gisZoneRepository.calculateVerotusLohkoAreaSize(zoneId);
+        final Set<String> officialCodes = F.mapNonNullsToSet(verotusLohkoAreaSizeList, GISZoneSizeByOfficialCodeDTO::getOfficialCode);
+        final List<GISVerotusLohkoDTO> dtoList = officialCodes.isEmpty()
+                ? Collections.emptyList()
+                : verotusLohkoRepository.findWithoutGeometry(officialCodes);
+        final Map<String, GISVerotusLohkoDTO> dtoMapping = F.index(dtoList, GISVerotusLohkoDTO::getOfficialCode);
+
+        return verotusLohkoAreaSizeList.stream()
+                .filter(e -> e.getBothSize().getTotal() >= MIN_MAPPING_AREA_SIZE)
+                .map(size -> {
+                    final GISVerotusLohkoDTO dto = dtoMapping.get(size.getOfficialCode());
+
+                    return new HarvestPermitAreaVerotusLohko(harvestPermitArea, dto.getOfficialCode(), dto.getName(),
+                            size.getBothSize(), size.getStateSize(), size.getPrivateSize());
+                })
                 .collect(Collectors.toList());
     }
 

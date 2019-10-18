@@ -19,9 +19,8 @@ public abstract class BaseEntityEvent extends BaseEntity<Long> {
     @Column(nullable = false, updatable = false)
     private DateTime eventTime;
 
-    @NotNull
     @Column(nullable = false, updatable = false)
-    private Long userId;
+    private long userId;
 
     protected BaseEntityEvent() {
     }
@@ -34,11 +33,11 @@ public abstract class BaseEntityEvent extends BaseEntity<Long> {
         this.eventTime = eventTime;
     }
 
-    public Long getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    private void setUserId(final Long userId) {
+    private void setUserId(final long userId) {
         this.userId = userId;
     }
 

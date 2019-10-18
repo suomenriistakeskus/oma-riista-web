@@ -2,7 +2,6 @@
 
 angular.module('app.diary.sidebar', [])
     .service('DiaryEntrySidebar', function ($q, offCanvasStack, Harvest, Observation, Srva,
-                                            GameDiaryParameters, GameDiarySrvaParameters,
                                             HarvestFieldsService) {
         this.showSidebar = function (diaryEntry, largeDialog) {
             return offCanvasStack.open({
@@ -25,11 +24,6 @@ angular.module('app.diary.sidebar', [])
                         return diaryEntry.isHarvest()
                             ? HarvestFieldsService.getForPersistedHarvest(diaryEntry.id)
                             : $q.resolve(null);
-                    },
-                    parameters: function () {
-                        return diaryEntry.isSrva()
-                            ? GameDiarySrvaParameters.query().$promise
-                            : GameDiaryParameters.query().$promise;
                     }
                 }
             });
@@ -39,9 +33,8 @@ angular.module('app.diary.sidebar', [])
     .controller('DiaryEntrySidebarController', function ($scope, $state,
                                                          ActiveRoleService,
                                                          DiaryEntryRemoveModal, DiaryEntryService, DiaryImageService,
-                                                         entry, parameters, computedFields) {
+                                                         entry, computedFields) {
         $scope.entry = entry;
-        $scope.getGameNameWithAmount = parameters.$getGameNameWithAmount;
         $scope.getUrl = DiaryImageService.getUrl;
         $scope.moderator = ActiveRoleService.isModerator();
 
@@ -74,11 +67,14 @@ angular.module('app.diary.sidebar', [])
         };
 
         $scope.getSrvaMethodsForSidebar = function (methods) {
-            return _.pluck(_.filter(methods, {'isChecked': true}), 'name');
+            return _.chain(methods)
+                .filter({isChecked: true})
+                .map('name')
+                .value();
         };
 
         $scope.showSrvaMethodsInSidebar = function (methods) {
-            return _.result(_.find(methods, {'isChecked': true}), 'isChecked');
+            return _.some(methods, 'isChecked');
         };
 
         function isDefined(fieldName) {

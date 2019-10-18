@@ -1,5 +1,6 @@
 package fi.riista.feature.account;
 
+import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationNameDTO;
@@ -49,6 +50,7 @@ public class AccountDTOBuilder {
         dto.setUsername(user.getUsername());
         dto.setTimeZone(user.getTimeZone());
         dto.setLocale(user.getLocale());
+        dto.setPrivileges(ImmutableSet.copyOf(user.getPrivileges()));
 
         if (user.getPerson() != null) {
             withPerson(user.getPerson());
@@ -71,7 +73,7 @@ public class AccountDTOBuilder {
         Objects.requireNonNull(person);
 
         dto.setPersonId(person.getId());
-        dto.setSsnMasked(person.getSsnMasked());
+        dto.setDateOfBirth(person.parseDateOfBirth().toString("dd.MM.YYYY"));
         dto.setEmail(person.getEmail());
         dto.setFirstName(person.getFirstName());
         dto.setByName(person.getByName());
@@ -80,11 +82,11 @@ public class AccountDTOBuilder {
         dto.setLanguageCode(person.getLanguageCode());
         dto.setPhoneNumber(person.getPhoneNumber());
         dto.setRegistered(person.isRegistered());
+        dto.setForeignPerson(person.isForeignPerson());
         dto.setActive(person.isActive());
         dto.setHunterNumber(person.getHunterNumber());
         dto.setHuntingCardStart(person.getHuntingCardStart());
         dto.setHuntingCardEnd(person.getHuntingCardEnd());
-
         final int huntingYear = DateUtil.huntingYear();
         final Optional<LocalDate> paymentDate = person.getHuntingPaymentDateForNextOrCurrentSeason();
 
@@ -101,7 +103,6 @@ public class AccountDTOBuilder {
         dto.setHuntingBanEnd(person.getHuntingBanEnd());
         dto.setHuntingBanActive(person.isHuntingBanActiveNow());
 
-        dto.setDenyPost(person.isDenyPost());
         dto.setDenyMagazine(person.isDenyMagazine());
         dto.setMagazineLanguageCode(person.getMagazineLanguageCode());
         dto.setMrSyncTime(person.getMrSyncTime());

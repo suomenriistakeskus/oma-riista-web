@@ -2,10 +2,14 @@ package fi.riista.feature.harvestpermit.download;
 
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitNotFoundException;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
 import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.PermitDecisionRepository;
 import fi.riista.feature.permit.decision.revision.PermitDecisionRevision;
-import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionRepository;
 import fi.riista.feature.storage.FileDownloadService;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.integration.common.HttpProxyService;
@@ -23,9 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -45,39 +47,68 @@ public class HarvestPermitDownloadDecisionFeature {
     private HarvestPermitRepository harvestPermitRepository;
 
     @Resource
-    private PermitDecisionRevisionRepository permitDecisionRevisionRepository;
+    private HarvestPermitLatestDecisionRevisionService harvestPermitLatestDecisionRevisionService;
+
+    @Resource
+    private HarvestPermitApplicationRepository harvestPermitApplicationRepository;
+
+    @Resource
+    private PermitDecisionRepository permitDecisionRepository;
 
     @Transactional(readOnly = true, rollbackFor = MalformedURLException.class)
     public HarvestPermitDownloadDecisionDTO getDecisionPdf(final String permitNumber) {
         final HarvestPermit harvestPermit = harvestPermitRepository.findByPermitNumber(permitNumber);
+
+        if (harvestPermit == null) {
+            // could be permit number of decision for cancelled or ignored application
+            final HarvestPermitApplication application = findApplication(permitNumber);
+            final PermitDecision decision = permitDecisionRepository.findOneByApplication(application);
+
+            decision.assertStatus(PermitDecision.Status.PUBLISHED);
+
+            return getDecisionPdfForDecision(permitNumber, decision);
+        }
+
         activeUserService.assertHasPermission(harvestPermit, EntityPermission.READ);
 
-        final Locale locale = harvestPermit.getPermitDecision() != null
-                ? harvestPermit.getPermitDecision().getLocale()
-                : Locales.FI;
-        final String filename = PermitDecision.getFileName(locale, permitNumber);
-        final UUID latestRevisionArchivePdfId = getLatestRevisionArchivePdfId(harvestPermit);
+        if (harvestPermit.getPermitDecision() != null) {
+            return getDecisionPdfForDecision(permitNumber, harvestPermit.getPermitDecision());
+        }
 
-        if (latestRevisionArchivePdfId == null && StringUtils.isBlank(harvestPermit.getPrintingUrl())) {
+        if (StringUtils.isBlank(harvestPermit.getPrintingUrl())) {
             throw new IllegalArgumentException("Decision is not available");
         }
 
         LOG.info("userId:{} loading permitNumber:{} pdf", activeUserService.requireActiveUserId(), permitNumber);
+        final String filename = PermitDecision.getFileName(Locales.FI, permitNumber);
 
-        return latestRevisionArchivePdfId != null
-                ? new HarvestPermitDownloadDecisionDTO(filename, latestRevisionArchivePdfId)
-                : new HarvestPermitDownloadDecisionDTO(filename, harvestPermit.getPrintingUrl());
+        return new HarvestPermitDownloadDecisionDTO(filename, harvestPermit.getPrintingUrl());
     }
 
-    private UUID getLatestRevisionArchivePdfId(final HarvestPermit harvestPermit) {
-        return harvestPermit.getPermitDecision() != null
-                ? getLatestRevisionArchivePdfId(harvestPermit.getPermitDecision())
-                : null;
+    private HarvestPermitApplication findApplication(final String permitNumber) {
+        final HarvestPermitApplication application = harvestPermitApplicationRepository
+                .findByApplicationNumber(PermitNumberUtil.extractOrderNumber(permitNumber))
+                .orElseThrow(() -> new HarvestPermitNotFoundException(permitNumber));
+
+        activeUserService.assertHasPermission(application, EntityPermission.READ);
+        return application;
+    }
+
+    private HarvestPermitDownloadDecisionDTO getDecisionPdfForDecision(final String permitNumber, final PermitDecision decision) {
+        Objects.requireNonNull(permitNumber);
+        Objects.requireNonNull(decision);
+
+        final UUID latestRevisionArchivePdfId = getLatestRevisionArchivePdfId(decision);
+        if (latestRevisionArchivePdfId == null) {
+            throw new IllegalArgumentException("Decision is not available");
+        }
+        LOG.info("userId:{} loading permitNumber:{} pdf", activeUserService.requireActiveUserId(), permitNumber);
+        final String filename = PermitDecision.getFileName(decision.getLocale(), permitNumber);
+        return new HarvestPermitDownloadDecisionDTO(filename, latestRevisionArchivePdfId);
     }
 
     private UUID getLatestRevisionArchivePdfId(final PermitDecision permitDecision) {
-        final List<PermitDecisionRevision> all = permitDecisionRevisionRepository.findByPermitDecision(permitDecision);
-        return all.stream().max(Comparator.comparingLong(PermitDecisionRevision::getId))
+        return harvestPermitLatestDecisionRevisionService.getLatestRevisionArchivePdfId(permitDecision)
                 .map(PermitDecisionRevision::getPdfMetadata)
                 .map(PersistentFileMetadata::getId)
                 .orElseThrow(() -> new IllegalStateException(String.format(

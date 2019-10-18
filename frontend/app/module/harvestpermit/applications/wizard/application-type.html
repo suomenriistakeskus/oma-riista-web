@@ -1,0 +1,24 @@
+<div class="col-md-6 col-xs-12  fa-border" style="margin-bottom: 20px">
+    <img ng-src="/static/elainlajikuvat/512x512/{{$ctrl.speciesCode}}.jpg" width="192"
+         height="192"/>
+</div>
+
+<div class="col-md-6 col-xs-12" style="margin-bottom: 20px">
+    <p>
+        <strong>{{'harvestpermit.mine.applications.permitCategory.' + $ctrl.type.category| translate}}</strong>
+    </p>
+    <div ng-switch="$ctrl.type.begin != null && $ctrl.type.end != null">
+        <p ng-switch-when="true">
+            <span translate="harvestpermit.new.applicationPeriod"></span><br/>
+            {{$ctrl.type.begin|date:'d.M.'}} - {{$ctrl.type.end|date:'d.M.yyyy'}}
+        </p>
+        <hr ng-switch-when="false" class="invisible"/>
+    </div>
+    <hr class="invisible"/>
+    <button ng-if="$ctrl.isActive()"
+            class="btn btn-primary"
+            ng-click="$ctrl.onSelectType()"
+            translate="harvestpermit.new.selectTypeButton">
+    </button>
+
+</div>

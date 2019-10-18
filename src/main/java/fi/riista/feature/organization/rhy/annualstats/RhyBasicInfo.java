@@ -1,8 +1,10 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.common.entity.IbanConverter;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
 import org.iban4j.Iban;
+import org.joda.time.DateTime;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -15,20 +17,24 @@ import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.F.nullsafeMax;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
-public class RhyBasicInfo implements AnnualStatisticsFieldsetStatus, Serializable {
+public class RhyBasicInfo
+        implements AnnualStatisticsFieldsetReadiness, AnnualStatisticsNonComputedFields<RhyBasicInfo>, Serializable {
 
     public static final RhyBasicInfo reduce(@Nullable final RhyBasicInfo first, @Nullable final RhyBasicInfo second) {
         final RhyBasicInfo result = new RhyBasicInfo();
-        result.setOperationalLandAreaSize(nullsafeSumAsInt(first, second, RhyBasicInfo::getOperationalLandAreaSize));
-        result.setRhyMembers(nullsafeSumAsInt(first, second, RhyBasicInfo::getRhyMembers));
+        result.setOperationalLandAreaSize(nullableIntSum(first, second, RhyBasicInfo::getOperationalLandAreaSize));
+        result.setRhyMembers(nullableIntSum(first, second, RhyBasicInfo::getRhyMembers));
+        result.setLastModified(nullsafeMax(first, second, s -> s.getLastModified()));
         return result;
     }
 
@@ -57,15 +63,40 @@ public class RhyBasicInfo implements AnnualStatisticsFieldsetStatus, Serializabl
     @Column(name = "rhy_members")
     private Integer rhyMembers;
 
+    // Updated when any of the manually updateable fields is changed.
+    @Column(name = "basic_info_last_modified")
+    private DateTime lastModified;
+
     public RhyBasicInfo() {
     }
 
-    public RhyBasicInfo(@Nonnull final RhyBasicInfo that) {
-        requireNonNull(that);
+    public RhyBasicInfo makeCopy() {
+        final RhyBasicInfo copy = new RhyBasicInfo();
+        copy.iban = this.iban;
+        copy.operationalLandAreaSize = this.operationalLandAreaSize;
+        copy.rhyMembers = this.rhyMembers;
+        return copy;
+    }
+
+    @Override
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.BASIC_INFO;
+    }
+
+    @Override
+    public boolean isEqualTo(@Nonnull final RhyBasicInfo that) {
+        // Includes manually updateable fields only.
+
+        return Objects.equals(iban, that.iban) &&
+                Objects.equals(operationalLandAreaSize, that.operationalLandAreaSize);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final RhyBasicInfo that) {
+        // Includes manually updateable fields only.
 
         this.iban = that.iban;
         this.operationalLandAreaSize = that.operationalLandAreaSize;
-        this.rhyMembers = that.rhyMembers;
     }
 
     @Override
@@ -85,9 +116,7 @@ public class RhyBasicInfo implements AnnualStatisticsFieldsetStatus, Serializabl
 
     @Transient
     public void setIbanAsFormattedString(final String newIban) {
-        this.iban = StringUtils.hasText(newIban)
-                ? Iban.valueOf(newIban.replaceAll(" ", ""))
-                : null;
+        this.iban = StringUtils.hasText(newIban) ? Iban.valueOf(newIban.replaceAll(" ", "")) : null;
     }
 
     // Accessors -->
@@ -114,5 +143,15 @@ public class RhyBasicInfo implements AnnualStatisticsFieldsetStatus, Serializabl
 
     public void setRhyMembers(final Integer rhyMembers) {
         this.rhyMembers = rhyMembers;
+    }
+
+    @Override
+    public DateTime getLastModified() {
+        return lastModified;
+    }
+
+    @Override
+    public void setLastModified(final DateTime lastModified) {
+        this.lastModified = lastModified;
     }
 }

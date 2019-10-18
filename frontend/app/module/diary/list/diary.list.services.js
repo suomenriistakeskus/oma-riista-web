@@ -40,8 +40,7 @@ angular.module('app.diary.list.services', ['ngResource'])
             showHarvest: true,
             showObservation: true,
             showSrvaEvent: true,
-            onlyReports: false,
-            onlyTodo: false,
+            harvestReportFilter: 'all',
             beginDate: HuntingYearService.getBeginDateStr(),
             endDate: HuntingYearService.getEndDateStr(),
             allSpecies: [],
@@ -72,11 +71,11 @@ angular.module('app.diary.list.services', ['ngResource'])
                 return moment(diaryEntry.pointOfTime).format('YYYYMMDD');
             });
 
-            return _(grouped).pairs().map(function (pair) {
-                var entryList = _.sortByOrder(pair[1], 'pointOfTime', false);
+            return _(grouped).toPairs().map(function (pair) {
+                var entryList = _.orderBy(pair[1], 'pointOfTime', 'desc');
 
                 var countTotalSpecimenAmount = function (list, filterMethod) {
-                    return _(list).filter(_.method(filterMethod)).sum(function (e) {
+                    return _(list).filter(_.method(filterMethod)).sumBy(function (e) {
                         // totalSpecimenAmount is null, at least with some types of observations
                         return e.totalSpecimenAmount || 1;
                     });
@@ -84,13 +83,13 @@ angular.module('app.diary.list.services', ['ngResource'])
 
                 return {
                     entries: entryList,
-                    pointOfTime: _.first(entryList).pointOfTime,
+                    pointOfTime: _.head(entryList).pointOfTime,
                     totalHarvestSpecimenCount: countTotalSpecimenAmount(entryList, 'isHarvest'),
                     totalObservationSpecimenCount: countTotalSpecimenAmount(entryList, 'isObservation'),
                     totalSrvaSpecimenCount: countTotalSpecimenAmount(entryList, 'isSrva'),
                     accordionOpen: false
                 };
-            }).sortByOrder('pointOfTime', false).value();
+            }).orderBy('pointOfTime', 'desc').value();
         };
 
         this.showSidebar = function () {
@@ -100,7 +99,9 @@ angular.module('app.diary.list.services', ['ngResource'])
                 var state = DiaryListViewState;
 
                 if (currentSidebar !== null) {
-                    if (state.selectedDiaryEntry && state.selectedDiaryEntry.id === diaryEntry.id) {
+                    if (state.selectedDiaryEntry
+                        && state.selectedDiaryEntry.id === diaryEntry.id
+                        && state.selectedDiaryEntry.type === diaryEntry.type) {
                         return;
                     }
 
@@ -155,7 +156,7 @@ angular.module('app.diary.list.services', ['ngResource'])
                 var parts = markerId.split(':');
 
                 if (parts.length === 2) {
-                    var diaryEntry = _.findWhere(diaryEntryList, {
+                    var diaryEntry = _.find(diaryEntryList, {
                         'type': parts[0],
                         'id': _.parseInt(parts[1])
                     });

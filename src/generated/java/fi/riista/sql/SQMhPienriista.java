@@ -36,7 +36,7 @@ public class SQMhPienriista extends RelationalPathSpatial<SQMhPienriista> {
 
     public final NumberPath<Integer> vuosi = createNumber("vuosi", Integer.class);
 
-    public final com.querydsl.sql.PrimaryKey<SQMhPienriista> mhHirviPkey = createPrimaryKey(gid);
+    public final com.querydsl.sql.PrimaryKey<SQMhPienriista> mhPienriistaPkey = createPrimaryKey(gid);
 
     public SQMhPienriista(String variable) {
         super(SQMhPienriista.class, forVariable(variable), "public", "mh_pienriista");

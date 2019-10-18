@@ -1,8 +1,18 @@
 package fi.riista.feature.gis;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vividsolutions.jts.geom.Envelope;
 
 public class GISBounds {
+    public static GISBounds create(final Envelope envelope) {
+        final double xmin = envelope.getMinX();
+        final double ymin = envelope.getMinY();
+        final double xmax = envelope.getMaxX();
+        final double ymax = envelope.getMaxY();
+
+        return new GISBounds(xmin, ymin, xmax, ymax);
+    }
+
     private double minLng;
     private double minLat;
     private double maxLng;

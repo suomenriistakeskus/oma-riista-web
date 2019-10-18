@@ -1,0 +1,24 @@
+<table class="table table-condensed table-striped">
+    <thead>
+    <tr>
+        <th>Nimi</th>
+        <th>Sähköposti</th>
+        <th ng-if="$ctrl.editable"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="d in $ctrl.deliveries track by $index">
+        <td>
+            <span ng-bind="d.name"></span>
+        </td>
+        <td>
+            <span ng-bind-html="d.email"></span>
+        </td>
+        <td ng-if="$ctrl.editable">
+            <button class="btn btn-link" ng-click="$ctrl.remove(d)">
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+            </button>
+        </td>
+    </tr>
+    </tbody>
+</table>

@@ -1,6 +1,5 @@
 package fi.riista.feature.gamediary.mobile;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationDTOBase;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
@@ -16,7 +15,6 @@ import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_PENKKA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_SEKA;
 
-@JsonPropertyOrder({ "id", "mobileClientRefId", "rev", "type", "observationSpecVersion", "geoLocation", "pointOfTime", "gameSpeciesCode", "withinMooseHunting", "observationType", "description", "totalSpecimenAmount", "specimens", "imageIds" })
 public class MobileObservationDTO extends ObservationDTOBase {
 
     private Long mobileClientRefId;

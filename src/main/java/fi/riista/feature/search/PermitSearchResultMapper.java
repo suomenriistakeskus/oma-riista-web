@@ -13,10 +13,8 @@ public class PermitSearchResultMapper implements Function<HarvestPermit, SearchR
     @Override
     public SearchResultsDTO.Result apply(HarvestPermit permit) {
         final String description = permit.getPermitNumber() + " " + permit.getPermitType();
-        if (permit.isMooselikePermitType()) {
-            return SearchResultsDTO.createResult(
-                    permit.isAmendmentPermit() ? permit.getOriginalPermit().getId() : permit.getId(),
-                    description);
+        if (permit.isAmendmentPermit()) {
+            return SearchResultsDTO.createResult(permit.getOriginalPermit().getId(), description);
         }
         return SearchResultsDTO.createResult(permit.getId(), description);
     }

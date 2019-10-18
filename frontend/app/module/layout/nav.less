@@ -3,24 +3,25 @@
 
 .r-brand {
   padding: 0;
-  margin-top: 10px;
-  margin-left: -15px;
 }
-.r-logo {
-  display: inline-block;
-  text-indent: -10000px;
-  background: transparent url('../images/oma-riista-logo-brown.png') no-repeat center center;
-  width: 180px;
+
+.r-navbar-logo {
+  display: block;
+  width: 177px;
   height: 40px;
+  margin-top: 10px;
+  overflow:visible;
+  background: transparent url('../images/oma-riista-logo.svg') no-repeat left top;
+  background-size: contain;
+  font-family: @font-family-roboto-slab;
+  font-size: 26px;
+  font-weight: 400;
+  text-indent: 52px;
+  line-height: 48px;
+  color: #B0B0B0;
+  white-space: nowrap;
 }
-.r-logo.r-logo-white {
-  background: transparent url('../images/oma-riista-logo-white.png') no-repeat center center;
-  width: 228px;
-  height: 182px;
-}
-.r-lead {
-  font-size: 18px;
-}
+
 .r-page-context-heading {
   color: @r-light;
   text-shadow: 1px 1px #333;
@@ -58,7 +59,7 @@
 
 .r-main-navbar-nav-right {
   display: table;
-  min-width: 370px;
+  min-width: 300px;
 }
 
 .r-main-navbar-nav-right > li {

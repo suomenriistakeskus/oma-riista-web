@@ -1439,11 +1439,13 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addUniqueConstraint tableName="mh_pienriista" constraintName="uk_mh_pienriista_vuosi_kohde" columnNames="vuosi,koodi"/>
+        <addUniqueConstraint tableName="mh_pienriista" constraintName="uk_mh_pienriista_vuosi_kohde"
+                             columnNames="vuosi,koodi"/>
     </changeSet>
 
     <changeSet id="2018-06-11-rename-boolean-flag-in-invoice" author="vincit-jarkkoka">
-         <renameColumn tableName="invoice" oldColumnName="online_payment_expected" newColumnName="electronic_invoicing_enabled"/>
+        <renameColumn tableName="invoice" oldColumnName="online_payment_expected"
+                      newColumnName="electronic_invoicing_enabled"/>
     </changeSet>
 
     <changeSet id="2018-06-11-add-original-delivery-method-to-invoice" author="vincit-jarkkoka">
@@ -1486,6 +1488,998 @@
         <createIndex tableName="invoice_state_change_event" indexName="ndx_invoice_state_change_event_invoice">
             <column name="invoice_id"/>
         </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-06-26-remove-mooselike-price-table" author="vincit-kyostihe">
+        <dropTable tableName="mooselike_price"/>
+    </changeSet>
+
+    <changeSet id="2018-08-06-drop-species-amount-creditor-reference" author="vincit-kyostihe">
+        <dropColumn tableName="harvest_permit_species_amount" columnName="creditor_reference"/>
+    </changeSet>
+
+    <changeSet id="2018-06-27-permit_harvest_invoice" author="vincit-kyostihe">
+        <createTable tableName="permit_harvest_invoice">
+            <column autoIncrement="true" name="permit_harvest_invoice_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_harvest_invoice_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="invoice_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="invoice(invoice_id)"
+                             foreignKeyName="fk_permit_harvest_invoice_invoice"/>
+            </column>
+            <column name="harvest_permit_species_amount_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_species_amount(harvest_permit_species_amount_id)"
+                             foreignKeyName="fk_permit_harvest_invoice_species_amount"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="permit_harvest_invoice" indexName="uk_permit_harvest_invoice_invoice" unique="true">
+            <column name="invoice_id"/>
+        </createIndex>
+
+        <createIndex tableName="permit_harvest_invoice" indexName="uk_permit_harvest_invoice_species_amount"
+                     unique="true">
+            <column name="harvest_permit_species_amount_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-08-06-add-species-amount-moose-hunting-end-status" author="vincit-kyostihe">
+        <addColumn tableName="harvest_permit_species_amount">
+            <column name="mooselike_hunting_finished" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="harvest_permit_species_amount">
+            <column name="hunting_finished_by_moderator" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE harvest_permit_species_amount
+            SET mooselike_hunting_finished = TRUE, hunting_finished_by_moderator = moose_harvest_report.moderator_override
+            FROM moose_harvest_report
+            WHERE moose_harvest_report.species_amount_id = harvest_permit_species_amount.harvest_permit_species_amount_id;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2018-08-14-increase_precision_of_invoice_amount" author="vincit-jarkkoka">
+        <modifyDataType tableName="invoice" columnName="amount" newDataType="DECIMAL(8,2)"/>
+    </changeSet>
+
+    <changeSet id="2018-08-14-add-account-transfer-batch" author="vincit-jarkkoka">
+        <createTable tableName="account_transfer_batch">
+            <column autoIncrement="true" name="account_transfer_batch_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="account_transfer_batch_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="account_transfer_batch" indexName="uk_account_transfer_batch_date" unique="true">
+            <column name="date"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-08-14-add-account-transfer" author="vincit-jarkkoka">
+        <createTable tableName="account_transfer">
+            <column autoIncrement="true" name="account_transfer_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="account_transfer_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="batch_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="account_transfer_batch(account_transfer_batch_id)"
+                             foreignKeyName="fk_account_transfer_batch"/>
+            </column>
+
+            <column name="creditor_iban" type="CHAR(18)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="transaction_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="booking_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="debtor_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="amount" type="NUMERIC(8,2)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="creditor_reference" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="account_service_reference" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="account_transfer" indexName="ndx_account_transfer_batch">
+            <column name="batch_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-08-16-add-origin-file-info-into-account_transfer_batch" author="vincit-jarkkoka">
+        <renameColumn tableName="account_transfer_batch" oldColumnName="date" newColumnName="statement_date"/>
+
+        <addColumn tableName="account_transfer_batch">
+            <column name="filename" type="VARCHAR(255)">
+                <constraints unique="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="account_transfer_batch">
+            <column name="filename_date" type="DATE">
+                <constraints unique="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-08-23-drop-application-attachment-url" author="vincit-kyostihe">
+        <delete tableName="harvest_permit_application_attachment">
+            <where>attachment_metadata_id IS NULL</where>
+        </delete>
+        <dropColumn tableName="harvest_permit_application_attachment" columnName="name"/>
+        <dropColumn tableName="harvest_permit_application_attachment" columnName="url"/>
+        <addNotNullConstraint tableName="harvest_permit_application_attachment" columnName="attachment_metadata_id"
+                              columnDataType="CHAR(36)"/>
+    </changeSet>
+
+    <changeSet id="2018-08-09-add-official-statement-enum-value" author="vincit-terova">
+        <insert tableName="harvest_permit_application_attachment_type">
+            <column name="name" value="OFFICIAL_STATEMENT"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2018-08-09-application-locale" author="vincit-terova">
+        <addColumn tableName="harvest_permit_application">
+            <column name="locale_id" type="VARCHAR(255)" defaultValue="fi_FI">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="2018-08-24-amendment_application_data" author="vincit-terova">
+        <createTable tableName="amendment_application_data">
+            <column autoIncrement="true" name="amendment_application_data_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="amendment_application_data_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="application_id" type="BIGINT">
+                <constraints references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_amendment_application_data_application_id"
+                             unique="true"/>
+            </column>
+            <column name="original_permit_id" type="BIGINT">
+                <constraints references="harvest_permit(harvest_permit_id)"
+                             foreignKeyName="fk_amendment_application_data_permit_id"/>
+            </column>
+            <column name="non_edible_harvest_id" type="BIGINT">
+                <constraints references="harvest(harvest_id)"
+                             foreignKeyName="fk_amendment_application_data_harvest_id"/>
+            </column>
+
+            <column name="point_of_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="age" type="VARCHAR(255)">
+                <constraints references="game_age(name)"
+                             foreignKeyName="fk_amendment_application_data_age"/>
+            </column>
+            <column name="gender" type="VARCHAR(255)">
+                <constraints references="game_gender(name)"
+                             foreignKeyName="fk_amendment_application_data_gender"/>
+            </column>
+            <column name="shooter_id" type="BIGINT">
+                <constraints references="person(person_id)"
+                             foreignKeyName="fk_amendment_application_data_shooter"/>
+            </column>
+            <column name="partner_id" type="BIGINT">
+                <constraints references="organisation(organisation_id)"
+                             foreignKeyName="fk_amendment_application_data_partner"/>
+            </column>
+            <column name="latitude" type="INT"/>
+            <column name="longitude" type="INT"/>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-04-19-mh-permit-changes" author="vincit-terova">
+        <dropNotNullConstraint tableName="mh_permit" columnName="begin_date" columnDataType="date"/>
+        <dropNotNullConstraint tableName="mh_permit" columnName="end_date" columnDataType="date"/>
+
+        <addColumn tableName="mh_permit">
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <dropForeignKeyConstraint baseTableName="mh_permit" constraintName="fk_mh_permit_person"/>
+        <dropIndex tableName="mh_permit" indexName="ndx_mh_permit_person_permit_identifier"/>
+        <dropColumn tableName="mh_permit" columnName="person_id"/>
+
+        <addColumn tableName="mh_permit">
+            <column name="ssn" type="CHAR(11)"/>
+        </addColumn>
+        <createIndex tableName="mh_permit" indexName="ndx_mh_permit_ssn">
+            <column name="ssn"/>
+        </createIndex>
+
+        <addColumn tableName="mh_permit">
+            <column name="hunter_number" type="CHAR(8)"/>
+        </addColumn>
+        <createIndex tableName="mh_permit" indexName="ndx_mh_permit_hunter_number">
+            <column name="hunter_number"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-08-24-add-foreign_person" author="vincit-jarkkoka">
+        <createTable tableName="foreign_person">
+            <column autoIncrement="true" name="foreign_person_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="foreign_person_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="first_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hunter_number" type="VARCHAR(8)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_foreign_person_hunter_number"/>
+            </column>
+            <column name="date_of_birth" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-08-24-add-foreign_person-reference-to-shooting_test_participant" author="vincit-jarkkoka">
+        <addColumn tableName="shooting_test_participant">
+            <column name="foreign_person_id" type="BIGINT">
+                <constraints nullable="true"
+                             references="foreign_person(foreign_person_id)"
+                             foreignKeyName="fk_shooting_test_participant_foreign_person"/>
+            </column>
+        </addColumn>
+
+        <sql><![CDATA[
+            ALTER TABLE shooting_test_participant ADD CONSTRAINT ck_shooting_test_participant_person
+            CHECK (person_id IS NOT NULL AND foreign_person_id IS NULL OR person_id IS NULL AND foreign_person_id IS NOT NULL);
+        ]]></sql>
+
+        <dropNotNullConstraint tableName="shooting_test_participant"
+                               columnName="person_id"
+                               columnDataType="BIGINT"/>
+    </changeSet>
+
+    <changeSet id="2018-09-05-alter-shooting_test_participant-indices" author="vincit-jarkkoka">
+        <sql><![CDATA[
+            ALTER INDEX IF EXISTS ndx_shooting_test_participant_uniq RENAME TO uk_shooting_test_participant_person;
+        ]]></sql>
+
+        <createIndex tableName="shooting_test_participant" indexName="uk_shooting_test_participant_foreign_person"
+                     unique="true">
+            <column name="shooting_test_event_id"/>
+            <column name="foreign_person_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-09-04-add-decision-revision-id" author="vincit-kyostihe">
+        <addColumn tableName="permit_decision_revision">
+            <column name="external_id" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-09-06-add-payment-amount-into-permit_harvest_invoice" author="vincit-jarkkoka">
+        <addColumn tableName="permit_harvest_invoice">
+            <column name="payment_amount" type="NUMERIC(8,2)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-09-04-remove-unused-decision-status" author="vincit-kyostihe">
+        <delete tableName="permit_decision_status">
+            <where>name = 'COMPLETE' OR name = 'REVOKED' or name = 'IGNORED'</where>
+        </delete>
+    </changeSet>
+
+    <changeSet id="2018-09-04-add-decision-appeal-status" author="vincit-kyostihe">
+        <createTable tableName="permit_decision_appeal_status">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="permit_decision_appeal_status">
+            <column name="name" value="INITIATED"/>
+        </insert>
+
+        <insert tableName="permit_decision_appeal_status">
+            <column name="name" value="UNCHANGED"/>
+        </insert>
+
+        <insert tableName="permit_decision_appeal_status">
+            <column name="name" value="REPEALED"/>
+        </insert>
+
+        <insert tableName="permit_decision_appeal_status">
+            <column name="name" value="PARTIALLY_REPEALED"/>
+        </insert>
+
+        <insert tableName="permit_decision_appeal_status">
+            <column name="name" value="RETREATMENT"/>
+        </insert>
+
+        <addColumn tableName="permit_decision">
+            <column name="appeal_status" type="VARCHAR(255)">
+                <constraints referencedColumnNames="permit_decision_appeal_status(name)"
+                             foreignKeyName="fk_permit_decision_appeal_status"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="permit_decision_revision">
+            <column name="appeal_status" type="VARCHAR(255)">
+                <constraints referencedColumnNames="permit_decision_appeal_status(name)"
+                             foreignKeyName="fk_permit_decision_revision_appeal_status"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-09-06-decision-action-attachment" author="vincit-kyostihe">
+        <createTable tableName="permit_decision_action_attachment">
+            <column autoIncrement="true" name="permit_decision_action_attachment_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="permit_decision_action_attachment_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="permit_decision_action_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="permit_decision_action(permit_decision_action_id)"
+                             foreignKeyName="fk_permit_decision_action_attachment_decision_id"/>
+            </column>
+
+            <column name="attachment_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_permit_decision_action_attachment_metadata_id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2018-09-13-alter-srva-event-decription-types" author="vincit-terole">
+        <modifyDataType tableName="srva_event"
+                        columnName="other_type_description"
+                        newDataType="text"/>
+        <modifyDataType tableName="srva_event"
+                        columnName="other_method_description"
+                        newDataType="text"/>
+        <modifyDataType tableName="srva_event"
+                        columnName="other_species_description"
+                        newDataType="text"/>
+    </changeSet>
+
+    <changeSet id="2018-09-12-add-decision-type" author="vincit-kyostihe">
+        <createTable tableName="permit_decision_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="permit_decision_type">
+            <column name="name" value="HARVEST_PERMIT"/>
+        </insert>
+
+        <insert tableName="permit_decision_type">
+            <column name="name" value="CANCEL_APPLICATION"/>
+        </insert>
+
+        <insert tableName="permit_decision_type">
+            <column name="name" value="IGNORE_APPLICATION"/>
+        </insert>
+
+        <addColumn tableName="permit_decision">
+            <column name="decision_type" type="VARCHAR(255)" defaultValue="HARVEST_PERMIT">
+                <constraints nullable="false"
+                             referencedColumnNames="permit_decision_decision_type(name)"
+                             foreignKeyName="fk_permit_decision_type"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="permit_decision_revision">
+            <column name="decision_type" type="VARCHAR(255)" defaultValue="HARVEST_PERMIT">
+                <constraints nullable="false"
+                             referencedColumnNames="permit_decision_decision_type(name)"
+                             foreignKeyName="fk_permit_decision_revision_type"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-09-13-make-decision-application-not-null" author="vincit-kyostihe">
+        <addNotNullConstraint tableName="permit_decision" columnName="application_id" columnDataType="BIGINT"/>
+    </changeSet>
+
+    <changeSet id="2018-09-06-add-received-amount-into-invoice" author="vincit-jarkkoka">
+        <addColumn tableName="invoice">
+            <column name="received_amount" type="NUMERIC(8,2)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-09-06-add-table-invoice_payment_line" author="vincit-jarkkoka">
+        <createTable tableName="invoice_payment_line">
+            <column autoIncrement="true" name="invoice_payment_line_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="invoice_payment_line_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="invoice_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="invoice(invoice_id)"
+                             foreignKeyName="fk_invoice_payment_line_invoice"/>
+            </column>
+
+            <column name="payment_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="amount" type="NUMERIC(8,2)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="account_transfer_id" type="BIGINT">
+                <constraints nullable="true"
+                             unique="true"
+                             uniqueConstraintName="uk_invoice_payment_line_account_transfer"
+                             references="account_transfer(account_transfer_id)"
+                             foreignKeyName="fk_invoice_payment_line_account_transfer"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="invoice_payment_line" indexName="ndx_invoice_payment_line_invoice">
+            <column name="invoice_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2018-09-24-add-mr_sync_time-into-foreign_person" author="vincit-jarkkoka">
+        <addColumn tableName="foreign_person">
+            <column name="mr_sync_time" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-09-21-change-harvest-and-observation-amount-max" author="vincit-terova">
+        <sql><![CDATA[
+            ALTER TABLE harvest DROP CONSTRAINT ck_harvest_amount_bounds;
+            ALTER TABLE harvest ADD CONSTRAINT ck_harvest_amount_bounds
+              CHECK (amount > 0 AND amount < 10000);
+
+            ALTER TABLE game_observation DROP CONSTRAINT ck_game_observation_amount_bounds;
+            ALTER TABLE game_observation ADD CONSTRAINT ck_game_observation_amount_bounds
+              CHECK (amount > 0 AND amount < 10000);
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2018-10-11-rename-applications-status-cancelled-to-hidden" author="vincit-terova" dbms="postgresql">
+        <sql><![CDATA[
+        INSERT INTO harvest_permit_application_status(name) VALUES('HIDDEN');
+        UPDATE harvest_permit_application SET status='HIDDEN' where status='CANCELLED';
+        DELETE FROM harvest_permit_application_status WHERE name='CANCELLED';
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2018-10-22-add-ignored-appeal-status" author="vincit-kyostihe">
+        <insert tableName="permit_decision_appeal_status">
+            <column name="name" value="IGNORED"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2018-10-18-add-corrected_amount-into-invoice" author="vincit-jarkkoka">
+        <addColumn tableName="invoice">
+            <column name="corrected_amount" type="NUMERIC(8,2)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2018-10-18-migrate-corrected_amount-from-permit_harvest_invoice-to-invoice" author="vincit-jarkkoka" dbms="postgresql">
+        <sql><![CDATA[
+            UPDATE invoice i
+            SET corrected_amount = phi.payment_amount
+            FROM permit_harvest_invoice phi
+            WHERE
+              i.invoice_id = phi.invoice_id
+              AND phi.payment_amount IS NOT NULL
+              AND i.amount <> phi.payment_amount;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2018-10-19-drop-payment_amount-from-permit_harvest_invoice" author="vincit-jarkkoka">
+        <dropColumn tableName="permit_harvest_invoice">
+            <column name="payment_amount"/>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet id="2018-10-24-add-hunter_number-into-shooting_test_participant" author="vincit-jarkkoka">
+        <!-- Not-null constraint will possibly be added later. -->
+        <addColumn tableName="shooting_test_participant">
+            <column name="hunter_number" type="VARCHAR(8)"/>
+        </addColumn>
+
+        <createIndex tableName="shooting_test_participant" indexName="uk_shooting_test_participant_hunter_number" unique="true">
+            <column name="shooting_test_event_id"/>
+            <column name="hunter_number"/>
+        </createIndex>
+
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE shooting_test_participant stp
+            SET hunter_number = p.hunter_number
+            FROM person p
+            WHERE stp.person_id = p.person_id;
+
+            UPDATE shooting_test_participant stp
+            SET hunter_number = fp.hunter_number
+            FROM foreign_person fp
+            WHERE stp.foreign_person_id = fp.foreign_person_id;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2018-11-14-add-not-null-constraint-for-hunter_number-of-shooting_test_participant" author="vincit-jarkkoka">
+        <addNotNullConstraint tableName="shooting_test_participant" columnName="hunter_number" columnDataType="VARCHAR(8)"/>
+    </changeSet>
+
+    <changeSet id="2018-11-28-add-new-luke-column-into-rhy_annual_statistics" author="vincit-jarkkoka">
+        <renameColumn tableName="rhy_annual_statistics"
+                      oldColumnName="luke_water_birds"
+                      newColumnName="luke_water_bird_couples"/>
+
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="luke_water_bird_broods" type="INT"/>
+        </addColumn>
+
+        <sql><![CDATA[
+            ALTER TABLE rhy_annual_statistics RENAME CONSTRAINT ck_rhy_annual_report_luke_water_birds TO ck_rhy_annual_statistics_luke_water_bird_couples;
+
+            ALTER TABLE rhy_annual_statistics ADD CONSTRAINT ck_rhy_annual_statistics_luke_water_bird_broods CHECK (luke_water_bird_broods >= 0);
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2018-11-28-add-column-moose_taxation_planning_events-into-rhy_annual_statistics" author="vincit-jarkkoka">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="moose_taxation_planning_events" type="INT"/>
+        </addColumn>
+
+        <sql><![CDATA[
+            ALTER TABLE rhy_annual_statistics ADD CONSTRAINT ck_rhy_annual_statistics_moose_taxation_planning_events
+                CHECK (moose_taxation_planning_events >= 0);
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2018-12-03-add-new-rhy_annual_statistics_state" author="vincit-jarkkoka">
+        <insert tableName="rhy_annual_statistics_state">
+            <column name="name" value="NOT_STARTED"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2018-11-16-permit-holder-fields" author="vincit-terole">
+        <addColumn tableName="harvest_permit_application">
+            <column name="permit_holder_name" type="VARCHAR(255)"/>
+            <column name="permit_holder_code" type="VARCHAR(255)"/>
+            <column name="permit_holder_type" type="VARCHAR(255)"/>
+        </addColumn>
+        <addColumn tableName="permit_decision">
+            <column name="permit_holder_name" type="VARCHAR(255)"/>
+            <column name="permit_holder_code" type="VARCHAR(255)"/>
+            <column name="permit_holder_type" type="VARCHAR(255)"/>
+        </addColumn>
+        <addColumn tableName="harvest_permit">
+            <column name="permit_holder_name" type="VARCHAR(255)"/>
+            <column name="permit_holder_code" type="VARCHAR(255)"/>
+            <column name="permit_holder_type" type="VARCHAR(255)"/>
+        </addColumn>
+        <sql dbms="postgresql"><![CDATA[
+
+        -- Application
+
+        UPDATE harvest_permit_application hpa
+        SET permit_holder_name = c.name_finnish,
+            permit_holder_code = c.official_code,
+            permit_holder_type = CASE WHEN c.subtype = 'PERSON' OR c.subtype = 'BUSINESS' OR c.subtype = 'RY' THEN c.subtype ELSE 'OTHER' END
+        FROM (SELECT organisation_id, subtype, official_code, name_finnish FROM organisation WHERE organisation.organisation_type = 'CLUB') as c
+        WHERE hpa.permit_holder_id IS NOT NULL
+        AND hpa.permit_holder_id = c.organisation_id;
+
+        UPDATE harvest_permit_application hpa
+        SET permit_holder_name = p.first_name || ' ' || p.last_name,
+            permit_holder_code = null,
+            permit_holder_type = 'PERSON'
+        FROM (SELECT person_id, first_name, last_name FROM person) as p
+        WHERE hpa.permit_holder_id IS NULL
+        AND hpa.contact_person_id = p.person_id;
+
+        -- Decision
+
+        UPDATE permit_decision d
+        SET
+            permit_holder_name = c.name_finnish,
+            permit_holder_code = c.official_code,
+            permit_holder_type = CASE WHEN c.subtype = 'PERSON' OR c.subtype = 'BUSINESS' OR c.subtype = 'RY' THEN c.subtype ELSE 'OTHER' END
+        FROM (SELECT organisation_id, subtype, official_code, name_finnish FROM organisation WHERE organisation.organisation_type = 'CLUB') as c
+        WHERE d.permit_holder_id IS NOT NULL
+        AND d.permit_holder_id = c.organisation_id;
+
+        UPDATE permit_decision d
+        SET permit_holder_name = p.first_name || ' ' || p.last_name,
+            permit_holder_code = null,
+            permit_holder_type = 'PERSON'
+        FROM (SELECT person_id, first_name, last_name FROM person) as p
+        WHERE d.permit_holder_id IS NULL
+        AND d.contact_person_id = p.person_id;
+
+        -- Permit
+
+        UPDATE harvest_permit hp
+        SET permit_holder_name = c.name_finnish,
+            permit_holder_code = c.official_code,
+            permit_holder_type = CASE WHEN c.subtype = 'PERSON' OR c.subtype = 'BUSINESS' OR c.subtype = 'RY' THEN c.subtype ELSE 'OTHER' END
+        FROM (SELECT organisation_id, subtype, official_code, name_finnish FROM organisation WHERE organisation.organisation_type = 'CLUB') as c
+        WHERE hp.permit_holder_id IS NOT NULL
+        AND hp.permit_holder_id = c.organisation_id
+        AND hp.permit_type_code IN ('100', '190');
+
+        UPDATE harvest_permit hp
+        SET permit_holder_name = p.first_name || ' ' || p.last_name,
+            permit_holder_code = null,
+            permit_holder_type = 'PERSON'
+        FROM (SELECT person_id, first_name, last_name FROM person) as p
+        WHERE hp.permit_holder_id IS NULL
+        AND hp.original_contact_person_id = p.person_id
+        AND hp.permit_type_code IN ('100', '190');
+        ]]></sql>
+
+        <addNotNullConstraint tableName="permit_decision"
+                              columnName="permit_holder_name"
+                              columnDataType="VARCHAR(255)"/>
+
+        <addNotNullConstraint tableName="permit_decision"
+                              columnName="permit_holder_type"
+                              columnDataType="VARCHAR(255)"/>
+
+        <sql><![CDATA[
+            ALTER TABLE harvest_permit_application ADD CONSTRAINT harvest_permit_application_permit_holder_check
+            CHECK (status = 'DRAFT' OR (permit_holder_type IS NOT NULL AND permit_holder_name IS NOT NULL));
+        ]]></sql>
+
+        <createTable tableName="permit_holder_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="permit_holder_type">
+            <column name="name" value="PERSON"/>
+        </insert>
+
+        <insert tableName="permit_holder_type">
+            <column name="name" value="BUSINESS"/>
+        </insert>
+
+        <insert tableName="permit_holder_type">
+            <column name="name" value="RY"/>
+        </insert>
+
+        <insert tableName="permit_holder_type">
+            <column name="name" value="OTHER"/>
+        </insert>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_application"
+                                 baseColumnNames="permit_holder_type"
+                                 constraintName="fk_harvest_permit_application_holder_type"
+                                 referencedTableName="permit_holder_type"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="permit_decision"
+                                 baseColumnNames="permit_holder_type"
+                                 constraintName="fk_permit_decision_holder_type"
+                                 referencedTableName="permit_holder_type"
+                                 referencedColumnNames="name"/>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit"
+                                 baseColumnNames="permit_holder_type"
+                                 constraintName="fk_harvest_permit_holder_type"
+                                 referencedTableName="permit_holder_type"
+                                 referencedColumnNames="name"/>
+    </changeSet>
+
+    <changeSet id="2018-11-16-bird-permit-table" author="vincit-terole">
+        <createTable tableName="bird_permit_application">
+            <column autoIncrement="true" name="bird_permit_application_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="bird_permit_application_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="harvest_permit_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_bird_permit_application_application_id"
+                             unique="true"
+                             uniqueConstraintName="uk_bird_permit_application_parent"/>
+            </column>
+            <column name="protected_area_name" type="VARCHAR(255)"/>
+            <column name="protected_area_type" type="VARCHAR(255)"/>
+            <column name="protected_area_description" type="TEXT"/>
+            <column name="protected_area_size" type="INT"/>
+            <column name="protected_area_street_address" type="VARCHAR(255)"/>
+            <column name="protected_area_postal_code" type="VARCHAR(255)"/>
+            <column name="protected_area_city" type="VARCHAR(255)"/>
+            <column name="latitude" type="INT"/>
+            <column name="longitude" type="INT"/>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+            <column name="cause_public_health" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_public_safety" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_aviation_safety" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_crops_damage" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_domestic_pets" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_forest_damage" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_fishing" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_water_system" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_flora" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_fauna" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="cause_research" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="deviate_section_32" type="TEXT"/>
+            <column name="deviate_section_33" type="TEXT"/>
+            <column name="deviate_section_34" type="TEXT"/>
+            <column name="deviate_section_35" type="TEXT"/>
+            <column name="deviate_section_51" type="TEXT"/>
+            <column name="use_traps" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="use_tape_recorders" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+
+        <createTable tableName="bird_permit_application_protected_area_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="bird_permit_application_protected_area_type">
+            <column name="name" value="OTHER"/>
+        </insert>
+        <insert tableName="bird_permit_application_protected_area_type">
+            <column name="name" value="AIRPORT"/>
+        </insert>
+        <insert tableName="bird_permit_application_protected_area_type">
+            <column name="name" value="FOOD_PREMISES"/>
+        </insert>
+        <insert tableName="bird_permit_application_protected_area_type">
+            <column name="name" value="WASTE_DISPOSAL"/>
+        </insert>
+        <insert tableName="bird_permit_application_protected_area_type">
+            <column name="name" value="BERRY_FARM"/>
+        </insert>
+        <insert tableName="bird_permit_application_protected_area_type">
+            <column name="name" value="FUR_FARM"/>
+        </insert>
+        <insert tableName="bird_permit_application_protected_area_type">
+            <column name="name" value="FISHERY"/>
+        </insert>
+        <insert tableName="bird_permit_application_protected_area_type">
+            <column name="name" value="ANIMAL_SHELTER"/>
+        </insert>
+
+        <addForeignKeyConstraint baseTableName="bird_permit_application"
+                                 baseColumnNames="protected_area_type"
+                                 constraintName="fk_bird_permit_application_protected_area_type"
+                                 referencedTableName="bird_permit_application_protected_area_type"
+                                 referencedColumnNames="name"/>
+
+        <renameColumn tableName="harvest_permit_application_species_amount"
+                      oldColumnName="description"
+                      newColumnName="mooselike_description"/>
+
+        <addColumn tableName="harvest_permit_application_species_amount">
+            <column name="begin_date" type="DATE"/>
+            <column name="end_date" type="DATE"/>
+            <column name="validity_years" type="INT"/>
+            <column name="additional_period_info" type="TEXT"/>
+            <column name="caused_damage_amount" type="INT"/>
+            <column name="caused_damage_description" type="TEXT"/>
+            <column name="eviction_measure_description" type="TEXT"/>
+            <column name="eviction_measure_effect" type="TEXT"/>
+            <column name="population_amount" type="VARCHAR(255)"/>
+            <column name="population_description" type="TEXT"/>
+            <column name="forbidden_method_justification" type="TEXT"/>
+            <column name="forbidden_methods_used" type="BOOLEAN"/>
+        </addColumn>
+
+        <sql><![CDATA[
+            ALTER TABLE harvest_permit_application_species_amount
+            ADD CONSTRAINT ck_harvest_permit_application_species_amount_validity_years
+            CHECK (validity_years >= 0 AND validity_years <= 5);
+        ]]></sql>
+
+        <insert tableName="harvest_permit_application_attachment_type">
+            <column name="name" value="PROTECTED_AREA"/>
+        </insert>
+
+        <addColumn tableName="harvest_permit_application_attachment">
+            <column name="additional_info" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <modifyDataType tableName="harvest_permit_application_attachment"
+                        columnName="additional_info"
+                        newDataType="TEXT"/>
+
+        <addColumn tableName="harvest_permit_application">
+            <column name="decision_locale_id" type="VARCHAR(255)" defaultValue="fi_FI"/>
+        </addColumn>
+
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE harvest_permit_application hpa
+            SET decision_locale_id = locale_id;
+        ]]></sql>
+
+        <addNotNullConstraint tableName="harvest_permit_application"
+                              columnDataType="VARCHAR(255)"
+                              columnName="decision_locale_id"/>
+
+        <addColumn tableName="harvest_permit_application">
+            <column name="uuid" type="CHAR(36)"/>
+        </addColumn>
+
+        <dropNotNullConstraint tableName="harvest_permit_application"
+                               columnName="permit_type_code"
+                               columnDataType="VARCHAR(3)"/>
+
+        <addColumn tableName="harvest_permit_application">
+            <column name="harvest_permit_category" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE harvest_permit_application SET harvest_permit_category = 'MOOSELIKE' WHERE permit_type_code = '100';
+            UPDATE harvest_permit_application SET harvest_permit_category = 'MOOSELIKE_NEW' WHERE permit_type_code = '190';
+            UPDATE harvest_permit_application SET harvest_permit_category = 'BIRD' WHERE permit_type_code = '300';
+        ]]></sql>
+
+        <addNotNullConstraint tableName="harvest_permit_application"
+                              columnName="harvest_permit_category"
+                              columnDataType="VARCHAR(255)"/>
+
+        <createTable tableName="harvest_permit_category">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="harvest_permit_category">
+            <column name="name" value="MOOSELIKE"/>
+        </insert>
+
+        <insert tableName="harvest_permit_category">
+            <column name="name" value="MOOSELIKE_NEW"/>
+        </insert>
+
+        <insert tableName="harvest_permit_category">
+            <column name="name" value="BIRD"/>
+        </insert>
+
+        <addForeignKeyConstraint baseTableName="harvest_permit_application"
+                                 baseColumnNames="harvest_permit_category"
+                                 constraintName="fk_harvest_permit_application_category"
+                                 referencedTableName="harvest_permit_category"
+                                 referencedColumnNames="name"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -1,8 +1,7 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
-import fi.riista.util.DateUtil;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
-import fi.riista.util.NumberUtils;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -18,26 +17,28 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
 public class JHTTrainingStatistics
-        implements AnnualStatisticsFieldsetStatus, HasLastModificationStatus<JHTTrainingStatistics>, Serializable {
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<JHTTrainingStatistics>,
+        Serializable {
 
     public static final JHTTrainingStatistics reduce(@Nullable final JHTTrainingStatistics a,
                                                      @Nullable final JHTTrainingStatistics b) {
 
         final JHTTrainingStatistics result = new JHTTrainingStatistics();
-        result.setShootingTestTrainingEvents(nullsafeSumAsInt(a, b, s -> s.getShootingTestTrainingEvents()));
-        result.setShootingTestTrainingParticipants(nullsafeSumAsInt(a, b, s -> s.getShootingTestTrainingParticipants()));
-        result.setHunterExamOfficialTrainingEvents(nullsafeSumAsInt(a, b, s -> s.getHunterExamOfficialTrainingEvents()));
-        result.setHunterExamOfficialTrainingParticipants(nullsafeSumAsInt(a, b, s -> s.getHunterExamOfficialTrainingParticipants()));
-        result.setGameDamageTrainingEvents(nullsafeSumAsInt(a, b, s -> s.getGameDamageTrainingEvents()));
-        result.setGameDamageTrainingParticipants(nullsafeSumAsInt(a, b, s -> s.getGameDamageTrainingParticipants()));
-        result.setHuntingControlTrainingEvents(nullsafeSumAsInt(a, b, s -> s.getHuntingControlTrainingEvents()));
-        result.setHuntingControlTrainingParticipants(nullsafeSumAsInt(a, b, s -> s.getHuntingControlTrainingParticipants()));
+        result.setShootingTestTrainingEvents(nullableIntSum(a, b, s -> s.getShootingTestTrainingEvents()));
+        result.setShootingTestTrainingParticipants(nullableIntSum(a, b, s -> s.getShootingTestTrainingParticipants()));
+        result.setHunterExamOfficialTrainingEvents(nullableIntSum(a, b, s -> s.getHunterExamOfficialTrainingEvents()));
+        result.setHunterExamOfficialTrainingParticipants(nullableIntSum(a, b, s -> s.getHunterExamOfficialTrainingParticipants()));
+        result.setGameDamageTrainingEvents(nullableIntSum(a, b, s -> s.getGameDamageTrainingEvents()));
+        result.setGameDamageTrainingParticipants(nullableIntSum(a, b, s -> s.getGameDamageTrainingParticipants()));
+        result.setHuntingControlTrainingEvents(nullableIntSum(a, b, s -> s.getHuntingControlTrainingEvents()));
+        result.setHuntingControlTrainingParticipants(nullableIntSum(a, b, s -> s.getHuntingControlTrainingParticipants()));
         result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
         return result;
     }
@@ -58,40 +59,64 @@ public class JHTTrainingStatistics
     @Column(name = "jht_shooting_test_training_events")
     private Integer shootingTestTrainingEvents;
 
+    @Column(name = "jht_shooting_test_training_events_overridden", nullable = false)
+    private boolean shootingTestTrainingEventsOverridden;
+
     // Ampumakoekoulutukseen osallistujat, lkm
     @Min(0)
     @Column(name = "jht_shooting_test_training_participants")
     private Integer shootingTestTrainingParticipants;
+
+    @Column(name = "jht_shooting_test_training_participants_overridden", nullable = false)
+    private boolean shootingTestTrainingParticipantsOverridden;
 
     // Metsästäjätutkintokoulutustilaisuudet, lkm
     @Min(0)
     @Column(name = "jht_hunter_exam_training_events")
     private Integer hunterExamOfficialTrainingEvents;
 
+    @Column(name = "jht_hunter_exam_training_events_overridden", nullable = false)
+    private boolean hunterExamOfficialTrainingEventsOverridden;
+
     // Metsästäjätutkintokoulutukseen osallistujat, lkm
     @Min(0)
     @Column(name = "jht_hunter_exam_training_participants")
     private Integer hunterExamOfficialTrainingParticipants;
+
+    @Column(name = "jht_hunter_exam_training_participants_overridden", nullable = false)
+    private boolean hunterExamOfficialTrainingParticipantsOverridden;
 
     // Riistavahinkokoulutustilaisuudet, lkm
     @Min(0)
     @Column(name = "jht_game_damage_training_events")
     private Integer gameDamageTrainingEvents;
 
+    @Column(name = "jht_game_damage_training_events_overridden", nullable = false)
+    private boolean gameDamageTrainingEventsOverridden;
+
     // Riistavahinkokoulutukseen osallistujat, lkm
     @Min(0)
     @Column(name = "jht_game_damage_training_participants")
     private Integer gameDamageTrainingParticipants;
+
+    @Column(name = "jht_game_damage_training_participants_overridden", nullable = false)
+    private boolean gameDamageTrainingParticipantsOverridden;
 
     // Metsästyksenvalvojakoulutustilaisuudet, lkm
     @Min(0)
     @Column(name = "jht_hunting_control_training_events")
     private Integer huntingControlTrainingEvents;
 
+    @Column(name = "jht_hunting_control_training_events_overridden", nullable = false)
+    private boolean huntingControlTrainingEventsOverridden;
+
     // Metsästyksenvalvojakoulutukseen osallistujat, lkm
     @Min(0)
     @Column(name = "jht_hunting_control_training_participants")
     private Integer huntingControlTrainingParticipants;
+
+    @Column(name = "jht_hunting_control_training_participants_overridden", nullable = false)
+    private boolean huntingControlTrainingParticipantsOverridden;
 
     // Updated when any of the manually updateable fields is changed.
     @Column(name = "jht_trainings_last_modified")
@@ -101,36 +126,84 @@ public class JHTTrainingStatistics
     }
 
     public JHTTrainingStatistics(@Nonnull final JHTTrainingStatistics that) {
-        Objects.requireNonNull(that);
+        requireNonNull(that);
 
         this.shootingTestTrainingEvents = that.shootingTestTrainingEvents;
+        this.shootingTestTrainingEventsOverridden = that.shootingTestTrainingEventsOverridden;
+
         this.shootingTestTrainingParticipants = that.shootingTestTrainingParticipants;
+        this.shootingTestTrainingParticipantsOverridden = that.shootingTestTrainingParticipantsOverridden;
+
         this.hunterExamOfficialTrainingEvents = that.hunterExamOfficialTrainingEvents;
+        this.hunterExamOfficialTrainingEventsOverridden = that.hunterExamOfficialTrainingEventsOverridden;
+
         this.hunterExamOfficialTrainingParticipants = that.hunterExamOfficialTrainingParticipants;
+        this.hunterExamOfficialTrainingParticipantsOverridden = that.hunterExamOfficialTrainingParticipantsOverridden;
+
         this.gameDamageTrainingEvents = that.gameDamageTrainingEvents;
+        this.gameDamageTrainingEventsOverridden = that.gameDamageTrainingEventsOverridden;
+
         this.gameDamageTrainingParticipants = that.gameDamageTrainingParticipants;
+        this.gameDamageTrainingParticipantsOverridden = that.gameDamageTrainingParticipantsOverridden;
+
         this.huntingControlTrainingEvents = that.huntingControlTrainingEvents;
+        this.huntingControlTrainingEventsOverridden = that.huntingControlTrainingEventsOverridden;
+
         this.huntingControlTrainingParticipants = that.huntingControlTrainingParticipants;
+        this.huntingControlTrainingParticipantsOverridden = that.huntingControlTrainingParticipantsOverridden;
+
         this.lastModified = that.lastModified;
     }
 
     @Override
-    public boolean isEqualTo(final JHTTrainingStatistics other) {
-        // Includes manually updateable fields only.
-
-        return Objects.equals(shootingTestTrainingEvents, other.shootingTestTrainingEvents) &&
-                Objects.equals(shootingTestTrainingParticipants, other.shootingTestTrainingParticipants) &&
-                Objects.equals(hunterExamOfficialTrainingEvents, other.hunterExamOfficialTrainingEvents) &&
-                Objects.equals(hunterExamOfficialTrainingParticipants, other.hunterExamOfficialTrainingParticipants) &&
-                Objects.equals(gameDamageTrainingEvents, other.gameDamageTrainingEvents) &&
-                Objects.equals(gameDamageTrainingParticipants, other.gameDamageTrainingParticipants) &&
-                Objects.equals(huntingControlTrainingEvents, other.huntingControlTrainingEvents) &&
-                Objects.equals(huntingControlTrainingParticipants, other.huntingControlTrainingParticipants);
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.JHT_TRAINING;
     }
 
     @Override
-    public void updateModificationStatus() {
-        lastModified = DateUtil.now();
+    public boolean isEqualTo(@Nonnull final JHTTrainingStatistics that) {
+        // Includes manually updateable fields only.
+
+        return Objects.equals(shootingTestTrainingEvents, that.shootingTestTrainingEvents) &&
+                Objects.equals(shootingTestTrainingParticipants, that.shootingTestTrainingParticipants) &&
+
+                Objects.equals(hunterExamOfficialTrainingEvents, that.hunterExamOfficialTrainingEvents) &&
+                Objects.equals(hunterExamOfficialTrainingParticipants, that.hunterExamOfficialTrainingParticipants) &&
+
+                Objects.equals(gameDamageTrainingEvents, that.gameDamageTrainingEvents) &&
+                Objects.equals(gameDamageTrainingParticipants, that.gameDamageTrainingParticipants) &&
+
+                Objects.equals(huntingControlTrainingEvents, that.huntingControlTrainingEvents) &&
+                Objects.equals(huntingControlTrainingParticipants, that.huntingControlTrainingParticipants);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final JHTTrainingStatistics that) {
+        // Includes manually updateable fields only.
+
+        this.shootingTestTrainingEvents = that.shootingTestTrainingEvents;
+        this.shootingTestTrainingEventsOverridden = that.shootingTestTrainingEventsOverridden;
+
+        this.shootingTestTrainingParticipants = that.shootingTestTrainingParticipants;
+        this.shootingTestTrainingParticipantsOverridden = that.shootingTestTrainingParticipantsOverridden;
+
+        this.hunterExamOfficialTrainingEvents = that.hunterExamOfficialTrainingEvents;
+        this.hunterExamOfficialTrainingEventsOverridden = that.hunterExamOfficialTrainingEventsOverridden;
+
+        this.hunterExamOfficialTrainingParticipants = that.hunterExamOfficialTrainingParticipants;
+        this.hunterExamOfficialTrainingParticipantsOverridden = that.hunterExamOfficialTrainingParticipantsOverridden;
+
+        this.gameDamageTrainingEvents = that.gameDamageTrainingEvents;
+        this.gameDamageTrainingEventsOverridden = that.gameDamageTrainingEventsOverridden;
+
+        this.gameDamageTrainingParticipants = that.gameDamageTrainingParticipants;
+        this.gameDamageTrainingParticipantsOverridden = that.gameDamageTrainingParticipantsOverridden;
+
+        this.huntingControlTrainingEvents = that.huntingControlTrainingEvents;
+        this.huntingControlTrainingEventsOverridden = that.huntingControlTrainingEventsOverridden;
+
+        this.huntingControlTrainingParticipants = that.huntingControlTrainingParticipants;
+        this.huntingControlTrainingParticipantsOverridden = that.huntingControlTrainingParticipantsOverridden;
     }
 
     @Override
@@ -147,20 +220,18 @@ public class JHTTrainingStatistics
         return isReadyForInspection();
     }
 
-    public int countJhtTrainingEvents() {
-        return Stream
-                .of(shootingTestTrainingEvents, hunterExamOfficialTrainingEvents,
-                        gameDamageTrainingEvents, huntingControlTrainingEvents)
-                .mapToInt(NumberUtils::getIntValueOrZero)
-                .sum();
+    @Nullable
+    Integer countJhtTrainingEvents() {
+        return nullableIntSum(
+                shootingTestTrainingEvents, hunterExamOfficialTrainingEvents, gameDamageTrainingEvents,
+                huntingControlTrainingEvents);
     }
 
-    public int countJhtTrainingParticipants() {
-        return Stream
-                .of(shootingTestTrainingParticipants, hunterExamOfficialTrainingParticipants,
-                        gameDamageTrainingParticipants, huntingControlTrainingParticipants)
-                .mapToInt(NumberUtils::getIntValueOrZero)
-                .sum();
+    @Nullable
+    Integer countJhtTrainingParticipants() {
+        return nullableIntSum(
+                shootingTestTrainingParticipants, hunterExamOfficialTrainingParticipants,
+                gameDamageTrainingParticipants, huntingControlTrainingParticipants);
     }
 
     // Accessors -->
@@ -229,11 +300,77 @@ public class JHTTrainingStatistics
         this.huntingControlTrainingParticipants = huntingControlTrainingParticipants;
     }
 
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
+    }
+
+    public boolean isShootingTestTrainingEventsOverridden() {
+        return shootingTestTrainingEventsOverridden;
+    }
+
+    public void setShootingTestTrainingEventsOverridden(final boolean shootingTestTrainingEventsOverridden) {
+        this.shootingTestTrainingEventsOverridden = shootingTestTrainingEventsOverridden;
+    }
+
+    public boolean isShootingTestTrainingParticipantsOverridden() {
+        return shootingTestTrainingParticipantsOverridden;
+    }
+
+    public void setShootingTestTrainingParticipantsOverridden(final boolean shootingTestTrainingParticipantsOverridden) {
+        this.shootingTestTrainingParticipantsOverridden = shootingTestTrainingParticipantsOverridden;
+    }
+
+    public boolean isHunterExamOfficialTrainingEventsOverridden() {
+        return hunterExamOfficialTrainingEventsOverridden;
+    }
+
+    public void setHunterExamOfficialTrainingEventsOverridden(final boolean hunterExamOfficialTrainingEventsOverridden) {
+        this.hunterExamOfficialTrainingEventsOverridden = hunterExamOfficialTrainingEventsOverridden;
+    }
+
+    public boolean isHunterExamOfficialTrainingParticipantsOverridden() {
+        return hunterExamOfficialTrainingParticipantsOverridden;
+    }
+
+    public void setHunterExamOfficialTrainingParticipantsOverridden(final boolean hunterExamOfficialTrainingParticipantsOverridden) {
+        this.hunterExamOfficialTrainingParticipantsOverridden = hunterExamOfficialTrainingParticipantsOverridden;
+    }
+
+    public boolean isGameDamageTrainingEventsOverridden() {
+        return gameDamageTrainingEventsOverridden;
+    }
+
+    public void setGameDamageTrainingEventsOverridden(final boolean gameDamageTrainingEventsOverridden) {
+        this.gameDamageTrainingEventsOverridden = gameDamageTrainingEventsOverridden;
+    }
+
+    public boolean isGameDamageTrainingParticipantsOverridden() {
+        return gameDamageTrainingParticipantsOverridden;
+    }
+
+    public void setGameDamageTrainingParticipantsOverridden(final boolean gameDamageTrainingParticipantsOverridden) {
+        this.gameDamageTrainingParticipantsOverridden = gameDamageTrainingParticipantsOverridden;
+    }
+
+    public boolean isHuntingControlTrainingEventsOverridden() {
+        return huntingControlTrainingEventsOverridden;
+    }
+
+    public void setHuntingControlTrainingEventsOverridden(final boolean huntingControlTrainingEventsOverridden) {
+        this.huntingControlTrainingEventsOverridden = huntingControlTrainingEventsOverridden;
+    }
+
+    public boolean isHuntingControlTrainingParticipantsOverridden() {
+        return huntingControlTrainingParticipantsOverridden;
+    }
+
+    public void setHuntingControlTrainingParticipantsOverridden(final boolean huntingControlTrainingParticipantsOverridden) {
+        this.huntingControlTrainingParticipantsOverridden = huntingControlTrainingParticipantsOverridden;
     }
 }

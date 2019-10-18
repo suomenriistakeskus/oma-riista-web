@@ -50,6 +50,9 @@ public class EndOfHuntingHarvestReportFeature {
     @Transactional(readOnly = true)
     public EndOfHuntingHarvestReportDTO getEndOfHuntingReport(final long permitId) {
         final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
+        if (harvestPermit.isMooselikePermitType() || harvestPermit.isAmendmentPermit()) {
+            throw new IllegalStateException("This report is not used for permit type " + harvestPermit.getPermitTypeCode());
+        }
         return getEndOfHuntingReport(harvestPermit);
     }
 
@@ -67,8 +70,18 @@ public class EndOfHuntingHarvestReportFeature {
 
     @Transactional
     public EndOfHuntingHarvestReportDTO createEndOfHuntingReport(final long permitId) {
+        return createEndOfHuntingReport(permitId, null);
+    }
+
+    @Transactional
+    public EndOfHuntingHarvestReportDTO createEndOfHuntingReport(final long permitId,
+                                                                 final EndOfHuntingReportModeratorCommentsDTO endOfHuntingReportComments) {
         final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(permitId,
                 HarvestPermitAuthorization.Permission.CREATE_REMOVE_HARVEST_REPORT);
+
+        if (harvestPermit.isMooselikePermitType() || harvestPermit.isAmendmentPermit()) {
+            throw new IllegalStateException("Can not crete report to permit which type is " + harvestPermit.getPermitTypeCode());
+        }
 
         if (harvestPermit.isHarvestReportDone()) {
             throw new IllegalStateException("Harvest report already done for permit");
@@ -80,6 +93,10 @@ public class EndOfHuntingHarvestReportFeature {
 
         final SystemUser activeUser = activeUserService.requireActiveUser();
 
+        if (endOfHuntingReportComments != null && !activeUser.isModeratorOrAdmin()) {
+            throw new IllegalArgumentException("Only moderators can add comments");
+        }
+
         if (activeUser.isModeratorOrAdmin()) {
             harvestReportModeratorService.approvePermitHarvestReportsInBulk(activeUser, harvestPermit);
         }
@@ -90,6 +107,9 @@ public class EndOfHuntingHarvestReportFeature {
                 : HarvestReportState.SENT_FOR_APPROVAL);
         harvestPermit.setHarvestReportAuthor(getEndOfHuntingReportAuthor(activeUser, harvestPermit));
         harvestPermit.setHarvestReportModeratorOverride(activeUser.isModeratorOrAdmin());
+        if (endOfHuntingReportComments != null) {
+            harvestPermit.setEndOfHuntingReportComments(endOfHuntingReportComments.getEndOfHuntingReportComments());
+        }
 
         commitHookService.runInTransactionAfterCommit(() -> {
             harvestReportNotificationService.sendNotificationForPermit(harvestPermit.getId());
@@ -141,6 +161,7 @@ public class EndOfHuntingHarvestReportFeature {
 
         if (dto.getTo() == HarvestReportState.APPROVED) {
             harvestReportModeratorService.approvePermitHarvestReportsInBulk(activeUser, permit);
+            permit.setEndOfHuntingReportComments(dto.getEndOfHuntingReportComments().getEndOfHuntingReportComments());
         }
 
         permit.setHarvestReportState(dto.getTo());

@@ -19,15 +19,15 @@ public class CreditorReferenceTest {
         assertEquals("", getDelimitedValue(" "));
         assertEquals("", getDelimitedValue("  "));
 
-        assertDelimiting("1", generateTrimTestInputs("1"));
-        assertDelimiting("12", generateTrimTestInputs("12"));
-        assertDelimiting("123", generateTrimTestInputs("123"));
-        assertDelimiting("1234", generateTrimTestInputs("1234"));
-        assertDelimiting("12345", generateTrimTestInputs("12345"));
+        assertDelimiting("1", generateSurroundingWhitespaceVariants("1"));
+        assertDelimiting("12", generateSurroundingWhitespaceVariants("12"));
+        assertDelimiting("123", generateSurroundingWhitespaceVariants("123"));
+        assertDelimiting("1234", generateSurroundingWhitespaceVariants("1234"));
+        assertDelimiting("12345", generateSurroundingWhitespaceVariants("12345"));
 
-        assertDelimiting("1 23456", generateTrimTestInputs("123456"));
-        assertDelimiting("1 23456", generateTrimTestInputs("1 23456"));
-        assertDelimiting("1 23456", generateTrimTestInputs("12345 6"));
+        assertDelimiting("1 23456", generateSurroundingWhitespaceVariants("123456"));
+        assertDelimiting("1 23456", generateSurroundingWhitespaceVariants("1 23456"));
+        assertDelimiting("1 23456", generateSurroundingWhitespaceVariants("12345 6"));
     }
 
     @Test
@@ -94,7 +94,7 @@ public class CreditorReferenceTest {
         }
     }
 
-    private static String[] generateTrimTestInputs(final String str) {
+    private static String[] generateSurroundingWhitespaceVariants(final String str) {
         return new String[] {
                 str,
                 " " + str,

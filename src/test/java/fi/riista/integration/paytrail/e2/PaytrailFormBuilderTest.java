@@ -1,5 +1,6 @@
 package fi.riista.integration.paytrail.e2;
 
+import fi.riista.integration.paytrail.e2.model.CallbackUrlSet;
 import fi.riista.integration.paytrail.e2.model.Payment;
 import fi.riista.integration.paytrail.e2.model.Product;
 import fi.riista.util.BigDecimalMoney;
@@ -90,16 +91,19 @@ public class PaytrailFormBuilderTest {
         product2.setDiscountPercent(0);
         product2.setType(1);
 
+        final CallbackUrlSet callbacks = new CallbackUrlSet();
+        callbacks.setSuccessUri(URI.create("http://www.example.com/success"));
+        callbacks.setCancelUri(URI.create("http://www.example.com/cancel"));
+        callbacks.setNotifyUri(URI.create("http://www.example.com/notify"));
+
         final Payment model = new Payment();
-        model.setSuccessUri(URI.create("http://www.example.com/success"));
-        model.setCancelUri(URI.create("http://www.example.com/cancel"));
+        model.setCallbacks(callbacks);
         model.setOrderNumber("123456");
 
         model.getProducts().add(product1);
         model.getProducts().add(product2);
 
         model.setMsgUiMerchantPanel("Order 123456");
-        model.setNotifyUri(URI.create("http://www.example.com/notify"));
         model.setLocale(new Locale("en", "US"));
         model.setCurrency("EUR");
         model.setReferenceNumber("");
@@ -120,9 +124,12 @@ public class PaytrailFormBuilderTest {
 
     @Test
     public void testMinimalExampleFromDocumentation() {
+        final CallbackUrlSet callbacks = new CallbackUrlSet();
+        callbacks.setSuccessUri(URI.create("http://www.example.com/success"));
+        callbacks.setCancelUri(URI.create("http://www.example.com/cancel"));
+
         final Payment model = new Payment();
-        model.setSuccessUri(URI.create("http://www.example.com/success"));
-        model.setCancelUri(URI.create("http://www.example.com/cancel"));
+        model.setCallbacks(callbacks);
         model.setOrderNumber("123456");
         model.setAmount(new BigDecimalMoney(350, 0));
 

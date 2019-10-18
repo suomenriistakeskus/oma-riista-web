@@ -37,10 +37,10 @@ public class HarvestSeasonUtil {
         return day -> DateUtil.overlapsInclusive(ld(y, 8, 20), ld(y, 10, 31), day);
     }
 
-    // 1.9 - 31.1 and 16.5 - 15.6
+    // 1.9 - 15.2 and 16.5 - 15.6
     private static Predicate<LocalDate> isRoeDeerSeason(final int y) {
-        return day -> DateUtil.overlapsInclusive(ld(y, 9, 1), ld(y + 1, 1, 31), day) ||
-                DateUtil.overlapsInclusive(ld(y + 1, 5, 16), ld(y + 1, 5, 16), day);
+        return day -> DateUtil.overlapsInclusive(ld(y, 9, 1), ld(y + 1, 2, 15), day) ||
+                DateUtil.overlapsInclusive(ld(y + 1, 5, 16), ld(y + 1, 6, 15), day);
     }
 
     // 1.10 - 30.11

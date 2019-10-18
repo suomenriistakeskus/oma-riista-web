@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<xs:schema xmlns="http://riista.fi/integration/common/export/2018/10"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/common/export/2018/10"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:include schemaLocation="geolocation-v1.xsd"/>
+
+    <xs:element name="harvests">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="harvest" type="Harvest" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="specimen" type="Specimen" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="Harvest">
+        <xs:sequence>
+            <xs:element name="harvestId" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>
+                        Unique identifier for this harvest.
+                    </xs:documentation>
+                </xs:annotation>
+
+            </xs:element>
+            <xs:element name="rhyNumber" type="xs:string"/>
+            <xs:element name="pointOfTime" type="xs:dateTime"/>
+            <xs:element name="geoLocation" type="geoLocation"/>
+            <xs:element name="gameSpeciesCode" type="xs:int">
+                <xs:annotation>
+                    <xs:documentation>
+                        Official game species code.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="amount" type="xs:int"/>
+            <xs:element name="officialHarvest" type="xs:boolean">
+                <xs:annotation>
+                    <xs:documentation>
+                        True if harvest report is accepted by Finnish Wildlife Agency or accepted as harvest for
+                        hunting day. State can change later when harvest is accepted.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="permitNumber" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Permit number of harvest accepted to permit. Present only in permit based harvest.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Specimen">
+        <xs:sequence>
+            <xs:element name="harvestId" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>
+                        Refers to the harvest id.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="gender" type="gameGender" minOccurs="0"/>
+            <xs:element name="age" type="gameAge" minOccurs="0"/>
+            <xs:element name="weight" type="xs:double" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Measured weight if available, otherwise estimated weight if available, otherwise
+                        empty.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="weightEstimated" type="xs:double" minOccurs="0"/>
+            <xs:element name="weightMeasured" type="xs:double" minOccurs="0"/>
+            <xs:element name="fitnessClass" type="gameFitnessClass" minOccurs="0"/>
+            <xs:element name="antlersType" type="gameAntlersType" minOccurs="0"/>
+            <xs:element name="antlersWidth" type="xs:int" minOccurs="0"/>
+            <xs:element name="antlerPointsLeft" type="xs:int" minOccurs="0"/>
+            <xs:element name="antlerPointsRight" type="xs:int" minOccurs="0"/>
+            <xs:element name="notEdible" type="xs:boolean" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="gameAge">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ADULT"/>
+            <xs:enumeration value="YOUNG"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameAntlersType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="HANKO"/>
+            <xs:enumeration value="LAPIO"/>
+            <xs:enumeration value="SEKA"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameFitnessClass">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ERINOMAINEN"/>
+            <xs:enumeration value="NORMAALI"/>
+            <xs:enumeration value="LAIHA"/>
+            <xs:enumeration value="NAANTYNYT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameGender">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="FEMALE"/>
+            <xs:enumeration value="MALE"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

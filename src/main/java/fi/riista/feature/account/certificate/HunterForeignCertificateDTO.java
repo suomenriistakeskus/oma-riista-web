@@ -13,7 +13,7 @@ public class HunterForeignCertificateDTO {
         Objects.requireNonNull(person);
         Objects.requireNonNull(paymentDate);
 
-        if (person.getHunterNumber() == null) {
+        if (!person.hasHunterNumber()) {
             throw new IllegalArgumentException("Certificate can only be generated for persons with hunterNumber");
         }
 

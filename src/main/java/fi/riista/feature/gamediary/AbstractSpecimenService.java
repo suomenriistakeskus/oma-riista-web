@@ -1,7 +1,7 @@
 package fi.riista.feature.gamediary;
 
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.BaseEntity;
-import fi.riista.feature.common.entity.BaseEntityDTO;
 import fi.riista.feature.common.repository.BaseRepository;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;

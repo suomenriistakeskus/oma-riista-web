@@ -1,6 +1,6 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
-import fi.riista.util.DateUtil;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
 
@@ -17,22 +17,23 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
 public class OtherHuntingRelatedStatistics
-        implements AnnualStatisticsFieldsetStatus,
-        HasLastModificationStatus<OtherHuntingRelatedStatistics>,
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<OtherHuntingRelatedStatistics>,
         Serializable {
 
     public static final OtherHuntingRelatedStatistics reduce(@Nullable final OtherHuntingRelatedStatistics a,
                                                              @Nullable final OtherHuntingRelatedStatistics b) {
 
         final OtherHuntingRelatedStatistics result = new OtherHuntingRelatedStatistics();
-        result.setHarvestPermitApplicationPartners(nullsafeSumAsInt(a, b, s -> s.getHarvestPermitApplicationPartners()));
-        result.setWolfTerritoryWorkgroupLeads(nullsafeSumAsInt(a, b, s -> s.getWolfTerritoryWorkgroupLeads()));
+        result.setHarvestPermitApplicationPartners(nullableIntSum(a, b, s -> s.getHarvestPermitApplicationPartners()));
+        result.setMooselikeTaxationPlanningEvents(nullableIntSum(a, b, s -> s.getMooselikeTaxationPlanningEvents()));
+        result.setWolfTerritoryWorkgroups(nullableIntSum(a, b, s -> s.getWolfTerritoryWorkgroups()));
         result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
         return result;
     }
@@ -54,10 +55,16 @@ public class OtherHuntingRelatedStatistics
     @Column(name = "harvest_permit_application_partners")
     private Integer harvestPermitApplicationPartners;
 
-    // Susireviirityöryhmän vetäminen, kpl
+    // Hirviverotussuunnittelun tilaisuudet lupaosakkaille
+    // TODO Rename database field
     @Min(0)
-    @Column(name = "wolf_territory_workgroup_leads")
-    private Integer wolfTerritoryWorkgroupLeads;
+    @Column(name = "mooselike_taxation_planning_events")
+    private Integer mooselikeTaxationPlanningEvents;
+
+    // Susireviiriyhteistyöryhmän toimintaan osallistuminen, kpl
+    @Min(0)
+    @Column(name = "wolf_territory_workgroups")
+    private Integer wolfTerritoryWorkgroups;
 
     // Updated when any of the manually updateable fields is changed.
     @Column(name = "other_hunting_related_last_modified")
@@ -66,34 +73,40 @@ public class OtherHuntingRelatedStatistics
     public OtherHuntingRelatedStatistics() {
     }
 
-    public OtherHuntingRelatedStatistics(@Nonnull final OtherHuntingRelatedStatistics that) {
-        Objects.requireNonNull(that);
-
-        this.harvestPermitApplicationPartners = that.harvestPermitApplicationPartners;
-        this.wolfTerritoryWorkgroupLeads = that.wolfTerritoryWorkgroupLeads;
-        this.lastModified = that.lastModified;
+    public OtherHuntingRelatedStatistics makeCopy() {
+        final OtherHuntingRelatedStatistics copy = new OtherHuntingRelatedStatistics();
+        copy.harvestPermitApplicationPartners = this.harvestPermitApplicationPartners;
+        copy.mooselikeTaxationPlanningEvents = this.mooselikeTaxationPlanningEvents;
+        copy.wolfTerritoryWorkgroups = this.wolfTerritoryWorkgroups;
+        copy.lastModified = this.lastModified;
+        return copy;
     }
 
     @Override
-    public boolean isEqualTo(final OtherHuntingRelatedStatistics other) {
-        // Includes manually updateable fields only.
-
-        return Objects.equals(wolfTerritoryWorkgroupLeads, other.wolfTerritoryWorkgroupLeads);
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.OTHER_HUNTING_RELATED;
     }
 
     @Override
-    public void updateModificationStatus() {
-        lastModified = DateUtil.now();
+    public boolean isEqualTo(@Nonnull final OtherHuntingRelatedStatistics that) {
+        // Includes only fields manually updateable by coordinator.
+        return Objects.equals(mooselikeTaxationPlanningEvents, that.mooselikeTaxationPlanningEvents);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final OtherHuntingRelatedStatistics that) {
+        // Includes only fields manually updateable by coordinator.
+        this.mooselikeTaxationPlanningEvents = that.mooselikeTaxationPlanningEvents;
     }
 
     @Override
     public boolean isReadyForInspection() {
-        return harvestPermitApplicationPartners != null;
+        return harvestPermitApplicationPartners != null && mooselikeTaxationPlanningEvents != null;
     }
 
     @Override
     public boolean isCompleteForApproval() {
-        return isReadyForInspection() && wolfTerritoryWorkgroupLeads != null;
+        return isReadyForInspection() && wolfTerritoryWorkgroups != null;
     }
 
     // Accessors -->
@@ -106,18 +119,28 @@ public class OtherHuntingRelatedStatistics
         this.harvestPermitApplicationPartners = harvestPermitApplicationPartners;
     }
 
-    public Integer getWolfTerritoryWorkgroupLeads() {
-        return wolfTerritoryWorkgroupLeads;
+    public Integer getMooselikeTaxationPlanningEvents() {
+        return mooselikeTaxationPlanningEvents;
     }
 
-    public void setWolfTerritoryWorkgroupLeads(final Integer wolfTerritoryWorkgroupLeads) {
-        this.wolfTerritoryWorkgroupLeads = wolfTerritoryWorkgroupLeads;
+    public void setMooselikeTaxationPlanningEvents(final Integer mooselikeTaxationPlanningEvents) {
+        this.mooselikeTaxationPlanningEvents = mooselikeTaxationPlanningEvents;
     }
 
+    public Integer getWolfTerritoryWorkgroups() {
+        return wolfTerritoryWorkgroups;
+    }
+
+    public void setWolfTerritoryWorkgroups(final Integer wolfTerritoryWorkgroups) {
+        this.wolfTerritoryWorkgroups = wolfTerritoryWorkgroups;
+    }
+
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

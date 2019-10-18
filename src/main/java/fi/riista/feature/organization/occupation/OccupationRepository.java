@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -49,6 +50,16 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
     List<Occupation> findActiveByOrganisationAndOccupationType(@Param("org") Organisation organisation,
                                                                @Param("type") OccupationType occupationType);
 
+    @Query("SELECT o FROM #{#entityName} o" +
+            " INNER JOIN FETCH o.person person" +
+            " WHERE o.organisation = :org" +
+            " AND o.occupationType = :type" +
+            " AND :date BETWEEN COALESCE(o.beginDate, :date) AND COALESCE(o.endDate, :date)" +
+            AND_NOT_DELETED)
+    List<Occupation> findActiveByOrganisationAndOccupationTypeAndDate(@Param("org") Organisation organisation,
+                                                                      @Param("type") OccupationType occupationType,
+                                                                      @Param("date") LocalDate date);
+
     @Query("SELECT o FROM #{#entityName} o WHERE o.person = :person AND o.organisation = :org" + AND_ACTIVE)
     List<Occupation> findActiveByOrganisationAndPerson(@Param("org") Organisation organisation,
                                                        @Param("person") Person person);
@@ -60,6 +71,14 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
             AND_ACTIVE)
     List<Occupation> findActiveByPersonAndOrganisationTypes(@Param("person") Person person,
                                                             @Param("orgTypes") Set<OrganisationType> type);
+
+    @Query("SELECT o FROM #{#entityName} o" +
+            " INNER JOIN FETCH o.organisation org" +
+            " WHERE o.person IN :persons" +
+            " AND org.organisationType = :orgType" +
+            AND_ACTIVE)
+    List<Occupation> findActiveByPersonsAndOrganisationType(@Param("persons") Set<Person> person,
+                                                            @Param("orgType") OrganisationType type);
 
     @Query("SELECT o FROM #{#entityName} o" +
             " WHERE o.person = :person" +
@@ -131,6 +150,11 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
 
     default List<Occupation> findActiveByOrganisations(final Collection<Long> organisationIds,
                                                        final Interval activityInterval) {
+
+        if (organisationIds.isEmpty()) {
+            // Return modifiable empty list.
+            return new ArrayList<>(0);
+        }
 
         final DateTime beginTime = activityInterval.getStart();
         final DateTime endTime = activityInterval.getEnd();

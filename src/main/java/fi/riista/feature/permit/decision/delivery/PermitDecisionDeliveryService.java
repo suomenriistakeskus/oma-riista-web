@@ -45,7 +45,9 @@ public class PermitDecisionDeliveryService {
         return deliveries;
     }
 
-    private boolean existingDeliveriesContainRhy(final List<PermitDecisionDelivery> deliveries, final PermitDecisionDeliveryDTO rhy) {
+    private static boolean existingDeliveriesContainRhy(final List<PermitDecisionDelivery> deliveries,
+                                                        final PermitDecisionDeliveryDTO rhy) {
+
         return deliveries.stream().anyMatch(d -> d.getName().equals(rhy.getName()));
     }
 

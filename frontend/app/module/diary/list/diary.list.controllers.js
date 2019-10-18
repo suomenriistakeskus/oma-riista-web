@@ -47,15 +47,8 @@ angular.module('app.diary.list.controllers', ['ngResource'])
     .controller('DiaryListController', function ($scope, Helpers, AccountService, FormPostService,
                                                  MapDefaults, MapState, MapBounds, WGS84, GIS, Markers,
                                                  DiaryListService, DiaryListMarkerService, DiaryListSpeciesService,
-                                                 DiaryEntries, DiaryEntryService, SrvaOtherSpeciesService, LocalStorageService,
+                                                 DiaryEntries, DiaryEntryService, SrvaOtherSpeciesService,
                                                  viewState, parameters) {
-
-        $scope.harvestReportInfoVisible = LocalStorageService.getKey('2017-11-16-harvestReportInfoVisibility') !== 'hide';
-        $scope.hideHarvestReportInfo = function () {
-            $scope.harvestReportInfoVisible = false;
-            LocalStorageService.setKey('2017-11-16-harvestReportInfoVisibility', 'hide');
-        };
-
         $scope.state = viewState;
         $scope.parameters = parameters;
         $scope.mapState = MapState.get();
@@ -84,14 +77,14 @@ angular.module('app.diary.list.controllers', ['ngResource'])
                 });
             }
 
-            return _.first($scope.groupedEntries);
+            return _.head($scope.groupedEntries);
         }
 
         function _expandActiveHuntingDayGroup() {
             var activeHuntingDayGroup = _getActiveHuntingDayGroup();
 
             if (activeHuntingDayGroup) {
-                _.each($scope.groupedEntries, function (group) {
+                _.forEach($scope.groupedEntries, function (group) {
                     group.accordionOpen = false;
                 });
                 activeHuntingDayGroup.accordionOpen = true;
@@ -157,8 +150,8 @@ angular.module('app.diary.list.controllers', ['ngResource'])
                 includeHarvest: !!viewState.showHarvest,
                 includeObservation: !!viewState.showObservation,
                 includeSrva: !!viewState.showSrvaEvent,
-                onlyReports: !!viewState.onlyReports,
-                onlyTodo: !!viewState.onlyTodo,
+                onlyReports: !!viewState.showHarvest && viewState.harvestReportFilter === 'report-only',
+                onlyTodo: !!viewState.showHarvest && viewState.harvestReportFilter === 'todo-only',
                 reportedForOthers: !!viewState.reportedForOthers
 
             }).$promise.then(function (diaryEntries) {
@@ -177,10 +170,9 @@ angular.module('app.diary.list.controllers', ['ngResource'])
             'state.showObservation', // 1
             'state.showSrvaEvent', // 2
             'state.reportedForOthers', // 3
-            'state.onlyReports', // 4
-            'state.onlyTodo', // 5
-            'state.beginDate', // 6
-            'state.endDate', // 7
+            'state.harvestReportFilter', // 4
+            'state.beginDate', // 5
+            'state.endDate', // 6
         ], function (newValues, oldValues) {
             // Data loaded from backend is up to date ?
 
@@ -190,8 +182,7 @@ angular.module('app.diary.list.controllers', ['ngResource'])
                 angular.equals(newValues[3], oldValues[3]) &&
                 angular.equals(newValues[4], oldValues[4]) &&
                 angular.equals(newValues[5], oldValues[5]) &&
-                angular.equals(newValues[6], oldValues[6]) &&
-                angular.equals(newValues[7], oldValues[7])) {
+                angular.equals(newValues[6], oldValues[6])) {
                 return;
             }
 

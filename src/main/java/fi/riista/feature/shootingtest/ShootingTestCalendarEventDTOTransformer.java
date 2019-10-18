@@ -1,33 +1,36 @@
 package fi.riista.feature.shootingtest;
 
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import fi.riista.feature.organization.address.Address;
+import fi.riista.feature.common.dto.LastModifierDTO;
+import fi.riista.feature.common.service.LastModifierService;
 import fi.riista.feature.organization.address.QAddress;
 import fi.riista.feature.organization.calendar.CalendarEvent;
 import fi.riista.feature.organization.calendar.QCalendarEvent;
 import fi.riista.feature.organization.calendar.QVenue;
 import fi.riista.feature.organization.calendar.Venue;
 import fi.riista.feature.organization.calendar.VenueDTO;
-import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.occupation.QOccupation;
+import fi.riista.feature.organization.person.QPerson;
 import fi.riista.feature.shootingtest.ShootingTestParticipantRepositoryCustom.ParticipantSummary;
-import fi.riista.util.DateUtil;
+import fi.riista.feature.shootingtest.official.QShootingTestOfficial;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficial;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficialDTO;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficialRepository;
 import fi.riista.util.F;
 import fi.riista.util.ListTransformer;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import static fi.riista.util.jpa.JpaGroupingUtils.groupRelations;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.group.GroupBy.list;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 @Component
 public class ShootingTestCalendarEventDTOTransformer
@@ -43,6 +46,9 @@ public class ShootingTestCalendarEventDTOTransformer
     private ShootingTestParticipantRepository participantRepo;
 
     @Resource
+    private LastModifierService lastModifierService;
+
+    @Resource
     private JPAQueryFactory queryFactory;
 
     @Nonnull
@@ -52,56 +58,30 @@ public class ShootingTestCalendarEventDTOTransformer
             return emptyList();
         }
 
-        final Map<Long, Venue> venueMapping = getVenuesByCalendarEventId(calendarEvents);
+        final Associations assocations = new Associations(calendarEvents);
 
-        final List<ShootingTestEvent> shootingTestEvents = eventRepo.findByCalendarEventIn(calendarEvents);
+        return F.mapNonNullsToList(calendarEvents, calendarEvent -> {
 
-        final Map<CalendarEvent, ShootingTestEvent> eventIndex;
-        final Map<ShootingTestEvent, List<ShootingTestOfficial>> officialMapping;
-        final Map<Long, ParticipantSummary> participantSummaryMapping;
+            checkArgument(calendarEvent.getCalendarEventType().isShootingTest(), "Event must be a shooting test event");
 
-        if (shootingTestEvents.isEmpty()) {
-            eventIndex = emptyMap();
-            officialMapping = emptyMap();
-            participantSummaryMapping = emptyMap();
-        } else {
-            eventIndex = F.index(shootingTestEvents, ShootingTestEvent::getCalendarEvent);
-            officialMapping = groupRelations(shootingTestEvents, ShootingTestOfficial_.shootingTestEvent, officialRepo);
-            participantSummaryMapping = participantRepo.getParticipantSummaryByShootingTestEventId(shootingTestEvents);
-        }
+            final ShootingTestCalendarEventDTO.Builder builder = ShootingTestCalendarEventDTO
+                    .builder()
+                    .withCalendarEvent(calendarEvent)
+                    .withVenue(assocations.getVenue(calendarEvent));
 
-        return calendarEvents.stream().map(calendarEvent -> {
+            final ShootingTestEvent shootingTestEvent = assocations.getShootingTestEvent(calendarEvent);
 
-            final ShootingTestEvent shootingTestEvent = eventIndex.get(calendarEvent);
-            final Venue venue = venueMapping.get(calendarEvent.getId());
-
-            final List<ShootingTestOfficialDTO> officialDTOs;
-            final ParticipantSummary participantSummary;
-
-            if (shootingTestEvent != null) {
-                officialDTOs = Optional
-                        .ofNullable(officialMapping.get(shootingTestEvent))
-                        .map(officials -> {
-                            return officials
-                                    .stream()
-                                    .map(official -> {
-                                        final Person person = official.getOccupation().getPerson();
-                                        return ShootingTestOfficialDTOTransformer.create(official, person);
-                                    })
-                                    .collect(toList());
-                        })
-                        .orElseGet(Collections::emptyList);
-
-                participantSummary =
-                        participantSummaryMapping.getOrDefault(shootingTestEvent.getId(), ParticipantSummary.EMPTY);
-            } else {
-                officialDTOs = emptyList();
-                participantSummary = ParticipantSummary.EMPTY;
+            if (shootingTestEvent == null) {
+                return builder.build();
             }
 
-            return create(shootingTestEvent, calendarEvent, venue, venue.getAddress(), officialDTOs, participantSummary);
-
-        }).collect(toList());
+            return builder
+                    .withShootingTestEvent(shootingTestEvent)
+                    .withOfficials(assocations.getOfficials(shootingTestEvent))
+                    .withParticipantSummary(assocations.getParticipantSummary(shootingTestEvent))
+                    .withLastModifier(assocations.getLastModifier(shootingTestEvent))
+                    .build();
+        });
     }
 
     private Map<Long, Venue> getVenuesByCalendarEventId(final List<CalendarEvent> events) {
@@ -115,44 +95,79 @@ public class ShootingTestCalendarEventDTOTransformer
                 .join(CALENDAR_EVENT.venue, VENUE)
                 .join(VENUE.address, ADDRESS).fetchJoin()
                 .where(CALENDAR_EVENT.in(events))
-                .fetch()
-                .stream()
-                .collect(toMap(t -> t.get(CALENDAR_EVENT.id), t -> t.get(VENUE)));
+                .transform(groupBy(CALENDAR_EVENT.id).as(VENUE));
     }
 
-    private static ShootingTestCalendarEventDTO create(@Nullable final ShootingTestEvent shootingTestEvent,
-                                                       @Nonnull final CalendarEvent calendarEvent,
-                                                       @Nonnull final Venue venue,
-                                                       @Nonnull final Address venueAddress,
-                                                       @Nonnull final List<ShootingTestOfficialDTO> officials,
-                                                       @Nonnull final ParticipantSummary participantSummary) {
+    private Map<Long, List<ShootingTestOfficial>> getOfficialsByShootingTestEventId(final List<ShootingTestEvent> events) {
+        final QShootingTestOfficial OFFICIAL = QShootingTestOfficial.shootingTestOfficial;
+        final QOccupation OCCUPATION = QOccupation.occupation;
+        final QPerson PERSON = QPerson.person;
 
-        final ShootingTestCalendarEventDTO dto = new ShootingTestCalendarEventDTO();
+        final NumberPath<Long> eventId = OFFICIAL.shootingTestEvent.id;
 
-        dto.setRhyId(calendarEvent.getOrganisation().getId());
-        dto.setCalendarEventId(calendarEvent.getId());
+        return queryFactory
+                .select(eventId, OFFICIAL)
+                .from(OFFICIAL)
+                .join(OFFICIAL.occupation, OCCUPATION).fetchJoin()
+                .join(OCCUPATION.person, PERSON).fetchJoin()
+                .where(eventId.in(F.getUniqueIds(events)))
+                .transform(groupBy(eventId).as(list(OFFICIAL)));
+    }
 
-        if (shootingTestEvent != null) {
-            dto.setShootingTestEventId(shootingTestEvent.getId());
-            dto.setLockedTime(DateUtil.toDateTimeNullSafe(shootingTestEvent.getLockedTime()));
+    private class Associations {
+
+        private final Map<Long, Venue> venueByCalendarEventId;
+        private final Map<CalendarEvent, ShootingTestEvent> eventIndex;
+        private final Map<Long, List<ShootingTestOfficial>> officialsByShootingTestEventId;
+        private final Map<Long, ParticipantSummary> participantSummaryMapping;
+        private final Map<ShootingTestEvent, LastModifierDTO> lastModifierMapping;
+
+        Associations(final List<CalendarEvent> calendarEvents) {
+            final List<ShootingTestEvent> shootingTestEvents = eventRepo.findByCalendarEventIn(calendarEvents);
+
+            this.venueByCalendarEventId = getVenuesByCalendarEventId(calendarEvents);
+
+            if (shootingTestEvents.isEmpty()) {
+                this.eventIndex = emptyMap();
+                this.officialsByShootingTestEventId = emptyMap();
+                this.participantSummaryMapping = emptyMap();
+                this.lastModifierMapping = emptyMap();
+            } else {
+                this.eventIndex = F.index(shootingTestEvents, ShootingTestEvent::getCalendarEvent);
+                this.officialsByShootingTestEventId = getOfficialsByShootingTestEventId(shootingTestEvents);
+                this.participantSummaryMapping =
+                        participantRepo.getParticipantSummaryByShootingTestEventId(shootingTestEvents);
+                this.lastModifierMapping = lastModifierService.getLastModifiers(shootingTestEvents);
+            }
         }
 
-        dto.setCalendarEventType(calendarEvent.getCalendarEventType());
-        dto.setName(calendarEvent.getName());
-        dto.setDescription(calendarEvent.getDescription());
+        ShootingTestEvent getShootingTestEvent(final CalendarEvent calendarEvent) {
+            return eventIndex.get(calendarEvent);
+        }
 
-        dto.setDate(DateUtil.toLocalDateNullSafe(calendarEvent.getDate()));
-        dto.setBeginTime(calendarEvent.getBeginTime());
-        dto.setEndTime(calendarEvent.getEndTime());
+        VenueDTO getVenue(final CalendarEvent calendarEvent) {
+            final Venue venue = venueByCalendarEventId.get(calendarEvent.getId());
+            return VenueDTO.create(venue, venue.getAddress());
+        }
 
-        dto.setVenue(VenueDTO.create(venue, venueAddress));
-        dto.setOfficials(officials);
+        List<ShootingTestOfficialDTO> getOfficials(final ShootingTestEvent shootingTestEvent) {
+            final List<ShootingTestOfficial> officials = officialsByShootingTestEventId.get(shootingTestEvent.getId());
 
-        dto.setNumberOfAllParticipants(participantSummary.numberOfAllParticipants);
-        dto.setNumberOfCompletedParticipants(participantSummary.numberOfCompletedParticipants);
-        dto.setNumberOfParticipantsWithNoAttempts(participantSummary.numberOfParticipantsWithNoAttempts);
-        dto.setTotalPaidAmount(participantSummary.totalPaidAmount);
+            if (F.isNullOrEmpty(officials)) {
+                return emptyList();
+            }
 
-        return dto;
+            return F.mapNonNullsToList(officials, official -> {
+                return ShootingTestOfficialDTO.create(official, official.getOccupation().getPerson());
+            });
+        }
+
+        ParticipantSummary getParticipantSummary(final ShootingTestEvent shootingTestEvent) {
+            return participantSummaryMapping.getOrDefault(shootingTestEvent.getId(), ParticipantSummary.EMPTY);
+        }
+
+        LastModifierDTO getLastModifier(final ShootingTestEvent shootingTestEvent) {
+            return lastModifierMapping.get(shootingTestEvent);
+        }
     }
 }

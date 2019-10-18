@@ -1,8 +1,9 @@
 package fi.riista.feature.shootingtest;
 
 import fi.riista.integration.metsastajarekisteri.shootingtest.MR_ShootingTestType;
+import fi.riista.util.LocalisedEnum;
 
-public enum ShootingTestType {
+public enum ShootingTestType implements LocalisedEnum {
 
     MOOSE(4),
     BEAR(4),

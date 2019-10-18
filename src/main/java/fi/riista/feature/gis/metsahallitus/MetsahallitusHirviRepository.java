@@ -1,6 +1,5 @@
 package fi.riista.feature.gis.metsahallitus;
 
-import com.google.common.collect.ImmutableSet;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
@@ -11,7 +10,6 @@ import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.sql.SQMhHirvi;
-import fi.riista.sql.SQPalstaalue;
 import fi.riista.sql.SQZoneMhHirvi;
 import fi.riista.util.F;
 import fi.riista.util.GISUtils;
@@ -24,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public class MetsahallitusHirviRepository {
@@ -105,15 +102,12 @@ public class MetsahallitusHirviRepository {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Set<Integer> filterPalstaIntersectingHirvi(final List<Integer> listOfPalstaId, final int year) {
+    public Integer findLatestYear() {
         final SQMhHirvi MH_HIRVI = SQMhHirvi.mhHirvi;
-        final SQPalstaalue PALSTA_ALUE = SQPalstaalue.palstaalue;
 
-        return ImmutableSet.copyOf(sqlQueryFactory
-                .select(PALSTA_ALUE.id)
-                .from(PALSTA_ALUE)
-                .join(MH_HIRVI).on(MH_HIRVI.geom.intersects(PALSTA_ALUE.geom.buffer(-0.01)))
-                .where(MH_HIRVI.vuosi.eq(year), PALSTA_ALUE.id.in(listOfPalstaId))
-                .fetch());
+        return sqlQueryFactory
+                .select(MH_HIRVI.vuosi.max())
+                .from(MH_HIRVI)
+                .fetchOne();
     }
 }

@@ -1,71 +1,9 @@
-<div class="r-club-map-edit-layout">
-    <div class="main-column">
-        <div class="map-overlay-button-container">
-            <map-editor-toolbar api="$ctrl.editor.api"
-                                save="$ctrl.saveFeatures()"
-                                close="$ctrl.close()"></map-editor-toolbar>
-        </div>
-
-        <leaflet id="club-area-map"
-                 class="r-cursor-arrow"
-                 defaults="$ctrl.mapDefaults"
-                 layers="$ctrl.mapDefaults.mmlLayers"
-                 controls="$ctrl.mapDefaults.controls"
-                 event-broadcast="$ctrl.mapEvents"
-                 lf-center="$ctrl.mapState.center"
-                 bounds="$ctrl.mapState.viewBounds"
-                 r-viewport-height>
-            <r-geojson-editor
-                    editor-api="$ctrl.editor.api"
-                    editor-geojson="$ctrl.editor.geojson"
-                    editor-callbacks="$ctrl.editor.callbacks">
-            </r-geojson-editor>
-        </leaflet>
-    </div>
-
-    <div class="top-left-column">
-        <h3 ng-bind="$ctrl.huntingClubArea | rI18nNameFilter"></h3>
-
-        <club-map-edit-details feature="$ctrl.getActiveFeature()"
-                               update-feature="$ctrl.updateActiveFeature()"></club-map-edit-details>
-
-        <div class="btn-group btn-group-justified">
-            <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'a'">
-                <span translate="club.area.map.tab.realEstates.title"></span>
-                &nbsp;
-                <span ng-show="$ctrl.hasPalstaAreaChanges()" class="glyphicon glyphicon-bell text-danger"></span>
-            </label>
-
-            <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'b'">
-                <span translate="club.area.map.tab.metsahallitus.title"></span>
-                &nbsp;
-                <span ng-show="$ctrl.hasMooseAreaChanges()" class="glyphicon glyphicon-bell text-danger"></span>
-            </label>
-
-            <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'c'">
-                <span translate="club.area.map.tab.massInsert.title"></span>
-            </label>
-        </div>
-    </div>
-
-    <div class="left-column">
-        <div ng-if="$ctrl.selectedTab === 'a'">
-            <club-map-edit-palsta-sidebar
-                    editor-api="$ctrl.editor.api">
-            </club-map-edit-palsta-sidebar>
-        </div>
-
-        <div ng-if="$ctrl.selectedTab === 'b'">
-            <club-map-edit-moose-sidebar
-                    editor-api="$ctrl.editor.api"
-                    metsahallitus="$ctrl.metsahallitus">
-            </club-map-edit-moose-sidebar>
-        </div>
-
-        <div ng-if="$ctrl.selectedTab === 'c'">
-            <club-map-bulk-insert-sidebar
-                    editor-api="$ctrl.editor.api">
-            </club-map-bulk-insert-sidebar>
-        </div>
-    </div>
-</div>
+<map-editor-layout
+        feature-collection="$ctrl.featureCollection"
+        default-bounds="$ctrl.rhyBounds"
+        area-name="$ctrl.huntingClubArea | rI18nNameFilter"
+        metsahallitus-year="$ctrl.huntingClubArea.metsahallitusYear"
+        hirvi-area-list="$ctrl.hirviAreaList"
+        save-features="$ctrl.saveFeatures(geoJSON)"
+        close="$ctrl.close()">
+</map-editor-layout>

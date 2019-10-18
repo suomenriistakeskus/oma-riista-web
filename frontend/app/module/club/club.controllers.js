@@ -7,8 +7,11 @@ angular.module('app.club.controllers', [])
                 abstract: true,
                 templateUrl: 'club/layout.html',
                 url: '/club/{id:[0-9]{1,8}}',
-                controller: function ($scope, club) {
+                controller: function ($scope, club, todos) {
                     $scope.club = club;
+                    $scope.todos = todos;
+                    $scope.groupTodos = !$scope.todos.groupMissing && $scope.todos.groupPermitMissing;
+
                 },
                 resolve: {
                     clubId: function ($stateParams) {
@@ -16,6 +19,9 @@ angular.module('app.club.controllers', [])
                     },
                     club: function (Clubs, clubId) {
                         return Clubs.get({id: clubId}).$promise;
+                    },
+                    todos: function (ClubPermits, Helpers, clubId) {
+                        return ClubPermits.todos({clubId: clubId, year: moment().year()}).$promise;
                     }
                 }
             })
@@ -214,9 +220,9 @@ angular.module('app.club.controllers', [])
 
             if (angular.isArray($scope.summary.items)) {
                 var sortFields = ['species.categoryId', 'count', 'species.code'];
-                var sortOrders = [true, false, true];
+                var sortOrders = ['asc', 'desc', 'asc'];
 
-                $scope.summary.items = _.sortByOrder($scope.summary.items, sortFields, sortOrders);
+                $scope.summary.items = _.orderBy($scope.summary.items, sortFields, sortOrders);
             }
 
             $scope.yearChanged = function () {

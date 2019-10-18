@@ -1,0 +1,26 @@
+<permit-decision-section-header decision="$ctrl.decision"
+                                section-id="$ctrl.sectionId">
+</permit-decision-section-header>
+
+<div class="panel panel-decision">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-xs-6">
+                <div class="panel-title">
+                    <span translate="harvestpermit.decision.section.textHeader"></span>
+                </div>
+            </div>
+
+            <div class="col-xs-6 text-right">
+                <a ng-if="$ctrl.canEditContent()"
+                   ng-click="$ctrl.editSection()">
+                    <span class="fa fa-2x fa-edit text-primary"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <div class="html-content" ng-bind-html="$ctrl.sectionContent"></div>
+    </div>
+</div>

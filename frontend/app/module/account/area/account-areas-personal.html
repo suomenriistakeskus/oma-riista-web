@@ -1,0 +1,19 @@
+<div>
+    <div class="row">
+        <div class="col-xs-12 text-right">
+            <button type="button" class="btn btn-primary"
+                    ng-click="$ctrl.createArea()">
+                <span translate="account.areas.create"></span>
+            </button>
+        </div>
+    </div>
+
+    <hr class="invisible">
+
+    <slice-pager slice="$ctrl.areaList" load-page="$ctrl.loadPage(page)"></slice-pager>
+
+    <hr class="invisible">
+
+    <account-area-list area-list="$ctrl.areaList.content"></account-area-list>
+
+</div>

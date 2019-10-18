@@ -155,6 +155,7 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
 
         return jpqlQueryFactory.selectFrom(occupation)
                 .join(occupation.organisation)
+                .join(occupation.person).fetchJoin()
                 .where(occupation.occupationType.eq(OccupationType.TOIMINNANOHJAAJA),
                         occupation.organisation.in(rhys),
                         occupation.validAndNotDeleted())

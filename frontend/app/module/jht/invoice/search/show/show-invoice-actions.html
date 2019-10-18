@@ -1,0 +1,22 @@
+<div ng-if="$ctrl.actions.length > 0">
+    <p class="column-title">
+        <span translate="jht.invoice.show.actions"></span>
+    </p>
+
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th translate="global.pointOfTime"></th>
+                <th translate="jht.invoice.show.actor"></th>
+                <th translate="jht.invoice.show.action"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="action in $ctrl.actions track by action.id">
+                <td class="text-nowrap" ng-bind="::action.actionTime | date:'d.M.yyyy HH:mm'"></td>
+                <td class="text-nowrap" ng-bind="::action.moderatorName"></td>
+                <td ng-bind="'invoice.stateChangeEventTypes.' + action.type | translate"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

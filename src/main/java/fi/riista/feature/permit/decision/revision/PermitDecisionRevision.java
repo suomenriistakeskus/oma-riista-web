@@ -11,6 +11,8 @@ import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -35,12 +37,18 @@ public class PermitDecisionRevision extends LifecycleEntity<Long> {
 
     private Long id;
 
-    // Lukituspäivä
+    @Size(min = 8, max = 255)
     @Column
+    private String externalId;
+
+    // Lukituspäivä
+    @NotNull
+    @Column(nullable = false)
     private DateTime lockedDate;
 
     // Suunniteltu julkaisupäivä
-    @Column
+    @NotNull
+    @Column(nullable = false)
     private DateTime scheduledPublishDate;
 
     // Julkaisupäivä
@@ -63,6 +71,15 @@ public class PermitDecisionRevision extends LifecycleEntity<Long> {
     // Julkaisu peruutettu
     @Column(nullable = false)
     private boolean cancelled;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PermitDecision.DecisionType decisionType;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private PermitDecision.AppealStatus appealStatus;
 
     @Valid
     @Embedded
@@ -106,6 +123,14 @@ public class PermitDecisionRevision extends LifecycleEntity<Long> {
     @Override
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(final String externalId) {
+        this.externalId = externalId;
     }
 
     public DateTime getLockedDate() {
@@ -162,6 +187,22 @@ public class PermitDecisionRevision extends LifecycleEntity<Long> {
 
     public void setCancelled(final boolean cancelled) {
         this.cancelled = cancelled;
+    }
+
+    public PermitDecision.DecisionType getDecisionType() {
+        return decisionType;
+    }
+
+    public void setDecisionType(final PermitDecision.DecisionType decisionType) {
+        this.decisionType = decisionType;
+    }
+
+    public PermitDecision.AppealStatus getAppealStatus() {
+        return appealStatus;
+    }
+
+    public void setAppealStatus(final PermitDecision.AppealStatus appealStatus) {
+        this.appealStatus = appealStatus;
     }
 
     public PermitDecisionDocument getDocument() {

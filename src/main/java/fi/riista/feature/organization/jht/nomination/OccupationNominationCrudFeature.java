@@ -20,7 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -30,8 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@Component
-public class OccupationNominationCrudFeature extends AbstractCrudFeature<Long, OccupationNomination, OccupationNominationDTO> {
+@Service
+public class OccupationNominationCrudFeature
+        extends AbstractCrudFeature<Long, OccupationNomination, OccupationNominationDTO> {
 
     @Resource
     private OccupationNominationRepository occupationNominationRepository;
@@ -59,8 +60,7 @@ public class OccupationNominationCrudFeature extends AbstractCrudFeature<Long, O
     }
 
     @Override
-    protected void updateEntity(final OccupationNomination entity,
-                                final OccupationNominationDTO dto) {
+    protected void updateEntity(final OccupationNomination entity, final OccupationNominationDTO dto) {
     }
 
     @Transactional(readOnly = true)
@@ -100,7 +100,9 @@ public class OccupationNominationCrudFeature extends AbstractCrudFeature<Long, O
 
         if (dto.getHunterNumber() != null) {
             isPersonSearch = true;
-            person = personLookupService.findByHunterNumber(dto.getHunterNumber()).orElse(null);
+            person = personLookupService
+                    .findByHunterNumber(dto.getHunterNumber(), Occupation.FOREIGN_PERSON_ELIGIBLE_FOR_OCCUPATION)
+                    .orElse(null);
         } else if (dto.getSsn() != null) {
             isPersonSearch = true;
             person = personLookupService.findBySsnNoFallback(dto.getSsn().toUpperCase()).orElse(null);

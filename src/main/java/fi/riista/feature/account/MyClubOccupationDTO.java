@@ -1,6 +1,6 @@
 package fi.riista.feature.account;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.OrganisationType;

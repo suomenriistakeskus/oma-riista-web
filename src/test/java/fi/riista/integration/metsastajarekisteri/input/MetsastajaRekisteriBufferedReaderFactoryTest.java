@@ -36,27 +36,27 @@ public class MetsastajaRekisteriBufferedReaderFactoryTest {
 
     @Test
     public void testWithPlain() throws IOException {
-        String content = readContent("sample.csv");
+        final String content = readContent("sample.csv");
         Assert.assertEquals("Hello World!", content);
     }
 
     @Test
     public void testWithGzipAndEncryption() throws IOException {
-        String content = readContent("sample.csv.gz");
+        final String content = readContent("sample.csv.gz");
         Assert.assertEquals("Hello World!", content);
     }
 
     @Test
     public void testWithGzip() throws IOException {
-        String content = readContent("sample.csv.gz.enc");
+        final String content = readContent("sample.csv.gz.enc");
         Assert.assertEquals("Hello World!", content);
     }
 
-    private String readContent(String fileName) throws IOException {
+    private String readContent(final String fileName) throws IOException {
         final ClassPathResource resource = new ClassPathResource(fileName, this.getClass());
 
         try (BufferedReader bufferedReader = readerFactory.create(resource, Constants.UTF8.name())) {
-            StringBuilder to = new StringBuilder();
+            final StringBuilder to = new StringBuilder();
             CharStreams.copy(bufferedReader, to);
             return to.toString();
         }

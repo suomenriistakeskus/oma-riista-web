@@ -12,7 +12,7 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
+import fi.riista.feature.huntingclub.permit.endofhunting.HuntingFinishingService;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -59,7 +59,7 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
     private ActiveUserService activeUserService;
 
     @Resource
-    private HuntingClubPermitService clubPermitService;
+    private HuntingFinishingService huntingFinishingService;
 
     @Resource
     private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
@@ -93,17 +93,17 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
             dto.setHuntingDaysExist(idsOfGroupsHavingHuntingDays.contains(group.getId()));
             dto.setMemberCount(memberCountFn.apply(group));
 
-            dto.setHuntingFinished(clubPermitService.hasClubHuntingFinished(group));
+            dto.setHuntingFinished(huntingFinishingService.hasPermitPartnerFinishedHunting(group));
             dto.setCanEdit(!group.isFromMooseDataCard() &&
                     (adminOrModerator ||
                             hasEditPermission(occupationByOrganisationId, group)
-                                    && !harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(group.getHarvestPermit(), group.getHuntingYear())));
+                                    && !harvestPermitLockedByDateService.isPermitLocked(group)));
 
             return dto;
         }).collect(toList());
     }
 
-    private List<Long> getGroupIdsHavingHuntingDays(@Nonnull List<HuntingClubGroup> list) {
+    private List<Long> getGroupIdsHavingHuntingDays(@Nonnull final List<HuntingClubGroup> list) {
         final Set<Long> groupIds = F.getUniqueIds(list);
 
         final QHarvest harvest = QHarvest.harvest;
@@ -184,7 +184,7 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
 
     private static boolean hasAnyOccupationWithType(final Collection<Occupation> occupations,
                                                     final EnumSet<OccupationType> occupationType) {
+
         return occupations.stream().map(Occupation::getOccupationType).anyMatch(occupationType::contains);
     }
-
 }

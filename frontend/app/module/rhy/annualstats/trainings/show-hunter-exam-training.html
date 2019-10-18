@@ -17,8 +17,12 @@
                             <span ng-switch-when="false" num-pieces="::$ctrl.hunterExamTraining.hunterExamTrainingEvents"></span>
                         </td>
                     </tr>
-                    <tr>
-                        <td class="col-xs-9" translate="rhy.annualStats.trainings.hunterExam.hunterExamParticipants"></td>
+
+                    <tr class="indented-row">
+                        <td class="col-xs-9" ng-switch="$ctrl.hunterExamTraining.hunterExamTrainingParticipantsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunterExam.hunterExamParticipants"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunterExam.hunterExamParticipants"></div>
+                        </td>
                         <td num-persons="::$ctrl.hunterExamTraining.hunterExamTrainingParticipants"></td>
                     </tr>
                 </tbody>

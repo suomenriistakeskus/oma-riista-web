@@ -9,7 +9,7 @@
 </div>
 <div>
     <span class="glyphicon glyphicon-envelope"></span>
-    <span ng-bind="$ctrl.person.email"></span>
+    <a ng-bind="$ctrl.person.email" href="mailto:{{$ctrl.person.email}}"></a>
 </div>
 <div>
     <span class="glyphicon glyphicon-phone"></span>

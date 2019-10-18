@@ -88,11 +88,11 @@
         <commons.io.version>2.5</commons.io.version>
         <commons.codec.version>1.10</commons.codec.version>
         <commons.validator.version>1.4.1</commons.validator.version>
-        <commons.net.version>3.3</commons.net.version>
+        <sshj.version>0.26.0</sshj.version>
         <handlebars.version>4.0.6</handlebars.version>
         <flexmark.version>0.32.18</flexmark.version>
         <jasypt.version>1.9.2</jasypt.version>
-        <onelogin.saml.version>2.0.1</onelogin.saml.version>
+        <onelogin.saml.version>2.4.0</onelogin.saml.version>
         <jsoup.version>1.10.1</jsoup.version>
         <google.phonenumber>8.0.0</google.phonenumber>
         <joda.time.version>2.9.7</joda.time.version>
@@ -103,8 +103,8 @@
         <pdfbox.version>2.0.8</pdfbox.version>
         <barcode4j.version>2.1</barcode4j.version>
         <fcm.java.version>1.0</fcm.java.version>
-        <sentry.version>1.6.3</sentry.version>
-        <vavr.version>0.9.0</vavr.version>
+        <sentry.version>1.7.5</sentry.version>
+        <vavr.version>0.10.0</vavr.version>
         <fixedformat4j.version>1.2.2</fixedformat4j.version>
         <!-- Do not upgrade unless Spring Cloud has support -->
         <amazon.sdk.version>1.11.160</amazon.sdk.version>
@@ -131,7 +131,7 @@
         <jackson.geojson.version>1.8</jackson.geojson.version>
         <logback.version>1.2.3</logback.version>
         <logback.syslog.version>1.0.0</logback.syslog.version>
-        <newrelic.agent.version>3.40.0</newrelic.agent.version>
+        <newrelic.agent.version>5.4.0</newrelic.agent.version>
         <feign.version>9.7.0</feign.version>
         <swagger.core.version>1.5.20</swagger.core.version>
 
@@ -430,6 +430,141 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>common-export-harvests-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <packageLevelAnnotations>true</packageLevelAnnotations>
+                                    <bindingIncludes>
+                                        <include>common-export/export-harvests-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>common-export/export-harvests-v1.xsd</include>
+                                        <include>common-export/geolocation-v1.xsd</include>
+                                    </schemaIncludes>
+                                    <args>
+                                        <!-- Enabled JAXB RI customizations -->
+                                        <arg>-extension</arg>
+                                        <arg>-Xnamespace-prefix</arg>
+                                        <arg>-Xfluent-api</arg>
+                                        <arg>-XtoString</arg>
+                                        <arg>-Xequals</arg>
+                                        <arg>-XhashCode</arg>
+                                        <arg>-Xannotate</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>common-export-observations-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <packageLevelAnnotations>true</packageLevelAnnotations>
+                                    <bindingIncludes>
+                                        <include>common-export/export-observations-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>common-export/export-observations-v1.xsd</include>
+                                        <include>common-export/geolocation-v1.xsd</include>
+                                    </schemaIncludes>
+                                    <args>
+                                        <!-- Enabled JAXB RI customizations -->
+                                        <arg>-extension</arg>
+                                        <arg>-Xnamespace-prefix</arg>
+                                        <arg>-Xfluent-api</arg>
+                                        <arg>-XtoString</arg>
+                                        <arg>-Xequals</arg>
+                                        <arg>-XhashCode</arg>
+                                        <arg>-Xannotate</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>common-export-srva-events-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <packageLevelAnnotations>true</packageLevelAnnotations>
+                                    <bindingIncludes>
+                                        <include>common-export/export-srva-events-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>common-export/export-srva-events-v1.xsd</include>
+                                        <include>common-export/geolocation-v1.xsd</include>
+                                    </schemaIncludes>
+                                    <args>
+                                        <!-- Enabled JAXB RI customizations -->
+                                        <arg>-extension</arg>
+                                        <arg>-Xnamespace-prefix</arg>
+                                        <arg>-Xfluent-api</arg>
+                                        <arg>-XtoString</arg>
+                                        <arg>-Xequals</arg>
+                                        <arg>-XhashCode</arg>
+                                        <arg>-Xannotate</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>common-export-permits-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <packageLevelAnnotations>true</packageLevelAnnotations>
+                                    <bindingIncludes>
+                                        <include>common-export/export-permits-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>common-export/export-permits-v1.xsd</include>
+                                        <include>common-export/geolocation-v1.xsd</include>
+                                    </schemaIncludes>
+                                    <args>
+                                        <!-- Enabled JAXB RI customizations -->
+                                        <arg>-extension</arg>
+                                        <arg>-Xnamespace-prefix</arg>
+                                        <arg>-Xfluent-api</arg>
+                                        <arg>-XtoString</arg>
+                                        <arg>-Xequals</arg>
+                                        <arg>-XhashCode</arg>
+                                        <arg>-Xannotate</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>common-export-hunting-summaries-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <packageLevelAnnotations>true</packageLevelAnnotations>
+                                    <bindingIncludes>
+                                        <include>common-export/export-hunting-summaries-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>common-export/export-hunting-summaries-v1.xsd</include>
+                                        <include>common-export/geolocation-v1.xsd</include>
+                                    </schemaIncludes>
+                                    <args>
+                                        <!-- Enabled JAXB RI customizations -->
+                                        <arg>-extension</arg>
+                                        <arg>-Xnamespace-prefix</arg>
+                                        <arg>-Xfluent-api</arg>
+                                        <arg>-XtoString</arg>
+                                        <arg>-Xequals</arg>
+                                        <arg>-XhashCode</arg>
+                                        <arg>-Xannotate</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>mr-export-shootingtests-xsd-compile</id>
                                 <goals>
                                     <goal>generate</goal>
@@ -438,13 +573,54 @@
                                 <configuration>
                                     <packageLevelAnnotations>true</packageLevelAnnotations>
                                     <bindingIncludes>
-                                        <include>mr/ShootingTestExport.xjb</include>
+                                        <include>mr/shootingtest/ShootingTestExport.xjb</include>
                                     </bindingIncludes>
                                     <schemaIncludes>
-                                        <include>mr/ShootingTestExport.xsd</include>
+                                        <include>mr/shootingtest/ShootingTestExport.xsd</include>
                                     </schemaIncludes>
                                     <args>
                                         <!-- Enabled JAXB RI customizations -->
+                                        <arg>-extension</arg>
+                                        <arg>-Xnamespace-prefix</arg>
+                                        <arg>-Xfluent-api</arg>
+                                        <arg>-XtoString</arg>
+                                        <arg>-Xequals</arg>
+                                        <arg>-XhashCode</arg>
+                                        <arg>-Xannotate</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>mr-export-jht-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <bindingIncludes>
+                                        <include>mr/jht/mr-jht-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>mr/jht/mr-jht-v1.xsd</include>
+                                    </schemaIncludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>habides-export-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <packageLevelAnnotations>true</packageLevelAnnotations>
+                                    <bindingIncludes>
+                                        <include>habides/derogations-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>habides/derogations-v1.xsd</include>
+                                    </schemaIncludes>
+                                    <args>
+                                        <!-- Enabled JAXB RI customisations -->
                                         <arg>-extension</arg>
                                         <arg>-Xnamespace-prefix</arg>
                                         <arg>-Xfluent-api</arg>
@@ -1712,6 +1888,12 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>${commons.fileupload.version}</version>
+        </dependency>
+
+        <dependency>
+          <groupId>com.hierynomus</groupId>
+          <artifactId>sshj</artifactId>
+          <version>${sshj.version}</version>
         </dependency>
 
         <!-- URL Rewrite filter for frontend asset versioning -->

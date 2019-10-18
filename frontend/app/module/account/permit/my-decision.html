@@ -1,0 +1,24 @@
+<div ng-init="collapsed = true">
+    <div class="permit-header" ng-click="collapsed = !collapsed">
+        <div class="permit-header-toggle">
+            <span class="glyphicon glyphicon-chevron-right" ng-show="collapsed"></span>
+            <span class="glyphicon glyphicon-chevron-down" ng-hide="collapsed"></span>
+        </div>
+
+        <div class="permit-header-content">
+            <p>
+                <strong ng-bind="::$ctrl.decision.permitNumber"></strong>
+                <span>{{'harvestpermit.wizard.summary.permitType.' + $ctrl.decision.permitTypeCode | translate}}</span>
+            </p>
+        </div>
+    </div>
+
+    <div uib-collapse="collapsed">
+        <div class="permit-section-actions">
+            <button type="button" class="btn btn-primary"
+                    ng-click="$ctrl.pdf()">
+                <span translate="harvestpermit.mine.applications.pdfButton"></span>
+            </button>
+        </div>
+    </div>
+</div>

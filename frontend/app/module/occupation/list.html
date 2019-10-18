@@ -23,6 +23,23 @@
         </li>
     </ul>
 
+    <div class="row">
+        <div class="col-xs-8 col-md-6 col-lg-5 pad-20">
+            <label for="occupationType" class="control-label">
+                <span translate="occupation.occupation"></span>
+            </label>
+
+             <select class="form-control"
+                     name="occupationType" id="occupationType"
+                     ng-model="$ctrl.occupationTypeFilter"
+                     ng-options="('occupation.type.' + o | translate) for o in $ctrl.occupationTypes"
+                     ng-change="$ctrl.onOccupationTypeChange()"
+                     ie10-optgroup-fix>
+                 <option value="" translate="occupation.all"></option>
+             </select>
+        </div>
+    </div>
+
     <div class="r-occupation-list table-responsive" ng-show="$ctrl.showOccupations">
         <h3 translate="occupation.occupations" ng-show="$ctrl.showBoard"></h3>
 

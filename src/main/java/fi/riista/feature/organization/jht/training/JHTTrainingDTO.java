@@ -1,7 +1,7 @@
 package fi.riista.feature.organization.jht.training;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;

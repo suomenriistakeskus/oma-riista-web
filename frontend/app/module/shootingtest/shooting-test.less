@@ -1,3 +1,9 @@
+.shooting-test-event-alert-box {
+  .text-danger;
+
+  font-weight: 700;
+}
+
 .shooting-test-intended-type {
   .r-badge-blue;
 }
@@ -24,12 +30,6 @@ tr.shooting-test-participant-divider-row > td {
   .shooting-test-tab {
     @media (min-width: 992px) {
       .btn-lg;
-    }
-
-    .shooting-test-tab-count-badge {
-      .r-badge-red;
-      margin-top: -3px;
-      margin-left: 3px;
     }
   }
 }
@@ -104,4 +104,18 @@ tr.shooting-test-participant-divider-row > td {
   @media (min-width: 992px) {
     .make-form-group(4, 3);
   }
+}
+
+.shooting-test-responsible-official, .shooting-test-responsible-official-empty:hover {
+  .glyphicon;
+  .glyphicon-star;
+  .text-success;
+  font-size: 16px;
+}
+
+.shooting-test-responsible-official-empty, .shooting-test-responsible-official-empty[disabled]:hover {
+  .glyphicon;
+  .glyphicon-star-empty;
+  .text-success;
+  font-size: 16px;
 }

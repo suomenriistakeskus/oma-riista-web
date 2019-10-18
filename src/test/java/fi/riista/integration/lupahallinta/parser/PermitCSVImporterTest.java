@@ -8,16 +8,15 @@ import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummaryRepository;
 import fi.riista.feature.huntingclub.register.RegisterHuntingClubService;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonLookupService;
-import fi.riista.feature.organization.rhy.MergedRhyMapping;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
+import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.util.NumberUtils;
 import io.vavr.Tuple3;
 import org.hamcrest.Matchers;
@@ -81,16 +80,10 @@ public class PermitCSVImporterTest {
     private HarvestPermitRepository harvestPermitRepository;
 
     @Mock
-    private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
-
-    @Mock
     private RegisterHuntingClubService registerHuntingClubService;
 
     @Mock
     private GISHirvitalousalueRepository hirvitalousalueRepository;
-
-    @Mock
-    private MooseHuntingSummaryRepository mooseHuntingSummaryRepository;
 
     private void mockDefaults(String ssn) {
         Person person = new Person();
@@ -108,8 +101,8 @@ public class PermitCSVImporterTest {
         when(riistanhoitoyhdistysRepository.findByOfficialCode(eq("221"))).thenReturn(new Riistanhoitoyhdistys());
 
         Riistanhoitoyhdistys lakeudenRhy = new Riistanhoitoyhdistys();
-        lakeudenRhy.setOfficialCode(MergedRhyMapping.LAKEUDEN_RHY_334);
-        when(riistanhoitoyhdistysRepository.findByOfficialCode(eq(MergedRhyMapping.LAKEUDEN_RHY_334))).thenReturn(lakeudenRhy);
+        lakeudenRhy.setOfficialCode("334");
+        when(riistanhoitoyhdistysRepository.findByOfficialCode(eq("334"))).thenReturn(lakeudenRhy);
 
         GISHirvitalousalue hta = new GISHirvitalousalue("", "", "", "", null);
         hta.setId(1);
@@ -262,12 +255,12 @@ public class PermitCSVImporterTest {
         Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "", "", "2014-1-050-00128-6",
                 "207", "Karhu 41 A § kannanhoidollinen",
-                species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", MergedRhyMapping.SEINAJOEN_RHY_328, "", "", "", "", "", "", "", ""});
+                species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "328", "", "", "", "", "", "", "", ""});
 
         HarvestPermit permit = assertErrorCountReturnPermit(res, 0);
 
         assertNotNull(permit);
-        assertEquals(MergedRhyMapping.LAKEUDEN_RHY_334, permit.getRhy().getOfficialCode());
+        assertEquals("334", permit.getRhy().getOfficialCode());
     }
 
     @Test
@@ -294,13 +287,13 @@ public class PermitCSVImporterTest {
 
         Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "555, 666", "2014-1-050-00128-6",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "HIRVIELÄIN",
+                PermitTypeCode.MOOSELIKE, "HIRVIELÄIN",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "", "1232", "http://invalid/2014-1-050-00999-0", HTA_ID, "221", AREA_SIZE.toString()});
 
         HarvestPermit permit = assertErrorCountReturnPermit(res, 0);
 
         assertNotNull(permit);
-        assertEquals("555", permit.getPermitHolder().getOfficialCode());
+        assertEquals("555", permit.getHuntingClub().getOfficialCode());
         assertEquals(
                 Sets.newHashSet("555", "666"),
                 permit.getPermitPartners().stream().map(Organisation::getOfficialCode).collect(Collectors.toSet()));
@@ -314,7 +307,7 @@ public class PermitCSVImporterTest {
 
         Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00128-6",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "HIRVIELÄIN",
+                PermitTypeCode.MOOSELIKE, "HIRVIELÄIN",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "", "1232", "http://invalid/2014-1-050-00999-0", HTA_ID, "221", AREA_SIZE.toString()});
 
         HarvestPermit permit = assertErrorCountReturnPermit(res, 2);
@@ -333,7 +326,7 @@ public class PermitCSVImporterTest {
 
         Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "", "2014-1-050-00128-6",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "HIRVIELÄIN",
+                PermitTypeCode.MOOSELIKE, "HIRVIELÄIN",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "", "1232", "http://invalid/2014-1-050-00999-0", HTA_ID, "221", AREA_SIZE.toString()});
 
         HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
@@ -353,11 +346,7 @@ public class PermitCSVImporterTest {
     @Test
     public void testOriginalPermitNumberResolved() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
@@ -373,7 +362,7 @@ public class PermitCSVImporterTest {
         assertNotNull(permit.getOriginalPermit());
         assertEquals(existingPermit.getId(), permit.getOriginalPermit().getId());
 
-        assertEquals(existingPermit.getPermitHolder(), permit.getPermitHolder());
+        assertEquals(existingPermit.getHuntingClub(), permit.getHuntingClub());
         assertEquals(existingPermit.getPermitPartners(), permit.getPermitPartners());
     }
 
@@ -394,20 +383,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testMooselikePermitHtaNotGiven() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00999-0",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "http://invalid/2014-1-050-00999-0", "", "221", AREA_SIZE.toString()});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
 
         assertNull(permit);
         assertThat(res._2.get(0), is("Lupatyypille vaaditaan hirvitaloustalue mutta ei löydy:"));
@@ -416,20 +401,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testMooselikePermitHtaGivenButNotFound() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00999-0",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "http://invalid/2014-1-050-00999-0", "htaXNotFound", "221", AREA_SIZE.toString()});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
 
         assertNull(permit);
         assertThat(res._2.get(0), is("Lupatyypille vaaditaan hirvitaloustalue mutta ei löydy:htaXNotFound"));
@@ -438,20 +419,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testOtherPermitHtaGivenIsSkipped() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00999-0",
                 "123", "jokulupatyyppi",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "http://invalid/2014-1-050-00999-0", HTA_ID, "", ""});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 0);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 0);
 
         assertNotNull(permit);
         assertNull(permit.getMooseArea());
@@ -460,20 +437,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testOtherPermitHtaGivenButNotFoundIsOk() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00999-0",
                 "123", "jokulupatyyppi",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "http://invalid/2014-1-050-00999-0", "htaXNotFound", "", ""});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 0);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 0);
 
         assertNotNull(permit);
         assertNull(permit.getMooseArea());
@@ -482,20 +455,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testMooselikePermitUrlIsNotGiven() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00999-0",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "", HTA_ID, "221", AREA_SIZE.toString()});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
 
         assertNull(permit);
         assertThat(res._2.get(0), is("Lupatyypille vaaditaan päätöksen URL, annettu arvo ei kelpaa:"));
@@ -504,20 +473,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testMooselikePermitUrlIsNotValidUrl() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00999-0",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "asdf", HTA_ID, "221", AREA_SIZE.toString()});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
 
         assertNull(permit);
         assertThat(res._2.get(0), is("Lupatyypille vaaditaan päätöksen URL, annettu arvo ei kelpaa:asdf"));
@@ -526,20 +491,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testMooselikePermitRelatedRhysInvalid() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00128-6",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "http://it.works", HTA_ID, "000", AREA_SIZE.toString()});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
 
         assertNull(permit);
         assertThat(res._2.get(0), is("RHY ei löydy:000"));
@@ -548,20 +509,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testMooselikePermitAreaSizeNotNumber() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00128-6",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "http://it.works", HTA_ID, "", "x"});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
 
         assertNull(permit);
         assertThat(res._2.get(0), is("Lupatyypille vaaditaan alueen pinta-ala, annettu arvo ei kelpaa:x"));
@@ -570,20 +527,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testMooselikePermitAreaSizeZero() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00128-6",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "http://it.works", HTA_ID, "", "0"});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
 
         assertNull(permit);
         assertThat(res._2.get(0), is("Lupatyypille vaaditaan alueen pinta-ala, annettu arvo ei kelpaa:0"));
@@ -592,20 +545,16 @@ public class PermitCSVImporterTest {
     @Test
     public void testMooselikePermitAreaSizeEmptyString() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
-        Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
+        final Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00128-6",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "http://it.works", HTA_ID, "", "  "});
 
-        HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
+        final HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
 
         assertNull(permit);
         assertThat(res._2.get(0), is("Lupatyypille vaaditaan alueen pinta-ala, annettu arvo ei kelpaa:  "));
@@ -614,17 +563,13 @@ public class PermitCSVImporterTest {
     @Test
     public void testMooselikePermitAreaSizeNegative() {
         mockDefaults("111111-109A");
-        HarvestPermit existingPermit = new HarvestPermit();
-        existingPermit.setId(256L);
-
-        existingPermit.setPermitHolder(createClub(1L, "1"));
-        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        final HarvestPermit existingPermit = createExistingPermitForClubAndOnePartner();
 
         when(harvestPermitRepository.findByPermitNumber(eq("2014-1-050-00128-6"))).thenReturn(existingPermit);
 
         Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00128-6",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1), "1.0", "20.08.2014 - 31.10.2014", "", "221", "", "", "2014-1-050-00128-6", "1232", "http://it.works", HTA_ID, "", "-1"});
 
         HarvestPermit permit = assertErrorCountReturnPermit(res, 1);
@@ -644,7 +589,8 @@ public class PermitCSVImporterTest {
         HuntingClub club1 = createClub(2, "666");
         when(registerHuntingClubService.findExistingOrCreate(eq("666"))).thenReturn(club1);
 
-        existingPermit.setPermitHolder(club);
+        existingPermit.setHuntingClub(club);
+        existingPermit.setPermitHolder(PermitHolder.createHolderForClub(club));
         existingPermit.setPermitPartners(Sets.newHashSet(club1));
         HarvestPermitSpeciesAmount existingHpsa = createSpeciesAmount(existingPermit, 1L, GAMESPECIES1, 1.0f);
         HarvestPermitSpeciesAmount toBeDeletedHpsa = createSpeciesAmount(existingPermit, 2L, GAMESPECIES2, 2.0f);
@@ -654,7 +600,7 @@ public class PermitCSVImporterTest {
 
         Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "666", "2014-1-050-00128-6",
-                HarvestPermit.MOOSELIKE_PERMIT_TYPE, "hirvieläin",
+                PermitTypeCode.MOOSELIKE, "hirvieläin",
                 species(SPECIES1, SPECIES3), "1.0,13.0", "20.08.2014 - 31.10.2014,20.08.2014 - 31.10.2014", ",", "221", ",", ",", ",", "1232,1232", "http://it.works", HTA_ID, "", AREA_SIZE.toString()});
 
         HarvestPermit permit = assertErrorCountReturnPermit(res, 0);
@@ -711,5 +657,17 @@ public class PermitCSVImporterTest {
 
     private static String species(Integer... codes) {
         return Stream.of(codes).map(Object::toString).collect(joining(","));
+    }
+
+
+    private HarvestPermit createExistingPermitForClubAndOnePartner() {
+        final HarvestPermit existingPermit = new HarvestPermit();
+        existingPermit.setId(256L);
+
+        final HuntingClub club = createClub(1L, "1");
+        existingPermit.setHuntingClub(club);
+        existingPermit.setPermitHolder(PermitHolder.createHolderForClub(club));
+        existingPermit.setPermitPartners(Sets.newHashSet(createClub(2L, "2"), createClub(3L, "3")));
+        return existingPermit;
     }
 }

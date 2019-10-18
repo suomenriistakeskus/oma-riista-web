@@ -1,0 +1,22 @@
+<div class="row">
+    <div class="col-xs-8 col-xs-offset-2">
+        <h3 translate="jht.hirviJyvitys.title"></h3>
+        <select class="form-control"
+                name="selectedArea"
+                id="selectedArea"
+                ng-model="$ctrl.selectedArea"
+                ng-options="area as area.name for area in $ctrl.areas">
+            <option disabled value="" translate="jht.hirviJyvitys.chooseRka"></option>
+        </select>
+
+        <h4 ng-if="!!$ctrl.selectedArea" translate="jht.hirviJyvitys.chooseRhy"></h4>
+
+        <div class="row">
+            <div class="col-xs-6" style="padding-top: 10px"
+                 ng-repeat="rhy in $ctrl.selectedArea.subOrganisations track by rhy.officialCode">
+                <span class="fa fa-fw fa-download"></span>
+                <a ng-click="$ctrl.exportExcel(rhy.officialCode)">{{rhy.name}}</a>
+            </div>
+        </div>
+    </div>
+</div>

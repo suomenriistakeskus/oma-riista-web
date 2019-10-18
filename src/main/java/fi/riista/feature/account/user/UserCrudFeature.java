@@ -2,6 +2,7 @@ package fi.riista.feature.account.user;
 
 import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.AbstractCrudFeature;
+import fi.riista.feature.account.AccountSessionService;
 import fi.riista.feature.account.password.ChangePasswordService;
 import fi.riista.security.UserInfo;
 import fi.riista.util.DtoUtil;
@@ -18,11 +19,15 @@ import java.util.List;
 
 @Component
 public class UserCrudFeature extends AbstractCrudFeature<Long, SystemUser, SystemUserDTO> {
+
     @Resource
     private UserRepository userRepository;
 
     @Resource
     private ChangePasswordService changePasswordService;
+
+    @Resource
+    private AccountSessionService accountSessionService;
 
     @Override
     protected JpaRepository<SystemUser, Long> getRepository() {
@@ -53,26 +58,24 @@ public class UserCrudFeature extends AbstractCrudFeature<Long, SystemUser, Syste
             dto.setLastName(user.getLastName());
             dto.setNameEditable(true);
         }
-        if (user.getRole() == SystemUser.Role.ROLE_REST) {
-            dto.setPrivileges(ImmutableSet.copyOf(user.getPrivileges()));
-        }
+        dto.setPrivileges(ImmutableSet.copyOf(user.getPrivileges()));
         return dto;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
-    public Page<SystemUserDTO> list(Pageable page) {
+    public Page<SystemUserDTO> list(final Pageable page) {
         return DtoUtil.toDTO(userRepository.findAll(page), page, this::toDTO);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
-    public Page<SystemUserDTO> listHavingAnyOfRole(List<SystemUser.Role> roles, Pageable page) {
+    public Page<SystemUserDTO> listHavingAnyOfRole(final List<SystemUser.Role> roles, final Pageable page) {
         return DtoUtil.toDTO(userRepository.listHavingAnyOfRole(roles, page), page, this::toDTO);
     }
 
     @Override
-    protected void updateEntity(SystemUser user, SystemUserDTO dto) {
+    protected void updateEntity(final SystemUser user, final SystemUserDTO dto) {
         final UserInfo activeUserInfo = activeUserService.getActiveUserInfoOrNull();
 
         // FIXME Potential NPE
@@ -102,8 +105,10 @@ public class UserCrudFeature extends AbstractCrudFeature<Long, SystemUser, Syste
             }
 
             user.clearPrivileges();
-            if (user.getRole() == SystemUser.Role.ROLE_REST) {
-                dto.getPrivileges().forEach(user::addPrivilege);
+            dto.getPrivileges().forEach(user::addPrivilege);
+
+            if (!user.isActive()) {
+                accountSessionService.deleteSessions(user.getUsername());
             }
         }
     }

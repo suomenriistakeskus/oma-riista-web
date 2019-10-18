@@ -1,0 +1,103 @@
+<div class="r-account-success-panel" ng-show="$ctrl.hasNoPartnerAreas()">
+    <div class="text-success">
+        <span class="fa fa-warning fa-2x">&nbsp;</span>
+        <span><strong translate="account.personalAreaUnion.messages.addUnionAreas"></strong></span>
+    </div>
+</div>
+
+<div class="r-account-danger-panel" ng-show="$ctrl.partnerAreaHasChanged()">
+    <div class="text-danger">
+        <span class="fa fa-warning fa-2x">&nbsp;</span>
+        <span translate="account.personalAreaUnion.messages.partnerAreaHasChanged"></span>
+    </div>
+</div>
+
+<table class="table">
+    <tbody>
+    <tr>
+        <th translate="global.map.status"></th>
+        <td class="text-right">
+            <strong ng-class="$ctrl.area.status==='PROCESSING_FAILED' ? 'text-danger' : 'text-default'"
+                    translate="account.personalAreaUnion.areaStatus.{{$ctrl.area.status}}"></strong>
+        </td>
+    </tr>
+    <tr>
+        <th translate="account.personalAreaUnion.areaExternalId"></th>
+        <td class="text-right" ng-bind="$ctrl.area.externalId"></td>
+    </tr>
+    <tr>
+        <th translate="global.map.lastModifier"></th>
+        <td class="text-right" ng-switch="$ctrl.area.modifier.adminOrModerator">
+            <span ng-switch-when="true" translate="global.role.ROLE_MODERATOR"></span>
+            <span ng-switch-default>
+                {{ $ctrl.area.modifier.lastName }} {{ $ctrl.area.modifier.firstName }}
+            </span>
+            <br>
+            {{ $ctrl.area.modifier.timestamp | date : 'dd-MM-yyyy HH:mm:ss' }}
+        </td>
+    </tr>
+
+    <tr>
+        <th translate="global.map.size.privateLandAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.privateLandAreaSize | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
+        </td>
+    </tr>
+    <tr>
+        <th translate="global.map.size.stateLandAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.stateLandAreaSize | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
+        </td>
+    </tr>
+    <tr>
+        <th translate="global.map.size.landAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.all.land | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
+        </td>
+    </tr>
+    <tr>
+        <th translate="global.map.size.waterAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.all.water | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
+        </td>
+    </tr>
+    <tr>
+        <th translate="global.map.size.totalAreaSize"></th>
+        <td class="text-right"
+            ng-switch="!!$ctrl.area.size">
+
+            <span ng-switch-when="true"
+                  ng-bind="$ctrl.area.size.all.total | prettyAreaSize:1"></span>
+
+            <strong ng-switch-default
+                    translate="global.map.size.calculating"></strong>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+

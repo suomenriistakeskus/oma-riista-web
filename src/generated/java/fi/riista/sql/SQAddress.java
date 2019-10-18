@@ -59,6 +59,8 @@ public class SQAddress extends RelationalPathSpatial<SQAddress> {
 
     public final com.querydsl.sql.ForeignKey<SQVenue> _venueAddressFk = createInvForeignKey(addressId, "address_id");
 
+    public final com.querydsl.sql.ForeignKey<SQInvoice> _invoiceRecipientAddressFk = createInvForeignKey(addressId, "recipient_address_id");
+
     public final com.querydsl.sql.ForeignKey<SQPerson> _personMrAddressFk = createInvForeignKey(addressId, "mr_address_id");
 
     public final com.querydsl.sql.ForeignKey<SQPerson> _personOtherAddressFk = createInvForeignKey(addressId, "other_address_id");

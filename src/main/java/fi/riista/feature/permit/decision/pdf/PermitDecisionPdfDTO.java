@@ -1,9 +1,11 @@
 package fi.riista.feature.permit.decision.pdf;
 
-import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
-import fi.riista.feature.permit.application.species.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.DeliveryAddressDTO;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
 import fi.riista.feature.permit.decision.document.PermitDecisionDocumentHeadingDTO;
@@ -11,11 +13,12 @@ import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
 import fi.riista.util.F;
 import fi.riista.util.Locales;
 import org.joda.time.LocalDateTime;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
+
+import static org.springframework.util.StringUtils.hasText;
 
 public class PermitDecisionPdfDTO {
     public static class SpeciesAmount extends Has2BeginEndDatesDTO {
@@ -39,8 +42,8 @@ public class PermitDecisionPdfDTO {
         }
 
         private Long id;
-        private String speciesName;
-        private float amount;
+        private final String speciesName;
+        private final float amount;
         private PermitDecisionSpeciesAmount.RestrictionType restrictionType;
         private Float restrictionAmount;
 
@@ -48,7 +51,7 @@ public class PermitDecisionPdfDTO {
             return id;
         }
 
-        public void setId(Long id) {
+        public void setId(final Long id) {
             this.id = id;
         }
 
@@ -73,44 +76,67 @@ public class PermitDecisionPdfDTO {
     private final String permitNumber;
     private final PermitDecisionDocument document;
     private final PermitDecisionDocumentHeadingDTO heading;
-    private final OrganisationNameDTO permitHolder;
+    private final PermitHolderDTO permitHolder;
+    private final OrganisationNameDTO huntingClub;
     private final PersonContactInfoDTO contactPerson;
+    private final DeliveryAddressDTO deliveryAddress;
     private final LocalDateTime publishDate;
     private final List<SpeciesAmount> decisionSpeciesAmounts;
     private final List<SpeciesAmount> applicationSpeciesAmounts;
-    private PermitDecision.GrantStatus grantStatus;
+    private final PermitDecision.GrantStatus grantStatus;
+
+    public boolean isIncludeApplicationReasoning() {
+        return hasText(document.getApplicationReasoning());
+    }
+
+    public boolean isIncludeProcessing() {
+        return hasText(document.getProcessing());
+    }
 
     public boolean isIncludeNotificationObligation() {
-        return !isRejected() && StringUtils.hasText(document.getNotificationObligation());
+        return !isRejected() && hasText(document.getNotificationObligation());
     }
 
     public boolean isIncludeRestriction() {
-        return !isRejected() && (StringUtils.hasText(document.getRestriction()) || StringUtils.hasText(document.getRestrictionExtra()));
+        return !isRejected() && (hasText(document.getRestriction()) || hasText(document.getRestrictionExtra()));
     }
 
     public boolean isIncludeExecution() {
-        return !isRejected();
+        return !isRejected() && hasText(document.getExecution());
     }
 
-    public PermitDecisionPdfDTO(final @Nonnull PermitDecision decision,
-                                final @Nonnull PermitDecisionDocument document) {
+    public boolean isIncludePayment() {
+        return hasText(document.getPayment());
+    }
+
+    public boolean isIncludeAttachments() {
+        return hasText(document.getAttachments());
+    }
+
+    public PermitDecisionPdfDTO(final @Nonnull String permitNumber,
+                                final @Nonnull PermitDecision decision,
+                                final @Nonnull PermitDecisionDocument document,
+                                final @Nonnull List<PermitDecisionSpeciesAmount> decisionSpeciesAmounts,
+                                final @Nonnull List<HarvestPermitApplicationSpeciesAmount> applicationSpeciesAmounts) {
         Objects.requireNonNull(decision);
         Objects.requireNonNull(document);
         Objects.requireNonNull(decision.getContactPerson());
         Objects.requireNonNull(decision.getApplication());
 
         this.swedish = Locales.isSwedish(decision.getLocale());
-        this.permitNumber = decision.getApplication().getPermitNumber();
+        this.permitNumber = Objects.requireNonNull(permitNumber);
         this.publishDate = decision.getPublishDate() != null ? decision.getPublishDate().toLocalDateTime() : null;
         this.document = document;
-        this.heading = new PermitDecisionDocumentHeadingDTO(decision.getLocale());
+        this.heading = new PermitDecisionDocumentHeadingDTO(decision.getLocale(), decision.getDecisionName());
         this.contactPerson = PersonContactInfoDTO.create(decision.getContactPerson());
-        this.permitHolder = decision.getPermitHolder() != null
-                ? OrganisationNameDTO.create(decision.getApplication().getPermitHolder())
+        this.deliveryAddress = DeliveryAddressDTO.from(decision.getDeliveryAddress());
+        this.permitHolder = PermitHolderDTO.createFrom(decision.getPermitHolder());
+        this.huntingClub = decision.getHuntingClub() != null
+                ? OrganisationNameDTO.create(decision.getHuntingClub())
                 : null;
 
-        this.decisionSpeciesAmounts = F.mapNonNullsToList(decision.getSpeciesAmounts(), SpeciesAmount::new);
-        this.applicationSpeciesAmounts = F.mapNonNullsToList(decision.getApplication().getSpeciesAmounts(), SpeciesAmount::new);
+        this.decisionSpeciesAmounts = F.mapNonNullsToList(decisionSpeciesAmounts, SpeciesAmount::new);
+        this.applicationSpeciesAmounts = F.mapNonNullsToList(applicationSpeciesAmounts, SpeciesAmount::new);
         this.grantStatus = decision.getGrantStatus();
     }
 
@@ -126,8 +152,12 @@ public class PermitDecisionPdfDTO {
         return document;
     }
 
-    public OrganisationNameDTO getPermitHolder() {
+    public PermitHolderDTO getPermitHolder() {
         return permitHolder;
+    }
+
+    public OrganisationNameDTO getHuntingClub() {
+        return huntingClub;
     }
 
     public PermitDecisionDocumentHeadingDTO getHeading() {
@@ -136,6 +166,10 @@ public class PermitDecisionPdfDTO {
 
     public PersonContactInfoDTO getContactPerson() {
         return contactPerson;
+    }
+
+    public DeliveryAddressDTO getDeliveryAddress() {
+        return deliveryAddress;
     }
 
     public LocalDateTime getPublishDate() {

@@ -2,14 +2,14 @@
 
     <div class="modal-header">
         <button riista-modal-close></button>
-        <h3 class="modal-title" ng-if="$ctrl.authority.id">Muokkaa päätöksen esittelijää</h3>
-        <h3 class="modal-title" ng-if="!$ctrl.authority.id">Lisää päätöksen esittelijä</h3>
+        <h3 class="modal-title" ng-if="$ctrl.authority.id" translate="harvestpermit.decision.rkaAuthority.editTitle"></h3>
+        <h3 class="modal-title" ng-if="!$ctrl.authority.id" translate="harvestpermit.decision.rkaAuthority.addTitle"></h3>
     </div>
 
     <div class="modal-body">
         <div class="form-group" show-errors>
             <label for="firstName" class="col-xs-4 control-label">
-                <span>Etunimi</span>
+                <span translate="harvestpermit.decision.rkaAuthority.firstName"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
@@ -24,7 +24,7 @@
         </div>
         <div class="form-group" show-errors>
             <label for="lastName" class="col-xs-4 control-label">
-                <span>Sukunimi</span>
+                <span translate="harvestpermit.decision.rkaAuthority.lastName"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
@@ -38,7 +38,7 @@
         </div>
         <div class="form-group" show-errors>
             <label for="titleFinnish" class="col-xs-4 control-label">
-                <span>Tehtävänimike suomeksi</span>
+                <span translate="harvestpermit.decision.rkaAuthority.titleFinnish"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
@@ -53,7 +53,7 @@
 
         <div class="form-group" show-errors>
             <label for="titleSwedish" class="col-xs-4 control-label">
-                <span>Tehtävänimike ruotsiksi</span>
+                <span translate="harvestpermit.decision.rkaAuthority.titleSwedish"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
@@ -68,7 +68,7 @@
 
         <div class="form-group" show-errors>
             <label for="phoneNumber" class="col-xs-4 control-label">
-                <span>Puhelinnumero</span>
+                <span translate="harvestpermit.decision.rkaAuthority.telephone"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
@@ -80,15 +80,15 @@
                        pattern="029[0-9 ]+"
                        required>
                 <p class="help-block has-error"
-                   ng-show="form.phoneNumber.$invalid">
-                    <span>Puhelinnumeron täytyy alkaa 029</span>
+                   ng-show="form.phoneNumber.$invalid"
+                   translate="harvestpermit.decision.rkaAuthority.telephoneNote">
                 </p>
             </div>
         </div>
 
         <div class="form-group" show-errors>
             <label for="email" class="col-xs-4 control-label">
-                <span>Sähköpostiosoite</span>
+                <span translate="harvestpermit.decision.rkaAuthority.email"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 

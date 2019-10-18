@@ -3,9 +3,9 @@ package fi.riista.integration.fivaldi;
 import com.ancientprogramming.fixedformat4j.annotation.Field;
 import com.ancientprogramming.fixedformat4j.annotation.Record;
 import fi.riista.integration.fivaldi.formatter.FivaldiCurrencySumFormatter;
-import fi.riista.integration.fivaldi.formatter.FivaldiIntegerFormatter;
-import fi.riista.integration.fivaldi.formatter.FivaldiLocalDateFormatter;
-import fi.riista.integration.fivaldi.formatter.FivaldiLongFormatter;
+import fi.riista.util.fixedformat.IntegerFormatter;
+import fi.riista.util.fixedformat.LocalDateFormatter;
+import fi.riista.util.fixedformat.LongFormatter;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.joda.time.LocalDate;
@@ -13,6 +13,7 @@ import org.joda.time.LocalDate;
 import java.math.BigDecimal;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static fi.riista.util.fixedformat.FixedFormatHelper.scaleMonetaryAmount;
 
 @Record
 public class FivaldiReslasLine {
@@ -109,7 +110,7 @@ public class FivaldiReslasLine {
 
     // Accessors -->
 
-    @Field(offset = 1, length = 6, formatter = FivaldiIntegerFormatter.class)
+    @Field(offset = 1, length = 6, formatter = IntegerFormatter.class)
     public Integer getCompanyNumber() {
         return companyNumber;
     }
@@ -136,7 +137,7 @@ public class FivaldiReslasLine {
         this.customerId = customerId;
     }
 
-    @Field(offset = 23, length = 8, formatter = FivaldiIntegerFormatter.class)
+    @Field(offset = 23, length = 8, formatter = IntegerFormatter.class)
     public Integer getInvoiceNumber() {
         return invoiceNumber;
     }
@@ -145,7 +146,7 @@ public class FivaldiReslasLine {
         this.invoiceNumber = invoiceNumber;
     }
 
-    @Field(offset = 31, length = 8, formatter = FivaldiIntegerFormatter.class)
+    @Field(offset = 31, length = 8, formatter = IntegerFormatter.class)
     public Integer getCreditMemoNumber() {
         return creditMemoNumber;
     }
@@ -154,7 +155,7 @@ public class FivaldiReslasLine {
         this.creditMemoNumber = creditMemoNumber;
     }
 
-    @Field(offset = 39, length = 6, formatter = FivaldiIntegerFormatter.class)
+    @Field(offset = 39, length = 6, formatter = IntegerFormatter.class)
     public Integer getSeason() {
         return season;
     }
@@ -163,7 +164,7 @@ public class FivaldiReslasLine {
         this.season = season;
     }
 
-    @Field(offset = 45, length = 6, formatter = FivaldiLocalDateFormatter.class)
+    @Field(offset = 45, length = 6, formatter = LocalDateFormatter.class)
     public LocalDate getInvoiceDate() {
         return invoiceDate;
     }
@@ -181,7 +182,7 @@ public class FivaldiReslasLine {
         this.paymentTermsCode = paymentTermsCode;
     }
 
-    @Field(offset = 55, length = 6, formatter = FivaldiLocalDateFormatter.class)
+    @Field(offset = 55, length = 6, formatter = LocalDateFormatter.class)
     public LocalDate getSettlementDiscountDate() {
         return settlementDiscountDate;
     }
@@ -190,7 +191,7 @@ public class FivaldiReslasLine {
         this.settlementDiscountDate = settlementDiscountDate;
     }
 
-    @Field(offset = 61, length = 2, formatter = FivaldiIntegerFormatter.class)
+    @Field(offset = 61, length = 2, formatter = IntegerFormatter.class)
     public Integer getSettlementDiscountPercentage() {
         return settlementDiscountPercentage;
     }
@@ -199,7 +200,7 @@ public class FivaldiReslasLine {
         this.settlementDiscountPercentage = settlementDiscountPercentage;
     }
 
-    @Field(offset = 63, length = 6, formatter = FivaldiLocalDateFormatter.class)
+    @Field(offset = 63, length = 6, formatter = LocalDateFormatter.class)
     public LocalDate getNetDueDate() {
         return netDueDate;
     }
@@ -214,7 +215,7 @@ public class FivaldiReslasLine {
     }
 
     public void setInvoiceSum(final BigDecimal sum) {
-        this.invoiceSum = FivaldiHelper.scaleMonetaryAmount(sum);
+        this.invoiceSum = scaleMonetaryAmount(sum);
     }
 
     @Field(offset = 88, length = 3)
@@ -232,7 +233,7 @@ public class FivaldiReslasLine {
     }
 
     public void setCurrencySum(final BigDecimal currencySum) {
-        this.currencySum = FivaldiHelper.scaleMonetaryAmount(currencySum);
+        this.currencySum = scaleMonetaryAmount(currencySum);
     }
 
     @Field(offset = 110, length = 16)
@@ -253,7 +254,7 @@ public class FivaldiReslasLine {
         this.tiliSaamisetAccountingNumber = tiliSaamisAccountNumber;
     }
 
-    @Field(offset = 134, length = 20, formatter = FivaldiLongFormatter.class)
+    @Field(offset = 134, length = 20, formatter = LongFormatter.class)
     public Long getCreditorReference() {
         return creditorReference;
     }

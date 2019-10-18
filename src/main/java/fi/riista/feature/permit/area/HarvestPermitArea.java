@@ -1,20 +1,18 @@
 package fi.riista.feature.permit.area;
 
+import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
-import fi.riista.feature.gis.zone.AreaEntity;
 import fi.riista.feature.gis.zone.GISZone;
-import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.permit.area.hta.HarvestPermitAreaHta;
+import fi.riista.feature.permit.area.mml.HarvestPermitAreaMml;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartner;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhy;
+import fi.riista.feature.permit.area.verotuslohko.HarvestPermitAreaVerotusLohko;
 import fi.riista.util.DateUtil;
-import fi.riista.util.LocalisedString;
 import fi.riista.util.RandomStringUtil;
-import org.hibernate.validator.constraints.Range;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -26,10 +24,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.security.SecureRandom;
@@ -41,7 +40,7 @@ import java.util.Set;
 
 @Entity
 @Access(AccessType.FIELD)
-public class HarvestPermitArea extends AreaEntity<Long> {
+public class HarvestPermitArea extends LifecycleEntity<Long> {
 
     public enum StatusCode {
         // Permit area is not ready to be used in Lupahallinta
@@ -63,6 +62,9 @@ public class HarvestPermitArea extends AreaEntity<Long> {
         LOCKED;
     }
 
+    public static final int MIN_YEAR = 2000;
+    public static final int MAX_YEAR = 2100;
+
     private Long id;
 
     @NotNull
@@ -74,15 +76,8 @@ public class HarvestPermitArea extends AreaEntity<Long> {
     @Column(nullable = false)
     private DateTime statusTime = DateUtil.now();
 
-    @Size(max = 255)
-    @Column
-    private String nameFinnish;
-
-    @Size(max = 255)
-    @Column
-    private String nameSwedish;
-
-    @Range(min = 2000, max = 2100)
+    @Min(MIN_YEAR)
+    @Max(MAX_YEAR)
     @Column(nullable = false)
     private int huntingYear;
 
@@ -94,11 +89,6 @@ public class HarvestPermitArea extends AreaEntity<Long> {
     // Sisältääkö alue vähintään 1000 ha valtionmaata tietyissä pohjois-Suomen kunnissa, jotta ML 8§ voidaan soveltaa?
     @Column(nullable = false)
     private boolean freeHunting;
-
-    // Owner
-    @JoinColumn
-    @ManyToOne(fetch = FetchType.LAZY)
-    private HuntingClub club;
 
     // Computed union
     @NotNull
@@ -115,6 +105,12 @@ public class HarvestPermitArea extends AreaEntity<Long> {
     @OneToMany(mappedBy = "harvestPermitArea")
     private Set<HarvestPermitAreaHta> hta = new HashSet<>();
 
+    @OneToMany(mappedBy = "harvestPermitArea")
+    private Set<HarvestPermitAreaMml> mml = new HashSet<>();
+
+    @OneToMany(mappedBy = "harvestPermitArea")
+    private Set<HarvestPermitAreaVerotusLohko> verotusLohko = new HashSet<>();
+
     public void generateAndStoreExternalId(final SecureRandom random) {
         if (this.externalId != null) {
             throw new IllegalStateException("Cannot update existing externalId");
@@ -130,12 +126,6 @@ public class HarvestPermitArea extends AreaEntity<Long> {
         return getHta().stream()
                 .max(Comparator.comparingDouble(HarvestPermitAreaHta::getAreaSize))
                 .map(HarvestPermitAreaHta::getHta);
-    }
-
-    @Override
-    @Nonnull
-    public LocalisedString getNameLocalisation() {
-        return LocalisedString.of(nameFinnish, nameSwedish);
     }
 
     @Transient
@@ -230,22 +220,6 @@ public class HarvestPermitArea extends AreaEntity<Long> {
         return statusTime;
     }
 
-    public String getNameFinnish() {
-        return nameFinnish;
-    }
-
-    public void setNameFinnish(final String nameFinnish) {
-        this.nameFinnish = nameFinnish;
-    }
-
-    public String getNameSwedish() {
-        return nameSwedish;
-    }
-
-    public void setNameSwedish(final String nameSwedish) {
-        this.nameSwedish = nameSwedish;
-    }
-
     public int getHuntingYear() {
         return huntingYear;
     }
@@ -270,20 +244,10 @@ public class HarvestPermitArea extends AreaEntity<Long> {
         this.freeHunting = freeHunting;
     }
 
-    public HuntingClub getClub() {
-        return club;
-    }
-
-    public void setClub(final HuntingClub club) {
-        this.club = club;
-    }
-
-    @Override
     public GISZone getZone() {
         return zone;
     }
 
-    @Override
     public void setZone(final GISZone zone) {
         this.zone = zone;
     }
@@ -299,4 +263,17 @@ public class HarvestPermitArea extends AreaEntity<Long> {
     public Set<HarvestPermitAreaHta> getHta() {
         return hta;
     }
+
+    public Set<HarvestPermitAreaMml> getMml() {
+        return mml;
+    }
+
+    public void setMml(Set<HarvestPermitAreaMml> mml) {
+        this.mml = mml;
+    }
+
+    public Set<HarvestPermitAreaVerotusLohko> getVerotusLohko() {
+        return verotusLohko;
+    }
+
 }

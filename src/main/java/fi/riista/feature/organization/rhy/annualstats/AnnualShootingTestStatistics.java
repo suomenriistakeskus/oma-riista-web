@@ -1,7 +1,8 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import fi.riista.util.NumberUtils;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -12,35 +13,39 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static fi.riista.util.F.nullsafeMax;
-import static fi.riista.util.NumberUtils.nullsafeSumAsInt;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 @Embeddable
 @Access(AccessType.FIELD)
-public class AnnualShootingTestStatistics implements AnnualStatisticsFieldsetStatus, Serializable {
+public class AnnualShootingTestStatistics
+        implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsNonComputedFields<AnnualShootingTestStatistics>,
+        Serializable {
 
     public static final AnnualShootingTestStatistics reduce(@Nullable final AnnualShootingTestStatistics a,
                                                             @Nullable final AnnualShootingTestStatistics b) {
 
         final AnnualShootingTestStatistics result = new AnnualShootingTestStatistics();
 
-        result.firearmTestEvents = nullsafeSumAsInt(a, b, s -> s.getFirearmTestEvents());
-        result.bowTestEvents = nullsafeSumAsInt(a, b, s -> s.getBowTestEvents());
+        result.firearmTestEvents = nullableIntSum(a, b, s -> s.getFirearmTestEvents());
+        result.bowTestEvents = nullableIntSum(a, b, s -> s.getBowTestEvents());
 
-        result.allMooseAttempts = nullsafeSumAsInt(a, b, s -> s.getAllMooseAttempts());
-        result.qualifiedMooseAttempts = nullsafeSumAsInt(a, b, s -> s.getQualifiedMooseAttempts());
-        result.allBearAttempts = nullsafeSumAsInt(a, b, s -> s.getAllBearAttempts());
-        result.qualifiedBearAttempts = nullsafeSumAsInt(a, b, s -> s.getQualifiedBearAttempts());
-        result.allRoeDeerAttempts = nullsafeSumAsInt(a, b, s -> s.getAllRoeDeerAttempts());
-        result.qualifiedRoeDeerAttempts = nullsafeSumAsInt(a, b, s -> s.getQualifiedRoeDeerAttempts());
-        result.allBowAttempts = nullsafeSumAsInt(a, b, s -> s.getAllBowAttempts());
-        result.qualifiedBowAttempts = nullsafeSumAsInt(a, b, s -> s.getQualifiedBowAttempts());
+        result.allMooseAttempts = nullableIntSum(a, b, s -> s.getAllMooseAttempts());
+        result.qualifiedMooseAttempts = nullableIntSum(a, b, s -> s.getQualifiedMooseAttempts());
+        result.allBearAttempts = nullableIntSum(a, b, s -> s.getAllBearAttempts());
+        result.qualifiedBearAttempts = nullableIntSum(a, b, s -> s.getQualifiedBearAttempts());
+        result.allRoeDeerAttempts = nullableIntSum(a, b, s -> s.getAllRoeDeerAttempts());
+        result.qualifiedRoeDeerAttempts = nullableIntSum(a, b, s -> s.getQualifiedRoeDeerAttempts());
+        result.allBowAttempts = nullableIntSum(a, b, s -> s.getAllBowAttempts());
+        result.qualifiedBowAttempts = nullableIntSum(a, b, s -> s.getQualifiedBowAttempts());
 
-        result.shootingTestOfficials = nullsafeSumAsInt(a, b, s -> s.getShootingTestOfficials());
+        result.shootingTestOfficials = nullableIntSum(a, b, s -> s.getShootingTestOfficials());
 
         result.firearmTestEventsLastOverridden = nullsafeMax(a, b, s -> s.getFirearmTestEventsLastOverridden());
         result.bowTestEventsLastOverridden = nullsafeMax(a, b, s -> s.getBowTestEventsLastOverridden());
@@ -130,26 +135,48 @@ public class AnnualShootingTestStatistics implements AnnualStatisticsFieldsetSta
     public AnnualShootingTestStatistics() {
     }
 
-    public AnnualShootingTestStatistics(@Nonnull final AnnualShootingTestStatistics that) {
-        requireNonNull(that);
+    public AnnualShootingTestStatistics makeCopy() {
+        final AnnualShootingTestStatistics copy = new AnnualShootingTestStatistics();
 
+        copy.firearmTestEvents = this.firearmTestEvents;
+        copy.bowTestEvents = this.bowTestEvents;
+
+        copy.allMooseAttempts = this.allMooseAttempts;
+        copy.qualifiedMooseAttempts = this.qualifiedMooseAttempts;
+        copy.allBearAttempts = this.allBearAttempts;
+        copy.qualifiedBearAttempts = this.qualifiedBearAttempts;
+        copy.allRoeDeerAttempts = this.allRoeDeerAttempts;
+        copy.qualifiedRoeDeerAttempts = this.qualifiedRoeDeerAttempts;
+        copy.allBowAttempts = this.allBowAttempts;
+        copy.qualifiedBowAttempts = this.qualifiedBowAttempts;
+
+        copy.shootingTestOfficials = this.shootingTestOfficials;
+
+        copy.firearmTestEventsLastOverridden = this.firearmTestEventsLastOverridden;
+        copy.bowTestEventsLastOverridden = this.bowTestEventsLastOverridden;
+        copy.lastModified = this.lastModified;
+
+        return copy;
+    }
+
+    @Override
+    public AnnualStatisticGroup getGroup() {
+        return AnnualStatisticGroup.SHOOTING_TESTS;
+    }
+
+    @Override
+    public boolean isEqualTo(@Nonnull final AnnualShootingTestStatistics that) {
+        return Objects.equals(firearmTestEvents, that.firearmTestEvents) &&
+                Objects.equals(bowTestEvents, that.bowTestEvents);
+    }
+
+    @Override
+    public void assignFrom(@Nonnull final AnnualShootingTestStatistics that) {
         this.firearmTestEvents = that.firearmTestEvents;
-        this.bowTestEvents = that.bowTestEvents;
-
-        this.allMooseAttempts = that.allMooseAttempts;
-        this.qualifiedMooseAttempts = that.qualifiedMooseAttempts;
-        this.allBearAttempts = that.allBearAttempts;
-        this.qualifiedBearAttempts = that.qualifiedBearAttempts;
-        this.allRoeDeerAttempts = that.allRoeDeerAttempts;
-        this.qualifiedRoeDeerAttempts = that.qualifiedRoeDeerAttempts;
-        this.allBowAttempts = that.allBowAttempts;
-        this.qualifiedBowAttempts = that.qualifiedBowAttempts;
-
-        this.shootingTestOfficials = that.shootingTestOfficials;
-
         this.firearmTestEventsLastOverridden = that.firearmTestEventsLastOverridden;
+
+        this.bowTestEvents = that.bowTestEvents;
         this.bowTestEventsLastOverridden = that.bowTestEventsLastOverridden;
-        this.lastModified = that.lastModified;
     }
 
     @Override
@@ -176,29 +203,34 @@ public class AnnualShootingTestStatistics implements AnnualStatisticsFieldsetSta
         return this.bowTestEventsLastOverridden != null;
     }
 
-    public void setFirearmTestEventsWithModeratorOverride(@Nonnull final Integer firearmTestEvents,
-                                                          @Nonnull final DateTime overriddenAt) {
+    public void setTestEventsOverridden(@Nullable final Integer moderatorOverriddenFirearmTestEvents,
+                                        @Nullable final Integer moderatorOverriddenBowTestEvents) {
 
-        this.firearmTestEvents = requireNonNull(firearmTestEvents, "firearmTestEvents is null");
-        this.firearmTestEventsLastOverridden = requireNonNull(overriddenAt, "overriddenAt is null");
+        if (moderatorOverriddenFirearmTestEvents != null || moderatorOverriddenBowTestEvents != null) {
+            final DateTime now = DateUtil.now();
+
+            if (moderatorOverriddenFirearmTestEvents != null) {
+                this.firearmTestEvents = moderatorOverriddenFirearmTestEvents;
+                this.firearmTestEventsLastOverridden = now;
+            }
+
+            if (moderatorOverriddenBowTestEvents != null) {
+                this.bowTestEvents = moderatorOverriddenBowTestEvents;
+                this.bowTestEventsLastOverridden = now;
+            }
+
+            this.lastModified = now;
+        }
     }
 
-    public void setBowTestEventsWithModeratorOverride(@Nonnull final Integer bowTestEvents,
-                                                      @Nonnull final DateTime overriddenAt) {
-
-        this.bowTestEvents = requireNonNull(bowTestEvents, "bowTestEvents is null");
-        this.bowTestEventsLastOverridden = requireNonNull(overriddenAt, "overriddenAt is null");
+    @Nullable
+    public Integer countAllShootingTestEvents() {
+        return nullableIntSum(firearmTestEvents, bowTestEvents);
     }
 
-    public int countAllShootingTestEvents() {
-        return NumberUtils.getIntValueOrZero(firearmTestEvents) + NumberUtils.getIntValueOrZero(bowTestEvents);
-    }
-
-    public int countAllShootingTestAttempts() {
-        return NumberUtils.getIntValueOrZero(allMooseAttempts)
-                + NumberUtils.getIntValueOrZero(allBearAttempts)
-                + NumberUtils.getIntValueOrZero(allRoeDeerAttempts)
-                + NumberUtils.getIntValueOrZero(allBowAttempts);
+    @Nullable
+    public Integer countAllShootingTestAttempts() {
+        return nullableIntSum(allMooseAttempts, allBearAttempts, allRoeDeerAttempts, allBowAttempts);
     }
 
     // Accessors -->
@@ -255,7 +287,7 @@ public class AnnualShootingTestStatistics implements AnnualStatisticsFieldsetSta
         return qualifiedBearAttempts;
     }
 
-    public void setQualifiedBearAttempts(Integer qualifiedBearAttempts) {
+    public void setQualifiedBearAttempts(final Integer qualifiedBearAttempts) {
         this.qualifiedBearAttempts = qualifiedBearAttempts;
     }
 
@@ -299,10 +331,12 @@ public class AnnualShootingTestStatistics implements AnnualStatisticsFieldsetSta
         this.shootingTestOfficials = shootingTestOfficials;
     }
 
+    @Override
     public DateTime getLastModified() {
         return lastModified;
     }
 
+    @Override
     public void setLastModified(final DateTime lastModified) {
         this.lastModified = lastModified;
     }

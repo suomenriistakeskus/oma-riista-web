@@ -3,12 +3,16 @@ package fi.riista.util;
 import com.vividsolutions.jts.geom.Polygon;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.common.money.FinnishBank;
+import fi.riista.feature.common.money.FinnishBankAccount;
+import fi.riista.feature.permit.PermitNumberUtil;
 import fi.riista.validation.FinnishCreditorReferenceValidator;
-import fi.riista.validation.FinnishHuntingPermitNumberValidator;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.iban4j.Bic;
+import org.iban4j.CountryCode;
 import org.iban4j.Iban;
 
 import javax.annotation.Nonnull;
@@ -20,15 +24,15 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.LongStream;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 
 public final class ValueGenerator {
 
-    private static final int TEN_MILLION = 10000000;
+    private static final int TEN_MILLION = 10_000_000;
 
     private static final DecimalFormat HTA_NUMBER_FORMATTER;
 
@@ -55,19 +59,19 @@ public final class ValueGenerator {
 
     @Nonnull
     public static String postalCode(@Nonnull final NumberGenerator numberGenerator) {
-        Objects.requireNonNull(numberGenerator);
+        requireNonNull(numberGenerator);
         return zeroPaddedNumber(numberGenerator.nextNonNegativeIntBelow(100000), 5);
     }
 
     @Nonnull
     public static String phoneNumber(@Nonnull final NumberGenerator numberGenerator) {
-        Objects.requireNonNull(numberGenerator);
+        requireNonNull(numberGenerator);
         return String.format("+35850%s", zeroPaddedNumber(numberGenerator.nextNonNegativeIntBelow(10000000), 7));
     }
 
     @Nonnull
     public static String htaNumber(@Nonnull final NumberGenerator numberGenerator) {
-        Objects.requireNonNull(numberGenerator);
+        requireNonNull(numberGenerator);
         return htaNumber(numberGenerator.nextPositiveInt());
     }
 
@@ -78,13 +82,13 @@ public final class ValueGenerator {
 
     @Nonnull
     public static Double weight(@Nonnull final NumberGenerator numberGenerator) {
-        Objects.requireNonNull(numberGenerator);
+        requireNonNull(numberGenerator);
         return Integer.valueOf(numberGenerator.nextNonNegativeIntBelow(1000)).doubleValue();
     }
 
     @Nonnull
     public static String zeroPaddedNumber(final int maxDigits, @Nonnull final NumberGenerator numberGenerator) {
-        Objects.requireNonNull(numberGenerator);
+        requireNonNull(numberGenerator);
         final int modulo = Double.valueOf(Math.pow(10.0, maxDigits)).intValue();
         return String.format("%0" + maxDigits + "d", numberGenerator.nextInt() % modulo);
     }
@@ -103,7 +107,7 @@ public final class ValueGenerator {
     public static <E extends Enum<E>> E some(@Nonnull final Class<E> clazz,
                                              @Nonnull final NumberGenerator numberGenerator) {
 
-        Objects.requireNonNull(clazz, "clazz must not be null");
+        requireNonNull(clazz, "clazz must not be null");
 
         return pickEnumValue(EnumSet.allOf(clazz), numberGenerator);
     }
@@ -119,8 +123,8 @@ public final class ValueGenerator {
                                                       @Nonnull final Class<E> clazz,
                                                       @Nonnull final NumberGenerator numberGenerator) {
 
-        Objects.requireNonNull(clazz, "clazz must not be null");
-        Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
+        requireNonNull(clazz, "clazz must not be null");
+        requireNonNull(numberGenerator, "numberGenerator must not be null");
 
         if (clazz.getEnumConstants().length <= 1) {
             throw new IllegalArgumentException("Enum class does not have more than one value: " + clazz.getName());
@@ -137,8 +141,8 @@ public final class ValueGenerator {
                                                       @Nonnull final EnumSet<E> enumSet,
                                                       @Nonnull final NumberGenerator numberGenerator) {
 
-        Objects.requireNonNull(enumSet, "enumSet must not be null");
-        Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
+        requireNonNull(enumSet, "enumSet must not be null");
+        requireNonNull(numberGenerator, "numberGenerator must not be null");
 
         final Set<E> filteredEnumSet = enumSet.stream().filter(e -> e != enumValue).collect(toSet());
         return pickEnumValue(filteredEnumSet, numberGenerator);
@@ -147,8 +151,8 @@ public final class ValueGenerator {
     private static <E extends Enum<E>> E pickEnumValue(@Nonnull final Set<E> enumSet,
                                                        @Nonnull final NumberGenerator numberGenerator) {
 
-        Objects.requireNonNull(enumSet, "enumSet must not be null");
-        Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
+        requireNonNull(enumSet, "enumSet must not be null");
+        requireNonNull(numberGenerator, "numberGenerator must not be null");
 
         final int numElementsToBypass = numberGenerator.nextNonNegativeIntBelow(enumSet.size());
         final Iterator<E> iter = enumSet.iterator();
@@ -164,8 +168,8 @@ public final class ValueGenerator {
     public static GeoLocation geoLocation(@Nonnull final GeoLocation.Source geoLocationSource,
                                           @Nonnull final NumberGenerator numberGenerator) {
 
-        Objects.requireNonNull(geoLocationSource, "geoLocationSource must not be null");
-        Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
+        requireNonNull(geoLocationSource, "geoLocationSource must not be null");
+        requireNonNull(numberGenerator, "numberGenerator must not be null");
 
         // Some rough magic numbers that can be fine-tuned if needed.
         final int minLatitude = 6754304;
@@ -181,7 +185,7 @@ public final class ValueGenerator {
 
     @Nonnull
     public static String hunterNumber(@Nonnull final NumberGenerator numberGenerator) {
-        Objects.requireNonNull(numberGenerator);
+        requireNonNull(numberGenerator);
 
         int num = (TEN_MILLION / 2 + numberGenerator.nextNonNegativeInt()) % TEN_MILLION;
         if (num < 1000000) {
@@ -192,32 +196,54 @@ public final class ValueGenerator {
     }
 
     @Nonnull
-    public static String permitNumber(@Nonnull final String rka, @Nonnull final NumberGenerator numberGenerator) {
-        Objects.requireNonNull(rka, "rka must not be null");
-        Objects.requireNonNull(numberGenerator, "numberGenerator must not be null");
-
-        final int year = DateUtil.now().getYear();
-        final int yearsValid = 1;
-        final String counter = zeroPaddedNumber(5, numberGenerator);
-        final String permitNumberWithoutChecksum =
-                String.format("%s-%s-%s-%s-", year, yearsValid, StringUtils.right(rka, 3), counter);
-        final char checksum = FinnishHuntingPermitNumberValidator.calculateChecksum(permitNumberWithoutChecksum);
-        return permitNumberWithoutChecksum + checksum;
+    public static String permitNumber(@Nonnull final NumberGenerator numberGenerator) {
+        return permitNumber(DateUtil.currentYear(), numberGenerator);
     }
 
-    public static Iban iban() {
-        return Iban.random(org.iban4j.CountryCode.FI);
+    @Nonnull
+    public static String permitNumber(final int year, @Nonnull final NumberGenerator numberGenerator) {
+        return permitNumber(year, 1, numberGenerator);
+    }
+
+    @Nonnull
+    public static String permitNumber(final int year,
+                                      final int yearsValid,
+                                      @Nonnull final NumberGenerator numberGenerator) {
+
+        requireNonNull(numberGenerator);
+        return PermitNumberUtil.createPermitNumber(year, yearsValid, numberGenerator.nextNonNegativeInt());
+    }
+
+    public static Iban iban(@Nonnull final NumberGenerator numberGenerator) {
+        return iban(some(FinnishBank.class, numberGenerator), numberGenerator);
+    }
+
+    public static Iban iban(@Nonnull final FinnishBank bank, @Nonnull final NumberGenerator numberGenerator) {
+        final String bankCodeStart = bank.getBankCodePrefixes().iterator().next();
+        final String bankCodeEnd = zeroPaddedNumber(6 - bankCodeStart.length(), numberGenerator);
+
+        return new Iban.Builder().countryCode(CountryCode.FI).bankCode(bankCodeStart + bankCodeEnd).buildRandom();
+    }
+
+    public static Bic bic(@Nonnull final NumberGenerator numberGenerator) {
+        return some(FinnishBank.class, numberGenerator).getBic();
+    }
+
+    public static FinnishBankAccount bankAccount(@Nonnull final NumberGenerator numberGenerator) {
+        final FinnishBank bank = some(FinnishBank.class, numberGenerator);
+        final Iban iban = iban(bank, numberGenerator);
+        return FinnishBankAccount.fromIban(iban);
     }
 
     public static CreditorReference creditorReference(@Nonnull final NumberGenerator numberGenerator) {
-        final String c = String.valueOf(numberGenerator.nextInt());
+        final String c = String.valueOf(1000 + numberGenerator.nextInt());
         return CreditorReference.fromNullable(c + FinnishCreditorReferenceValidator.calculateChecksum(c));
     }
 
     // Returns a base36 representation of a number generated from monotonically increasing
     // sequence during test execution.
     public static String externalAreaId(@Nonnull final NumberGenerator numberGenerator) {
-        Objects.requireNonNull(numberGenerator);
+        requireNonNull(numberGenerator);
 
         final LongStream ls = LongStream.concat(
                 LongStream.of(System.currentTimeMillis()),
@@ -243,7 +269,7 @@ public final class ValueGenerator {
     public static Polygon squareFromLocationAndOffsets(
             final GeoLocation location, final int firstOffset, final int secondOffset) {
 
-        Objects.requireNonNull(location, "location must not be null");
+        requireNonNull(location, "location must not be null");
 
         final List<Tuple2<Integer, Integer>> offsets = Arrays.asList(
                 Tuple.of(firstOffset, firstOffset),

@@ -1,8 +1,10 @@
 package fi.riista.feature.huntingclub;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.gis.hta.GISHirvitalousalueDTO;
+import fi.riista.feature.gis.hta.HirvitalousalueDTO;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.OrganisationType;
@@ -20,7 +22,7 @@ import java.util.List;
 
 public class HuntingClubDTO extends BaseEntityDTO<Long> {
 
-    public static HuntingClubDTO create(HuntingClub club, boolean canEdit, List<OccupationDTO> yhdyshenkilot, GISHirvitalousalueDTO mooseAreaDto) {
+    public static HuntingClubDTO create(HuntingClub club, boolean canEdit, List<OccupationDTO> yhdyshenkilot, HirvitalousalueDTO mooseAreaDto) {
         HuntingClubDTO dto = new HuntingClubDTO();
         DtoUtil.copyBaseFields(club, dto);
         dto.setOfficialCode(club.getOfficialCode());
@@ -80,8 +82,9 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
     @DoNotValidate
     private List<OccupationDTO> yhdyshenkilot;
 
-    @Valid
-    private GISHirvitalousalueDTO mooseArea;
+    @DoNotValidate
+    @JsonIgnore
+    private HirvitalousalueDTO mooseArea;
 
     @Email
     @Length(max = 255)
@@ -196,11 +199,13 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         this.yhdyshenkilot = yhdyshenkilot;
     }
 
-    public GISHirvitalousalueDTO getMooseArea() {
+    @JsonProperty
+    public HirvitalousalueDTO getMooseArea() {
         return mooseArea;
     }
 
-    public void setMooseArea(GISHirvitalousalueDTO mooseArea) {
+    @JsonIgnore
+    public void setMooseArea(HirvitalousalueDTO mooseArea) {
         this.mooseArea = mooseArea;
     }
 

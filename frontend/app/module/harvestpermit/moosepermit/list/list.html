@@ -1,0 +1,40 @@
+<div class="row year-species-menu">
+    <div class="col-xs-4 left">
+        <select name="huntingYearSelection" id="huntingYearSelection"
+                class="form-control"
+                ng-model="$ctrl.selectedYearAndSpecies.huntingYear"
+                ng-options="year.year as year.name for year in $ctrl.yearOptions"
+                ng-change="$ctrl.onHuntingYearOrSpeciesChange()">
+            <option disabled value="" translate="club.hunting.selectHuntingYear"></option>
+        </select>
+    </div>
+    <div class="col-xs-8 right">
+        <select name="gameSpeciesId" id="gameSpeciesId"
+                class="form-control"
+                ng-model="$ctrl.selectedYearAndSpecies.species"
+                ng-options="s.code as (s.name | rI18nNameFilter) for s in $ctrl.speciesOptions"
+                ng-change="$ctrl.onHuntingYearOrSpeciesChange()">
+            <option disabled value="" translate="global.selectSpecies"></option>
+        </select>
+    </div>
+</div>
+
+<div class="row year-species-menu">
+    <div class="col-xs-12">
+        <select name="selectedPermit" id="selectedPermit"
+                class="form-control"
+                ng-model="$ctrl.selectedPermit.permitId"
+                ng-change="$ctrl.table()"
+                ng-options="p.id as $ctrl.getPermitName(p) for p in $ctrl.permits">
+            <option disabled value="" translate="global.selectPermit"></option>
+        </select>
+    </div>
+</div>
+
+<moose-permit-list-details
+        table="$ctrl.table()"
+        map="$ctrl.map()"
+        lukereports="$ctrl.lukereports()"
+        leaders="$ctrl.leaders()"
+        rhystats="$ctrl.rhystats()"
+        selected-permit="$ctrl.getSelectedPermit()"></moose-permit-list-details>

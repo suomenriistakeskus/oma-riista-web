@@ -8,9 +8,8 @@ import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
-import fi.riista.feature.huntingclub.permit.summary.AreaSizeAndRemainingPopulation;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
-import fi.riista.feature.search.RhySearchParamsFeature.RhySearchOrgType;
+import fi.riista.feature.huntingclub.permit.endofhunting.AreaSizeAndRemainingPopulation;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.Locales;
@@ -56,15 +55,17 @@ public class MoosePermitStatisticsFeatureTest extends EmbeddedDatabaseTest imple
                 model().newBasicHuntingSummary(f2.speciesAmount, f2.club, true);
 
                 // Hunting finished for the first permit.
-                model().newMooseHarvestReport(f1.speciesAmount);
+                f1.speciesAmount.setMooselikeHuntingFinished(true);
 
                 onSavedAndAuthenticated(createNewModerator(), () -> {
 
                     final int speciesCode = species.getOfficialCode();
                     final int huntingYear = f1.speciesAmount.resolveHuntingYear();
 
-                    final List<MoosePermitStatisticsDTO> stats = feature.calculateByHolder(
-                            rhy.getId(), Locales.FI, speciesCode, huntingYear, RhySearchOrgType.RHY, rhy.getOfficialCode());
+                    final List<MoosePermitStatisticsDTO> stats = feature.calculate(
+                            Locales.FI, MoosePermitStatisticsReportType.BY_PERMIT,
+                            MoosePermitStatisticsGroupBy.RHY_PERMIT, true, speciesCode, huntingYear,
+                            MoosePermitStatisticsOrganisationType.RHY, rhy.getOfficialCode());
 
                     // Total stats included in the count.
                     assertEquals(3, stats.size());
@@ -73,7 +74,7 @@ public class MoosePermitStatisticsFeatureTest extends EmbeddedDatabaseTest imple
                             .filter(stat -> stat.getPermitNumber() != null)
                             .collect(toMap(
                                     MoosePermitStatisticsDTO::getPermitNumber,
-                                    MoosePermitStatisticsDTO::isHuntingFinished));
+                                    dto -> dto.getPermitAmount().isMooselikeHuntingFinished()));
 
                     assertEquals(
                             ImmutableMap.of(f1.permit.getPermitNumber(), true, f2.permit.getPermitNumber(), false),
@@ -105,33 +106,36 @@ public class MoosePermitStatisticsFeatureTest extends EmbeddedDatabaseTest imple
             persistInNewTransaction();
             authenticate(createNewModerator());
 
-            final List<MoosePermitStatisticsDTO> stats = feature.calculateByHolder(
-                    fixture.rhy.getId(), Locales.FI, fixture.species.getOfficialCode(), fixture.speciesAmount.resolveHuntingYear(), RhySearchOrgType.RHY, fixture.rhy.getOfficialCode());
+            final List<MoosePermitStatisticsDTO> stats = feature.calculate(
+                    Locales.FI, MoosePermitStatisticsReportType.BY_PERMIT,
+                    MoosePermitStatisticsGroupBy.RHY_PERMIT, true,
+                    fixture.species.getOfficialCode(), fixture.speciesAmount.resolveHuntingYear(),
+                    MoosePermitStatisticsOrganisationType.RHY, fixture.rhy.getOfficialCode());
 
             assertEquals(3, stats.size());
 
             final MoosePermitStatisticsDTO total = stats.get(0);
-            assertEquals(100F * 2, total.getPermitAmount(), 0);
+            assertEquals(100F * 2, total.getPermitAmount().getTotal(), 0);
 
             assertEquals(17 * 2, total.getHarvestCount().getTotal());
-            assertEquals(1 * 2, total.getHarvestCount().getAdultMales());
-            assertEquals(2 * 2, total.getHarvestCount().getAdultFemales());
-            assertEquals(6 * 2, total.getHarvestCount().getYoungMales());
-            assertEquals(8 * 2, total.getHarvestCount().getYoungFemales());
+            assertEquals(1 * 2, total.getHarvestCount().getNumberOfAdultMales());
+            assertEquals(2 * 2, total.getHarvestCount().getNumberOfAdultFemales());
+            assertEquals(6 * 2, total.getHarvestCount().getNumberOfYoungMales());
+            assertEquals(8 * 2, total.getHarvestCount().getNumberOfYoungFemales());
 
             assertEquals(1 / 3.0 * 100, total.getHarvestCount().getAdultMalePercentage(), 0.001);
             assertEquals(14 / 17.0 * 100, total.getHarvestCount().getYoungPercentage(), 0.001);
 
-            assertEquals(permitAreaSize1 + permitAreaSize2, total.getHarvestCount().getTotalAreaSize());
+            assertEquals(permitAreaSize1 + permitAreaSize2, total.getAreaAndPopulation().getTotalAreaSize());
 
             double expectedInTotalPer1000ha = remainingPopulationInTotalArea * 2 / ((permitAreaSize1 + permitAreaSize2) / 1000.0);
-            assertEquals(expectedInTotalPer1000ha, total.getHarvestCount().getRemainingPopulationInTotalAreaPer1000ha(), 0.001);
+            assertEquals(expectedInTotalPer1000ha, total.getAreaAndPopulation().getRemainingPopulationInTotalAreaPer1000ha(), 0.001);
 
             double expectedInEffectivePer1000ha = remainingPopulationInEffectiveArea * 2 / ((effectiveAreaSize1 + effectiveAreaSize2) / 1000.0);
-            assertEquals(expectedInEffectivePer1000ha, total.getHarvestCount().getRemainingPopulationInEffectiveAreaPer1000ha(), 0.001);
+            assertEquals(expectedInEffectivePer1000ha, total.getAreaAndPopulation().getRemainingPopulationInEffectiveAreaPer1000ha(), 0.001);
 
-            assertEquals(permitAreaSize1, stats.get(1).getHarvestCount().getTotalAreaSize());
-            assertEquals(permitAreaSize2, stats.get(2).getHarvestCount().getTotalAreaSize());
+            assertEquals(permitAreaSize1, stats.get(1).getAreaAndPopulation().getTotalAreaSize());
+            assertEquals(permitAreaSize2, stats.get(2).getAreaAndPopulation().getTotalAreaSize());
         });
 
     }

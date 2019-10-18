@@ -3,11 +3,11 @@ package fi.riista.feature.sso;
 import fi.riista.config.properties.SecurityConfigurationProperties;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
+import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.sso.dto.ExternalAuthenticationFailure;
 import fi.riista.feature.sso.dto.ExternalAuthenticationRequest;
@@ -16,6 +16,8 @@ import fi.riista.feature.sso.dto.ExternalAuthenticationStatusCode;
 import fi.riista.security.otp.OneTimePasswordRequiredException;
 import fi.riista.security.otp.OneTimePasswordSMSService;
 import fi.riista.test.EmbeddedDatabaseTest;
+import org.joda.time.LocalDate;
+import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class ExternalAuthenticationFeatureTest extends EmbeddedDatabaseTest {
 
@@ -42,7 +45,7 @@ public class ExternalAuthenticationFeatureTest extends EmbeddedDatabaseTest {
     private CheckExternalAuthenticationFeature checkExternalAuthenticationFeature;
 
     @Test
-    public void testOK() {
+    public void testOKWithNoFields() {
         final SystemUser apiUser = createNewApiUser(SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION);
         final SystemUser user = createNewUserWithPasswordAndPerson("user", DEFAULT_PASSWORD, SystemUser.Role.ROLE_USER);
         final Person person = user.getPerson();
@@ -70,7 +73,40 @@ public class ExternalAuthenticationFeatureTest extends EmbeddedDatabaseTest {
         ExternalAuthenticationResponse resp = (ExternalAuthenticationResponse) responseEntity.getBody();
         assertEquals(user.getPerson().getId(), resp.getPersonId());
         assertOccupations(resp.getOccupations(), occupationsToExport);
+        assertNull(resp.getDateOfBirth());
+        assertNull(resp.getSsn());
+        assertNull(resp.getAddress());
+        assertNull(resp.getHunterNumber());
     }
+
+    @Test
+    public void testOkWithFields() {
+        final SystemUser apiUser = createNewApiUser(
+                SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION,
+                SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION_DATE_OF_BIRTH,
+                SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION_HUNTERNUMBER,
+                SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION_ADDRESS,
+                SystemUserPrivilege.CHECK_EXTERNAL_AUTHENTICATION_SSN);
+        final SystemUser user = createNewUserWithPasswordAndPerson("user", DEFAULT_PASSWORD, SystemUser.Role.ROLE_USER);
+        final Person person = user.getPerson();
+        final LocalDate dob = person.parseDateOfBirth();
+
+        persistInNewTransaction();
+
+        authenticate(apiUser);
+
+        final ResponseEntity<?> responseEntity =
+                checkAuthentication(user.getUsername(), DEFAULT_PASSWORD, "127.0.0.1", null, null);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+        ExternalAuthenticationResponse resp = (ExternalAuthenticationResponse) responseEntity.getBody();
+        assertEquals(user.getPerson().getId(), resp.getPersonId());
+        assertEquals(dob.toString(ISODateTimeFormat.date()), resp.getDateOfBirth());
+        assertEquals(person.getSsn(), resp.getSsn());
+        assertEquals(person.getHunterNumber(), resp.getHunterNumber());
+        assertEquals(person.getAddress(), resp.getAddress());
+    }
+
 
     private List<Occupation> createTransientOccupations(Person person, Organisation org, Set<OccupationType> occupationTypes) {
         return occupationTypes.stream()

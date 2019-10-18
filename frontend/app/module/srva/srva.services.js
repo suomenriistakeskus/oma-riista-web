@@ -103,7 +103,7 @@ angular.module('app.srva.services', [])
         };
 
         function filterEnabledChoices(choices) {
-            return _.pluck(_.filter(choices, 'isChecked', true), 'name');
+            return _.chain(choices).filter('isChecked').map('name').value();
         }
     })
 
@@ -158,6 +158,6 @@ angular.module('app.srva.services', [])
         };
 
         function filterEnabledChoices(choices) {
-            return _.pluck(_.filter(choices, 'isChecked', true), 'name');
+            return _.chain(choices).filter('isChecked').map('name').value();
         }
     });

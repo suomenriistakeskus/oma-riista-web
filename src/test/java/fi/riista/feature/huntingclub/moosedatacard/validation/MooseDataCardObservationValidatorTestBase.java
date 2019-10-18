@@ -1,8 +1,8 @@
 package fi.riista.feature.huntingclub.moosedatacard.validation;
 
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
-import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
 import fi.riista.feature.huntingclub.moosedatacard.DateAndLocation;
 import io.vavr.control.Either;
 import org.joda.time.LocalDate;

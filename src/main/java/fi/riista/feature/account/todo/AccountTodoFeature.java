@@ -6,6 +6,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.gamediary.srva.SrvaEventRepository;
@@ -19,7 +20,10 @@ import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitat
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission;
+import fi.riista.feature.shootingtest.ShootingTest;
+import fi.riista.feature.shootingtest.ShootingTestEventRepository;
 import fi.riista.util.jpa.JpaSpecs;
+import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +31,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import static fi.riista.util.DateUtil.today;
 
@@ -41,25 +47,29 @@ public class AccountTodoFeature {
     private RequireEntityService requireEntityService;
 
     @Resource
+    private UserAuthorizationHelper userAuthorizationHelper;
+
+    @Resource
     private HuntingClubMemberInvitationRepository invitationRepository;
 
     @Resource
     private SrvaEventRepository srvaEventRepository;
 
     @Resource
+    private ShootingTestEventRepository shootingTestEventRepository;
+
+    @Resource
     private JPQLQueryFactory jpqlQueryFactory;
 
     @Transactional(readOnly = true)
-    public AccountTodoCountDTO countTodos() {
+    public AccountPermitTodoCountDTO countPermitTodos() {
         final Person person = activeUserService.requireActiveUser().getPerson();
 
         if (person == null) {
-            return new AccountTodoCountDTO(Collections.emptySet(), 0);
+            return new AccountPermitTodoCountDTO(Collections.emptySet());
         }
 
-        return new AccountTodoCountDTO(
-                listAllPermitsRequiringAction(person),
-                countInvitations(person));
+        return new AccountPermitTodoCountDTO(listAllPermitsRequiringAction(person));
     }
 
     private Set<Long> listAllPermitsRequiringAction(@Nonnull final Person person) {
@@ -101,6 +111,11 @@ public class AccountTodoFeature {
         return Sets.newHashSet(ids);
     }
 
+    @Transactional(readOnly = true)
+    public AccountTodoCountDTO countInvitationTodos() {
+        return countTodos(this::countInvitations);
+    }
+
     private long countInvitations(final @Nonnull Person person) {
         return invitationRepository.count(JpaSpecs.and(
                 JpaSpecs.equal(HuntingClubMemberInvitation_.person, person),
@@ -108,14 +123,8 @@ public class AccountTodoFeature {
     }
 
     @Transactional(readOnly = true)
-    public AccountSrvaTodoCountDTO countSrvaTodos(final long rhyId) {
-        final Person person = activeUserService.requireActiveUser().getPerson();
-
-        if (person == null) {
-            return new AccountSrvaTodoCountDTO(0);
-        }
-
-        return new AccountSrvaTodoCountDTO(countUnfinishedSrvaEvents(rhyId));
+    public AccountTodoCountDTO countSrvaTodos(final long rhyId) {
+        return countTodos(person -> countUnfinishedSrvaEvents(rhyId));
     }
 
     private long countUnfinishedSrvaEvents(final long rhyId) {
@@ -125,5 +134,30 @@ public class AccountTodoFeature {
         return srvaEventRepository.count(JpaSpecs.and(
                 SrvaSpecs.equalRhy(rhy),
                 SrvaSpecs.equalState(SrvaEventStateEnum.UNFINISHED)));
+    }
+
+    @Transactional(readOnly = true)
+    public AccountTodoCountDTO countShootingTestTodos(final long rhyId) {
+        final Riistanhoitoyhdistys rhy =
+                requireEntityService.requireRiistanhoitoyhdistys(rhyId, RhyPermission.VIEW_SHOOTING_TEST_EVENTS);
+
+        final boolean isCoordinatorOrModerator =
+                activeUserService.isModeratorOrAdmin() || userAuthorizationHelper.isCoordinator(rhy);
+
+        final LocalDate beginDate = ShootingTest.getBeginDateOfShootingTestEventList(!isCoordinatorOrModerator);
+        final LocalDate endDate = today().minusDays(1);
+
+        return countTodos(person -> {
+            return shootingTestEventRepository.countShootingTestEventsNotProperlyFinished(rhy, beginDate, endDate);
+        });
+    }
+
+    private AccountTodoCountDTO countTodos(final Function<? super Person, Long> todoCountFn) {
+        final long todoCount = Optional
+                .ofNullable(activeUserService.requireActiveUser().getPerson())
+                .map(todoCountFn)
+                .orElse(0L);
+
+        return new AccountTodoCountDTO(todoCount);
     }
 }

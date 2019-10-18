@@ -1,0 +1,47 @@
+<table class="table r-decision-species-table">
+    <thead>
+    <tr>
+        <th colspan="4" translate="harvestpermit.decision.species.title"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="s in $ctrl.speciesList track by s.code">
+        <td>
+            <span ng-bind="::(s.code | translateSpeciesCode)"></span>
+        </td>
+        <td>
+            <span ng-bind="s.category"></span>
+        </td>
+        <td>
+            <a class="edit-link"
+               ng-if="$ctrl.canEditContent"
+               ng-click="$ctrl.editSpeciesAmounts(s.code)">
+                <div class="logo">
+                    <span ng-hide="s.amountComplete" class="fa fa-fw fa-2x fa-edit"></span>
+                    <span ng-show="s.amountComplete" class="fa fa-fw fa-2x fa-check-circle"></span>
+                </div>
+
+                <div class="text">
+                    Määrät ja
+                    <br/>
+                    aika
+                </div>
+            </a>
+        </td>
+        <td>
+            <a class="edit-link"
+               ng-if="$ctrl.canEditContent"
+               ng-click="$ctrl.editForbiddenMethods(s.code)">
+                <div class="logo">
+                    <span ng-hide="s.forbiddenMethodComplete" class="fa fa-fw fa-2x fa-edit"></span>
+                    <span ng-show="s.forbiddenMethodComplete" class="fa fa-fw fa-2x fa-check-circle"></span>
+                </div>
+                <div class="text">
+                    Kielletyt <br/>
+                    menetelmät
+                </div>
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>

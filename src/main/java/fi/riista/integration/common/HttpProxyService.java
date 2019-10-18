@@ -28,7 +28,7 @@ public class HttpProxyService {
     private static final Logger LOG = LoggerFactory.getLogger(HttpProxyService.class);
 
     private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
-            .setConnectTimeout(750)
+            .setConnectTimeout(1500)
             .setSocketTimeout(5000)
             // When LH serves pdf, and pdf is not found for some reason, there will be redirect to error page, but error page is 200 OK.
             // Therefore do not follow redirects and treat anything else than 200 as 404 Not Found.

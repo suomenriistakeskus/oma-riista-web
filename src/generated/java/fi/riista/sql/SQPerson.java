@@ -43,10 +43,6 @@ public class SQPerson extends RelationalPathSpatial<SQPerson> {
 
     public final BooleanPath denyMagazine = createBoolean("denyMagazine");
 
-    public final BooleanPath denyPost = createBoolean("denyPost");
-
-    public final BooleanPath denyTransmit = createBoolean("denyTransmit");
-
     public final StringPath email = createString("email");
 
     public final BooleanPath enableShootingTests = createBoolean("enableShootingTests");
@@ -117,11 +113,11 @@ public class SQPerson extends RelationalPathSpatial<SQPerson> {
 
     public final com.querydsl.sql.PrimaryKey<SQPerson> personPkey = createPrimaryKey(personId);
 
+    public final com.querydsl.sql.ForeignKey<SQAddress> personMrAddressFk = createForeignKey(mrAddressId, "address_id");
+
     public final com.querydsl.sql.ForeignKey<SQOrganisation> rhyMembershipFk = createForeignKey(rhyMembershipId, "organisation_id");
 
     public final com.querydsl.sql.ForeignKey<SQAddress> personOtherAddressFk = createForeignKey(otherAddressId, "address_id");
-
-    public final com.querydsl.sql.ForeignKey<SQAddress> personMrAddressFk = createForeignKey(mrAddressId, "address_id");
 
     public final com.querydsl.sql.ForeignKey<SQSrvaEvent> _srvaEventAuthorFk = createInvForeignKey(personId, "author_id");
 
@@ -129,17 +125,23 @@ public class SQPerson extends RelationalPathSpatial<SQPerson> {
 
     public final com.querydsl.sql.ForeignKey<SQJhtTraining> _jhtTrainingPersonIdFk = createInvForeignKey(personId, "person_id");
 
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplication> _harvestPermitApplicationContactPersonFk = createInvForeignKey(personId, "contact_person_id");
+
     public final com.querydsl.sql.ForeignKey<SQHarvest> _harvestActualShooterFk = createInvForeignKey(personId, "actual_shooter_id");
 
     public final com.querydsl.sql.ForeignKey<SQGameObservation> _gameObservationApproverToHuntingDayPersonIdFk = createInvForeignKey(personId, "approver_to_hunting_day_id");
 
-    public final com.querydsl.sql.ForeignKey<SQMhPermit> _mhPermitPersonFk = createInvForeignKey(personId, "person_id");
+    public final com.querydsl.sql.ForeignKey<SQAmendmentApplicationData> _amendmentApplicationDataShooterFk = createInvForeignKey(personId, "shooter_id");
 
     public final com.querydsl.sql.ForeignKey<SQShootingTestParticipant> _shootingTestParticipantPersonFk = createInvForeignKey(personId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> _clubPersonFk = createInvForeignKey(personId, "club_person_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvest> _harvestAuthorFk = createInvForeignKey(personId, "author_id");
 
     public final com.querydsl.sql.ForeignKey<SQOccupation> _occupationPersonFk = createInvForeignKey(personId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitDecision> _permitDecisionContactPersonFk = createInvForeignKey(personId, "contact_person_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitContactPerson> _harvestPermitContactPersonPersonFk = createInvForeignKey(personId, "contact_person_id");
 
@@ -199,8 +201,6 @@ public class SQPerson extends RelationalPathSpatial<SQPerson> {
         addMetadata(deletionCode, ColumnMetadata.named("deletion_code").withIndex(34).ofType(Types.CHAR).withSize(1));
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
         addMetadata(denyMagazine, ColumnMetadata.named("deny_magazine").withIndex(32).ofType(Types.BIT).withSize(1).notNull());
-        addMetadata(denyPost, ColumnMetadata.named("deny_post").withIndex(31).ofType(Types.BIT).withSize(1).notNull());
-        addMetadata(denyTransmit, ColumnMetadata.named("deny_transmit").withIndex(30).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(email, ColumnMetadata.named("email").withIndex(14).ofType(Types.VARCHAR).withSize(255));
         addMetadata(enableShootingTests, ColumnMetadata.named("enable_shooting_tests").withIndex(44).ofType(Types.BIT).withSize(1));
         addMetadata(enableSrva, ColumnMetadata.named("enable_srva").withIndex(39).ofType(Types.BIT).withSize(1));

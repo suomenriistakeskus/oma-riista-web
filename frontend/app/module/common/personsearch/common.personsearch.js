@@ -17,6 +17,10 @@ angular.module('app.common.personsearch', [])
         this.findByPersonName = function (name) {
             return HttpPost.post('api/v1/search/person/name', {name: name});
         };
+
+        this.findByHunterNumberOrPersonName = function (searchTerm) {
+            return HttpPost.post('api/v1/search/person', {searchTerm: searchTerm});
+        };
     })
 
     .service('PersonSearchModal', function ($q, $uibModal, PersonSearchService) {

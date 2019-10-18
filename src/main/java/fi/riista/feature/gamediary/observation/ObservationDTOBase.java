@@ -11,7 +11,6 @@ import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenDTO;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps;
 import fi.riista.util.F;
 import fi.riista.validation.PhoneNumber;
-import org.hibernate.validator.constraints.Range;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
@@ -19,6 +18,8 @@ import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertFalse;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,21 +33,25 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
     private ObservationType observationType;
 
     @JsonProperty(value = "totalSpecimenAmount")
-    @Range(min = Observation.MIN_AMOUNT, max = Observation.MAX_AMOUNT)
+    @Min(Observation.MIN_AMOUNT)
+    @Max(Observation.MAX_AMOUNT)
     private Integer amount;
 
     private Boolean withinMooseHunting;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Range(min = 0, max = 100)
+    @Min(0)
+    @Max(100)
     private Integer mooselikeMaleAmount;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Range(min = 0, max = 100)
+    @Min(0)
+    @Max(100)
     private Integer mooselikeFemaleAmount;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     private Integer mooselikeCalfAmount;
 
     /**
@@ -54,7 +59,8 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
      * observation (event).
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     private Integer mooselikeFemale1CalfAmount;
 
     /**
@@ -62,7 +68,8 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
      * observation (event).
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     private Integer mooselikeFemale2CalfsAmount;
 
     /**
@@ -70,7 +77,8 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
      * game observation (event).
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     private Integer mooselikeFemale3CalfsAmount;
 
     /**
@@ -78,11 +86,13 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
      * game observation (event).
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     private Integer mooselikeFemale4CalfsAmount;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Range(min = 0, max = 50)
+    @Min(0)
+    @Max(50)
     private Integer mooselikeUnknownSpecimenAmount;
 
     private Integer inYardDistanceToResidence;

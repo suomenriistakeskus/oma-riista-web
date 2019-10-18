@@ -66,8 +66,7 @@ public class ShootingTestAttemptCrudFeature
     }
 
     @Override
-    protected void afterCreate(final ShootingTestAttempt entity,
-                               final ShootingTestAttemptDTO dto) {
+    protected void afterCreate(final ShootingTestAttempt entity, final ShootingTestAttemptDTO dto) {
         updateTotalDueAmount(entity.getParticipant());
     }
 
@@ -77,7 +76,7 @@ public class ShootingTestAttemptCrudFeature
         chargeableAttempts.stream()
                 .collect(groupingBy(ShootingTestAttempt::getType, counting()))
                 .forEach((type, count) -> {
-                    if (count > ShootingTestAttempt.MAX_ATTEMPTS_PER_TYPE) {
+                    if (count > ShootingTest.MAX_ATTEMPTS_PER_TYPE) {
                         throw new TooManyAttemptsException();
                     }
                 });

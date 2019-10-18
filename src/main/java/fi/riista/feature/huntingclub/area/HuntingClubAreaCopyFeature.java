@@ -1,7 +1,7 @@
 package fi.riista.feature.huntingclub.area;
 
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.gis.metsahallitus.MetsahallitusProperties;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusMaterialYear;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.huntingclub.copy.CopyClubGroupService;
@@ -42,7 +42,7 @@ public class HuntingClubAreaCopyFeature {
     private SecureRandom secureRandom;
 
     @Resource
-    private MetsahallitusProperties metsahallitusProperties;
+    private MetsahallitusMaterialYear metsahallitusMaterialYear;
 
     @Transactional
     public HuntingClubAreaDTO copy(final HuntingClubAreaCopyDTO dto) {
@@ -60,7 +60,7 @@ public class HuntingClubAreaCopyFeature {
                 originalArea.getNameFinnish() + (useSuffix ? suffix(Locales.FI) : ""),
                 originalArea.getNameSwedish() + (useSuffix ? suffix(Locales.SV) : ""),
                 dto.getHuntingYear(),
-                HuntingClubArea.calculateMetsahallitusYear(dto.getHuntingYear(), metsahallitusProperties.getLatestMetsahallitusYear()),
+                HuntingClubArea.calculateMetsahallitusYear(dto.getHuntingYear(), metsahallitusMaterialYear.getLatestHirviYear()),
                 null);
 
         area.generateAndStoreExternalId(secureRandom);

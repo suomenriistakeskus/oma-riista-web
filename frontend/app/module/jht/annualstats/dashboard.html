@@ -1,13 +1,13 @@
 <div class="row">
     <div class="col-xs-9 col-sm-10 col-md-9">
-        <jht-annual-statistics-tab-selection tab-counts="::$ctrl.stateCounts"
-                                             active-tab-index="::$ctrl.activeTab"
-                                             year="::$ctrl.year">
+        <jht-annual-statistics-tab-selection name-count-pairs="::$ctrl.stateNameCountPairs"
+                                             active-tab="$ctrl.activeTab"
+                                             on-active-tab-changed="$ctrl.onActiveTabChanged(activeTab)">
         </jht-annual-statistics-tab-selection>
     </div>
 
     <div class="col-xs-3 col-sm-2 col-md-3">
-        <div class="text-right">
+        <div class="form-group text-right">
             <span class="hidden-xs hidden-sm">
                 <span translate="global.year"></span>
                 <span>&nbsp;&nbsp;</span>
@@ -26,13 +26,32 @@
 
 <div class="row">
     <div class="col-xs-12 text-right">
-        <button type="button" class="btn btn-primary"
+        <button type="button" class="btn btn-default"
+                ng-if="$ctrl.isCopyEmailsButtonVisible"
                 ng-controller="CopyEmailsController as $emailCtrl"
-                ng-click="$emailCtrl.copyEmails($ctrl.getEntriesNotCompletedByCoordinator(), 'rhyEmail')"
-                ng-disabled="::(!$ctrl.isCopyEmailsButtonActive)">
+                ng-click="$emailCtrl.copyEmails($ctrl.unsentStatistics, 'rhyEmail')"
+                ng-disabled="::$ctrl.isCopyEmailsButtonDisabled">
 
             <span class="glyphicon glyphicon-envelope"></span> &nbsp;
             <span translate="jht.annualStats.button.copyEmails"></span>
+        </button>
+
+        <button type="button" class="btn btn-primary"
+                ng-if="$ctrl.isBatchApproveButtonVisible"
+                ng-confirm-click="{{'jht.annualStats.batchApprovalConfirmation' | translate}}"
+                ng-confirm-click-action="$ctrl.batchApprove()"
+                ng-disabled="::$ctrl.isBatchApproveButtonDisabled">
+
+            <span class="fa fa-fw fa-check"></span> &nbsp;
+            <span translate="jht.annualStats.button.batchApprove"></span>
+        </button>
+
+        <button type="button" class="btn btn-primary"
+                ng-if="$ctrl.isExportSubsidyAllocationButtonVisible"
+                ng-click="$ctrl.openExportSubsidyAllocationDialog()"
+                ng-disabled="::$ctrl.isExportSubsidyAllocationButtonDisabled">
+
+            <span translate="jht.annualStats.button.exportSubsidyAllocation"></span>
         </button>
     </div>
 </div>
@@ -40,7 +59,18 @@
 <!-- vertical spacing -->
 <div>&nbsp;</div>
 
-<jht-annual-statistics-table annual-stats="::$ctrl.filteredStats"
+<jht-annual-statistics-table annual-stats="::$ctrl.displayedStatistics"
                              year="::$ctrl.year"
                              active-state="::$ctrl.activeState">
 </jht-annual-statistics-table>
+
+<div class="row" ng-if="::$ctrl.isExportSendersButtonVisible">
+    <div class="col-xs-12 text-right">
+        <button type="button" class="btn btn-primary"
+            ng-click="$ctrl.exportSenders()"
+            ng-disabled="::$ctrl.isExportSendersButtonDisabled">
+
+            <span translate="jht.annualStats.button.exportSenders"></span>
+        </button>
+    </div>
+</div>

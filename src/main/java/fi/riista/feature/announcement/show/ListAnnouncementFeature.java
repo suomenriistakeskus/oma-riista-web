@@ -1,19 +1,21 @@
 package fi.riista.feature.announcement.show;
 
 import fi.riista.feature.account.user.ActiveUserService;
-import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementRepository;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.person.Person;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.Optional;
+import java.util.Objects;
 
 import static java.util.Collections.emptyList;
 
@@ -34,44 +36,59 @@ public class ListAnnouncementFeature {
     @Resource
     private ListAnnouncementDTOTransformer announcementDTOTransformer;
 
-    private Optional<Organisation> resolveOrganisation(final ListAnnouncementRequest request) {
-        if (request.getOrganisationType() != null && request.getOfficialCode() != null) {
-            return Optional.ofNullable(
-                    organisationRepository.findByTypeAndOfficialCode(
-                            request.getOrganisationType(),
-                            request.getOfficialCode()));
+    @Transactional(readOnly = true)
+    public Slice<ListAnnouncementDTO> listMine(final Pageable pageRequest) {
+        if (activeUserService.isModeratorOrAdmin()) {
+            return emptySlice();
         }
-        return Optional.empty();
+
+        final Person person = activeUserService.requireActivePerson();
+
+        final ListAnnouncementFilter filter = new ListAnnouncementFilter()
+                .withActiveUser(activeUserService.getActiveUserInfoOrNull())
+                .withActivePersonOccupations(occupationRepository.findActiveByPerson(person))
+                .withActivePersonRhy(person.getRhyMembership());
+
+        return filterAnnouncements(filter, pageRequest);
     }
 
     @Transactional(readOnly = true)
-    public Slice<ListAnnouncementDTO> list(final ListAnnouncementRequest request, final Pageable pageRequest) {
-        final ListAnnouncementFilter filter = new ListAnnouncementFilter(occupationRepository);
+    public Slice<ListAnnouncementDTO> listForOrganisation(final @Nonnull OrganisationType organisationType,
+                                                          final @Nonnull String officialCode,
+                                                          final @Nonnull Pageable pageRequest) {
+        Objects.requireNonNull(organisationType);
+        Objects.requireNonNull(officialCode);
+        Objects.requireNonNull(pageRequest);
+
+        final Organisation organisation = organisationRepository.findByTypeAndOfficialCode(organisationType, officialCode);
+
+        if (organisation == null) {
+            throw new IllegalArgumentException("Organisation filter is required");
+        }
+
+        final ListAnnouncementFilter filter = new ListAnnouncementFilter()
+                .withActiveUser(activeUserService.getActiveUserInfoOrNull())
+                .withOrganisation(organisation);
 
         if (!activeUserService.isModeratorOrAdmin()) {
-            filter.withSubscriberPerson(activeUserService.requireActivePerson());
+            final Person person = activeUserService.requireActivePerson();
+
+            filter.withActivePersonOccupations(occupationRepository.findActiveByPerson(person));
+            filter.withActivePersonRhy(person.getRhyMembership());
         }
 
-        final Optional<Organisation> maybeOrganisation = resolveOrganisation(request);
-
-        switch (request.getDirection()) {
-            case SENT:
-                maybeOrganisation.ifPresent(filter::withFromOrganisation);
-                break;
-            case RECEIVED:
-                maybeOrganisation.ifPresent(filter::withSubscriberOrganisation);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid direction");
-        }
-
-        return filter.buildPredicate()
-                .map(predicate -> announcementRepository.findAllAsSlice(predicate, pageRequest))
-                .map(slice -> transform(pageRequest, slice))
-                .orElseGet(() -> new SliceImpl<>(emptyList()));
+        return filterAnnouncements(filter, pageRequest);
     }
 
-    private Slice<ListAnnouncementDTO> transform(final Pageable pageRequest, final Slice<Announcement> slice) {
-        return new SliceImpl<>(announcementDTOTransformer.transform(slice.getContent()), pageRequest, slice.hasNext());
+    private Slice<ListAnnouncementDTO> filterAnnouncements(final ListAnnouncementFilter filter,
+                                                           final Pageable pageRequest) {
+        return filter.buildPredicate()
+                .map(predicate -> announcementRepository.findAllAsSlice(predicate, pageRequest))
+                .map(slice -> announcementDTOTransformer.apply(slice, pageRequest))
+                .orElseGet(ListAnnouncementFeature::emptySlice);
+    }
+
+    private static <T> SliceImpl<T> emptySlice() {
+        return new SliceImpl<>(emptyList());
     }
 }

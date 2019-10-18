@@ -1,0 +1,25 @@
+<span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span>
+<table class="table table-bordered table-striped">
+
+    <tr ng-repeat="permitTypeCount in $ctrl.metrics.permitCounts">
+        <td class="col-sm-6" ng-bind="::permitTypeCount.permitType"></td>
+        <td class="col-sm-6" ng-bind="::permitTypeCount.permitCount"></td>
+    </tr>
+</table>
+
+<hr class="invisible"/>
+
+<table class="table table-bordered table-striped">
+    <tr>
+        <td class="col-sm-6">Luvansaajia</td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.hunterCount"></td>
+    </tr>
+    <tr ng-if="$ctrl.metrics.invalidPeriodPermitCount > 0">
+        <td class="col-sm-6">Lupia joista puuttuu lupa-aika</td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.invalidPeriodPermitCount"></td>
+    </tr>
+    <tr ng-if="$ctrl.metrics.swedishTypeMissingPermitCount > 0">
+        <td class="col-sm-6">Lupia joista puuttuu ruotsinkielinen lupatyyppi</td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.swedishTypeMissingPermitCount"></td>
+    </tr>
+</table>

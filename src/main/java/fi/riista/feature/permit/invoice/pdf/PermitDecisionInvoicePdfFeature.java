@@ -3,9 +3,9 @@ package fi.riista.feature.permit.invoice.pdf;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.invoice.Invoice;
-import fi.riista.feature.permit.invoice.PermitDecisionInvoice;
-import fi.riista.feature.permit.invoice.PermitDecisionInvoiceRepository;
-import fi.riista.feature.permit.invoice.PermitInvoiceService;
+import fi.riista.feature.permit.invoice.decision.PermitDecisionInvoice;
+import fi.riista.feature.permit.invoice.decision.PermitDecisionInvoiceRepository;
+import fi.riista.feature.storage.FileDownloadService;
 import fi.riista.security.EntityPermission;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class PermitDecisionInvoicePdfFeature {
     private RequireEntityService requireEntityService;
 
     @Resource
-    private PermitInvoiceService permitInvoiceService;
+    private FileDownloadService fileDownloadService;
 
     @Transactional(readOnly = true, rollbackFor = IOException.class)
     public ResponseEntity<byte[]> getProcessingInvoicePdfFile(final long decisionId) throws IOException {
@@ -40,6 +40,6 @@ public class PermitDecisionInvoicePdfFeature {
                     "Refusing to download invoice PDF for decisionId %d having electronic invoicing enabled", decisionId));
         }
 
-        return permitInvoiceService.getInvoicePdfFile(invoice);
+        return fileDownloadService.download(invoice.getPdfFileMetadata());
     }
 }

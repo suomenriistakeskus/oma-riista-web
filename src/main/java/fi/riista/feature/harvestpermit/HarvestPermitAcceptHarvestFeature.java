@@ -66,7 +66,7 @@ public class HarvestPermitAcceptHarvestFeature {
 
         if (harvestPermit.isHarvestReportDone()) {
             // end of hunting report must be removed first
-            throw new EndOfHuntingReportExistsException(harvestPermit);
+            throw new EndOfHuntingReportExistsException();
         }
 
         if (!harvestPermit.isHarvestReportAllowed()) {

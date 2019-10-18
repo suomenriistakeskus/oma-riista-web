@@ -41,6 +41,8 @@ public class SQRhyAnnualStatistics extends RelationalPathSpatial<SQRhyAnnualStat
 
     public final NumberPath<Integer> announcements = createNumber("announcements", Integer.class);
 
+    public final DateTimePath<java.sql.Timestamp> basicInfoLastModified = createDateTime("basicInfoLastModified", java.sql.Timestamp.class);
+
     public final NumberPath<Integer> bowTestEvents = createNumber("bowTestEvents", Integer.class);
 
     public final DateTimePath<java.sql.Timestamp> bowTestEventsLastOverridden = createDateTime("bowTestEventsLastOverridden", java.sql.Timestamp.class);
@@ -153,7 +155,7 @@ public class SQRhyAnnualStatistics extends RelationalPathSpatial<SQRhyAnnualStat
 
     public final NumberPath<Integer> largeCarnivoreDamageInspectionLocations = createNumber("largeCarnivoreDamageInspectionLocations", Integer.class);
 
-    public final DateTimePath<java.sql.Timestamp> lockedTime = createDateTime("lockedTime", java.sql.Timestamp.class);
+    public final NumberPath<Integer> lukeCarnivoreContactPersons = createNumber("lukeCarnivoreContactPersons", Integer.class);
 
     public final NumberPath<Integer> lukeFieldTriangles = createNumber("lukeFieldTriangles", Integer.class);
 
@@ -161,7 +163,9 @@ public class SQRhyAnnualStatistics extends RelationalPathSpatial<SQRhyAnnualStat
 
     public final NumberPath<Integer> lukeSummerGameTriangles = createNumber("lukeSummerGameTriangles", Integer.class);
 
-    public final NumberPath<Integer> lukeWaterBirds = createNumber("lukeWaterBirds", Integer.class);
+    public final NumberPath<Integer> lukeWaterBirdBroods = createNumber("lukeWaterBirdBroods", Integer.class);
+
+    public final NumberPath<Integer> lukeWaterBirdCouples = createNumber("lukeWaterBirdCouples", Integer.class);
 
     public final NumberPath<Integer> lukeWinterGameTriangles = createNumber("lukeWinterGameTriangles", Integer.class);
 
@@ -186,6 +190,8 @@ public class SQRhyAnnualStatistics extends RelationalPathSpatial<SQRhyAnnualStat
     public final NumberPath<Integer> mooselikeHuntingTrainingParticipants = createNumber("mooselikeHuntingTrainingParticipants", Integer.class);
 
     public final NumberPath<Integer> mooseRanges = createNumber("mooseRanges", Integer.class);
+
+    public final NumberPath<Integer> mooseTaxationPlanningEvents = createNumber("mooseTaxationPlanningEvents", Integer.class);
 
     public final NumberPath<Integer> mutualAckShootingCertificates = createNumber("mutualAckShootingCertificates", Integer.class);
 
@@ -331,6 +337,8 @@ public class SQRhyAnnualStatistics extends RelationalPathSpatial<SQRhyAnnualStat
 
     public final NumberPath<Integer> srvaWolverineInjuries = createNumber("srvaWolverineInjuries", Integer.class);
 
+    public final StringPath state = createString("state");
+
     public final DateTimePath<java.sql.Timestamp> stateAidHunterTrainingsLastModified = createDateTime("stateAidHunterTrainingsLastModified", java.sql.Timestamp.class);
 
     public final NumberPath<Integer> trackerTrainingEvents = createNumber("trackerTrainingEvents", Integer.class);
@@ -344,6 +352,12 @@ public class SQRhyAnnualStatistics extends RelationalPathSpatial<SQRhyAnnualStat
     public final com.querydsl.sql.PrimaryKey<SQRhyAnnualStatistics> rhyAnnualStatisticsPkey = createPrimaryKey(rhyAnnualStatisticsId);
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> rhyAnnualStatisticsRhyFk = createForeignKey(rhyId, "organisation_id");
+
+    public final com.querydsl.sql.ForeignKey<SQRhyAnnualStatisticsState> rhyAnnualStatisticsStateFk = createForeignKey(state, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQRhyAnnualStatisticsModeratorUpdateEvent> _rhyAnnualStatisticsModeratorUpdateEventStatisticsFk = createInvForeignKey(rhyAnnualStatisticsId, "statistics_id");
+
+    public final com.querydsl.sql.ForeignKey<SQRhyAnnualStatisticsStateChangeEvent> _rhyAnnualStatisticsStateChangeEventStatisticsFk = createInvForeignKey(rhyAnnualStatisticsId, "statistics_id");
 
     public SQRhyAnnualStatistics(String variable) {
         super(SQRhyAnnualStatistics.class, forVariable(variable), "public", "rhy_annual_statistics");
@@ -371,162 +385,166 @@ public class SQRhyAnnualStatistics extends RelationalPathSpatial<SQRhyAnnualStat
     }
 
     public void addMetadata() {
-        addMetadata(accidentPreventionTrainingEvents, ColumnMetadata.named("accident_prevention_training_events").withIndex(84).ofType(Types.INTEGER).withSize(10));
-        addMetadata(accidentPreventionTrainingParticipants, ColumnMetadata.named("accident_prevention_training_participants").withIndex(85).ofType(Types.INTEGER).withSize(10));
-        addMetadata(allBearAttempts, ColumnMetadata.named("all_bear_attempts").withIndex(28).ofType(Types.INTEGER).withSize(10));
-        addMetadata(allBowAttempts, ColumnMetadata.named("all_bow_attempts").withIndex(32).ofType(Types.INTEGER).withSize(10));
-        addMetadata(allMooseAttempts, ColumnMetadata.named("all_moose_attempts").withIndex(26).ofType(Types.INTEGER).withSize(10));
-        addMetadata(allRoeDeerAttempts, ColumnMetadata.named("all_roe_deer_attempts").withIndex(30).ofType(Types.INTEGER).withSize(10));
-        addMetadata(announcements, ColumnMetadata.named("announcements").withIndex(93).ofType(Types.INTEGER).withSize(10));
-        addMetadata(bowTestEvents, ColumnMetadata.named("bow_test_events").withIndex(25).ofType(Types.INTEGER).withSize(10));
-        addMetadata(bowTestEventsLastOverridden, ColumnMetadata.named("bow_test_events_last_overridden").withIndex(156).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(carnivoreContactPersonTrainingEvents, ColumnMetadata.named("carnivore_contact_person_training_events").withIndex(56).ofType(Types.INTEGER).withSize(10));
-        addMetadata(carnivoreContactPersonTrainingParticipants, ColumnMetadata.named("carnivore_contact_person_training_participants").withIndex(57).ofType(Types.INTEGER).withSize(10));
-        addMetadata(carnivoreHuntingLeaderTrainingEvents, ColumnMetadata.named("carnivore_hunting_leader_training_events").withIndex(52).ofType(Types.INTEGER).withSize(10));
-        addMetadata(carnivoreHuntingLeaderTrainingParticipants, ColumnMetadata.named("carnivore_hunting_leader_training_participants").withIndex(53).ofType(Types.INTEGER).withSize(10));
-        addMetadata(carnivoreHuntingTrainingEvents, ColumnMetadata.named("carnivore_hunting_training_events").withIndex(50).ofType(Types.INTEGER).withSize(10));
-        addMetadata(carnivoreHuntingTrainingParticipants, ColumnMetadata.named("carnivore_hunting_training_participants").withIndex(51).ofType(Types.INTEGER).withSize(10));
-        addMetadata(collegeTrainingEvents, ColumnMetadata.named("college_training_events").withIndex(78).ofType(Types.INTEGER).withSize(10));
-        addMetadata(collegeTrainingParticipants, ColumnMetadata.named("college_training_participants").withIndex(79).ofType(Types.INTEGER).withSize(10));
-        addMetadata(communicationLastModified, ColumnMetadata.named("communication_last_modified").withIndex(96).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(accidentPreventionTrainingEvents, ColumnMetadata.named("accident_prevention_training_events").withIndex(83).ofType(Types.INTEGER).withSize(10));
+        addMetadata(accidentPreventionTrainingParticipants, ColumnMetadata.named("accident_prevention_training_participants").withIndex(84).ofType(Types.INTEGER).withSize(10));
+        addMetadata(allBearAttempts, ColumnMetadata.named("all_bear_attempts").withIndex(27).ofType(Types.INTEGER).withSize(10));
+        addMetadata(allBowAttempts, ColumnMetadata.named("all_bow_attempts").withIndex(31).ofType(Types.INTEGER).withSize(10));
+        addMetadata(allMooseAttempts, ColumnMetadata.named("all_moose_attempts").withIndex(25).ofType(Types.INTEGER).withSize(10));
+        addMetadata(allRoeDeerAttempts, ColumnMetadata.named("all_roe_deer_attempts").withIndex(29).ofType(Types.INTEGER).withSize(10));
+        addMetadata(announcements, ColumnMetadata.named("announcements").withIndex(92).ofType(Types.INTEGER).withSize(10));
+        addMetadata(basicInfoLastModified, ColumnMetadata.named("basic_info_last_modified").withIndex(160).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(bowTestEvents, ColumnMetadata.named("bow_test_events").withIndex(24).ofType(Types.INTEGER).withSize(10));
+        addMetadata(bowTestEventsLastOverridden, ColumnMetadata.named("bow_test_events_last_overridden").withIndex(155).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(carnivoreContactPersonTrainingEvents, ColumnMetadata.named("carnivore_contact_person_training_events").withIndex(55).ofType(Types.INTEGER).withSize(10));
+        addMetadata(carnivoreContactPersonTrainingParticipants, ColumnMetadata.named("carnivore_contact_person_training_participants").withIndex(56).ofType(Types.INTEGER).withSize(10));
+        addMetadata(carnivoreHuntingLeaderTrainingEvents, ColumnMetadata.named("carnivore_hunting_leader_training_events").withIndex(51).ofType(Types.INTEGER).withSize(10));
+        addMetadata(carnivoreHuntingLeaderTrainingParticipants, ColumnMetadata.named("carnivore_hunting_leader_training_participants").withIndex(52).ofType(Types.INTEGER).withSize(10));
+        addMetadata(carnivoreHuntingTrainingEvents, ColumnMetadata.named("carnivore_hunting_training_events").withIndex(49).ofType(Types.INTEGER).withSize(10));
+        addMetadata(carnivoreHuntingTrainingParticipants, ColumnMetadata.named("carnivore_hunting_training_participants").withIndex(50).ofType(Types.INTEGER).withSize(10));
+        addMetadata(collegeTrainingEvents, ColumnMetadata.named("college_training_events").withIndex(77).ofType(Types.INTEGER).withSize(10));
+        addMetadata(collegeTrainingParticipants, ColumnMetadata.named("college_training_participants").withIndex(78).ofType(Types.INTEGER).withSize(10));
+        addMetadata(communicationLastModified, ColumnMetadata.named("communication_last_modified").withIndex(95).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
         addMetadata(consistencyVersion, ColumnMetadata.named("consistency_version").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(createdByUserId, ColumnMetadata.named("created_by_user_id").withIndex(3).ofType(Types.BIGINT).withSize(19));
         addMetadata(creationTime, ColumnMetadata.named("creation_time").withIndex(6).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(deletedByUserId, ColumnMetadata.named("deleted_by_user_id").withIndex(4).ofType(Types.BIGINT).withSize(19));
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(failedHunterExams, ColumnMetadata.named("failed_hunter_exams").withIndex(14).ofType(Types.INTEGER).withSize(10));
-        addMetadata(firearmTestEvents, ColumnMetadata.named("firearm_test_events").withIndex(24).ofType(Types.INTEGER).withSize(10));
-        addMetadata(firearmTestEventsLastOverridden, ColumnMetadata.named("firearm_test_events_last_overridden").withIndex(155).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(gameCountingTrainingEvents, ColumnMetadata.named("game_counting_training_events").withIndex(63).ofType(Types.INTEGER).withSize(10));
-        addMetadata(gameCountingTrainingParticipants, ColumnMetadata.named("game_counting_training_participants").withIndex(64).ofType(Types.INTEGER).withSize(10));
-        addMetadata(gameDamageInspectors, ColumnMetadata.named("game_damage_inspectors").withIndex(22).ofType(Types.INTEGER).withSize(10));
-        addMetadata(gameDamageLastModified, ColumnMetadata.named("game_damage_last_modified").withIndex(23).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(gameEnvironmentalCareTrainingEvents, ColumnMetadata.named("game_environmental_care_training_events").withIndex(67).ofType(Types.INTEGER).withSize(10));
-        addMetadata(gameEnvironmentalCareTrainingParticipants, ColumnMetadata.named("game_environmental_care_training_participants").withIndex(68).ofType(Types.INTEGER).withSize(10));
-        addMetadata(gamePopulationManagementTrainingEvents, ColumnMetadata.named("game_population_management_training_events").withIndex(65).ofType(Types.INTEGER).withSize(10));
-        addMetadata(gamePopulationManagementTrainingParticipants, ColumnMetadata.named("game_population_management_training_participants").withIndex(66).ofType(Types.INTEGER).withSize(10));
-        addMetadata(grantedRecreationalShootingCertificates, ColumnMetadata.named("granted_recreational_shooting_certificates").withIndex(36).ofType(Types.INTEGER).withSize(10));
-        addMetadata(harvestPermitApplicationPartners, ColumnMetadata.named("harvest_permit_application_partners").withIndex(90).ofType(Types.INTEGER).withSize(10));
-        addMetadata(homePage, ColumnMetadata.named("home_page").withIndex(147).ofType(Types.VARCHAR).withSize(255));
-        addMetadata(hunterExamEvents, ColumnMetadata.named("hunter_exam_events").withIndex(12).ofType(Types.INTEGER).withSize(10));
-        addMetadata(hunterExamEventsLastOverridden, ColumnMetadata.named("hunter_exam_events_last_overridden").withIndex(154).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(hunterExamOfficials, ColumnMetadata.named("hunter_exam_officials").withIndex(15).ofType(Types.INTEGER).withSize(10));
-        addMetadata(hunterExamsLastModified, ColumnMetadata.named("hunter_exams_last_modified").withIndex(16).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(hunterExamTrainingEvents, ColumnMetadata.named("hunter_exam_training_events").withIndex(87).ofType(Types.INTEGER).withSize(10));
-        addMetadata(hunterExamTrainingEventsLastOverridden, ColumnMetadata.named("hunter_exam_training_events_last_overridden").withIndex(157).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(hunterExamTrainingLastModified, ColumnMetadata.named("hunter_exam_training_last_modified").withIndex(89).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(hunterExamTrainingParticipants, ColumnMetadata.named("hunter_exam_training_participants").withIndex(88).ofType(Types.INTEGER).withSize(10));
-        addMetadata(huntingControlCustomers, ColumnMetadata.named("hunting_control_customers").withIndex(18).ofType(Types.INTEGER).withSize(10));
-        addMetadata(huntingControlEvents, ColumnMetadata.named("hunting_control_events").withIndex(17).ofType(Types.INTEGER).withSize(10));
-        addMetadata(huntingControlLastModified, ColumnMetadata.named("hunting_control_last_modified").withIndex(21).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(huntingControllers, ColumnMetadata.named("hunting_controllers").withIndex(20).ofType(Types.INTEGER).withSize(10));
-        addMetadata(iban, ColumnMetadata.named("iban").withIndex(149).ofType(Types.CHAR).withSize(18));
-        addMetadata(info, ColumnMetadata.named("info").withIndex(148).ofType(Types.VARCHAR).withSize(2147483647));
-        addMetadata(interviews, ColumnMetadata.named("interviews").withIndex(92).ofType(Types.INTEGER).withSize(10));
-        addMetadata(jhtGameDamageTrainingEvents, ColumnMetadata.named("jht_game_damage_training_events").withIndex(43).ofType(Types.INTEGER).withSize(10));
-        addMetadata(jhtGameDamageTrainingParticipants, ColumnMetadata.named("jht_game_damage_training_participants").withIndex(44).ofType(Types.INTEGER).withSize(10));
-        addMetadata(jhtHunterExamTrainingEvents, ColumnMetadata.named("jht_hunter_exam_training_events").withIndex(41).ofType(Types.INTEGER).withSize(10));
-        addMetadata(jhtHunterExamTrainingParticipants, ColumnMetadata.named("jht_hunter_exam_training_participants").withIndex(42).ofType(Types.INTEGER).withSize(10));
-        addMetadata(jhtHuntingControlTrainingEvents, ColumnMetadata.named("jht_hunting_control_training_events").withIndex(45).ofType(Types.INTEGER).withSize(10));
-        addMetadata(jhtHuntingControlTrainingParticipants, ColumnMetadata.named("jht_hunting_control_training_participants").withIndex(46).ofType(Types.INTEGER).withSize(10));
-        addMetadata(jhtShootingTestTrainingEvents, ColumnMetadata.named("jht_shooting_test_training_events").withIndex(39).ofType(Types.INTEGER).withSize(10));
-        addMetadata(jhtShootingTestTrainingParticipants, ColumnMetadata.named("jht_shooting_test_training_participants").withIndex(40).ofType(Types.INTEGER).withSize(10));
-        addMetadata(jhtTrainingsLastModified, ColumnMetadata.named("jht_trainings_last_modified").withIndex(47).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(largeCarnivoreDamageInspectionExpenses, ColumnMetadata.named("large_carnivore_damage_inspection_expenses").withIndex(137).ofType(Types.NUMERIC).withSize(9).withDigits(2));
-        addMetadata(largeCarnivoreDamageInspectionLocations, ColumnMetadata.named("large_carnivore_damage_inspection_locations").withIndex(136).ofType(Types.INTEGER).withSize(10));
-        addMetadata(lockedTime, ColumnMetadata.named("locked_time").withIndex(11).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(lukeFieldTriangles, ColumnMetadata.named("luke_field_triangles").withIndex(140).ofType(Types.INTEGER).withSize(10));
-        addMetadata(lukeGameCalculationsLastModified, ColumnMetadata.named("luke_game_calculations_last_modified").withIndex(142).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(lukeSummerGameTriangles, ColumnMetadata.named("luke_summer_game_triangles").withIndex(139).ofType(Types.INTEGER).withSize(10));
-        addMetadata(lukeWaterBirds, ColumnMetadata.named("luke_water_birds").withIndex(141).ofType(Types.INTEGER).withSize(10));
-        addMetadata(lukeWinterGameTriangles, ColumnMetadata.named("luke_winter_game_triangles").withIndex(138).ofType(Types.INTEGER).withSize(10));
-        addMetadata(mhLastModified, ColumnMetadata.named("mh_last_modified").withIndex(145).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(mhSmallGameSoldLicenses, ColumnMetadata.named("mh_small_game_sold_licenses").withIndex(143).ofType(Types.INTEGER).withSize(10));
+        addMetadata(failedHunterExams, ColumnMetadata.named("failed_hunter_exams").withIndex(13).ofType(Types.INTEGER).withSize(10));
+        addMetadata(firearmTestEvents, ColumnMetadata.named("firearm_test_events").withIndex(23).ofType(Types.INTEGER).withSize(10));
+        addMetadata(firearmTestEventsLastOverridden, ColumnMetadata.named("firearm_test_events_last_overridden").withIndex(154).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(gameCountingTrainingEvents, ColumnMetadata.named("game_counting_training_events").withIndex(62).ofType(Types.INTEGER).withSize(10));
+        addMetadata(gameCountingTrainingParticipants, ColumnMetadata.named("game_counting_training_participants").withIndex(63).ofType(Types.INTEGER).withSize(10));
+        addMetadata(gameDamageInspectors, ColumnMetadata.named("game_damage_inspectors").withIndex(21).ofType(Types.INTEGER).withSize(10));
+        addMetadata(gameDamageLastModified, ColumnMetadata.named("game_damage_last_modified").withIndex(22).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(gameEnvironmentalCareTrainingEvents, ColumnMetadata.named("game_environmental_care_training_events").withIndex(66).ofType(Types.INTEGER).withSize(10));
+        addMetadata(gameEnvironmentalCareTrainingParticipants, ColumnMetadata.named("game_environmental_care_training_participants").withIndex(67).ofType(Types.INTEGER).withSize(10));
+        addMetadata(gamePopulationManagementTrainingEvents, ColumnMetadata.named("game_population_management_training_events").withIndex(64).ofType(Types.INTEGER).withSize(10));
+        addMetadata(gamePopulationManagementTrainingParticipants, ColumnMetadata.named("game_population_management_training_participants").withIndex(65).ofType(Types.INTEGER).withSize(10));
+        addMetadata(grantedRecreationalShootingCertificates, ColumnMetadata.named("granted_recreational_shooting_certificates").withIndex(35).ofType(Types.INTEGER).withSize(10));
+        addMetadata(harvestPermitApplicationPartners, ColumnMetadata.named("harvest_permit_application_partners").withIndex(89).ofType(Types.INTEGER).withSize(10));
+        addMetadata(homePage, ColumnMetadata.named("home_page").withIndex(146).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(hunterExamEvents, ColumnMetadata.named("hunter_exam_events").withIndex(11).ofType(Types.INTEGER).withSize(10));
+        addMetadata(hunterExamEventsLastOverridden, ColumnMetadata.named("hunter_exam_events_last_overridden").withIndex(153).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(hunterExamOfficials, ColumnMetadata.named("hunter_exam_officials").withIndex(14).ofType(Types.INTEGER).withSize(10));
+        addMetadata(hunterExamsLastModified, ColumnMetadata.named("hunter_exams_last_modified").withIndex(15).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(hunterExamTrainingEvents, ColumnMetadata.named("hunter_exam_training_events").withIndex(86).ofType(Types.INTEGER).withSize(10));
+        addMetadata(hunterExamTrainingEventsLastOverridden, ColumnMetadata.named("hunter_exam_training_events_last_overridden").withIndex(156).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(hunterExamTrainingLastModified, ColumnMetadata.named("hunter_exam_training_last_modified").withIndex(88).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(hunterExamTrainingParticipants, ColumnMetadata.named("hunter_exam_training_participants").withIndex(87).ofType(Types.INTEGER).withSize(10));
+        addMetadata(huntingControlCustomers, ColumnMetadata.named("hunting_control_customers").withIndex(17).ofType(Types.INTEGER).withSize(10));
+        addMetadata(huntingControlEvents, ColumnMetadata.named("hunting_control_events").withIndex(16).ofType(Types.INTEGER).withSize(10));
+        addMetadata(huntingControlLastModified, ColumnMetadata.named("hunting_control_last_modified").withIndex(20).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(huntingControllers, ColumnMetadata.named("hunting_controllers").withIndex(19).ofType(Types.INTEGER).withSize(10));
+        addMetadata(iban, ColumnMetadata.named("iban").withIndex(148).ofType(Types.CHAR).withSize(18));
+        addMetadata(info, ColumnMetadata.named("info").withIndex(147).ofType(Types.VARCHAR).withSize(2147483647));
+        addMetadata(interviews, ColumnMetadata.named("interviews").withIndex(91).ofType(Types.INTEGER).withSize(10));
+        addMetadata(jhtGameDamageTrainingEvents, ColumnMetadata.named("jht_game_damage_training_events").withIndex(42).ofType(Types.INTEGER).withSize(10));
+        addMetadata(jhtGameDamageTrainingParticipants, ColumnMetadata.named("jht_game_damage_training_participants").withIndex(43).ofType(Types.INTEGER).withSize(10));
+        addMetadata(jhtHunterExamTrainingEvents, ColumnMetadata.named("jht_hunter_exam_training_events").withIndex(40).ofType(Types.INTEGER).withSize(10));
+        addMetadata(jhtHunterExamTrainingParticipants, ColumnMetadata.named("jht_hunter_exam_training_participants").withIndex(41).ofType(Types.INTEGER).withSize(10));
+        addMetadata(jhtHuntingControlTrainingEvents, ColumnMetadata.named("jht_hunting_control_training_events").withIndex(44).ofType(Types.INTEGER).withSize(10));
+        addMetadata(jhtHuntingControlTrainingParticipants, ColumnMetadata.named("jht_hunting_control_training_participants").withIndex(45).ofType(Types.INTEGER).withSize(10));
+        addMetadata(jhtShootingTestTrainingEvents, ColumnMetadata.named("jht_shooting_test_training_events").withIndex(38).ofType(Types.INTEGER).withSize(10));
+        addMetadata(jhtShootingTestTrainingParticipants, ColumnMetadata.named("jht_shooting_test_training_participants").withIndex(39).ofType(Types.INTEGER).withSize(10));
+        addMetadata(jhtTrainingsLastModified, ColumnMetadata.named("jht_trainings_last_modified").withIndex(46).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(largeCarnivoreDamageInspectionExpenses, ColumnMetadata.named("large_carnivore_damage_inspection_expenses").withIndex(136).ofType(Types.NUMERIC).withSize(9).withDigits(2));
+        addMetadata(largeCarnivoreDamageInspectionLocations, ColumnMetadata.named("large_carnivore_damage_inspection_locations").withIndex(135).ofType(Types.INTEGER).withSize(10));
+        addMetadata(lukeCarnivoreContactPersons, ColumnMetadata.named("luke_carnivore_contact_persons").withIndex(161).ofType(Types.INTEGER).withSize(10));
+        addMetadata(lukeFieldTriangles, ColumnMetadata.named("luke_field_triangles").withIndex(139).ofType(Types.INTEGER).withSize(10));
+        addMetadata(lukeGameCalculationsLastModified, ColumnMetadata.named("luke_game_calculations_last_modified").withIndex(141).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(lukeSummerGameTriangles, ColumnMetadata.named("luke_summer_game_triangles").withIndex(138).ofType(Types.INTEGER).withSize(10));
+        addMetadata(lukeWaterBirdBroods, ColumnMetadata.named("luke_water_bird_broods").withIndex(158).ofType(Types.INTEGER).withSize(10));
+        addMetadata(lukeWaterBirdCouples, ColumnMetadata.named("luke_water_bird_couples").withIndex(140).ofType(Types.INTEGER).withSize(10));
+        addMetadata(lukeWinterGameTriangles, ColumnMetadata.named("luke_winter_game_triangles").withIndex(137).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mhLastModified, ColumnMetadata.named("mh_last_modified").withIndex(144).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(mhSmallGameSoldLicenses, ColumnMetadata.named("mh_small_game_sold_licenses").withIndex(142).ofType(Types.INTEGER).withSize(10));
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
-        addMetadata(mooselikeDamageInspectionExpenses, ColumnMetadata.named("mooselike_damage_inspection_expenses").withIndex(135).ofType(Types.NUMERIC).withSize(9).withDigits(2));
-        addMetadata(mooselikeDamageInspectionLocations, ColumnMetadata.named("mooselike_damage_inspection_locations").withIndex(134).ofType(Types.INTEGER).withSize(10));
-        addMetadata(mooselikeHuntingLeaderTrainingEvents, ColumnMetadata.named("mooselike_hunting_leader_training_events").withIndex(59).ofType(Types.INTEGER).withSize(10));
-        addMetadata(mooselikeHuntingLeaderTrainingParticipants, ColumnMetadata.named("mooselike_hunting_leader_training_participants").withIndex(60).ofType(Types.INTEGER).withSize(10));
-        addMetadata(mooselikeHuntingTrainingEvents, ColumnMetadata.named("mooselike_hunting_training_events").withIndex(48).ofType(Types.INTEGER).withSize(10));
-        addMetadata(mooselikeHuntingTrainingParticipants, ColumnMetadata.named("mooselike_hunting_training_participants").withIndex(49).ofType(Types.INTEGER).withSize(10));
-        addMetadata(mooseRanges, ColumnMetadata.named("moose_ranges").withIndex(97).ofType(Types.INTEGER).withSize(10));
-        addMetadata(mutualAckShootingCertificates, ColumnMetadata.named("mutual_ack_shooting_certificates").withIndex(37).ofType(Types.INTEGER).withSize(10));
-        addMetadata(omariistaAnnouncements, ColumnMetadata.named("omariista_announcements").withIndex(94).ofType(Types.INTEGER).withSize(10));
-        addMetadata(operationalLandAreaSize, ColumnMetadata.named("operational_land_area_size").withIndex(150).ofType(Types.INTEGER).withSize(10));
-        addMetadata(otherAdminDataLastModified, ColumnMetadata.named("other_admin_data_last_modified").withIndex(38).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(otherGamekeepingTrainingEvents, ColumnMetadata.named("other_gamekeeping_training_events").withIndex(69).ofType(Types.INTEGER).withSize(10));
-        addMetadata(otherGamekeepingTrainingParticipants, ColumnMetadata.named("other_gamekeeping_training_participants").withIndex(70).ofType(Types.INTEGER).withSize(10));
-        addMetadata(otherHunterTrainingsLastModified, ColumnMetadata.named("other_hunter_trainings_last_modified").withIndex(75).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(otherHuntingRelatedLastModified, ColumnMetadata.named("other_hunting_related_last_modified").withIndex(91).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(otherShootingRanges, ColumnMetadata.named("other_shooting_ranges").withIndex(100).ofType(Types.INTEGER).withSize(10));
-        addMetadata(otherShootingTrainingEvents, ColumnMetadata.named("other_shooting_training_events").withIndex(71).ofType(Types.INTEGER).withSize(10));
-        addMetadata(otherShootingTrainingParticipants, ColumnMetadata.named("other_shooting_training_participants").withIndex(72).ofType(Types.INTEGER).withSize(10));
-        addMetadata(otherTrainingEvents, ColumnMetadata.named("other_training_events").withIndex(82).ofType(Types.INTEGER).withSize(10));
-        addMetadata(otherTrainingLastModified, ColumnMetadata.named("other_training_last_modified").withIndex(86).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(otherTrainingParticipants, ColumnMetadata.named("other_training_participants").withIndex(83).ofType(Types.INTEGER).withSize(10));
-        addMetadata(otherYouthTargetedTrainingEvents, ColumnMetadata.named("other_youth_targeted_training_events").withIndex(80).ofType(Types.INTEGER).withSize(10));
-        addMetadata(otherYouthTargetedTrainingParticipants, ColumnMetadata.named("other_youth_targeted_training_participants").withIndex(81).ofType(Types.INTEGER).withSize(10));
-        addMetadata(passedHunterExams, ColumnMetadata.named("passed_hunter_exams").withIndex(13).ofType(Types.INTEGER).withSize(10));
-        addMetadata(proofOrders, ColumnMetadata.named("proof_orders").withIndex(19).ofType(Types.INTEGER).withSize(10));
-        addMetadata(qualifiedBearAttempts, ColumnMetadata.named("qualified_bear_attempts").withIndex(29).ofType(Types.INTEGER).withSize(10));
-        addMetadata(qualifiedBowAttempts, ColumnMetadata.named("qualified_bow_attempts").withIndex(33).ofType(Types.INTEGER).withSize(10));
-        addMetadata(qualifiedMooseAttempts, ColumnMetadata.named("qualified_moose_attempts").withIndex(27).ofType(Types.INTEGER).withSize(10));
-        addMetadata(qualifiedRoeDeerAttempts, ColumnMetadata.named("qualified_roe_deer_attempts").withIndex(31).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mooselikeDamageInspectionExpenses, ColumnMetadata.named("mooselike_damage_inspection_expenses").withIndex(134).ofType(Types.NUMERIC).withSize(9).withDigits(2));
+        addMetadata(mooselikeDamageInspectionLocations, ColumnMetadata.named("mooselike_damage_inspection_locations").withIndex(133).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mooselikeHuntingLeaderTrainingEvents, ColumnMetadata.named("mooselike_hunting_leader_training_events").withIndex(58).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mooselikeHuntingLeaderTrainingParticipants, ColumnMetadata.named("mooselike_hunting_leader_training_participants").withIndex(59).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mooselikeHuntingTrainingEvents, ColumnMetadata.named("mooselike_hunting_training_events").withIndex(47).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mooselikeHuntingTrainingParticipants, ColumnMetadata.named("mooselike_hunting_training_participants").withIndex(48).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mooseRanges, ColumnMetadata.named("moose_ranges").withIndex(96).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mooseTaxationPlanningEvents, ColumnMetadata.named("moose_taxation_planning_events").withIndex(159).ofType(Types.INTEGER).withSize(10));
+        addMetadata(mutualAckShootingCertificates, ColumnMetadata.named("mutual_ack_shooting_certificates").withIndex(36).ofType(Types.INTEGER).withSize(10));
+        addMetadata(omariistaAnnouncements, ColumnMetadata.named("omariista_announcements").withIndex(93).ofType(Types.INTEGER).withSize(10));
+        addMetadata(operationalLandAreaSize, ColumnMetadata.named("operational_land_area_size").withIndex(149).ofType(Types.INTEGER).withSize(10));
+        addMetadata(otherAdminDataLastModified, ColumnMetadata.named("other_admin_data_last_modified").withIndex(37).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(otherGamekeepingTrainingEvents, ColumnMetadata.named("other_gamekeeping_training_events").withIndex(68).ofType(Types.INTEGER).withSize(10));
+        addMetadata(otherGamekeepingTrainingParticipants, ColumnMetadata.named("other_gamekeeping_training_participants").withIndex(69).ofType(Types.INTEGER).withSize(10));
+        addMetadata(otherHunterTrainingsLastModified, ColumnMetadata.named("other_hunter_trainings_last_modified").withIndex(74).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(otherHuntingRelatedLastModified, ColumnMetadata.named("other_hunting_related_last_modified").withIndex(90).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(otherShootingRanges, ColumnMetadata.named("other_shooting_ranges").withIndex(99).ofType(Types.INTEGER).withSize(10));
+        addMetadata(otherShootingTrainingEvents, ColumnMetadata.named("other_shooting_training_events").withIndex(70).ofType(Types.INTEGER).withSize(10));
+        addMetadata(otherShootingTrainingParticipants, ColumnMetadata.named("other_shooting_training_participants").withIndex(71).ofType(Types.INTEGER).withSize(10));
+        addMetadata(otherTrainingEvents, ColumnMetadata.named("other_training_events").withIndex(81).ofType(Types.INTEGER).withSize(10));
+        addMetadata(otherTrainingLastModified, ColumnMetadata.named("other_training_last_modified").withIndex(85).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(otherTrainingParticipants, ColumnMetadata.named("other_training_participants").withIndex(82).ofType(Types.INTEGER).withSize(10));
+        addMetadata(otherYouthTargetedTrainingEvents, ColumnMetadata.named("other_youth_targeted_training_events").withIndex(79).ofType(Types.INTEGER).withSize(10));
+        addMetadata(otherYouthTargetedTrainingParticipants, ColumnMetadata.named("other_youth_targeted_training_participants").withIndex(80).ofType(Types.INTEGER).withSize(10));
+        addMetadata(passedHunterExams, ColumnMetadata.named("passed_hunter_exams").withIndex(12).ofType(Types.INTEGER).withSize(10));
+        addMetadata(proofOrders, ColumnMetadata.named("proof_orders").withIndex(18).ofType(Types.INTEGER).withSize(10));
+        addMetadata(qualifiedBearAttempts, ColumnMetadata.named("qualified_bear_attempts").withIndex(28).ofType(Types.INTEGER).withSize(10));
+        addMetadata(qualifiedBowAttempts, ColumnMetadata.named("qualified_bow_attempts").withIndex(32).ofType(Types.INTEGER).withSize(10));
+        addMetadata(qualifiedMooseAttempts, ColumnMetadata.named("qualified_moose_attempts").withIndex(26).ofType(Types.INTEGER).withSize(10));
+        addMetadata(qualifiedRoeDeerAttempts, ColumnMetadata.named("qualified_roe_deer_attempts").withIndex(30).ofType(Types.INTEGER).withSize(10));
         addMetadata(rhyAnnualStatisticsId, ColumnMetadata.named("rhy_annual_statistics_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(rhyId, ColumnMetadata.named("rhy_id").withIndex(9).ofType(Types.BIGINT).withSize(19).notNull());
-        addMetadata(rhyMembers, ColumnMetadata.named("rhy_members").withIndex(146).ofType(Types.INTEGER).withSize(10));
-        addMetadata(rifleRanges, ColumnMetadata.named("rifle_ranges").withIndex(99).ofType(Types.INTEGER).withSize(10));
-        addMetadata(schoolTrainingEvents, ColumnMetadata.named("school_training_events").withIndex(76).ofType(Types.INTEGER).withSize(10));
-        addMetadata(schoolTrainingParticipants, ColumnMetadata.named("school_training_participants").withIndex(77).ofType(Types.INTEGER).withSize(10));
-        addMetadata(shootingRangesLastModified, ColumnMetadata.named("shooting_ranges_last_modified").withIndex(101).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(shootingTestOfficials, ColumnMetadata.named("shooting_test_officials").withIndex(34).ofType(Types.INTEGER).withSize(10));
-        addMetadata(shootingTestsLastModified, ColumnMetadata.named("shooting_tests_last_modified").withIndex(35).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(shotgunRanges, ColumnMetadata.named("shotgun_ranges").withIndex(98).ofType(Types.INTEGER).withSize(10));
-        addMetadata(smallCarnivoreHuntingTrainingEvents, ColumnMetadata.named("small_carnivore_hunting_training_events").withIndex(61).ofType(Types.INTEGER).withSize(10));
-        addMetadata(smallCarnivoreHuntingTrainingParticipants, ColumnMetadata.named("small_carnivore_hunting_training_participants").withIndex(62).ofType(Types.INTEGER).withSize(10));
-        addMetadata(someInfo, ColumnMetadata.named("some_info").withIndex(95).ofType(Types.VARCHAR).withSize(2147483647));
-        addMetadata(srvaBearAccidents, ColumnMetadata.named("srva_bear_accidents").withIndex(123).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaBearDeportations, ColumnMetadata.named("srva_bear_deportations").withIndex(124).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaBearInjuries, ColumnMetadata.named("srva_bear_injuries").withIndex(125).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaFallowDeerAccidents, ColumnMetadata.named("srva_fallow_deer_accidents").withIndex(114).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaFallowDeerDeportations, ColumnMetadata.named("srva_fallow_deer_deportations").withIndex(115).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaFallowDeerInjuries, ColumnMetadata.named("srva_fallow_deer_injuries").withIndex(116).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaLynxAccidents, ColumnMetadata.named("srva_lynx_accidents").withIndex(120).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaLynxDeportations, ColumnMetadata.named("srva_lynx_deportations").withIndex(121).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaLynxInjuries, ColumnMetadata.named("srva_lynx_injuries").withIndex(122).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaMooseAccidents, ColumnMetadata.named("srva_moose_accidents").withIndex(102).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaMooseDeportations, ColumnMetadata.named("srva_moose_deportations").withIndex(103).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaMooseInjuries, ColumnMetadata.named("srva_moose_injuries").withIndex(104).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaOtherAccidents, ColumnMetadata.named("srva_other_accidents").withIndex(153).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaParticipants, ColumnMetadata.named("srva_participants").withIndex(133).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaRailwayAccidents, ColumnMetadata.named("srva_railway_accidents").withIndex(152).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaRoeDeerAccidents, ColumnMetadata.named("srva_roe_deer_accidents").withIndex(108).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaRoeDeerDeportations, ColumnMetadata.named("srva_roe_deer_deportations").withIndex(109).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaRoeDeerInjuries, ColumnMetadata.named("srva_roe_deer_injuries").withIndex(110).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaTotalWorkHours, ColumnMetadata.named("srva_total_work_hours").withIndex(132).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaTrafficAccidents, ColumnMetadata.named("srva_traffic_accidents").withIndex(151).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaTrainingEvents, ColumnMetadata.named("srva_training_events").withIndex(54).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaTrainingParticipants, ColumnMetadata.named("srva_training_participants").withIndex(55).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWhiteTailedDeerAccidents, ColumnMetadata.named("srva_white_tailed_deer_accidents").withIndex(105).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWhiteTailedDeerDeportations, ColumnMetadata.named("srva_white_tailed_deer_deportations").withIndex(106).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWhiteTailedDeerInjuries, ColumnMetadata.named("srva_white_tailed_deer_injuries").withIndex(107).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWildBoarAccidents, ColumnMetadata.named("srva_wild_boar_accidents").withIndex(117).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWildBoarDeportations, ColumnMetadata.named("srva_wild_boar_deportations").withIndex(118).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWildBoarInjuries, ColumnMetadata.named("srva_wild_boar_injuries").withIndex(119).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWildForestReindeerAccidents, ColumnMetadata.named("srva_wild_forest_reindeer_accidents").withIndex(111).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWildForestReindeerDeportations, ColumnMetadata.named("srva_wild_forest_reindeer_deportations").withIndex(112).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWildForestReindeerInjuries, ColumnMetadata.named("srva_wild_forest_reindeer_injuries").withIndex(113).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWolfAccidents, ColumnMetadata.named("srva_wolf_accidents").withIndex(126).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWolfDeportations, ColumnMetadata.named("srva_wolf_deportations").withIndex(127).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWolfInjuries, ColumnMetadata.named("srva_wolf_injuries").withIndex(128).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWolverineAccidents, ColumnMetadata.named("srva_wolverine_accidents").withIndex(129).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWolverineDeportations, ColumnMetadata.named("srva_wolverine_deportations").withIndex(130).ofType(Types.INTEGER).withSize(10));
-        addMetadata(srvaWolverineInjuries, ColumnMetadata.named("srva_wolverine_injuries").withIndex(131).ofType(Types.INTEGER).withSize(10));
-        addMetadata(stateAidHunterTrainingsLastModified, ColumnMetadata.named("state_aid_hunter_trainings_last_modified").withIndex(58).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
-        addMetadata(trackerTrainingEvents, ColumnMetadata.named("tracker_training_events").withIndex(73).ofType(Types.INTEGER).withSize(10));
-        addMetadata(trackerTrainingParticipants, ColumnMetadata.named("tracker_training_participants").withIndex(74).ofType(Types.INTEGER).withSize(10));
-        addMetadata(wolfTerritoryWorkgroupLeads, ColumnMetadata.named("wolf_territory_workgroup_leads").withIndex(144).ofType(Types.INTEGER).withSize(10));
+        addMetadata(rhyMembers, ColumnMetadata.named("rhy_members").withIndex(145).ofType(Types.INTEGER).withSize(10));
+        addMetadata(rifleRanges, ColumnMetadata.named("rifle_ranges").withIndex(98).ofType(Types.INTEGER).withSize(10));
+        addMetadata(schoolTrainingEvents, ColumnMetadata.named("school_training_events").withIndex(75).ofType(Types.INTEGER).withSize(10));
+        addMetadata(schoolTrainingParticipants, ColumnMetadata.named("school_training_participants").withIndex(76).ofType(Types.INTEGER).withSize(10));
+        addMetadata(shootingRangesLastModified, ColumnMetadata.named("shooting_ranges_last_modified").withIndex(100).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(shootingTestOfficials, ColumnMetadata.named("shooting_test_officials").withIndex(33).ofType(Types.INTEGER).withSize(10));
+        addMetadata(shootingTestsLastModified, ColumnMetadata.named("shooting_tests_last_modified").withIndex(34).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(shotgunRanges, ColumnMetadata.named("shotgun_ranges").withIndex(97).ofType(Types.INTEGER).withSize(10));
+        addMetadata(smallCarnivoreHuntingTrainingEvents, ColumnMetadata.named("small_carnivore_hunting_training_events").withIndex(60).ofType(Types.INTEGER).withSize(10));
+        addMetadata(smallCarnivoreHuntingTrainingParticipants, ColumnMetadata.named("small_carnivore_hunting_training_participants").withIndex(61).ofType(Types.INTEGER).withSize(10));
+        addMetadata(someInfo, ColumnMetadata.named("some_info").withIndex(94).ofType(Types.VARCHAR).withSize(2147483647));
+        addMetadata(srvaBearAccidents, ColumnMetadata.named("srva_bear_accidents").withIndex(122).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaBearDeportations, ColumnMetadata.named("srva_bear_deportations").withIndex(123).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaBearInjuries, ColumnMetadata.named("srva_bear_injuries").withIndex(124).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaFallowDeerAccidents, ColumnMetadata.named("srva_fallow_deer_accidents").withIndex(113).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaFallowDeerDeportations, ColumnMetadata.named("srva_fallow_deer_deportations").withIndex(114).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaFallowDeerInjuries, ColumnMetadata.named("srva_fallow_deer_injuries").withIndex(115).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaLynxAccidents, ColumnMetadata.named("srva_lynx_accidents").withIndex(119).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaLynxDeportations, ColumnMetadata.named("srva_lynx_deportations").withIndex(120).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaLynxInjuries, ColumnMetadata.named("srva_lynx_injuries").withIndex(121).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaMooseAccidents, ColumnMetadata.named("srva_moose_accidents").withIndex(101).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaMooseDeportations, ColumnMetadata.named("srva_moose_deportations").withIndex(102).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaMooseInjuries, ColumnMetadata.named("srva_moose_injuries").withIndex(103).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaOtherAccidents, ColumnMetadata.named("srva_other_accidents").withIndex(152).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaParticipants, ColumnMetadata.named("srva_participants").withIndex(132).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaRailwayAccidents, ColumnMetadata.named("srva_railway_accidents").withIndex(151).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaRoeDeerAccidents, ColumnMetadata.named("srva_roe_deer_accidents").withIndex(107).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaRoeDeerDeportations, ColumnMetadata.named("srva_roe_deer_deportations").withIndex(108).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaRoeDeerInjuries, ColumnMetadata.named("srva_roe_deer_injuries").withIndex(109).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaTotalWorkHours, ColumnMetadata.named("srva_total_work_hours").withIndex(131).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaTrafficAccidents, ColumnMetadata.named("srva_traffic_accidents").withIndex(150).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaTrainingEvents, ColumnMetadata.named("srva_training_events").withIndex(53).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaTrainingParticipants, ColumnMetadata.named("srva_training_participants").withIndex(54).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWhiteTailedDeerAccidents, ColumnMetadata.named("srva_white_tailed_deer_accidents").withIndex(104).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWhiteTailedDeerDeportations, ColumnMetadata.named("srva_white_tailed_deer_deportations").withIndex(105).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWhiteTailedDeerInjuries, ColumnMetadata.named("srva_white_tailed_deer_injuries").withIndex(106).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWildBoarAccidents, ColumnMetadata.named("srva_wild_boar_accidents").withIndex(116).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWildBoarDeportations, ColumnMetadata.named("srva_wild_boar_deportations").withIndex(117).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWildBoarInjuries, ColumnMetadata.named("srva_wild_boar_injuries").withIndex(118).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWildForestReindeerAccidents, ColumnMetadata.named("srva_wild_forest_reindeer_accidents").withIndex(110).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWildForestReindeerDeportations, ColumnMetadata.named("srva_wild_forest_reindeer_deportations").withIndex(111).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWildForestReindeerInjuries, ColumnMetadata.named("srva_wild_forest_reindeer_injuries").withIndex(112).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWolfAccidents, ColumnMetadata.named("srva_wolf_accidents").withIndex(125).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWolfDeportations, ColumnMetadata.named("srva_wolf_deportations").withIndex(126).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWolfInjuries, ColumnMetadata.named("srva_wolf_injuries").withIndex(127).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWolverineAccidents, ColumnMetadata.named("srva_wolverine_accidents").withIndex(128).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWolverineDeportations, ColumnMetadata.named("srva_wolverine_deportations").withIndex(129).ofType(Types.INTEGER).withSize(10));
+        addMetadata(srvaWolverineInjuries, ColumnMetadata.named("srva_wolverine_injuries").withIndex(130).ofType(Types.INTEGER).withSize(10));
+        addMetadata(state, ColumnMetadata.named("state").withIndex(157).ofType(Types.VARCHAR).withSize(255).notNull());
+        addMetadata(stateAidHunterTrainingsLastModified, ColumnMetadata.named("state_aid_hunter_trainings_last_modified").withIndex(57).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(trackerTrainingEvents, ColumnMetadata.named("tracker_training_events").withIndex(72).ofType(Types.INTEGER).withSize(10));
+        addMetadata(trackerTrainingParticipants, ColumnMetadata.named("tracker_training_participants").withIndex(73).ofType(Types.INTEGER).withSize(10));
+        addMetadata(wolfTerritoryWorkgroupLeads, ColumnMetadata.named("wolf_territory_workgroup_leads").withIndex(143).ofType(Types.INTEGER).withSize(10));
         addMetadata(year, ColumnMetadata.named("year").withIndex(10).ofType(Types.INTEGER).withSize(10).notNull());
     }
 

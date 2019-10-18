@@ -69,7 +69,14 @@ angular.module('app.layout.services', ['angular-growl'])
                 var errorsToIgnore = ['ignore', 'cancel', 'no', 'escape', 'escape key press', 'delete', 'back', 'previous'];
 
                 if (!angular.isString(err) || errorsToIgnore.indexOf(err) < 0) {
-                    showDefaultFailure();
+                    var status = _.get(err, 'status');
+                    var message = _.get(err, 'data.message');
+
+                    var messageAlreadyCapturedByHttpInterceptor = status === 400 && message;
+
+                    if (!messageAlreadyCapturedByHttpInterceptor) {
+                        showDefaultFailure();
+                    }
                 }
 
                 return $q.reject(err);

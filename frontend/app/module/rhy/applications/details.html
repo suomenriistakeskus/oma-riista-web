@@ -14,16 +14,21 @@
         <td class="text-right">
             <div uib-tooltip="{{'harvestpermit.application.application' | translate}}"
                  tooltip-placement="left">
-                <button type="button" class="btn btn-link btn-sm"
-                        ng-click="$ctrl.zip()">
-                    <span class="fa fa-download fa-lg"></span>
-                </button>
+                <a ng-show="$ctrl.application.huntingYear >= 2018"
+                   ng-click="$ctrl.zip()">
+                    <i class="fa fa-2x fa-fw fa-file-archive-o"></i>
+                </a>
+
+                <a ng-show="$ctrl.application.huntingYear < 2018"
+                   ng-click="$ctrl.pdf()">
+                    <i class="fa fa-2x fa-fw fa-file-pdf-o"></i>
+                </a>
             </div>
         </td>
     </tr>
 
     <tr ng-if="$ctrl.application.areaSize">
-        <th translate="club.area.landAreaSize"></th>
+        <th translate="global.map.size.landAreaSize"></th>
         <td class="text-right">
             <span ng-bind="$ctrl.application.areaSize.all.land | prettyAreaSize:0"></span>
         </td>

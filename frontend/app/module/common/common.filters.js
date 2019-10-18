@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('app.common.filters', [])
+angular.module('app.common.filters', ['app.metadata'])
 
     .filter('withVersion', function (versionUrlPrefix) {
         return function (url) {
@@ -127,6 +127,8 @@ angular.module('app.common.filters', [])
                     result = input[lang] || input.fi;
                 } else if (input.nameFI || input.nameSV) {
                     result = (lang === 'sv' && input.nameSV) ? input.nameSV : input.nameFI;
+                } else if (input.finnish || input.swedish) {
+                    result = (lang === 'sv' && input.swedish) ? input.swedish : input.finnish;
                 }
             }
 
@@ -164,7 +166,7 @@ angular.module('app.common.filters', [])
                 var hours = Math.floor(value / 60.0);
                 var minutes = value - hours * 60;
 
-                return (hours || 0) + ':' + _.padLeft(minutes, 2, '0');
+                return (hours || 0) + ':' + _.padStart(minutes, 2, '0');
             }
 
             return '';
@@ -180,4 +182,9 @@ angular.module('app.common.filters', [])
             return _.isEmpty(finite) ? null : _.sum(finite);
         };
     })
-;
+
+    .filter('translateSpeciesCode', function (SpeciesNameService) {
+        return function (speciesCode) {
+            return SpeciesNameService.translateSpeciesCode(speciesCode) || '?';
+        };
+    });

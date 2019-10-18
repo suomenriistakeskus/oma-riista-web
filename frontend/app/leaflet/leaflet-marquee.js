@@ -49,10 +49,15 @@ L.Marquee = L.Layer.extend({
         if (this._dragStartLatLng) {
             this._dragStart = this.map.latLngToContainerPoint(this._dragStartLatLng);
         }
-        this._render();
+
+        if (this._dragStart) {
+            this._render();
+        }
     },
 
     _onMouseDown: function(event) {
+        L.DomEvent.stopPropagation(event);
+
         this.overlayPane.appendChild(this._marquee);
 
         this._dragStart = event.containerPoint;
@@ -79,6 +84,8 @@ L.Marquee = L.Layer.extend({
     },
 
     _onMouseUp: function(upEvent) {
+        L.DomEvent.stopPropagation(upEvent);
+
         this.overlayPane.removeChild(this._marquee);
 
         L.DomEvent.off(this.mouseTarget, "mouseup", this._onMouseUp, this);

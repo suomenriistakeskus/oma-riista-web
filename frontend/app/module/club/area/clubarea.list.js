@@ -44,10 +44,11 @@
                                 return preselectedArea.huntingYear;
                             }
                             var currentYear = new Date().getFullYear();
-                            if (_.some(preloadedHuntingYears, 'year', currentYear) || _.isEmpty(preloadedHuntingYears)) {
+                            if (_.some(preloadedHuntingYears, {year: currentYear}) || _.isEmpty(preloadedHuntingYears)) {
                                 return currentYear;
                             }
-                            return _.max(_.pluck(preloadedHuntingYears, 'year'));
+
+                            return _.max(_.map(preloadedHuntingYears, 'year'));
                         }
                     }
                 });
@@ -67,15 +68,9 @@
                     method: 'GET',
                     url: apiPrefix + '/features'
                 },
-                updateFeatures: {
+                saveFeatures: {
                     method: 'PUT',
-                    url: apiPrefix + '/features',
-                    transformRequest: function (req, headers) {
-                        delete req.clubId;
-                        delete req.id;
-
-                        return angular.toJson(req);
-                    }
+                    url: apiPrefix + '/features'
                 },
                 combinedFeatures: {
                     method: 'GET',
@@ -121,8 +116,10 @@
             };
 
             this.selectActiveArea = function (areas, selectedAreaId) {
-                var area = _.find(areas, 'id', selectedAreaId);
-                return area || _.chain(areas).filter('active', true).first().value();
+                var area = _.find(areas, {
+                    id: selectedAreaId
+                });
+                return area || _.chain(areas).filter('active').head().value();
             };
         })
 
@@ -163,7 +160,7 @@
             var currentHuntingYear = HuntingYearService.getCurrent();
 
             $ctrl.showUpdateWarning = function () {
-                return $ctrl.selectedYear && $ctrl.selectedYear  < currentHuntingYear;
+                return $ctrl.selectedYear && $ctrl.selectedYear < currentHuntingYear;
             };
 
             $scope.$on('areaChanged', function (e, area) {
@@ -172,7 +169,7 @@
 
                 $ctrl.reloadAreas();
 
-                if (!_.some($ctrl.huntingYears, 'year', $ctrl.selectedYear)) {
+                if (!_.some($ctrl.huntingYears, {year: $ctrl.selectedYear})) {
                     ClubAreaListService.listHuntingYears(clubId).then(function (result) {
                         $ctrl.huntingYears = result;
                     });
@@ -262,7 +259,8 @@
             bindings: {
                 area: '<'
             },
-            controller: function ($q, $scope, $window, FormPostService, ActiveRoleService, ClubAreas,
+            controller: function ($q, $scope, $window, ActiveRoleService, ClubAreas,
+                                  FetchAndSaveBlob, TranslatedBlockUI,
                                   ClubAreaFormSidebar, ClubAreaCopyModal, ClubAreaImportModal, MapPdfModal) {
                 var $ctrl = this;
 
@@ -291,15 +289,23 @@
                 };
 
                 $ctrl.exportExcel = function (type) {
-                    FormPostService.submitFormUsingBlankTarget(exportBaseUri() + '/excel/' + type, {});
+                    var url = exportBaseUri() + '/excel/' + type;
+
+                    TranslatedBlockUI.start("club.area.excelExportMessage");
+
+                    FetchAndSaveBlob.get(url)
+                        .finally(TranslatedBlockUI.stop);
+
                 };
 
                 $ctrl.exportGeoJson = function () {
-                    FormPostService.submitFormUsingBlankTarget(exportBaseUri() + '/zip', {});
+                    var url = exportBaseUri() + '/zip';
+
+                    FetchAndSaveBlob.post(url, 'arraybuffer');
                 };
 
                 $ctrl.exportGarmin = function () {
-                    FormPostService.submitFormUsingBlankTarget(exportBaseUri() + '/garmin', {});
+                    FetchAndSaveBlob.post(exportBaseUri() + '/garmin');
                 };
 
                 $ctrl.exportArea = function () {
@@ -335,7 +341,7 @@
                 };
 
                 $ctrl.isAreaWithGeometry = function () {
-                    return $ctrl.area && $ctrl.area.zoneId && $ctrl.area.computedAreaSize > 0;
+                    return $ctrl.area && $ctrl.area.zoneId && !!$ctrl.area.size;
                 };
 
                 $ctrl.isLocalAreaWithGeometry = function () {

@@ -70,26 +70,41 @@ body {
 
 /*-------------- COMMON -------------------------- */
 
-li {
-    margin: 6pt 0;
+ul {
+    list-style-type: none;
+    padding-left: 0.4cm;
+}
+
+ul > li {
+    margin: 0 0 6pt;
+}
+
+ul > li:before {
+    content: "\2012";
+    position: absolute;
+    margin-left: -0.4cm;
 }
 
 h1 {
-    margin-top: 48pt;
-    margin-bottom: 12pt;
-    text-transform: uppercase;
+    margin-top: 80pt;
+    margin-bottom: 8pt;
 }
 
 h2 {
-    margin-bottom: 6pt;
+    margin-bottom: 8pt;
+}
+
+h3 {
+    margin: 16pt 0 8pt;
 }
 
 strong {
-    font-weight: bold;
+    /*font-weight: bold;*/
+    text-transform: uppercase;
 }
 
 hr {
-    margin: 12pt 0;
+    margin: 8pt 0;
     border: 1px solid transparent;
 }
 
@@ -100,7 +115,7 @@ hr {
     overflow: visible;
 }
 
-.header-container > .extend {
+.header-container .extend {
     width: 100% !important;
 }
 
@@ -112,7 +127,7 @@ hr {
 .header-container > .col-1 {
     float: left;
     box-sizing: border-box;
-    width: 9cm;
+    width: 11.5cm;
     min-height: 1px;
     padding: 0 0 4pt;
     overflow: visible;
@@ -121,24 +136,25 @@ hr {
 .header-container > .col-2 {
     overflow: visible;
     box-sizing: border-box;
-    margin-left: 9cm;
+    margin-left: 11.5cm;
     min-height: 1px;
-    padding: 0 0 4pt;
+    padding: 6pt 0 4pt;
 }
 
 .logo {
     float: right;
-    background: url('/static/application-pdf/logo.png') no-repeat 0 0;
+    background: url('/static/common/logo.png') no-repeat 0 0;
     background-clip: border-box;
     background-size: 48pt auto;
     width: 48pt;
     height: 48pt;
-    margin-right: 48pt;
+    margin-right: 3.5cm;
+    margin-top: 16pt;
 }
 
 #header-sub-table {
     width: 100%;
-    margin-top: 24pt;
+    margin-top: 10pt;
 }
 
 #header-sub-table > thead > tr > td {
@@ -146,7 +162,7 @@ hr {
 }
 
 #header-sub-table > tbody > tr > td {
-    padding: 3pt 0 0;
+    padding-bottom: 3pt;
 }
 
 #header-sub-table > tbody > tr > td:nth-child(1) {
@@ -172,59 +188,80 @@ hr {
     float: left;
     overflow: hidden;
     box-sizing: border-box;
-    width: 4cm;
+    width: 4.5cm;
+    padding-top: 12pt;
     min-height: 1px;
-    padding: 6pt 0 0;
 }
 
 .layout-container > .col-2 {
     position: relative;
-    width: 13.5cm;
+    width: 13cm;
     overflow: hidden;
     box-sizing: border-box;
-    margin-left: 4.5cm;
-    padding: 6pt 0 0;
+    margin-left: 5cm;
+    padding-top: 12pt;
     min-height: 1px;
 }
 
 .layout-container p + p {
-     margin-bottom: 6pt;
+    margin-top: 8pt;
  }
+
+.layout-container p {
+    margin-bottom: 8pt;
+}
 
 /*-------------- TABLE -------------------------- */
 
-.data-table {
+.layout-container table {
+    min-width: 8cm;
+    margin-bottom: 6pt;
     width: 100%;
-    margin-bottom: 10pt;
 }
 
-.data-table > thead > tr {
+.layout-container table > tbody {
     page-break-inside: avoid !important;
 }
 
-.data-table > thead > tr > th {
-    padding: 6pt 0 6pt;
-    border-bottom: 1px solid #e7e7e7;
-    text-align: left;
-}
-
-.data-table > tbody > tr {
+.layout-container table > tbody > tr {
     page-break-inside: avoid !important;
 }
 
-.data-table > tbody > tr > th {
-    padding: 3pt 3pt 3pt 0;
+.layout-container table > tbody > tr > td {
+    page-break-inside: avoid !important;
+    border-collapse: collapse;
+    min-width: 1.5cm;
+    max-width: 9cm;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    padding: 0 3pt 3pt 0;
+}
+
+.layout-container table > tbody > tr > td[align='right']:nth-child(1) {
+    padding-right: 6pt;
+}
+
+/*
+.layout-container table > tbody > tr > th {
+    padding: 3pt 3pt 6pt 0;
     border-collapse: collapse;
     border-top: 1px solid #e7e7e7;
     border-bottom: 1px solid #e7e7e7;
     text-align: left;
 }
+*/
 
-.data-table > tbody > tr > td {
-    padding: 3pt 3pt 3pt 0;
-    border-collapse: collapse;
-    min-width: 36pt;
-    border-top: 1px solid #e7e7e7;
-    border-bottom: 1px solid #e7e7e7;
+.layout-container table > thead {
+    page-break-inside: avoid !important;
 }
 
+.layout-container table > thead > tr {
+    page-break-inside: avoid !important;
+}
+
+.layout-container table > thead > tr > th {
+    page-break-inside: avoid !important;
+    text-align: left;
+    font-style: italic;
+    padding-bottom: 3pt;
+}

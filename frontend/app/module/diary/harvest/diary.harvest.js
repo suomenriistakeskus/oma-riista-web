@@ -159,7 +159,7 @@ angular.module('app.diary.harvest', [])
             if (harvest.isPermitBasedMooselike()) {
                 var isAlonePossible = harvest.isAlonePossible();
 
-                _.each(harvest.specimens, function (specimen) {
+                _.forEach(harvest.specimens, function (specimen) {
                     delete specimen.weight;
 
                     if (!_.isBoolean(specimen.notEdible)) {
@@ -171,7 +171,7 @@ angular.module('app.diary.harvest', [])
                 });
 
                 if (!harvest.isAntlersPossible()) {
-                    _.each(harvest.specimens, function (specimen) {
+                    _.forEach(harvest.specimens, function (specimen) {
                         delete specimen.antlersType;
                         delete specimen.antlersWidth;
                         delete specimen.antlerPointsLeft;
@@ -181,7 +181,7 @@ angular.module('app.diary.harvest', [])
             } else {
                 var weightNotAllowed = harvest.isGreySeal() && harvest.huntingMethod === 'SHOT_BUT_LOST';
 
-                _.each(harvest.specimens, function (specimen) {
+                _.forEach(harvest.specimens, function (specimen) {
                     delete specimen.alone;
                     delete specimen.weightEstimated;
                     delete specimen.weightMeasured;
@@ -202,19 +202,19 @@ angular.module('app.diary.harvest', [])
             if (requiredFields) {
                 var fieldRemover = createFieldRemover(requiredFields, harvest);
 
-                _.each([
+                _.forEach([
                     'huntingMethod', 'reportedWithPhoneCall', 'feedingPlace',
                     'huntingAreaType', 'huntingAreaSize', 'huntingParty', 'lukeStatus'
                 ], function (fieldName) {
                     fieldRemover(harvest, fieldName);
                 });
 
-                _.each([
+                _.forEach([
                     //'weight', 'age', 'gender', 'additionalInfo', 'weighEstimated', 'weightMeasured',
                     //'fitnessClass', 'antlersType', 'antersWidth', 'antlerPointsLeft', 'antlerPointsRight',
                     'taigaBeanGoose', 'feedingPlace', 'lukeStatus'
                 ], function (fieldName) {
-                    _.each(harvest.specimens, function (specimen) {
+                    _.forEach(harvest.specimens, function (specimen) {
                         fieldRemover(specimen, fieldName);
                     });
                 });
@@ -349,7 +349,7 @@ angular.module('app.diary.harvest', [])
                 $ctrl.availableSpecies = getAvailableSpecies(allSpecies, $ctrl.harvestPermit, $ctrl.harvestDate);
 
                 // clear currently selected species if it is not in the permits species
-                if ($ctrl.harvestPermit && _.find($ctrl.availableSpecies, 'code', $ctrl.gameSpeciesCode) === -1) {
+                if ($ctrl.harvestPermit && _.find($ctrl.availableSpecies, {code: $ctrl.gameSpeciesCode}) === -1) {
                     $ctrl.gameSpeciesCode = null;
                 }
 
@@ -398,7 +398,7 @@ angular.module('app.diary.harvest', [])
                         }
                         return s;
                     })
-                    .sortByAll(['categoryId', 'speciesName'])
+                    .sortBy(['categoryId', 'speciesName'])
                     .value();
             }
         }
@@ -660,7 +660,7 @@ angular.module('app.diary.harvest', [])
                 var gender = $ctrl.isFieldRequired('gender');
                 var weight = $ctrl.isWeightRequired();
 
-                return _.all($ctrl.harvest.specimens, function (specimen) {
+                return _.every($ctrl.harvest.specimens, function (specimen) {
                     return (!age || specimen.age) && (!gender || specimen.gender) && (!weight || specimen.weight);
                 });
             }
@@ -871,7 +871,7 @@ angular.module('app.diary.harvest', [])
 
                     HarvestPermits.query().$promise.then(function (myPermits) {
                         // Check if current user is contactPerson for used permit
-                        var isContactPerson = _.any(myPermits, function (p) {
+                        var isContactPerson = _.some(myPermits, function (p) {
                             return p.permitNumber === $scope.viewState.harvestPermit.permitNumber;
                         });
 

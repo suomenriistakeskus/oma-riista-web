@@ -1,7 +1,7 @@
 package fi.riista.feature.gamediary.srva.specimen;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.util.DtoUtil;

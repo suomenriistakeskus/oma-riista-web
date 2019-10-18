@@ -95,11 +95,13 @@ common: &default_settings
   # If a proxy is used, the host setting is required.  Other settings
   # are optional.  Default port is 8080.  The username and password
   # settings will be used to authenticate to Basic Auth challenges
-  # from a proxy server.
+  # from a proxy server. Proxy scheme will allow the agent to
+  # connect through proxies using the HTTPS scheme.
   #proxy_host: hostname
   #proxy_port: 8080
   #proxy_user: username
   #proxy_password: password
+  #proxy_scheme: https
 
   # Limits the number of lines to capture for each stack trace.
   # Default is 30
@@ -211,6 +213,13 @@ common: &default_settings
     # Default is 2000.  Setting to 0 will disable.
     max_samples_stored: 2000
 
+  # Distributed tracing lets you see the path that a request takes through your distributed system.
+  # Enabling distributed tracing changes the behavior of some New Relic features, so carefully consult the transition
+  # guide before you enable this feature: https://docs.newrelic.com/docs/transition-guide-distributed-tracing
+  # Default is false.
+  distributed_tracing:
+    enabled: false
+
   # Cross Application Tracing adds request and response headers to
   # external calls using supported HTTP libraries to provide better
   # performance data when calling applications monitored by other New Relic Agents.
@@ -251,13 +260,24 @@ common: &default_settings
     com.newrelic.instrumentation.spring-aop-2:
       enabled: false
 
+    # Classes loaded by classloaders in this list will not be instrumented.
+    # This is a useful optimization for runtimes which use classloaders to
+    # load dynamic classes which the agent would not instrument.
+    classloader_excludes:
+      groovy.lang.GroovyClassLoader$InnerLoader,
+      org.codehaus.groovy.runtime.callsite.CallSiteClassLoader,
+      com.collaxa.cube.engine.deployment.BPELClassLoader,
+      org.springframework.data.convert.ClassGeneratingEntityInstantiator$ObjectInstantiatorClassGenerator,
+      org.mvel2.optimizers.impl.asm.ASMAccessorOptimizer$ContextClassLoader,
+      gw.internal.gosu.compiler.SingleServingGosuClassLoader,
+
   # User-configurable custom labels for this agent.  Labels are name-value pairs.
   # There is a maximum of 64 labels per agent.  Names and values are limited to 255 characters.
   # Names and values may not contain colons (:) or semicolons (;).
   labels:
 
-    # An example label
-    #label_name: label_value
+  # An example label
+  #label_name: label_value
 
 
 # Application Environments

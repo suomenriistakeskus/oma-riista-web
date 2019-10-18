@@ -1,29 +1,8 @@
-<uib-tabset type="pills" justified="true" active="$ctrl.activeTabIndex">
-    <uib-tab index="0" select="$ctrl.selectTab(0)">
+<uib-tabset type="pills" justified="true" active="$ctrl.activeTab">
+    <uib-tab ng-repeat="state in ::$ctrl.nameCountPairs" index="$index" select="$ctrl.selectTab($index)">
         <uib-tab-heading>
-            <span translate="rhy.annualStats.state.NOT_CREATED"></span>
-            <span class="annual-statistics-state-count" ng-bind="$ctrl.notCreatedCount"></span>
-        </uib-tab-heading>
-    </uib-tab>
-
-    <uib-tab index="1" select="$ctrl.selectTab(1)">
-        <uib-tab-heading>
-            <span translate="rhy.annualStats.state.IN_PROGRESS"></span>
-            <span class="annual-statistics-state-count" ng-bind="$ctrl.inProgressCount"></span>
-        </uib-tab-heading>
-    </uib-tab>
-
-    <uib-tab index="2" select="$ctrl.selectTab(2)">
-        <uib-tab-heading>
-            <span translate="rhy.annualStats.state.UNDER_INSPECTION"></span>
-            <span class="annual-statistics-state-count" ng-bind="$ctrl.underInspectionCount"></span>
-        </uib-tab-heading>
-    </uib-tab>
-
-    <uib-tab index="3" select="$ctrl.selectTab(3)">
-        <uib-tab-heading>
-            <span translate="rhy.annualStats.state.APPROVED"></span>
-            <span class="annual-statistics-state-count" ng-bind="$ctrl.approvedCount"></span>
+            <span translate="rhy.annualStats.state.{{::state.name}}"></span>
+            <span class="annual-statistics-state-count" ng-bind="::state.count"></span>
         </uib-tab-heading>
     </uib-tab>
 </uib-tabset>

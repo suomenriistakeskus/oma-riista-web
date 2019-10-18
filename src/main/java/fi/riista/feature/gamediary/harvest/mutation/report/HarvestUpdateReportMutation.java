@@ -22,13 +22,13 @@ public class HarvestUpdateReportMutation implements HarvestMutation {
 
     @Override
     public void accept(final Harvest harvest) {
-        if (harvest.isHarvestReportApproved() || harvest.isHarvestReportRejected()) {
-            throw new HarvestReportExistsException(harvest);
-        }
-
         // Do not update existing report as moderator
         if (mutationRole == HarvestMutationRole.MODERATOR) {
             return;
+        }
+
+        if (harvest.isHarvestReportApproved() || harvest.isHarvestReportRejected()) {
+            throw new HarvestReportExistsException(harvest);
         }
 
         // Do not update if reporting type not changed

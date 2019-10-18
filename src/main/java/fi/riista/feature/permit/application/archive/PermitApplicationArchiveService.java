@@ -20,6 +20,7 @@ public class PermitApplicationArchiveService {
     private static final String FILENAME_PDF_APPLICATION = "hakemus.pdf";
     private static final String FILENAME_GEOJSON = "hakemus.json";
     private static final String FILENAME_PDF_MAP = "kartta.pdf";
+    private static final String FILE_NAME_PDF_MML = "kiinteistöt.pdf";
 
     @Resource
     private HarvestPermitApplicationRepository harvestPermitApplicationRepository;
@@ -45,26 +46,37 @@ public class PermitApplicationArchiveService {
         return archiveList.isEmpty();
     }
 
+    @Transactional(readOnly = true)
+    public PermitApplicationArchiveDTO getDataForArchive(final long applicationId) {
+        return PermitApplicationArchiveDTO.create(harvestPermitApplicationRepository.getOne(applicationId));
+    }
+
     // No transaction here as intended
-    public Path createArchive(final long applicationId) throws Exception {
+    public Path createArchive(final PermitApplicationArchiveDTO dto) throws Exception {
         try (final PermitApplicationArchiveGenerator archiveGenerator = new PermitApplicationArchiveGenerator()) {
             final Path applicationPdf = archiveGenerator.addAttachment(FILENAME_PDF_APPLICATION);
-            final Path applicationGeoJson = archiveGenerator.addAttachment(FILENAME_GEOJSON);
-            final Path applicationMapPdf = archiveGenerator.addAttachment(FILENAME_PDF_MAP);
 
             // Application
-            permitApplicationArchiveExportService.exportApplicationPdf(applicationId, applicationPdf);
-            permitApplicationValidationService.validateApplicationPdf(applicationId, applicationPdf);
+            permitApplicationArchiveExportService.exportApplicationPdf(dto, applicationPdf);
+            permitApplicationValidationService.validateApplicationPdf(dto.getId(), applicationPdf);
 
-            // Map GeoJSON
-            permitApplicationArchiveExportService.exportMapGeoJson(applicationId, applicationGeoJson);
+            if (dto.isHasPermitArea()) {
+                // Map GeoJSON
+                final Path applicationGeoJson = archiveGenerator.addAttachment(FILENAME_GEOJSON);
+                permitApplicationArchiveExportService.exportMapGeoJson(dto.getId(), applicationGeoJson);
 
-            // Map PDF
-            permitApplicationArchiveExportService.exportMapPdf(applicationId, applicationMapPdf);
-            permitApplicationValidationService.validateMapPdf(applicationMapPdf);
+                // Map PDF
+                final Path applicationMapPdf = archiveGenerator.addAttachment(FILENAME_PDF_MAP);
+                permitApplicationArchiveExportService.exportMapPdf(dto.getId(), applicationMapPdf);
+                permitApplicationValidationService.validateMapPdf(applicationMapPdf);
+
+                final Path mml = archiveGenerator.addAttachment(FILE_NAME_PDF_MML);
+                permitApplicationArchiveExportService.exportMmlPdf(dto, mml);
+                permitApplicationValidationService.validateMmlPdf(mml);
+            }
 
             // Attachments
-            permitApplicationArchiveExportService.exportApplicationAttachments(applicationId, archiveGenerator);
+            permitApplicationArchiveExportService.exportApplicationAttachments(dto.getId(), archiveGenerator);
 
             return archiveGenerator.buildArchive();
         }
@@ -78,6 +90,7 @@ public class PermitApplicationArchiveService {
         final PermitApplicationArchive archive = new PermitApplicationArchive();
         archive.setFileMetadata(fileMetadata);
         archive.setHarvestPermitApplication(application);
+
         permitApplicationArchiveRepository.save(archive);
     }
 

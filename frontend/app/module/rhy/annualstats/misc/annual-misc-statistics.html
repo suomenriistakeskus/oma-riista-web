@@ -1,30 +1,35 @@
-<div class="r-annual-statistics-content row">
+<div class="r-annual-statistics-panel row">
     <div class="col-sm-6">
-        <show-other-hunting-related-statistics other-hunting-related="$ctrl.statistics.otherHuntingRelated"
-                                               editable="$ctrl.moderatorEditable"
+        <show-other-hunting-related-statistics other-hunting-related="::$ctrl.statistics.otherHuntingRelated"
+                                               editable="::$ctrl.isEditable"
                                                open-edit-dialog="$ctrl.editOtherHuntingRelated()">
         </show-other-hunting-related-statistics>
 
-        <show-shooting-range-statistics shooting-ranges="$ctrl.statistics.shootingRanges"
-                                        editable="$ctrl.editable"
+        <show-shooting-range-statistics shooting-ranges="::$ctrl.statistics.shootingRanges"
+                                        editable="::$ctrl.isEditable"
                                         open-edit-dialog="$ctrl.editShootingRanges()">
         </show-shooting-range-statistics>
 
-        <show-metsahallitus-statistics metsahallitus="$ctrl.statistics.metsahallitus"
-                                       editable="$ctrl.moderatorEditable"
+        <show-metsahallitus-statistics metsahallitus="::$ctrl.statistics.metsahallitus"
+                                       editable="::($ctrl.isModerator && $ctrl.isEditable)"
                                        open-edit-dialog="$ctrl.editMetsahallitusData()">
         </show-metsahallitus-statistics>
     </div>
 
     <div class="col-sm-6">
-        <show-communication-statistics communication="$ctrl.statistics.communication"
-                                       editable="$ctrl.editable"
+        <show-communication-statistics communication="::$ctrl.statistics.communication"
+                                       editable="::$ctrl.isEditable"
                                        open-edit-dialog="$ctrl.editCommunication()">
         </show-communication-statistics>
 
-        <show-game-calculation-statistics luke="$ctrl.statistics.luke"
-                                          editable="$ctrl.moderatorEditable"
+        <show-game-calculation-statistics luke="::$ctrl.statistics.luke"
+                                          editable="::($ctrl.isModerator && $ctrl.isEditable)"
                                           open-edit-dialog="$ctrl.editGameCalculations()">
         </show-game-calculation-statistics>
+
+        <show-public-event-statistics public-events="::$ctrl.statistics.publicEvents"
+                                      editable="::$ctrl.isEditable"
+                                      open-edit-dialog="$ctrl.editPublicEvents()">
+        </show-public-event-statistics>
     </div>
 </div>

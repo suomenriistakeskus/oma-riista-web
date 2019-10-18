@@ -43,11 +43,27 @@ public class SQHarvestPermitAreaRhy extends RelationalPathSpatial<SQHarvestPermi
 
     public final NumberPath<Long> harvestPermitAreaRhyId = createNumber("harvestPermitAreaRhyId", Long.class);
 
+    public final NumberPath<Double> landSize = createNumber("landSize", Double.class);
+
     public final DateTimePath<java.sql.Timestamp> modificationTime = createDateTime("modificationTime", java.sql.Timestamp.class);
 
     public final NumberPath<Long> modifiedByUserId = createNumber("modifiedByUserId", Long.class);
 
+    public final NumberPath<Double> privateLandSize = createNumber("privateLandSize", Double.class);
+
+    public final NumberPath<Double> privateSize = createNumber("privateSize", Double.class);
+
+    public final NumberPath<Double> privateWaterSize = createNumber("privateWaterSize", Double.class);
+
     public final NumberPath<Long> rhyId = createNumber("rhyId", Long.class);
+
+    public final NumberPath<Double> stateLandSize = createNumber("stateLandSize", Double.class);
+
+    public final NumberPath<Double> stateSize = createNumber("stateSize", Double.class);
+
+    public final NumberPath<Double> stateWaterSize = createNumber("stateWaterSize", Double.class);
+
+    public final NumberPath<Double> waterSize = createNumber("waterSize", Double.class);
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestPermitAreaRhy> harvestPermitAreaRhyPkey = createPrimaryKey(harvestPermitAreaRhyId);
 
@@ -89,9 +105,17 @@ public class SQHarvestPermitAreaRhy extends RelationalPathSpatial<SQHarvestPermi
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
         addMetadata(harvestPermitAreaId, ColumnMetadata.named("harvest_permit_area_id").withIndex(9).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(harvestPermitAreaRhyId, ColumnMetadata.named("harvest_permit_area_rhy_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
+        addMetadata(landSize, ColumnMetadata.named("land_size").withIndex(12).ofType(Types.DOUBLE).withSize(17).withDigits(17));
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
+        addMetadata(privateLandSize, ColumnMetadata.named("private_land_size").withIndex(18).ofType(Types.DOUBLE).withSize(17).withDigits(17));
+        addMetadata(privateSize, ColumnMetadata.named("private_size").withIndex(17).ofType(Types.DOUBLE).withSize(17).withDigits(17));
+        addMetadata(privateWaterSize, ColumnMetadata.named("private_water_size").withIndex(19).ofType(Types.DOUBLE).withSize(17).withDigits(17));
         addMetadata(rhyId, ColumnMetadata.named("rhy_id").withIndex(10).ofType(Types.BIGINT).withSize(19).notNull());
+        addMetadata(stateLandSize, ColumnMetadata.named("state_land_size").withIndex(15).ofType(Types.DOUBLE).withSize(17).withDigits(17));
+        addMetadata(stateSize, ColumnMetadata.named("state_size").withIndex(14).ofType(Types.DOUBLE).withSize(17).withDigits(17));
+        addMetadata(stateWaterSize, ColumnMetadata.named("state_water_size").withIndex(16).ofType(Types.DOUBLE).withSize(17).withDigits(17));
+        addMetadata(waterSize, ColumnMetadata.named("water_size").withIndex(13).ofType(Types.DOUBLE).withSize(17).withDigits(17));
     }
 
 }

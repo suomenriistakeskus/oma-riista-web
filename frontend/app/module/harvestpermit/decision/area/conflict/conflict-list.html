@@ -1,0 +1,87 @@
+<div class="row" style="margin-bottom: 15px">
+    <div class="col-xs-8">
+        <div class="btn-group">
+            <label class="btn btn-default"
+                   ng-model="$ctrl.filter"
+                   uib-btn-radio="'all'">
+                <span class="fa-stack">
+                    <i class="text-primary fa fa-check"
+                       ng-show="$ctrl.filter === 'all'"></i>
+                </span>
+                &nbsp;
+                <span translate="global.showAll"></span>
+            </label>
+
+            <label class="btn btn-default"
+                   ng-model="$ctrl.filter"
+                   uib-btn-radio="'private'">
+                <span class="text-primary fa fa-check"
+                      ng-show="$ctrl.filter === 'private'"></span>
+                &nbsp;
+                <span translate="harvestpermit.application.conflictList.showOnlyPrivateLand"></span>
+                <span class="fa-stack">
+                    <i class="fa fa-tree fa-stack-1x text-primary"></i>
+                    <i class="fa fa-ban fa-stack-2x text-danger"></i>
+                </span>
+            </label>
+
+            <label class="btn btn-default"
+                   ng-model="$ctrl.filter"
+                   uib-btn-radio="'mh'">
+                <span class="text-primary fa fa-check"
+                      ng-show="$ctrl.filter === 'mh'"></span>
+                &nbsp;
+                <span translate="harvestpermit.application.conflictList.showOnlyMhLand"></span>
+                <span class="fa-stack">
+                    <i class="fa fa-tree fa-stack-1x text-primary"></i>
+                </span>
+            </label>
+        </div>
+    </div>
+
+    <div class="col-xs-4 text-right">
+        <button class="btn btn-default"
+                ng-click="$ctrl.exportConflictsExcel()">
+            <span class="fa-stack">
+                <i class="fa fa-fw fa-file-excel-o"></i>
+            </span>
+            <span translate="harvestpermit.decision.area.buttons.conflicts"></span>
+        </button>
+    </div>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th class="col-xs-2" translate="harvestpermit.application.conflictList.applicationNumber"></th>
+        <th class="col-xs-3" translate="harvestpermit.application.conflictList.rhy"></th>
+        <th class="col-xs-4" translate="harvestpermit.application.conflictList.permitHolder"></th>
+        <th class="col-xs-3" translate="harvestpermit.application.conflictList.areaSize"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="p in $ctrl.filterConflicts() | orderBy: ['onlyMhConflicts', 'onlyPrivateConflicts', 'applicationNumber'] track by p.id">
+        <td>
+            <a ng-click="$ctrl.openConflictResolution(p)">
+                <span ng-bind="p.applicationNumber"></span>
+
+                <span ng-if="p.onlyMhConflicts" class="fa-stack">
+                    <i class="fa fa-tree fa-stack-1x text-primary"></i>
+                </span>
+
+                <span ng-if="p.onlyPrivateConflicts" class="fa-stack">
+                    <i class="fa fa-tree fa-stack-1x text-primary"></i>
+                    <i class="fa fa-ban fa-stack-1x text-danger"></i>
+                </span>
+            </a>
+        </td>
+        <td name-translated="p.rhy"></td>
+        <td ng-if="p.permitHolder" name-translated="p.permitHolder"></td>
+        <td ng-if="!p.permitHolder">
+            <span ng-bind="p.contactPerson.lastName"></span>
+            <span ng-bind="p.contactPerson.byName"></span>
+        </td>
+        <td ng-bind="::p.conflictSum | prettyAreaSize"></td>
+    </tr>
+    </tbody>
+</table>

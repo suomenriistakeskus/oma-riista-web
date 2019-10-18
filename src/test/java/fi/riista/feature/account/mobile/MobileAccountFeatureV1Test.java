@@ -1,16 +1,15 @@
 package fi.riista.feature.account.mobile;
 
+import com.google.common.collect.ImmutableSortedMap;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import io.vavr.Tuple;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
 import javax.annotation.Resource;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 public class MobileAccountFeatureV1Test extends MobileAccountFeatureTest {
@@ -25,7 +24,7 @@ public class MobileAccountFeatureV1Test extends MobileAccountFeatureTest {
 
     @Test
     public void testGetMobileAccount_succeedsWhenUserAuthenticated() {
-        final SystemUser user = createEntityGraphForMobileAccountTest(asList(Tuple.of(2014, 1), Tuple.of(2015, 2)));
+        final SystemUser user = createEntityGraphForMobileAccountTest(ImmutableSortedMap.of(2014, 1, 2015, 2));
 
         persistInNewTransaction();
 

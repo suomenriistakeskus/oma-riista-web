@@ -1,0 +1,105 @@
+<div class="rhy-sidebar-layout">
+    <div class="left-column" auto-scroll-to="$ctrl.scrollToIndex" prefix-id="application-id-">
+        <div class="row" style="margin-bottom: 10px">
+            <div class="col-xs-6">
+                <button type="button" class="btn btn-success"
+                        ng-click="$ctrl.goBack()">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                    <span translate="global.button.return"></span>
+                </button>
+            </div>
+
+            <div class="col-xs-6 text-right">
+                <button type="button" class="btn btn-default"
+                        ng-click="$ctrl.printSelected()">
+                    <span class="fa fa-fw fa-lg fa-print text-primary"></span>
+                    <span translate="global.button.print"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <tbody>
+                <tr>
+                    <th>
+                        <span translate="harvestpermit.application.conflictResolution.firstApplication"></span>
+                    </th>
+                    <td>
+                        <strong ng-bind="::$ctrl.firstApplication.applicationNumber"></strong>
+                        <br/>
+                        <span ng-bind="::$ctrl.firstApplication.permitHolder.name"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <span translate="harvestpermit.application.conflictResolution.secondApplication"></span>
+                    </th>
+                    <td>
+                        <strong ng-bind="::$ctrl.secondApplication.applicationNumber"></strong>
+                        <br/>
+                        <span ng-bind="::$ctrl.secondApplication.permitHolder.name"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="form-group">
+            <label class="checkbox-inline">
+                <input type="checkbox"
+                       style="transform:scale(1.5, 1.5);"
+                       ng-model="$ctrl.selectAll"
+                       ng-change="$ctrl.onSelectAllChanged($ctrl.selectAll)">
+                <span>Valitse kaikki</span>
+            </label>
+        </div>
+
+        <table class="table table-condensed" style="table-layout: fixed">
+            <tbody>
+            <tr id="application-id-{{ ::$index }}"
+                ng-repeat="conflict in ::$ctrl.pairwiseConflicts track by conflict.palstaId">
+                <td class="col-xs-1">
+                    <label class="checkbox-inline">
+                        <input type="checkbox"
+                               style="transform:scale(1.5, 1.5); margin-top: 10px;"
+                               ng-model="conflict.selected">
+                    </label>
+                </td>
+                <td class="col-xs-9">
+                    <a ng-click="$ctrl.focusPalsta(conflict)"
+                       ng-bind="::conflict.palstaTunnus | formatPropertyIdentifier"></a>
+
+                    <span ng-show="::conflict.metsahallitus"
+                          ng-class="{'strong': conflict.isOpen}"
+                          uib-tooltip="Metsähallituksen alue"
+                          class="glyphicon glyphicon-tree-conifer text-primary"></span>
+                    <br/>
+
+                    <a ng-click="$ctrl.focusPalsta(conflict)"
+                       ng-bind="::conflict.palstaNimi"></a>
+                    <br/>
+
+                    <strong ng-bind="::conflict.areaSize | prettyAreaSize"></strong>
+                </td>
+                <td class="col-xs-2 text-center">
+                    <span class="fa fa-2x fa-eye text-primary"
+                          style="margin-top: 10px;"
+                          ng-show="conflict.focus"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="main-column">
+        <harvest-permit-application-conflict-map
+                on-map-click="$ctrl.onMapClick(latlng)"
+                on-feature-click="$ctrl.onFeatureClick(feature)"
+                focus-selected="$ctrl.focusSelected"
+                first-application-id="$ctrl.firstApplicationId"
+                second-application-id="$ctrl.secondApplicationId"
+                palsta-feature-collection="$ctrl.palstaFeatureCollection">
+        </harvest-permit-application-conflict-map>
+    </div>
+</div>

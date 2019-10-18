@@ -13,6 +13,7 @@ CREATE TABLE import_harvest_permit (
 
 INSERT INTO harvest_permit (
   permit_number,
+  permit_year,
   permit_type_code,
   permit_type,
   permit_area_size,
@@ -21,6 +22,7 @@ INSERT INTO harvest_permit (
   original_contact_person_id
 ) SELECT
     permit_number,
+    SUBSTRING(permit_number, 0, 5) ::INT AS permit_year,
     permit_type_code,
     permit_type,
     123456 AS permit_area_size,

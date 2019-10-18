@@ -1,30 +1,28 @@
 package fi.riista.feature.pub.calendar;
 
+import com.google.common.base.Preconditions;
 import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.organization.Organisation_;
-import fi.riista.feature.organization.calendar.CalendarEvent;
+import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.calendar.CalendarEventRepository;
+import fi.riista.feature.organization.calendar.CalendarEventSearchParamsDTO;
+import fi.riista.feature.organization.calendar.CalendarEventSearchResultDTO;
 import fi.riista.feature.organization.calendar.CalendarEventType;
-import fi.riista.feature.organization.calendar.CalendarEvent_;
+import fi.riista.feature.organization.calendar.Venue;
+import fi.riista.feature.organization.calendar.VenueRepository;
 import fi.riista.feature.pub.PublicDTOFactory;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import fi.riista.util.jpa.JpaSpecs;
-import org.joda.time.LocalDate;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.JpaSort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Predicate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static java.util.Collections.emptyMap;
 
 @Component
 public class PublicCalendarEventSearchFeature {
@@ -32,71 +30,102 @@ public class PublicCalendarEventSearchFeature {
     private static final int MAX_RESULTS = 200;
 
     @Resource
+    private PublicDTOFactory dtoFactory;
+
+    @Resource
     private CalendarEventRepository calendarEventRepository;
 
     @Resource
-    private PublicDTOFactory dtoFactory;
+    private OrganisationRepository organisationRepository;
+
+    @Resource
+    private VenueRepository venueRepository;
 
     @Transactional(readOnly = true)
-    public PublicCalendarEventSearchResultDTO findCalendarEvents(PublicCalendarEventSearchDTO params) {
-        final Specification<CalendarEvent> filter = where(betweenDates(params.getBegin(), params.getEnd()))
-                .and(byArea(params.getAreaId()))
-                .and(byRhy(params.getRhyId()))
-                .and(byEventType(params.getCalendarEventType()));
-
-        final JpaSort sort = new JpaSort(Sort.Direction.ASC, CalendarEvent_.date, CalendarEvent_.beginTime);
-        return toCalendarEventDTOs(calendarEventRepository.findAll(filter, sort));
+    public PublicCalendarEventSearchResultDTO findCalendarEvents(final PublicCalendarEventSearchDTO parameters) {
+        return findCalendarEvents(parameters, MAX_RESULTS);
     }
 
-    private static Specification<CalendarEvent> betweenDates(final LocalDate begin, final LocalDate end) {
-        return (root, query, cb) -> cb.between(root.get(CalendarEvent_.date), begin.toDate(), end.toDate());
-    }
+    // For testing
+    @Transactional(readOnly = true)
+    public PublicCalendarEventSearchResultDTO findCalendarEvents(final PublicCalendarEventSearchDTO parameters, final int maxResults) {
+        Preconditions.checkArgument(parameters.getPageSize() == null || parameters.getPageSize() <= maxResults,
+                "Requested page size must not exceed " + maxResults);
 
-    private static Specification<CalendarEvent> byArea(final String areaId) {
-        return (root, query, cb) -> {
-            if (areaId == null) {
-                return cb.conjunction();
-            }
+        final int pageSize = Optional.ofNullable(parameters.getPageSize()).orElse(MAX_RESULTS);
+        final int pageNumber = Optional.ofNullable(parameters.getPageNumber()).orElse(0);
 
-            final Join<CalendarEvent, Organisation> orgJoin = root.join(CalendarEvent_.organisation);
-            final Join<Organisation, Organisation> parentOrgJoin = orgJoin.join(Organisation_.parentOrganisation);
-            final Predicate thisIsWantedArea = getPredicate(cb, orgJoin, OrganisationType.RKA, areaId);
-            final Predicate parentIsWantedArea = getPredicate(cb, parentOrgJoin, OrganisationType.RKA, areaId);
-            return cb.or(thisIsWantedArea, parentIsWantedArea);
-        };
-    }
+        final CalendarEventSearchParamsDTO calendarEventSearchParamsDTO =
+                new CalendarEventSearchParamsDTO(parameters, pageSize + 1, pageNumber * pageSize);
+        final List<CalendarEventSearchResultDTO> result = calendarEventRepository.getCalendarEvents(calendarEventSearchParamsDTO);
 
-    private static Specification<CalendarEvent> byRhy(final String rhyId) {
-        return (root, query, cb) -> rhyId == null
-                ? cb.conjunction()
-                : getPredicate(cb, root.join(CalendarEvent_.organisation), OrganisationType.RHY, rhyId);
-    }
-
-    private static Predicate getPredicate(
-            CriteriaBuilder cb, From<?, Organisation> organisationJoin, OrganisationType orgType, String officialCode) {
-
-        return cb.and(
-                cb.equal(organisationJoin.get(Organisation_.organisationType), orgType),
-                cb.equal(organisationJoin.get(Organisation_.officialCode), officialCode));
-    }
-
-    private static Specification<CalendarEvent> byEventType(final CalendarEventType calendarEventType) {
-        return calendarEventType == null
-                ? JpaSpecs.conjunction()
-                : JpaSpecs.equal(CalendarEvent_.calendarEventType, calendarEventType);
-    }
-
-    private PublicCalendarEventSearchResultDTO toCalendarEventDTOs(final List<CalendarEvent> calendarEvents) {
-        if (calendarEvents.size() > MAX_RESULTS) {
-            return PublicCalendarEventSearchResultDTO.TOO_MANY_RESULTS;
+        boolean lastPage = true;
+        if (result.size() > pageSize) {
+            lastPage = false;
+            result.remove(result.size() - 1);
         }
-        final List<PublicCalendarEventDTO> events = F.mapNonNullsToList(calendarEvents, calendarEvent ->
-                dtoFactory.create(calendarEvent, dtoFactory.create(calendarEvent.getCalendarEventType())));
-        return new PublicCalendarEventSearchResultDTO(events);
+
+        return toCalendarEventDTOs(result, lastPage, maxResults);
     }
 
     public List<PublicCalendarEventTypeDTO> getCalendarEventTypes() {
         return F.mapNonNullsToList(CalendarEventType.values(), dtoFactory::create);
     }
 
+    private PublicCalendarEventSearchResultDTO toCalendarEventDTOs(
+            final List<CalendarEventSearchResultDTO> events, final boolean isLastPage, final int maxResults) {
+        if (events.size() > maxResults) {
+            return PublicCalendarEventSearchResultDTO.TOO_MANY_RESULTS;
+        }
+
+        final HashSet<Long> organisationIds = new HashSet<>();
+        final HashSet<Long> venueIds = new HashSet<>();
+
+        events.forEach(event -> {
+            venueIds.add(event.getVenueId());
+            organisationIds.add(event.getOrganisationId());
+        });
+
+        final Map<Long, Organisation> organisationIdToOrganisation = getOrganisationIdToOrganisation(organisationIds);
+        final Map<Long, Venue> venueIdToVenue = getVenueIdToVenue(venueIds);
+
+        final List<PublicCalendarEventDTO> eventDTOS = events.stream()
+                .map(event -> {
+                    final String id = String.format("%d:%d",
+                            event.getCalendarEventId(),
+                            Optional.ofNullable(event.getAdditionalCalendarEventId()).orElse(Long.valueOf(0)));
+                    final PublicCalendarEventTypeDTO eventTypeDTO = dtoFactory.create(event.getCalendarEventType());
+                    final Organisation organisation = organisationIdToOrganisation.get(event.getOrganisationId());
+                    final Venue venue = venueIdToVenue.get(event.getVenueId());
+
+                    return dtoFactory.create(
+                            id,
+                            eventTypeDTO,
+                            event.getName(),
+                            event.getDescription(),
+                            DateUtil.toLocalDateNullSafe(event.getDate()),
+                            event.getBeginTime(),
+                            event.getEndTime(),
+                            organisation,
+                            venue);
+                }).collect(Collectors.toList());
+
+        return new PublicCalendarEventSearchResultDTO(eventDTOS, isLastPage);
+    }
+
+    private Map<Long, Organisation> getOrganisationIdToOrganisation(final HashSet<Long> organisationIds) {
+        if (organisationIds.isEmpty()) {
+            return emptyMap();
+        }
+
+        return F.indexById(organisationRepository.findAll(organisationIds));
+    }
+
+    private Map<Long, Venue> getVenueIdToVenue(final HashSet<Long> venueIds) {
+        if (venueIds.isEmpty()) {
+            return emptyMap();
+        }
+
+        return F.indexById(venueRepository.findAll(venueIds));
+    }
 }

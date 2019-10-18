@@ -79,6 +79,34 @@ public abstract class GameDiaryEntryAuthorizationTest<T extends GameDiaryEntry>
     }
 
     @Test
+    public void testHuntingClubGroupBasedPermissions_whenUnlinkedDiaryEntryWithinGroupArea_actorNotMember() {
+        final GeoLocation location = geoLocation();
+        final HuntingClub club = model().newHuntingClub();
+        final HuntingClubGroup group = model().newHuntingClubGroupWithAreaContaining(club, location);
+        model().newHarvestPermitForHuntingGroup(group);
+
+        final Occupation authorClubOccupation = model().newHuntingClubMember(club, OccupationType.SEURAN_JASEN);
+        final Occupation authorGroupOccupation = model().newHuntingClubGroupMember(authorClubOccupation.getPerson(),
+                group);
+        final Person author = authorGroupOccupation.getPerson();
+        final Person actor = model().newPerson();
+
+        final T diaryEntry = create(group.getSpecies(), author);
+        diaryEntry.setActor(actor);
+        diaryEntry.setGeoLocation(location);
+
+        final Enum<?> linkPerm = getPermissionForLinkingDiaryEntryToGroupHuntingDay();
+
+        assertPermissions(
+                diaryEntry,
+                group,
+                ImmutableSet.of(CREATE, READ, UPDATE, linkPerm),
+                ImmutableSet.of(CREATE, READ),
+                ImmutableSet.of(CREATE, READ, UPDATE, linkPerm),
+                ImmutableSet.of(CREATE, READ));
+    }
+
+    @Test
     public void testHuntingClubGroupBasedPermissions_whenUnlinkedDiaryEntryNotWithinGroupArea() {
         final GeoLocation location = geoLocation();
         final HuntingClub club = model().newHuntingClub();

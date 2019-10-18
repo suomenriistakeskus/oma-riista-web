@@ -3,8 +3,7 @@ package fi.riista.feature.gamediary.srva.method;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.util.DtoUtil;
 
 import javax.annotation.Nonnull;

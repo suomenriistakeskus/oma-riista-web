@@ -1,6 +1,6 @@
 package fi.riista.feature.huntingclub.group;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
@@ -8,13 +8,14 @@ import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 import fi.riista.validation.DoNotValidate;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.Range;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
@@ -101,7 +102,8 @@ public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String nameSV;
 
-    @Range(min = 2000, max = 2100)
+    @Min(HuntingClubGroup.MIN_YEAR)
+    @Max(HuntingClubGroup.MAX_YEAR)
     private int huntingYear;
 
     @DoNotValidate

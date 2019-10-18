@@ -115,8 +115,9 @@ public class HuntingClubMemberCrudFeature extends AbstractCrudFeature<Long, Occu
     protected void updateEntity(final Occupation entity, final OccupationDTO dto) {
         if (entity.isNew()) {
             final HuntingClub org = huntingClubRepository.getOne(dto.getOrganisationId());
-            final Person person = personLookupService.findById(dto.getPersonId())
-                    .orElseThrow(() -> new PersonNotFoundException(dto.getPersonId()));
+            final Person person = personLookupService
+                    .findById(dto.getPersonId(), Occupation.FOREIGN_PERSON_ELIGIBLE_FOR_OCCUPATION)
+                    .orElseThrow(() -> PersonNotFoundException.byPersonId(dto.getPersonId()));
 
             entity.setOrganisationAndOccupationType(org, dto.getOccupationType());
             entity.setPerson(person);
@@ -168,24 +169,24 @@ public class HuntingClubMemberCrudFeature extends AbstractCrudFeature<Long, Occu
     }
 
     @Transactional(readOnly = true)
-    public List<OccupationDTO> listMembers(final long orgId) {
-        final Organisation org = requireEntityService.requireOrganisation(orgId, EntityPermission.READ);
+    public List<OccupationDTO> listMembers(final long clubId) {
+        final HuntingClub club = requireEntityService.requireHuntingClub(clubId, EntityPermission.READ);
 
         final Comparator<Occupation> sort = OccupationSort.BY_TYPE
                 .thenComparing(OccupationSort.BY_CALL_ORDER)
                 .thenComparing(OccupationSort.BY_LAST_NAME)
                 .thenComparing(OccupationSort.BY_BYNAME);
 
-        final List<Occupation> occupations = occupationRepository.findActiveByOrganisation(org);
+        final List<Occupation> occupations = occupationRepository.findActiveByOrganisation(club);
 
         return clubOccupationDTOTransformer.apply(occupations.stream().sorted(sort).collect(toList()));
     }
 
     @Transactional
-    public void updatePrimaryContact(Long orgId, Long id) {
-        final Organisation organisation = requireEntityService.requireOrganisation(orgId, EntityPermission.UPDATE);
+    public void updatePrimaryContact(final long clubId, final long id) {
+        final HuntingClub club = requireEntityService.requireHuntingClub(clubId, EntityPermission.UPDATE);
 
-        occupationRepository.findActiveByOrganisationAndOccupationType(organisation, OccupationType.SEURAN_YHDYSHENKILO)
+        occupationRepository.findActiveByOrganisationAndOccupationType(club, OccupationType.SEURAN_YHDYSHENKILO)
                 .forEach(leader -> leader.setCallOrder(leader.getId().equals(id) ? 0 : null));
     }
 

@@ -1,0 +1,61 @@
+@map-editor-top-left-height: 255px;
+@map-editor-top-left-padding: 20px;
+@map-editor-left-sidebar-width: 455px;
+
+.map-editor-layout {
+  .make-row(0);
+
+  .main-column {
+    position: fixed;
+    top: @main-nav-height;
+    right: 0;
+    bottom: 0;
+    left: @map-editor-left-sidebar-width;
+    overflow: hidden;
+    min-height: 1px;
+    margin-top: -1px;
+    background: #fff;
+  }
+
+  .top-left-column {
+    position: fixed;
+    min-height: 1px;
+    top: @main-nav-height;
+    bottom: 0;
+    left: 0;
+    width: @map-editor-left-sidebar-width;
+    padding: 0 @map-editor-top-left-padding;
+    background: #fff;
+    overflow: hidden;
+
+    .buttons {
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    p.area-name {
+      width: @map-editor-left-sidebar-width - 2 * @map-editor-top-left-padding;
+      white-space: nowrap;
+      font-family: @headings-font-family;
+      font-weight: @headings-font-weight;
+      font-size: 20px;
+      margin: 10px 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .left-column {
+    position: fixed;
+    min-height: 1px;
+    top: @main-nav-height + @map-editor-top-left-height;
+    bottom: 0;
+    left: 0;
+    width: @map-editor-left-sidebar-width;
+    padding: 15px 20px 0;
+    background: #fff;
+    overflow: auto;
+    overflow-x: hidden;
+    border-top: 1px solid #ddd;
+  }
+}

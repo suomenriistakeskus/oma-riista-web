@@ -27,6 +27,8 @@ import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.feature.organization.rhy.MergedRhyMapping;
+import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysEmailService;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.util.F;
 import io.vavr.Tuple3;
@@ -59,6 +61,9 @@ public class RegisterHuntingClubFeature {
 
     @Resource
     private ActiveUserService activeUserService;
+
+    @Resource
+    private RiistanhoitoyhdistysEmailService riistanhoitoyhdistysEmailService;
 
     @Resource
     private RegisterHuntingClubMailService registerHuntingClubMailService;
@@ -133,7 +138,8 @@ public class RegisterHuntingClubFeature {
     }
 
     private boolean rhyExists(final String rhyOfficialCode) {
-        return riistanhoitoyhdistysRepository.count(equal(Organisation_.officialCode, rhyOfficialCode)) > 0;
+        return riistanhoitoyhdistysRepository.count(equal(Organisation_.officialCode,
+                MergedRhyMapping.translateIfMerged(rhyOfficialCode))) > 0;
     }
 
     private Map<String, Person> findClubOfficialCodesWithActiveContactPerson(final Collection<String> officialCodes) {
@@ -252,7 +258,7 @@ public class RegisterHuntingClubFeature {
         final OrganisationNameDTO rhyDTO = OrganisationNameDTO.create(rhy);
 
         final String contactPersonEmail = activeUser.isModeratorOrAdmin() ? null : activeUser.getEmail();
-        final Iterable<String> rhyContactEmails = registerHuntingClubMailService.getRhyContactEmails(rhy);
+        final Iterable<String> rhyContactEmails = riistanhoitoyhdistysEmailService.resolveEmails(rhy);
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override

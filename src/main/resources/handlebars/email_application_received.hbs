@@ -1,0 +1,34 @@
+<h1>Lupahakemus jätetty</h1>
+<h2>Haettava lupa</h2>
+<p>
+    Haettava lupa: {{ applicationType }}<br/>
+    Hakemusnumero: {{ applicationNumber }}
+</p>
+
+<h3>Luvan yhteyshenkilö</h3>
+<p>
+    {{contactPersonFirstName}} {{contactPersonLastName}}<br/>
+    {{contactPersonStreetAddress}}<br/>
+    {{contactPersonPostalCode}} {{contactPersonCity}}, {{contactPersonCountry}}<br/>
+    Puhelinnumero: {{contactPersonPhoneNumber}}<br/>
+    Sähköpostiosoite: {{contactPersonEmail}}
+</p>
+
+<h3>Lupaa hakee</h3>
+<p>
+    {{~#if permitHolderCode}}
+        {{ permitHolderCode }} - {{ permitHolderName }}
+    {{else}}
+        {{ permitHolderName }}
+    {{/if}}
+</p>
+
+<p>
+    Hakemus on noudettavissa oheisesta linkistä<br>
+    <a href="{{emailLink}}">{{emailLink}}</a>
+</p>
+<p>Terveisin,</p>
+<p>Suomen riistakeskus</p>
+<p>Julkiset hallintotehtävät</p>
+<hr/>
+<p>Tämä on automaattinen järjestelmän muodostama viesti, älä vastaa tähän viestiin.</p>

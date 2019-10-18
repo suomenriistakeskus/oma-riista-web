@@ -1,58 +1,46 @@
-<permit-decision-nav-header decision="$ctrl.decision"></permit-decision-nav-header>
-
 <div class="row">
-    <div class="col-xs-5">
+    <div class="col-xs-6">
+        <permit-decision-nav-header decision="$ctrl.decision"></permit-decision-nav-header>
+    </div>
 
-        <ul class="nav nav-pills">
-            <li ng-class="{'active': $ctrl.isMapActivated('vector')}">
-                <a ng-click="$ctrl.showMap('vector')">Alue</a>
+    <div class="col-xs-6">
+        <ul class="nav nav-pills pull-right ">
+            <li ng-class="{'active': $ctrl.isActiveTab('normal')}">
+                <a ng-click="$ctrl.showTab('normal')" translate="harvestpermit.decision.area.menu.area"></a>
             </li>
-            <li ng-class="{'active': $ctrl.isMapActivated('partner')}">
-                <a ng-click="$ctrl.showMap('partner')">Osakkaat</a>
+            <li ng-class="{'active': $ctrl.isActiveTab('partner')}">
+                <a ng-click="$ctrl.showTab('partner')" translate="harvestpermit.decision.area.menu.partners"></a>
             </li>
-            <li ng-class="{'active': $ctrl.isMapActivated('fragment')}">
-                <a ng-click="$ctrl.showMap('fragment')">Sirpaleet</a>
+            <li ng-class="{'active': $ctrl.isActiveTab('fragment')}">
+                <a ng-click="$ctrl.showTab('fragment')" translate="harvestpermit.decision.area.menu.fragments"></a>
             </li>
-            <li ng-class="{'active': $ctrl.isConflictsViewActivated()}">
-                <a ng-click="$ctrl.showConflicts()">Konfliktit</a>
+            <li ng-class="{'active': $ctrl.isActiveTab('conflicts')}">
+                <a ng-click="$ctrl.showTab('conflicts')" translate="harvestpermit.decision.area.menu.conflicts"></a>
             </li>
         </ul>
     </div>
-    <div class="col-xs-7 text-right">
-        <button class="btn btn-default"
-                ng-click="$ctrl.exportConflictsExcel()">
-            <span class="fa fa-file-excel-o"></span> &nbsp;
-            Konfliktit exceliin
-        </button>
-
-        <button class="btn btn-default"
-                ng-click="$ctrl.exportFragmentExcel()">
-            <span class="fa fa-file-excel-o"></span> &nbsp;
-            Sirpaleet exceliin
-        </button>
-
-        <button type="button" class="btn btn-default"
-                ng-click="$ctrl.loadMapPdf()">
-            <span class="fa fa-print"></span>
-            &nbsp;
-            Tulosta hakemusalueen kartta
-        </button>
-    </div>
 </div>
-<br>
-<decision-application-vector
-        ng-if="$ctrl.isMapActivated('vector')"
-        selected-application="$ctrl.application"></decision-application-vector>
 
-<decision-application-geojson
-        ng-if="$ctrl.isMapActivated('fragment') || $ctrl.isMapActivated('partner')"
-        application-id="$ctrl.application.id"
-        map-style="$ctrl.mapStyle"
-        feature-collection="$ctrl.featureCollection"></decision-application-geojson>
+<decision-application-normal-map
+        ng-if="$ctrl.isActiveTab('normal')"
+        application-id="$ctrl.applicationId"
+></decision-application-normal-map>
 
+<decision-application-partner-map
+        ng-if="$ctrl.isActiveTab('partner')"
+        application-id="$ctrl.applicationId"
+        feature-collection="$ctrl.featureCollection"
+></decision-application-partner-map>
 
-<div ng-if="$ctrl.isConflictsViewActivated()">
-    <harvest-permit-application-conflicts
-            selected-application="$ctrl.application"
-            conflicts="$ctrl.conflicts"></harvest-permit-application-conflicts>
-</div>
+<decision-application-fragment-map
+        ng-if="$ctrl.isActiveTab('fragment')"
+        application-id="$ctrl.applicationId"
+        fragment-size-limit="$ctrl.fragmentSizeLimit"
+        feature-collection="$ctrl.featureCollection"
+></decision-application-fragment-map>
+
+<harvest-permit-application-conflicts
+        ng-if="$ctrl.isActiveTab('conflicts')"
+        application-id="$ctrl.applicationId"
+        conflicts="$ctrl.conflicts"
+></harvest-permit-application-conflicts>

@@ -20,7 +20,6 @@ import fi.riista.config.QuartzConfig;
 import fi.riista.config.SchedulingConfig;
 import fi.riista.config.SecurityConfig;
 import fi.riista.config.SentryConfig;
-import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.config.SerializationConfig;
 import fi.riista.config.properties.EncryptedProperties;
 import fi.riista.feature.account.certificate.HuntingCardQRCodeKeyHolder;

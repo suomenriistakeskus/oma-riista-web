@@ -274,7 +274,7 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
         assertEquals(expectedIds, actualIds);
     }
 
-    private int pointOfTimeToYear(final SrvaEvent accidentEvent) {
+    private static int pointOfTimeToYear(final SrvaEvent accidentEvent) {
         return DateUtil.toDateTimeNullSafe(accidentEvent.getPointOfTime()).getYear();
     }
 

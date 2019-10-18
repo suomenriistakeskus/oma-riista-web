@@ -169,35 +169,65 @@ angular.module('app.common.services', [])
             return defaults.concat(transform);
         }
 
+        function doTransform(data, headersGetter, status) {
+            if (status === 200) {
+                var headers = headersGetter();
+                var contentType = headers['content-type'] || null;
+
+                if (!contentType) {
+                    console.log('Content-Type not set in response');
+                }
+
+                var blob = new Blob([data], {type: contentType});
+
+                var filenameRegexp = /.*filename="(.+)"/i;
+                var filenameMatch = filenameRegexp.exec(headers['content-disposition']);
+
+                if (angular.isObject(filenameMatch)) {
+                    blob.name = filenameMatch['1'];
+                }
+
+                return blob;
+            }
+
+            return null;
+        }
+
         this.get = function (url, responseType) {
             return $http({
                 method: 'GET',
                 url: url,
                 responseType: responseType || 'text',
-                transformResponse: appendTransform($http.defaults.transformResponse, function (data, headersGetter, status) {
-                    if (status === 200) {
-                        var headers = headersGetter();
-                        var contentType = headers['content-type'] || null;
-
-                        if (!contentType) {
-                            console.log('Content-Type not set in response');
-                        }
-
-                        var blob = new Blob([data], {type: contentType});
-
-                        var filenameRegexp = /.*filename="(.+)"/i;
-                        var filenameMatch = filenameRegexp.exec(headers['content-disposition']);
-
-                        if (angular.isObject(filenameMatch)) {
-                            blob.name = filenameMatch['1'];
-                        }
-
-                        return blob;
-                    }
-
-                    return null;
-                })
+                transformResponse: appendTransform($http.defaults.transformResponse, doTransform)
             });
+        };
+
+        this.post = function (url, responseType, data) {
+            return $http({
+                method: 'POST',
+                url: url,
+                responseType: responseType || 'text',
+                transformResponse: appendTransform($http.defaults.transformResponse, doTransform),
+                data: data
+            });
+        };
+    })
+
+    .service('FetchAndSaveBlob', function (HttpGetBlob, FileSaver) {
+
+        function save(response) {
+            var blob = response.data;
+            var filename = blob.name;
+
+            FileSaver.saveAs(blob, filename, true);
+        }
+
+        this.get = function (url) {
+            return HttpGetBlob.get(url, 'arraybuffer').then(save);
+        };
+
+        this.post = function (url, data) {
+            return HttpGetBlob.post(url, 'arraybuffer', data).then(save);
         };
     })
 
@@ -243,65 +273,6 @@ angular.module('app.common.services', [])
         };
     })
 
-    .service('HuntingYearService', function (Helpers) {
-        var self = this;
-
-        this.dateToHuntingYear = function (date) {
-            var year = date.getFullYear();
-            return date.getMonth() < 7 ? year - 1 : year;
-        };
-
-        this.getCurrent = function () {
-            return self.dateToHuntingYear(new Date());
-        };
-
-        var _getHuntingYear = function (dateOrYear) {
-            if (dateOrYear === null || _.isUndefined(dateOrYear)) {
-                return self.getCurrent();
-            } else if (_.isDate(dateOrYear)) {
-                return self.dateToHuntingYear(dateOrYear);
-            } else if (_.isFinite(dateOrYear)) {
-                return dateOrYear;
-            }
-
-            throw new TypeError("Invalid argument for dateOrYear: " + dateOrYear);
-        };
-
-        this.getBeginDateStr = function (dateOrYear) {
-            return Helpers.dateToString(new Date(_getHuntingYear(dateOrYear), 7, 1));
-        };
-
-        this.getEndDateStr = function (dateOrYear) {
-            return Helpers.dateToString(new Date(_getHuntingYear(dateOrYear) + 1, 6, 31));
-        };
-
-        this.createHuntingYearChoices = function (start) {
-            var rangeStart = start || 2014;
-            var rangeEnd = self.getCurrent();
-
-            return _.map(_.range(rangeStart, rangeEnd + 1), self.toObj);
-        };
-
-        // 2014 -> "2014-15"
-        this.toStr = function (y) {
-            var year = '' + y;
-            var next = '' + (y + 1);
-            return year + '-' + next.slice(2, 4);
-        };
-
-        this.toObj = function (year) {
-            return {
-                year: year,
-                name: self.toStr(year)
-            };
-        };
-
-        this.currentAndNextObj = function () {
-            var year = self.dateToHuntingYear(new Date());
-
-            return [self.toObj(year), self.toObj(year + 1)];
-        };
-    })
     .service('UnsavedChangesConfirmationService', function ($window, $translate) {
         var hasUnsavedChanges = false;
 

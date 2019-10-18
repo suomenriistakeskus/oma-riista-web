@@ -1,0 +1,26 @@
+<table class="table table-bordered table-striped">
+    <tbody>
+    <tr>
+        <td width="50%">Ampumakoesuorituksia yhteensä</td>
+        <td>
+            <span ng-bind="$ctrl.metrics.countOfTotalAttempts"></span>
+            <span translate="global.pcs"></span>
+        </td>
+    </tr>
+    <tr>
+        <td>Suljettuja ampumakoetapahtumia yhteensä</td>
+        <td>
+            <span ng-bind="$ctrl.metrics.countOfClosedEvents"></span>
+            <span translate="global.pcs"></span>
+        </td>
+    </tr>
+    <tr>
+        <td>RHY:t joissa sähköinen kirjaus otettu käyttöön</td>
+        <td>
+            <span ng-bind="$ctrl.metrics.countOfActiveRhy"></span>
+            /
+            <span ng-bind="$ctrl.metrics.countOfTotalRhy"></span>
+        </td>
+    </tr>
+    </tbody>
+</table>

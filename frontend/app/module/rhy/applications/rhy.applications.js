@@ -3,7 +3,8 @@
 angular.module('app.rhy.application', [])
     .controller('RhyApplicationsController', function ($q, $state, $stateParams, $scope, $timeout, $location,
                                                        ActiveRoleService, TranslatedBlockUI,
-                                                       HarvestPermitApplications, HuntingYearService, FormPostService,
+                                                       HarvestPermitApplications, MooselikePermitApplication,
+                                                       HuntingYearService, FormPostService,
                                                        diaryParameters, selectedRhyOfficialCode, availableSpecies) {
         var $ctrl = this;
 
@@ -23,7 +24,7 @@ angular.module('app.rhy.application', [])
             $ctrl.selectedRhyOfficialCode = selectedRhyOfficialCode;
 
             if ($stateParams.species) {
-                $ctrl.selectedSpecies = _.find($ctrl.availableSpecies, 'code', _.parseInt($stateParams.species));
+                $ctrl.selectedSpecies = _.find($ctrl.availableSpecies, {code: _.parseInt($stateParams.species)});
             } else {
                 $ctrl.selectedSpecies = null;
             }
@@ -84,7 +85,7 @@ angular.module('app.rhy.application', [])
             }).$promise.then(function (result) {
                 $ctrl.huntingYears = transformHuntingYears(result);
 
-                if (!$ctrl.selectedYear || !_.find($ctrl.huntingYears, 'year', $ctrl.selectedYear)) {
+                if (!$ctrl.selectedYear || !_.find($ctrl.huntingYears, {year: $ctrl.selectedYear})) {
                     // Most likely the current year as hunting year is what user expects
                     // Instead of defaulting to current hunting year, default to current calendar year.
                     $ctrl.selectedYear = new Date().getUTCFullYear();
@@ -121,7 +122,7 @@ angular.module('app.rhy.application', [])
                 $ctrl.applications = result;
 
                 if ($ctrl.applications && $ctrl.applications.length) {
-                    var selectedApplication = _.find($ctrl.applications, 'id', selectedApplicationId);
+                    var selectedApplication = _.find($ctrl.applications, {id: selectedApplicationId});
                     showApplication(selectedApplication ? selectedApplication : $ctrl.applications[0]);
                 }
             });
@@ -133,7 +134,7 @@ angular.module('app.rhy.application', [])
             application.isOpen = true;
 
             $timeout(function () {
-                var elementIndex = _.findIndex($ctrl.applications, 'id', application.id);
+                var elementIndex = _.findIndex($ctrl.applications, ['id', application.id]);
                 $ctrl.scrollToIndex = elementIndex === -1 ? null : elementIndex;
             });
         }
@@ -179,7 +180,7 @@ angular.module('app.rhy.application', [])
 
             TranslatedBlockUI.start("global.block.wait");
 
-            HarvestPermitApplications.getGeometry({
+            MooselikePermitApplication.getGeometry({
                 id: $ctrl.selectedApplication.id,
                 outputStyle: $ctrl.mapStyle
             }).$promise
@@ -199,7 +200,7 @@ angular.module('app.rhy.application', [])
                 return;
             }
 
-            HarvestPermitApplications.listPartnerClubs({id: $ctrl.selectedApplication.id}).$promise.then(function (partners) {
+            MooselikePermitApplication.listPartnerClubs({id: $ctrl.selectedApplication.id}).$promise.then(function (partners) {
                 $ctrl.partners = partners;
             });
         };
@@ -251,6 +252,11 @@ angular.module('app.rhy.application', [])
             $ctrl.zip = function () {
                 FormPostService.submitFormUsingBlankTarget('/api/v1/harvestpermit/application/'
                     + $ctrl.application.id + '/archive');
+            };
+
+            $ctrl.pdf = function () {
+                FormPostService.submitFormUsingBlankTarget('/api/v1/harvestpermit/application/' +
+                    $ctrl.application.id + '/print/pdf');
             };
         }
     })

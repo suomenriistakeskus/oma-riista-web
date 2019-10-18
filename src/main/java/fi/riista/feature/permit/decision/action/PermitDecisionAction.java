@@ -18,7 +18,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
+import java.util.LinkedList;
+import java.util.List;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -72,6 +75,9 @@ public class PermitDecisionAction extends LifecycleEntity<Long> {
     @Column(columnDefinition = "TEXT")
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String decisionText;
+
+    @OneToMany(mappedBy = "permitDecisionAction")
+    private List<PermitDecisionActionAttachment> attachments = new LinkedList<>();
 
     // Accessors -->
 
@@ -135,5 +141,13 @@ public class PermitDecisionAction extends LifecycleEntity<Long> {
 
     public void setDecisionText(final String decisionText) {
         this.decisionText = decisionText;
+    }
+
+    public List<PermitDecisionActionAttachment> getAttachments() {
+        return attachments;
+    }
+
+    void setAttachments(final List<PermitDecisionActionAttachment> attachments) {
+        this.attachments = attachments;
     }
 }

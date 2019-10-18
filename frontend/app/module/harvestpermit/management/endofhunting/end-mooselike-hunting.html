@@ -1,0 +1,100 @@
+<div class="end-mooselike-hunting">
+    <a ng-click="$ctrl.goBack()">
+        <i class="fa fa-fw fa-arrow-left"></i>
+        <strong translate="global.button.return"></strong>
+    </a>
+
+    <h2>
+        <span translate="harvestpermit.management.endOfMooselikeHunting.mainTitle"></span>
+        /
+        <span ng-bind="$ctrl.getGameSpeciesName()"></span>,
+        <span ng-bind="::$ctrl.moosePermit.permitType"></span>
+        <span ng-bind="::$ctrl.moosePermit.permitNumber"></span>
+    </h2>
+
+    <button class="btn btn-primary"
+            ng-show="$ctrl.isFinishHuntingByModeratorOverrideVisible"
+            ng-click="$ctrl.finishHuntingByModeratorOverride()">
+        <span class="fa fa-legal"></span>
+        <span translate="club.permit.finishHuntingByModeratorOverride"></span>
+    </button>
+
+    <div class="row">
+        <div class="col-xs-5">
+            <ul class="fa-ul">
+                <li ng-if="$ctrl.moosePermit.huntingFinishedByModeration">
+                    <i class="fa-li fa fa-lg fa fa-info text-info"></i>
+                    <span translate="harvestpermit.management.endOfMooselikeHunting.condition.moderatorOverride"></span>
+                </li>
+                <li>
+                    <i class="fa-li fa fa-lg fa-ban text-danger"
+                       ng-show="!$ctrl.moosePermit.allPartnersFinishedHunting"></i>
+                    <i class="fa-li fa fa-lg fa-check text-primary"
+                       ng-show="$ctrl.moosePermit.allPartnersFinishedHunting"></i>
+                    <span translate="harvestpermit.management.endOfMooselikeHunting.condition.allPartnersFinishedHunting"></span>
+                </li>
+                <li>
+                    <i class="fa-li fa fa-lg fa-ban text-danger"
+                       ng-show="!$ctrl.moosePermit.amendmentPermitsMatchHarvests"></i>
+                    <i class="fa-li fa fa-lg fa-check text-primary"
+                       ng-show="$ctrl.moosePermit.amendmentPermitsMatchHarvests"></i>
+                    <span translate="harvestpermit.management.endOfMooselikeHunting.condition.amendmentPermitsDoNotMatchHarvests"></span>
+                </li>
+                <li>
+                    <i class="fa-li fa fa-lg fa-ban text-danger" ng-show="$ctrl.moosePermit.restrictionViolated"></i>
+                    <i class="fa-li fa fa-lg fa-check text-primary"
+                       ng-show="!$ctrl.moosePermit.restrictionViolated"></i>
+                    <span translate="harvestpermit.management.endOfMooselikeHunting.condition.restriction"></span>
+                </li>
+                <li>
+                    <i class="fa-li fa fa-lg fa-check text-primary"
+                       ng-show="$ctrl.moosePermit.permitHolderFinishedHunting"></i>
+                    <i class="fa-li fa fa-lg fa-check text-muted"
+                       ng-show="!$ctrl.moosePermit.permitHolderFinishedHunting"></i>
+                    <span ng-class="{'text-muted': !$ctrl.moosePermit.permitHolderFinishedHunting}"
+                          translate="harvestpermit.management.endOfMooselikeHunting.condition.permitHolderFinishedHunting"></span>
+                </li>
+            </ul>
+
+            <button type="button" class="btn btn-block"
+                    ng-class="{'btn-primary': $ctrl.canEndMooselikeHunting, 'btn-default': !$ctrl.canEndMooselikeHunting}"
+                    ng-disabled="!$ctrl.canEndMooselikeHunting"
+                    ng-hide="::$ctrl.moosePermit.permitHolderFinishedHunting"
+                    ng-click="$ctrl.endHunting()">
+                <span translate="harvestpermit.management.endOfMooselikeHunting.button.close"></span>
+            </button>
+
+            <button type="button" class="btn btn-warning btn-block"
+                    ng-show="::$ctrl.canCancelEndHunting"
+                    ng-click="$ctrl.cancelEndOfHunting()">
+                <span translate="harvestpermit.management.endOfMooselikeHunting.button.cancel"></span>
+            </button>
+
+        </div>
+
+        <div class="col-xs-6 col-xs-offset-1">
+            <moose-permit-hunting-progress permit-amount="$ctrl.moosePermit.permitAmount"
+                                           amendment-amount="$ctrl.moosePermit.amendmentAmount"
+                                           harvested-amount="$ctrl.moosePermit.harvestedAmount"
+                                           non-edible-amount="$ctrl.moosePermit.requiredAmendmentAmount">
+            </moose-permit-hunting-progress>
+
+            <hr class="invisible">
+
+            <moose-permit-price-breakdown
+                    total-payment="$ctrl.moosePermit.totalPayment">
+            </moose-permit-price-breakdown>
+        </div>
+    </div>
+
+    <hr class="invisible">
+
+    <h3>
+        <span translate="harvestpermit.management.endOfMooselikeHunting.partnerListTitle"></span>
+    </h3>
+
+    <div>
+        <moose-permit-partner-table partners="$ctrl.partners">
+        </moose-permit-partner-table>
+    </div>
+</div>

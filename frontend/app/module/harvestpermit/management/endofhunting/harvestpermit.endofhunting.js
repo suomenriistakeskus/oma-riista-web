@@ -1,28 +1,133 @@
 'use strict';
 
 angular.module('app.harvestpermit.management.endofhunting', [])
+
+    .config(function ($stateProvider) {
+        $stateProvider
+            .state('permitmanagement.endofmooselikehunting', {
+                url: '/endhunting/{gameSpeciesCode:[0-9]{1,8}}',
+                templateUrl: 'harvestpermit/management/endofhunting/end-mooselike-hunting.html',
+                controller: 'EndHuntingForMooselikePermitController',
+                controllerAs: '$ctrl',
+                resolve: {
+                    gameSpeciesCode: function ($stateParams) {
+                        return _.parseInt($stateParams.gameSpeciesCode);
+                    },
+                    moosePermit: function (MoosePermits, permitId, gameSpeciesCode) {
+                        return MoosePermits.get({
+                            permitId: permitId,
+                            species: gameSpeciesCode
+                        }).$promise;
+                    }
+                }
+            });
+    })
+
+    .controller('EndHuntingForMooselikePermitController', function (MoosePermitEndOfHuntingReport, NotificationService,
+                                                                    $state, $translate, dialogs, ActiveRoleService,
+                                                                    gameSpeciesCode, getGameSpeciesName, moosePermit) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.moosePermit = moosePermit;
+            $ctrl.partners = moosePermit.partners;
+
+            $ctrl.canEndMooselikeHunting = moosePermit.canModifyEndOfHunting
+                && moosePermit.allPartnersFinishedHunting
+                && moosePermit.amendmentPermitsMatchHarvests
+                && !moosePermit.permitHolderFinishedHunting;
+
+            var isModerator = ActiveRoleService.isModerator();
+
+            $ctrl.canCancelEndHunting = moosePermit.canModifyEndOfHunting
+                && moosePermit.permitHolderFinishedHunting
+                && (!moosePermit.huntingFinishedByModeration || isModerator);
+
+            $ctrl.isFinishHuntingByModeratorOverrideVisible = isModerator && !moosePermit.permitHolderFinishedHunting;
+        };
+
+        $ctrl.getGameSpeciesName = function () {
+            return getGameSpeciesName(gameSpeciesCode);
+        };
+
+        $ctrl.goBack = function () {
+            $state.go('permitmanagement.dashboard', {
+                permitId: moosePermit.id,
+                gameSpeciesCode: gameSpeciesCode
+            }, {reload: true});
+        };
+
+        $ctrl.done = function () {
+            NotificationService.showDefaultSuccess();
+            $state.reload();
+        };
+
+        $ctrl.endHunting = function () {
+            var dialogTitle = $translate.instant('global.dialog.confirmation.title');
+            var dialogMessage = $translate.instant('global.dialog.confirmation.text');
+
+            dialogs.confirm(dialogTitle, dialogMessage).result.then(function () {
+                MoosePermitEndOfHuntingReport.save({
+                    permitId: moosePermit.id,
+                    speciesCode: gameSpeciesCode
+
+                }).$promise.then(function () {
+                    $ctrl.goBack();
+
+                }, function () {
+                    NotificationService.showDefaultFailure();
+                });
+            });
+        };
+
+        $ctrl.cancelEndOfHunting = function () {
+            var dialogTitle = $translate.instant('global.dialog.confirmation.title');
+            var dialogMessage = $translate.instant('global.dialog.confirmation.text');
+
+            dialogs.confirm(dialogTitle, dialogMessage).result.then(function () {
+                MoosePermitEndOfHuntingReport.remove({
+                    permitId: moosePermit.id,
+                    speciesCode: gameSpeciesCode
+
+                }).$promise.then($ctrl.done, function () {
+                    NotificationService.showDefaultFailure();
+                });
+            });
+        };
+
+        $ctrl.finishHuntingByModeratorOverride = function () {
+            $state.go('permitmanagement.override', {permitId: moosePermit.id, speciesCode: gameSpeciesCode});
+        };
+    })
+
     .factory('PermitEndOfHuntingReport', function ($resource) {
         var prefix = 'api/v1/harvestreport/permit/:id';
         return $resource(prefix, {id: '@id'}, {
             changeState: {
                 method: 'POST',
                 url: prefix + '/state'
+            },
+            moderatorCreate: {
+                method: 'POST',
+                url: prefix + '/moderator'
             }
         });
     })
-    .service('PermitEndOfHuntingReportService', function (PermitEndOfHuntingReport, PermitEndOfHuntingReportModal) {
-        this.openModal = function (permitId) {
-            return PermitEndOfHuntingReport.get({id: permitId}).$promise.then(function (report) {
-                return PermitEndOfHuntingReportModal.showModal(report);
-            });
-        };
+
+    .factory('MoosePermitEndOfHuntingReport', function ($resource) {
+        var apiPrefix = '/api/v1/harvestreport/moosepermit/:permitId/:speciesCode';
+
+        return $resource(apiPrefix, {permitId: "@permitId", speciesCode: "@speciesCode"}, {});
     })
-    .service('PermitEndOfHuntingReportModal', function ($uibModal, NotificationService, PermitEndOfHuntingReport) {
-        this.showModal = function (report) {
+
+    .service('PermitEndOfHuntingReportModal', function ($uibModal) {
+        this.openModal = function (permitId) {
             return $uibModal.open({
                 templateUrl: 'harvestpermit/management/endofhunting/end-of-hunting-report.html',
                 resolve: {
-                    report: _.constant(report)
+                    report: function (PermitEndOfHuntingReport) {
+                        return PermitEndOfHuntingReport.get({id: permitId}).$promise;
+                    }
                 },
                 controller: ModalController,
                 controllerAs: '$ctrl',
@@ -31,14 +136,27 @@ angular.module('app.harvestpermit.management.endofhunting', [])
             }).result;
         };
 
-        function ModalController($uibModalInstance, report) {
+        function ModalController($uibModalInstance, NotificationService, PermitEndOfHuntingReport, report, ActiveRoleService) {
             var $ctrl = this;
 
-            $ctrl.report = report;
-            $ctrl.hasHarvests = report.harvests && report.harvests.length;
+            $ctrl.$onInit = function () {
+                $ctrl.report = report;
+                $ctrl.hasHarvests = report.harvests && report.harvests.length;
+                $ctrl.isModerator = ActiveRoleService.isModerator();
+                $ctrl.showAdditionalComments = $ctrl.isModerator ||
+                    ($ctrl.report.harvestReportState === 'APPROVED' &&
+                    $ctrl.report.endOfHuntingReportComments);
+            };
 
             $ctrl.create = function () {
-                var promise = PermitEndOfHuntingReport.save({id: report.permitId}).$promise;
+                var promise;
+                if (ActiveRoleService.isModerator()) {
+                    promise = PermitEndOfHuntingReport
+                        .moderatorCreate({id: report.permitId}, {endOfHuntingReportComments: $ctrl.report.endOfHuntingReportComments})
+                        .$promise;
+                } else {
+                    promise = PermitEndOfHuntingReport.save({id: report.permitId}).$promise;
+                }
                 handleActionResultPromise(promise);
             };
 
@@ -48,11 +166,15 @@ angular.module('app.harvestpermit.management.endofhunting', [])
             };
 
             $ctrl.accept = function () {
-                var promise = PermitEndOfHuntingReport.changeState({id: report.permitId}, {
+                var bodyParams = {
                     to: 'APPROVED',
                     id: report.permitId,
-                    rev: report.permitRev
-                }).$promise;
+                    rev: report.permitRev,
+                    endOfHuntingReportComments: {
+                        endOfHuntingReportComments: $ctrl.report.endOfHuntingReportComments
+                    }
+                };
+                var promise = PermitEndOfHuntingReport.changeState({id: report.permitId}, bodyParams).$promise;
                 handleActionResultPromise(promise);
             };
 
@@ -66,131 +188,25 @@ angular.module('app.harvestpermit.management.endofhunting', [])
             }
         }
     })
-    .service('MooseHarvestReportModal', function ($uibModal, $state, MoosePermits) {
-        this.openModal = function (permitId, gameSpeciesCode) {
-            return MoosePermits.get({
-                permitId: permitId,
-                species: gameSpeciesCode
 
-            }).$promise.then(function (permit) {
-                return $uibModal.open({
-                    templateUrl: 'harvestpermit/management/endofhunting/moose-harvest-report.html',
-                    resolve: {
-                        permit: _.constant(permit),
-                        gameSpeciesCode: _.constant(gameSpeciesCode)
-                    },
-                    controller: ModalController,
-                    controllerAs: '$ctrl',
-                    size: permit.mooseHarvestReport ? 'md' : 'lg'
-                }).result;
-            });
-        };
-
-        function ModalController($uibModalInstance, $state, $translate, dialogs,
-                                 NotificationService, FormPostService,
-                                 MoosePermitEndOfHuntingReport,
-                                 permit, gameSpeciesCode) {
-            var $ctrl = this;
-
-            $ctrl.$onInit = function () {
-                $ctrl.permit = permit;
-                $ctrl.mooseHarvestReport = permit.mooseHarvestReport;
-                $ctrl.uri = '/api/v1/harvestreport/moosepermit/' + permit.id + '/' + gameSpeciesCode;
-
-                $ctrl.hasHarvests = permit.totalPayment.totalPayment > 0;
-
-                $ctrl.finishedWithoutHarvests = $ctrl.mooseHarvestReport
-                    && !$ctrl.mooseHarvestReport.moderatorOverride
-                    && $ctrl.mooseHarvestReport.noHarvests;
-
-                $ctrl.canCreateMooseHarvestReport = permit.canModifyEndOfHunting
-                    && permit.allPartnersFinishedHunting
-                    && permit.amendmentPermitsMatchHarvests
-                    && !($ctrl.mooseHarvestReport && $ctrl.mooseHarvestReport.moderatorOverride);
-
-                $ctrl.canRemoveMooseHarvestReport = permit.canModifyEndOfHunting
-                    && $ctrl.mooseHarvestReport
-                    && !$ctrl.mooseHarvestReport.moderatorOverride;
-
-                $ctrl.canDownloadMooseHarvestReport = $ctrl.mooseHarvestReport
-                    && !$ctrl.mooseHarvestReport.noHarvests
-                    && !$ctrl.mooseHarvestReport.moderatorOverride;
-            };
-
-            $ctrl.downloadReceipt = function () {
-                FormPostService.submitFormUsingBlankTarget($ctrl.uri + '/receipt');
-            };
-
-            $ctrl.done = function () {
-                NotificationService.showDefaultSuccess();
-                $uibModalInstance.close();
-                $state.reload();
-            };
-
-            $ctrl.createNoHarvestsReport = function () {
-                MoosePermitEndOfHuntingReport.noHarvests({
-                    permitId: permit.id,
-                    speciesCode: gameSpeciesCode
-
-                }).$promise.then($ctrl.done, function () {
-                    NotificationService.showDefaultFailure();
-                });
-            };
-
-            $ctrl.removeHarvestReport = function () {
-                var dialogTitle = $translate.instant('global.dialog.confirmation.title');
-                var dialogMessage = $translate.instant('global.dialog.confirmation.text');
-
-                dialogs.confirm(dialogTitle, dialogMessage).result.then(function () {
-                    MoosePermitEndOfHuntingReport.remove({
-                        permitId: permit.id,
-                        speciesCode: gameSpeciesCode
-
-                    }).$promise.then($ctrl.done, function () {
-                        NotificationService.showDefaultFailure();
-                    });
-                });
-            };
-
-            $ctrl.cancel = function () {
-                $uibModalInstance.dismiss('cancel');
-            };
-        }
-    })
-
-    .component('moosePermitUploadReceipt', {
-        templateUrl: 'harvestpermit/management/endofhunting/moose-permit-upload-receipt.html',
+    .component('moosePermitHuntingProgress', {
+        templateUrl: 'harvestpermit/management/endofhunting/moose-permit-hunting-progress.html',
         bindings: {
-            uri: '<',
-            done: '&'
+            permitAmount: '<',
+            amendmentAmount: '<',
+            harvestedAmount: '<',
+            nonEdibleAmount: '<'
         },
-        controller: function (NotificationService) {
+        controller: function () {
             var $ctrl = this;
 
-            $ctrl.dropzone = null;
-            $ctrl.dropzoneIncompatibleFileType = false;
-
             $ctrl.$onInit = function () {
-                $ctrl.dropzoneConfig = {
-                    autoProcessQueue: true,
-                    maxFiles: 1,
-                    maxFilesize: 50, // MiB
-                    uploadMultiple: false,
-                    url: $ctrl.uri
-                };
-            };
+                $ctrl.totalAmount = $ctrl.permitAmount + $ctrl.amendmentAmount;
+                $ctrl.progressBarWidth = 100 * $ctrl.harvestedAmount / $ctrl.totalAmount;
 
-            $ctrl.dropzoneEventHandlers = {
-                success: function (file) {
-                    $ctrl.dropzone.removeFile(file);
-                    $ctrl.dropzoneIncompatibleFileType = false;
-                    $ctrl.done();
-                    NotificationService.showDefaultSuccess();
-                },
-                error: function (file, response, xhr) {
-                    $ctrl.dropzone.removeFile(file);
-                    $ctrl.dropzoneIncompatibleFileType = true;
-                }
+                $ctrl.getCssClassForHarvestedAmount = function () {
+                    return $ctrl.harvestedAmount <= $ctrl.totalAmount ? 'text-success' : 'text-danger';
+                };
             };
         }
     })
@@ -204,18 +220,37 @@ angular.module('app.harvestpermit.management.endofhunting', [])
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.showPriceBreakdown = false;
             };
+        }
+    })
 
-            $ctrl.toggle = function () {
-                $ctrl.showPriceBreakdown = !$ctrl.showPriceBreakdown;
-            };
+    .component('moosePermitPartnerTable', {
+        templateUrl: 'harvestpermit/management/endofhunting/moose-permit-partner-table.html',
+        bindings: {
+            partners: '<'
+        },
+        controller: function () {
+            var $ctrl = this;
 
-            $ctrl.getToggleClasses = function () {
-                return {
-                    'glyphicon-chevron-right': $ctrl.showPriceBreakdown,
-                    'glyphicon-chevron-down': !$ctrl.showPriceBreakdown
+            $ctrl.$onInit = function () {
+                var pageSize = 20;
+
+                $ctrl.pager = {
+                    data: $ctrl.partners,
+                    total: $ctrl.partners.length,
+                    currentPage: 1,
+                    pageSize: pageSize
                 };
+
+                var updatePager = function () {
+                    var page = $ctrl.pager.currentPage - 1;
+                    var begin = page * pageSize;
+                    var end = begin + pageSize;
+
+                    $ctrl.page = $ctrl.pager.data.slice(begin, end);
+                };
+                updatePager();
+                $ctrl.updatePager = updatePager;
             };
         }
     });

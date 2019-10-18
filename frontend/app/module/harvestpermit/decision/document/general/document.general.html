@@ -1,0 +1,44 @@
+<p class="decision-section-title"
+   translate="harvestpermit.decision.sectionId.general"></p>
+
+<table class="table" style="table-layout: fixed; margin-top: 15px">
+    <tbody>
+    <tr>
+        <th style="width: 40%" translate="harvestpermit.decision.settings.document.decisionType"></th>
+        <td>
+            <strong translate="harvestpermit.decision.decisionType.{{$ctrl.decision.decisionType}}"></strong>
+        </td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.decision.settings.document.locale"></th>
+        <td>
+            <span ng-bind="$ctrl.decision.locale === 'sv_FI' ? 'ruotsi' : 'suomi'"></span>
+        </td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.admin.application.appealStatus"></th>
+        <td>
+                    <span ng-if="$ctrl.decision.appealStatus === null"
+                          translate="harvestpermit.decision.settings.appeal.noAppeal"></span>
+            <span ng-if="$ctrl.decision.appealStatus !== null"
+                  translate="harvestpermit.decision.appealStatus.{{$ctrl.decision.appealStatus}}"></span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="row" ng-if="::($ctrl.decision.status === 'DRAFT' && $ctrl.isHandler())">
+    <div class="col-xs-4 col-xs-offset-4">
+        <a class="btn btn-default btn-block" ng-click="$ctrl.editPublishSettings()">
+            <span class="fa fa-fw fa-calendar"></span>
+            <span translate="harvestpermit.decision.settings.publish.title"></span>
+        </a>
+    </div>
+
+    <div class="col-xs-4">
+        <a class="btn btn-primary btn-block" ng-click="$ctrl.editDocumentSettings()">
+            <span class="fa fa-fw fa-cog"></span>
+            <span translate="harvestpermit.decision.settings.document.title"></span>
+        </a>
+    </div>
+</div>

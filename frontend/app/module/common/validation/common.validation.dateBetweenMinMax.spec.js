@@ -169,5 +169,37 @@ describe("date-between-min-max", function () {
             assertInvalid(formWithMinMax2, ld(4));
         });
     });
-});
 
+    describe("form with array value for min or max", function () {
+        it("should accept max", function () {
+            $scope.model.max = [ld(), ld(1)];
+            assertValid(formWithMinMax, ld());
+        });
+
+        it("should accept min", function () {
+            $scope.model.min = [ld(), ld(-1)];
+            assertValid(formWithMinMax, ld());
+        });
+
+        it("should accept between", function () {
+            $scope.model.max = [ld(1)];
+            $scope.model.min = [ld(-1)];
+            assertValid(formWithMinMax, ld(-1));
+            assertValid(formWithMinMax, ld());
+            assertValid(formWithMinMax, ld(1));
+        });
+
+        it("should reject after max", function () {
+            $scope.model.max = [ld(), ld(1)];
+            assertInvalid(formWithMinMax, ld(1));
+            assertInvalid(formWithMinMax, ld(2));
+            assertInvalid(formWithMinMax, ld(3));
+        });
+
+        it("should reject before min", function () {
+            $scope.model.min = [ld(), ld(-1)];
+            assertInvalid(formWithMinMax, ld(-1));
+            assertInvalid(formWithMinMax, ld(-2));
+        });
+    });
+});

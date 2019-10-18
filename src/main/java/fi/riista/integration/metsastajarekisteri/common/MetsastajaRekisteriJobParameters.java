@@ -9,28 +9,24 @@ import org.springframework.batch.core.job.DefaultJobParametersValidator;
 import java.util.Map;
 
 public class MetsastajaRekisteriJobParameters {
+
     public static final String JOB_PARAMETER_INPUT_FILE = "inputFile";
     public static final String JOB_PARAMETER_IMPORT_TIMESTAMP = "importTimestamp";
 
     public static JobParameters createJobParameters(final PendingImportFile entry) {
         return new JobParametersBuilder()
-                .addString(MetsastajaRekisteriJobParameters.JOB_PARAMETER_INPUT_FILE,
-                        entry.getInputFile().toString())
-                .addLong(MetsastajaRekisteriJobParameters.JOB_PARAMETER_IMPORT_TIMESTAMP,
-                        entry.getLastModifiedAt().toMillis())
+                .addString(JOB_PARAMETER_INPUT_FILE, entry.getInputFile().toString())
+                .addLong(JOB_PARAMETER_IMPORT_TIMESTAMP, entry.getLastModifiedAt().toMillis())
                 .toJobParameters();
     }
 
     public static JobParametersValidator createValidator() {
         final DefaultJobParametersValidator parametersValidator = new DefaultJobParametersValidator();
 
-        final String[] required = new String[]{
-                MetsastajaRekisteriJobParameters.JOB_PARAMETER_IMPORT_TIMESTAMP,
-                MetsastajaRekisteriJobParameters.JOB_PARAMETER_INPUT_FILE
+        final String[] required = {
+                JOB_PARAMETER_IMPORT_TIMESTAMP, JOB_PARAMETER_INPUT_FILE
         };
-
-        final String[] optional = new String[]{
-        };
+        final String[] optional = {};
 
         parametersValidator.setRequiredKeys(required);
         parametersValidator.setOptionalKeys(optional);
@@ -40,7 +36,7 @@ public class MetsastajaRekisteriJobParameters {
 
     private final Map<String, Object> rawParameters;
 
-    public MetsastajaRekisteriJobParameters(Map<String, Object> rawParameters) {
+    public MetsastajaRekisteriJobParameters(final Map<String, Object> rawParameters) {
         this.rawParameters = rawParameters;
     }
 

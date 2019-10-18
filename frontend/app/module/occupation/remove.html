@@ -28,13 +28,13 @@
                         {{'occupation.indefinitely' | translate}}
                     </span>
                     <span class="validity" ng-if="occupation.beginDate != null && occupation.endDate == null">
-                        {{occupation.beginDate|date:'dd.M.yyyy'}} - {{'occupation.indefinitely' | translate}}
+                        {{occupation.beginDate|date:'d.M.yyyy'}} - {{'occupation.indefinitely' | translate}}
                     </span>
                     <span class="validity" ng-if="occupation.beginDate == null && occupation.endDate != null">
-                        {{'occupation.ending' | translate}} {{occupation.endDate|date:'dd.M.yyyy'}}
+                        {{'occupation.ending' | translate}} {{occupation.endDate|date:'d.M.yyyy'}}
                     </span>
                     <span class="validity" ng-if="occupation.beginDate != null && occupation.endDate != null">
-                        {{occupation.beginDate|date:'dd.M.yyyy'}} - {{occupation.endDate|date:'d.M.yyyy'}}
+                        {{occupation.beginDate|date:'d.M.yyyy'}} - {{occupation.endDate|date:'d.M.yyyy'}}
                     </span>
                 </p>
             </div>

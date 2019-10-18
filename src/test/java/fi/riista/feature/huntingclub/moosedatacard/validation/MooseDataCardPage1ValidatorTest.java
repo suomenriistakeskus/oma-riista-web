@@ -266,7 +266,4 @@ public class MooseDataCardPage1ValidatorTest implements ValueGeneratorMixin {
         return page;
     }
 
-    private String permitNumber() {
-        return permitNumber("001");
-    }
 }

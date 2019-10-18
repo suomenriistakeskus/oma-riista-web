@@ -1,0 +1,54 @@
+<form name="invoiceSearchForm" ng-submit="$ctrl.search()">
+    <div class="row">
+        <div class="col-xs-6 col-sm-4 col-md-3">
+            <invoice-search-number-filters filters="$ctrl.filters"></invoice-search-number-filters>
+
+            <invoice-search-payment-state-filter filters="$ctrl.filters"
+                                                 is-disabled="$ctrl.isExactNumberSearchActive()">
+            </invoice-search-payment-state-filter>
+        </div>
+
+        <div class="col-xs-6 col-sm-4 col-md-3">
+            <invoice-search-temporal-filter filters="$ctrl.filters"
+                                            available-hunting-years="$ctrl.availableHuntingYears"
+                                            is-disabled="$ctrl.isExactNumberSearchActive()">
+            </invoice-search-temporal-filter>
+        </div>
+
+        <div class="col-xs-6 col-sm-4 col-md-3">
+            <invoice-search-organisation-filter filters="$ctrl.filters"
+                                                is-disabled="$ctrl.isExactNumberSearchActive()">
+            </invoice-search-organisation-filter>
+        </div>
+
+        <div class="col-xs-6 col-sm-12 col-md-3">
+            <div class="row">
+                <div class="col-xs-12 col-sm-4 col-md-12" ng-switch="$ctrl.filters.type">
+                    <div ng-switch-when="PERMIT_HARVEST">
+                        <invoice-search-species-filter filters="$ctrl.filters"
+                                                       available-species="$ctrl.availableSpecies"
+                                                       is-disabled="$ctrl.isExactNumberSearchActive()">
+                        </invoice-search-species-filter>
+                    </div>
+
+                    <div ng-switch-default>
+                        <invoice-search-delivery-type-filter filters="$ctrl.filters"
+                                                             is-disabled="$ctrl.isExactNumberSearchActive()">
+                        </invoice-search-delivery-type-filter>
+                    </div>
+                </div>
+
+                <div class="invoice-search-form-placeholder hidden-sm col-md-12"
+                     ng-class="!!$ctrl.filters.rkaOfficialCode ? 'col-xs-12' : 'hidden-xs'">
+                </div>
+
+                <div class="col-xs-12 col-sm-offset-4 col-sm-4 col-md-offset-0 col-md-12">
+                    <button type="submit" class="btn btn-primary btn-block invoice-search-inline-button">
+                        <span class="glyphicon glyphicon-search"></span> &nbsp;
+                        <span translate="global.button.search"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

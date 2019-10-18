@@ -3,26 +3,57 @@
         <thead>
             <tr>
                 <th class="col-xs-2 col-lg-1 text-right" translate="rhy.officialCode"></th>
-                <th class="col-xs-8 col-lg-10" translate="global.organisationType.RHY"></th>
+
+                <th ng-class="::$ctrl.isReadinessColumnShown ?
+                        ($ctrl.isSenderInfoShown ? 'col-xs-2 col-lg-3' : 'col-xs-6 col-lg-8') :
+                        ($ctrl.isSenderInfoShown ? 'col-xs-3 col-lg-4' : 'col-xs-8 col-lg-10')"
+                    translate="global.organisationType.RHY"></th>
+
+                <th ng-if="::$ctrl.isSenderInfoShown"
+                    class="col-xs-2 col-lg-2"
+                    translate="jht.annualStats.submitTime"></th>
+
+                <th ng-if="::$ctrl.isSenderInfoShown"
+                    class="col-xs-2 col-lg-3"
+                    translate="jht.annualStats.submitAuthor"></th>
+
+                <th ng-if="::$ctrl.isReadinessColumnShown" class="col-xs-2"
+                    translate="{{::$ctrl.readinessColumnTitleKey}}"></th>
+
                 <th class="col-xs-2 col-lg-1"></th>
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="entry in $ctrl.annualStats track by entry.rhyId">
+            <tr ng-repeat="entry in ::$ctrl.annualStats track by entry.rhyId">
                 <td class="text-right" ng-bind="::entry.rhyCode"></td>
-                <td>
-                    <span ng-bind="entry.rhyName | rI18nNameFilter"></span>&nbsp;
-                    <span ng-if="::$ctrl.isReadyForTransitioningToNextState(entry)" class="glyphicon glyphicon-ok"></span>
-                </td>
-                <td class="text-right">
-                    <button type="button"
-                            class="annual-statistics-open-button"
-                            ng-click="$ctrl.openAnnualStatistics(entry.rhyId)">
 
-                        <span ng-switch="::($ctrl.isAnnualStatisticsCreated(entry))">
-                            <span ng-switch-when="true" translate="global.button.open"></span>
-                            <span ng-switch-when="false" translate="global.button.create"></span>
-                        </span>
+                <td ng-bind="entry.rhyName | rI18nNameFilter"></td>
+
+                <td ng-if="::$ctrl.isSenderInfoShown">
+                    <span ng-bind="::entry.submitEvent.eventTime | date:'d.M.yyyy HH:mm'"></span>
+                </td>
+
+                <td ng-if="::$ctrl.isSenderInfoShown">
+                    <span ng-bind="::entry.submitEvent.actor.fullName"></span>
+                </td>
+
+                <td ng-if="::$ctrl.isReadinessColumnShown"
+                    ng-switch="::$ctrl.isReadyForTransitioningToNextState(entry)">
+
+                    <div ng-switch-when="true">
+                        <span class="fa fa-fw fa-lg fa-check text-primary"></span>
+                        <span translate="global.yes"></span>
+                    </div>
+                    <div ng-switch-when="false">
+                        <span class="fa fa-fw fa-lg fa-ban text-danger"></span>
+                        <span translate="global.no"></span>
+                    </div>
+                </td>
+
+                <td class="text-right">
+                    <button type="button" class="annual-statistics-open-button"
+                            ng-click="$ctrl.openAnnualStatistics(entry.rhyId)"
+                            translate="global.button.open">
                     </button>
                 </td>
             </tr>

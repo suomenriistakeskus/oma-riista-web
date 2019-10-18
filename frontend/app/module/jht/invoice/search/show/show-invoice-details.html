@@ -1,0 +1,31 @@
+<p class="column-title">
+    <span translate="jht.invoice.show.paymentDetails"></span>
+</p>
+
+<div class="invoice-text">
+    <table style="width: 100%;">
+        <tr>
+            <td><span translate="invoice.invoiceNumber"></span>:</td>
+            <td class="text-right" ng-bind="::$ctrl.invoice.invoiceNumber"></td>
+        </tr>
+        <tr>
+            <td><span translate="payment.creditorReference"></span>:</td>
+            <td class="text-right" ng-bind="::$ctrl.invoice.creditorReference"></td>
+        </tr>
+        <tr>
+            <td><span translate="global.date"></span>:</td>
+            <td class="text-right" ng-bind="::$ctrl.invoice.invoiceDate | date: 'd.M.yyyy'"></td>
+        </tr>
+        <tr>
+            <td><span translate="payment.dueDate"></span>:</td>
+            <td class="text-right" ng-bind="::$ctrl.invoice.dueDate | date: 'd.M.yyyy'"></td>
+        </tr>
+        <tr>
+            <td><span translate="invoice.deliveryType"></span>:</td>
+            <td class="text-right" ng-switch="$ctrl.invoice.electronicInvoicingEnabled">
+                <span ng-switch-when="true" translate="invoice.deliveryTypes.ELECTRONIC"></span>
+                <span ng-switch-when="false" translate="invoice.deliveryTypes.MAIL"></span>
+            </td>
+        </tr>
+    </table>
+</div>

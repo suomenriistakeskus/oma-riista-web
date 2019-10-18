@@ -1,6 +1,6 @@
 package fi.riista.integration.lupahallinta.parser;
 
-import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,7 +36,7 @@ public class PermitCSVLine {
             return restrictionAmount;
         }
 
-        public void setRestrictionAmount(BigDecimal restrictionAmount) {
+        public void setRestrictionAmount(final BigDecimal restrictionAmount) {
             this.restrictionAmount = restrictionAmount;
         }
 
@@ -44,7 +44,7 @@ public class PermitCSVLine {
             return restrictionType;
         }
 
-        public void setRestrictionType(String restrictionType) {
+        public void setRestrictionType(final String restrictionType) {
             this.restrictionType = restrictionType;
         }
 
@@ -52,14 +52,14 @@ public class PermitCSVLine {
             return referenceNumber;
         }
 
-        public void setReferenceNumber(String referenceNumber) {
+        public void setReferenceNumber(final String referenceNumber) {
             this.referenceNumber = referenceNumber;
         }
     }
 
     private String contactPersonSsn;
     private String permitNumber;
-    private String permitHolder;
+    private String permitHolderClub;
     private List<String> permitPartners;
     private String permitTypeCode;
     private String permitTypeName;
@@ -95,12 +95,12 @@ public class PermitCSVLine {
         this.permitPartners = permitPartners;
     }
 
-    public String getPermitHolder() {
-        return permitHolder;
+    public String getPermitHolderClub() {
+        return permitHolderClub;
     }
 
-    public void setPermitHolder(final String permitHolder) {
-        this.permitHolder = permitHolder;
+    public void setPermitHolderClub(final String permitHolderClub) {
+        this.permitHolderClub = permitHolderClub;
     }
 
     public String getPermitTypeCode() {
@@ -139,7 +139,7 @@ public class PermitCSVLine {
         return originalPermitNumber;
     }
 
-    public void setOriginalPermitNumber(String originalPermitNumber) {
+    public void setOriginalPermitNumber(final String originalPermitNumber) {
         this.originalPermitNumber = originalPermitNumber;
     }
 
@@ -147,7 +147,7 @@ public class PermitCSVLine {
         return printingUrl;
     }
 
-    public void setPrintingUrl(String printingUrl) {
+    public void setPrintingUrl(final String printingUrl) {
         this.printingUrl = printingUrl;
     }
 
@@ -155,7 +155,7 @@ public class PermitCSVLine {
         return htaNumber;
     }
 
-    public void setHtaNumber(String htaNumber) {
+    public void setHtaNumber(final String htaNumber) {
         this.htaNumber = htaNumber;
     }
 
@@ -163,7 +163,7 @@ public class PermitCSVLine {
         return relatedRhys;
     }
 
-    public void setRelatedRhys(List<String> relatedRhys) {
+    public void setRelatedRhys(final List<String> relatedRhys) {
         this.relatedRhys = relatedRhys;
     }
 
@@ -171,7 +171,7 @@ public class PermitCSVLine {
         return permitAreaSize;
     }
 
-    public void setPermitAreaSize(String permitAreaSize) {
+    public void setPermitAreaSize(final String permitAreaSize) {
         this.permitAreaSize = permitAreaSize;
     }
 }

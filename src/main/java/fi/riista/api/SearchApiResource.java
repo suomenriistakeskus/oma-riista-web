@@ -11,8 +11,9 @@ import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,36 +35,40 @@ public class SearchApiResource {
     private PersonSearchFeature personSearchFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public SearchResultsDTO search(@RequestParam(value = "term") String searchTerm,
                                    @RequestParam(value = "locale", required = false) Locale locale) {
         return siteSearchFeature.search(searchTerm, locale);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/venue", method = RequestMethod.GET)
+    @GetMapping(value = "/venue")
     public Page<VenueDTO> searchVenue(Pageable pageRequest, @RequestParam(value = "term") String searchTerm) {
         return venueSearchFeature.searchVenue(searchTerm, pageRequest);
     }
 
-    @RequestMapping(value = "/person/hunternumber", method = RequestMethod.POST)
+    @PostMapping(value = "/person/hunternumber")
     public PersonWithHunterNumberDTO findByHunterNumber(@RequestParam String hunterNumber) {
         return personSearchFeature.findNameByHunterNumber(hunterNumber);
     }
 
-    @RequestMapping(value = "/person/ssn", method = RequestMethod.POST)
+    @PostMapping(value = "/person/ssn")
     public PersonWithHunterNumberDTO findBySSN(@RequestParam String ssn) {
         return personSearchFeature.findNameAndHunterNumberBySsn(ssn);
     }
 
-    @RequestMapping(value = "/person/permitnumber", method = RequestMethod.POST)
+    @PostMapping(value = "/person/permitnumber")
     public PersonWithHunterNumberDTO findByPermitNumber(@RequestParam String permitNumber) {
         return personSearchFeature.findNameAndHunterNumberByPermitNumber(permitNumber);
     }
 
-    @RequestMapping(value = "/person/name", method = RequestMethod.POST)
+    @PostMapping(value = "/person/name")
     public List<PersonWithHunterNumberDTO> findByPersonName(@RequestParam String name) {
         return personSearchFeature.findNameAndHunterNumberOfAllByNameMatch(name);
     }
 
+    @PostMapping(value = "/person")
+    public List<PersonWithHunterNumberDTO> findByPersonNameOrHunterNumber(@RequestParam String searchTerm) {
+        return personSearchFeature.findPersonsByHunterNumberOrNameFuzzyMatch(searchTerm);
+    }
 }

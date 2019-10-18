@@ -1,0 +1,47 @@
+<div class="btn-group" uib-dropdown dropdown-append-to-body>
+    <button type="button" class="btn btn-default" uib-dropdown-toggle>
+        <span translate="club.area.button.functionMenu"></span>
+        &nbsp;
+        <span class="caret"></span>
+    </button>
+
+    <ul class="dropdown-menu" uib-dropdown-menu>
+        <li>
+            <a ng-confirm-click ng-confirm-click-action="$ctrl.delete()">
+                <span class="fa fa-archive"></span> &nbsp;
+                <span translate="global.button.delete"></span>
+            </a>
+        </li>
+        <li>
+            <a ng-confirm-click ng-confirm-click-action="$ctrl.copy()">
+                <span class="fa fa-clone"></span> &nbsp;
+                <span translate="global.button.copy"></span>
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.exportExcel('all')">
+                <span class="glyphicon glyphicon-export"></span> &nbsp;
+                <span translate="club.area.button.toExcel"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.exportExcel('changed')">
+                <span class="glyphicon glyphicon-export"></span> &nbsp;
+                <span translate="club.area.button.toChangesExcel"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.exportGeoJson()">
+                <span class="glyphicon glyphicon-globe"></span> &nbsp;
+                <span translate="club.area.button.toGeojson"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.exportGarmin()">
+                <span class="glyphicon glyphicon-globe"></span> &nbsp;
+                <span translate="club.area.button.toGarmin"></span>
+            </a>
+        </li>
+    </ul>
+</div>

@@ -1,0 +1,55 @@
+<form>
+    <div class="r-rhy-year-species-menu">
+        <r-hunting-year-and-species-selection
+                hunting-years="$ctrl.huntingYears"
+                available-species="$ctrl.availableSpecies"
+                preselect-current-hunting-year="true"
+                on-hunting-year-or-species-changed="$ctrl.selectHuntingYearAndSpeciesCode(huntingYear, speciesCode)">
+        </r-hunting-year-and-species-selection>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">
+            <span translate="reporting.moosePermitStatistics.areaFilter"></span>
+        </label>
+
+        <organisation-select-by-rhy
+                tabs="$ctrl.tabs"
+                organisation-changed="$ctrl.onOrganisationSelect(type, code)">
+        </organisation-select-by-rhy>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">
+            <span translate="reporting.moosePermitStatistics.harvestMapping"></span>
+        </label>
+
+        <div class="btn-group btn-group-justified">
+            <div class="btn btn-default"
+                 ng-repeat="reportType in $ctrl.reportTypeOptions"
+                 ng-model="$ctrl.reportType"
+                 ng-change="$ctrl.notifyChange()"
+                 uib-btn-radio="reportType">
+                        <span translate="reporting.moosePermitStatistics.reportType.{{reportType}}"
+                              uib-tooltip="{{ ::('reporting.moosePermitStatistics.reportTypeTooltip.' + reportType) | translate }}"
+                              tooltip-placement="bottom"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">
+            <span translate="reporting.moosePermitStatistics.groupByLabel"></span>
+        </label>
+
+        <div class="btn-group btn-group-vertical" style="width: 100%">
+            <label class="btn btn-default"
+                   ng-repeat="groupBy in $ctrl.groupByOptions"
+                   ng-model="$ctrl.groupBy"
+                   ng-change="$ctrl.notifyChange()"
+                   uib-btn-radio="groupBy">
+                <span translate="reporting.moosePermitStatistics.groupBy.{{groupBy}}"></span>
+            </label>
+        </div>
+    </div>
+</form>

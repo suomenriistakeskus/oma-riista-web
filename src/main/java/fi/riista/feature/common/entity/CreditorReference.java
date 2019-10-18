@@ -12,6 +12,7 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Embeddable
 @Access(AccessType.FIELD)
@@ -62,11 +63,33 @@ public class CreditorReference implements Serializable {
         return creditorReference != null && FinnishCreditorReferenceValidator.validate(creditorReference, true);
     }
 
+    public String getUndelimitedValue() {
+        return creditorReference == null ? null : creditorReference.replaceAll("[^0-9]", "");
+    }
+
     public Long parseLong() {
         if (creditorReference == null) {
             return null;
         }
         return Long.parseLong(StringUtils.replace(creditorReference, " ", ""));
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || !(obj instanceof CreditorReference)) {
+            return false;
+        }
+
+        final CreditorReference that = (CreditorReference) obj;
+        return Objects.equals(creditorReference, that.creditorReference);
+    }
+
+    @Override
+    public int hashCode() {
+        return creditorReference == null ? 0 : creditorReference.hashCode();
     }
 
     @Override

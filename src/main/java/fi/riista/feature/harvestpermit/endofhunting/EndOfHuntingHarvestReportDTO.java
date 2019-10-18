@@ -29,6 +29,8 @@ public class EndOfHuntingHarvestReportDTO {
     private HarvestReportState harvestReportState;
     private PersonWithHunterNumberDTO harvestReportAuthor;
 
+    private String endOfHuntingReportComments;
+
     public EndOfHuntingHarvestReportDTO(final HarvestPermit harvestPermit,
                                         final SystemUser activeUser, final List<HarvestPermitUsageDTO> speciesAmounts,
                                         final List<HarvestDTO> harvests) {
@@ -48,6 +50,8 @@ public class EndOfHuntingHarvestReportDTO {
         this.actions.create = harvestPermit.canCreateEndOfHuntingReport(activeUser);
         this.actions.remove = harvestPermit.canRemoveEndOfHuntingReport(activeUser);
         this.actions.accept = harvestPermit.canAcceptOrRejectEndOfHuntingReport(activeUser);
+
+        this.endOfHuntingReportComments = harvestPermit.getEndOfHuntingReportComments();
     }
 
     public Permissions getActions() {
@@ -88,5 +92,9 @@ public class EndOfHuntingHarvestReportDTO {
 
     public PersonWithHunterNumberDTO getHarvestReportAuthor() {
         return harvestReportAuthor;
+    }
+
+    public String getEndOfHuntingReportComments() {
+        return endOfHuntingReportComments;
     }
 }

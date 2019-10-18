@@ -2,9 +2,11 @@ package fi.riista.feature.organization.rhy.annualstats.export;
 
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.ExcelHelper;
+import fi.riista.util.F;
 import fi.riista.util.LocalisedEnum;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.MediaTypeExtras;
@@ -15,41 +17,42 @@ import org.springframework.web.servlet.view.document.AbstractXlsxView;
 import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticsExportItemDTO.aggregate;
+import static fi.riista.util.Collect.toMap;
 import static fi.riista.util.DateUtil.now;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang.StringUtils.capitalize;
 
 public class AnnualStatisticsExcelView extends AbstractXlsxView {
 
     private final int calendarYear;
-    private final List<AnnualStatisticsExportItemDTO> rhyList;
-    private final List<AnnualStatisticItemGroup> statisticGroups;
+    private final List<AnnualStatisticsExportDTO> rhyList;
     private final AnnualStatisticsExcelLayout layout;
     private final EnumLocaliser localiser;
+    private final Map<AnnualStatisticsCategory, List<AnnualStatisticGroup>> groupedStatistics;
 
     public AnnualStatisticsExcelView(final int calendarYear,
-                                     @Nonnull final List<AnnualStatisticsExportItemDTO> rhyList,
-                                     @Nonnull final List<AnnualStatisticItemGroup> statisticGroups,
+                                     @Nonnull final List<AnnualStatisticsExportDTO> rhyList,
                                      @Nonnull final EnumLocaliser localiser,
                                      @Nonnull final AnnualStatisticsExcelLayout layout) {
 
         this.calendarYear = calendarYear;
         this.rhyList = requireNonNull(rhyList, "rhyList is null");
-        this.statisticGroups = requireNonNull(statisticGroups, "statisticGroups is null");
         this.layout = requireNonNull(layout, "layout is null");
         this.localiser = requireNonNull(localiser, "localiser is null");
+
+        this.groupedStatistics = AnnualStatisticGroupsFactory
+                .getAllGroups(calendarYear)
+                .stream()
+                .collect(groupingBy(AnnualStatisticGroup::getCategory, TreeMap::new, toList()));
     }
 
     @Override
@@ -64,13 +67,22 @@ public class AnnualStatisticsExcelView extends AbstractXlsxView {
 
         switch (layout) {
             case NORMAL:
-                createNormalSheet(workbook);
+
+                groupedStatistics.forEach((category, groups) -> {
+                    addSheetForNormalLayout(workbook, category, groups, rhyList);
+                });
                 break;
-            case TRANSPOSED_WITH_MULTIPLE_SHEETS:
-                createTransposedSheets(workbook);
+
+            case TRANSPOSED:
+
+                groupedStatistics.forEach((category, groups) -> addSheetForTransposedLayout(workbook, category, groups));
                 break;
+
             case WITH_RKA_GROUPING:
-                createRkaGroupedSheet(workbook);
+
+                groupedStatistics.forEach((category, groups) -> {
+                    addSheetForRkaGroupedLayout(workbook, category, groups, createListOfRkaStatistics());
+                });
                 break;
         }
     }
@@ -79,153 +91,179 @@ public class AnnualStatisticsExcelView extends AbstractXlsxView {
         final String organisationLevel;
 
         if (layout == AnnualStatisticsExcelLayout.WITH_RKA_GROUPING) {
-            organisationLevel = localise("rkaAbbrv");
+            organisationLevel = i18n("rkaAbbrv");
         } else {
             if (rhyList.size() == 1) {
-                organisationLevel = localise(rhyList.get(0).getOrganisationName());
+                organisationLevel = i18n(rhyList.get(0).getOrganisation().getNameLocalisation());
             } else {
-                organisationLevel = localise("allOfFinland");
+                organisationLevel = i18n("allOfFinland");
             }
         }
 
         return format("%s-%d-%s-%s.xlsx",
-                localise("annualStatistics"),
+                i18n("annualStatistics"),
                 calendarYear,
                 organisationLevel.replaceAll(" ", "_"),
                 Constants.FILENAME_TS_PATTERN.print(now()));
     }
 
-    private void createNormalSheet(final Workbook workbook) {
-        final ExcelHelper sheetWrapper = new ExcelHelper(workbook)
-                // Freeze statistic item title rows and RHY column.
-                .createFreezePane(1, 2)
-                .appendRow()
-                .appendTextCellBold(format("%s %d", localise("financialYear"), calendarYear));
+    private List<RkaStatistics> createListOfRkaStatistics() {
+        final SortedMap<String, List<AnnualStatisticsExportDTO>> rhyListGroupedByRkaCode = rhyList
+                .stream()
+                .collect(groupingBy(dto -> dto.getParentOrganisation().getOfficialCode(), TreeMap::new, toList()));
 
-        statisticGroups.forEach(group -> {
-            sheetWrapper
-                    .appendTextCellBold(localise(group.getTitle()))
-                    .appendEmptyCell(group.getItemMetadatas().size() - 1);
+        return rhyListGroupedByRkaCode.entrySet()
+                .stream()
+                .map(Map.Entry::getValue)
+                .map(RkaStatistics::new)
+                .collect(toList());
+    }
+
+    private void addSheetForNormalLayout(final Workbook workbook,
+                                         final AnnualStatisticsCategory category,
+                                         final List<AnnualStatisticGroup> statisticGroups,
+                                         final List<AnnualStatisticsExportDTO> allRhyStatistics) {
+
+        final ExcelHelper sheetWrapper = new ExcelHelper(workbook, i18n(category))
+                // Freeze statistic item title rows and RHY column.
+                .withFreezePane(1, 2)
+                .appendRow()
+                .appendTextCellBold(format("%s %d", i18n("financialYear"), calendarYear));
+
+        appendStatisticGroupTitleRow(sheetWrapper, statisticGroups);
+
+        // Append titles of statistic items.
+        sheetWrapper.appendRow().appendEmptyCell(1);
+        appendStatisticItemTitles(sheetWrapper, statisticGroups);
+
+        allRhyStatistics.forEach(rhyStatistics -> {
+
+            final String rhyName = i18n(rhyStatistics.getOrganisation().getNameLocalisation());
+            final String rhyTitle = format("%s %s", rhyStatistics.getOrganisation().getOfficialCode(), rhyName);
+
+            // Append new row for RHY statistics starting with title column.
+            sheetWrapper.appendRow().appendTextCellBold(rhyTitle);
+
+            appendStatistics(sheetWrapper, statisticGroups, rhyStatistics);
         });
 
-        sheetWrapper.appendRow().appendEmptyCell(1);
-
-        statisticGroups.forEach(group -> group.getItemMetadatas().forEach(itemMetadata -> {
-            sheetWrapper.appendTextCell(localise(itemMetadata.getTitle()));
-        }));
-
-        Stream<AnnualStatisticsExportItemDTO> organisations = rhyList.stream();
-
-        if (rhyList.size() > 1) {
-            final AnnualStatisticsExportItemDTO aggregate = AnnualStatisticsExportItemDTO.aggregate(rhyList);
-            aggregate.setOrganisationName(getUppercaseLocalisedString("total"));
-
-            organisations = Stream.concat(organisations, Stream.of(aggregate));
+        if (allRhyStatistics.size() > 1) {
+            // Append summary row.
+            sheetWrapper.appendRow().appendTextCellBold(i18n("total").toUpperCase());
+            appendStatistics(sheetWrapper, statisticGroups, AnnualStatisticsExportDTO.aggregate(allRhyStatistics));
         }
 
-        organisations.forEach(org -> {
-
-            final String orgName = localise(org.getOrganisationName());
-            final String rowTitle = Optional.ofNullable(org.getOrganisationCode())
-                    .map(code -> format("%s %s", code, orgName))
-                    .orElse(orgName);
-
-            sheetWrapper.appendRow().appendTextCellBold(rowTitle);
-
-            statisticGroups.forEach(group -> group.getItemMetadatas().forEach(itemMetadata -> {
-                itemMetadata.populateExcelCell(sheetWrapper, org);
-            }));
-        });
-
         sheetWrapper.autoSizeColumns();
     }
 
-    private void createRkaGroupedSheet(final Workbook workbook) {
+    private void addSheetForRkaGroupedLayout(final Workbook workbook,
+                                             final AnnualStatisticsCategory category,
+                                             final List<AnnualStatisticGroup> statisticGroups,
+                                             final List<RkaStatistics> allRkaStatistics) {
 
-        final SortedMap<String, List<AnnualStatisticsExportItemDTO>> rhyGrouping = rhyList.stream()
-                .collect(groupingBy(AnnualStatisticsExportItemDTO::getParentOrganisationCode, TreeMap::new, toList()));
-
-        final ExcelHelper sheetWrapper = new ExcelHelper(workbook)
+        final ExcelHelper sheetWrapper = new ExcelHelper(workbook, i18n(category))
                 // Freeze statistic item title rows and RHY columns.
-                .createFreezePane(2, 2)
+                .withFreezePane(2, 2)
                 .appendRow()
-                .appendTextCellBold(format("%s %d", localise("financialYear"), calendarYear))
+                .appendTextCellBold(format("%s %d", i18n("financialYear"), calendarYear))
                 .appendEmptyCell(1);
 
-        statisticGroups.forEach(group -> {
-            sheetWrapper
-                    .appendTextCellBold(localise(group.getTitle()))
-                    .appendEmptyCell(group.getItemMetadatas().size() - 1);
-        });
+        appendStatisticGroupTitleRow(sheetWrapper, statisticGroups);
 
-        sheetWrapper
-                .appendRow()
-                .appendTextCell(localise("rhyNumber"), HorizontalAlignment.RIGHT)
-                .appendTextCell(localise(OrganisationType.RHY));
+        // Append titles of statistic items.
+        sheetWrapper.appendRow()
+                .appendTextCell(i18n("rhyNumber"), HorizontalAlignment.RIGHT)
+                .appendTextCell(i18n(OrganisationType.RHY));
+        appendStatisticItemTitles(sheetWrapper, statisticGroups);
 
-        statisticGroups.forEach(group -> group.getItemMetadatas().forEach(itemMetadata -> {
-            sheetWrapper.appendTextCell(localise(itemMetadata.getTitle()));
-        }));
+        allRkaStatistics.forEach(rkaStats -> appendRkaStatistics(sheetWrapper, statisticGroups, rkaStats));
 
-        final List<AnnualStatisticsExportItemDTO> allRkaAggregates = new ArrayList<>();
+        // Append summary line which is an aggregate of all RKA summaries.
 
-        rhyGrouping.forEach((rkaCode, rhyList) -> {
+        sheetWrapper.appendRow()
+                .appendEmptyCell(1)
+                .appendTextCell(i18n("totalAll").toUpperCase());
 
-            final LocalisedString rkaName = rhyList.get(0).getParentOrganisationName();
-            sheetWrapper.appendRow().appendEmptyCell(1).appendTextCellBold(localise(rkaName).toUpperCase());
+        final List<AnnualStatisticsExportDTO> rkaSummaries =
+                F.mapNonNullsToList(allRkaStatistics, rkaStats -> rkaStats.summary);
 
-            final AnnualStatisticsExportItemDTO aggregate = aggregate(rhyList);
-            aggregate.setOrganisationName(localiser.getLocalisedString("total"));
-
-            allRkaAggregates.add(aggregate);
-
-            Stream.concat(rhyList.stream(), Stream.of(aggregate))
-                    .forEach(dto -> appendRowForRkaGroupedLayout(dto, sheetWrapper, statisticGroups));
-
-            sheetWrapper.appendRow();
-        });
-
-        final AnnualStatisticsExportItemDTO allRhysAggregate = aggregate(allRkaAggregates);
-        allRhysAggregate.setOrganisationName(getUppercaseLocalisedString("totalAll"));
-
-        appendRowForRkaGroupedLayout(allRhysAggregate, sheetWrapper, statisticGroups);
+        appendStatistics(sheetWrapper, statisticGroups, AnnualStatisticsExportDTO.aggregate(rkaSummaries));
 
         sheetWrapper.autoSizeColumns();
     }
 
-    private void appendRowForRkaGroupedLayout(final AnnualStatisticsExportItemDTO dto,
-                                              final ExcelHelper sheetWrapper,
-                                              final List<AnnualStatisticItemGroup> groups) {
+    private void appendRkaStatistics(final ExcelHelper sheetWrapper,
+                                     final List<AnnualStatisticGroup> groups,
+                                     final RkaStatistics rkaStatistics) {
 
-        sheetWrapper
-                .appendRow()
-                .appendTextCell(dto.getOrganisationCode(), HorizontalAlignment.RIGHT)
-                .appendTextCell(localise(dto.getOrganisationName()));
+        final LocalisedString rkaName = rkaStatistics.summary.getOrganisation().getNameLocalisation();
 
-        groups.forEach(group -> group.getItemMetadatas().forEach(itemMetadata -> {
-            itemMetadata.populateExcelCell(sheetWrapper, dto);
-        }));
+        sheetWrapper.appendRow()
+                .appendEmptyCell(1)
+                .appendTextCellBold(i18n(rkaName).toUpperCase());
+
+        rkaStatistics.rhyList.forEach(rhyStatistics -> {
+            appendRhyStatisticsForRkaGroupedLayout(sheetWrapper, groups, rhyStatistics);
+        });
+
+        // Append RKA summary line.
+
+        sheetWrapper.appendRow()
+                .appendEmptyCell(1)
+                .appendTextCell(i18n("total"));
+
+        appendStatistics(sheetWrapper, groups, rkaStatistics.summary);
+
+        sheetWrapper.appendRow();
     }
 
-    private void createTransposedSheets(final Workbook workbook) {
-        statisticGroups.stream()
-                .collect(groupingBy(group -> group.getCategory(), TreeMap::new, toList()))
-                .forEach((category, groups) -> createTransposedSheet(workbook, category, groups));
+    private void appendRhyStatisticsForRkaGroupedLayout(final ExcelHelper sheetWrapper,
+                                                        final List<AnnualStatisticGroup> groups,
+                                                        final AnnualStatisticsExportDTO statistics) {
+
+        final OrganisationNameDTO rhy = statistics.getOrganisation();
+
+        sheetWrapper.appendRow()
+                .appendTextCell(rhy.getOfficialCode(), HorizontalAlignment.RIGHT)
+                .appendTextCell(i18n(rhy.getNameLocalisation()));
+
+        appendStatistics(sheetWrapper, groups, statistics);
     }
 
-    private void createTransposedSheet(final Workbook workbook,
-                                       final AnnualStatisticsCategory category,
-                                       final List<AnnualStatisticItemGroup> groups) {
+    private void appendStatisticGroupTitleRow(final ExcelHelper sheetWrapper, final List<AnnualStatisticGroup> groups) {
+        extractTitlesAndNumberOfItems(groups).forEach((title, numberOfItems) -> {
+            sheetWrapper.appendTextCellBold(title).appendEmptyCell(numberOfItems - 1);
+        });
+    }
 
-        final ExcelHelper sheetWrapper = createCommonHeaderRowsForTransposedLayout(workbook, category);
+    private LinkedHashMap<String, Integer> extractTitlesAndNumberOfItems(final List<AnnualStatisticGroup> groups) {
+        return groups.stream().collect(toMap(this::i18n, grp -> grp.getItems().size(), LinkedHashMap::new));
+    }
+
+    private void appendStatisticItemTitles(final ExcelHelper sheetWrapper, final List<AnnualStatisticGroup> groups) {
+        streamItems(groups).map(this::i18n).forEach(sheetWrapper::appendTextCell);
+    }
+
+    private static void appendStatistics(final ExcelHelper sheetWrapper,
+                                         final List<AnnualStatisticGroup> groups,
+                                         final AnnualStatisticsExportDTO statistics) {
+
+        streamItems(groups).forEach(item -> populateExcelCell(sheetWrapper, item, statistics));
+    }
+
+    private void addSheetForTransposedLayout(final Workbook workbook,
+                                             final AnnualStatisticsCategory category,
+                                             final List<AnnualStatisticGroup> groups) {
+
+        final ExcelHelper sheetWrapper = appendHeaderRowsForTransposedLayout(workbook, category);
 
         groups.forEach(group -> {
 
-            sheetWrapper.appendTextCellBold(localise(group.getTitle())).appendRow();
+            sheetWrapper.appendTextCellBold(i18n(group)).appendRow();
 
-            group.getItemMetadatas().forEach(itemMetadata -> {
-                sheetWrapper.appendTextCell(localise(itemMetadata.getTitle()));
-                rhyList.forEach(rhy -> itemMetadata.populateExcelCell(sheetWrapper, rhy));
+            group.getItems().forEach(item -> {
+                sheetWrapper.appendTextCell(i18n(item));
+                rhyList.forEach(rhy -> populateExcelCell(sheetWrapper, item, rhy));
                 sheetWrapper.appendRow();
             });
 
@@ -235,14 +273,14 @@ public class AnnualStatisticsExcelView extends AbstractXlsxView {
         sheetWrapper.autoSizeColumns();
     }
 
-    private ExcelHelper createCommonHeaderRowsForTransposedLayout(final Workbook workbook,
-                                                                  final AnnualStatisticsCategory category) {
+    private ExcelHelper appendHeaderRowsForTransposedLayout(final Workbook workbook,
+                                                            final AnnualStatisticsCategory category) {
 
-        final ExcelHelper sheetWrapper = new ExcelHelper(workbook, localise(category))
+        final ExcelHelper sheetWrapper = new ExcelHelper(workbook, i18n(category))
                 // Freeze title column (the first one in a sheet).
-                .createFreezePane(1, 0)
+                .withFreezePane(1, 0)
                 .appendRow()
-                .appendTextCell(localise("financialYear"));
+                .appendTextCell(i18n("financialYear"));
 
         final int numRhys = rhyList.size();
 
@@ -250,34 +288,55 @@ public class AnnualStatisticsExcelView extends AbstractXlsxView {
             sheetWrapper.appendNumberCell(calendarYear);
         }
 
-        sheetWrapper.appendRow().appendTextCell(localise(OrganisationType.RHY));
+        sheetWrapper.appendRow().appendTextCell(i18n(OrganisationType.RHY));
 
-        for (final AnnualStatisticsExportItemDTO rhy : rhyList) {
-            sheetWrapper.appendTextCell(localise(rhy.getOrganisationName()), HorizontalAlignment.RIGHT);
+        for (final AnnualStatisticsExportDTO stats : rhyList) {
+            sheetWrapper.appendTextCell(i18n(stats.getOrganisation().getNameLocalisation()), HorizontalAlignment.RIGHT);
         }
 
-        sheetWrapper.appendRow().appendTextCell(localise("rhyNumber"));
+        sheetWrapper.appendRow().appendTextCell(i18n("rhyNumber"));
 
-        for (final AnnualStatisticsExportItemDTO rhy : rhyList) {
-            sheetWrapper.appendTextCell(localise(rhy.getOrganisationCode()), HorizontalAlignment.RIGHT);
+        for (final AnnualStatisticsExportDTO stats : rhyList) {
+            sheetWrapper.appendTextCell(i18n(stats.getOrganisation().getOfficialCode()), HorizontalAlignment.RIGHT);
         }
 
         return sheetWrapper.appendRow().appendRow();
     }
 
-    private LocalisedString getUppercaseLocalisedString(final String message) {
-        return localiser.getLocalisedString(message).transform(s -> s == null ? null : s.toUpperCase());
+    private static Stream<AnnualStatisticItem> streamItems(final List<AnnualStatisticGroup> groups) {
+        return groups.stream().flatMap(group -> group.getItems().stream());
     }
 
-    private String localise(final String value) {
+    private String i18n(final String value) {
         return localiser.getTranslation(value);
     }
 
-    private String localise(final LocalisedString value) {
-        return capitalize(localiser.getTranslation(value));
+    private String i18n(final LocalisedString value) {
+        return localiser.getTranslation(value);
     }
 
-    private <E extends Enum<E> & LocalisedEnum> String localise(final E value) {
+    private <E extends Enum<E> & LocalisedEnum> String i18n(final E value) {
         return localiser.getTranslation(value);
+    }
+
+    private static void populateExcelCell(final ExcelHelper sheetWrapper,
+                                          final AnnualStatisticItem item,
+                                          final AnnualStatisticsExportDTO statistics) {
+        item.extractValue(statistics)
+                .peek(text -> sheetWrapper.appendTextCell(text, HorizontalAlignment.RIGHT))
+                .peekLeft(sheetWrapper::appendNumberCell);
+    }
+
+    private static class RkaStatistics {
+
+        final List<AnnualStatisticsExportDTO> rhyList;
+        final AnnualStatisticsExportDTO summary;
+
+        RkaStatistics(@Nonnull final List<AnnualStatisticsExportDTO> rhyList) {
+            this.rhyList = requireNonNull(rhyList);
+
+            this.summary = AnnualStatisticsExportDTO.aggregate(rhyList);
+            this.summary.setOrganisation(rhyList.get(0).getParentOrganisation());
+        }
     }
 }

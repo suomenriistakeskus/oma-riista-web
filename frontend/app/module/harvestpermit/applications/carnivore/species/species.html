@@ -1,0 +1,70 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title">
+            <span translate="harvestpermit.wizard.carnivore.species.title"></span>
+        </p>
+        <span translate="harvestpermit.wizard.carnivore.species.instructions"></span>
+    </div>
+</div>
+<hr class="invisible">
+<form name="carnivoreSpeciesAmountForm" r-force-show-errors-check-validity>
+
+    <div class="row">
+        <div class="col-xs-6">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th translate="harvestpermit.wizard.carnivore.species.species"></th>
+                    <th translate="harvestpermit.wizard.carnivore.species.huntingPeriod"></th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><span ng-bind="$ctrl.spa.gameSpeciesCode | translateSpeciesCode"></span></td>
+                    <td><span ng-bind="$ctrl.spa.begin | date:'dd.MM.yyyy'"></span> - <span
+                            ng-bind="$ctrl.spa.end | date:'dd.MM.yyyy'"></span></td>
+                    <td><span class="fa fa-2x fa-edit text-primary pull-right" ng-click="$ctrl.editPeriod()"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-xs-6 col-md-3">
+            <div class="form-group" show-errors>
+                <label class="control-label" for="amount"
+                       translate="harvestpermit.wizard.carnivore.species.speciesAmount"></label>
+
+                <div class="input-group">
+                    <input type="number" class="form-control no-spinner"
+                           name="amount"
+                           id="amount"
+                           ng-model="$ctrl.spa.amount"
+                           required
+                           min="1" max="99999" step="1"
+                           r-click-select>
+                    <div class="input-group-addon">
+                        <span translate="harvestpermit.pcs"></span>
+                    </div>
+                </div>
+                <p class="help-block has-error"
+                   ng-show="carnivoreSpeciesAmountForm.$invalid"
+                   ng-messages="carnivoreSpeciesAmountForm.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+</form>
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(carnivoreSpeciesAmountForm)"
+        previous="$ctrl.previous(carnivoreSpeciesAmountForm)"
+        next-disabled="$ctrl.nextDisabled(carnivoreSpeciesAmountForm)"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

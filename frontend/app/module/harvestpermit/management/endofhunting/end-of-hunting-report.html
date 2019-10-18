@@ -10,7 +10,7 @@
 
     <div ng-if="!$ctrl.hasHarvests" class="alert alert-warning" translate="harvestpermit.noHarvests"></div>
 
-    <permit-species-amount-usage species-amounts="$ctrl.report.speciesAmounts"></permit-species-amount-usage>
+    <permit-species-amount-usage permit-usage="$ctrl.report.speciesAmounts"></permit-species-amount-usage>
 
     <hr ng-if="$ctrl.hasHarvests"/>
 
@@ -29,7 +29,7 @@
             <tr ng-repeat="harvest in $ctrl.report.harvests track by harvest.id">
                 <td class="col-xs-2" ng-bind="::harvest.pointOfTime | date:'d.M.yyyy HH:mm'"></td>
                 <td class="col-xs-2">
-                    <span name-translated="harvest.gameSpecies.name"></span>
+                    <span ng-bind="::harvest.gameSpeciesCode | translateSpeciesCode"></span>
                     <span ng-bind="::harvest.totalSpecimenAmount"></span>
                     <span translate="harvestpermit.pcs"></span>
                 </td>
@@ -44,6 +44,20 @@
             </tr>
             </tbody>
         </table>
+    </div>
+    <div class="form-group">
+        <div ng-show="$ctrl.showAdditionalComments">
+            <label for="endOfHuntingReportComments" class="control-label">
+                <span translate="gamediary.form.moderatorDescription"></span>
+            </label>
+            <textarea name="endOfHuntingReportComments"
+                  id="endOfHuntingReportComments"
+                  class="form-control"
+                  rows="6"
+                  ng-model="$ctrl.report.endOfHuntingReportComments"
+                  ng-disabled="!$ctrl.isModerator || $ctrl.report.harvestReportState === 'APPROVED'">
+            </textarea>
+        </div>
     </div>
 </div>
 

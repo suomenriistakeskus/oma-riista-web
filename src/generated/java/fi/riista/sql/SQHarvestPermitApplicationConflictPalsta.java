@@ -1,19 +1,18 @@
 package fi.riista.sql;
 
-import static com.querydsl.core.types.PathMetadataFactory.*;
-
-import com.querydsl.core.types.dsl.*;
-
-import com.querydsl.core.types.PathMetadata;
-import javax.annotation.Generated;
 import com.querydsl.core.types.Path;
-
+import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.dsl.BooleanPath;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.sql.ColumnMetadata;
-import java.sql.Types;
-
 import com.querydsl.sql.spatial.RelationalPathSpatial;
 
-import com.querydsl.spatial.*;
+import javax.annotation.Generated;
+import java.sql.Types;
+
+import static com.querydsl.core.types.PathMetadataFactory.forVariable;
 
 
 
@@ -26,6 +25,8 @@ public class SQHarvestPermitApplicationConflictPalsta extends RelationalPathSpat
     private static final long serialVersionUID = 1048292246;
 
     public static final SQHarvestPermitApplicationConflictPalsta harvestPermitApplicationConflictPalsta = new SQHarvestPermitApplicationConflictPalsta("harvest_permit_application_conflict_palsta");
+
+    public final NumberPath<Long> batchId = createNumber("batchId", Long.class);
 
     public final NumberPath<Double> conflictAreaSize = createNumber("conflictAreaSize", Double.class);
 
@@ -59,6 +60,8 @@ public class SQHarvestPermitApplicationConflictPalsta extends RelationalPathSpat
 
     public final com.querydsl.sql.PrimaryKey<SQHarvestPermitApplicationConflictPalsta> harvestPermitApplicationConflictPalstaPkey = createPrimaryKey(harvestPermitApplicationConflictPalstaId);
 
+    public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplicationConflictBatch> harvestPermitApplicationConflictPalstaBatchIdFk = createForeignKey(batchId, "harvest_permit_application_conflict_batch_id");
+
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplication> harvestPermitApplicationConflictPalstaFirstFk = createForeignKey(firstApplicationId, "harvest_permit_application_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermitApplication> harvestPermitApplicationConflictPalstaSecondFk = createForeignKey(secondApplicationId, "harvest_permit_application_id");
@@ -89,6 +92,7 @@ public class SQHarvestPermitApplicationConflictPalsta extends RelationalPathSpat
     }
 
     public void addMetadata() {
+        addMetadata(batchId, ColumnMetadata.named("batch_id").withIndex(16).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(conflictAreaSize, ColumnMetadata.named("conflict_area_size").withIndex(15).ofType(Types.DOUBLE).withSize(17).withDigits(17));
         addMetadata(consistencyVersion, ColumnMetadata.named("consistency_version").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(createdByUserId, ColumnMetadata.named("created_by_user_id").withIndex(3).ofType(Types.BIGINT).withSize(19));

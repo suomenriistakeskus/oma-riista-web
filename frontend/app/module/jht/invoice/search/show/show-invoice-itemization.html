@@ -1,0 +1,11 @@
+<p class="column-title">
+    <span translate="invoice.items"></span>
+</p>
+
+<div class="invoice-text">
+    <div>
+        <span translate="harvestpermit.decision.sectionId.decision"></span>
+        <span ng-bind="::$ctrl.invoice.permitNumber"></span>
+    </div>
+    <div ng-bind="'invoice.invoiceTypes.' + $ctrl.invoice.type | translate"></div>
+</div>

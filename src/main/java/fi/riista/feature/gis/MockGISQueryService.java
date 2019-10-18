@@ -10,6 +10,7 @@ import fi.riista.feature.common.repository.BaseRepository;
 import fi.riista.feature.common.repository.MunicipalityRepository;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
+import fi.riista.feature.gis.metsahallitus.MetsahallitusAreaLookupResult;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.integration.mml.dto.MMLRekisteriyksikonTietoja;
@@ -77,6 +78,11 @@ public class MockGISQueryService implements GISQueryService {
     }
 
     @Override
+    public MetsahallitusAreaLookupResult findMetsahallitusAreas(@Nonnull final GeoLocation geoLocation) {
+        return new MetsahallitusAreaLookupResult(null, null);
+    }
+
+    @Override
     public Optional<MMLRekisteriyksikonTietoja> findPropertyByLocation(final GISPoint gisPoint) {
         LOG.warn("Using mock implementation to find property!");
         return PROPERTY_NOT_FOUND.equals(new GeoLocation(gisPoint.getLatitude(), gisPoint.getLongitude()))
@@ -89,15 +95,6 @@ public class MockGISQueryService implements GISQueryService {
         return PROPERTY_NOT_FOUND.equals(geoLocation) ? Optional.empty() : Optional.of(PROPERTY_QUERY_RESULT);
     }
 
-    @Override
-    public Integer findMetsahallitusHirviAlueId(@Nonnull GeoLocation geoLocation, int year) {
-        return null;
-    }
-
-    @Override
-    public Integer findMetsahallitusPienriistaAlueId(@Nonnull GeoLocation geoLocation, int year) {
-        return null;
-    }
 
     @Override
     public Municipality findMunicipality(@Nonnull GeoLocation geoLocation) {

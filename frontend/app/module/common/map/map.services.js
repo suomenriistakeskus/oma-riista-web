@@ -20,7 +20,7 @@ angular.module('app.common.map.services', [])
 
         this.limitDefaultZoom = function (currentZoom) {
             var defaultZoom = 11;
-            var minZoom = 7;
+            var minZoom = 5;
             var maxZoom = 16;
 
             if (!isFinite(currentZoom)) {
@@ -196,11 +196,33 @@ angular.module('app.common.map.services', [])
         };
     })
 
-    .service('MapLayers', function (WGS84, MapState, $translate) {
-        var maxBounds = {
-            southWest: WGS84.fromETRS(6291456, -548576),
-            northEast: WGS84.fromETRS(8388608, 1548576)
+    .service('SelectedMapLayers', function (MapState) {
+        this.activateSelectedBaseLayer = function (layers) {
+            var selectedLayerName = MapState.getSelectedLayerName();
+            var selectedLayer = _.find(layers, function (layer) {
+                return layer.name === selectedLayerName;
+            });
+
+            _.forEach(layers, function (layer) {
+                layer.top = false;
+            });
+
+            if (selectedLayer) {
+                selectedLayer.top = true;
+            }
         };
+
+        this.activateSelectedOverlays = function (layers) {
+            var selectedOverlayNames = MapState.getSelectedOverlayNames();
+
+            _.forEach(layers, function (overlay) {
+                overlay.visible = _.includes(selectedOverlayNames, overlay.name);
+            });
+        };
+    })
+
+    .service('BaseMapLayers', function (MapBounds, $translate) {
+        var maxBounds = MapBounds.getBoundsOfMmlBasemap();
 
         var mmlUrlTemplate = _.template('https://kartta.riista.fi/tms/1.0.0/<%= layer %>/EPSG_3857/{z}/{x}/{y}.png');
         var mmlUrls = {
@@ -230,14 +252,18 @@ angular.module('app.common.map.services', [])
                 }
             };
         };
+    })
 
+    .service('VectorMapLayers', function ($translate, MapBounds) {
+        var maxBounds = MapBounds.getBoundsOfMmlBasemap();
         var vectorLayerTemplate = _.template('https://kartta.riista.fi/vector/<%= layer %>/{z}/{x}/{y}');
 
-        this.createVectorLayer = function (layerName, style) {
+        this.createLayer = function (vectorGridLayerName, style) {
             var vectorTileLayerStyles = {};
-            vectorTileLayerStyles[layerName] = style;
+            vectorTileLayerStyles[vectorGridLayerName] = style;
 
-            return L.vectorGrid.protobuf(vectorLayerTemplate({layer: layerName}), {
+            var layer = L.vectorGrid.protobuf(vectorLayerTemplate({layer: vectorGridLayerName}), {
+                interactive: true,
                 pane: 'overlayPane',
                 updateWhenZooming: true,
                 keepBuffer: 10,
@@ -246,41 +272,30 @@ angular.module('app.common.map.services', [])
                 bounds: L.latLngBounds(maxBounds.southWest, maxBounds.northEast),
                 vectorTileLayerStyles: vectorTileLayerStyles
             });
-        };
 
-        this.activateSelectedBaseLayer = function (layers) {
-            var selectedLayerName = MapState.getSelectedLayerName();
-            var selectedLayer = _.find(layers, function (layer) {
-                return layer.name === selectedLayerName;
+            var popup = L.popup({
+                closeButton: false,
+                closeOnClick: true
             });
 
-            _.each(layers, function (layer) {
-                layer.top = false;
+            layer.on('mouseover', function (e) {
+                var map = e.target._map;
+                var name = _.get(e.layer.properties, 'KOHDE_NIMI', '');
+
+                if (!_.isEmpty(name)) {
+                    L.DomEvent.stopPropagation(e);
+                    popup.setContent(name).setLatLng(e.latlng).openOn(map);
+                }
             });
 
-            if (selectedLayer) {
-                selectedLayer.top = true;
-            }
+            return {
+                name: $translate.instant('global.map.overlay.' + vectorGridLayerName),
+                type: 'custom',
+                layer: layer
+            };
         };
 
-        this.activateSelectedOverlays = function (layers) {
-            var selectedOverlayNames = MapState.getSelectedOverlayNames();
-
-            _.each(layers, function (overlay) {
-                overlay.visible = _.contains(selectedOverlayNames, overlay.name);
-            });
-        };
-    })
-
-    .service('MapDefaults', function (MapLayers) {
-        var mapBaseLayers = {
-            terrain: MapLayers.createLayer('terrain'),
-            background: MapLayers.createLayer('background'),
-            aerial: MapLayers.createLayer('aerial'),
-            empty: MapLayers.createLayer('empty')
-        };
-
-        function createRandomColourFunction(kohdeCount) {
+        this.createRandomColourFunction = function (kohdeCount) {
             return function (feature) {
                 var kohdeId = _.get(feature, 'KOHDE_ID', 0);
 
@@ -295,44 +310,56 @@ angular.module('app.common.map.services', [])
                     color: 'black'
                 };
             };
-        }
+        };
+    })
+
+    .service('MapDefaults', function (BaseMapLayers, VectorMapLayers, SelectedMapLayers) {
+        var mapBaseLayers = {
+            terrain: BaseMapLayers.createLayer('terrain'),
+            background: BaseMapLayers.createLayer('background'),
+            aerial: BaseMapLayers.createLayer('aerial'),
+            empty: BaseMapLayers.createLayer('empty')
+        };
 
         var mapOverlays = {
-            hirvi: {
-                type: 'custom',
-                name: 'Metsähallitus hirvi 2018',
-                layer: MapLayers.createVectorLayer('hirvi', createRandomColourFunction(348))
-            },
-            pienriista: {
-                type: 'custom',
-                name: 'Metsähallitus pienriista 2018',
-                layer: MapLayers.createVectorLayer('pienriista', createRandomColourFunction(123))
-            },
-            valtionmaat: {
-                type: 'custom',
-                name: 'Valtionmaat',
-                layer: MapLayers.createVectorLayer('metsahallitus', {
-                    fill: true,
-                    fillColor: 'blue',
-                    fillOpacity: 0.25,
-                    weight: 0.75,
-                    color: 'black'
-                })
-            },
-            rhy: {
-                type: 'custom',
-                name: 'RHY rajat',
-                layer: MapLayers.createVectorLayer('rhy', {
-                    fill: false,
-                    weight: 5.0,
-                    color: 'blue'
-                })
-            }
+            // Style definition contains hard-coded counts of known distinct layer features
+            hirvi: VectorMapLayers.createLayer('hirvi', VectorMapLayers.createRandomColourFunction(348)),
+            pienriista: VectorMapLayers.createLayer('pienriista', VectorMapLayers.createRandomColourFunction(123)),
+            metsahallitus: VectorMapLayers.createLayer('metsahallitus', {
+                fill: true,
+                fillColor: 'blue',
+                fillOpacity: 0.25,
+                weight: 0.75,
+                color: 'black'
+            }),
+            riistakolmiot: VectorMapLayers.createLayer('riistakolmiot', {
+                fill: true,
+                fillColor: 'red',
+                fillOpacity: 0.25,
+                weight: 0.75,
+                color: 'black'
+            }),
+            rhy: VectorMapLayers.createLayer('rhy', {
+                fill: false,
+                weight: 5.0,
+                color: 'blue'
+            })
         };
 
         this.create = function (cfg) {
-            MapLayers.activateSelectedBaseLayer(mapBaseLayers);
-            MapLayers.activateSelectedOverlays(mapOverlays);
+            var hideOverlays = _.get(cfg, 'hideOverlays', false);
+            var scrollWheelZoom = _.get(cfg, 'scrollWheelZoom', true);
+            var doubleClickZoom = _.get(cfg, 'doubleClickZoom', true);
+
+            if (hideOverlays) {
+                _.forEach(mapOverlays, function (overlay) {
+                    overlay.visible = false;
+                });
+            } else {
+                SelectedMapLayers.activateSelectedOverlays(mapOverlays);
+            }
+
+            SelectedMapLayers.activateSelectedBaseLayer(mapBaseLayers);
 
             var defaults = angular.extend({}, {
                 controls: {
@@ -364,6 +391,8 @@ angular.module('app.common.map.services', [])
                 // Disable the animation on double-click and other zooms.
                 zoomAnimation: false,
                 fadeAnimation: false,
+                scrollWheelZoom: scrollWheelZoom,
+                doubleClickZoom: doubleClickZoom,
                 inertia: true,
                 minZoom: 5,
                 attributionControl: true,
@@ -416,7 +445,7 @@ angular.module('app.common.map.services', [])
             };
 
             if (angular.isArray(mapEvents)) {
-                _.each(mapEvents, function (e) {
+                _.forEach(mapEvents, function (e) {
                     broadcastEvents.map.enable.push(e);
                 });
             }
@@ -425,7 +454,7 @@ angular.module('app.common.map.services', [])
         };
     })
 
-    .service('GIS', function ($http, MapBounds, $rootScope, WGS84) {
+    .service('GIS', function ($http, MapBounds, WGS84) {
         var self = this;
 
         this.getPropertyIdentifierForGeoLocation = function (geoLocation) {
@@ -490,13 +519,6 @@ angular.module('app.common.map.services', [])
             });
         };
 
-        this.getRhyMembershipBoundsOrNull = function () {
-            if ($rootScope.account && $rootScope.account.rhyMembership) {
-                return MapBounds.getRhyBounds($rootScope.account.rhyMembership.officialCode);
-            }
-            return null;
-        };
-
         this.getPropertyPolygonByCode = function (propertyIdentifier) {
             var params = {propertyIdentifier: propertyIdentifier};
 
@@ -539,31 +561,144 @@ angular.module('app.common.map.services', [])
         };
     })
 
-    .service('MapPdfModal', function ($uibModal, FormPostService) {
-        this.printArea = function (url) {
-            return $uibModal.open({
-                controller: ModalController,
-                templateUrl: 'common/map/map-pdf.html',
-                controllerAs: '$ctrl',
-                bindToController: true,
-                resolve: {
-                    url: _.constant(url)
+    .service('PolygonService', function ($http) {
+        var self = this;
+
+        function geometryToPolygons(data) {
+            if (!data) {
+                return [];
+            }
+
+            switch (data.type) {
+                case 'Polygon':
+                    // Keep exterior rings only
+                    return [_.head(data.coordinates)];
+
+                case 'MultiPolygon':
+                    return _(data.coordinates).map(_.head).value();
+
+                case 'GeometryCollection':
+                    return _.chain(data.geometries)
+                        .map(geometryToPolygons)
+                        .flatten()
+                        .value();
+
+                default:
+                    return [];
+            }
+        }
+
+        this.geometryToPolygons = geometryToPolygons;
+
+        function resultToMultiPolygon(result, defaultValue) {
+            return result && typeof result[0][0] === 'number' ? [result] : (result || defaultValue);
+        }
+
+        function isPointInsidePolygon(polygon, point) {
+            var oddNodes = false, edgeCounter = 1,
+                current = polygon[0], next = polygon[1],
+                pointX = point[0], pointY = point[1];
+
+            do {
+                var currentX = current[0];
+                var currentY = current[1];
+                var nextX = next[0];
+                var nextY = next[1];
+
+                if ((currentY < pointY && nextY >= pointY ||
+                    nextY < pointY && currentY >= pointY) &&
+                    (currentX <= pointX || nextX <= pointX)) {
+                    /* jshint ignore:start */
+                    oddNodes ^= (currentX + (pointY - currentY) /
+                        (nextY - currentY) * (nextX - currentX) < pointX);
+                    /* jshint ignore:end */
                 }
+
+                edgeCounter++;
+                current = next;
+                next = edgeCounter < polygon.length ? polygon[edgeCounter] : polygon[0];
+            } while (current !== polygon[0]);
+
+            return !!oddNodes;
+        }
+
+        function isPolygonInsidePolygon(a, b) {
+            return _.every(a, function (point) {
+                return isPointInsidePolygon(b, point);
+            });
+        }
+
+        this.difference = function (clipPolygon, bboxPolygons) {
+            return _(bboxPolygons).map(function (sourcePolygon) {
+                // Clipping requires intersection -> clip region inside -> no action
+                if (isPolygonInsidePolygon(clipPolygon, sourcePolygon)) {
+                    return [sourcePolygon];
+                }
+
+                // Clipping requires intersection -> clip region outside -> remove region
+                if (isPolygonInsidePolygon(sourcePolygon, clipPolygon)) {
+                    return null;
+                }
+
+                return resultToMultiPolygon(greinerHormann.diff(sourcePolygon, clipPolygon), [sourcePolygon]);
+            }).filter().flatten().value();
+        };
+
+        this.intersection = function (clipPolygon, bboxPolygons) {
+            return _(bboxPolygons).map(function (sourcePolygon) {
+                return resultToMultiPolygon(greinerHormann.intersection(sourcePolygon, clipPolygon));
+            }).filter().flatten().value();
+        };
+
+        this.joinPolygons = function (inputPolygons) {
+            var requestData = {
+                type: 'FeatureCollection',
+                features: _.map(inputPolygons, function (p) {
+                    return L.GeoJSON.asFeature({
+                        type: 'Polygon',
+                        coordinates: [p]
+                    });
+                })
+            };
+
+            return $http.post('/api/v1/gis/polygonUnion', requestData).then(function (response) {
+                return self.geometryToPolygons(response.data);
+            });
+        };
+    })
+
+    .service('MapPdfModal', function ($uibModal, FormPostService) {
+        var self = this;
+
+        this.printArea = function (url) {
+            self.showModal().then(function (pdfParameters) {
+                FormPostService.submitFormUsingBlankTarget(url, pdfParameters);
             });
         };
 
-        function ModalController($uibModalInstance, url) {
+        this.showModal = function () {
+            var modalInstance = $uibModal.open({
+                controller: ModalController,
+                templateUrl: 'common/map/map-pdf.html',
+                controllerAs: '$ctrl',
+                bindToController: true
+            });
+
+            return modalInstance.result;
+        };
+
+        function ModalController($uibModalInstance) {
             var $ctrl = this;
 
             $ctrl.request = {
                 paperSize: 'A4',
-                paperDpi: '300',
-                paperOrientation: 'PORTRAIT'
+                paperOrientation: 'PORTRAIT',
+                layer: 'MAASTOKARTTA',
+                overlay: 'NONE'
             };
 
             $ctrl.save = function () {
-                $uibModalInstance.close();
-                FormPostService.submitFormUsingBlankTarget(url, $ctrl.request);
+                $uibModalInstance.close($ctrl.request);
             };
 
             $ctrl.cancel = function () {

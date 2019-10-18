@@ -2,17 +2,6 @@
 
 angular.module('app.moosepermit.services', [])
 
-    .service('MoosePermitSelection', function () {
-        var self = this;
-
-        self.permitId = null;
-
-        this.updateSelectedPermitId = function (stateParams) {
-            self.permitId = _.parseInt(stateParams.permitId);
-            return self.permitId;
-        };
-    })
-
     .factory('MoosePermits', function ($http, $resource) {
         var apiPrefix = '/api/v1/moosepermit';
 
@@ -88,34 +77,6 @@ angular.module('app.moosepermit.services', [])
         });
     })
 
-    .factory('MoosePermitEndOfHuntingReport', function ($resource) {
-        var apiPrefix = '/api/v1/harvestreport/moosepermit/:permitId/:speciesCode';
-
-        return $resource(apiPrefix, {permitId: "@permitId", speciesCode: "@speciesCode"}, {
-            noHarvests: {
-                method: 'POST',
-                url: apiPrefix + '/noharvests'
-            }
-        });
-    })
-
-    .service('MoosePermitPdfUrl', function () {
-        this.get = function (permitNumber) {
-            return '/api/v1/moosepermit/pdf?permitNumber=' + permitNumber;
-        };
-    })
-    .service('LukeUrlService', function ($httpParamSerializer) {
-        this.get = function (permitId, clubId, lukeOrg, lukePresentation, file) {
-            var url = '/api/v1/moosepermit/' + permitId + '/luke-reports';
-
-            return url + '?' + $httpParamSerializer({
-                clubId: clubId,
-                org: lukeOrg,
-                presentation: lukePresentation,
-                fileName: file
-            });
-        };
-    })
     .service('MoosePermitLeadersService', function (MoosePermits, $uibModal) {
         this.showLeaders = function (params) {
             return $uibModal.open({
@@ -158,50 +119,4 @@ angular.module('app.moosepermit.services', [])
                 $uibModalInstance.close();
             };
         }
-    })
-    .service('MoosePermitCounterService', function () {
-        var countHarvestsBy = function (permit, key) {
-            if (key === 'adult') {
-                return _.sum(permit.harvestCounts, 'adultMales') + _.sum(permit.harvestCounts, 'adultFemales');
-            }
-            if (key === 'young') {
-                return _.sum(permit.harvestCounts, 'youngMales') + _.sum(permit.harvestCounts, 'youngFemales');
-            }
-            return _.sum(permit.harvestCounts, key);
-        };
-
-        var countAllocateBy = function (allocations, key) {
-            return _.sum(allocations, key);
-        };
-
-        var countSummaryForPartnersTable = function (permit, key) {
-            return _.sum(permit.summaryForPartnersTable, key);
-        };
-
-        var countMaleAdultPercentage = function (func) {
-            var m = func('adultMales');
-            var f = func('adultFemales');
-            return _.round(100 * m / (m + f)) || 0;
-        };
-
-        var countYoungPercentage = function (func) {
-            var m = func('adultMales');
-            var f = func('adultFemales');
-            var y = func('young');
-            return _.round(100 * y / (m + f + y)) || 0;
-        };
-
-        this.create = function (permit, allocations) {
-            var harvestsBy = _.partial(countHarvestsBy, permit);
-            var allocatedBy = _.partial(countAllocateBy, allocations);
-            return {
-                harvestsBy: harvestsBy,
-                allocatedBy: allocatedBy,
-                maleAdultPercentage: _.partial(countMaleAdultPercentage, allocatedBy),
-                youngPercentage: _.partial(countYoungPercentage, allocatedBy),
-                maleAdultHarvestPercentage: _.partial(countMaleAdultPercentage, harvestsBy),
-                youngHarvestPercentage: _.partial(countYoungPercentage, harvestsBy),
-                summaryForPartnersTable: _.partial(countSummaryForPartnersTable, permit)
-            };
-        };
     });

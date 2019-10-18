@@ -2,16 +2,37 @@ package fi.riista.feature.organization.calendar;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.util.DateUtil;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
-import javax.persistence.*;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
+import static fi.riista.util.DateUtil.today;
 
 @Entity
 @Access(value = AccessType.FIELD)
 public class CalendarEvent extends LifecycleEntity<Long> {
+
+    public static final Days DAYS_OF_EVENT_MODIFIABLE_AFTER_CREATION = Days.ONE;
 
     private Long id;
 
@@ -46,6 +67,18 @@ public class CalendarEvent extends LifecycleEntity<Long> {
     @Column(columnDefinition = "text")
     private String description;
 
+    @Column(nullable = false)
+    private boolean publicVisibility;
+
+    @Column(nullable = false)
+    private boolean excludedFromStatistics;
+
+    @Column
+    private Integer participants;
+
+    @OneToMany(mappedBy = "calendarEvent")
+    private Set<AdditionalCalendarEvent> additionalCalendarEvents = new HashSet<>();
+
     public CalendarEvent() {
     }
 
@@ -58,6 +91,38 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         this.venue = venue;
         this.description = description;
     }
+
+    @Transient
+    public boolean isLockedAsPastCalendarEvent() {
+        if (calendarEventType == null) {
+            return false;
+        }
+        final LocalDate today = today();
+
+        if (today.isAfter(getDateAsLocalDate())) {
+            final LocalDate creationDate = DateUtil.toLocalDateNullSafe(getCreationTime());
+            return creationDate.plus(CalendarEvent.DAYS_OF_EVENT_MODIFIABLE_AFTER_CREATION).isBefore(today);
+        }
+
+        return false;
+    }
+
+    @Transient
+    public boolean isLockedAsPastStatistics() {
+        if (calendarEventType == null) {
+            return false;
+        }
+        final LocalDate today = today();
+        final LocalDate eventDate = getDateAsLocalDate();
+
+        return eventDate.getYear() < today.minusDays(15).getYear();
+    }
+
+    public LocalDate getDateAsLocalDate() {
+        return DateUtil.toLocalDateNullSafe(date);
+    }
+
+    // Accessors -->
 
     @Override
     @Id
@@ -77,7 +142,7 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         return venue;
     }
 
-    public void setVenue(Venue venue) {
+    public void setVenue(final Venue venue) {
         this.venue = venue;
     }
 
@@ -85,7 +150,7 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         return organisation;
     }
 
-    public void setOrganisation(Organisation organisation) {
+    public void setOrganisation(final Organisation organisation) {
         this.organisation = organisation;
     }
 
@@ -93,7 +158,7 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         return calendarEventType;
     }
 
-    public void setCalendarEventType(CalendarEventType calendarEventType) {
+    public void setCalendarEventType(final CalendarEventType calendarEventType) {
         this.calendarEventType = calendarEventType;
     }
 
@@ -101,7 +166,7 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -109,7 +174,7 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(final Date date) {
         this.date = date;
     }
 
@@ -117,7 +182,7 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         return beginTime;
     }
 
-    public void setBeginTime(LocalTime beginTime) {
+    public void setBeginTime(final LocalTime beginTime) {
         this.beginTime = beginTime;
     }
 
@@ -125,7 +190,7 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         return endTime;
     }
 
-    public void setEndTime(LocalTime endTime) {
+    public void setEndTime(final LocalTime endTime) {
         this.endTime = endTime;
     }
 
@@ -133,7 +198,35 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
+    }
+
+    public boolean getPublicVisibility() {
+        return publicVisibility;
+    }
+
+    public void setPublicVisibility(final boolean publicVisibility) {
+        this.publicVisibility = publicVisibility;
+    }
+
+    public boolean getExcludedFromStatistics() {
+        return excludedFromStatistics;
+    }
+
+    public void setExcludedFromStatistics(final boolean excludedFromStatistics) {
+        this.excludedFromStatistics = excludedFromStatistics;
+    }
+
+    public Integer getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(Integer participants) {
+        this.participants = participants;
+    }
+
+    Set<AdditionalCalendarEvent> getAdditionalCalendarEvents() {
+        return additionalCalendarEvents;
     }
 }

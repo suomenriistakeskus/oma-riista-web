@@ -1,0 +1,11 @@
+<div class="form-group" show-errors>
+    <label for="gameSpecies" translate="jht.invoice.search.gameSpecies"></label>
+
+    <select name="gameSpecies" id="gameSpecies"
+            class="form-control"
+            ng-model="$ctrl.filters.gameSpeciesCode"
+            ng-disabled="$ctrl.isDisabled()"
+            ng-options="s.code as (s.name | rI18nNameFilter:'translated') for s in $ctrl.availableSpecies | orderBy:'name.translated' track by s.code">
+        <option value="" translate="jht.invoice.search.showAllSpecies"></option>
+    </select>
+</div>

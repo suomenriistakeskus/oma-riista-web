@@ -1,12 +1,18 @@
 package fi.riista.feature.permit.decision;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
+import fi.riista.feature.permit.application.DeliveryAddressDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.PermitHolderDTO;
+import fi.riista.feature.permit.decision.PermitDecision.DecisionType;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import fi.riista.util.NumberUtils;
 import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
@@ -19,6 +25,8 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
     private Integer rev;
     private Long applicationId;
     private Integer applicationNumber;
+    private String permitTypeCode;
+    private HarvestPermitCategory harvestPermitCategory;
     private Long harvestPermitId;
     private String harvestPermitNumber;
     private PermitDecision.Status status;
@@ -26,7 +34,8 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
     private boolean userIsHandler;
 
     private PersonContactInfoDTO contactPerson;
-    private OrganisationNameDTO permitHolder;
+    private PermitHolderDTO permitHolder;
+    private OrganisationNameDTO huntingClub;
 
     private PermitDecisionDocument document;
     private PermitDecisionCompleteStatus completeStatus;
@@ -36,8 +45,13 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
     private Locale locale;
     private Long referenceId;
     private boolean deliveryByMail;
+    private DeliveryAddressDTO deliveryAddress;
+    private DecisionType decisionType;
     private PermitDecision.GrantStatus grantStatus;
+    private PermitDecision.AppealStatus appealStatus;
     private HarvestPermitApplication.Status applicationStatus;
+    private boolean hasDecisionInvoice;
+    private boolean hasHarvestInvoices;
 
     public static PermitDecisionDTO create(final @Nonnull PermitDecision decision,
                                            final @Nonnull PermitDecisionDocument document,
@@ -51,37 +65,54 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         dto.setRev(decision.getConsistencyVersion());
         dto.setApplicationId(F.getId(application));
         dto.setApplicationNumber(application.getApplicationNumber());
+        dto.setPermitTypeCode(decision.getPermitTypeCode());
+        dto.setHarvestPermitCategory(application.getHarvestPermitCategory());
         dto.setDocument(document);
         dto.setCompleteStatus(decision.getCompleteStatus());
         dto.setPaymentAmount(decision.getPaymentAmount());
         dto.setStatus(decision.getStatus());
-        dto.setLockedDate(decision.getLockedDate() != null ? decision.getLockedDate().toLocalDateTime() : null);
-        dto.setPublishDate(decision.getPublishDate() != null ? decision.getPublishDate().toLocalDateTime() : null);
+        dto.setLockedDate(DateUtil.toLocalDateTimeNullSafe(decision.getLockedDate()));
+        dto.setPublishDate(DateUtil.toLocalDateTimeNullSafe(decision.getPublishDate()));
         dto.setLocale(decision.getLocale());
         dto.setReferenceId(F.getId(decision.getReference()));
         dto.setDeliveryByMail(Boolean.TRUE.equals(application.getDeliveryByMail()));
+        dto.setDeliveryAddress(DeliveryAddressDTO.from(decision.getDeliveryAddress()));
+        dto.setDecisionType(decision.getDecisionType());
         dto.setGrantStatus(decision.getGrantStatus());
+        dto.setAppealStatus(decision.getAppealStatus());
         dto.setApplicationStatus(application.getStatus());
 
-        if (decision.getHandler() != null) {
-            final PersonWithNameDTO handlerDTO = new PersonWithNameDTO();
-            handlerDTO.setByName(decision.getHandler().getFirstName());
-            handlerDTO.setLastName(decision.getHandler().getLastName());
-            dto.setHandler(handlerDTO);
-        }
+        dto.setHandler(Optional
+                .ofNullable(decision.getHandler())
+                .map(handler -> {
+                    final PersonWithNameDTO handlerDTO = new PersonWithNameDTO();
+                    handlerDTO.setByName(handler.getFirstName());
+                    handlerDTO.setLastName(handler.getLastName());
+                    return handlerDTO;
+                })
+                .orElse(null));
         dto.setUserIsHandler(userIsHandler);
 
-        if (decision.getContactPerson() != null) {
-            dto.setContactPerson(PersonContactInfoDTO.create(decision.getContactPerson()));
-        }
+        dto.setContactPerson(Optional
+                .ofNullable(decision.getContactPerson())
+                .map(PersonContactInfoDTO::create)
+                .orElse(null));
 
         dto.setPermitHolder(Optional.ofNullable(decision.getPermitHolder())
+                .map(PermitHolderDTO::createFrom).orElse(null));
+
+        dto.setHuntingClub(Optional.ofNullable(decision.getHuntingClub())
                 .map(OrganisationNameDTO::createWithOfficialCode).orElse(null));
 
         if (harvestPermit != null) {
             dto.setHarvestPermitId(harvestPermit.getId());
             dto.setHarvestPermitNumber(harvestPermit.getPermitNumber());
         }
+
+        dto.setHasDecisionInvoice(NumberUtils.bigDecimalIsPositive(decision.getPaymentAmount()));
+
+        dto.setHasHarvestInvoices(decision.getGrantStatus() != PermitDecision.GrantStatus.REJECTED
+                && application.getHarvestPermitCategory().isMooselike());
 
         return dto;
     }
@@ -130,6 +161,22 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         this.applicationNumber = applicationNumber;
     }
 
+    public String getPermitTypeCode() {
+        return permitTypeCode;
+    }
+
+    public void setPermitTypeCode(final String permitTypeCode) {
+        this.permitTypeCode = permitTypeCode;
+    }
+
+    public HarvestPermitCategory getHarvestPermitCategory() {
+        return harvestPermitCategory;
+    }
+
+    public void setHarvestPermitCategory(final HarvestPermitCategory harvestPermitCategory) {
+        this.harvestPermitCategory = harvestPermitCategory;
+    }
+
     public Long getHarvestPermitId() {
         return harvestPermitId;
     }
@@ -162,12 +209,20 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         this.userIsHandler = userIsHandler;
     }
 
-    public OrganisationNameDTO getPermitHolder() {
+    public PermitHolderDTO getPermitHolder() {
         return permitHolder;
     }
 
-    public void setPermitHolder(final OrganisationNameDTO permitHolder) {
+    public void setPermitHolder(final PermitHolderDTO permitHolder) {
         this.permitHolder = permitHolder;
+    }
+
+    public OrganisationNameDTO getHuntingClub() {
+        return huntingClub;
+    }
+
+    public void setHuntingClub(final OrganisationNameDTO huntingClub) {
+        this.huntingClub = huntingClub;
     }
 
     public PersonContactInfoDTO getContactPerson() {
@@ -242,6 +297,22 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         this.deliveryByMail = deliveryByMail;
     }
 
+    public DeliveryAddressDTO getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(DeliveryAddressDTO deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public DecisionType getDecisionType() {
+        return decisionType;
+    }
+
+    public void setDecisionType(final DecisionType decisionType) {
+        this.decisionType = decisionType;
+    }
+
     public PermitDecision.GrantStatus getGrantStatus() {
         return grantStatus;
     }
@@ -250,11 +321,35 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         this.grantStatus = grantStatus;
     }
 
+    public PermitDecision.AppealStatus getAppealStatus() {
+        return appealStatus;
+    }
+
+    public void setAppealStatus(final PermitDecision.AppealStatus appealStatus) {
+        this.appealStatus = appealStatus;
+    }
+
     public HarvestPermitApplication.Status getApplicationStatus() {
         return applicationStatus;
     }
 
     public void setApplicationStatus(final HarvestPermitApplication.Status applicationStatus) {
         this.applicationStatus = applicationStatus;
+    }
+
+    public boolean isHasDecisionInvoice() {
+        return hasDecisionInvoice;
+    }
+
+    public void setHasDecisionInvoice(final boolean hasDecisionInvoice) {
+        this.hasDecisionInvoice = hasDecisionInvoice;
+    }
+
+    public boolean isHasHarvestInvoices() {
+        return hasHarvestInvoices;
+    }
+
+    public void setHasHarvestInvoices(final boolean hasHarvestInvoices) {
+        this.hasHarvestInvoices = hasHarvestInvoices;
     }
 }

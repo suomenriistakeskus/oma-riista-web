@@ -265,7 +265,9 @@
             $ctrl.notFoundHunterNumbers = null;
 
             $ctrl.yearChanged = function () {
-                var v = _.find($ctrl.years.values, 'year', $ctrl.years.selected);
+                var v = _.find($ctrl.years.values, {
+                    year: $ctrl.years.selected
+                });
                 $ctrl.groups = v ? v.groups : groups;
             };
             $ctrl.yearChanged();

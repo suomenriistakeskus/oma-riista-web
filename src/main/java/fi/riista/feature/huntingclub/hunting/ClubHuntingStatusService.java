@@ -7,7 +7,7 @@ import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitService;
+import fi.riista.feature.huntingclub.permit.endofhunting.HuntingFinishingService;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
@@ -23,10 +23,13 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
+import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
+import static java.util.Objects.requireNonNull;
 
 @Service
 public class ClubHuntingStatusService {
@@ -41,14 +44,14 @@ public class ClubHuntingStatusService {
     private ActiveUserService activeUserService;
 
     @Resource
-    private HuntingClubPermitService huntingClubPermitService;
+    private HuntingFinishingService huntingFinishingService;
 
     @Resource
     private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public GroupHuntingStatusDTO getGroupStatus(final @Nonnull HuntingClubGroup group) {
-        Objects.requireNonNull(group, "group is null");
+        requireNonNull(group);
 
         final GroupHuntingStatusDTO result = new GroupHuntingStatusDTO();
 
@@ -79,13 +82,14 @@ public class ClubHuntingStatusService {
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public boolean isDiaryEntryLocked(final @Nonnull GameDiaryEntry diaryEntry) {
-        Objects.requireNonNull(diaryEntry, "diaryEntry is null");
+        requireNonNull(diaryEntry);
+
         return diaryEntry.getHuntingDayOfGroup() != null &&
                 isGroupHuntingDataLocked(diaryEntry.getHuntingDayOfGroup().getGroup());
     }
 
     private boolean isGroupHuntingDataLocked(final @Nonnull HuntingClubGroup group) {
-        if (huntingClubPermitService.hasClubHuntingFinished(group)) {
+        if (huntingFinishingService.hasPermitPartnerFinishedHunting(group)) {
             return true;
         }
 
@@ -97,13 +101,11 @@ public class ClubHuntingStatusService {
             return true;
         }
 
-        if (harvestPermitLockedByDateService.isPermitLockedByDateForHuntingYear(group.getHarvestPermit(), group.getHuntingYear())) {
+        if (harvestPermitLockedByDateService.isPermitLocked(group)) {
             return true;
         }
 
-        final EnumSet<OccupationType> leaderRoles = EnumSet.of(
-                OccupationType.SEURAN_YHDYSHENKILO,
-                OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
+        final EnumSet<OccupationType> leaderRoles = EnumSet.of(SEURAN_YHDYSHENKILO, RYHMAN_METSASTYKSENJOHTAJA);
 
         final Set<OccupationType> activePersonRoles =
                 findActiveClubAndGroupOccupationTypes(group, activeUserService.requireActiveUser().getPerson());
@@ -113,9 +115,9 @@ public class ClubHuntingStatusService {
 
     private Set<OccupationType> findActiveClubAndGroupOccupationTypes(final @Nonnull HuntingClubGroup group,
                                                                       final Person person) {
-        Objects.requireNonNull(group, "group is null");
+        requireNonNull(group, "group is null");
         final Organisation club = group.getParentOrganisation();
-        Objects.requireNonNull(club, "club is null");
+        requireNonNull(club, "club is null");
 
         if (person == null) {
             return Collections.emptySet();
@@ -132,7 +134,7 @@ public class ClubHuntingStatusService {
     private boolean groupHasHuntingLeader(final HuntingClubGroup group) {
         final QOccupation occupation = QOccupation.occupation;
         return 0 < occupationRepository.count(occupation.organisation.eq(group)
-                .and(occupation.occupationType.eq(OccupationType.RYHMAN_METSASTYKSENJOHTAJA))
+                .and(occupation.occupationType.eq(RYHMAN_METSASTYKSENJOHTAJA))
                 .and(occupation.validAndNotDeleted()));
     }
 

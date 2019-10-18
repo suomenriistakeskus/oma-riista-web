@@ -16,6 +16,8 @@ public class Integration extends LifecycleEntity<String> {
 
     public static final String LH_PERMIT_IMPORT_ID = "lh_permit_import";
     public static final String EMAIL_HUNTING_LEADERS_TO_RHY_COORDINATOR_ID = "email_hunting_leaders_to_rhy_coordinator";
+    public static final String RHY_ANNUAL_STATISTICS_MODERATOR_UPDATE_NOTIFICATION_ID = "rhy_annual_statistics_moderator_update_notification";
+    public static final String HARVEST_REGISTRY_SYNC_ID = "harvest_registry_synchronization";
 
     private String id;
 
@@ -40,7 +42,7 @@ public class Integration extends LifecycleEntity<String> {
         return lastRun;
     }
 
-    public void setLastRun(DateTime lastRun) {
+    public void setLastRun(final DateTime lastRun) {
         this.lastRun = lastRun;
     }
 }

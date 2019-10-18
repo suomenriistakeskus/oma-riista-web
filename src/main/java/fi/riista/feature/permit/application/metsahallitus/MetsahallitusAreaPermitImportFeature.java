@@ -3,7 +3,6 @@ package fi.riista.feature.permit.application.metsahallitus;
 import fi.riista.config.HttpClientConfig;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.feature.error.NotFoundException;
-import fi.riista.feature.error.NotImplementedException;
 import fi.riista.util.ContentDispositionUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.auth.AuthenticationException;
@@ -117,10 +116,10 @@ public class MetsahallitusAreaPermitImportFeature {
         });
     }
 
-    private MultipartFile createMultipartFile(@Nonnull final String fileNamePrefix,
-                                              @Nonnull final String contentType,
-                                              @Nonnull final String fileName,
-                                              @Nonnull final byte[] bytes) {
+    private static MultipartFile createMultipartFile(@Nonnull final String fileNamePrefix,
+                                                     @Nonnull final String contentType,
+                                                     @Nonnull final String fileName,
+                                                     @Nonnull final byte[] bytes) {
         Objects.requireNonNull(fileNamePrefix);
         Objects.requireNonNull(contentType);
         Objects.requireNonNull(fileName);
@@ -164,7 +163,7 @@ public class MetsahallitusAreaPermitImportFeature {
 
             @Override
             public void transferTo(final File dest) throws IOException, IllegalStateException {
-                throw new NotImplementedException();
+                throw new RuntimeException();
             }
         };
     }

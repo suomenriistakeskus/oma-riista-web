@@ -30,6 +30,9 @@ public class PermitDecisionDocument implements Serializable {
             case decision:
                 this.decision = value;
                 break;
+            case decisionExtra:
+                this.decisionExtra = value;
+                break;
             case decisionReasoning:
                 this.decisionReasoning = value;
                 break;
@@ -94,6 +97,10 @@ public class PermitDecisionDocument implements Serializable {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.BASIC)
     @Column(name = "decision_body", columnDefinition = "TEXT")
     private String decision;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.BASIC)
+    @Column(name = "decision_extra", columnDefinition = "TEXT")
+    private String decisionExtra;
 
     // Päätöksen perustelut
 
@@ -196,6 +203,14 @@ public class PermitDecisionDocument implements Serializable {
 
     public void setDecision(final String decisionBody) {
         this.decision = decisionBody;
+    }
+
+    public String getDecisionExtra() {
+        return decisionExtra;
+    }
+
+    public void setDecisionExtra(final String decisionExtra) {
+        this.decisionExtra = decisionExtra;
     }
 
     public String getDecisionReasoning() {

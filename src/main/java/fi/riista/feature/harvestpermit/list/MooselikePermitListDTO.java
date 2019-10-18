@@ -4,24 +4,27 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountDTO;
-import fi.riista.feature.harvestpermit.allocation.MoosePermitAllocationDTO;
-import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReport;
-import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportDTO;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitCountDTO;
+import fi.riista.feature.harvestpermit.violation.AmendmentPermitMatchHarvest;
+import fi.riista.feature.harvestpermit.violation.PermitRestrictionViolationChecker;
+import fi.riista.feature.huntingclub.permit.statistics.ClubHuntingSummaryBasicInfoDTO;
+import fi.riista.feature.huntingclub.permit.statistics.HarvestCountDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.util.F;
 import fi.riista.util.NumberUtils;
-import fi.riista.validation.DoNotValidate;
-import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+
+import static java.util.Objects.requireNonNull;
 
 public class MooselikePermitListDTO {
+    public static MooselikePermitListDTO.Builder builder(final HarvestPermitSpeciesAmount speciesAmount) {
+        return new MooselikePermitListDTO.Builder(speciesAmount);
+    }
 
     private static OrganisationNameDTO createContactPersonAsPermitHolder(final @Nonnull Person contactPerson) {
         Objects.requireNonNull(contactPerson);
@@ -32,118 +35,199 @@ public class MooselikePermitListDTO {
         return dto;
     }
 
-    MooselikePermitListDTO(@Nonnull final HarvestPermit permit,
-                           @Nonnull final HarvestPermitSpeciesAmount spa,
-                           @Nonnull final GameSpecies species,
-                           @Nonnull final Map<String, Float> amendmentPermits,
-                           @Nullable final Long viewedClubId,
-                           final boolean viewedClubIsPartner,
-                           final boolean amendmentPermitsMatchHarvests,
-                           final MooseHarvestReport mooseHarvestReport,
-                           final boolean listLeadersButtonVisible,
-                           final boolean huntingFinished,
-                           final boolean huntingFinishedByModeration,
-                           @Nonnull final Collection<HuntingClubPermitCountDTO> harvests,
-                           @Nonnull final List<MoosePermitAllocationDTO> allocations) {
+    public static class Builder {
+        private final HarvestPermit harvestPermit;
+        private final GameSpecies gameSpecies;
+        private final HarvestPermitSpeciesAmount speciesAmount;
 
-        Objects.requireNonNull(permit);
-        Objects.requireNonNull(spa);
-        Objects.requireNonNull(species);
-        Objects.requireNonNull(amendmentPermits);
-        Objects.requireNonNull(harvests);
-        Objects.requireNonNull(allocations);
+        private String permitAreaExternalId;
+        private boolean listLeadersButtonVisible;
 
-        this.id = permit.getId();
-        this.permitNumber = permit.getPermitNumber();
-        this.permitHolder = permit.getPermitHolder() != null
-                ? OrganisationNameDTO.create(permit.getPermitHolder())
-                : createContactPersonAsPermitHolder(permit.getOriginalContactPerson());
+        private Collection<HarvestCountDTO> harvestCounts;
+        private double allocatedCount;
+        private Map<String, Float> amendmentPermits;
+        private ClubHuntingSummaryBasicInfoDTO huntingSummary;
 
-        this.speciesAmount = HarvestPermitSpeciesAmountDTO.create(spa, species);
-        this.amendmentPermits = amendmentPermits;
+        private Long viewedClubId;
 
-        this.viewedClubId = viewedClubId;
-        this.viewedClubIsPartner = viewedClubIsPartner;
+        private Builder(final @Nonnull HarvestPermitSpeciesAmount speciesAmount) {
+            this.speciesAmount = requireNonNull(speciesAmount);
+            this.harvestPermit = requireNonNull(speciesAmount.getHarvestPermit());
+            this.gameSpecies = requireNonNull(speciesAmount.getGameSpecies());
+        }
 
-        this.amendmentPermitsMatchHarvests = amendmentPermitsMatchHarvests;
-        this.mooseHarvestReport = MooseHarvestReportDTO.create(mooseHarvestReport);
+        public Builder withPermitAreaExternalId(final String permitAreaExternalId) {
+            this.permitAreaExternalId = permitAreaExternalId;
+            return this;
+        }
 
-        this.listLeadersButtonVisible = listLeadersButtonVisible;
-        this.huntingFinished = huntingFinished;
-        this.huntingFinishedByModeration = huntingFinishedByModeration;
+        public Builder withAmendmentPermits(Map<String, Float> amendmentPermits) {
+            this.amendmentPermits = amendmentPermits;
+            return this;
+        }
 
-        double total = spa.getAmount() + NumberUtils.sum(amendmentPermits.values(), Float::doubleValue);
-        double unallocated = total - allocations.stream()
-                .mapToDouble(a -> a.getAdultMales() + a.getAdultFemales() + a.getYoung() / 2.0).sum();
+        public Builder withViewedClubId(Long viewedClubId) {
+            this.viewedClubId = viewedClubId;
+            return this;
+        }
 
-        this.total = total;
-        this.unallocated = unallocated;
-        this.used = harvests.stream()
-                .mapToDouble(h -> h.countAdults() + h.countYoung() / 2.0).sum();
-        this.notEdible = harvests.stream()
-                .mapToDouble(h -> h.getNumberOfNonEdibleAdults() + h.getNumberOfNonEdibleYoungs() / 2.0).sum();
+        public Builder withListLeadersButtonVisible(boolean listLeadersButtonVisible) {
+            this.listLeadersButtonVisible = listLeadersButtonVisible;
+            return this;
+        }
 
-        if (speciesAmount.getRestrictionType() != null) {
-            final Integer restrictedHarvests = harvests.stream()
-                    .mapToInt(h -> {
-                        switch (speciesAmount.getRestrictionType()) {
-                            case AE:
-                                return h.getNumberOfAdultMales() + h.getNumberOfAdultFemales() - h.getNumberOfNonEdibleAdults();
-                            case AU:
-                                return h.getNumberOfAdultMales() - h.getNumberOfNonEdibleAdultMales();
-                            default:
-                                throw new IllegalStateException("Unknown restriction type:" + speciesAmount.getRestrictionType());
-                        }
-                    }).sum();
-            this.restrictionViolated = restrictedHarvests > speciesAmount.getRestrictionAmount();
+        public Builder withClubHuntingSummary(ClubHuntingSummaryBasicInfoDTO dto) {
+            this.huntingSummary = dto;
+            return this;
+        }
+
+        public Builder withHarvestCounts(Collection<HarvestCountDTO> harvests) {
+            this.harvestCounts = harvests;
+            return this;
+        }
+
+        public Builder withAllocatedCount(double allocatedCount) {
+            this.allocatedCount = allocatedCount;
+            return this;
+        }
+
+        private OrganisationNameDTO getPermitHolder() {
+            return harvestPermit.getHuntingClub() != null
+                    ? OrganisationNameDTO.create(harvestPermit.getHuntingClub())
+                    : createContactPersonAsPermitHolder(harvestPermit.getOriginalContactPerson());
+        }
+
+        private boolean getPermitHolderFinishedHunting() {
+            return speciesAmount.isMooselikeHuntingFinished();
+        }
+
+        private boolean getPermitPartnerFinishedHunting() {
+            return huntingSummary != null && huntingSummary.isHuntingFinished();
+        }
+
+        private boolean getHuntingFinishedByModeration() {
+            return huntingSummary != null && huntingSummary.isHuntingFinishedByModeration() || speciesAmount.isHuntingFinishedByModerator();
+        }
+
+        private double getPermitAmount() {
+            return speciesAmount.getAmount();
+        }
+
+        private double getAmendmentAmount() {
+            return NumberUtils.sum(amendmentPermits.values(), Float::doubleValue);
+        }
+
+        private double getUsedCount() {
+            return NumberUtils.sum(harvestCounts, HarvestCountDTO::getRequiredPermitAmount);
+        }
+
+        private double getRequiredAmendmentPermits() {
+            return NumberUtils.sum(harvestCounts, HarvestCountDTO::getRequiredAmendmentPermits);
+        }
+
+        private boolean isAmendmentPermitsMatchHarvests() {
+            return AmendmentPermitMatchHarvest.countMatches(harvestCounts, amendmentPermits);
+        }
+
+        private boolean isRestrictionViolated() {
+            return new PermitRestrictionViolationChecker(speciesAmount, harvestCounts).isRestrictionViolated();
+        }
+
+        private boolean isViewedClubPartner() {
+            return F.getUniqueIds(harvestPermit.getPermitPartners()).contains(viewedClubId);
+        }
+
+        public MooselikePermitListDTO build() {
+            Objects.requireNonNull(harvestPermit);
+            Objects.requireNonNull(speciesAmount);
+            Objects.requireNonNull(amendmentPermits);
+            Objects.requireNonNull(harvestCounts);
+
+            return new MooselikePermitListDTO(this);
         }
     }
 
-    private long id;
+    private final long id;
+    private final String permitNumber;
+    private final String permitType;
+    private final int gameSpeciesCode;
 
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String permitNumber;
-
-    private final OrganisationNameDTO permitHolder;
-
-    @DoNotValidate
-    private HarvestPermitSpeciesAmountDTO speciesAmount;
-
-    private Map<String, Float> amendmentPermits;
-
-    private Long viewedClubId;
-    private boolean viewedClubIsPartner;
-
-    private boolean amendmentPermitsMatchHarvests;
-    private MooseHarvestReportDTO mooseHarvestReport;
-    private boolean listLeadersButtonVisible;
-    private boolean huntingFinished;
-    private boolean huntingFinishedByModeration;
-
-    private double total;
-    private double unallocated;
-    private double used;
-    private double notEdible;
-
-    private boolean restrictionViolated;
+    private final Long viewedClubId;
+    private final boolean viewedClubIsPartner;
 
     // This is set only on those views where resolving this is relevant
     private boolean currentlyViewedRhyIsRelated;
 
-    public long getId() {
-        return id;
+    private final double permitAmount;
+    private final double amendmentAmount;
+    private final double totalAmount;
+    private final double harvestedAmount;
+    private final double requiredAmendmentAmount;
+    private final double allocatedAmount;
+
+    private final OrganisationNameDTO permitHolder;
+    private final HarvestPermitSpeciesAmountDTO speciesAmount;
+    private String permitAreaExternalId;
+
+    private final Set<String> amendmentPermits;
+    private final boolean amendmentPermitsMatchHarvests;
+    private final boolean restrictionViolated;
+
+    private final boolean permitHolderFinishedHunting;
+    private final boolean permitPartnerFinishedHunting;
+    private final boolean huntingFinishedByModeration;
+
+    private final boolean listLeadersButtonVisible;
+
+    private MooselikePermitListDTO(final Builder builder) {
+        this.id = builder.harvestPermit.getId();
+        this.permitNumber = builder.harvestPermit.getPermitNumber();
+        this.permitType = builder.harvestPermit.getPermitType();
+        this.gameSpeciesCode = builder.gameSpecies.getOfficialCode();
+
+        this.viewedClubId = builder.viewedClubId;
+        this.viewedClubIsPartner = builder.isViewedClubPartner();
+
+        this.permitAmount = builder.getPermitAmount();
+        this.amendmentAmount = builder.getAmendmentAmount();
+        this.totalAmount = this.permitAmount + this.amendmentAmount;
+        this.allocatedAmount = builder.allocatedCount;
+        this.harvestedAmount = builder.getUsedCount();
+        this.requiredAmendmentAmount = builder.getRequiredAmendmentPermits();
+
+        this.permitHolder = builder.getPermitHolder();
+        this.speciesAmount = HarvestPermitSpeciesAmountDTO.create(builder.speciesAmount);
+        this.permitAreaExternalId = builder.permitAreaExternalId;
+
+        this.amendmentPermits = builder.amendmentPermits.keySet();
+        this.amendmentPermitsMatchHarvests = builder.isAmendmentPermitsMatchHarvests();
+        this.restrictionViolated = builder.isRestrictionViolated();
+
+        this.permitPartnerFinishedHunting = builder.getPermitPartnerFinishedHunting();
+        this.permitHolderFinishedHunting = builder.getPermitHolderFinishedHunting();
+        this.huntingFinishedByModeration = builder.getHuntingFinishedByModeration();
+
+        this.listLeadersButtonVisible = builder.listLeadersButtonVisible;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public long getId() {
+        return id;
     }
 
     public String getPermitNumber() {
         return permitNumber;
     }
 
-    public void setPermitNumber(String permitNumber) {
-        this.permitNumber = permitNumber;
+    public String getPermitType() {
+        return permitType;
+    }
+
+    public int getGameSpeciesCode() {
+        return gameSpeciesCode;
+    }
+
+    public void setPermitAreaExternalId(final String permitAreaExternalId) {
+        this.permitAreaExternalId = permitAreaExternalId;
     }
 
     public OrganisationNameDTO getPermitHolder() {
@@ -154,112 +238,72 @@ public class MooselikePermitListDTO {
         return speciesAmount;
     }
 
-    public void setSpeciesAmount(HarvestPermitSpeciesAmountDTO speciesAmount) {
-        this.speciesAmount = speciesAmount;
+    public String getPermitAreaExternalId() {
+        return permitAreaExternalId;
     }
 
-    public Map<String, Float> getAmendmentPermits() {
+    public Set<String> getAmendmentPermits() {
         return amendmentPermits;
-    }
-
-    public void setAmendmentPermits(Map<String, Float> amendmentPermits) {
-        this.amendmentPermits = amendmentPermits;
     }
 
     public Long getViewedClubId() {
         return viewedClubId;
     }
 
-    public void setViewedClubId(Long viewedClubId) {
-        this.viewedClubId = viewedClubId;
-    }
-
     public boolean isViewedClubIsPartner() {
         return viewedClubIsPartner;
-    }
-
-    public void setViewedClubIsPartner(boolean viewedClubIsPartner) {
-        this.viewedClubIsPartner = viewedClubIsPartner;
     }
 
     public boolean isAmendmentPermitsMatchHarvests() {
         return amendmentPermitsMatchHarvests;
     }
 
-    public void setAmendmentPermitsMatchHarvests(boolean amendmentPermitsMatchHarvests) {
-        this.amendmentPermitsMatchHarvests = amendmentPermitsMatchHarvests;
-    }
-
-    public MooseHarvestReportDTO getMooseHarvestReport() {
-        return mooseHarvestReport;
-    }
-
-    public void setMooseHarvestReport(MooseHarvestReportDTO mooseHarvestReport) {
-        this.mooseHarvestReport = mooseHarvestReport;
+    public boolean getPermitHolderFinishedHunting() {
+        return permitHolderFinishedHunting;
     }
 
     public boolean isListLeadersButtonVisible() {
         return listLeadersButtonVisible;
     }
 
-    public void setListLeadersButtonVisible(final boolean listLeadersButtonVisible) {
-        this.listLeadersButtonVisible = listLeadersButtonVisible;
+    public boolean isPermitHolderFinishedHunting() {
+        return permitHolderFinishedHunting;
     }
 
-    public boolean isHuntingFinished() {
-        return huntingFinished;
-    }
-
-    public void setHuntingFinished(boolean huntingFinished) {
-        this.huntingFinished = huntingFinished;
+    public boolean isPermitPartnerFinishedHunting() {
+        return permitPartnerFinishedHunting;
     }
 
     public boolean isHuntingFinishedByModeration() {
         return huntingFinishedByModeration;
     }
 
-    public void setHuntingFinishedByModeration(boolean huntingFinishedByModeration) {
-        this.huntingFinishedByModeration = huntingFinishedByModeration;
+    public double getPermitAmount() {
+        return permitAmount;
     }
 
-    public double getTotal() {
-        return total;
+    public double getAmendmentAmount() {
+        return amendmentAmount;
     }
 
-    public void setTotal(double total) {
-        this.total = total;
+    public double getTotalAmount() {
+        return totalAmount;
     }
 
-    public double getUnallocated() {
-        return unallocated;
+    public double getAllocatedAmount() {
+        return allocatedAmount;
     }
 
-    public void setUnallocated(double unallocated) {
-        this.unallocated = unallocated;
+    public double getHarvestedAmount() {
+        return harvestedAmount;
     }
 
-    public double getUsed() {
-        return used;
-    }
-
-    public void setUsed(double used) {
-        this.used = used;
-    }
-
-    public double getNotEdible() {
-        return notEdible;
-    }
-
-    public void setNotEdible(double notEdible) {
-        this.notEdible = notEdible;
+    public double getRequiredAmendmentAmount() {
+        return requiredAmendmentAmount;
     }
 
     public boolean isRestrictionViolated() {
         return restrictionViolated;
-    }
-
-    public void setRestrictionViolated(boolean restrictionViolated) {
-        this.restrictionViolated = restrictionViolated;
     }
 
     public boolean isCurrentlyViewedRhyIsRelated() {

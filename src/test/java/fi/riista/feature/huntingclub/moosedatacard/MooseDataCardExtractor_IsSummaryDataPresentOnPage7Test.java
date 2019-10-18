@@ -2,7 +2,7 @@ package fi.riista.feature.huntingclub.moosedatacard;
 
 import com.google.common.collect.ObjectArrays;
 import fi.riista.feature.common.entity.HasMooseDataCardEncoding;
-import fi.riista.feature.huntingclub.permit.summary.TrendOfPopulationGrowth;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.TrendOfPopulationGrowth;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardGameSpeciesAppearance;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCardPage7;
 import org.junit.Before;

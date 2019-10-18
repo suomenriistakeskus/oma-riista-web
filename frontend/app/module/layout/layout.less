@@ -63,13 +63,15 @@ body > .wrapper > .main-content > .container-fluid {
 // -------------------------
 
 .growl-container.growl-fixed {
-  width: 45%;
+  //width: 45%;
+  width: 100%;
   max-width: 800px;
 }
 
 .growl-container.growl-fixed.top-right {
   top: 5px;
-  right: 375px;
+  //right: 375px;
+  left: 10px;
 
   .growl-item {
     box-shadow: -6px 9px 16px 0 rgba(50,50,50,0.6)
@@ -115,6 +117,26 @@ body > .wrapper > .main-content > .container-fluid {
     a {
       color: white;
       font-size: 18px;
+    }
+  }
+}
+
+// Generic form layout
+// -------------------------
+
+.make-form-group(@control-label-grid-columns, @form-control-wrapper-grid-columns) {
+  .form-group {
+    .control-label {
+      .make-xs-column(@control-label-grid-columns);
+    }
+
+    .form-control-offset-wrapper {
+      .make-xs-column-offset(@control-label-grid-columns);
+      .make-xs-column(@form-control-wrapper-grid-columns);
+    }
+
+    .form-control-wrapper {
+      .make-xs-column(@form-control-wrapper-grid-columns);
     }
   }
 }

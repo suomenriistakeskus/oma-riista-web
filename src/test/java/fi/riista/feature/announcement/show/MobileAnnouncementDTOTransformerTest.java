@@ -21,9 +21,9 @@ public class MobileAnnouncementDTOTransformerTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testMessageFromCoordinator() {
-        final SystemUser sender = createNewUser(SystemUser.Role.ROLE_USER);
-        sender.setFirstName("first");
-        sender.setLastName("second");
+        final SystemUser sender = createUserWithPerson();
+        sender.getPerson().setFirstName("first");
+        sender.getPerson().setLastName("second");
 
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final Announcement announcement = model().newAnnouncement(
@@ -39,9 +39,9 @@ public class MobileAnnouncementDTOTransformerTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testMessageFromClubContactPerson() {
-        final SystemUser sender = createNewUser(SystemUser.Role.ROLE_USER);
-        sender.setFirstName("first");
-        sender.setLastName("second");
+        final SystemUser sender = createUserWithPerson();
+        sender.getPerson().setFirstName("first");
+        sender.getPerson().setLastName("second");
 
         final HuntingClub club = model().newHuntingClub();
         final Announcement announcement = model().newAnnouncement(
@@ -57,7 +57,7 @@ public class MobileAnnouncementDTOTransformerTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testExcludeFullNameFromRiistakeskus() {
-        final SystemUser sender = createNewUser(SystemUser.Role.ROLE_USER);
+        final SystemUser sender = createNewUser(SystemUser.Role.ROLE_MODERATOR);
         sender.setFirstName("first");
         sender.setLastName("second");
 
@@ -91,9 +91,9 @@ public class MobileAnnouncementDTOTransformerTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private void assertContentEquals(final MobileAnnouncementDTO dto,
-                                     final Announcement announcement,
-                                     final boolean includeFullName) {
+    private static void assertContentEquals(final MobileAnnouncementDTO dto,
+                                            final Announcement announcement,
+                                            final boolean includeFullName) {
         assertNotNull(dto.getSender());
         assertEquals(announcement.getBody(), dto.getBody());
         assertEquals(announcement.getSubject(), dto.getSubject());
@@ -101,7 +101,10 @@ public class MobileAnnouncementDTOTransformerTest extends EmbeddedDatabaseTest {
         assertNotNull(dto.getSender().getTitle());
 
         if (includeFullName) {
-            assertEquals(announcement.getFromUser().getFullName(), dto.getSender().getFullName());
+            final String expectedName = announcement.getFromUser().getPerson() != null
+                    ? announcement.getFromUser().getPerson().getFullName()
+                    : announcement.getFromUser().getFullName();
+            assertEquals(expectedName, dto.getSender().getFullName());
         } else {
             assertEquals("", dto.getSender().getFullName());
         }

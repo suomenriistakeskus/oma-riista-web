@@ -1,0 +1,100 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.bird.cause.instruction1"></p>
+        <p translate="harvestpermit.wizard.bird.cause.instruction2"></p>
+    </div>
+</div>
+
+<form name="deviationForm">
+    <div>
+        <strong translate="harvestpermit.wizard.bird.cause.selectionInstruction"></strong>
+    </div>
+
+    <div class="form-group">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causePublicHealth">
+                <span translate="harvestpermit.wizard.bird.cause.causePublicHealth"></span>
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causePublicSafety">
+                <span translate="harvestpermit.wizard.bird.cause.causePublicSafety"></span>
+            </label>
+        </div>
+
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causeAviationSafety">
+                <span translate="harvestpermit.wizard.bird.cause.causeAviationSafety"></span>
+            </label>
+        </div>
+
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causeCropsDamage">
+                <span translate="harvestpermit.wizard.bird.cause.causeCropsDamage"></span>
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causeDomesticPets">
+                <span translate="harvestpermit.wizard.bird.cause.causeDomesticPets"></span>
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causeForestDamage">
+                <span translate="harvestpermit.wizard.bird.cause.causeForestDamage"></span>
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causeFishing">
+                <span translate="harvestpermit.wizard.bird.cause.causeFishing"></span>
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causeWaterSystem">
+                <span translate="harvestpermit.wizard.bird.cause.causeWaterSystem"></span>
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causeFlora">
+                <span translate="harvestpermit.wizard.bird.cause.causeFlora"></span>
+                <span class="fa fa-fw fa-info-circle text-info"
+                      uib-tooltip="{{'harvestpermit.wizard.bird.cause.nonLimitlessCauseToolTip' | translate }}"></span>
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causeFauna">
+                <span translate="harvestpermit.wizard.bird.cause.causeFauna"></span>
+                <span class="fa fa-fw fa-info-circle text-info"
+                      uib-tooltip="{{'harvestpermit.wizard.bird.cause.nonLimitlessCauseToolTip' | translate }}"></span>
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="$ctrl.permitCause.causeResearch">
+                <span translate="harvestpermit.wizard.bird.cause.causeResearch"></span>
+                <span class="fa fa-fw fa-info-circle text-info"
+                      uib-tooltip="{{'harvestpermit.wizard.bird.cause.nonLimitlessCauseToolTip' | translate }}"></span>
+            </label>
+        </div>
+    </div>
+</form>
+
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit()"
+        previous="$ctrl.previous()"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled()">
+</permit-application-wizard-navigation>

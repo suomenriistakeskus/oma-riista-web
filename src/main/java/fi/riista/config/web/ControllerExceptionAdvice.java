@@ -1,7 +1,10 @@
 package fi.riista.config.web;
 
-import fi.riista.feature.error.RestErrorService;
 import fi.riista.feature.error.RestError;
+import fi.riista.feature.error.RestErrorService;
+import io.sentry.Sentry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +19,17 @@ import javax.validation.ConstraintViolationException;
 
 @ControllerAdvice
 public class ControllerExceptionAdvice extends ResponseEntityExceptionHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(ControllerExceptionAdvice.class);
+
     @Resource
     private RestErrorService restErrorService;
 
-    @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<RestError> handleGeneralException(final Exception ex) {
+    @ExceptionHandler(Throwable.class)
+    public ResponseEntity<Object> handleAll(final Throwable ex) {
+        LOG.error("Exception caught", ex);
+
+        Sentry.capture(ex);
+
         final RestError restError = restErrorService.exposeGeneralException(ex);
 
         return new ResponseEntity<>(restError, restError.getHttpStatus());
@@ -32,6 +41,10 @@ public class ControllerExceptionAdvice extends ResponseEntityExceptionHandler {
                                                              final HttpHeaders headers,
                                                              final HttpStatus status,
                                                              final WebRequest request) {
+        LOG.error("Spring MVC exception was caught", ex);
+
+        Sentry.capture(ex);
+
         final RestError restError = restErrorService.exposeOtherSpringError(ex, status, request);
 
         return new ResponseEntity<>(restError, headers, restError.getHttpStatus());
@@ -42,6 +55,10 @@ public class ControllerExceptionAdvice extends ResponseEntityExceptionHandler {
                                                                   final HttpHeaders headers,
                                                                   final HttpStatus status,
                                                                   final WebRequest request) {
+        LOG.error("Spring MVC parameter validation failed", ex);
+
+        Sentry.capture(ex);
+
         final RestError restError = restErrorService.exposeMethodArgumentError(ex, status);
 
         return new ResponseEntity<>(restError, headers, restError.getHttpStatus());
@@ -49,6 +66,10 @@ public class ControllerExceptionAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = ConstraintViolationException.class)
     public ResponseEntity<RestError> handleConstraintViolationException(final ConstraintViolationException cve) {
+        LOG.error("Constraint violation failure", cve);
+
+        Sentry.capture(cve);
+
         final RestError restError = restErrorService.exposeConstraintViolation(cve);
 
         return new ResponseEntity<>(restError, restError.getHttpStatus());

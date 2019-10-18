@@ -139,12 +139,17 @@
                 </label>
 
                 <div class="col-xs-7">
-                    <select name="totalSpecimenAmount" id="totalSpecimenAmount"
-                            class="form-control"
-                            ng-model="entry.totalSpecimenAmount"
-                            ng-options="n for n in [] | range:1:maxSpecimenCount"
-                            ng-required="isFieldRequired('amount')"
-                            ng-disabled="!entry.canEdit || !entry.gameSpeciesCode"></select>
+                    <input type="number" name="totalSpecimenAmount" id="totalSpecimenAmount"
+                           class="form-control"
+                           ng-model="entry.totalSpecimenAmount"
+                           ng-required="isFieldRequired('amount')"
+                           ng-disabled="!entry.canEdit || !entry.gameSpeciesCode"
+                           min="1" ng-max="maxSpecimenCount"/>
+                    <p class="help-block has-error"
+                       ng-show="observationForm.totalSpecimenAmount.$invalid"
+                       ng-messages="observationForm.totalSpecimenAmount.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
                 </div>
             </div>
 

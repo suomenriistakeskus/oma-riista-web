@@ -1,0 +1,24 @@
+<form class="form">
+    <div class="form-group">
+        <div class="row">
+            <div class="col-xs-6 col-md-3">
+                <label translate="reporting.habides.calendarYear"></label>
+                <select class="form-control"
+                        ng-options="year for year in $ctrl.years track by year"
+                        ng-model="$ctrl.selected.year">
+                </select>
+            </div>
+            <div class="col-xs-6 col-md-3">
+                <label translate="reporting.habides.species"></label>
+                <select class="form-control"
+                        ng-options="s.name for s in $ctrl.species track by s.code"
+                        ng-model="$ctrl.selected.species">
+                </select>
+            </div>
+        </div>
+    </div>
+    <button type="button" class="btn btn-default" ng-click="$ctrl.exportBirdsToXml()">
+        <span class="fa fa-file-code-o"></span>&nbsp;
+        <span translate="global.button.exportToXml"></span>
+    </button>
+</form>

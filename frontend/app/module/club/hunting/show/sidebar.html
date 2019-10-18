@@ -33,14 +33,14 @@
             </td>
 
             <td class="species-name">
-                <p>{{ diaryEntry.gameSpecies.name | rI18nNameFilter | capitalize }}</p>
+                <p ng-bind="diaryEntry.gameSpeciesCode | translateSpeciesCode | capitalize"></p>
             </td>
         </tr>
 
         <tr>
             <td>
-                <h5 translate="club.hunting.pointOfTime"></h5>
-                <span>{{diaryEntry.pointOfTime | date:'d.M.yyyy HH:mm'}}</span>
+                <h5 translate="global.pointOfTime"></h5>
+                <span ng-bind="diaryEntry.pointOfTime | date:'d.M.yyyy HH:mm'"></span>
             </td>
             <td>
                 <h5 translate="gamediary.form.location"></h5>

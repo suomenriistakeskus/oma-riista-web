@@ -1,6 +1,5 @@
 package fi.riista.integration.fivaldi;
 
-import com.newrelic.api.agent.NewRelic;
 import fi.riista.config.quartz.QuartzScheduledJob;
 import fi.riista.config.quartz.RunAsAdminJob;
 import io.sentry.Sentry;
@@ -31,7 +30,6 @@ public class FivaldiInvoiceBatchExportJob extends RunAsAdminJob {
             LOG.info("Done.");
         } catch (final Exception e) {
             LOG.error("Fivaldi invoice batch export job threw exception", e);
-            NewRelic.noticeError(e, false);
             Sentry.capture(e);
         }
     }

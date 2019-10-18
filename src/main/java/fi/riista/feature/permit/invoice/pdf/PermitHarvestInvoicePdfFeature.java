@@ -26,6 +26,6 @@ public class PermitHarvestInvoicePdfFeature {
         final PermitDecision permitDecision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.READ);
         final GameSpecies gameSpecies = gameSpeciesService.requireByOfficialCode(gameSpeciesCode);
 
-        return PermitHarvestInvoicePdf.createInvoice(permitDecision, gameSpecies).asResponseEntity();
+        return PermitHarvestInvoicePdf.createBlankInvoice(permitDecision, gameSpecies).asResponseEntity();
     }
 }

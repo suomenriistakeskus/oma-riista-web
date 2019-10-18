@@ -1,14 +1,19 @@
 <div class="row">
-    <div class="col-xs-8">
-        <p class="h3">
-            <span ng-bind="::$ctrl.permit.permitType"></span>
-            <span ng-bind="::$ctrl.permit.permitNumber"></span>
-        </p>
+    <div class="col-md-8">
+        <div class="permit-management-title-box">
+            <div class="permit-management-main-title">
+                <span ng-bind="::$ctrl.permit.permitType"></span>
+                <span ng-bind="::$ctrl.permit.permitNumber"></span>
+            </div>
+            <p class="text-danger" ng-if="$ctrl.partiallyPaidInvoiceCount > 0">
+                <span class="fa fa-fw fa-exclamation-triangle"></span>
+                <strong translate="harvestpermit.management.dashboard.correctedInvoicesExist"></strong>
+            </p>
+        </div>
     </div>
-    <div class="col-xs-4 text-right">
-        <a class="btn btn-link"
-           style="margin-top: 36px;"
-           ng-click="$ctrl.editContactPersons()">
+
+    <div class="col-md-4 text-right">
+        <a class="btn btn-link" ng-click="$ctrl.editContactPersons()">
             <strong translate="harvestpermit.management.contactPerson.editButton"></strong>
             &nbsp;
             <span class="fa fa-user"></span>
@@ -24,7 +29,7 @@
     </div>
 
     <div class="row">
-        <div class="col-xs-3">
+        <div class="col-md-3 col-xs-6">
             <p class="column-title" translate="harvestpermit.management.invoiceType.{{$ctrl.duePayment.invoiceType}}"></p>
 
             <p>
@@ -32,24 +37,22 @@
                 <span ng-bind="::$ctrl.permit.permitNumber"></span>
             </p>
         </div>
-        <div class="col-xs-3">
+        <div class="col-md-3 col-xs-6">
             <p class="column-title" translate="payment.dueDate"></p>
 
             <p class="large-text" ng-bind="::$ctrl.duePayment.dueDate | date:'d.M.yyyy'"></p>
         </div>
-        <div class="col-xs-3">
+        <div class="col-md-3 col-xs-6">
             <p class="column-title" translate="payment.amount"></p>
 
             <p class="large-text">
-                <span ng-bind="::$ctrl.duePayment.amount"></span>
-                &euro;
+                <span ng-bind="::$ctrl.duePayment.amount | currency: '&euro;' : 2"></span>
             </p>
         </div>
-        <div class="col-xs-3">
+        <div class="col-md-3 col-xs-6">
             <p class="column-title">&nbsp;</p>
 
-            <button class="btn btn-primary btn-block"
-                    ng-click="$ctrl.startPayment()">
+            <button class="btn btn-primary btn-block" ng-click="$ctrl.startPayment()">
                 <span class="fa fa-credit-card"></span>
                 &nbsp;
                 <span class="text-uppercase" translate="payment.payButton"></span>
@@ -66,44 +69,61 @@
     </div>
 
     <div class="row">
-        <div class="col-xs-3">
+        <div class="col-lg-3 col-sm-6 col-xs-12">
             <p class="column-title" translate="harvestpermit.management.dashboard.decisionAndAttachments.decision"></p>
 
-            <p>
-                <a ng-if="::$ctrl.isMooselikePermit"
-                   ng-click="$ctrl.downloadPdf()">
-                    <span class="fa fa-file-pdf-o"></span>
-                    &nbsp;
-                    <span translate="harvestpermit.management.dashboard.decisionAndAttachments.decision"></span>
-                    <span ng-bind="::$ctrl.permit.permitNumber"></span>
-                </a>
+            <ul class="fa-ul">
+                <li ng-switch="$ctrl.permit.canDownloadDecision">
+                    <a ng-switch-when="true"
+                       ng-click="$ctrl.downloadPdf($ctrl.permit.permitNumber)">
+                        <i class="fa fa-li fa-file-pdf-o"></i>
 
-                <span ng-if="::(!$ctrl.isMooselikePermit)">
-                    <span translate="harvestpermit.management.dashboard.decisionAndAttachments.decision"></span>
-                    <span ng-bind="::$ctrl.permit.permitNumber"></span>
-                </span>
-            </p>
+                        <span translate="harvestpermit.management.dashboard.decisionAndAttachments.decision"></span>
+                        <span ng-bind="::$ctrl.permit.permitNumber"></span>
+                    </a>
+
+                    <span ng-switch-when="false">
+                        <span translate="harvestpermit.management.dashboard.decisionAndAttachments.decision"></span>
+                        <span ng-bind="::$ctrl.permit.permitNumber"></span>
+                    </span>
+                </li>
+
+                <li ng-repeat="p in $ctrl.permit.amendmentPermitNumbers | orderBy">
+                    <a ng-click="$ctrl.downloadPdf(p)">
+                        <i class="fa fa-li fa-file-pdf-o"></i>
+
+                        <span translate="club.permit.amendmentPermitName"></span>
+                        <span ng-bind="::p"></span>
+                    </a>
+                </li>
+            </ul>
         </div>
 
-        <div class="col-xs-3">
+        <div class="col-lg-3 col-sm-6 col-xs-12">
             <p class="column-title" translate="harvestpermit.management.dashboard.decisionAndAttachments.attachments"></p>
 
             <p ng-if="::($ctrl.attachmentList.length === 0)" translate="harvestpermit.management.dashboard.decisionAndAttachments.noAttachments">
             </p>
 
-            <p ng-repeat="a in ::$ctrl.attachmentList">
-                <a ng-click="$ctrl.downloadAttachment(a)">
-                    <span class="fa fa-file-pdf-o"></span>
-                    &nbsp;
-                    <span ng-bind="::a.description"></span>
-                </a>
-            </p>
+            <ul class="fa-ul">
+                <li ng-repeat="a in ::$ctrl.attachmentList">
+                    <i class="fa-li fa fa-file-pdf-o"></i>
+                    <a ng-click="$ctrl.downloadAttachment(a)">
+                        <span ng-bind="::a.description"></span>
+                    </a>
+                </li>
+            </ul>
         </div>
-        <div class="col-xs-3">
+
+        <div class="col-lg-3 col-sm-6 col-xs-12">
             <p class="column-title" translate="harvestpermit.management.dashboard.decisionAndAttachments.permittedAmount"></p>
 
-            <div ng-repeat="spa in $ctrl.speciesAmounts">
-                <div class="species-amount-value" ng-bind="::spa.amount | number"></div>
+            <div ng-repeat="spa in $ctrl.permit.speciesAmounts">
+                <div class="species-amount-value">
+                    <span ng-bind="::spa.amount"></span>
+                    <span ng-show="spa.amendmentAmount > 0"
+                          class="species-amendment-amount" ng-bind="::(' + ' + spa.amendmentAmount)"></span>
+                </div>
                 <div class="species-amount-text">
                     <span ng-bind="$ctrl.getGameSpeciesName(spa.gameSpecies.code)"></span>
                     <br>
@@ -115,10 +135,11 @@
             <div ng-if="::$ctrl.permit.gameSpeciesCodes.length === 0"
                  class="species-amount-value">-</div>
         </div>
-        <div class="col-xs-3">
+
+        <div class="col-lg-3 col-sm-6 col-xs-12">
             <p class="column-title" translate="harvestpermit.management.dashboard.decisionAndAttachments.permittedDate"></p>
 
-            <div ng-repeat="spa in $ctrl.speciesAmounts"
+            <div ng-repeat="spa in $ctrl.permit.speciesAmounts"
                  class="species-date-text">
                 <div ng-show="::(spa.beginDate || spa.endDate)">
                     <span ng-bind="::spa.beginDate | date:'d.M.yyyy'"></span>
@@ -151,7 +172,7 @@
     <hr class="invisible">
 
     <div class="row" style="margin-top: 16px" ng-if="$ctrl.permit.gameSpeciesCodes.length > 0">
-        <div class="col-xs-4" ng-if="::$ctrl.isMooselikePermit">
+        <div class="col-md-4 col-sm-6" ng-if="::$ctrl.isMooselikePermit">
             <div class="panel panel-permit-management">
                 <div class="panel-heading">
                     <p class="panel-title">
@@ -163,21 +184,20 @@
                 <div class="panel-body">
                     <p>
                         <span translate="harvestpermit.management.dashboard.allocation.instruction"></span>
-                        <strong ng-bind="$ctrl.getGameSpeciesName($ctrl.selectedGameSpeciesCode)"></strong>.
+                        <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
                     </p>
                     <p></p>
                 </div>
 
                 <div class="panel-buttons">
-                    <button class="btn btn-primary"
-                            ng-click="$ctrl.editAllocations($ctrl.selectedGameSpeciesCode)">
+                    <button class="btn btn-primary" ng-click="$ctrl.editAllocations()">
                         <span translate="harvestpermit.management.dashboard.allocation.button"></span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-xs-4" ng-if="::(!$ctrl.isMooselikePermit)">
+        <div class="col-md-4 col-sm-6" ng-if="::(!$ctrl.isMooselikePermit)">
             <div class="panel panel-permit-management">
                 <div class="panel-heading">
                     <p class="panel-title">
@@ -191,14 +211,14 @@
                 </div>
 
                 <div class="panel-buttons">
-                    <button class="btn btn-primary" ui-sref="permitmanagement.usage">
+                    <button class="btn btn-primary" ng-click="$ctrl.showUsage()">
                         <span translate="harvestpermit.management.dashboard.usage.button"></span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-xs-4" ng-if="::$ctrl.isMooselikePermit">
+        <div class="col-md-4 col-sm-6" ng-if="::$ctrl.isMooselikePermit">
             <div class="panel panel-permit-management">
                 <div class="panel-heading">
                     <p class="panel-title">
@@ -209,20 +229,19 @@
 
                 <div class="panel-body">
                     <span translate="harvestpermit.management.dashboard.huntingGroupLeaders.instruction"></span>
-                    <strong ng-bind="$ctrl.getGameSpeciesName($ctrl.selectedGameSpeciesCode)"></strong>.
+                    <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
                     <span translate="harvestpermit.management.dashboard.huntingGroupLeaders.instruction2"></span>.
                 </div>
 
                 <div class="panel-buttons">
-                    <button class="btn btn-primary"
-                            ng-click="$ctrl.showHuntingGroupLeaders($ctrl.selectedGameSpeciesCode)">
+                    <button class="btn btn-primary" ng-click="$ctrl.showHuntingGroupLeaders()">
                         <span translate="harvestpermit.management.dashboard.huntingGroupLeaders.button"></span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-xs-4" ng-if="::$ctrl.isMooselikePermit">
+        <div class="col-md-4 col-sm-6" ng-if="::$ctrl.isMooselikePermit">
             <div class="panel panel-permit-management">
                 <div class="panel-heading">
                     <p class="panel-title">
@@ -233,20 +252,19 @@
 
                 <div class="panel-body">
                     <span translate="harvestpermit.management.dashboard.partnerMap.instruction"></span>
-                    <strong ng-bind="$ctrl.getGameSpeciesName($ctrl.selectedGameSpeciesCode)"></strong>.
+                    <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
                     <span translate="harvestpermit.management.dashboard.partnerMap.instruction2"></span>
                 </div>
 
                 <div class="panel-buttons">
-                    <button class="btn btn-primary"
-                            ng-click="$ctrl.showMap($ctrl.selectedGameSpeciesCode)">
+                    <button class="btn btn-primary" ng-click="$ctrl.showMap()">
                         <span translate="harvestpermit.management.dashboard.partnerMap.button"></span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-xs-4" ng-if="::$ctrl.isMooselikePermit">
+        <div class="col-md-4 col-sm-6" ng-if="::$ctrl.isMooselikePermit">
             <div class="panel panel-permit-management">
                 <div class="panel-heading">
                     <p class="panel-title">
@@ -257,43 +275,62 @@
 
                 <div class="panel-body">
                     <span translate="harvestpermit.management.dashboard.tables.instruction"></span>
-                    <strong ng-bind="$ctrl.getGameSpeciesName($ctrl.selectedGameSpeciesCode)"></strong>.
+                    <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
                 </div>
 
                 <div class="panel-buttons">
-                    <button class="btn btn-primary"
-                            ng-click="$ctrl.showTables($ctrl.selectedGameSpeciesCode)">
+                    <button class="btn btn-primary" ng-click="$ctrl.showTables()">
                         <span translate="harvestpermit.management.dashboard.tables.button"></span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-xs-4" ng-if="::$ctrl.canEditMooseHarvestReport">
+        <div class="col-md-4 col-sm-6"
+             ng-if="::($ctrl.isMooselikePermit && $ctrl.permit.gameSpeciesCodes.length > 0)">
             <div class="panel panel-permit-management">
                 <div class="panel-heading">
                     <p class="panel-title">
-                        <span class="fa fa-2x fa-file-text"></span>
-                        <span translate="harvestpermit.management.dashboard.mooseHarvestReport.title"></span>
+                        <span class="fa fa-2x fa-gavel"></span>
+                        <span translate="harvestpermit.management.dashboard.amendmentPermit.title"></span>
                     </p>
                 </div>
 
                 <div class="panel-body">
-                    <span translate="harvestpermit.management.dashboard.mooseHarvestReport.instruction"></span>
-                    <strong ng-bind="$ctrl.getGameSpeciesName($ctrl.selectedGameSpeciesCode)"></strong>.
+                    <span translate="harvestpermit.management.dashboard.amendmentPermit.instruction"></span>
                 </div>
 
                 <div class="panel-buttons">
-                    <button class="btn btn-primary"
-                            ng-click="$ctrl.showMooseHarvestReport($ctrl.selectedGameSpeciesCode)">
-                        <span translate="harvestpermit.management.dashboard.mooseHarvestReport.button"></span>
+                    <button class="btn btn-primary" ng-click="$ctrl.listAmendmentApplications()">
+                        <span translate="harvestpermit.management.dashboard.amendmentPermit.button"></span>
                     </button>
                 </div>
             </div>
         </div>
 
+        <div class="col-md-4 col-sm-6" ng-if="::$ctrl.isMooselikePermit">
+            <div class="panel panel-permit-management">
+                <div class="panel-heading">
+                    <p class="panel-title">
+                        <span class="fa fa-2x fa-file-text"></span>
+                        <span translate="harvestpermit.management.dashboard.endOfHunting.title"></span>
+                    </p>
+                </div>
 
-        <div class="col-xs-4" ng-if="::(!$ctrl.isMooselikePermit)">
+                <div class="panel-body">
+                    <span translate="harvestpermit.management.dashboard.endOfHunting.instruction"></span>
+                    <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
+                </div>
+
+                <div class="panel-buttons">
+                    <button class="btn btn-primary" ng-click="$ctrl.endHuntingForMooselikePermit()">
+                        <span translate="harvestpermit.management.dashboard.endOfHunting.button"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6" ng-if="::(!$ctrl.isMooselikePermit)">
             <div class="panel panel-permit-management">
                 <div class="panel-heading">
                     <p class="panel-title">
@@ -302,12 +339,12 @@
                     </p>
                 </div>
 
-                <div class="panel-body">
-                    <div ng-if="::$ctrl.permit.harvestReportState">
+                <div class="panel-body" ng-switch="::$ctrl.permit.harvestReportState">
+                    <div ng-switch-when="true">
                         <p translate="harvestpermit.harvestReportDoneInfo"></p>
                     </div>
 
-                    <div ng-if="::(!$ctrl.permit.harvestReportState)">
+                    <div ng-switch-when="false">
                         <span translate="harvestpermit.management.dashboard.endOfHunting.instruction"></span>
                     </div>
                 </div>

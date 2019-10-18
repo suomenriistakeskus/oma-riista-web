@@ -3,11 +3,7 @@ package fi.riista.feature.shootingtest;
 import fi.riista.feature.organization.fixture.OrganisationFixtureMixin;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.shootingtest.ShootingTestAttempt;
-import fi.riista.feature.shootingtest.ShootingTestAttemptResult;
-import fi.riista.feature.shootingtest.ShootingTestEvent;
-import fi.riista.feature.shootingtest.ShootingTestParticipant;
-import fi.riista.feature.shootingtest.ShootingTestType;
+import fi.riista.feature.shootingtest.official.ShootingTestOfficial;
 import org.joda.time.LocalDate;
 
 import java.util.ArrayList;
@@ -25,20 +21,22 @@ public interface ShootingTestFixtureMixin extends OrganisationFixtureMixin {
 
     default ShootingTestEvent openEvent(final Riistanhoitoyhdistys rhy, final LocalDate date) {
         final ShootingTestEvent event = getEntitySupplier().newShootingTestEvent(rhy, date);
-
-        final Person officialPerson1 = getEntitySupplier().newPerson();
-        officialPerson1.setRhyMembership(rhy);
-        getEntitySupplier().newShootingTestOfficial(event, officialPerson1);
-
-        final Person officialPerson2 = getEntitySupplier().newPerson();
-        officialPerson2.setRhyMembership(rhy);
-        getEntitySupplier().newShootingTestOfficial(event, officialPerson2);
-
+        createOfficial(getEntitySupplier().newPerson(), event);
+        createOfficial(getEntitySupplier().newPerson(), event);
         return event;
+    }
+
+    default ShootingTestOfficial createOfficial(final Person person, final ShootingTestEvent event) {
+        person.setRhyMembership((Riistanhoitoyhdistys) event.getCalendarEvent().getOrganisation());
+        return getEntitySupplier().newShootingTestOfficial(event, person);
     }
 
     default ShootingTestAttempt createParticipantWithOneAttempt(final ShootingTestEvent event) {
         return createParticipantWithOneAttempt(event, getEntitySupplier().newPerson());
+    }
+
+    default ShootingTestAttempt createForeignParticipantWithOneAttempt(final ShootingTestEvent event) {
+        return createParticipantWithOneAttempt(event, getEntitySupplier().newForeignPerson());
     }
 
     default ShootingTestAttempt createParticipantWithOneAttempt(final ShootingTestEvent event, final Person person) {
@@ -73,7 +71,8 @@ public interface ShootingTestFixtureMixin extends OrganisationFixtureMixin {
             final ShootingTestAttempt attempt1 = createParticipantWithOneAttempt(event1, person1, BEAR);
 
             final ShootingTestEvent event2 = openEvent(rhy2, date.minusDays(1));
-            final ShootingTestParticipant participant2 = getEntitySupplier().newShootingTestParticipant(event1, person2);
+            final ShootingTestParticipant participant2 =
+                    getEntitySupplier().newShootingTestParticipant(event1, person2);
             getEntitySupplier().newShootingTestAttempt(participant2, UNQUALIFIED);
             final ShootingTestAttempt attempt2 = getEntitySupplier().newShootingTestAttempt(participant2, QUALIFIED);
             completeParticipation(participant2, 2, 2);

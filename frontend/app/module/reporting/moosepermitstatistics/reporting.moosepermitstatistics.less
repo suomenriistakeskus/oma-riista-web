@@ -1,0 +1,67 @@
+@moosepermit-statistics-header-border-style: 1px solid #c5c5c5;
+@moosepermit-statistics-advanced-table-border-indexes: 3 4 5 6 8 12 15 18 21 22 23 25 28 30 33;
+@moosepermit-statistics-simple-table-border-indexes: 3 4 11 14 16 18;
+
+.loop-moosepermit-statistics-border-left(@cols; @index: 1) when (@index <= length(@cols)) {
+  .loop-moosepermit-statistics-border-left(@cols; (@index + 1));
+
+  @i: extract(@cols, @index);
+
+  &:nth-of-type(@{i}) {
+    border-left: @moosepermit-statistics-header-border-style;
+  }
+}
+
+.moosepermit-statistics-table {
+  td, th {
+    text-align: center;
+    padding: 6px 4px !important;
+    white-space: nowrap;
+  }
+
+  td:nth-child(2) {
+    width: 135px;
+    text-align: left;
+  }
+
+  .summary {
+    font-weight: bold;
+  }
+
+  tr:hover {
+    background-color: #e0f0eb;
+  }
+
+  .topheader {
+    th {
+      border-bottom: none;
+      border-left: @moosepermit-statistics-header-border-style;
+
+      &:first-child {
+        border-left: 0;
+      }
+    }
+  }
+}
+
+.moosepermit-statistics-table.simple {
+  .lowheader > th {
+    border-top: 0;
+    .loop-moosepermit-statistics-border-left(@moosepermit-statistics-simple-table-border-indexes);
+  }
+
+  tr > td {
+    .loop-moosepermit-statistics-border-left(@moosepermit-statistics-simple-table-border-indexes);
+  }
+}
+
+.moosepermit-statistics-table.advanced {
+  .lowheader > th {
+    border-top: 0;
+    .loop-moosepermit-statistics-border-left(@moosepermit-statistics-advanced-table-border-indexes);
+  }
+
+  tr > td {
+    .loop-moosepermit-statistics-border-left(@moosepermit-statistics-advanced-table-border-indexes);
+  }
+}

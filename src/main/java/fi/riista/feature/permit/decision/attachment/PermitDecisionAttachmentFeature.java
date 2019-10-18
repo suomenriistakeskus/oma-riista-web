@@ -76,7 +76,7 @@ public class PermitDecisionAttachmentFeature {
         permitDecisionAttachmentRepository.save(attachment);
     }
 
-    private int getNextOrderingNumber(final PermitDecision decision) {
+    private static int getNextOrderingNumber(final PermitDecision decision) {
         final int maxOrderingNumber = decision.getAttachments().stream()
                 .filter(a -> !a.isDeleted() && a.getOrderingNumber() != null)
                 .mapToInt(PermitDecisionAttachment::getOrderingNumber)
@@ -103,8 +103,8 @@ public class PermitDecisionAttachmentFeature {
         decision.assertHandler(activeUserService.requireActiveUser());
 
         final String attachmentName = new LocalisedString(
-                "Saate hirvieläinten pyyntiluvan saajille 2018",
-                "Följebrev till mottagarna av hjortdjurslicenser 2018")
+                "Saate hirvieläinten pyyntiluvan saajille 2019",
+                "Följebrev till mottagarna av hjortdjurslicenser 2019")
                 .getTranslation(decision.getLocale());
         final String attachmentResourceName = new LocalisedString(
                 "moose-decision-attachment-fi.pdf",

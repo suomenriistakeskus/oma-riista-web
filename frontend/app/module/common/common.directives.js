@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('app.common.directives', ['dialogs.main'])
+angular.module('app.common.directives', ['dialogs.main', 'app.metadata'])
     .directive('uibDatepickerPopup', function ($window, $filter) {
         // Extend external directive to support storing model value as ISO-8601 string date
         return {
@@ -192,7 +192,7 @@ angular.module('app.common.directives', ['dialogs.main'])
                 if (!element || !element.context) {
                     return;
                 }
-                _.each(element.context.children, function (e) {
+                _.forEach(element.context.children, function (e) {
                     if (e.tagName === 'OPTGROUP') {
                         angular.element(e).attr('value', '*');
                     }
@@ -328,6 +328,35 @@ angular.module('app.common.directives', ['dialogs.main'])
                             if (inputViewValue && _.isEmpty(otherInputModelController.$viewValue)) {
                                 otherInputModelController.$setViewValue(inputViewValue);
                                 otherInputModelController.$render();
+                            }
+                        }
+                    });
+                }
+            }
+        };
+    })
+    .directive('rCopyZeroOnBlurToEmptyInput', function () {
+        return {
+            restrict: 'A',
+            priority: 1,
+            scope: false,
+            require: ['^^form', '^ngModel'],
+            link: function (scope, element, attrs, controllers) {
+                var formController = controllers[0];
+                var modelController = controllers[1];
+
+                var targetInput = attrs.rCopyZeroOnBlurToEmptyInput;
+
+                if (targetInput) {
+                    element.on('blur', function (event) {
+                        if (modelController.$viewValue === "0") {
+                            var targetInputModelController = formController[targetInput];
+
+                            if (angular.isObject(targetInputModelController)) {
+                                if (_.isEmpty(targetInputModelController.$viewValue)) {
+                                    targetInputModelController.$setViewValue("0");
+                                    targetInputModelController.$render();
+                                }
                             }
                         }
                     });

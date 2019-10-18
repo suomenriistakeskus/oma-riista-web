@@ -1,0 +1,32 @@
+<table class="table table-condensed moose-permit-infotable">
+    <thead>
+    <tr>
+        <th style="width: 15%" translate="club.permit.allocation.partner"></th>
+        <th style="width: 10%" translate="global.map.areaExternalId"></th>
+        <th style="width: 15%" translate="global.map.size.privateLandAreaSize"></th>
+        <th style="width: 15%" translate="global.map.size.stateLandAreaSize"></th>
+        <th style="width: 15%" translate="global.map.size.landAreaSize"></th>
+        <th style="width: 15%" translate="global.map.size.waterAreaSize"></th>
+        <th style="width: 15%" translate="global.map.size.totalAreaSize"></th>
+    </tr>
+    </thead>
+
+    <tbody ng-repeat="partner in ::$ctrl.partners track by partner.huntingClubId">
+    <tr ng-repeat="area in partner.partnerAreas">
+        <td>
+            <a ng-if="::$ctrl.canNavigateToClub"
+               name-translated="::partner.huntingClubName"
+               ng-click="$ctrl.navigateToClub({'partner': partner})"></a>
+
+            <span ng-if="::(!$ctrl.canNavigateToClub)"
+                  name-translated="::partner.huntingClubName"></span>
+        </td>
+        <td ng-bind="area.externalId"></td>
+        <td ng-bind="area.areaSize.privateLandAreaSize | prettyAreaSize:0"></td>
+        <td ng-bind="area.areaSize.stateLandAreaSize | prettyAreaSize:0"></td>
+        <td ng-bind="area.areaSize.all.land | prettyAreaSize:0"></td>
+        <td ng-bind="area.areaSize.all.water | prettyAreaSize:0"></td>
+        <td ng-bind="area.areaSize.all.total | prettyAreaSize:0"></td>
+    </tr>
+    </tbody>
+</table>

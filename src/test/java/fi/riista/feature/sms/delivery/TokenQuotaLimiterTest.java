@@ -1,5 +1,6 @@
 package fi.riista.feature.sms.delivery;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,7 @@ public class TokenQuotaLimiterTest {
     }
 
     @Test
+    @Ignore("Fails randomly because guava's cache eviction cannot be reliably determined from outside")
     public void testCacheExpirationTimeUpdatedOnlyOnSuccessfulAcquire() throws InterruptedException {
         final int tokenExpirationTimeMillis = 20;
 

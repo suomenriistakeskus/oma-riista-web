@@ -1,8 +1,10 @@
 package fi.riista.api.pub;
 
 import com.google.common.collect.ImmutableMap;
+import fi.riista.feature.gis.GISWGS84Point;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.permit.application.archive.PermitApplicationArchiveDownloadFeature;
 import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionDownloadFeature;
 import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionFeature;
 import fi.riista.feature.pub.calendar.PublicCalendarEventSearchDTO;
@@ -14,11 +16,11 @@ import fi.riista.feature.pub.occupation.PublicOccupationSearchParameters;
 import fi.riista.feature.pub.occupation.PublicOccupationTypeDTO;
 import fi.riista.feature.pub.occupation.PublicOccupationsAndOrganisationsDTO;
 import fi.riista.feature.pub.occupation.PublicOrganisationDTO;
+import fi.riista.feature.pub.rhy.RhyWithRkaResultDTO;
 import fi.riista.feature.pub.season.PublicHarvestSeasonDTO;
 import fi.riista.feature.pub.season.PublicHarvestSeasonFeature;
 import fi.riista.feature.pub.statistics.PublicBearReportFeature;
 import fi.riista.feature.pub.statistics.PublicHarvestPivotTableFeature;
-import fi.riista.feature.pub.statistics.PublicMetsahallitusHarvestSummaryFeature;
 import fi.riista.feature.pub.statistics.PublicWolfReportFeature;
 import fi.riista.util.DateUtil;
 import fi.riista.util.Patterns;
@@ -71,9 +73,6 @@ public class PublicApiResource {
     private PublicHarvestPivotTableFeature harvestSpecimenPivotTableFeature;
 
     @Resource
-    private PublicMetsahallitusHarvestSummaryFeature metsahallitusHarvestSummaryFeature;
-
-    @Resource
     private PublicWolfReportFeature wolfReportFeature;
 
     @Resource
@@ -85,9 +84,12 @@ public class PublicApiResource {
     @Resource
     private PermitDecisionRevisionDownloadFeature permitDecisionRevisionDownloadFeature;
 
+    @Resource
+    private PermitApplicationArchiveDownloadFeature permitApplicationArchiveDownloadFeature;
+
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/rk", method = RequestMethod.GET)
-    public PublicOrganisationDTO getRiistakeskus(@RequestParam(required = false) String lang) {
+    public PublicOrganisationDTO getRiistakeskus(@RequestParam(required = false) final String lang) {
         setLocale(lang);
         return occupationSearchFeature.getRiistakeskus();
     }
@@ -95,9 +97,9 @@ public class PublicApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/{organisationType:\\w+}/{officialCode:\\w+}", method = RequestMethod.GET)
     public PublicOrganisationDTO getOrganisation(
-            @PathVariable OrganisationType organisationType,
-            @PathVariable String officialCode,
-            @RequestParam(required = false) String lang) {
+            @PathVariable final OrganisationType organisationType,
+            @PathVariable final String officialCode,
+            @RequestParam(required = false) final String lang) {
 
         setLocale(lang);
         return occupationSearchFeature.getByTypeAndOfficialCode(organisationType, officialCode);
@@ -105,7 +107,7 @@ public class PublicApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/tehtavatyypit", method = RequestMethod.GET)
-    public List<PublicOccupationTypeDTO> getOccupationTypes(@RequestParam(required = false) String lang) {
+    public List<PublicOccupationTypeDTO> getOccupationTypes(@RequestParam(required = false) final String lang) {
         setLocale(lang);
         return occupationSearchFeature.getAllOccupationTypes();
     }
@@ -113,11 +115,13 @@ public class PublicApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/tehtavat", method = RequestMethod.GET)
     public PublicOccupationsAndOrganisationsDTO listOccupations(
-            @RequestParam(required = false) String areaId,
-            @RequestParam(required = false) String rhyId,
-            @RequestParam(required = false) OrganisationType organisationType,
-            @RequestParam(required = false) OccupationType occupationType,
-            @RequestParam(required = false) String lang) {
+            @RequestParam(required = false) final String areaId,
+            @RequestParam(required = false) final String rhyId,
+            @RequestParam(required = false) final OrganisationType organisationType,
+            @RequestParam(required = false) final OccupationType occupationType,
+            @RequestParam(required = false) final Integer pageSize,
+            @RequestParam(required = false) final Integer pageNumber,
+            @RequestParam(required = false) final String lang) {
 
         setLocale(lang);
 
@@ -126,12 +130,14 @@ public class PublicApiResource {
                 .withRhyId(rhyId)
                 .withOrganisationType(organisationType)
                 .withOccupationType(occupationType)
+                .withPageSize(pageSize)
+                .withPageNumber(pageNumber)
                 .build());
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/tapahtumatyypit", method = RequestMethod.GET)
-    public List<PublicCalendarEventTypeDTO> getCalendarEventTypes(@RequestParam(required = false) String lang) {
+    public List<PublicCalendarEventTypeDTO> getCalendarEventTypes(@RequestParam(required = false) final String lang) {
         setLocale(lang);
         return calendarEventSearchFeature.getCalendarEventTypes();
     }
@@ -139,17 +145,28 @@ public class PublicApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/tapahtumat", method = RequestMethod.GET)
     public PublicCalendarEventSearchResultDTO listCalendarEvents(
-            @ModelAttribute @Valid PublicCalendarEventSearchDTO params, @RequestParam(required = false) String lang) {
+            @ModelAttribute @Valid final PublicCalendarEventSearchDTO params, @RequestParam(required = false) final String lang) {
 
         setLocale(lang);
         fixBeginToBeBeforeEnd(params);
         return calendarEventSearchFeature.findCalendarEvents(params);
     }
 
-    private static void fixBeginToBeBeforeEnd(PublicCalendarEventSearchDTO params) {
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/rhy")
+    public RhyWithRkaResultDTO getRhyByLocation(
+            @RequestParam final double latitude,
+            @RequestParam final double longitude,
+            @RequestParam(required = false) final String lang) {
+
+        setLocale(lang);
+        return occupationSearchFeature.getRkaAndRhyByWGS84Location(GISWGS84Point.create(latitude, longitude));
+    }
+
+    private static void fixBeginToBeBeforeEnd(final PublicCalendarEventSearchDTO params) {
         if (params.getEnd().isBefore(params.getBegin())) {
-            LocalDate begin = params.getBegin();
-            LocalDate end = params.getEnd();
+            final LocalDate begin = params.getBegin();
+            final LocalDate end = params.getEnd();
             params.setBegin(end);
             params.setEnd(begin);
         }
@@ -157,43 +174,27 @@ public class PublicApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/kiintiometsastys", method = RequestMethod.GET)
-    public List<PublicHarvestSeasonDTO> listSeasonsWithQuotas(@RequestParam(required = false) Boolean onlyActive) {
+    public List<PublicHarvestSeasonDTO> listSeasonsWithQuotas(@RequestParam(required = false) final Boolean onlyActive) {
         return harvestSeasonPublicFeature.listSeasonsWithQuotas(onlyActive);
     }
 
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
     @RequestMapping(value = "/saaliit/rka", method = RequestMethod.GET)
     public Object harvestByRka(
-            @RequestParam(required = false) Integer species,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam(required = false) final Integer species,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate end) {
         return harvestSpecimenPivotTableFeature.summary(species, start, end);
     }
 
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
     @RequestMapping(value = "/saaliit/rka/{officialCode:\\w+}", method = RequestMethod.GET)
     public Object harvestByRhy(
-            @PathVariable String officialCode,
-            @RequestParam(required = false) Integer species,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @PathVariable final String officialCode,
+            @RequestParam(required = false) final Integer species,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate end) {
         return harvestSpecimenPivotTableFeature.summaryForRka(species, officialCode, start, end);
-    }
-
-    @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
-    @RequestMapping(value = "/saaliit/metsahallitus/hirvi", method = RequestMethod.GET, produces = "text/csv")
-    public Object harvestMetsahallitusHirvi(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        return metsahallitusHarvestSummaryFeature.getHirviSummary(start, end);
-    }
-
-    @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
-    @RequestMapping(value = "/saaliit/metsahallitus/pienriista", method = RequestMethod.GET, produces = "text/csv")
-    public Object harvestMetsahallitusPienriista(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        return metsahallitusHarvestSummaryFeature.getPienriistaSummary(start, end);
     }
 
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
@@ -205,7 +206,7 @@ public class PublicApiResource {
 
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
     @RequestMapping(value = "/saaliit/susi/kannanhoidollinen", method = RequestMethod.GET)
-    public FeatureCollection getWolfPropertyPolygon(@RequestParam Integer year) {
+    public FeatureCollection getWolfPropertyPolygon(@RequestParam final Integer year) {
         return Optional.ofNullable(year).map(wolfReportFeature::report).orElse(null);
     }
 
@@ -217,17 +218,24 @@ public class PublicApiResource {
 
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
     @RequestMapping(value = "/saaliit/karhu/kaikki", method = RequestMethod.GET)
-    public FeatureCollection getBearPropertyPolygon(@RequestParam Integer year) {
+    public FeatureCollection getBearPropertyPolygon(@RequestParam final Integer year) {
         return Optional.ofNullable(year).map(bearReportFeature::report).orElse(null);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/decision/receiver/pdf/download/{uuid:" + Patterns.UUID + "}")
     public void getAttachment(@PathVariable final UUID uuid,
-                              HttpServletResponse response) throws IOException {
+                              final HttpServletResponse response) throws IOException {
 
         final long revisionId = permitDecisionRevisionFeature.updateViewCountAndResolveRevisionIdByReceiverUuid(uuid);
         permitDecisionRevisionDownloadFeature.downloadPdfNoAuthorization(revisionId, response);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/application/zip/{uuid:" + Patterns.UUID + "}")
+    public void getApplicationArchive(final @PathVariable UUID uuid,
+                                      final HttpServletResponse response) throws IOException {
+        permitApplicationArchiveDownloadFeature.downloadArchiveWithoutAuthorization(uuid, response);
     }
 
     private static List<Map<String, Object>> generateYearRange(final int beginYear) {
@@ -238,8 +246,8 @@ public class PublicApiResource {
         return generateYearRange(now, years);
     }
 
-    private static List<Map<String, Object>> generateYearRange(DateTime now, IntStream years) {
-        return years.<Map<String, Object>> mapToObj(year -> {
+    private static List<Map<String, Object>> generateYearRange(final DateTime now, final IntStream years) {
+        return years.<Map<String, Object>>mapToObj(year -> {
             final Interval interval = DateUtil.huntingYearInterval(year);
 
             return ImmutableMap.of("year", year,
@@ -248,7 +256,7 @@ public class PublicApiResource {
         }).collect(toList());
     }
 
-    private static void setLocale(String lang) {
+    private static void setLocale(final String lang) {
         if (lang != null) {
             LocaleContextHolder.setLocale(new Locale(lang));
         }

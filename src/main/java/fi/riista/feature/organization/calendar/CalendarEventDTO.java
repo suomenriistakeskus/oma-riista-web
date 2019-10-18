@@ -4,33 +4,38 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fi.riista.config.jackson.LocalTimeToStringSerializer;
 import fi.riista.config.jackson.StringToLocalTimeDeserializer;
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.address.Address;
-import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
+import fi.riista.util.F;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Size;
+import java.util.Collections;
+import java.util.List;
+
+import static fi.riista.feature.organization.calendar.CalendarEventType.additionalEventsAllowedTypes;
 
 public class CalendarEventDTO extends BaseEntityDTO<Long> {
-
     public static CalendarEventDTO create(final CalendarEvent event,
                                           final Organisation organisation,
                                           final Venue venue,
                                           final Address venueAddress,
-                                          final boolean isAssociatedWithShootingTestEvent) {
-
+                                          final boolean lockedAsPastCalendarEvent,
+                                          final boolean lockedAsPastStatistics,
+                                          final List<AdditionalCalendarEventDTO> additionalCalendarEvents) {
         final CalendarEventDTO dto = new CalendarEventDTO();
         DtoUtil.copyBaseFields(event, dto);
 
         dto.setName(event.getName());
         dto.setCalendarEventType(event.getCalendarEventType());
-        dto.setDate(DateUtil.toLocalDateNullSafe(event.getDate()));
+        dto.setDate(event.getDateAsLocalDate());
         dto.setBeginTime(event.getBeginTime());
         dto.setEndTime(event.getEndTime());
         dto.setDescription(event.getDescription());
@@ -38,7 +43,17 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         dto.setOrganisation(OrganisationDTO.create(organisation));
         dto.setVenue(VenueDTO.create(venue, venueAddress));
 
-        dto.setAssociatedWithShootingTestEvent(isAssociatedWithShootingTestEvent);
+        dto.setLockedAsPastCalendarEvent(lockedAsPastCalendarEvent);
+
+        dto.setPublicVisibility(event.getPublicVisibility());
+
+        dto.setExcludedFromStatistics(event.getExcludedFromStatistics());
+
+        dto.setParticipants(event.getParticipants());
+
+        dto.setLockedAsPastStatistics(lockedAsPastStatistics);
+
+        dto.setAdditionalCalendarEvents(additionalCalendarEvents);
 
         return dto;
     }
@@ -69,7 +84,18 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
     @Valid
     private VenueDTO venue;
 
-    private Boolean associatedWithShootingTestEvent;
+    private Boolean lockedAsPastCalendarEvent;
+
+    private boolean publicVisibility;
+
+    private boolean excludedFromStatistics;
+
+    private Integer participants;
+
+    private Boolean lockedAsPastStatistics;
+
+    @Valid
+    private List<AdditionalCalendarEventDTO> additionalCalendarEvents;
 
     @Override
     public Long getId() {
@@ -155,11 +181,57 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         this.venue = venue;
     }
 
-    public Boolean getAssociatedWithShootingTestEvent() {
-        return associatedWithShootingTestEvent;
+    public Boolean getLockedAsPastCalendarEvent() {
+        return lockedAsPastCalendarEvent;
     }
 
-    public void setAssociatedWithShootingTestEvent(final Boolean associatedWithShootingTestEvent) {
-        this.associatedWithShootingTestEvent = associatedWithShootingTestEvent;
+    public void setLockedAsPastCalendarEvent(final Boolean lockedAsPastCalendarEvent) {
+        this.lockedAsPastCalendarEvent = lockedAsPastCalendarEvent;
+    }
+
+    public boolean getPublicVisibility() {
+        return publicVisibility;
+    }
+
+    public void setPublicVisibility(final boolean publicVisibility) {
+        this.publicVisibility = publicVisibility;
+    }
+
+    public boolean getExcludedFromStatistics() {
+        return excludedFromStatistics;
+    }
+
+    public void setExcludedFromStatistics(final boolean excludedFromStatistics) {
+        this.excludedFromStatistics = excludedFromStatistics;
+    }
+
+    public Integer getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(Integer participants) {
+        this.participants = participants;
+    }
+
+    public Boolean getLockedAsPastStatistics() {
+        return lockedAsPastStatistics;
+    }
+
+    public void setLockedAsPastStatistics(Boolean lockedAsPastStatistics) {
+        this.lockedAsPastStatistics = lockedAsPastStatistics;
+    }
+
+    public List<AdditionalCalendarEventDTO> getAdditionalCalendarEvents() {
+        return additionalCalendarEvents == null ? Collections.emptyList() : additionalCalendarEvents;
+    }
+
+    public void setAdditionalCalendarEvents(final List<AdditionalCalendarEventDTO> additionalCalendarEvents) {
+        this.additionalCalendarEvents = additionalCalendarEvents;
+    }
+
+    @AssertTrue
+    public boolean isAdditionalEventsInfoValid() {
+        return F.isNullOrEmpty(additionalCalendarEvents)
+                || additionalEventsAllowedTypes().contains(calendarEventType);
     }
 }

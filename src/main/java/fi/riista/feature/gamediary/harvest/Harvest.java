@@ -13,6 +13,7 @@ import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.report.HasHarvestReportState;
 import fi.riista.feature.harvestpermit.season.HarvestQuota;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
+import fi.riista.feature.harvestregistry.HarvestRegistryItem;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay_;
@@ -21,7 +22,6 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.Person_;
 import fi.riista.util.F;
 import fi.riista.util.jpa.CriteriaUtils;
-import org.hibernate.validator.constraints.Range;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
@@ -78,11 +78,12 @@ public class Harvest extends GameDiaryEntry implements HasHarvestReportState {
     }
 
     public static final int MIN_AMOUNT = 1;
-    public static final int MAX_AMOUNT = 999;
+    public static final int MAX_AMOUNT = 9999;
 
     private Long id;
 
-    @Range(min = MIN_AMOUNT, max = MAX_AMOUNT)
+    @Min(MIN_AMOUNT)
+    @Max(MAX_AMOUNT)
     @Column(nullable = false)
     private int amount;
 
@@ -197,6 +198,9 @@ public class Harvest extends GameDiaryEntry implements HasHarvestReportState {
     @Valid
     @Embedded
     private PermittedMethod permittedMethod;
+
+    @OneToMany(mappedBy = "harvest", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<HarvestRegistryItem> harvestRegistryItem = new HashSet<HarvestRegistryItem>();
 
     @Transient
     private HuntingClub huntingClub;

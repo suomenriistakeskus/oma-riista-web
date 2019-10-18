@@ -30,15 +30,16 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroup_;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay_;
-import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummary;
-import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryRepository;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummaryRepository;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary_;
+import fi.riista.feature.huntingclub.permit.endofhunting.basicsummary.BasicClubHuntingSummary;
+import fi.riista.feature.huntingclub.permit.endofhunting.basicsummary.BasicClubHuntingSummaryRepository;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummaryRepository;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary_;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationSort;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Club;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Permit;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Permits;
@@ -65,10 +66,10 @@ import java.util.Set;
 import java.util.stream.Collector;
 
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
-import static fi.riista.util.Collect.leastAfterGroupingBy;
 import static fi.riista.util.Collect.groupingByIdOf;
 import static fi.riista.util.Collect.indexingBy;
 import static fi.riista.util.Collect.indexingByIdOf;
+import static fi.riista.util.Collect.leastAfterGroupingBy;
 import static fi.riista.util.jpa.JpaSpecs.and;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.inCollection;
@@ -132,7 +133,7 @@ public class LukeExportFeature {
     @PreAuthorize("hasPrivilege('EXPORT_LUKE_MOOSE')")
     public LEM_Permits exportMoose(final int huntingYear) {
         final GameSpecies moose = gameSpeciesService.requireByOfficialCode(GameSpecies.OFFICIAL_CODE_MOOSE);
-        final List<HarvestPermit> allPermits = findPermits(huntingYear, moose, HarvestPermit.MOOSELIKE_PERMIT_TYPE);
+        final List<HarvestPermit> allPermits = findPermits(huntingYear, moose, PermitTypeCode.MOOSELIKE);
 
         final Map<Long, HarvestPermitSpeciesAmount> allPermitsSpeciesAmounts = F.index(
                 harvestPermitSpeciesAmountRepository.findAll(
@@ -141,7 +142,7 @@ public class LukeExportFeature {
                 hpsa -> hpsa.getHarvestPermit().getId());
 
         final Map<HarvestPermit, Map<HuntingClub, MooseHuntingSummary>> permitToClubToSummary = findSummaries(allPermits);
-        final List<HarvestPermit> amendmentPermits = findPermits(huntingYear, moose, HarvestPermit.MOOSELIKE_AMENDMENT_PERMIT_TYPE);
+        final List<HarvestPermit> amendmentPermits = findPermits(huntingYear, moose, PermitTypeCode.MOOSELIKE_AMENDMENT);
         final Map<Long, List<HarvestPermitSpeciesAmount>> amendmentPermitSpas = amendmentPermits.stream()
                 .map(hp -> findAnyMooseSpeciesAmount(hp.getSpeciesAmounts()).orElseThrow(
                         () -> new IllegalStateException("Could not find moose speciesAmount for harvestPermitId=" + hp.getId())))

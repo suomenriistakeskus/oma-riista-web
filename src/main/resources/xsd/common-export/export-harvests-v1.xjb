@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               schemaLocation="export-harvests-v1.xsd"
+               version="2.1">
+
+    <jaxb:schemaBindings>
+        <jaxb:package name="fi.riista.integration.common.export.harvests"/>
+
+        <jaxb:nameXmlTransform>
+            <jaxb:typeName prefix="CHAR_"/>
+            <jaxb:anonymousTypeName prefix="CHAR_"/>
+            <jaxb:elementName prefix="CHAR_"/>
+        </jaxb:nameXmlTransform>
+
+    </jaxb:schemaBindings>
+
+    <jaxb:globalBindings>
+        <xjc:javaType adapter="fi.riista.integration.support.LocalDateTimeAdapter"
+                      name="org.joda.time.LocalDateTime"
+                      xmlType="xsd:dateTime"/>
+    </jaxb:globalBindings>
+
+</jaxb:bindings>

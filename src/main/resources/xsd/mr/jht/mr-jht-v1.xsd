@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/mr/jht/2018/10"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/mr/jht/2018/10"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xs:element name="jht">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="occupation" type="occupation" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="occupation">
+        <xs:sequence>
+            <xs:element name="id" type="xs:long"/>
+            <xs:element name="rhyOfficialCode" type="xs:token"/>
+            <xs:element name="occupationType" type="occupationTypeEnum"/>
+            <xs:element name="beginDate" type="xs:date" nillable="true"/>
+            <xs:element name="endDate" type="xs:date" nillable="true"/>
+            <xs:choice>
+                <xs:element name="ssn" type="xs:token"/>
+                <xs:element name="hunterNumber" type="xs:token"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="occupationTypeEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="TOIMINNANOHJAAJA"/>
+            <xs:enumeration value="METSASTYKSENVALVOJA"/>
+            <xs:enumeration value="METSASTAJATUTKINNON_VASTAANOTTAJA"/>
+            <xs:enumeration value="AMPUMAKOKEEN_VASTAANOTTAJA"/>
+            <xs:enumeration value="RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

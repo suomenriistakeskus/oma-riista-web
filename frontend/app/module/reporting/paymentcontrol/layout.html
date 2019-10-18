@@ -1,0 +1,46 @@
+<div class="row">
+    <div class="col-xs-12 col-sm-9 col-md-10">
+        <span class="reporting-payment-control-title">Hirvieläinlupien maksuntarkkailu</span>
+    </div>
+
+    <div class="col-xs-4 col-sm-3 col-md-2 text-right">
+        <r-hunting-year-selection available-hunting-years="$ctrl.availableHuntingYears"
+                                  preselect-current-hunting-year="true"
+                                  on-hunting-year-changed="$ctrl.selectHuntingYear(huntingYear)">
+        </r-hunting-year-selection>
+    </div>
+</div>
+
+<hr class="invisible"/>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-6">
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.exportUnfinishedMoosePermitsToExcel()">
+
+            <span class="glyphicon glyphicon-search"></span> &nbsp;
+            <span translate="reporting.paymentControl.button.exportUnfinishedMoosePermits"></span>
+        </button>
+    </div>
+
+    <div class="col-xs-12 col-sm-6 text-right">
+        <div class="btn-group" role="group" uib-dropdown dropdown-append-to-body>
+
+            <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="reporting.paymentControl.button.exportMooselikeHarvestPaymentSummary"></span>
+                &nbsp;
+                <span class="caret"></span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+                <li ng-repeat="s in $ctrl.mooselikeSpecies track by s.code">
+                    <a ng-click="$ctrl.exportMooselikeHarvestPaymentSummaryToExcel(s.code)">
+                        <span class="glyphicon glyphicon-th"></span>&nbsp;
+                        <span ng-bind="s | rI18nNameFilter | capitalize"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    <div>
+</div>

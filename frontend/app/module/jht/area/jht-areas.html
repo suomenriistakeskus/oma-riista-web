@@ -1,0 +1,73 @@
+<div class="row">
+    <div class="col-md-2">
+        <label>&nbsp;</label>
+
+        <a class="btn btn-block"
+           ng-class="{'btn-primary': !$ctrl.hasFilters(), 'btn-default': $ctrl.hasFilters()}"
+           ng-click="$ctrl.clearFilter()">
+            Omat
+        </a>
+    </div>
+
+    <div class="col-md-2">
+        <label for="year" class="control-label">
+            <span translate="global.selectCalendarYear"></span>
+        </label>
+
+        <select class="form-control"
+                name="year" id="year"
+                ng-model="$ctrl.year"
+                ng-change="$ctrl.onFilterChange()"
+                ng-options="y for y in $ctrl.yearOptions">
+            <option value="" translate="harvestreport.admin.all"></option>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label for="rkaCode" class="control-label">
+            <span translate="organisation.organisationType.RKA"></span>
+        </label>
+
+        <select class="form-control"
+                name="rkaCode" id="rkaCode"
+                ng-model="$ctrl.rkaCode"
+                ng-change="$ctrl.onFilterChange()"
+                ng-options="a.officialCode as a.name for a in $ctrl.rkaList">
+            <option value="" translate="harvestreport.admin.all"></option>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label for="searchText" class="control-label" translate="jht.areas.list.searchText"></label>
+
+        <div class="input-group">
+            <input type="text"
+                   class="form-control"
+                   name="searchText"
+                   ng-model="$ctrl.searchText"
+                   ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                   ng-change="$ctrl.onFilterChange()"
+                   id="searchText">
+
+            <div class="input-group-addon">
+                <span class="fa fa-lg fa-fw fa-search"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" style="margin-top: 60px;">
+    <div class="col-md-2">
+        <div style="padding: 15px 0;">
+            <a class="btn btn-primary btn-block"
+               ng-click="$ctrl.createArea()">
+                <span translate="account.areas.create"></span>
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4 col-md-offset-2">
+        <slice-pager slice="$ctrl.areaList" load-page="$ctrl.loadPage(page)"></slice-pager>
+    </div>
+</div>
+
+<moderator-area-list area-list="$ctrl.areaList.content" reload="$ctrl.onFilterChange()"></moderator-area-list>

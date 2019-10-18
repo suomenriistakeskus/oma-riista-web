@@ -3,6 +3,8 @@ package fi.riista.util;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -51,6 +53,17 @@ public abstract class ListTransformer<T, U> {
         final List<U> resultList = transformedList != null ? transformedList : Collections.emptyList();
 
         return new PageImpl<>(resultList, pageRequest, resultPage.getTotalElements());
+    }
+
+    @Nonnull
+    public Slice<U> apply(final @Nonnull Slice<T> resultPage, final @Nonnull Pageable pageRequest) {
+        Objects.requireNonNull(resultPage, "resultPage is null");
+        Objects.requireNonNull(pageRequest, "pageRequest is null");
+
+        final List<U> transformedList = apply(resultPage.getContent());
+        final List<U> resultList = transformedList != null ? transformedList : Collections.emptyList();
+
+        return new SliceImpl<>(resultList, pageRequest, resultPage.hasNext());
     }
 
     @Nonnull

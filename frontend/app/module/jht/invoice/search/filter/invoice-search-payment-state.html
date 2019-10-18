@@ -1,0 +1,10 @@
+<div class="form-group" show-errors>
+    <label for="paymentState" translate="jht.invoice.search.paymentState"></label>
+
+    <select name="paymentState" id="paymentState" class="form-control"
+            ng-model="$ctrl.filters.paymentState"
+            ng-options="('jht.invoice.search.paymentStates.' + option | translate) for option in $ctrl.paymentStates"
+            ng-disabled="$ctrl.isDisabled()">
+        <option value="" translate="jht.invoice.search.showAllPaymentStates"></option>
+    </select>
+</div>

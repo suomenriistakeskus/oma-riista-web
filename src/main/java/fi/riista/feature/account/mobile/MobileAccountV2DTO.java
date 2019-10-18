@@ -1,7 +1,6 @@
 package fi.riista.feature.account.mobile;
 
 import fi.riista.feature.account.AccountShootingTestDTO;
-import fi.riista.feature.gamediary.mobile.MobileOccupationDTO;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;

@@ -64,8 +64,9 @@
                             return ShootingTestEventService.isUserGrantedUpdatePermission(event.officials);
                         }
                     },
-                    controller: function (event) {
+                    controller: function (event, hasUpdatePermission) {
                         this.event = event;
+                        this.hasUpdatePermission = hasUpdatePermission;
                     },
                     controllerAs: '$ctrl'
                 })
@@ -100,7 +101,7 @@
                                     };
                                     var sortCriterias = [attemptExistenceSort, 'registrationTime', 'lastName', 'firstName', 'hunterNumber'];
 
-                                    return _.sortByAll(participants, sortCriterias);
+                                    return _.sortBy(participants, sortCriterias);
                                 });
                         }
                     }
@@ -131,13 +132,13 @@
                                 .then(function (participants) {
                                     var partitionByCompleted = _.partition(participants, 'completed');
 
-                                    var completed = _.sortByAll(partitionByCompleted[0], ['lastName', 'firstName', 'hunterNumber']);
+                                    var completed = _.sortBy(partitionByCompleted[0], ['lastName', 'firstName', 'hunterNumber']);
 
                                     var attemptExistenceSort = function (participant) {
                                         return participant.attempts.length === 0 ? 0 : 1;
                                     };
                                     var uncompletedSortCriteria = [attemptExistenceSort, 'registrationTime', 'lastName', 'firstName', 'hunterNumber'];
-                                    var uncompleted = _.sortByAll(partitionByCompleted[1], uncompletedSortCriteria);
+                                    var uncompleted = _.sortBy(partitionByCompleted[1], uncompletedSortCriteria);
 
                                     return uncompleted.concat(completed);
                                 });
@@ -164,46 +165,57 @@
                 return repository;
             }
 
-            var repository = $resource('/api/v1/shootingtest/:rhyId/calendarevents', {'rhyId': '@rhyId'}, {
+            var defaultParams = {
+                calendarEventId: '@calendarEventId'
+            };
+
+            var repository = $resource('/api/v1/shootingtest/calendarevent/:calendarEventId', defaultParams, {
                 'query': {
                     method: 'GET',
+                    url: '/api/v1/shootingtest/rhy/:rhyId/calendarevents',
+                    params: {rhyId: '@rhyId'},
                     isArray: true
                 },
                 'get': {
-                    method: 'GET',
-                    url: '/api/v1/shootingtest/calendarevent/:calendarEventId',
-                    params: {calendarEventId: '@calendarEventId'}
+                    method: 'GET'
                 },
                 'open': {
                     method: 'POST',
-                    url: '/api/v1/shootingtest/calendarevent/:calendarEventId/open',
-                    params: {calendarEventId: '@calendarEventId'}
+                    url: '/api/v1/shootingtest/calendarevent/:calendarEventId/open'
                 }
             });
 
             return decorateRepository(repository);
         })
 
-        .factory('ShootingTestEvents', function ($resource) {
-            return $resource('/api/v1/shootingtest/:rhyId/events', {'rhyId': '@rhyId'}, {
+        .service('ShootingTestCalendarEventsService', function (FetchAndSaveBlob, $translate) {
+            this.loadPaymentSummaryPdf = function (calendarEventId) {
+                var lang = $translate.use();
+                return FetchAndSaveBlob.post('/api/v1/shootingtest/summary/event/' +
+                    calendarEventId + '/event-summary.pdf' + '?lang=' + lang);
+            };
+        })
+
+        .factory('ShootingTestEvent', function ($resource) {
+            return $resource('/api/v1/shootingtest/event/:eventId', {eventId: '@eventId'}, {
                 'close': {
                     method: 'POST',
-                    url: '/api/v1/shootingtest/event/:eventId/close',
-                    params: {eventId: '@eventId'}
+                    url: '/api/v1/shootingtest/event/:eventId/close'
                 },
                 'reopen': {
                     method: 'POST',
-                    url: '/api/v1/shootingtest/event/:eventId/reopen',
-                    params: {eventId: '@eventId'}
+                    url: '/api/v1/shootingtest/event/:eventId/reopen'
                 }
             });
         })
 
         .factory('ShootingTestStatistics', function ($resource) {
-            return $resource('/api/v1/shootingtest/:rhyId/statistics/:calendarYear', {
-                'rhyId': '@rhyId',
-                'calendarYear': '@calendarYear'
-            }, {
+            var defaultParams = {
+                rhyId: '@rhyId',
+                calendarYear: '@calendarYear'
+            };
+
+            return $resource('/api/v1/shootingtest/rhy/:rhyId/statistics/:calendarYear', defaultParams, {
                 'get': {
                     method: 'GET'
                 }
@@ -211,35 +223,65 @@
         })
 
         .factory('ShootingTestOfficials', function ($resource) {
-            return $resource('/api/v1/shootingtest/:rhyId/officials', {'rhyId': '@rhyId'}, {
+            var defaultParams = {
+                shootingTestEventId: '@shootingTestEventId'
+            };
+
+            return $resource('/api/v1/shootingtest/event/:shootingTestEventId/officials', defaultParams, {
                 'listAvailable': {
                     method: 'GET',
+                    url: '/api/v1/shootingtest/rhy/:rhyId/officials',
+                    params: {
+                        rhyId: '@rhyId',
+                        eventDate: '@eventDate'
+                    },
                     isArray: true
                 },
                 'listQualifying': {
                     method: 'GET',
                     url: '/api/v1/shootingtest/event/:shootingTestEventId/qualifyingofficials',
-                    params: {
-                        shootingTestEventId: '@shootingTestEventId'
-                    },
                     isArray: true
                 },
                 'listAssigned': {
                     method: 'GET',
                     url: '/api/v1/shootingtest/event/:shootingTestEventId/assignedofficials',
-                    params: {
-                        shootingTestEventId: '@shootingTestEventId'
-                    },
                     isArray: true
                 },
                 'update': {
-                    method: 'PUT',
-                    url: '/api/v1/shootingtest/event/:shootingTestEventId/officials',
-                    params: {
-                        shootingTestEventId: '@shootingTestEventId'
-                    }
+                    method: 'PUT'
                 }
             });
+        })
+
+        .service('ShootingTestOfficialService', function (NotificationService, ShootingTestOfficials) {
+            var self = this;
+
+            self.listAvailable = function (rhyId, date) {
+                return ShootingTestOfficials.listAvailable({rhyId: rhyId, eventDate: date}).$promise;
+            };
+
+            self.listQualifying = function (shootingTestEventId) {
+                return ShootingTestOfficials.listQualifying({shootingTestEventId: shootingTestEventId}).$promise;
+            };
+
+            self.listAssigned = function (shootingTestEventId) {
+                return ShootingTestOfficials.listAssigned({shootingTestEventId: shootingTestEventId}).$promise;
+            };
+
+            self.update = function (shootingTestEventId, shootingTestOfficialOccupationIds, shootingTestResponsibleOccupationId) {
+                var pathParams = {shootingTestEventId: shootingTestEventId};
+                var bodyParams = {
+                    shootingTestEventId: shootingTestEventId,
+                    occupationIds: shootingTestOfficialOccupationIds,
+                    responsibleOccupationId: shootingTestResponsibleOccupationId
+                };
+
+                return ShootingTestOfficials.update(pathParams, bodyParams).$promise
+                    .then(function (response) {
+                        NotificationService.showDefaultSuccess();
+                        return response;
+                    });
+            };
         })
 
         .factory('ShootingTestPersonSearch', function (HttpPost) {
@@ -260,8 +302,8 @@
                 },
                 'register': {
                     method: 'POST',
-                    url: '/api/v1/shootingtest/event/:eventId/participant/person/:personId',
-                    params: {eventId: '@eventId', personId: '@personId'}
+                    url: '/api/v1/shootingtest/event/:eventId/participant',
+                    params: {eventId: '@eventId'}
                 },
                 'get': {
                     method: 'GET',
@@ -334,16 +376,35 @@
             $ctrl.selectEvent = function (calendarEventId) {
                 $state.go('rhy.shootingtest.event.overview', {calendarEventId: calendarEventId});
             };
+
+            var isEventInPast = function (event) {
+                var eventDateMoment = moment(event.date);
+                return moment().diff(eventDateMoment, 'days') > 0;
+            };
+
+            $ctrl.isEventNotClosedOnTime = function (event) {
+                return !!event.shootingTestEventId && !event.lockedTime && isEventInPast(event);
+            };
+
+            $ctrl.isEventUnpopulated = function (event) {
+                return isEventInPast(event)
+                    && (!event.shootingTestEventId || !!event.lockedTime && !event.numberOfAllParticipants);
+            };
+
+            $ctrl.isEventIncomplete = function (event) {
+                return $ctrl.isEventNotClosedOnTime(event) || $ctrl.isEventUnpopulated(event);
+            };
         })
 
         .component('shootingTestTabSelection', {
             templateUrl: 'shootingtest/tab-selection.html',
             bindings: {
-                event: '<'
+                event: '<',
+                hasUpdatePermission: '<'
             },
             controller: function ($state) {
                 var $ctrl = this;
-                var states = [ '^.overview', '^.registration', '^.participants', '^.payments' ];
+                var states = ['^.overview', '^.registration', '^.participants', '^.payments'];
 
                 $ctrl.$onInit = function () {
                     $ctrl.activeTabIndex = _.findIndex(states, function (state) {
@@ -361,48 +422,37 @@
                         $state.go(states[index], $ctrl.params, {reload: true});
                     }
                 };
+
+                $ctrl.isRegistrationEnabled = function () {
+                    return $ctrl.event.isOpen() && $ctrl.hasUpdatePermission;
+                };
+
+                $ctrl.isParticipantsViewEnabled = function () {
+                    return $ctrl.event.isOpen() && $ctrl.hasUpdatePermission;
+                };
+
+                $ctrl.isPaymentsViewEnabled = function () {
+                    return $ctrl.event.isOpened() && $ctrl.hasUpdatePermission;
+                };
             }
         })
 
         .controller('ShootingTestEventOverviewController',
-            function ($state, $uibModal, Helpers, NotificationService, ShootingTestCalendarEvents, ShootingTestEvents,
-                      ShootingTestOfficials, event, hasUpdatePermission, rhyId) {
-
-                var calendarEventId = event.calendarEventId;
-                var eventId = event.shootingTestEventId;
+            function ($state, $uibModal, NotificationService, ShootingTestCalendarEvents, ShootingTestOfficialService,
+                      event, hasUpdatePermission, rhyId) {
 
                 var $ctrl = this;
-                $ctrl.event = event;
 
-                var onSuccess = function () {
-                    NotificationService.showDefaultSuccess();
+                $ctrl.$onInit = function () {
+                    $ctrl.event = event;
+                    $ctrl.hasUpdatePermission = hasUpdatePermission;
+
+                    $ctrl.isEventOpened = $ctrl.event.isOpened();
+                    $ctrl.canUpdateOfficials = hasUpdatePermission && $ctrl.event.isOpen();
                 };
-                var onFailure = function () {
-                    NotificationService.showDefaultFailure();
-                };
-                var reload = function () {
+
+                $ctrl.reloadState = function () {
                     $state.reload();
-                };
-
-                $ctrl.canOpenEvent = function () {
-                    var eventDate = Helpers.toMoment($ctrl.event.date);
-                    var today = Helpers.toMoment(new Date());
-
-                    return !$ctrl.event.isOpened() && !eventDate.isAfter(today, 'day');
-                };
-
-                $ctrl.canCloseEvent = function () {
-                    return $ctrl.event.isOpen()
-                        && $ctrl.event.numberOfCompletedParticipants === $ctrl.event.numberOfAllParticipants
-                        && hasUpdatePermission;
-                };
-
-                $ctrl.canReopenEvent = function () {
-                    return hasUpdatePermission && $ctrl.event.isClosed();
-                };
-
-                $ctrl.isAnyLifecycleButtonVisible = function () {
-                    return $ctrl.canOpenEvent() || $ctrl.canCloseEvent() || $ctrl.canReopenEvent();
                 };
 
                 $ctrl.openEvent = function () {
@@ -414,40 +464,99 @@
                         resolve: {
                             titleLocalisationKey: _.constant('shootingTest.overview.open'),
                             saveLocalisationKey: _.constant('shootingTest.overview.open'),
-                            existingOfficials: _.constant(angular.copy($ctrl.event.officials)),
+                            existingOfficials: _.constant([]),
                             availableOfficials: function () {
-                                return ShootingTestOfficials.listAvailable({rhyId: rhyId}).$promise;
+                                return ShootingTestOfficialService.listAvailable(rhyId, $ctrl.event.date);
                             }
                         }
                     });
 
                     modalInstance.result.then(function (officials) {
+                        var calendarEventId = event.calendarEventId;
                         var params = {calendarEventId: calendarEventId};
                         var e = {
                             calendarEventId: calendarEventId,
                             occupationIds: _.map(officials, 'occupationId')
                         };
-                        ShootingTestCalendarEvents.open(params, e).$promise.then(onSuccess, onFailure).finally(reload);
+
+                        ShootingTestCalendarEvents.open(params, e).$promise
+                            .then(NotificationService.showDefaultSuccess)
+                            .finally($ctrl.reloadState);
                     });
+                };
+            })
+
+        .component('showShootingTestEventInfo', {
+            templateUrl: 'shootingtest/show-shooting-test-event-info.html',
+            bindings: {
+                event: '<',
+                hasUpdatePermission: '<',
+                openOfficialAssignDialog: '&',
+                reload: '&'
+            },
+            controller: function (Helpers, NotificationService, ShootingTestEvent) {
+                var $ctrl = this;
+
+                $ctrl.$onInit = function () {
+                    var eventDate = Helpers.toMoment($ctrl.event.date);
+                    var today = Helpers.toMoment(new Date());
+
+                    $ctrl.canOpenEvent = !$ctrl.event.isOpened() && !eventDate.isAfter(today, 'day');
+
+                    $ctrl.canCloseEvent = $ctrl.hasUpdatePermission
+                        && $ctrl.event.isOpen()
+                        && $ctrl.event.numberOfCompletedParticipants === $ctrl.event.numberOfAllParticipants;
+
+                    $ctrl.canReopenEvent = $ctrl.hasUpdatePermission && $ctrl.event.isClosed();
+
+                    $ctrl.isAnyLifecycleButtonVisible = $ctrl.canOpenEvent || $ctrl.canCloseEvent || $ctrl.canReopenEvent;
                 };
 
                 $ctrl.closeEvent = function () {
-                    ShootingTestEvents.close({eventId: eventId}).$promise
-                        .then(onSuccess, onFailure)
-                        .finally(reload);
+                    ShootingTestEvent.close({eventId: $ctrl.event.shootingTestEventId}).$promise
+                        .then(NotificationService.showDefaultSuccess)
+                        .finally($ctrl.reload);
                 };
 
                 $ctrl.reopenEvent = function () {
-                    ShootingTestEvents.reopen({eventId: eventId}).$promise
-                        .then(onSuccess, onFailure)
-                        .finally(reload);
+                    ShootingTestEvent.reopen({eventId: $ctrl.event.shootingTestEventId}).$promise
+                        .then(NotificationService.showDefaultSuccess)
+                        .finally($ctrl.reload);
+                };
+            }
+        })
+
+        .component('showShootingTestEventOfficials', {
+            templateUrl: 'shootingtest/show-shooting-test-event-officials.html',
+            bindings: {
+                shootingTestEventId: '<',
+                officials: '<',
+                canUpdateOfficials: '<',
+                reload: '&'
+            },
+            controller: function ($uibModal, ShootingTestOfficialService) {
+                var $ctrl = this;
+
+                var sortOfficials = function (officials) {
+                    return _.orderBy(officials, [function (official) {
+                        return !!official.shootingTestResponsible;
+                    }, 'lastName', 'firstName'], ['desc', 'asc', 'asc']);
                 };
 
-                $ctrl.canAssignOfficials = function () {
-                    return $ctrl.event.isOpen();
+                $ctrl.$onInit = function () {
+                    $ctrl.sortedOfficials = sortOfficials($ctrl.officials);
                 };
 
-                $ctrl.assignOfficials = function () {
+                var updateOfficials = function (occupationIds, responsibleOccupationId) {
+                    ShootingTestOfficialService.update($ctrl.shootingTestEventId, occupationIds, responsibleOccupationId)
+                        .finally($ctrl.reload);
+                };
+
+                $ctrl.openOfficialUpdateDialog = function () {
+                    if (!$ctrl.canUpdateOfficials) {
+                        return;
+                    }
+
                     var modalInstance = $uibModal.open({
                         templateUrl: 'shootingtest/shooting-test-officials.html',
                         size: 'lg',
@@ -456,26 +565,53 @@
                         resolve: {
                             titleLocalisationKey: _.constant('shootingTest.overview.assignOfficials'),
                             saveLocalisationKey: _.constant('global.button.save'),
-                            existingOfficials: _.constant(angular.copy($ctrl.event.officials)),
+                            existingOfficials: _.constant(angular.copy($ctrl.sortedOfficials)),
                             availableOfficials: function () {
-                                return ShootingTestOfficials.listQualifying({shootingTestEventId: eventId}).$promise;
+                                return ShootingTestOfficialService.listQualifying($ctrl.shootingTestEventId);
                             }
                         }
                     });
 
                     modalInstance.result.then(function (officials) {
-                        var params = {calendarEventId: calendarEventId};
-                        var e = {
-                            shootingTestEventId: eventId,
-                            occupationIds: _.map(officials, 'occupationId')
-                        };
+                        var responsible = _.find(officials, function (official) {
+                            return !!official.shootingTestResponsible;
+                        });
 
-                        ShootingTestOfficials.update(params, e).$promise
-                            .then(onSuccess, onFailure)
-                            .finally(reload);
+                        var occupationIds = _.map(sortOfficials(officials), 'occupationId');
+                        var responsibleOccupationId = responsible ? responsible.occupationId : null;
+
+                        updateOfficials(occupationIds, responsibleOccupationId);
                     });
                 };
-            })
+
+                $ctrl.updateResponsibleOfficial = function (responsibleOfficial) {
+                    if (!$ctrl.canUpdateOfficials) {
+                        return;
+                    }
+
+                    var updatedOfficials = _.chain($ctrl.sortedOfficials)
+                        .map(function (official) {
+                            var responsible = official.occupationId === responsibleOfficial.occupationId;
+                            return angular.extend({}, official, {shootingTestResponsible: responsible});
+                        })
+                        .value();
+
+                    $ctrl.sortedOfficials = sortOfficials(updatedOfficials);
+
+                    var occupationIds = _.map($ctrl.sortedOfficials, 'occupationId');
+
+                    updateOfficials(occupationIds, responsibleOfficial.occupationId);
+                };
+            }
+        })
+
+        .component('showShootingTestEventWorkflowSummary', {
+            templateUrl: 'shootingtest/show-shooting-test-event-summary.html',
+            bindings: {
+                totalPaidAmount: '<',
+                lastModifier: '<'
+            }
+        })
 
         .controller('ShootingTestOfficialEditController',
             function ($uibModalInstance, ActiveRoleService, ShootingTestEventService,
@@ -491,8 +627,8 @@
 
                 var updateAvailableOfficials = function () {
                     $ctrl.availableOfficials = _.filter(availableOfficials, function (availableOfficial) {
-                        return !_.find($ctrl.officials, function (existing) {
-                            return existing.personId === availableOfficial.personId;
+                        return _.every($ctrl.officials, function (existing) {
+                            return existing.personId !== availableOfficial.personId;
                         });
                     });
                 };
@@ -517,6 +653,10 @@
                 };
 
                 $ctrl.addOfficial = function () {
+                    $ctrl.newOfficial.shootingTestResponsible = null;
+                    if ($ctrl.officials.length === 0) {
+                        $ctrl.newOfficial.shootingTestResponsible = true;
+                    }
                     $ctrl.officials.push($ctrl.newOfficial);
                     $ctrl.newOfficial = null;
                     updateAvailableOfficials();
@@ -526,6 +666,9 @@
                     _.remove($ctrl.officials, function (o) {
                         return o.personId === official.personId;
                     });
+                    if (official.shootingTestResponsible && $ctrl.officials.length > 0) {
+                        $ctrl.officials[0].shootingTestResponsible = true;
+                    }
                     updateAvailableOfficials();
                 };
 
@@ -574,13 +717,14 @@
                             $ctrl.selectedShootingTestTypes = {};
                         })
                     .finally(TranslatedBlockUI.stop);
-            }, 500, true);
+            }, 500);
 
             $ctrl.getStatusNotificationClass = function () {
                 var status = _.get($ctrl, 'searchResult.registrationStatus');
 
                 switch (status) {
                     case 'COMPLETED':
+                    case 'FOREIGN_HUNTER':
                         return 'info';
                     case 'HUNTING_PAYMENT_DONE':
                         return 'success';
@@ -594,11 +738,11 @@
                 }
             };
 
-            $ctrl.isRegistrationDisallowed = function () {
-                if (!hasUpdatePermission || $ctrl.event.isClosed()) {
-                    return true;
-                }
+            $ctrl.isRegistrationDisabled = function () {
+                return !hasUpdatePermission || $ctrl.event.isClosed();
+            };
 
+            var isRegistrationDisallowedByCheckStatus = function () {
                 var registrationCheckStatus = _.get($ctrl, 'searchResult.registrationStatus');
 
                 switch (registrationCheckStatus) {
@@ -611,18 +755,37 @@
                     case 'COMPLETED':
                     case 'HUNTING_PAYMENT_DONE':
                     case 'HUNTING_PAYMENT_NOT_DONE':
+                    case 'FOREIGN_HUNTER':
                         return false;
                 }
+            };
+
+            $ctrl.isTogglingTestTypesDisabled = function () {
+                return $ctrl.isRegistrationDisabled() || isRegistrationDisallowedByCheckStatus();
+            };
+
+            $ctrl.isRegistrationDisallowed = function () {
+                var isAnyTestTypeSelected = _.some($ctrl.selectedShootingTestTypes, function (isSelected) {
+                    return isSelected;
+                });
+
+                return !isAnyTestTypeSelected ||
+                    $ctrl.isRegistrationDisabled() ||
+                    isRegistrationDisallowedByCheckStatus();
             };
 
             $ctrl.addParticipant = function () {
                 if ($ctrl.searchResult) {
                     var urlParams = {
-                        eventId: $ctrl.event.shootingTestEventId,
-                        personId: $ctrl.searchResult.id
+                        eventId: $ctrl.event.shootingTestEventId
                     };
 
-                    ShootingTestParticipant.register(urlParams, $ctrl.selectedShootingTestTypes).$promise
+                    var requestBody = {
+                        hunterNumber: $ctrl.searchResult.hunterNumber,
+                        selectedTypes: $ctrl.selectedShootingTestTypes
+                    };
+
+                    ShootingTestParticipant.register(urlParams, requestBody).$promise
                         .then(NotificationService.showDefaultSuccess, NotificationService.showDefaultFailure)
                         .finally(function () {
                             $state.reload();
@@ -804,7 +967,7 @@
                 if (!$ctrl.attempt.result) {
                     return [];
                 }
-                return _.unique([isQualified() ? 'QUALIFIED' : 'UNQUALIFIED', $ctrl.attempt.result, 'REBATED', 'TIMED_OUT']);
+                return _.uniq([isQualified() ? 'QUALIFIED' : 'UNQUALIFIED', $ctrl.attempt.result, 'REBATED', 'TIMED_OUT']);
             };
 
             $ctrl.showNote = function () {
@@ -833,7 +996,7 @@
 
         .controller('ShootingTestPaymentsController', function ($state, $translate, $uibModal, NotificationService,
                                                                 ShootingTestParticipant, event, hasUpdatePermission,
-                                                                participants) {
+                                                                participants, ShootingTestCalendarEventsService) {
             var $ctrl = this;
 
             var numberOfUncompleted = event.numberOfAllParticipants - event.numberOfCompletedParticipants;
@@ -899,6 +1062,10 @@
                     $state.reload();
                 });
             };
+
+            $ctrl.loadPaymentSummaryPdf = function () {
+                ShootingTestCalendarEventsService.loadPaymentSummaryPdf($ctrl.event.calendarEventId);
+            };
         })
 
         .controller('ShootingTestUpdatePaymentFormController', function ($uibModalInstance,
@@ -914,7 +1081,7 @@
             $ctrl.completed = participant.completed;
 
             $ctrl.paidAmountOptions = _.chain(participant.attempts)
-                .pluck('attemptCount')
+                .map('attemptCount')
                 .sum()
                 .add(1)
                 .range()
@@ -961,19 +1128,40 @@
         })
 
         .controller('ShootingTestStatsController', function (availableYears, exportToExcel, fetchStatistics,
-                                                             initialStatistics) {
+                                                             initialStatistics, ShootingTestCalendarEventsService,
+                                                             ActiveRoleService) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
                 $ctrl.availableYears = availableYears;
                 $ctrl.calendarYear = _.last(availableYears);
                 $ctrl.statistics = initialStatistics;
+                $ctrl.isModeratorOrCoordinator = ActiveRoleService.isModerator() || ActiveRoleService.isCoordinator();
             };
 
-            $ctrl.joinOfficials = function (officials) {
-                return _(officials).map(function (o) {
-                    return o.lastName + ' ' + o.firstName;
-                }).join(', ');
+            $ctrl.getResponsibleOfficialName = function (officials) {
+                var responsibleOfficial = _.find(officials, function (official) {
+                    return official.shootingTestResponsible === true;
+                });
+
+                var responsibleOfficialName = null;
+                if (responsibleOfficial) {
+                    responsibleOfficialName = responsibleOfficial.lastName + ' ' + responsibleOfficial.firstName;
+                }
+
+                return responsibleOfficialName;
+            };
+
+            $ctrl.joinNonResponsibleOfficials = function (officials) {
+                return _.chain(officials)
+                    .filter(function (official) {
+                        return official.shootingTestResponsible !== true;
+                    })
+                    .map(function (official) {
+                        return official.lastName + ' ' + official.firstName;
+                    })
+                    .join(', ')
+                    .value();
             };
 
             $ctrl.onSelectedYearChanged = function () {
@@ -984,6 +1172,10 @@
 
             $ctrl.exportToExcel = function () {
                 exportToExcel($ctrl.calendarYear);
+            };
+
+            $ctrl.loadPaymentSummaryPdf = function (calendarEventId) {
+                ShootingTestCalendarEventsService.loadPaymentSummaryPdf(calendarEventId);
             };
         })
 

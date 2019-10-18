@@ -1,0 +1,95 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="harvestpermit.wizard.summary.delivery.decisionRecipient"></h3>
+</div>
+
+<div class="modal-body" style="min-height: 300px;">
+    <form name="addressForm">
+
+        <div class="form-group" show-errors>
+            <label class="control-label" translate="harvestpermit.wizard.summary.delivery.recipient"
+                   for="recipient"></label>
+            <input name="recipient"
+                   id="recipient"
+                   class="form-control"
+                   required
+                   ng-model="$ctrl.deliveryAddress.recipient">
+            <p class="help-block has-error"
+               ng-show="summaryForm.recipient.$invalid && summaryForm.recipient.$touched"
+               ng-messages="summaryForm.recipient.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label translate="global.address.streetAddress"
+                   for="streetAddress"></label>
+            <input name="streetAddress"
+                   id="streetAddress"
+                   required
+                   class="form-control"
+                   ng-model="$ctrl.deliveryAddress.streetAddress">
+            <p class="help-block has-error"
+               ng-show="summaryForm.streetAddress.$invalid && summaryForm.streetAddress.$touched"
+               ng-messages="summaryForm.streetAddress.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+        <div class="row">
+            <div class="col-xs-4 form-group" show-errors>
+                <label class="control-label"
+                       translate="global.address.postalCode"
+                       for="postalCode"></label>
+                <input name="postalCode" id="postalCode"
+                       required
+                       ng-pattern="/^[0-9]{1,10}$/"
+                       class="form-control"
+                       ng-model="$ctrl.deliveryAddress.postalCode">
+                <p class="help-block has-error"
+                   ng-show="summaryForm.postalCode.$invalid && summaryForm.postalCode.$touched"
+                   ng-messages="summaryForm.postalCode.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+            <div class="col-xs-8 form-group" show-errors>
+                <label class="control-label"
+                       translate="global.address.city"
+                       for="city"></label>
+                <input name="city" id="city"
+                       required
+                       class="form-control"
+                       ng-model="$ctrl.deliveryAddress.city">
+                <p class="help-block has-error"
+                   ng-show="summaryForm.city.$invalid && summaryForm.city.$touched"
+                   ng-messages="summaryForm.city.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-8 form-group" show-errors>
+                <label class="control-label"
+                       translate="global.address.country"
+                       for="country"></label>
+                <input name="country" id="country"
+                       class="form-control"
+                       ng-model="$ctrl.deliveryAddress.country">
+                <p class="help-block has-error"
+                   ng-show="summaryForm.postalCode.$invalid && summaryForm.postalCode.$touched"
+                   ng-messages="summaryForm.postalCode.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-click="$ctrl.cancel()"
+            translate="global.button.cancel"></button>
+    <button type="button" class="btn btn-primary"
+            ng-disabled="addressForm.$invalid"
+            ng-click="$ctrl.close()"
+            translate="global.button.save"></button>
+</div>

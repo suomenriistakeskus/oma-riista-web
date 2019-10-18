@@ -5,7 +5,9 @@ import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.common.entity.FinnishBusinessIdEntity;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gis.GISQueryService;
-import fi.riista.feature.gis.hta.GISHirvitalousalueDTO;
+import fi.riista.feature.gis.hta.GISHirvitalousalue;
+import fi.riista.feature.gis.hta.HirvitalousalueDTO;
+import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
 import fi.riista.feature.huntingclub.members.HuntingClubOccupationDTOTransformer;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.Occupation;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -42,6 +45,9 @@ public class HuntingClubCrudFeature extends AbstractCrudFeature<Long, HuntingClu
 
     @Resource
     private GISQueryService gisQueryService;
+
+    @Resource
+    private GISHirvitalousalueRepository gisHirvitalousalueRepository;
 
     @Resource
     private PersonRepository personRepository;
@@ -118,7 +124,11 @@ public class HuntingClubCrudFeature extends AbstractCrudFeature<Long, HuntingClu
     @Override
     protected HuntingClubDTO toDTO(@Nonnull final HuntingClub club) {
         final boolean editable = activeUserService.checkHasPermission(club, EntityPermission.UPDATE);
-        final GISHirvitalousalueDTO mooseAreaDto = GISHirvitalousalueDTO.create(club.getMooseArea());
+        final HirvitalousalueDTO mooseAreaDto = Optional.ofNullable(club.getMooseArea())
+                .map(GISHirvitalousalue::getId)
+                .map(gisHirvitalousalueRepository::getWithoutGeometry)
+                .orElse(null);
+
         return HuntingClubDTO.create(club, editable, getYhdyshenkilot(club), mooseAreaDto);
     }
 

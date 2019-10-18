@@ -1,6 +1,18 @@
 'use strict';
 
 angular.module('app.moosepermit.luke', [])
+    .service('LukeUrlService', function ($httpParamSerializer) {
+        this.get = function (permitId, clubId, lukeOrg, lukePresentation, file) {
+            var url = '/api/v1/moosepermit/' + permitId + '/luke-reports';
+
+            return url + '?' + $httpParamSerializer({
+                clubId: clubId,
+                org: lukeOrg,
+                presentation: lukePresentation,
+                fileName: file
+            });
+        };
+    })
     .config(function ($stateProvider) {
         $stateProvider
             .state('single_luke_report', {

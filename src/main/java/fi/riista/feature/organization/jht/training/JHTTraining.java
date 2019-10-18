@@ -35,6 +35,8 @@ public class JHTTraining extends LifecycleEntity<Long> {
 
     public static final String ID_COLUMN_NAME = "jht_training_id";
 
+    public static final boolean FOREIGN_PERSON_ELIGIBLE_FOR_JHT_TRAINING = false;
+
     // Person with current valid occupation RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA
     // do not require new trainings. To make them available for selection some artifical trainings
     // were populated to production database with training_location "Sähköinen" and fake date 1.1.1900

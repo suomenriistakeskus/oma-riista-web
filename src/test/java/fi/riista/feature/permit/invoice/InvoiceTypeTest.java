@@ -10,5 +10,6 @@ public class InvoiceTypeTest {
     @Test
     public void testCalculateDueDate() {
         assertEquals(ld(2018, 6, 22), InvoiceType.PERMIT_PROCESSING.calculateDueDate(ld(2018, 6, 1)));
+        assertEquals(ld(2018, 6, 8), InvoiceType.PERMIT_HARVEST.calculateDueDate(ld(2018, 6, 1)));
     }
 }

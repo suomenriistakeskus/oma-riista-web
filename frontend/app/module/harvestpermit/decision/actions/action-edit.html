@@ -2,13 +2,13 @@
 
     <div class="modal-header">
         <button riista-modal-close></button>
-        <h3 class="modal-title">Välitoimenpide</h3>
+        <h3 class="modal-title" translate="harvestpermit.decision.action.titleEdit"></h3>
     </div>
 
     <div class="modal-body row">
         <div class="col-xs-4">
             <div class="form-group" show-errors>
-                <label for="date">Ajankohta</label>
+                <label for="date" translate="harvestpermit.decision.action.date"></label>
 
                 <div class="input-group r-dropdown-align-right"
                      ng-controller="DatePickerController">
@@ -37,7 +37,7 @@
             </div>
 
             <div class="form-group" show-errors>
-                <label for="time">Aika</label>
+                <label for="time" translate="harvestpermit.decision.action.time"></label>
 
                 <input type="text" name="time" id="time"
                        class="form-control"
@@ -52,7 +52,7 @@
             </div>
 
             <div class="form-group" show-errors>
-                <label for="actionType">Välitoimenpiteen tyyppi</label>
+                <label for="actionType" translate="harvestpermit.decision.action.actionTypeTitle"></label>
                 <select name="actionType" id="actionType"
                         class="form-control"
                         ng-model="$ctrl.selectedAction.actionType"
@@ -63,7 +63,7 @@
                 </select>
             </div>
             <div class="form-group" show-errors>
-                <label for="type">Yhteydenottotapa</label>
+                <label for="type" translate="harvestpermit.decision.action.communicationTypeTitle"></label>
                 <select name="type" id="type"
                         class="form-control"
                         ng-model="$ctrl.selectedAction.communicationType"
@@ -76,7 +76,7 @@
 
         <div class="col-xs-8">
             <div class="form-group" show-errors>
-                <label for="text">Sisältö</label>
+                <label for="text" translate="harvestpermit.decision.action.text"></label>
                 <textarea name="text" id="text" class="form-control" rows="6"
                           required
                           ng-model="$ctrl.selectedAction.text"
@@ -89,7 +89,7 @@
             </div>
 
             <div class="form-group" show-errors>
-                <label for="decisionText">Päätöksellä näkyvä teksti</label>
+                <label for="decisionText" translate="harvestpermit.decision.action.decisionText"></label>
                 <textarea name="decisionText" id="decisionText" class="form-control" rows="6"
                           ng-model="$ctrl.selectedAction.decisionText"></textarea>
                 <p class="help-block has-error"
@@ -102,6 +102,13 @@
     </div>
 
     <div class="modal-footer">
+        <button type="button"
+                class="btn btn-danger pull-left"
+                ng-confirm-click
+                ng-confirm-click-action="$ctrl.remove(action)">
+            <span translate="global.button.delete"></span>
+        </button>
+
         <button type="button" class="btn btn-default"
                 ng-click="$ctrl.cancel()"
                 translate="global.button.cancel"></button>

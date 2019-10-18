@@ -3,7 +3,6 @@ package fi.riista.feature.announcement;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.announcement.show.ListAnnouncementDTO;
 import fi.riista.feature.announcement.show.ListAnnouncementFeature;
-import fi.riista.feature.announcement.show.ListAnnouncementRequest;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -24,7 +23,6 @@ import static fi.riista.feature.announcement.AnnouncementMatcher.isEqualAnnounce
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.junit.Assert.assertThat;
 
@@ -63,6 +61,7 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         public final Person coordinator;
         public final Person srva;
         public final Person valvoja;
+        public final Person member;
         public final Person nobody;
 
         public RhyFixture(final EntitySupplier model, final Riistanhoitoyhdistys rhy) {
@@ -70,11 +69,14 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
             coordinator = model.newPerson();
             srva = model.newPerson();
             valvoja = model.newPerson();
+            member = model.newPerson();
             nobody = model.newPerson();
 
             model.newOccupation(rhy, coordinator, OccupationType.TOIMINNANOHJAAJA);
             model.newOccupation(rhy, srva, OccupationType.SRVA_YHTEYSHENKILO);
             model.newOccupation(rhy, valvoja, OccupationType.METSASTYKSENVALVOJA);
+
+            member.setRhyMembership(rhy);
         }
     }
 
@@ -98,28 +100,19 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private List<ListAnnouncementDTO> listReceived(final Organisation organisation) {
-        return list(organisation, ListAnnouncementRequest.Direction.RECEIVED);
+        return listAnnouncementFeature.listForOrganisation(
+                organisation.getOrganisationType(),
+                organisation.getOfficialCode(),
+                new PageRequest(0, 1000)).getContent();
     }
 
-    private List<ListAnnouncementDTO> listSent(final Organisation organisation) {
-        return list(organisation, ListAnnouncementRequest.Direction.SENT);
-    }
-
-    private List<ListAnnouncementDTO> list(final Organisation organisation,
-                                           final ListAnnouncementRequest.Direction direction) {
-        final ListAnnouncementRequest request = new ListAnnouncementRequest();
-        if (organisation != null) {
-            request.setOrganisationType(organisation.getOrganisationType());
-            request.setOfficialCode(organisation.getOfficialCode());
-        }
-        request.setDirection(direction);
-
-        return listAnnouncementFeature.list(request, new PageRequest(0, 10)).getContent();
+    private List<ListAnnouncementDTO> listMine() {
+        return listAnnouncementFeature.listMine(new PageRequest(0, 1000)).getContent();
     }
 
     private void assertNotVisible(final Person person) {
         onSavedAndAuthenticated(createUser(person), () -> {
-            assertThat(listReceived(null), emptyCollectionOf(ListAnnouncementDTO.class));
+            assertThat(listMine(), emptyCollectionOf(ListAnnouncementDTO.class));
         });
     }
 
@@ -131,7 +124,7 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
     private void assertVisible(final Person person, final Announcement announcement) {
         onSavedAndAuthenticated(createUser(person), () -> {
-            assertThat(listReceived(null), contains(isEqualAnnouncement(announcement)));
+            assertThat(listMine(), contains(isEqualAnnouncement(announcement)));
         });
     }
 
@@ -152,11 +145,29 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         persistInNewTransaction();
 
+        // Club visibility
         assertVisible(f.clubMember, f.club, announcement);
         assertVisible(f.clubContact, f.club, announcement);
         assertVisible(f.groupMember, f.club, announcement);
         assertVisible(f.groupLeader, f.club, announcement);
+        assertNotVisible(r.coordinator, f.club);
+        assertNotVisible(r.member, f.club);
+        assertNotVisible(r.srva, f.club);
+        assertNotVisible(r.valvoja, f.club);
+        assertNotVisible(f.nobody, f.club);
+
+        // RHY visibility
         assertNotVisible(r.coordinator, r.rhy);
+        assertNotVisible(r.member, r.rhy);
+        assertNotVisible(f.nobody, r.rhy);
+
+        // Personal visibility
+        assertVisible(f.clubMember, announcement);
+        assertVisible(f.clubContact, announcement);
+        assertVisible(f.groupMember, announcement);
+        assertVisible(f.groupLeader, announcement);
+        assertNotVisible(r.coordinator);
+        assertNotVisible(r.member);
         assertNotVisible(f.nobody);
     }
 
@@ -171,11 +182,68 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         persistInNewTransaction();
 
+        // Club visibility
         assertNotVisible(f.clubMember, f.club);
         assertVisible(f.clubContact, f.club, announcement);
         assertNotVisible(f.groupMember, f.club);
         assertVisible(f.groupLeader, f.club, announcement);
+        assertNotVisible(r.coordinator, f.club);
+        assertNotVisible(r.member, f.club);
+        assertNotVisible(r.srva, f.club);
+        assertNotVisible(r.valvoja, f.club);
+        assertNotVisible(f.nobody, f.club);
+
+        // RHY visibility
         assertNotVisible(r.coordinator, r.rhy);
+        assertNotVisible(r.member, r.rhy);
+        assertNotVisible(f.nobody, r.rhy);
+
+        // Personal visibility
+        assertNotVisible(f.clubMember);
+        assertVisible(f.clubContact, announcement);
+        assertNotVisible(f.groupMember);
+        assertVisible(f.groupLeader, announcement);
+        assertNotVisible(r.coordinator);
+        assertNotVisible(r.member);
+        assertNotVisible(f.nobody);
+    }
+
+    @Test
+    public void testClub_GroupMembers() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        final RhyFixture r = new RhyFixture(model(), rhy);
+        final ClubFixture f = new ClubFixture(model(), rhy);
+
+        final Announcement announcement = createAnnouncement(f.club, f.club, createUser(f.clubContact),
+                AnnouncementSenderType.SEURAN_YHDYSHENKILO, OccupationType.RYHMAN_JASEN);
+
+        persistInNewTransaction();
+
+        // Club visibility
+        assertNotVisible(f.clubMember, f.club);
+        assertVisible(f.clubContact, f.club, announcement);
+        assertVisible(f.groupMember, f.club, announcement);
+        assertVisible(f.groupLeader, f.club, announcement);
+        assertNotVisible(r.coordinator, f.club);
+        assertNotVisible(r.member, f.club);
+        assertNotVisible(r.srva, f.club);
+        assertNotVisible(r.valvoja, f.club);
+        assertNotVisible(f.nobody, f.club);
+
+        // RHY visibility
+        assertNotVisible(r.coordinator, r.rhy);
+        assertNotVisible(r.member, r.rhy);
+        assertNotVisible(r.srva, r.rhy);
+        assertNotVisible(r.valvoja, r.rhy);
+        assertNotVisible(f.nobody, r.rhy);
+
+        // Personal visibility
+        assertNotVisible(f.clubMember);
+        assertVisible(f.clubContact, announcement);
+        assertVisible(f.groupMember, announcement);
+        assertVisible(f.groupLeader, announcement);
+        assertNotVisible(r.coordinator);
+        assertNotVisible(r.member);
         assertNotVisible(f.nobody);
     }
 
@@ -225,13 +293,36 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         persistInNewTransaction();
 
+        // Club visibility
         assertVisible(f.clubMember, f.club, announcement);
         assertVisible(f.clubContact, f.club, announcement);
         assertVisible(f.groupMember, f.club, announcement);
         assertVisible(f.groupLeader, f.club, announcement);
+        assertNotVisible(r.coordinator, f.club);
+        assertNotVisible(r.member, f.club);
+        assertNotVisible(r.srva, f.club);
+        assertNotVisible(r.valvoja, f.club);
+        assertNotVisible(f.nobody, f.club);
+
+        // RHY visibility
+        assertNotVisible(f.clubMember, r.rhy);
+        assertNotVisible(f.clubContact, r.rhy);
+        assertNotVisible(f.groupMember, r.rhy);
+        assertNotVisible(f.groupLeader, r.rhy);
+        assertNotVisible(f.nobody, r.rhy);
         assertVisible(r.coordinator, r.rhy, announcement);
+        assertNotVisible(r.member, r.rhy);
+        assertNotVisible(r.srva, r.rhy);
+        assertNotVisible(r.valvoja, r.rhy);
+
+        // Personal visibility
+        assertVisible(f.clubMember, announcement);
+        assertVisible(f.clubContact, announcement);
+        assertVisible(f.groupMember, announcement);
+        assertVisible(f.groupLeader, announcement);
+        assertVisible(r.coordinator, announcement);
+        assertNotVisible(r.member);
         assertNotVisible(f.nobody);
-        assertNotVisible(r.nobody);
     }
 
     @Test
@@ -242,60 +333,105 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         final RhyFixture r1 = new RhyFixture(model(), rhy1);
         final RhyFixture r2 = new RhyFixture(model(), rhy2);
-        final ClubFixture f1 = new ClubFixture(model(), rhy1);
-        final ClubFixture f2 = new ClubFixture(model(), rhy2);
+        final ClubFixture c1 = new ClubFixture(model(), rhy1);
+        final ClubFixture c2 = new ClubFixture(model(), rhy2);
 
         final Announcement announcement = createAnnouncement(r1.rhy, r1.rhy, createUser(r1.coordinator),
                 AnnouncementSenderType.TOIMINNANOHJAAJA, OccupationType.SEURAN_JASEN);
 
         persistInNewTransaction();
 
-        assertVisible(f1.clubMember, f1.club, announcement);
-        assertVisible(f1.clubContact, f1.club, announcement);
-        assertVisible(f1.groupMember, f1.club, announcement);
-        assertVisible(f1.groupLeader, f1.club, announcement);
+        // Club visibility
+        assertVisible(c1.clubMember, c1.club, announcement);
+        assertVisible(c1.clubContact, c1.club, announcement);
+        assertVisible(c1.groupMember, c1.club, announcement);
+        assertVisible(c1.groupLeader, c1.club, announcement);
 
-        assertNotVisible(f2.clubMember, f2.club);
-        assertNotVisible(f2.clubContact, f2.club);
-        assertNotVisible(f2.groupMember, f2.club);
-        assertNotVisible(f2.groupLeader, f2.club);
+        assertNotVisible(c2.clubMember, c2.club);
+        assertNotVisible(c2.clubContact, c2.club);
+        assertNotVisible(c2.groupMember, c2.club);
+        assertNotVisible(c2.groupLeader, c2.club);
 
-        assertNotVisible(f2.clubMember);
-        assertNotVisible(f2.clubContact);
-        assertNotVisible(f2.groupMember);
-        assertNotVisible(f2.groupLeader);
-
+        // RHY visibility
         assertVisible(r1.coordinator, rhy1, announcement);
         assertVisible(r1.coordinator, announcement);
+        assertNotVisible(r1.member, r1.rhy);
 
         assertNotVisible(r2.coordinator, rhy2);
-        assertNotVisible(r2.coordinator);
+        assertNotVisible(r2.member, r2.rhy);
 
+        // Personal visibility
+        assertVisible(c1.clubMember, announcement);
+        assertVisible(c1.clubContact, announcement);
+        assertVisible(c1.groupMember, announcement);
+        assertVisible(c1.groupLeader, announcement);
+        assertNotVisible(c1.nobody);
+
+        assertNotVisible(c2.clubMember);
+        assertNotVisible(c2.clubContact);
+        assertNotVisible(c2.groupMember);
+        assertNotVisible(c2.groupLeader);
+        assertNotVisible(c2.nobody);
+
+        assertVisible(r1.coordinator, announcement);
+        assertNotVisible(r1.member);
+        assertNotVisible(r1.srva);
+        assertNotVisible(r1.valvoja);
         assertNotVisible(r1.nobody);
+
+        assertNotVisible(r2.coordinator);
+        assertNotVisible(r2.member);
+        assertNotVisible(r2.srva);
+        assertNotVisible(r2.valvoja);
         assertNotVisible(r2.nobody);
-        assertNotVisible(f1.nobody);
-        assertNotVisible(f2.nobody);
     }
 
     @Test
     public void testCoordinator_HuntingLeaders() {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final RhyFixture r = new RhyFixture(model(), rhy);
-        final ClubFixture f = new ClubFixture(model(), rhy);
+        final ClubFixture c = new ClubFixture(model(), rhy);
 
         final Announcement announcement = createAnnouncement(r.rhy, r.rhy, createUser(r.coordinator),
                 AnnouncementSenderType.TOIMINNANOHJAAJA, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
         persistInNewTransaction();
 
-        assertNotVisible(f.clubMember, f.club);
-        assertVisible(f.clubContact, f.club, announcement);
-        assertNotVisible(f.groupMember, f.club);
-        assertVisible(f.groupLeader, f.club, announcement);
-        assertVisible(r.coordinator, r.rhy, announcement);
+        // Club visibility
+        assertNotVisible(c.clubMember, c.club);
+        assertVisible(c.clubContact, c.club, announcement);
+        assertNotVisible(c.groupMember, c.club);
+        assertVisible(c.groupLeader, c.club, announcement);
+        assertNotVisible(c.nobody, c.club);
+        assertNotVisible(r.coordinator, c.club);
+        assertNotVisible(r.member, c.club);
+        assertNotVisible(r.srva, c.club);
+        assertNotVisible(r.valvoja, c.club);
+        assertNotVisible(r.nobody, c.club);
 
-        assertNotVisible(f.nobody);
+        // RHY visibility
+        assertVisible(r.coordinator, r.rhy, announcement);
+        assertNotVisible(r.member, r.rhy);
+        assertNotVisible(r.srva, r.rhy);
+        assertNotVisible(r.valvoja, r.rhy);
+        assertNotVisible(r.nobody, r.rhy);
+
+        assertNotVisible(c.clubMember, r.rhy);
+        assertNotVisible(c.clubContact, r.rhy);
+        assertNotVisible(c.groupMember, r.rhy);
+        assertNotVisible(c.groupLeader, r.rhy);
+
+        // Personal visibility
+        assertVisible(r.coordinator, announcement);
+        assertNotVisible(r.member);
+        assertNotVisible(r.srva);
+        assertNotVisible(r.valvoja);
         assertNotVisible(r.nobody);
+
+        assertNotVisible(c.clubMember);
+        assertVisible(c.clubContact, announcement);
+        assertNotVisible(c.groupMember);
+        assertVisible(c.groupLeader, announcement);
     }
 
     @Test
@@ -310,21 +446,43 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         persistInNewTransaction();
 
-        assertVisible(r.srva, announcement);
-        assertVisible(r.coordinator, announcement);
-        assertNotVisible(r.valvoja);
+        // Club visibility
+        assertNotVisible(r.coordinator, c.club);
+        assertNotVisible(r.member, c.club);
+        assertNotVisible(r.srva, c.club);
+        assertNotVisible(r.valvoja, c.club);
+        assertNotVisible(r.nobody, c.club);
 
         assertNotVisible(c.clubMember, c.club);
         assertNotVisible(c.clubContact, c.club);
         assertNotVisible(c.groupMember, c.club);
         assertNotVisible(c.groupLeader, c.club);
+        assertNotVisible(c.nobody, c.club);
+
+        // RHY visibility
+        assertVisible(r.coordinator, r.rhy, announcement);
+        assertVisible(r.srva, r.rhy, announcement);
+        assertNotVisible(r.valvoja, r.rhy);
+        assertNotVisible(r.member, r.rhy);
+        assertNotVisible(r.nobody, r.rhy);
+
+        assertNotVisible(c.clubMember, r.rhy);
+        assertNotVisible(c.clubContact, r.rhy);
+        assertNotVisible(c.groupMember, r.rhy);
+        assertNotVisible(c.groupLeader, r.rhy);
+        assertNotVisible(c.nobody, r.rhy);
+
+        // Personal visibility
+        assertVisible(r.coordinator, announcement);
+        assertNotVisible(r.member);
+        assertVisible(r.srva, announcement);
+        assertNotVisible(r.valvoja);
+        assertNotVisible(r.nobody);
 
         assertNotVisible(c.clubMember);
         assertNotVisible(c.clubContact);
         assertNotVisible(c.groupMember);
         assertNotVisible(c.groupLeader);
-
-        assertNotVisible(r.nobody);
         assertNotVisible(c.nobody);
     }
 
@@ -346,22 +504,31 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         persistInNewTransaction();
 
         Stream.of(c1, c2).forEach(c -> {
-            assertVisible(c.clubMember, announcement);
-            assertVisible(c.clubContact, announcement);
-            assertVisible(c.groupMember, announcement);
-            assertVisible(c.groupLeader, announcement);
-
+            // Club visibility
             assertVisible(c.clubMember, c.club, announcement);
             assertVisible(c.clubContact, c.club, announcement);
             assertVisible(c.groupMember, c.club, announcement);
             assertVisible(c.groupLeader, c.club, announcement);
+            assertNotVisible(c.nobody, c.club);
 
+            // Personal visibility
+            assertVisible(c.clubMember, announcement);
+            assertVisible(c.clubContact, announcement);
+            assertVisible(c.groupMember, announcement);
+            assertVisible(c.groupLeader, announcement);
             assertNotVisible(c.nobody);
         });
 
+        // RHY visibility
         assertVisible(r.coordinator, r.rhy, announcement);
+        assertNotVisible(r.member, r.rhy);
+        assertNotVisible(r.srva, r.rhy);
+        assertNotVisible(r.valvoja, r.rhy);
+        assertNotVisible(r.nobody, r.rhy);
 
+        // Personal visibility
         assertVisible(r.coordinator, announcement);
+        assertNotVisible(r.member);
         assertNotVisible(r.srva);
         assertNotVisible(r.valvoja);
         assertNotVisible(r.nobody);
@@ -385,20 +552,31 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         persistInNewTransaction();
 
         Stream.of(c1, c2).forEach(c -> {
-            assertNotVisible(c.clubMember);
-            assertVisible(c.clubContact, announcement);
-            assertNotVisible(c.groupMember);
-            assertVisible(c.groupLeader, announcement);
-
+            // Club visibility
             assertNotVisible(c.clubMember, c.club);
             assertVisible(c.clubContact, c.club, announcement);
             assertNotVisible(c.groupMember, c.club);
             assertVisible(c.groupLeader, c.club, announcement);
+            assertNotVisible(c.nobody, c.club);
+
+            // Personal visibility
+            assertNotVisible(c.clubMember);
+            assertVisible(c.clubContact, announcement);
+            assertNotVisible(c.groupMember);
+            assertVisible(c.groupLeader, announcement);
+            assertNotVisible(c.nobody);
         });
 
+        // RHY visibility
         assertVisible(r.coordinator, r.rhy, announcement);
+        assertNotVisible(r.member, r.rhy);
+        assertNotVisible(r.srva, r.rhy);
+        assertNotVisible(r.valvoja, r.rhy);
+        assertNotVisible(r.nobody, r.rhy);
 
+        // Personal visibility
         assertVisible(r.coordinator, announcement);
+        assertNotVisible(r.member);
         assertNotVisible(r.srva);
         assertNotVisible(r.valvoja);
         assertNotVisible(r.nobody);
@@ -418,29 +596,43 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         final Announcement announcement = createAnnouncement(rk, rk, moderator,
                 AnnouncementSenderType.RIISTAKESKUS, OccupationType.SRVA_YHTEYSHENKILO);
 
+        final Person clubAndRhyPerson = model().newPerson();
+        model().newOccupation(c.club, clubAndRhyPerson, OccupationType.SEURAN_YHDYSHENKILO);
+        model().newOccupation(r.rhy, clubAndRhyPerson, OccupationType.SRVA_YHTEYSHENKILO);
+
         persistInNewTransaction();
 
-        assertVisible(r.coordinator, r.rhy, announcement);
-        assertVisible(r.coordinator, announcement);
-
-        assertVisible(r.srva, r.rhy, announcement);
-        assertVisible(r.srva, announcement);
-
-        assertNotVisible(r.valvoja, r.rhy);
-        assertNotVisible(r.valvoja);
-
-        assertNotVisible(c.clubMember);
-        assertNotVisible(c.clubContact);
-        assertNotVisible(c.groupMember);
-        assertNotVisible(c.groupLeader);
+        // Club visibility
 
         assertNotVisible(c.clubMember, c.club);
         assertNotVisible(c.clubContact, c.club);
         assertNotVisible(c.groupMember, c.club);
         assertNotVisible(c.groupLeader, c.club);
+        assertNotVisible(c.nobody, c.club);
+        assertNotVisible(clubAndRhyPerson, c.club);
 
-        assertNotVisible(c.nobody);
+        // Rhy visibility
+
+        assertVisible(r.coordinator, r.rhy, announcement);
+        assertVisible(r.srva, r.rhy, announcement);
+        assertNotVisible(r.valvoja, r.rhy);
+        assertNotVisible(r.nobody, r.rhy);
+        assertVisible(clubAndRhyPerson, r.rhy, announcement);
+
+        // Personal visibility
+
+        assertVisible(r.coordinator, announcement);
+        assertNotVisible(r.member);
+        assertVisible(r.srva, announcement);
+        assertNotVisible(r.valvoja);
         assertNotVisible(r.nobody);
+        assertVisible(clubAndRhyPerson, announcement);
+
+        assertNotVisible(c.clubMember);
+        assertNotVisible(c.clubContact);
+        assertNotVisible(c.groupMember);
+        assertNotVisible(c.groupLeader);
+        assertNotVisible(c.nobody);
     }
 
     @Test
@@ -471,6 +663,9 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertNotVisible(r1.valvoja, r1.rhy);
         assertNotVisible(r1.valvoja);
 
+        assertNotVisible(r1.nobody);
+        assertNotVisible(r1.member);
+
         // RKA 2
         assertNotVisible(r2.coordinator, r2.rhy);
         assertNotVisible(r2.coordinator);
@@ -480,8 +675,9 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
         assertNotVisible(r2.valvoja, r2.rhy);
         assertNotVisible(r2.valvoja);
-        assertNotVisible(r1.nobody);
+
         assertNotVisible(r2.nobody);
+        assertNotVisible(r2.member);
     }
 
     @Test
@@ -511,6 +707,9 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertNotVisible(r1.valvoja, r1.rhy);
         assertNotVisible(r1.valvoja);
 
+        assertNotVisible(r1.nobody);
+        assertNotVisible(r1.member);
+
         // RHY 2
         assertNotVisible(r2.coordinator, r2.rhy);
         assertNotVisible(r2.coordinator);
@@ -521,8 +720,8 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertNotVisible(r2.valvoja, r2.rhy);
         assertNotVisible(r2.valvoja);
 
-        assertNotVisible(r1.nobody);
         assertNotVisible(r2.nobody);
+        assertNotVisible(r2.member);
     }
 
     @Test
@@ -533,58 +732,78 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         final HuntingClub club = model().newHuntingClub(rhy);
 
         final SystemUser moderator = createNewModerator();
+        final SystemUser coordinator = createUserWithPerson();
+        final SystemUser contactPerson = createUserWithPerson();
 
-        // Subscriber has RHY occupation
-        final Announcement a_rk = createAnnouncement(rk, rk, moderator,
+        // moderator: RK -> SRVA_YHTEYSHENKILO
+        final Announcement moderator_srva_rk = createAnnouncement(rk, rk, moderator,
                 AnnouncementSenderType.RIISTAKESKUS, OccupationType.SRVA_YHTEYSHENKILO);
-        final Announcement a_rka = createAnnouncement(rk, rka, moderator,
+        final Announcement moderator_srva_rka = createAnnouncement(rk, rka, moderator,
                 AnnouncementSenderType.RIISTAKESKUS, OccupationType.SRVA_YHTEYSHENKILO);
-        final Announcement a_rhy = createAnnouncement(rk, rhy, moderator,
-                AnnouncementSenderType.RIISTAKESKUS, OccupationType.SRVA_YHTEYSHENKILO);
-        final Announcement a_club = createAnnouncement(rk, club, moderator,
+        final Announcement moderator_srva_rhy = createAnnouncement(rk, rhy, moderator,
                 AnnouncementSenderType.RIISTAKESKUS, OccupationType.SRVA_YHTEYSHENKILO);
 
-        // Subscriber is CLUB
-        final Announcement b_rk = createAnnouncement(rk, rk, moderator,
+        // moderator: RK -> SEURAN_JASEN
+        final Announcement moderator_club_member_rk = createAnnouncement(rk, rk, moderator,
                 AnnouncementSenderType.RIISTAKESKUS, OccupationType.SEURAN_JASEN);
-        final Announcement b_rka = createAnnouncement(rk, rka, moderator,
+        final Announcement moderator_club_member_rka = createAnnouncement(rk, rka, moderator,
                 AnnouncementSenderType.RIISTAKESKUS, OccupationType.SEURAN_JASEN);
-        final Announcement b_rhy = createAnnouncement(rk, rhy, moderator,
+        final Announcement moderator_club_member_rhy = createAnnouncement(rk, rhy, moderator,
                 AnnouncementSenderType.RIISTAKESKUS, OccupationType.SEURAN_JASEN);
-        final Announcement b_club = createAnnouncement(rk, club, moderator,
+        final Announcement moderator_club_member_club = createAnnouncement(rk, club, moderator,
                 AnnouncementSenderType.RIISTAKESKUS, OccupationType.SEURAN_JASEN);
+
+        // coordinator: RHY -> SRVA_YHTEYSHENKILO
+        final Announcement coordinator_rhy_occupation = createAnnouncement(rhy, rhy, coordinator,
+                AnnouncementSenderType.TOIMINNANOHJAAJA, OccupationType.SRVA_YHTEYSHENKILO);
+
+        // coordinator: RHY -> members
+        final Announcement coordinator_rhy_member = model().newAnnouncement(moderator, rhy,
+                AnnouncementSenderType.TOIMINNANOHJAAJA);
+        coordinator_rhy_member.setRhyMembershipSubscriber(rhy);
+
+        // CLUB -> SEURAN_JASEN
+        final Announcement clubcontact_club_members = createAnnouncement(club, club, contactPerson,
+                AnnouncementSenderType.SEURAN_YHDYSHENKILO, OccupationType.SEURAN_JASEN);
+
+        // CLUB -> METSASTYKSEN_JOHTAJA
+        final Announcement clubcontact_club_hunting_leader = createAnnouncement(club, club, contactPerson,
+                AnnouncementSenderType.SEURAN_YHDYSHENKILO, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
         // Public announcement
         final Announcement visibleToAll = createPublicAnnouncement(rk, moderator);
 
         onSavedAndAuthenticated(moderator, () -> {
-            // Received
-            assertThat(listReceived(rk), empty());
-            assertThat(listReceived(rka), empty());
-            assertThat(listReceived(rhy), containsInAnyOrder(asList(
-                    isEqualAnnouncement(a_rk),
-                    isEqualAnnouncement(a_rka),
-                    isEqualAnnouncement(a_rhy))));
-            assertThat(listReceived(club), containsInAnyOrder(asList(
-                    isEqualAnnouncement(b_rk),
-                    isEqualAnnouncement(b_rka),
-                    isEqualAnnouncement(b_rhy),
-                    isEqualAnnouncement(b_club))));
-
-            // Sent
-            assertThat(listSent(rk), containsInAnyOrder(asList(
-                    isEqualAnnouncement(a_rk),
-                    isEqualAnnouncement(a_rka),
-                    isEqualAnnouncement(a_rhy),
-                    isEqualAnnouncement(a_club),
-                    isEqualAnnouncement(b_rk),
-                    isEqualAnnouncement(b_rka),
-                    isEqualAnnouncement(b_rhy),
-                    isEqualAnnouncement(b_club),
+            assertThat(listReceived(rk), containsInAnyOrder(asList(
+                    isEqualAnnouncement(moderator_srva_rk),
+                    isEqualAnnouncement(moderator_srva_rka),
+                    isEqualAnnouncement(moderator_srva_rhy),
+                    isEqualAnnouncement(moderator_club_member_rk),
+                    isEqualAnnouncement(moderator_club_member_rka),
+                    isEqualAnnouncement(moderator_club_member_rhy),
+                    isEqualAnnouncement(moderator_club_member_club),
                     isEqualAnnouncement(visibleToAll))));
-            assertThat(listSent(rka), empty());
-            assertThat(listSent(rhy), empty());
-            assertThat(listSent(club), empty());
+            assertThat(listReceived(rka), containsInAnyOrder(asList(
+                    isEqualAnnouncement(moderator_srva_rk),
+                    isEqualAnnouncement(moderator_srva_rka),
+                    isEqualAnnouncement(moderator_club_member_rk),
+                    isEqualAnnouncement(moderator_club_member_rka))));
+            assertThat(listReceived(rhy), containsInAnyOrder(asList(
+                    isEqualAnnouncement(moderator_srva_rk),
+                    isEqualAnnouncement(moderator_srva_rka),
+                    isEqualAnnouncement(moderator_srva_rhy),
+                    isEqualAnnouncement(moderator_club_member_rk),
+                    isEqualAnnouncement(moderator_club_member_rka),
+                    isEqualAnnouncement(moderator_club_member_rhy),
+                    isEqualAnnouncement(coordinator_rhy_occupation),
+                    isEqualAnnouncement(coordinator_rhy_member))));
+            assertThat(listReceived(club), containsInAnyOrder(asList(
+                    isEqualAnnouncement(moderator_club_member_rk),
+                    isEqualAnnouncement(moderator_club_member_rka),
+                    isEqualAnnouncement(moderator_club_member_rhy),
+                    isEqualAnnouncement(moderator_club_member_club),
+                    isEqualAnnouncement(clubcontact_club_members),
+                    isEqualAnnouncement(clubcontact_club_hunting_leader))));
         });
     }
 
@@ -643,6 +862,7 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertVisible(c.groupLeader, announcement);
         assertVisible(r.nobody, announcement);
         assertVisible(c.nobody, announcement);
+        assertVisible(r.member, announcement);
 
         assertNotVisible(r.coordinator, r.rhy);
         assertNotVisible(r.srva, r.rhy);
@@ -653,5 +873,43 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         assertNotVisible(c.groupLeader, c.club);
         assertNotVisible(c.nobody, c.club);
         assertNotVisible(r.nobody, r.rhy);
+        assertNotVisible(r.member, c.club);
+        assertNotVisible(r.member, r.rhy);
+    }
+
+    @Test
+    public void testRhyMembership_Smoke() {
+        final Riistanhoitoyhdistys rhy1 = model().newRiistanhoitoyhdistys();
+        final Riistanhoitoyhdistys rhy2 = model().newRiistanhoitoyhdistys();
+        final RhyFixture r1 = new RhyFixture(model(), rhy1);
+        final RhyFixture r2 = new RhyFixture(model(), rhy2);
+        final ClubFixture c = new ClubFixture(model(), rhy1);
+
+        final Announcement a1 = model().newAnnouncement(createUser(r1.coordinator), r1.rhy, AnnouncementSenderType.TOIMINNANOHJAAJA);
+        a1.setRhyMembershipSubscriber(r1.rhy);
+
+        final Announcement a2 = model().newAnnouncement(createUser(r2.coordinator), r2.rhy, AnnouncementSenderType.TOIMINNANOHJAAJA);
+        a2.setRhyMembershipSubscriber(r2.rhy);
+
+        persistInNewTransaction();
+
+        assertNotVisible(c.clubMember, c.club);
+        assertNotVisible(c.clubContact, c.club);
+        assertNotVisible(c.groupMember, c.club);
+        assertNotVisible(c.groupLeader, c.club);
+
+        assertNotVisible(c.clubMember);
+        assertNotVisible(c.clubContact);
+        assertNotVisible(c.groupMember);
+        assertNotVisible(c.groupLeader);
+
+        assertVisible(r1.coordinator, r1.rhy, a1);
+        assertVisible(r2.coordinator, r2.rhy, a2);
+
+        assertNotVisible(c.nobody);
+        assertNotVisible(r1.nobody);
+
+        assertVisible(r1.member, a1);
+        assertVisible(r2.member, a2);
     }
 }

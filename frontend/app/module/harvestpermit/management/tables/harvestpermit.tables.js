@@ -9,52 +9,52 @@ angular.module('app.harvestpermit.management.tables', [])
                 controller: 'MoosePermitTablesController',
                 controllerAs: '$ctrl',
                 bindToController: true,
-                params: {
-                    gameSpeciesCode: null
-                },
                 resolve: {
-                    permit: function (MoosePermits, permitId, $stateParams) {
+                    gameSpeciesCode: function ($stateParams) {
+                        return _.parseInt($stateParams.gameSpeciesCode);
+                    },
+                    permit: function (MoosePermits, permitId, gameSpeciesCode) {
                         return MoosePermits.get({
                             permitId: permitId,
-                            species: $stateParams.gameSpeciesCode
+                            species: gameSpeciesCode
                         }).$promise;
                     },
-                    todos: function (MoosePermits, permitId, $stateParams) {
-                        return MoosePermits.listTodos({
-                            permitId: permitId,
-                            speciesCode: $stateParams.gameSpeciesCode
-                        }).$promise;
+                    gameSpeciesName: function (GameDiaryParameters, gameSpeciesCode) {
+                        return GameDiaryParameters.query().$promise.then(function (parameters) {
+                            return parameters.$getGameName(gameSpeciesCode);
+                        });
                     }
                 }
             });
     })
-    .controller('MoosePermitTablesController', function ($filter,
+    .controller('MoosePermitTablesController', function ($state, $filter,
                                                          GameSpeciesCodes,
                                                          MoosePermitCounterService,
-                                                         permit, todos) {
+                                                         permit, gameSpeciesCode, gameSpeciesName) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             $ctrl.permit = permit;
-            $ctrl.todos = todos;
-
-            $ctrl.latestUpdatesByClubId = _.transform($ctrl.permit.statistics, function (result, val, key) {
-                result[key] = val.latestUpdate;
-            });
-
-            $ctrl.fromMooseDataCard = _.transform($ctrl.permit.summaryForPartnersTable, function (result, val, key) {
-                result[key] = val.fromMooseDataCard;
-            });
+            $ctrl.gameSpeciesName = gameSpeciesName;
+            $ctrl.isMoose = GameSpeciesCodes.isMoose(gameSpeciesCode);
+            $ctrl.counter = MoosePermitCounterService.create($ctrl.permit);
+            $ctrl.canNavigateToClub = false;
 
             var i18NFilter = $filter('rI18nNameFilter');
-            $ctrl.allocations = _.sortBy($ctrl.permit.allocations, function (a) {
+
+            $ctrl.permit.partners = _.sortBy($ctrl.permit.partners, function (a) {
                 return i18NFilter(a.huntingClubName);
             });
+        };
 
-            $ctrl.counter = MoosePermitCounterService.create($ctrl.permit, $ctrl.allocations);
+        $ctrl.isCurrentClub = function (partner) {
+            return false;
+        };
 
-            $ctrl.isMoose = function () {
-                return GameSpeciesCodes.isMoose($ctrl.permit.speciesAmount.gameSpecies.code);
-            };
+        $ctrl.goBack = function () {
+            $state.go('permitmanagement.dashboard', {
+                permitId: permit.id,
+                gameSpeciesCode: gameSpeciesCode
+            }, {reload: true});
         };
     });

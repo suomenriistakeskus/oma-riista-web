@@ -7,9 +7,9 @@ import fi.riista.feature.huntingclub.HuntingClubDTO;
 import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.mail.MailService;
 import fi.riista.feature.organization.EmailResolver;
-import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.occupation.OccupationDTO;
+import fi.riista.util.EmailSanitizer;
 import fi.riista.util.LocalisedString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +47,6 @@ public class RegisterHuntingClubMailService {
     @Resource
     private EmailResolver emailResolver;
 
-    @Transactional(readOnly = true)
-    public Iterable<String> getRhyContactEmails(final Organisation rhy) {
-        return emailResolver.findRhyContactEmails(rhy);
-    }
-
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendNotificationEmail(final HuntingClubDTO huntingClubDTO,
@@ -66,7 +61,7 @@ public class RegisterHuntingClubMailService {
                 .build();
 
         final String emailSubject = "Seura otettu haltuun - " + huntingClubDTO.getNameFI();
-        final String adminEmail = EmailResolver.sanitizeEmail(runtimeEnvironmentUtil.getAdminEmail());
+        final String adminEmail = EmailSanitizer.getSanitizedOrNull(runtimeEnvironmentUtil.getAdminEmail());
 
         // Notify admin
         if (adminEmail != null) {

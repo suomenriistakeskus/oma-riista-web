@@ -76,11 +76,6 @@ public class GISZone extends LifecycleEntity<Long> {
     private Set<Integer> metsahallitusHirvi = new HashSet<>();
 
     @Transient
-    public TotalLandWaterSizeDTO getSize() {
-        return new TotalLandWaterSizeDTO(getComputedAreaSize(), getLandAreaSize(), getWaterAreaSize());
-    }
-
-    @Transient
     public double getLandAreaSize() {
         return computedAreaSize - waterAreaSize;
     }
@@ -193,4 +188,5 @@ public class GISZone extends LifecycleEntity<Long> {
     public void setMetsahallitusHirvi(Set<Integer> metsahallitusHirvi) {
         this.metsahallitusHirvi = metsahallitusHirvi;
     }
+
 }

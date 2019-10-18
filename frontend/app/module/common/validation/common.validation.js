@@ -194,22 +194,47 @@ angular.module('app.common.validation', [])
                         return true;
                     }
 
+                    var date = Helpers.toMoment(dateString, 'YYYY-MM-DD');
                     var min = attrs.minDate ? scope.$eval(attrs.minDate) : null;
                     var max = attrs.maxDate ? scope.$eval(attrs.maxDate) : null;
                     var min2 = attrs.minDate2 ? scope.$eval(attrs.minDate2) : null;
                     var max2 = attrs.maxDate2 ? scope.$eval(attrs.maxDate2) : null;
 
-                    var range1 = !!min || !!max;
-                    var range2 = !!min2 || !!max2;
-                    var noLimits = !range1 && !range2;
+                    var ranges1 = toRanges(toArray(min), toArray(max));
+                    var ranges2 = toRanges(toArray(min2), toArray(max2));
+                    var noLimits = ranges1.length === 0 && ranges2.length === 0;
 
-                    var range1Valid = range1 && Helpers.dateWithinRange(dateString, min, max);
-                    var range2Valid = range2 && Helpers.dateWithinRange(dateString, min2, max2);
-
-                    return noLimits || range1 && range1Valid || range2 && range2Valid;
+                    return noLimits || checkRanges(ranges1, date) || checkRanges(ranges2, date);
                 };
             }
         };
+
+        function checkRanges(ranges, dateString) {
+            return ranges.length > 0 && _.every(ranges, function (range) {
+                return Helpers.dateWithinRange(dateString, range[0], range[1]);
+            });
+        }
+
+        function toRanges(minArray, maxArray) {
+            var result = [];
+
+            for (var x = 0; x < minArray.length; x++) {
+                for (var y = 0; y < maxArray.length; y++) {
+                    var min = minArray[x];
+                    var max = maxArray[y];
+
+                    if (min || max) {
+                        result.push([min, max]);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        function toArray(value) {
+            return _.isArray(value) ? _.compact(value) : [value];
+        }
     })
 
     .directive('validPersonEmail', function ($q, $http) {
@@ -440,6 +465,23 @@ angular.module('app.common.validation', [])
                             _validateFinnishPersonalIdentity(ssn);
                     }
                 };
+            }
+        };
+    })
+
+    .directive('validInteger', function () {
+        function isInteger(value) {
+            return Number(value) % 1 === 0;
+        }
+
+        return {
+            restrict: 'A',
+            require: 'ngModel',
+            link: function linker(scope, element, attr, ngModelCtrl) {
+                ngModelCtrl.$parsers.unshift(function (modelValue, viewValue) {
+                    var value = modelValue || viewValue;
+                    return isInteger(value) ? value : undefined;
+                });
             }
         };
     })

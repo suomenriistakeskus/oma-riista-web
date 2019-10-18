@@ -77,13 +77,14 @@ public class AccountRoleService {
 
     private List<AccountRoleDTO> getRolesDerivedFromPermits(final Person person) {
         final int currentHuntingYear = DateUtil.huntingYear();
-        final int nextHuntingYear = currentHuntingYear + 1;
+        final int currentCalendarYear = DateUtil.today().getYear();
 
         return harvestPermitRepository.findAll(where(JpaSpecs.and(
                 HarvestPermitSpecs.isPermitContactPerson(person),
                 JpaSpecs.or(
                         HarvestPermitSpecs.withYear(Integer.toString(currentHuntingYear)),
-                        HarvestPermitSpecs.withYear(Integer.toString(nextHuntingYear)))))).stream()
+                        HarvestPermitSpecs.withYear(Integer.toString(currentCalendarYear)))))).stream()
+                .filter(permit -> !permit.isAmendmentPermit())
                 .sorted(comparingLong(HarvestPermit::getId).reversed())
                 .map(AccountRoleDTO::fromPermit)
                 .collect(toList());
@@ -99,7 +100,7 @@ public class AccountRoleService {
                 });
 
         final Map<Boolean, List<Occupation>> partitionByIsRelatedToClub =
-                roleMappedOccupations.collect(partitioningBy(o -> o.getOccupationType().isClubSpecific()));
+                roleMappedOccupations.collect(partitioningBy(o -> o.getOccupationType().isClubOrGroupOccupation()));
         final List<Occupation> clubOccupations = partitionByIsRelatedToClub.get(true);
         final List<Occupation> nonClubOccupations = partitionByIsRelatedToClub.get(false);
 

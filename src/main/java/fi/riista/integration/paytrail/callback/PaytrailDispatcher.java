@@ -1,8 +1,10 @@
 package fi.riista.integration.paytrail.callback;
 
 import fi.riista.integration.paytrail.PaytrailService;
+import fi.riista.integration.paytrail.auth.PaytrailAccount;
 import fi.riista.integration.paytrail.auth.PaytrailAuthCodeException;
 import fi.riista.integration.paytrail.auth.PaytrailAuthCodeVerifier;
+import fi.riista.integration.paytrail.auth.PaytrailAuthService;
 import fi.riista.integration.paytrail.auth.PaytrailInvalidTimestampException;
 import fi.riista.integration.paytrail.order.PaytrailOrderNumber;
 import org.springframework.http.HttpStatus;
@@ -16,7 +18,7 @@ import java.net.URI;
 public class PaytrailDispatcher {
 
     @Resource
-    private PaytrailAuthCodeVerifier authCodeVerifier;
+    private PaytrailAuthService paytrailAuthService;
 
     @Resource
     private PaytrailService paytrailService;
@@ -27,6 +29,9 @@ public class PaytrailDispatcher {
         final PaytrailOrderNumber paytrailOrderNumber = PaytrailOrderNumber.valueOf(params.getOrderNumber());
 
         try {
+            final PaytrailAccount paytrailAccount = paytrailOrderNumber.getOrderType().getPaytrailAccount();
+            final PaytrailAuthCodeVerifier authCodeVerifier = paytrailAuthService.createAuthCodeVerifier(paytrailAccount);
+
             authCodeVerifier.checkTimestampAge(params.getUnixTimestamp());
             authCodeVerifier.verifyReturnAuthCode(params.getReturnAuthCode(),
                     params.getFieldsForReturnAuthCodeValidation());

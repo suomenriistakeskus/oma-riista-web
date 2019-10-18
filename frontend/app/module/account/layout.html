@@ -1,33 +1,44 @@
 <nav class="navbar r-subnav-navbar" role="navigation">
     <div class="container">
-        <div class="navbar-collapse collapse" class="in">
-            <ul class="nav navbar-nav r-subnav-nav" ng-if="!$navCtrl.hideNavigation()">
-                <li ng-if="!$navCtrl.isModeratorView()" active-if-state-includes="profile.diary">
-                    <a ui-sref="profile.diary({id: 'me'})" translate="account.profile.menu.gameDiary"></a>
-                </li>
+        <ul class="nav navbar-nav r-subnav-nav" ng-if="!$navCtrl.hideNavigation()">
+            <li ng-if="!$navCtrl.isModeratorView()" active-if-state-includes="profile.diary">
+                <a ui-sref="profile.diary({id: 'me'})" translate="account.profile.menu.gameDiary"></a>
+            </li>
+            <li ng-if="$navCtrl.isAuthorizedForHarvestRegistry()" active-if-state-includes="profile.harvestregistry">
+                <a ng-click="$navCtrl.openHarvestRegistry()"
+                   uib-popover-template="'account/harvestregistry/harvest-registry-info-dialog.html'"
+                   popover-placement="bottom"
+                   popover-is-open="$navCtrl.harvestRegistryInfoVisible"
+                   popover-append-to-body="true"
+                   popover-enable="$navCtrl.harvestRegistryInfoVisible">
+                    <span translate="account.profile.menu.harvestRegistry"></span>
+                </a>
+            </li>
+            <li ng-if="!$navCtrl.isModeratorView()" active-if-state-includes="profile.messages">
+                <a ui-sref="profile.messages({id: 'me'})" translate="account.profile.menu.announcements"></a>
+            </li>
 
-                <li ng-if="!$navCtrl.isModeratorView()" active-if-state-includes="profile.messages">
-                    <a ui-sref="profile.messages({id: 'me'})" translate="account.profile.menu.announcements"></a>
-                </li>
+            <li active-if-state-includes="profile.areas,profile.areamap">
+                <a ng-click="$navCtrl.openAreas()" translate="account.profile.menu.areas"></a>
+            </li>
 
-                <li active-if-state-includes="profile.permits,profile.permit,profile.newpermit,profile.permitwizard">
-                    <a ng-click="$navCtrl.openPermits()">
-                        <span translate="harvestreport.menu.permits"></span>
+            <li active-if-state-includes="profile.permits,profile.permit,profile.newpermit,profile.permitwizard">
+                <a ng-click="$navCtrl.openPermits()">
+                    <span translate="harvestreport.menu.permits"></span>
 
-                        <span r-account-todo="'permits'"></span>
-                    </a>
-                </li>
+                    <span r-account-todo="'permits'"></span>
+                </a>
+            </li>
 
-                <li active-if-state-includes="profile.account,profile.clubconfig">
-                    <a ng-click="$navCtrl.openProfile()">
-                        <span translate="account.profile.menu.profile"></span>
+            <li active-if-state-includes="profile.account,profile.clubconfig">
+                <a ng-click="$navCtrl.openProfile()">
+                    <span translate="account.profile.menu.profile"></span>
 
-                        <span ng-if="!$navCtrl.isModeratorView()"
-                              r-account-todo="'invitations'"></span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+                    <span ng-if="!$navCtrl.isModeratorView()"
+                          r-account-todo="'invitations'"></span>
+                </a>
+            </li>
+        </ul>
     </div>
 </nav>
 

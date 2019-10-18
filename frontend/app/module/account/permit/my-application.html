@@ -1,0 +1,139 @@
+<div ng-init="collapsed = true">
+    <div class="permit-header" ng-click="collapsed = !collapsed">
+        <div class="permit-header-toggle">
+            <span class="glyphicon glyphicon-chevron-right" ng-show="collapsed"></span>
+            <span class="glyphicon glyphicon-chevron-down" ng-hide="collapsed"></span>
+        </div>
+
+        <div class="permit-header-content">
+            <p>
+                <strong ng-if="::($ctrl.application.status == 'ACTIVE')"
+                        ng-bind="::$ctrl.application.applicationNumber"></strong>
+                <span translate="harvestpermit.mine.applications.permitCategory.{{$ctrl.application.harvestPermitCategory}}"></span>
+            </p>
+
+            <p>
+                <span class="r-label-green"
+                      ng-if="::($ctrl.application.status == 'ACTIVE')"
+                      translate="harvestpermit.mine.applications.sent"></span>
+                <span class="r-label-yellow"
+                      ng-if="::($ctrl.application.status == 'DRAFT')"
+                      translate="harvestpermit.mine.applications.draft"></span>
+                &nbsp;
+                <small class="text-muted" ng-bind="::$ctrl.application.applicationName"></small>
+            </p>
+        </div>
+    </div>
+
+    <div uib-collapse="collapsed">
+        <div class="permit-section" ng-if="::$ctrl.application.status != 'DRAFT'">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="permit-section-header"
+                         translate="harvestpermit.mine.applications.applicationNumber"></div>
+                    <div class="permit-section-content" ng-bind="::$ctrl.application.applicationNumber"></div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="permit-section-header" translate="harvestpermit.mine.applications.submitDate"></div>
+                    <div class="permit-section-content"
+                         ng-bind="::$ctrl.application.submitDate | date:'d.M.yyyy HH:mm'"></div>
+                </div>
+            </div>
+        </div>
+        <div class="permit-section">
+            <div class="row">
+                <div class="col-sm-6" ng-if="::($ctrl.application.contactPerson && !$ctrl.application.permitHolder)">
+                    <div class="permit-section-header"
+                         translate="harvestpermit.mine.applications.permitHolder.person"></div>
+                    <div class="permit-section-content">
+                        <span ng-bind="::$ctrl.application.contactPerson.byName"></span>
+                        <span ng-bind="::$ctrl.application.contactPerson.lastName"></span>
+                        <br>
+                        <span ng-bind="::$ctrl.application.contactPerson.hunterNumber"></span>
+                    </div>
+                </div>
+                <div class="col-sm-6" ng-if="::$ctrl.application.huntingClub">
+                    <div class="permit-section-header"
+                         translate="harvestpermit.mine.applications.permitHolder.club"></div>
+                    <div class="permit-section-content" name-translated="$ctrl.application.huntingClub"></div>
+                </div>
+                <div class="col-sm-6"
+                     ng-if="::($ctrl.application.status != 'DRAFT' && $ctrl.application.areaExternalId)">
+                    <div class="permit-section-header" translate="harvestpermit.mine.applications.areaExternalId"></div>
+                    <div class="permit-section-content" ng-bind="::$ctrl.application.areaExternalId"></div>
+                </div>
+            </div>
+        </div>
+        <div class="permit-section">
+            <div class="permit-section-header" translate="harvestpermit.mine.applications.species"></div>
+            <div class="permit-section-content">
+                <div ng-repeat="spa in ::$ctrl.application.speciesAmounts track by spa.gameSpeciesCode">
+                    <span ng-bind="::(spa.gameSpeciesCode | translateSpeciesCode)"></span>
+                    <span ng-bind="::spa.amount"></span>
+                    <span translate="global.pcs"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="permit-section-actions">
+            <button class="btn btn-default btn-danger pull-left"
+                    ng-if="::($ctrl.canDelete())"
+                    ng-confirm-click="{{'harvestpermit.mine.applications.deleteConfirmation' | translate}}"
+                    ng-confirm-click-action="$ctrl.delete()">
+                <span class="fa fa-fw fa-remove"></span>
+                <span translate="global.button.delete"></span>
+            </button>
+
+            <button type="button"
+                    class="btn btn-default"
+                    ng-click="$ctrl.pdf()"
+                    ng-if="::($ctrl.application.status == 'DRAFT')">
+                <span class="fa fa-fw fa-file-pdf-o"></span>
+                <span translate="harvestpermit.mine.applications.pdfButton"></span>
+            </button>
+
+            <button type="button" class="btn btn-primary"
+                    ng-if="::($ctrl.application.status == 'DRAFT')"
+                    ng-click="$ctrl.edit()">
+                <span class="fa fa-fw fa-edit"></span>
+                <span translate="global.button.edit"></span>
+            </button>
+
+            <div class="btn-group"
+                 ng-if="::($ctrl.application.status === 'ACTIVE')"
+                 uib-dropdown dropdown-append-to-body>
+                <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                    <span translate="harvestpermit.mine.applications.download"></span>
+                    &nbsp;
+                    <span class="caret"></span>
+                </button>
+
+                <ul class="dropdown-menu" uib-dropdown-menu>
+                    <li>
+                        <a ng-click="$ctrl.pdf()">
+                            <span translate="harvestpermit.mine.applications.pdfButton"></span>
+                        </a>
+                    </li>
+
+                    <li ng-if="::$ctrl.application.areaExternalId">
+                        <a ng-click="$ctrl.mapPdf()">
+                            <span translate="harvestpermit.mine.applications.mapButton"></span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a ng-click="$ctrl.zip()">
+                            <span translate="harvestpermit.mine.applications.zipButton"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <button type="button" class="btn btn-primary"
+                    ng-if="::($ctrl.application.status === 'ACTIVE')"
+                    ng-click="$ctrl.view()">
+                <span translate="global.button.open"></span>
+            </button>
+        </div>
+    </div>
+</div>

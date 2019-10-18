@@ -1,0 +1,30 @@
+<div class="row header-row">
+    <div class="col-sm-3 hidden-xs">
+        <h4 translate="harvestpermit.mine.applications.title"></h4>
+    </div>
+    <div class="col-sm-3 col-xs-6">
+        <button class="btn btn-primary" ui-sref="profile.newpermit">
+            <span translate="harvestpermit.mine.applications.create"></span>
+        </button>
+    </div>
+    <div class="col-sm-6 hidden-xs">
+        <h4 translate="harvestpermit.mine.permits.title"></h4>
+    </div>
+</div>
+
+<div ng-repeat="adp in $ctrl.applicationsAndDecisions"
+     class="row permit-row">
+    <div class="col1">
+        <account-my-application ng-if="adp.application"
+                                application="adp.application"></account-my-application>
+    </div>
+
+    <div class="col2">
+        <account-my-permit ng-repeat="p in adp.permits | orderBy:'permitNumber'"
+                           permit="p"
+                           todo="$ctrl.todoPermitIds"></account-my-permit>
+
+        <account-my-decision ng-if="adp.decision && adp.permits.length === 0"
+                             decision="adp.decision"></account-my-decision>
+    </div>
+</div>

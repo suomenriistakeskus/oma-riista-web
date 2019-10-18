@@ -1,125 +1,146 @@
 package fi.riista.feature.harvestpermit;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
-import fi.riista.util.DtoUtil;
-import fi.riista.validation.FinnishHuntingPermitNumber;
-import org.hibernate.validator.constraints.SafeHtml;
+import fi.riista.util.F;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
-public class HarvestPermitDTO extends BaseEntityDTO<Long> {
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toMap;
 
-    public HarvestPermitDTO(@Nonnull final HarvestPermit harvestPermit,
-                            @Nonnull final Set<Integer> gameSpeciesCodes,
-                            final boolean canAddHarvest,
-                            final boolean canEditHarvest) {
-        Objects.requireNonNull(harvestPermit, "harvestPermit must not be null");
-        DtoUtil.copyBaseFields(harvestPermit, this);
+public class HarvestPermitDTO {
 
-        this.permitNumber = harvestPermit.getPermitNumber();
-        this.permitType = harvestPermit.getPermitType();
-        this.permitTypeCode = harvestPermit.getPermitTypeCode();
-        this.harvestReportState = harvestPermit.getHarvestReportState();
-        this.gameSpeciesCodes = gameSpeciesCodes;
+    @Nonnull
+    public static HarvestPermitDTO create(final @Nonnull HarvestPermit harvestPermit,
+                                          final @Nonnull List<HarvestPermitSpeciesAmount> speciesAmounts,
+                                          final @Nonnull Set<String> amendmentPermitNumbers,
+                                          final @Nonnull List<HarvestPermitSpeciesAmount> amendmentSpeciesAmounts,
+                                          final @Nonnull SystemUser activeUser) {
+        requireNonNull(harvestPermit);
+        requireNonNull(speciesAmounts);
+        requireNonNull(amendmentPermitNumbers);
+        requireNonNull(amendmentSpeciesAmounts);
+        requireNonNull(activeUser);
+
+        final Function<GameSpecies, Float> amendmentAmount = createAmendmentPermitAmountMapping(amendmentSpeciesAmounts);
+        final List<HarvestPermitSpeciesAmountWithAmendmentDTO> speciesAmountsDTOs = F.mapNonNullsToList(speciesAmounts,
+                speciesAmount -> HarvestPermitSpeciesAmountWithAmendmentDTO.create(
+                        speciesAmount, amendmentAmount.apply(speciesAmount.getGameSpecies())));
+
+        final Set<Integer> gameSpeciesCodes = F.mapNonNullsToSet(speciesAmounts,
+                spa -> spa.getGameSpecies().getOfficialCode());
+
+        final boolean canAddHarvest = harvestPermit.canAddHarvest(activeUser);
+        final boolean canEditHarvest = harvestPermit.canCreateEndOfHuntingReport(activeUser);
+        final boolean canDownloadDecision = harvestPermit.getPermitDecision() != null || harvestPermit.getPrintingUrl() != null;
+
+        return new HarvestPermitDTO(harvestPermit.getId(), harvestPermit.getPermitNumber(),
+                harvestPermit.getPermitType(), harvestPermit.getPermitTypeCode(), F.getId(harvestPermit.getOriginalPermit()),
+                harvestPermit.getHarvestReportState(),
+                gameSpeciesCodes, speciesAmountsDTOs, amendmentPermitNumbers,
+                canAddHarvest, canEditHarvest, canDownloadDecision);
+    }
+
+    private static Function<GameSpecies, Float> createAmendmentPermitAmountMapping(
+            final List<HarvestPermitSpeciesAmount> amendmentSpeciesAmounts) {
+        final Map<Long, Float> amendAmounts = amendmentSpeciesAmounts.stream().collect(toMap(
+                spa -> spa.getGameSpecies().getId(),
+                HarvestPermitSpeciesAmount::getAmount,
+                (a, b) -> a + b));
+
+        return species -> amendAmounts.getOrDefault(species.getId(), 0f);
+    }
+
+    private HarvestPermitDTO(final @Nonnull Long permitId,
+                             final @Nonnull String permitNumber,
+                             final @Nonnull String permitType,
+                             final @Nonnull String permitTypeCode,
+                             final Long originalPermitId,
+                             final HarvestReportState harvestReportState,
+                             final @Nonnull Set<Integer> gameSpeciesCodes,
+                             final @Nonnull List<HarvestPermitSpeciesAmountWithAmendmentDTO> speciesAmounts,
+                             final @Nonnull Set<String> amendmentPermitNumbers,
+                             final boolean canAddHarvest,
+                             final boolean canEditHarvest,
+                             final boolean canDownloadDecision) {
+        this.id = requireNonNull(permitId);
+        this.permitNumber = requireNonNull(permitNumber);
+        this.permitType = requireNonNull(permitType);
+        this.permitTypeCode = requireNonNull(permitTypeCode);
+        this.originalPermitId = originalPermitId;
+        this.harvestReportState = harvestReportState;
+        this.gameSpeciesCodes = requireNonNull(gameSpeciesCodes);
+        this.speciesAmounts = requireNonNull(speciesAmounts);
+        this.amendmentPermitNumbers = requireNonNull(amendmentPermitNumbers);
         this.canAddHarvest = canAddHarvest;
         this.canEndHunting = canEditHarvest;
+        this.canDownloadDecision = canDownloadDecision;
     }
 
-    private Long id;
-    private Integer rev;
+    private final Long id;
+    private final String permitNumber;
+    private final String permitType;
+    private final String permitTypeCode;
+    private final Long originalPermitId;
+    private final HarvestReportState harvestReportState;
+    private final Set<Integer> gameSpeciesCodes;
+    private final List<HarvestPermitSpeciesAmountWithAmendmentDTO> speciesAmounts;
+    private final Set<String> amendmentPermitNumbers;
+    private final boolean canAddHarvest;
+    private final boolean canEndHunting;
+    private final boolean canDownloadDecision;
 
-    @FinnishHuntingPermitNumber
-    private String permitNumber;
-
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String permitType;
-
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String permitTypeCode;
-
-    private Set<Integer> gameSpeciesCodes;
-
-    private HarvestReportState harvestReportState;
-
-    private boolean canAddHarvest;
-    private boolean canEndHunting;
-
-    @Override
     public Long getId() {
         return id;
-    }
-
-    @Override
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @Override
-    public Integer getRev() {
-        return rev;
-    }
-
-    @Override
-    public void setRev(Integer rev) {
-        this.rev = rev;
     }
 
     public String getPermitNumber() {
         return permitNumber;
     }
 
-    public void setPermitNumber(final String permitNumber) {
-        this.permitNumber = permitNumber;
+    public Set<String> getAmendmentPermitNumbers() {
+        return amendmentPermitNumbers;
     }
 
     public String getPermitType() {
         return permitType;
     }
 
-    public void setPermitType(final String permitType) {
-        this.permitType = permitType;
-    }
-
     public String getPermitTypeCode() {
         return permitTypeCode;
     }
 
-    public void setPermitTypeCode(final String permitTypeCode) {
-        this.permitTypeCode = permitTypeCode;
+    public Long getOriginalPermitId() {
+        return originalPermitId;
     }
 
     public Set<Integer> getGameSpeciesCodes() {
         return gameSpeciesCodes;
     }
 
-    public void setGameSpeciesCodes(final Set<Integer> gameSpeciesCodes) {
-        this.gameSpeciesCodes = gameSpeciesCodes;
+    public List<HarvestPermitSpeciesAmountWithAmendmentDTO> getSpeciesAmounts() {
+        return speciesAmounts;
     }
 
     public HarvestReportState getHarvestReportState() {
         return harvestReportState;
     }
 
-    public void setHarvestReportState(final HarvestReportState harvestReportState) {
-        this.harvestReportState = harvestReportState;
-    }
-
     public boolean isCanAddHarvest() {
         return canAddHarvest;
-    }
-
-    public void setCanAddHarvest(final boolean canAddHarvest) {
-        this.canAddHarvest = canAddHarvest;
     }
 
     public boolean isCanEndHunting() {
         return canEndHunting;
     }
 
-    public void setCanEndHunting(final boolean canEndHunting) {
-        this.canEndHunting = canEndHunting;
+    public boolean isCanDownloadDecision() {
+        return canDownloadDecision;
     }
 }

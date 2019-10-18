@@ -1,8 +1,8 @@
 package fi.riista.security.authentication;
 
 import com.querydsl.sql.SQLQueryFactory;
-import fi.riista.api.AccountApiResource;
 import fi.riista.api.mobile.MobileAccountApiResource;
+import fi.riista.api.personal.AccountApiResource;
 import fi.riista.security.UserInfo;
 import fi.riista.sql.SQMobileLoginEvent;
 import org.slf4j.Logger;

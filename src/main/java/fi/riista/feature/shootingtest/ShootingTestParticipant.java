@@ -1,10 +1,10 @@
 package fi.riista.feature.shootingtest;
 
-import com.google.common.base.Preconditions;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.BigDecimalComparison;
 import fi.riista.util.jpa.CriteriaUtils;
+import fi.riista.validation.FinnishHunterNumber;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -24,10 +24,11 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static fi.riista.feature.shootingtest.ShootingTestAttempt.calculatePaymentSum;
+import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(value = AccessType.FIELD)
@@ -38,6 +39,11 @@ public class ShootingTestParticipant extends LifecycleEntity<Long> {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private ShootingTestEvent shootingTestEvent;
+
+    @NotNull
+    @FinnishHunterNumber
+    @Column(nullable = false, updatable = false)
+    private String hunterNumber;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -78,10 +84,11 @@ public class ShootingTestParticipant extends LifecycleEntity<Long> {
     }
 
     public ShootingTestParticipant(final ShootingTestEvent shootingTestEvent, final Person person) {
-        setShootingTestEvent(Objects.requireNonNull(shootingTestEvent, "shootingTestEvent is null"));
-        setPerson(Objects.requireNonNull(person, "person is null"));
+        setShootingTestEvent(requireNonNull(shootingTestEvent, "shootingTestEvent is null"));
+        setPerson(requireNonNull(person, "person is null"));
+        this.hunterNumber = requireNonNull(person.getHunterNumber(), "hunterNumber is null");
 
-        reRegister();
+        registerAgain();
     }
 
     @AssertTrue
@@ -91,6 +98,10 @@ public class ShootingTestParticipant extends LifecycleEntity<Long> {
         }
 
         return totalDueAmount != null && totalDueAmount.compareTo(paidAmount) >= 0;
+    }
+
+    public boolean isForeignHunter() {
+        return person.isForeignPerson();
     }
 
     public BigDecimal getTotalDueAmountOrZero() {
@@ -109,13 +120,13 @@ public class ShootingTestParticipant extends LifecycleEntity<Long> {
         return getTotalDueAmountOrZero().compareTo(getPaidAmountOrZero()) > 0;
     }
 
-    public void reRegister() {
+    public void registerAgain() {
         setRegistrationTime(new Date());
         this.completed = false;
     }
 
     public void updateTotalDueAmount(final int chargeableAttempts) {
-        Preconditions.checkArgument(chargeableAttempts >= 0, "number of attempts must not be negative");
+        checkArgument(chargeableAttempts >= 0, "number of attempts must not be negative");
 
         checkState(!this.completed, "Cannot change total due amount after participant is completed");
 
@@ -136,7 +147,7 @@ public class ShootingTestParticipant extends LifecycleEntity<Long> {
     }
 
     public void updatePaymentState(final int paidAttempts, final boolean completed) {
-        Preconditions.checkArgument(paidAttempts >= 0, "number of attempts must not be negative");
+        checkArgument(paidAttempts >= 0, "number of attempts must not be negative");
 
         if (this.totalDueAmount == null) {
             this.totalDueAmount = BigDecimal.ZERO;
@@ -178,8 +189,13 @@ public class ShootingTestParticipant extends LifecycleEntity<Long> {
     }
 
     public void setShootingTestEvent(final ShootingTestEvent shootingTestEvent) {
-        CriteriaUtils.updateInverseCollection(ShootingTestEvent_.participants, this, this.shootingTestEvent, shootingTestEvent);
+        CriteriaUtils.updateInverseCollection(ShootingTestEvent_.participants, this, this.shootingTestEvent,
+                shootingTestEvent);
         this.shootingTestEvent = shootingTestEvent;
+    }
+
+    public String getHunterNumber() {
+        return hunterNumber;
     }
 
     public Person getPerson() {

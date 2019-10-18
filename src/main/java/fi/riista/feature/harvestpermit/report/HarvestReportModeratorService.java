@@ -67,13 +67,13 @@ public class HarvestReportModeratorService {
                 });
     }
 
-    private void assertPermitHarvestReportNotApproved(HarvestPermit permit) {
+    private static  void assertPermitHarvestReportNotApproved(HarvestPermit permit) {
         if (permit != null && permit.isHarvestReportApproved()) {
             throw new IllegalArgumentException("Permit harvest report is approved");
         }
     }
 
-    private void validate(Harvest harvest) {
+    private static void validate(Harvest harvest) {
         final int gameSpeciesCode = harvest.getSpecies().getOfficialCode();
         final int huntingYear = DateUtil.huntingYearContaining(DateUtil.toLocalDateNullSafe(harvest.getPointOfTime()));
         final HarvestReportingType reportingType = harvest.resolveReportingType();

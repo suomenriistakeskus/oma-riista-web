@@ -45,7 +45,7 @@ describe('Off canvas dialog stack', function() {
             OffCanvasDialogStacks = $injector.get('_offCanvasDialogStacks');
 
             // reset off canvas stacks
-            _.each(OffCanvasDialogStacks, function(dialogStack) {
+            _.forEach(OffCanvasDialogStacks, function (dialogStack) {
                 dialogStack.splice(0, dialogStack.length);
             });
 

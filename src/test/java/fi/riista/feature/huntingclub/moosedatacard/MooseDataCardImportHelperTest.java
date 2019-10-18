@@ -121,11 +121,12 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
             this.speciesBear = model.newGameSpecies(GameSpecies.OFFICIAL_CODE_BEAR);
             this.speciesLynx = model.newGameSpecies(GameSpecies.OFFICIAL_CODE_LYNX);
 
-            this.permit = model.newMooselikePermit(rhy);
-
             this.huntingYear = DateUtil.huntingYear();
-            this.speciesAmount = model.newHarvestPermitSpeciesAmount(this.permit, this.speciesMoose, this.huntingYear);
-            this.speciesAmount2 = model.newHarvestPermitSpeciesAmount(this.permit, this.speciesBear, this.huntingYear);
+
+            this.permit = model.newMooselikePermit(rhy, huntingYear);
+
+            this.speciesAmount = model.newHarvestPermitSpeciesAmount(permit, speciesMoose);
+            this.speciesAmount2 = model.newHarvestPermitSpeciesAmount(permit, speciesBear);
 
             this.lhOrgOrClub = clubInsteadOfLhOrg
                     ? Either.right(model.newHuntingClub(rhy))
@@ -138,7 +139,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
 
             persistInCurrentlyOpenTransaction();
 
-            this.permit.getSpeciesAmounts().addAll(asList(this.speciesAmount, this.speciesAmount2));
+            this.permit.getSpeciesAmounts().addAll(asList(speciesAmount, speciesAmount2));
 
             authenticate(moderator);
         }
@@ -229,10 +230,10 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
 
     @Test
     @Transactional
-    public void testResolveEntities_whenMooseHarvestReportDone() {
+    public void testResolveEntities_whenPermitHolderFinishedHunting() {
         final EntityResolveFixture f = new EntityResolveFixture(model());
 
-        model().newMooseHarvestReport(f.speciesAmount);
+        f.speciesAmount.setMooselikeHuntingFinished(true);
         persistInCurrentlyOpenTransaction();
 
         assertValidationFailure(f.getValidationInput(), huntingFinishedForPermit(f.permit.getPermitNumber()));
@@ -860,10 +861,6 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
     private static void assertFailure(final Try<?> tryObj, final List<String> expectedMessages) {
         Asserts.assertFailure(MooseDataCardImportException.class, tryObj);
         assertEquals(expectedMessages, MooseDataCardImportException.class.cast(tryObj.getCause()).getMessages());
-    }
-
-    private String permitNumber() {
-        return permitNumber("001");
     }
 
     private void withSpeciesAmountAndClub(final BiConsumer<HarvestPermitSpeciesAmount, HuntingClub> testBody) {

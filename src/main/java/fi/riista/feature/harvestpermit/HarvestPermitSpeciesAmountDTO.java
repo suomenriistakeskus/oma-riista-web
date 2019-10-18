@@ -1,6 +1,6 @@
 package fi.riista.feature.harvestpermit;
 
-import fi.riista.feature.common.entity.Has2BeginEndDatesDTO;
+import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
 

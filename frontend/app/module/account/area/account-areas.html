@@ -1,0 +1,13 @@
+<div class="row">
+
+    <ul class="nav nav-pills">
+        <li ui-sref="profile.areas.personal" active-if-state-includes="profile.areas.personal">
+            <a translate="account.areas.singleAreas"></a>
+        </li>
+        <li ui-sref="profile.areas.union" active-if-state-includes="profile.areas.union">
+            <a translate="account.areas.personalAreaUnions"></a>
+        </li>
+    </ul>
+</div>
+
+<div ui-view autoscroll="false" class="account-areas-container"></div>

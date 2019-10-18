@@ -29,62 +29,83 @@
                     <span class="glyphicon glyphicon-asterisk text-danger"></span>
                 </label>
 
-                <div text-angular id="body"
-                     required
-                     ng-model="message.body"
-                     ng-minlength="50"
-                     ng-maxlength="65535"></div>
+                <textarea id="body" name="body" class="form-control"
+                          rows="10"
+                          required
+                          ng-model="message.body"
+                          ng-minlength="50"
+                          ng-maxlength="65535">
+                </textarea>
             </div>
         </fieldset>
 
         <fieldset>
             <legend>Varmistus</legend>
 
-            <div class="form-group col-xs-6">
-                <label for="confirmation" class="control-label">
-                    <span>Koodi</span>
-                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                </label>
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="form-group">
+                        <label for="confirmation" class="control-label">
+                            <span>Koodi</span>
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
 
-                <input type="text" name="confirmationUser" id="confirmation"
-                       class="form-control" disabled
-                       ng-model="message.confirmation"/>
-            </div>
+                        <input type="text" name="confirmationUser" id="confirmation"
+                               class="form-control" disabled
+                               ng-model="message.confirmation"/>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    <div class="form-group" show-errors>
+                        <label for="userConfirmation" class="control-label">
+                            <span>Toista koodi</span>
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
 
-            <div class="form-group col-xs-6" show-errors>
-                <label for="userConfirmation" class="control-label">
-                    <span>Toista koodi</span>
-                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                </label>
-
-                <input type="text" name="userConfirmation" id="userConfirmation"
-                       class="form-control"
-                       required
-                       ng-model="message.userConfirmation"
-                       ng-maxlength="255"/>
+                        <input type="text" name="userConfirmation" id="userConfirmation"
+                               class="form-control"
+                               required
+                               ng-model="message.userConfirmation"
+                               ng-maxlength="255"/>
+                    </div>
+                </div>
             </div>
         </fieldset>
 
         <fieldset>
             <legend>Vastaanottaja</legend>
 
-            <div class="form-group col-xs-6">
-                <label><input type="radio" ng-model="viewState.sendTo" ng-value="SEND_TO.test">Testiviesti</label>
-                <br>
-                <label><input type="radio" ng-model="viewState.sendTo" ng-value="SEND_TO.clubContacts">Seurojen yhteyshenkilöille</label>
-                <br>
-                <label><input type="radio" ng-model="viewState.sendTo" ng-value="SEND_TO.all">Kaikille rekisteröityneille</label>
-            </div>
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" ng-model="viewState.sendTo" ng-value="SEND_TO.test">
+                            Testiviesti
+                        </label>
+                        <br>
+                        <label>
+                            <input type="radio" ng-model="viewState.sendTo" ng-value="SEND_TO.clubContacts">
+                            Seurojen yhteyshenkilöille
+                        </label>
+                        <br>
+                        <label>
+                            <input type="radio" ng-model="viewState.sendTo" ng-value="SEND_TO.all">
+                            Kaikille rekisteröityneille
+                        </label>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    <div ng-if="viewState.sendTo === SEND_TO.test">
+                        <div class="form-group">
+                            <label for="testRecipient" class="control-label">
+                                <span>Testiviestin vastaanottaja</span>
+                            </label>
 
-            <div ng-if="viewState.sendTo === SEND_TO.test">
-                <div class="form-group col-xs-6">
-                    <label for="confirmation" class="control-label">
-                        <span>Testiviestin vastaanottaja</span>
-                    </label>
-
-                    <input type="email" name="testRecipient" id="testRecipient"
-                           class="form-control"
-                           ng-model="viewState.testRecipient"/>
+                            <input type="email" name="testRecipient" id="testRecipient"
+                                   class="form-control"
+                                   ng-model="viewState.testRecipient"/>
+                        </div>
+                    </div>
                 </div>
             </div>
         </fieldset>

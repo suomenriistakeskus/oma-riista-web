@@ -45,6 +45,10 @@ public class SQShootingTestParticipant extends RelationalPathSpatial<SQShootingT
 
     public final DateTimePath<java.sql.Timestamp> deletionTime = createDateTime("deletionTime", java.sql.Timestamp.class);
 
+    public final NumberPath<Long> foreignPersonId = createNumber("foreignPersonId", Long.class);
+
+    public final StringPath hunterNumber = createString("hunterNumber");
+
     public final DateTimePath<java.sql.Timestamp> modificationTime = createDateTime("modificationTime", java.sql.Timestamp.class);
 
     public final NumberPath<Long> modifiedByUserId = createNumber("modifiedByUserId", Long.class);
@@ -65,9 +69,11 @@ public class SQShootingTestParticipant extends RelationalPathSpatial<SQShootingT
 
     public final com.querydsl.sql.PrimaryKey<SQShootingTestParticipant> shootingTestParticipantPkey = createPrimaryKey(shootingTestParticipantId);
 
+    public final com.querydsl.sql.ForeignKey<SQShootingTestEvent> shootingTestParticipantShootingTestEventFk = createForeignKey(shootingTestEventId, "shooting_test_event_id");
+
     public final com.querydsl.sql.ForeignKey<SQPerson> shootingTestParticipantPersonFk = createForeignKey(personId, "person_id");
 
-    public final com.querydsl.sql.ForeignKey<SQShootingTestEvent> shootingTestParticipantShootingTestEventFk = createForeignKey(shootingTestEventId, "shooting_test_event_id");
+    public final com.querydsl.sql.ForeignKey<SQForeignPerson> shootingTestParticipantForeignPersonFk = createForeignKey(foreignPersonId, "foreign_person_id");
 
     public final com.querydsl.sql.ForeignKey<SQShootingTestAttempt> _shootingTestAttemptParticipantFk = createInvForeignKey(shootingTestParticipantId, "participant_id");
 
@@ -106,11 +112,13 @@ public class SQShootingTestParticipant extends RelationalPathSpatial<SQShootingT
         addMetadata(deerTestIntended, ColumnMetadata.named("deer_test_intended").withIndex(13).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(deletedByUserId, ColumnMetadata.named("deleted_by_user_id").withIndex(4).ofType(Types.BIGINT).withSize(19));
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
+        addMetadata(foreignPersonId, ColumnMetadata.named("foreign_person_id").withIndex(19).ofType(Types.BIGINT).withSize(19));
+        addMetadata(hunterNumber, ColumnMetadata.named("hunter_number").withIndex(20).ofType(Types.VARCHAR).withSize(8).notNull());
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(7).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(modifiedByUserId, ColumnMetadata.named("modified_by_user_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
         addMetadata(mooseTestIntended, ColumnMetadata.named("moose_test_intended").withIndex(11).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(paidAmount, ColumnMetadata.named("paid_amount").withIndex(16).ofType(Types.NUMERIC).withSize(6).withDigits(2));
-        addMetadata(personId, ColumnMetadata.named("person_id").withIndex(10).ofType(Types.BIGINT).withSize(19).notNull());
+        addMetadata(personId, ColumnMetadata.named("person_id").withIndex(10).ofType(Types.BIGINT).withSize(19));
         addMetadata(registrationTime, ColumnMetadata.named("registration_time").withIndex(17).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(shootingTestEventId, ColumnMetadata.named("shooting_test_event_id").withIndex(9).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(shootingTestParticipantId, ColumnMetadata.named("shooting_test_participant_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());

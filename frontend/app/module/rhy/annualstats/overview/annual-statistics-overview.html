@@ -1,14 +1,14 @@
-<div class="r-annual-statistics-content row">
+<div class="r-annual-statistics-panel row">
     <div class="col-sm-6">
-        <show-rhy-basic-info basic-info="$ctrl.statistics.basicInfo"
-                             editable="$ctrl.editable"
+        <show-rhy-basic-info basic-info="::$ctrl.statistics.basicInfo"
+                             editable="::$ctrl.isEditable"
                              open-edit-dialog="$ctrl.editBasicInfo()">
         </show-rhy-basic-info>
 
-        <show-jht-statistics-overview statistics="$ctrl.statistics"></show-jht-statistics-overview>
+        <show-other-summary statistics="::$ctrl.statistics"></show-other-summary>
     </div>
 
     <div class="col-sm-6">
-        <show-state-aid-affecting-statistics statistics="$ctrl.statistics"></show-state-aid-affecting-statistics>
+        <show-subsidy-summary statistics="::$ctrl.statistics"></show-subsidy-summary>
     </div>
 </div>

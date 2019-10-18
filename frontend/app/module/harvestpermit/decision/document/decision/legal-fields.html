@@ -1,0 +1,31 @@
+<div class="panel panel-decision">
+    <div class="panel-heading">
+        <p class="panel-title">
+            <span translate="harvestpermit.derogation.legalFieldsTitle"></span>
+            <span translate="harvestpermit.decision.section.reportingOnly"></span>
+        </p>
+    </div>
+
+    <div class="panel-body">
+        <div ng-if="$ctrl.canEditContent" class="pull-right">
+            <a ng-click="$ctrl.updateLegalFields()">
+                <span class="fa fa-2x fa-edit text-primary"></span>
+            </a>
+        </div>
+
+        <ul>
+            <li ng-if="$ctrl.legalFields.legalSection32">
+                <span translate="harvestpermit.decision.legal.deviate32Label"></span>
+            </li>
+            <li ng-if="$ctrl.legalFields.legalSection33">
+                <span translate="harvestpermit.decision.legal.deviate33Label"></span>
+            </li>
+            <li ng-if="$ctrl.legalFields.legalSection34">
+                <span translate="harvestpermit.decision.legal.deviate34Label"></span>
+            </li>
+            <li ng-if="$ctrl.legalFields.legalSection51">
+                <span translate="harvestpermit.decision.legal.deviate51Label"></span>
+            </li>
+        </ul>
+    </div>
+</div>

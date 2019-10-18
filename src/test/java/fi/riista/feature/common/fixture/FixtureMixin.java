@@ -1,9 +1,7 @@
 package fi.riista.feature.common.fixture;
 
-import fi.riista.feature.common.support.EntitySupplier;
+import fi.riista.test.EntitySupplierProvider;
 
-public interface FixtureMixin {
-
-    EntitySupplier getEntitySupplier();
+public interface FixtureMixin extends EntitySupplierProvider {
 
 }

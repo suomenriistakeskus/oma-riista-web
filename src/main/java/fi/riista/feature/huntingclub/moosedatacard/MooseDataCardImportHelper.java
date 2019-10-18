@@ -16,7 +16,6 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
-import fi.riista.feature.harvestpermit.endofhunting.MooseHarvestReportRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -27,7 +26,7 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay_;
 import fi.riista.feature.huntingclub.moosedatacard.converter.MooseDataCardHuntingDayConverter;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardPage1Validation;
-import fi.riista.feature.huntingclub.permit.basicsummary.BasicClubHuntingSummaryRepository;
+import fi.riista.feature.huntingclub.permit.endofhunting.basicsummary.BasicClubHuntingSummaryRepository;
 import fi.riista.feature.organization.Organisation_;
 import fi.riista.feature.organization.lupahallinta.LHOrganisation;
 import fi.riista.feature.organization.lupahallinta.LHOrganisationRepository;
@@ -140,9 +139,6 @@ public class MooseDataCardImportHelper {
     private BasicClubHuntingSummaryRepository basicSummaryRepo;
 
     @Resource
-    private MooseHarvestReportRepository mooseHarvestReportRepo;
-
-    @Resource
     private GISQueryService gisQueryService;
 
     @Resource
@@ -198,10 +194,9 @@ public class MooseDataCardImportHelper {
                         return invalid(permitNotOfCorrectType(permit.getPermitTypeCode()));
                     }
 
-                    final List<HarvestPermitSpeciesAmount> hpsaList = speciesAmountRepo
-                            .findByHarvestPermitAndSpeciesCode(permit, GameSpecies.OFFICIAL_CODE_MOOSE);
+                    final List<HarvestPermitSpeciesAmount> hpsaList = speciesAmountRepo.findMooseAmounts(permit);
 
-                    return hpsaList.size() == 1 && mooseHarvestReportRepo.isMooseHarvestReportDone(hpsaList.get(0))
+                    return hpsaList.size() == 1 &&  hpsaList.get(0).isMooselikeHuntingFinished()
                             ? invalid(huntingFinishedForPermit(permitNumber))
                             : valid(permit);
                 },
@@ -210,8 +205,7 @@ public class MooseDataCardImportHelper {
 
     private Validation<String, HarvestPermitSpeciesAmount> findMoosePermitAmount(final HarvestPermit permit) {
 
-        final List<HarvestPermitSpeciesAmount> moosePermitAmounts =
-                speciesAmountRepo.findByHarvestPermitAndSpeciesCode(permit, GameSpecies.OFFICIAL_CODE_MOOSE);
+        final List<HarvestPermitSpeciesAmount> moosePermitAmounts = speciesAmountRepo.findMooseAmounts(permit);
 
         if (moosePermitAmounts.isEmpty()) {
             return invalid(harvestPermitSpeciesAmountForMooseNotFound());
@@ -253,7 +247,8 @@ public class MooseDataCardImportHelper {
     private Validation<String, Long> resolveContactPersonId(final MooseDataCardPage1Validation page1Validation) {
         final Either<String, Person> resolvedPerson = page1Validation.hunterNumberOrDateOfBirth.fold(
 
-                hunterNumber -> F.toEither(personLookupService.findByHunterNumber(hunterNumber), () -> {
+                // Foreign person is currently not eligible as a contact person.
+                hunterNumber -> F.toEither(personLookupService.findByHunterNumber(hunterNumber, false), () -> {
 
                     LOG.info("Contact person of moose data card could not be found by hunter number: \"{}\"",
                             hunterNumber);
@@ -462,8 +457,7 @@ public class MooseDataCardImportHelper {
                 occupationRepo.findNotDeletedByOrganisationAndPerson(club, person)
                         .stream()
                         .filter(occ -> occ.isActiveWithinPeriod(huntingSeasonBeginDate, null))
-                        .sorted(HasBeginAndEndDate.DEFAULT_COMPARATOR)
-                        .findFirst()
+                        .min(HasBeginAndEndDate.DEFAULT_COMPARATOR)
                         .map(occupation -> {
 
                             // Set Occupation's beginDate to minimum of (reportingPeriodBeginDate,

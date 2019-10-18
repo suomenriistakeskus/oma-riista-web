@@ -48,24 +48,22 @@ public class SharedPermitMapZoneTest extends EmbeddedDatabaseTest implements Hun
             this.gameSpecies = model.newGameSpecies();
 
             // Permit with club as partner
-            this.harvestPermit = model.newMooselikePermit(rhy);
-            this.speciesAmount = model.newHarvestPermitSpeciesAmount(harvestPermit, gameSpecies, huntingYear);
+            this.harvestPermit = model.newMooselikePermit(rhy, huntingYear);
+            this.speciesAmount = model.newHarvestPermitSpeciesAmount(harvestPermit, gameSpecies);
 
             this.huntingClub = model.newHuntingClub(rhy);
             this.harvestPermit.getPermitPartners().add(huntingClub);
 
             this.huntingClubGroup = model.newHuntingClubGroup(huntingClub, speciesAmount);
 
-            this.huntingClubArea = model.newHuntingClubArea(this.huntingClub, "fi", "sv", this.huntingClubGroup.getHuntingYear());
+            this.huntingClubArea = model.newHuntingClubArea(huntingClub, "fi", "sv", huntingYear);
             this.zone = model.newGISZone();
-            this.huntingClubArea.setZone(this.zone);
+            this.huntingClubArea.setZone(zone);
             this.huntingClubGroup.setHuntingArea(huntingClubArea);
         }
 
         public Map<Long, Map<String, Object>> loadAreas(final SharedPermitMapFeature feature) {
-            return feature.getPermitZones(this.harvestPermit,
-                    this.huntingClubGroup.getHuntingYear(),
-                    this.huntingClubGroup.getSpecies());
+            return feature.getGroupAreas(harvestPermit, huntingYear, gameSpecies);
         }
     }
 
@@ -147,9 +145,8 @@ public class SharedPermitMapZoneTest extends EmbeddedDatabaseTest implements Hun
 
         persistInNewTransaction();
 
-        final Map<Long, Map<String, Object>> permitZones = sharedPermitMapFeature.getPermitZones(f.harvestPermit,
-                f.huntingClubGroup.getHuntingYear() + 1,
-                f.huntingClubGroup.getSpecies());
+        final Map<Long, Map<String, Object>> permitZones =
+                sharedPermitMapFeature.getGroupAreas(f.harvestPermit, f.huntingYear + 1, f.gameSpecies);
 
         assertThat(permitZones, notNullValue());
         assertThat(permitZones.values(), empty());
@@ -164,9 +161,8 @@ public class SharedPermitMapZoneTest extends EmbeddedDatabaseTest implements Hun
 
         persistInNewTransaction();
 
-        final Map<Long, Map<String, Object>> permitZones = sharedPermitMapFeature.getPermitZones(f.harvestPermit,
-                f.huntingClubGroup.getHuntingYear(),
-                otherSpecies);
+        final Map<Long, Map<String, Object>> permitZones =
+                sharedPermitMapFeature.getGroupAreas(f.harvestPermit, f.huntingYear, otherSpecies);
 
         assertThat(permitZones, notNullValue());
         assertThat(permitZones.values(), empty());

@@ -1,44 +1,41 @@
-@r-annual-statistics-in-progress-background: #c44d4a;
-@r-annual-statistics-in-progress-border: #8c3d3a;
+.r-annual-statistics-top-control {
+  .make-xs-column(6);
+  .make-md-column(4);
+  .text-right;
 
-@r-annual-statistics-under-inspection-background: @r-yellow;
-@r-annual-statistics-under-inspection-border: @r-yellow;
+  margin-bottom: 12px;
+}
 
-@r-annual-statistics-approved-background: @btn-primary-bg;
-@r-annual-statistics-approved-border: @btn-primary-border;
+@r-annual-statistics-not-started-color: #c44d4a;
+@r-annual-statistics-in-progress-color: @r-annual-statistics-not-started-color;
+@r-annual-statistics-under-inspection-color: @r-yellow;
+@r-annual-statistics-approved-color: @btn-primary-bg;
 
-button.r-annual-statistics-state-label {
-  .btn;
-  .btn-block;
-  color: @btn-primary-color;
+.r-annual-statistics-state-label {
+  .h5;
+  margin-top: 0px;
+  margin-bottom: 0px;
 
-  &:hover {
-    color: @btn-primary-color;
+  &.not-started {
+    color: @r-annual-statistics-not-started-color;
   }
 
-  &.disabled, &[disabled] {
-    opacity: 1.0;
+  &.in-progress {
+    color: @r-annual-statistics-in-progress-color;
   }
 
-  &.r-annual-statistics-in-progress {
-    background-color: @r-annual-statistics-in-progress-background;
-    border: 1px solid darken(@r-annual-statistics-in-progress-border, 5%);
+  &.under-inspection {
+    color: @r-annual-statistics-under-inspection-color;
   }
 
-  &.r-annual-statistics-under-inspection {
-    background-color: @r-annual-statistics-under-inspection-background;
-    border: 1px solid darken(@r-annual-statistics-under-inspection-border, 5%);
-  }
-
-  &.r-annual-statistics-approved {
-    background-color: @r-annual-statistics-approved-background;
-    border: 1px solid darken(@r-annual-statistics-approved-border, 5%);
+  &.approved {
+    color: @r-annual-statistics-approved-color;
   }
 }
 
 .r-annual-statistics-year-select {
   width: 80px;
-  margin-bottom: 10px;
+  margin-left: 10px;
 
   &.form-control {
     display: inline-block;
@@ -46,16 +43,14 @@ button.r-annual-statistics-state-label {
 }
 
 .r-annual-statistics-tabset {
-  margin-top: 15px;
+  margin-bottom: 15px;
 }
 
-.r-annual-statistics-content {
-  margin-top: 18px;
-
+.r-annual-statistics-panel {
   .panel {
     .panel-heading {
       color: #333;
-      background-color: #f5f5f5;
+      background-color: @table-bg-accent;
       border-color: #ddd;
 
       > .panel-title {
@@ -123,6 +118,10 @@ button.r-annual-statistics-state-label {
 
           &.indented-row > td:first-child {
             padding-left: 2em;
+          }
+
+          &.indented-row-2 > td:first-child {
+            padding-left: 4em;
           }
         }
 

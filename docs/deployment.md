@@ -8,8 +8,6 @@ File should contain following properties:
   - if New Relic is used
 - aws.config.s3location
   - contains s3 url to properties file which overrides properties in production env
-- loadbalancer_log_bucket
-  - populate with bucket for HTTP access logs
 - cgpsmapper_uri
   - location of the cGPSMapper software bundle
 

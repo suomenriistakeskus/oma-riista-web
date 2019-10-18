@@ -2,15 +2,16 @@ package fi.riista.feature.organization.jht.nomination;
 
 import com.google.common.base.Preconditions;
 import com.querydsl.core.group.GroupBy;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.EnumPath;
 import com.querydsl.jpa.JPQLQuery;
+import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.jht.email.NotifyJhtOccupationNominationToRkaEmailDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.LocalisedString;
@@ -28,7 +29,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Repository
 public class OccupationNominationRepositoryImpl extends QueryDslRepositorySupport
@@ -55,14 +57,13 @@ public class OccupationNominationRepositoryImpl extends QueryDslRepositorySuppor
 
     @Override
     @Transactional(readOnly = true)
-    public Page<OccupationNomination> searchPage(
-            @Nonnull final Pageable pageRequest,
-            @Nonnull final OccupationType occupationType,
-            @Nonnull final OccupationNomination.NominationStatus nominationStatus,
-            @Nullable final Riistanhoitoyhdistys rhy,
-            @Nullable final Person person,
-            @Nullable final LocalDate beginDate,
-            @Nullable final LocalDate endDate) {
+    public Page<OccupationNomination> searchPage(@Nonnull final Pageable pageRequest,
+                                                 @Nonnull final OccupationType occupationType,
+                                                 @Nonnull final OccupationNomination.NominationStatus nominationStatus,
+                                                 @Nullable final Riistanhoitoyhdistys rhy,
+                                                 @Nullable final Person person,
+                                                 @Nullable final LocalDate beginDate,
+                                                 @Nullable final LocalDate endDate) {
         Preconditions.checkNotNull(pageRequest, "pageRequest is null");
         Preconditions.checkNotNull(occupationType, "occupationType is null");
         Preconditions.checkNotNull(nominationStatus, "nominationStatus is null");
@@ -116,36 +117,29 @@ public class OccupationNominationRepositoryImpl extends QueryDslRepositorySuppor
     @Override
     @Transactional(readOnly = true)
     public List<NotifyJhtOccupationNominationToRkaEmailDTO> findRkaNotifications(final LocalDate nominationDate) {
-        final QOccupationNomination occupationNomination = QOccupationNomination.occupationNomination;
-        final QRiistanhoitoyhdistys rhy = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
-        final QOrganisation rka = new QOrganisation("rka");
+        final QOccupationNomination NOMINATION = QOccupationNomination.occupationNomination;
+        final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
+        final QOrganisation RKA = new QOrganisation("rka");
 
-        return from(occupationNomination)
-                .join(occupationNomination.rhy, rhy)
-                .join(rhy.parentOrganisation, rka)
-                .where(occupationNomination.nominationDate.eq(nominationDate)
-                        .and(occupationNomination.nominationStatus.eq(OccupationNomination.NominationStatus.ESITETTY))
-                        .and(rka.email.isNotNull()))
-                .select(
-                        occupationNomination.occupationType,
-                        rhy.officialCode,
-                        rhy.nameFinnish,
-                        rhy.nameSwedish,
-                        rka.email
-                )
+        final Expression<LocalisedString> rhyName = RHY.nameLocalisation();
+
+        return from(NOMINATION)
+                .join(NOMINATION.rhy, RHY)
+                .join(RHY.parentOrganisation, RKA)
+                .where(NOMINATION.nominationDate.eq(nominationDate),
+                        NOMINATION.nominationStatus.eq(OccupationNomination.NominationStatus.ESITETTY),
+                        RKA.email.isNotNull())
+                .select(NOMINATION.occupationType,
+                        RHY.officialCode,
+                        rhyName,
+                        RKA.email)
                 .distinct()
                 .fetch().stream()
-                .map(tuple -> {
-                    final OccupationType occupationType = tuple.get(0, OccupationType.class);
-                    final String rhyOfficialCode = tuple.get(1, String.class);
-                    final String rhyNameFinnish = tuple.get(2, String.class);
-                    final String rhyNameSwedish = tuple.get(3, String.class);
-                    final String rkaEmail = tuple.get(4, String.class);
-
-                    final LocalisedString rhyName = new LocalisedString(rhyNameFinnish, rhyNameSwedish);
-
-                    return new NotifyJhtOccupationNominationToRkaEmailDTO(occupationType, rhyOfficialCode, rhyName, rkaEmail);
-                })
-                .collect(Collectors.toList());
+                .map(tuple -> new NotifyJhtOccupationNominationToRkaEmailDTO(
+                        tuple.get(NOMINATION.occupationType),
+                        tuple.get(RHY.officialCode),
+                        tuple.get(rhyName),
+                        tuple.get(RKA.email)))
+                .collect(toList());
     }
 }

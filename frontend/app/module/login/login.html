@@ -1,22 +1,17 @@
 <div class="container-transparent r-login-container">
+    <div class="r-login-logo"></div>
+    <div class="r-login-main-title">Oma riista</div>
+    <div class="r-login-sub-title" translate="main.title"></div>
 
-    <div class="text-center">
-        <br/>
-        <a href="/"><span class="r-logo r-logo-white">Oma Riista</span></a>
-        <br/><br/>
-        <div class="r-login-main-title" translate="main.title"></div>
-        <br/>
-    </div>
-
-    <ul class="nav nav-tabs pull-right" ng-controller="LanguageController as $langCtrl">
-        <li ng-class="{'active': $langCtrl.isSelected('fi')}">
-            <a ng-click="$langCtrl.changeLanguage('fi')"><span translate="global.language.fi"></span></a>
+    <ul class="nav nav-tabs pull-right">
+        <li ng-class="{'active': $ctrl.isSelectedLanguage('fi')}">
+            <a ng-click="$ctrl.changeLanguage('fi')"><span translate="global.language.fi"></span></a>
         </li>
-        <li ng-class="{'active': $langCtrl.isSelected('sv')}">
-            <a ng-click="$langCtrl.changeLanguage('sv')"><span translate="global.language.sv"></span></a>
+        <li ng-class="{'active': $ctrl.isSelectedLanguage('sv')}">
+            <a ng-click="$ctrl.changeLanguage('sv')"><span translate="global.language.sv"></span></a>
         </li>
-        <li ng-class="{'active': $langCtrl.isSelected('en')}" show-in-development>
-            <a ng-click="$langCtrl.changeLanguage('en')"><span translate="global.language.en"></span></a>
+        <li ng-class="{'active': $ctrl.isSelectedLanguage('en')}" show-in-development>
+            <a ng-click="$ctrl.changeLanguage('en')"><span translate="global.language.en"></span></a>
         </li>
     </ul>
     <div class="clearfix"></div>
@@ -26,23 +21,26 @@
 
         <div growl inline="true"></div>
 
-        <form class="form-horizontal" novalidate role="form" ng-submit="login()">
+        <form class="form-horizontal" novalidate role="form"
+              ng-submit="$ctrl.login()">
             <div class="form-group">
                 <div class="col-sm-4">
                     <input type="text" name="username" id="username"
                            class="form-control"
                            required
-                           autocorrect="off" autocapitalize="none"
+                           autocomplete="username" autocorrect="off" autocapitalize="none"
                            focus-me
                            placeholder="{{'login.form.usernamePlaceholder' | translate}}"
-                           ng-model="credentials.username"></div>
+                           ng-model="$ctrl.credentials.username">
+                </div>
                 <div class="col-sm-4">
                     <input type="password" name="password" id="password"
                            class="form-control"
+                           autocomplete="current-password"
                            required
-                           autocomplete="off"
                            placeholder="{{'login.form.passwordPlaceholder' | translate}}"
-                           ng-model="credentials.password"></div>
+                           ng-model="$ctrl.credentials.password">
+                </div>
                 <div class="col-sm-4">
                     <button type="submit" class="btn btn-primary btn-block">
                         <span translate="login.form.button"></span>
@@ -58,7 +56,7 @@
                 </div>
                 <div class="col-sm-4 text-center checkbox">
                     <label>
-                        <input type="checkbox" ng-model="credentials.rememberMe" checked>
+                        <input type="checkbox" ng-model="$ctrl.credentials.rememberMe" checked>
                         <span translate="login.form.rememberme"></span>
                     </label>
                 </div>
@@ -74,15 +72,12 @@
         </div>
     </div>
 </div>
-<div class="container r-twitter-feed-container text-center twitter-feed-container">
-        <h3 class="text-center" translate="main.news"></h3>
-        <br/>
-        <a class="twitter-timeline"
-           data-chrome="noheader nofooter transparent"
-           height="267px"
-           data-widget-id="464632970985209856"
-           data-dnt="true"
-           href="https://twitter.com/omariistafi">Twiittejä käyttäjältä @omariistafi</a>
-        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 
+<div class="container r-twitter-feed-container text-center twitter-feed-container">
+    <h3 translate="main.news"></h3>
+
+    <a class="twitter-timeline"
+       data-chrome="noheader nofooter noborders transparent"
+       data-tweet-limit="4"
+       href="https://twitter.com/omariistafi">Twiittejä käyttäjältä @omariistafi</a>
 </div>

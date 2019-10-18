@@ -1,46 +1,31 @@
-<uib-tabset type="pills" active="$ctrl.activeTabIndex" justified=true>
+<uib-tabset type="pills" active="$ctrl.activeTab" justified=true>
     <uib-tab index="0" select="$ctrl.onTabSelected(0)">
         <uib-tab-heading>
             <span translate="rhy.annualStats.category.overview"></span>
         </uib-tab-heading>
-        <annual-statistics-overview statistics="$ctrl.statistics"
-                                    is-moderator="$ctrl.isModerator">
-        </annual-statistics-overview>
     </uib-tab>
 
     <uib-tab index="1" select="$ctrl.onTabSelected(1)">
         <uib-tab-heading>
             <span translate="rhy.annualStats.category.publicAdministrationTasks"></span>
         </uib-tab-heading>
-        <annual-administration-statistics statistics="$ctrl.statistics"
-                                          is-moderator="$ctrl.isModerator">
-        </annual-administration-statistics>
     </uib-tab>
 
     <uib-tab index="2" select="$ctrl.onTabSelected(2)">
         <uib-tab-heading>
             <span translate="rhy.annualStats.category.srva"></span>
         </uib-tab-heading>
-        <annual-srva-statistics statistics="$ctrl.statistics"
-                                all-species-names="$ctrl.allSpeciesNames">
-        </annual-srva-statistics>
     </uib-tab>
 
     <uib-tab index="3" select="$ctrl.onTabSelected(3)">
         <uib-tab-heading>
             <span translate="rhy.annualStats.category.trainings"></span>
         </uib-tab-heading>
-        <annual-training-statistics statistics="$ctrl.statistics"
-                                    is-moderator="$ctrl.isModerator">
-        </annual-training-statistics>
     </uib-tab>
 
     <uib-tab index="4" select="$ctrl.onTabSelected(4)">
         <uib-tab-heading>
             <span translate="rhy.annualStats.category.misc"></span>
         </uib-tab-heading>
-        <annual-misc-statistics statistics="$ctrl.statistics"
-                                is-moderator="$ctrl.isModerator">
-        </annual-misc-statistics>
     </uib-tab>
 </uib-tabset>

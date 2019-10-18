@@ -1,12 +1,10 @@
 package fi.riista.feature.permit.application.fragment;
 
-import fi.riista.feature.gis.GISPoint;
-
 import java.util.List;
+import java.util.Map;
 
 public interface HarvestPermitAreaFragmentRepository {
+    List<HarvestPermitAreaFragmentSizeDTO> getFragmentSize(HarvestPermitAreaFragmentQueryParams params);
 
-    List<HarvestPermitAreaFragmentInfoDTO> getFragmentInfo(Long applicationId);
-
-    List<HarvestPermitAreaFragmentInfoDTO> getFragmentInfoInLocation(Long id, GISPoint gisPoint);
+    Map<String, List<HarvestPermitAreaFragmentPropertyDTO>> getFragmentProperty(HarvestPermitAreaFragmentQueryParams params);
 }

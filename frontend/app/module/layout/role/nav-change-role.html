@@ -1,22 +1,22 @@
 <li uib-dropdown class="r-role-nav">
     <a uib-dropdown-toggle>
-        <div class="role-logo"
-             ng-if="$ctrl.selectedRole()">
-            <span class="fa fa-fw" ng-class="$ctrl.getRoleLogo($ctrl.selectedRole())"></span>
-        </div>
+        <div ng-if="$ctrl.getActiveRole()">
+            <div class="role-logo">
+                <span class="fa fa-fw" ng-class="$ctrl.getActiveRoleLogo()"></span>
+            </div>
 
-        <div class="role-title"
-             ng-if="$ctrl.selectedRole()">
-            <span ng-bind="'global.role.' + $ctrl.selectedRole().type | translate"></span>
-            <br/>
-            <strong ng-bind="$ctrl.getRoleDisplayName($ctrl.selectedRole()) | uppercase"></strong>
+            <div class="role-title">
+                <span translate="global.role.{{$ctrl.getActiveRoleType()}}"></span>
+                <br/>
+                <strong ng-bind="$ctrl.getActiveRoleDisplayName() | uppercase"></strong>
+            </div>
         </div>
 
         <b class="caret"></b>
     </a>
 
     <ul class="dropdown-menu" uib-dropdown-menu>
-        <li ng-repeat="role in $ctrl.roles()"
+        <li ng-repeat="role in $ctrl.getAvailableRoles()"
             ng-click="$ctrl.selectRole(role)"
             ng-class="{'active': $ctrl.isSelectedRole(role)}">
             <a>
@@ -36,7 +36,7 @@
         <li class="divider"></li>
 
         <li>
-            <a ui-sref="logout">
+            <a ng-click="$ctrl.logout()">
                 <div class="role-logo" style="top: -2px">
                     <span class="fa fa-fw fa-sign-out"></span>
                 </div>

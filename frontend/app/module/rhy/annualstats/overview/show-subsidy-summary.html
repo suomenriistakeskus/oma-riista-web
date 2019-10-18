@@ -1,0 +1,87 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.overview.subsidySummary.title'"
+                               last-modified="$ctrl.statistics.quantitiesContributingToSubsidyLastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.overview.subsidySummary.needForCoordinationService"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.overview.subsidySummary.rhyMembers"></td>
+                        <td num-persons="::$ctrl.statistics.basicInfo.rhyMembers"></td>
+                    </tr>
+
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.overview.subsidySummary.trainingAndYouthWork"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" ng-switch="$ctrl.hunterExamTrainingEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.overview.subsidySummary.hunterExamTrainingEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.overview.subsidySummary.hunterExamTrainingEvents"></div>
+                        </td>
+                        <td ng-switch="$ctrl.hunterExamTrainingEventsOverridden">
+                            <span ng-switch-when="true" num-pieces="::$ctrl.statistics.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents"></span>
+                            <span ng-switch-when="false" num-pieces="::$ctrl.statistics.hunterExamTraining.hunterExamTrainingEvents"></span>
+                        </td>
+                    </tr>
+                    <tr uib-tooltip="{{'rhy.annualStats.overview.subsidySummary.otherTrainingEventsTooltip' | translate }}" tooltip-popup-delay="0" tooltip-placement="left">
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.overview.subsidySummary.otherTrainingEvents"></td>
+                        <td num-pieces="::$ctrl.statistics.subsidizableOtherTrainingEvents"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.overview.subsidySummary.studentAndYouthTrainingEvents"></td>
+                        <td num-pieces="::$ctrl.statistics.subsidizableStudentAndYouthTrainingEvents"></td>
+                    </tr>
+
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.overview.subsidySummary.huntingControl"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.overview.subsidySummary.huntingControlEvents"></td>
+                        <td num-pieces="::$ctrl.statistics.huntingControl.huntingControlEvents"></td>
+                    </tr>
+
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.overview.subsidySummary.encouragementToGameCalculation"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.overview.subsidySummary.sumOfLukeCalculations"></td>
+                        <td num-pieces="::$ctrl.statistics.luke.sum"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.overview.subsidySummary.lukeCarnivoreContactPersons"></td>
+                        <td num-persons="::$ctrl.statistics.luke.carnivoreContactPersons"></td>
+                    </tr>
+
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.overview.subsidySummary.populationManagementOfLargeGameSpecies"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.overview.subsidySummary.mooselikeTaxationPlanningEvents"></td>
+                        <td num-pieces="::$ctrl.statistics.otherHuntingRelated.mooselikeTaxationPlanningEvents"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.overview.subsidySummary.wolfTerritoryWorkgroups"></td>
+                        <td num-pieces="::$ctrl.statistics.otherHuntingRelated.wolfTerritoryWorkgroups"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.overview.subsidySummary.mooselikeSrvaEvents"></td>
+                        <td num-pieces="::$ctrl.statistics.srva.allMooselikes"></td>
+                    </tr>
+
+                    <tr class="subtitle-row">
+                        <td colspan="2" translate="rhy.annualStats.overview.subsidySummary.serviceNeedForNorthernArea"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.overview.subsidySummary.smallGameLicensesSoldByMetsahallitus"></td>
+                        <td num-pieces="::$ctrl.statistics.metsahallitus.smallGameLicensesSoldByMetsahallitus"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

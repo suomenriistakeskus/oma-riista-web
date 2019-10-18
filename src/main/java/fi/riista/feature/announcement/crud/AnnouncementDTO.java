@@ -2,7 +2,7 @@ package fi.riista.feature.announcement.crud;
 
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementSubscriber;
-import fi.riista.feature.common.entity.BaseEntityDTO;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -39,6 +39,14 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
         @NotNull
         @Pattern(regexp = "\\d+")
         private String officialCode;
+
+        @AssertTrue
+        public boolean isValidOrganisationType() {
+            return organisationType == OrganisationType.RK ||
+                    organisationType == OrganisationType.RHY ||
+                    organisationType == OrganisationType.RKA ||
+                    organisationType == OrganisationType.CLUB;
+        }
 
         public OrganisationType getOrganisationType() {
             return organisationType;
@@ -107,6 +115,7 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
 
     private Set<OccupationType> occupationTypes;
 
+    // Only required and allowed for moderator
     @Valid
     private Set<OrganisationDTO> subscriberOrganisations;
 
@@ -120,11 +129,82 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
 
     private boolean visibleToAll;
 
+    private boolean visibleToRhyMembers;
+
     private boolean sendEmail;
 
     @AssertTrue
-    protected boolean isRecipientsOk() {
-        return visibleToAll || !F.isNullOrEmpty(this.occupationTypes);
+    public boolean isVisibleToAllAllowed() {
+        return !visibleToAll || fromOrganisation != null && fromOrganisation.getOrganisationType() == OrganisationType.RK;
+    }
+
+    @AssertTrue
+    public boolean isNotEmailSelectedTogetherWithVisibleToAll() {
+        return !visibleToAll || !sendEmail;
+    }
+
+    @AssertTrue
+    public boolean isVisibleToRhyMembersAllowed() {
+        return !visibleToRhyMembers || fromOrganisation != null && fromOrganisation.getOrganisationType() == OrganisationType.RHY;
+    }
+
+    @AssertTrue
+    public boolean isRecipientsOk() {
+        if (fromOrganisation == null || fromOrganisation.getOrganisationType() == null) {
+            return false;
+        }
+
+        switch (fromOrganisation.getOrganisationType()) {
+            case RK:
+                return isValidRecipientsForRiistakeskus();
+
+            case RHY:
+                return isValidRecipientsForRhy();
+
+            case CLUB:
+                return isValidRecipientsForClub();
+
+            default:
+                return false;
+        }
+    }
+
+    private boolean isValidRecipientsForClub() {
+        if (visibleToAll || visibleToRhyMembers) {
+            return false;
+        }
+
+        if (!F.isNullOrEmpty(subscriberOrganisations)) {
+            return false;
+        }
+
+        return !F.isNullOrEmpty(occupationTypes) &&
+                occupationTypes.stream().allMatch(OccupationType::isClubOrGroupOccupation);
+    }
+
+    private boolean isValidRecipientsForRhy() {
+        if (visibleToAll || !F.isNullOrEmpty(subscriberOrganisations)) {
+            return false;
+        }
+
+        if (visibleToRhyMembers) {
+            return F.isNullOrEmpty(occupationTypes);
+        }
+
+        return !F.isNullOrEmpty(occupationTypes) &&
+                occupationTypes.stream().allMatch(t -> t.isRhyOccupation() || t.isClubOrGroupOccupation());
+    }
+
+    private boolean isValidRecipientsForRiistakeskus() {
+        if (visibleToRhyMembers) {
+            return false;
+        }
+
+        if (visibleToAll) {
+            return F.isNullOrEmpty(occupationTypes) && F.isNullOrEmpty(subscriberOrganisations);
+        }
+
+        return !F.isNullOrEmpty(occupationTypes) && !F.isNullOrEmpty(subscriberOrganisations);
     }
 
     @Override
@@ -201,5 +281,13 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
 
     public void setVisibleToAll(final boolean visibleToAll) {
         this.visibleToAll = visibleToAll;
+    }
+
+    public boolean isVisibleToRhyMembers() {
+        return visibleToRhyMembers;
+    }
+
+    public void setVisibleToRhyMembers(final boolean visibleToRhyMembers) {
+        this.visibleToRhyMembers = visibleToRhyMembers;
     }
 }

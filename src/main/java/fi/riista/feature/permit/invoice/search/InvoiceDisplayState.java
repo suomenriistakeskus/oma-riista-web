@@ -1,5 +1,7 @@
 package fi.riista.feature.permit.invoice.search;
 
+import fi.riista.feature.permit.invoice.InvoiceState;
+
 public enum InvoiceDisplayState {
 
     // Invoice is created but not further processed
@@ -22,4 +24,22 @@ public enum InvoiceDisplayState {
     VOID,
 
     UNKNOWN;
+
+    public static InvoiceDisplayState from(final InvoiceState state, final boolean dueDateInPast) {
+        switch (state) {
+            case CREATED:
+                return CREATED;
+            case DELIVERED:
+                return dueDateInPast ? OVERDUE : DELIVERED;
+            case PAID:
+                return PAID;
+            case REMINDER:
+                return REMINDER;
+            case VOID:
+                return VOID;
+            case UNKNOWN:
+            default:
+                return UNKNOWN;
+        }
+    }
 }

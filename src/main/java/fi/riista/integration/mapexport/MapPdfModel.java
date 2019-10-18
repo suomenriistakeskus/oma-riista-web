@@ -1,21 +1,19 @@
 package fi.riista.integration.mapexport;
 
-import com.google.common.collect.ImmutableList;
 import com.vividsolutions.jts.geom.Geometry;
-import fi.riista.feature.gis.zone.TotalLandWaterSizeDTO;
+import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.util.GISUtils;
 import fi.riista.util.LocalisedString;
+import fi.riista.util.NumberUtils;
 import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
-import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.springframework.context.MessageSource;
+import org.springframework.util.StringUtils;
 
-import javax.annotation.Nonnull;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
@@ -25,25 +23,13 @@ public class MapPdfModel {
     private static final DateTimeFormatter DTF_FILENAME = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     private final String exportFileName;
-    private final GeoJsonObject geometry;
+    private final FeatureCollection featureCollection;
     private final double[] bbox;
 
-    private final String clubName;
-    private final String areaName;
-    private final String saveDate;
-    private final String areaSize;
-
-    private MapPdfModel(final GeoJsonObject geometry, final double[] bbox,
-                        final String exportFileName,
-                        final String clubName, final String areaName,
-                        final String saveDate, final String areaSize) {
+    private MapPdfModel(final FeatureCollection featureCollection, final double[] bbox, final String exportFileName) {
         this.exportFileName = Objects.requireNonNull(exportFileName);
-        this.geometry = Objects.requireNonNull(geometry);
+        this.featureCollection = Objects.requireNonNull(featureCollection);
         this.bbox = Objects.requireNonNull(bbox);
-        this.clubName = Objects.requireNonNull(clubName);
-        this.areaName = Objects.requireNonNull(areaName);
-        this.saveDate = Objects.requireNonNull(saveDate);
-        this.areaSize = Objects.requireNonNull(areaSize);
     }
 
     public boolean isPreferLandscape() {
@@ -54,46 +40,32 @@ public class MapPdfModel {
         return width > height;
     }
 
+    public FeatureCollection getFeatures() {
+        return featureCollection;
+    }
+
     public String getExportFileName() {
         return exportFileName;
     }
 
-    public FeatureCollection toFeatureCollection() {
-        final Feature feature = new Feature();
-        feature.setGeometry(geometry);
-        feature.setBbox(bbox);
-
-        feature.setProperty("clubName", clubName);
-        feature.setProperty("saveDate", saveDate);
-        feature.setProperty("areaName", areaName);
-        feature.setProperty("areaSize", areaSize);
-        feature.setProperty("fill", "rgb(0, 192, 60)");
-        feature.setProperty("fill-opacity", 0.3);
-        feature.setProperty("stroke-width", 3.0);
-        feature.setProperty("stroke", "rgb(0,0,0)");
-
-        final FeatureCollection featureCollection = new FeatureCollection();
-        featureCollection.setCrs(GISUtils.SRID.ETRS_TM35FIN.getGeoJsonCrs());
-        featureCollection.setBbox(bbox);
-        featureCollection.setFeatures(ImmutableList.of(feature));
-
-        return featureCollection;
-    }
-
     public static class Builder {
-        private MessageSource messageSource;
         private Locale locale;
+        private String externalId;
         private LocalisedString clubName;
         private LocalisedString areaName;
         private GeoJsonObject geometry;
+        private GeoJsonObject overlayGeometry;
         private double[] bbox;
         private Date modificationTime;
-        private TotalLandWaterSizeDTO size;
+        private GISZoneSizeDTO areaSize;
 
-        public Builder(final MessageSource messageSource,
-                       final Locale locale) {
-            this.messageSource = Objects.requireNonNull(messageSource);
+        public Builder(final Locale locale) {
             this.locale = Objects.requireNonNull(locale);
+        }
+
+        public Builder withExternalId(final String externalId) {
+            this.externalId = externalId;
+            return this;
         }
 
         public Builder withClubName(final LocalisedString clubName) {
@@ -111,8 +83,20 @@ public class MapPdfModel {
             return this;
         }
 
+        public Builder withGeometry(final GeoJsonObject geometry) {
+            this.geometry = geometry;
+            return this;
+        }
+
         public Builder withGeometry(final Geometry geometry) {
             this.geometry = PolygonConversionUtil.javaToGeoJSON(geometry);
+            return this;
+        }
+
+        public Builder withOverlayGeometry(final Geometry overlayGeometry) {
+            if (overlayGeometry != null) {
+                this.overlayGeometry = PolygonConversionUtil.javaToGeoJSON(overlayGeometry);
+            }
             return this;
         }
 
@@ -121,54 +105,139 @@ public class MapPdfModel {
             return this;
         }
 
-        public Builder withSize(final TotalLandWaterSizeDTO size) {
-            this.size = size;
+        public Builder withAreaSize(final GISZoneSizeDTO size) {
+            this.areaSize = size;
             return this;
         }
 
-        private String i18n(final String key, final Locale locale) {
-            return messageSource.getMessage("HuntingClubArea.pdf." + key, null, locale);
+        private String formatAreaNameAndSaveDate() {
+            final String areaNameI18n = this.areaName.getAnyTranslation(locale);
+            return modificationTime != null ? (areaNameI18n + " - " + formatSaveDate()) : areaNameI18n;
         }
 
         private String formatClubName() {
-            return clubName.getAnyTranslation(this.locale);
+            return clubName.getAnyTranslation(this.locale) + (externalId != null ? " - " + externalId : "");
         }
 
-        @Nonnull
-        private String formatAreaSize() {
-            return formatAreaSize("totalAreaSize", size.getTotal()) + " " +
-                    formatAreaSize("landAreaSize", size.getLand()) + " " +
-                    formatAreaSize("waterAreaSize", size.getWater());
+        private String formatWaterLandTotalAreaSize() {
+            if (areaSize == null) {
+                return "";
+            }
+
+            final LocalisedString areaStringFormat = new LocalisedString(
+                    "Maa %s, vesi %s, yhteensä %s",
+                    "Markyta %s, vattenarealen %s, total %s");
+
+            return String.format(areaStringFormat.getAnyTranslation(locale),
+                    formatAreaSize(areaSize.getAll().getLand()),
+                    formatAreaSize(areaSize.getAll().getWater()),
+                    formatAreaSize(areaSize.getAll().getTotal()));
         }
 
-        private String formatAreaSize(final String key, final double areaSize) {
-            return i18n(key, locale) + " " + String.format("%.2f", areaSize / 10_000) + " " + i18n("ha", locale);
+        private String formatStatePrivateAreaSize() {
+            if (areaSize == null) {
+                return "";
+            }
+
+            if (areaSize.getPrivateLandAreaSize() < 1 && areaSize.getStateLandAreaSize() < 1) {
+                return "";
+            }
+
+            final LocalisedString statePrivateStringFormat = new LocalisedString(
+                    "Valtionmaa-alue %s, yksityismaa-alue %s",
+                    "Statsägda markyta %s, privatägda markyta %s");
+
+            return String.format(statePrivateStringFormat.getAnyTranslation(locale),
+                    formatAreaSize(areaSize.getStateLandAreaSize()),
+                    formatAreaSize(areaSize.getPrivateLandAreaSize()));
+        }
+
+        private String formatAreaSize(final double areaSize) {
+            final LocalisedString unitName = new LocalisedString("ha", "hektar");
+            return NumberUtils.squareMetersToHectares(areaSize) + " " + unitName.getTranslation(locale);
         }
 
         private String formatSaveDate() {
-            return i18n("saveDate", locale) + " " + DTF.print(DateUtil.toLocalDateTimeNullSafe(modificationTime));
-        }
+            if (modificationTime == null) {
+                return "";
+            }
 
-        private String formatAreaName() {
-            return i18n("areaName", locale) + " " + this.areaName.getAnyTranslation(locale);
+            final LocalisedString title = new LocalisedString("tallennettu", "sparade");
+            return title.getTranslation(locale) + " " + DTF.print(DateUtil.toLocalDateTimeNullSafe(modificationTime));
         }
 
         private String formatExportFileName() {
-            final LocalDateTime saveDateTime = DateUtil.toLocalDateTimeNullSafe(modificationTime);
-            return DTF_FILENAME.print(saveDateTime) + " " + areaName.getAnyTranslation(locale) + ".pdf";
+            final String ts = DTF_FILENAME.print(modificationTime != null
+                    ? DateUtil.toLocalDateTimeNullSafe(modificationTime)
+                    : DateUtil.today());
+
+            final String areaNameI18n = areaName.getAnyTranslation(locale);
+
+            if (StringUtils.hasText(areaNameI18n)) {
+                return ts + "-" + areaNameI18n + ".pdf";
+            }
+
+            return ts + ".pdf";
+        }
+
+        private Feature createBaseFeature() {
+            final Feature feature = new Feature();
+            feature.setGeometry(geometry);
+            feature.setBbox(bbox);
+
+            feature.setProperty("fill", "rgb(255, 0, 0)");
+            feature.setProperty("fill-opacity", 0.4);
+            feature.setProperty("stroke-width", 2.0);
+            feature.setProperty("stroke", "rgb(0,0,0)");
+
+            final String mainTitle = formatClubName();
+            final String subTitle1 = formatAreaNameAndSaveDate();
+            final String subTitle2 = formatWaterLandTotalAreaSize();
+            final String subTitle3 = formatStatePrivateAreaSize();
+
+            feature.setProperty("mainTitle", mainTitle);
+            feature.setProperty("subTitle1", subTitle1);
+            feature.setProperty("subTitle2", subTitle2);
+            feature.setProperty("subTitle3", subTitle3);
+
+            // TODO: Remove after migration
+            feature.setProperty("clubName", mainTitle);
+            feature.setProperty("areaName", subTitle1);
+            feature.setProperty("areaSize", subTitle2);
+            feature.setProperty("saveDate", subTitle3);
+
+            return feature;
+        }
+
+        private Feature createOverlayFeature() {
+            final Feature feature = new Feature();
+            feature.setGeometry(overlayGeometry);
+            feature.setBbox(bbox);
+
+            feature.setProperty("fill", "rgb(154, 101, 0)");
+            feature.setProperty("fill-opacity", 0.3);
+            feature.setProperty("stroke-width", 1.0);
+            feature.setProperty("stroke", "rgb(0,0,0)");
+
+            return feature;
         }
 
         public MapPdfModel build() {
+            Objects.requireNonNull(bbox, "bbox is null");
+            Objects.requireNonNull(geometry, "geometry is null");
             Objects.requireNonNull(clubName, "clubName is null");
             Objects.requireNonNull(areaName, "areaName is null");
-            Objects.requireNonNull(geometry, "geometry is null");
-            Objects.requireNonNull(bbox, "bbox is null");
-            Objects.requireNonNull(modificationTime, "modificationTime is null");
-            Objects.requireNonNull(size, "size is null");
 
-            return new MapPdfModel(this.geometry, this.bbox, formatExportFileName(),
-                    formatClubName(), formatAreaName(),
-                    formatSaveDate(), formatAreaSize());
+            final FeatureCollection featureCollection = new FeatureCollection();
+            featureCollection.setCrs(GISUtils.SRID.ETRS_TM35FIN.getGeoJsonCrs());
+            featureCollection.setBbox(bbox);
+            featureCollection.add(createBaseFeature());
+
+            if (overlayGeometry != null) {
+                featureCollection.add(createOverlayFeature());
+            }
+
+            return new MapPdfModel(featureCollection, this.bbox, formatExportFileName());
         }
     }
 }

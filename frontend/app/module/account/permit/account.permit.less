@@ -1,0 +1,114 @@
+.r-account-permits {
+  margin: 0 20px;
+
+  .nav-pills > .nav-item {
+    margin-bottom: 20px;
+    width: 250px;
+  }
+
+  .nav-pills > li > a {
+    text-align: center;
+  }
+
+  .header-row {
+    margin-bottom: 15px;
+  }
+
+  .permit-row {
+    border-top: 1px solid #e4e4e4;
+
+    &:nth-of-type(odd) {
+      background-color: #fcfcfc;
+    }
+
+    .col1, .col2 {
+      .make-sm-column(6);
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .permit-header {
+    cursor: pointer;
+    position: relative;
+
+    .permit-header-toggle {
+      float: left;
+      width: 40px;
+      min-height: 1px;
+
+      .glyphicon {
+        color: @r-green;
+        margin-top: 3px;
+        font-size: 20px;
+      }
+    }
+
+    .permit-header-content {
+      margin-left: 40px;
+      font-size: 16px;
+      line-height: 26px;
+      min-height: 55px;
+    }
+  }
+
+  .permit-section {
+    margin: 20px 0 0 40px;
+    font-size: 14px;
+    line-height: 24px;
+
+    .row {
+      padding-left: 0;
+    }
+  }
+
+  .permit-section-header {
+    .text-uppercase;
+    font-weight: bold;
+  }
+
+  .permit-section-content {
+    .text-muted;
+  }
+
+  .permit-section-actions {
+    margin: 30px 0 0 40px;
+    text-align: right;
+
+    .btn, .btn-group {
+      margin-left: 10px;
+    }
+  }
+
+  .metsahallitus-permit {
+    font-size: 13px;
+    border-top: 1px solid #e4e4e4;
+    padding: 10px 0;
+
+    &:nth-of-type(even) {
+      background-color: #fcfcfc;
+    }
+
+    .metsahallitus-header {
+      font-size: 16px;
+      line-height: 1.5em;
+      margin-top: 5px;
+    }
+
+    .info-row {
+      margin: 15px 0;
+    }
+
+    .info-label {
+    }
+
+    .info-value {
+      color: #555;
+      font-weight: bold;
+    }
+  }
+}

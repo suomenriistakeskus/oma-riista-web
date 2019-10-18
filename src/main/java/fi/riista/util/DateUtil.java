@@ -59,8 +59,10 @@ public final class DateUtil {
                                       @Nullable final LocalDate endDate, @Nullable final LocalTime endTime) {
 
         return startDate == null || startTime == null || endDate == null || endTime == null
-                ? new Duration(0)
-                : new Duration(toDateTimeNullSafe(startDate, startTime), toDateTimeNullSafe(endDate, endTime));
+               ? new Duration(0)
+               : new Duration(
+                toDateTimeNullSafe(startDate, startTime),
+                toDateTimeNullSafe(endDate, endTime));
     }
 
     @Nullable
@@ -86,6 +88,11 @@ public final class DateUtil {
     @Nullable
     public static LocalDateTime toLocalDateTimeNullSafe(@Nullable final Date date) {
         return date == null ? null : new LocalDateTime(date, Constants.DEFAULT_TIMEZONE);
+    }
+
+    @Nullable
+    public static LocalDateTime toLocalDateTimeNullSafe(@Nullable final DateTime datetime) {
+        return datetime == null ? null : datetime.toLocalDateTime();
     }
 
     @Nullable
@@ -201,38 +208,36 @@ public final class DateUtil {
         return new Interval(toDateTime(startDate), toDateTime(endDate.plusDays(1)));
     }
 
-    public static boolean overlapsInclusive(
-            @Nullable final Date begin, @Nullable final Date end, @Nonnull final LocalDate date) {
+    public static boolean overlapsInclusive(@Nullable final Date begin, @Nullable final Date end,
+                                            @Nonnull final LocalDate date) {
 
         return overlapsInclusive(toLocalDateNullSafe(begin), toLocalDateNullSafe(end), date);
     }
 
-    public static boolean overlapsInclusive(
-            @Nullable final LocalDate begin, @Nullable final LocalDate end, @Nonnull final LocalDate date) {
+    public static boolean overlapsInclusive(@Nullable final LocalDate begin, @Nullable final LocalDate end,
+                                            @Nonnull final LocalDate date) {
 
         Objects.requireNonNull(date, "date is null");
 
-        return begin == null && end == null || dateRange(begin, end).contains(date);
+        return begin == null && end == null || rangeFrom(begin, end).contains(date);
     }
 
-    public static boolean overlapsInclusive(@Nullable final LocalDate begin,
-                                            @Nullable final LocalDate end,
-                                            @Nullable final LocalDate begin2,
-                                            @Nullable final LocalDate end2) {
+    public static boolean overlapsInclusive(@Nullable final LocalDate begin, @Nullable final LocalDate end,
+                                            @Nullable final LocalDate begin2, @Nullable final LocalDate end2) {
 
-        return begin == null && end == null ||
-                begin2 == null && end2 == null ||
-                dateRange(begin, end).isConnected(dateRange(begin2, end2));
+        return begin == null && end == null || begin2 == null && end2 == null || rangeFrom(begin, end).isConnected(
+                rangeFrom(begin2, end2));
     }
 
-    private static Range<LocalDate> dateRange(@Nullable final LocalDate begin, @Nullable final LocalDate end) {
+    private static <T extends Comparable<? super T>> Range<T> rangeFrom(@Nullable final T begin,
+                                                                        @Nullable final T end) {
         if (begin == null) {
             return end == null ? Range.all() : Range.atMost(end);
         } else if (end == null) {
             return Range.atLeast(begin);
         }
 
-        return begin.isBefore(end) ? Range.closed(begin, end) : Range.closed(end, begin);
+        return begin.compareTo(end) < 0 ? Range.closed(begin, end) : Range.closed(end, begin);
     }
 
     private static DateTime toDateTime(final LocalDate date) {
@@ -249,6 +254,13 @@ public final class DateUtil {
         final int monthOfYear = date.getMonthOfYear();
         final int calendarYear = monthOfYear < HUNTING_YEAR_BEGIN_MONTH ? huntingYear + 1 : huntingYear;
         return date.withYear(calendarYear);
+    }
+
+    public static Range<DateTime> monthAsRange(final int year, final int month) {
+        final DateTime beginTime =
+                new DateTime(year, month, 1, 0, 0, Constants.DEFAULT_TIMEZONE);
+        final DateTime endTime = beginTime.plusMonths(1);
+        return rangeFrom(beginTime, endTime);
     }
 
     private DateUtil() {

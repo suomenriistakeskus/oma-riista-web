@@ -16,8 +16,11 @@
                 </div>
 
                 <div ng-if="$ctrl.showContent">
-                    <div class="receiver" ng-show="$ctrl.announcement.visibleToAll">
+                    <div class="receiver" ng-if="$ctrl.announcement.visibleToAll">
                         <span translate="announcements.list.visibleToAll"></span>
+                    </div>
+                    <div class="receiver" ng-if="$ctrl.announcement.visibleToRhyMembers">
+                        <span translate="announcements.list.visibleToRhyMembers"></span>
                     </div>
                     <div class="receiver" ng-if="$ctrl.announcement.subscriberOrganisations">
                         <span translate="announcements.list.subscriberOrganisations"></span>

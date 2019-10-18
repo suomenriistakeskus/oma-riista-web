@@ -4,17 +4,30 @@ import fi.riista.feature.shootingtest.ShootingTestType;
 import org.joda.time.LocalDate;
 
 public class AccountShootingTestDTO {
+
+    private String rhyCode;
     private String rhyName;
+
     private ShootingTestType type;
+    private String typeName;
+
     private LocalDate begin;
     private LocalDate end;
     private boolean expired;
+
+    public String getRhyCode() {
+        return rhyCode;
+    }
+
+    public void setRhyCode(final String rhyCode) {
+        this.rhyCode = rhyCode;
+    }
 
     public String getRhyName() {
         return rhyName;
     }
 
-    public void setRhyName(String rhyName) {
+    public void setRhyName(final String rhyName) {
         this.rhyName = rhyName;
     }
 
@@ -24,6 +37,14 @@ public class AccountShootingTestDTO {
 
     public void setType(final ShootingTestType type) {
         this.type = type;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(final String typeName) {
+        this.typeName = typeName;
     }
 
     public LocalDate getBegin() {

@@ -20,7 +20,7 @@ public class GetPolygonFeatureCollectionQuery {
             ")" +
             "SELECT ST_AsBinary(ST_Transform(d.geom, :crs)) AS geom," +
             " ST_Area(d.geom) AS area_size," +
-            " ST_Geohash(ST_Transform(ST_Centroid(d.geom), 4326), 8) AS hash" +
+            " ST_Geohash(ST_Transform(ST_PointOnSurface(d.geom), 4326), 8) AS hash" +
             " FROM d";
 
     private final NamedParameterJdbcOperations jdbcOperations;

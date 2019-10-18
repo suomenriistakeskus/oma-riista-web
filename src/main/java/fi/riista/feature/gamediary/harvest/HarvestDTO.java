@@ -3,8 +3,6 @@ package fi.riista.feature.gamediary.harvest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import fi.riista.feature.common.dto.CodesetEntryDTO;
-import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.HasAuthorAndActor;
 import fi.riista.feature.gamediary.HasHuntingDayId;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
@@ -18,7 +16,6 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.validation.DoNotValidate;
 import fi.riista.validation.XssSafe;
-import org.hibernate.validator.constraints.Range;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDateTime;
 
@@ -26,6 +23,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.ArrayList;
 
 public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, HasHuntingDayId {
@@ -54,12 +53,9 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
     private String moderatorReasonForChange;
 
     @JsonProperty(value = "totalSpecimenAmount")
-    @Range(min = Harvest.MIN_AMOUNT, max = Harvest.MAX_AMOUNT)
+    @Min(Harvest.MIN_AMOUNT)
+    @Max(Harvest.MAX_AMOUNT)
     private int amount;
-
-    @JsonIgnore
-    @DoNotValidate
-    private CodesetEntryDTO gameSpecies;
 
     @JsonIgnore
     @DoNotValidate
@@ -186,17 +182,6 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
 
     public void setAmount(int amount) {
         this.amount = amount;
-    }
-
-    @JsonProperty
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public CodesetEntryDTO getGameSpecies() {
-        return gameSpecies;
-    }
-
-    @JsonIgnore
-    public void setGameSpecies(final CodesetEntryDTO gameSpecies) {
-        this.gameSpecies = gameSpecies;
     }
 
     @JsonProperty
@@ -350,13 +335,6 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         public SELF withModeratorChangeReason(@Nullable final String reason) {
             dto.setModeratorReasonForChange(reason);
             return self();
-        }
-
-        @Override
-        public SELF populateWith(@Nonnull final GameSpecies species) {
-            return super.populateWith(species).chain(self -> {
-                dto.setGameSpecies(new CodesetEntryDTO(species.getOfficialCode(), species.getNameLocalisation()));
-            });
         }
 
         // ASSOCIATIONS MUST NOT BE TRAVERSED IN THIS METHOD (except for identifiers that are

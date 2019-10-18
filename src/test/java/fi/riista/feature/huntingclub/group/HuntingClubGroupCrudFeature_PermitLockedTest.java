@@ -71,13 +71,15 @@ public class HuntingClubGroupCrudFeature_PermitLockedTest extends EmbeddedDataba
 
     private HuntingClubGroup createGroup(final int huntingYear, final SystemUser user) {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
-        final HarvestPermit harvestPermit = model().newMooselikePermit(rhy);
+        final HarvestPermit harvestPermit = model().newMooselikePermit(rhy, huntingYear);
         final GameSpecies gameSpecies = model().newGameSpecies();
-        final HarvestPermitSpeciesAmount spa = model().newHarvestPermitSpeciesAmount(harvestPermit, gameSpecies, huntingYear);
+        final HarvestPermitSpeciesAmount spa = model().newHarvestPermitSpeciesAmount(harvestPermit, gameSpecies);
         final HuntingClub club = model().newHuntingClub();
+
         if (user.getPerson() != null) {
             model().newOccupation(club, user.getPerson(), OccupationType.SEURAN_YHDYSHENKILO);
         }
+
         return model().newHuntingClubGroup(club, spa);
     }
 }

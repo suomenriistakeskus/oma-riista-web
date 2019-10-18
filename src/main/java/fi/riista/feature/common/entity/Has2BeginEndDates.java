@@ -88,6 +88,12 @@ public interface Has2BeginEndDates extends HasBeginAndEndDate {
                 !(hasBeginAndEndDate2() && getBeginDate2().isAfter(getEndDate2()));
     }
 
+    @AssertTrue
+    default boolean isRangeNonOverlapping() {
+        return !(hasBeginOrEndDate() && hasBeginOrEndDate2() &&
+                DateUtil.overlapsInclusive(getBeginDate(), getEndDate(), getBeginDate2(), getEndDate2()));
+    }
+
     default void setDates(
             final LocalDate beginDate, final LocalDate endDate, final LocalDate beginDate2, final LocalDate endDate2) {
 

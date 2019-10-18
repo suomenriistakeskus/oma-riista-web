@@ -5,8 +5,8 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimeExpression;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
 import fi.riista.feature.common.entity.LifecycleEntity;
-import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
@@ -32,6 +32,8 @@ import static com.querydsl.core.types.dsl.DateTimeExpression.currentDate;
 @Entity
 @Access(value = AccessType.FIELD)
 public class Occupation extends LifecycleEntity<Long> implements HasBeginAndEndDate {
+
+    public static final boolean FOREIGN_PERSON_ELIGIBLE_FOR_OCCUPATION = false;
 
     private Long id;
 

@@ -10,6 +10,17 @@ import javax.persistence.Entity;
 @DiscriminatorValue("RKA")
 public class RiistakeskuksenAlue extends Organisation {
 
+    private static final String RKA_PREFIX_FI = "Suomen riistakeskus, ";
+    private static final String RKA_PREFIX_SV = "Finlands viltcentral, ";
+
+    public static String shortenRkaPrefixFi(final String input) {
+        return input.startsWith(RKA_PREFIX_FI) ? input.substring(RKA_PREFIX_FI.length()) : input;
+    }
+
+    public static String shortenRkaPrefixSv(final String input) {
+        return input.startsWith(RKA_PREFIX_SV) ? input.substring(RKA_PREFIX_SV.length()) : input;
+    }
+
     protected RiistakeskuksenAlue() {
         super(OrganisationType.RKA);
     }

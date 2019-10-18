@@ -5,7 +5,7 @@ import fi.riista.feature.gis.HtaNotResolvableByGeoLocationException;
 import fi.riista.feature.gis.MockGISQueryService;
 import fi.riista.feature.gis.RhyNotResolvableByGeoLocationException;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
-import fi.riista.feature.gis.hta.GISHirvitalousalueDTO;
+import fi.riista.feature.gis.hta.HirvitalousalueDTO;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -141,8 +141,7 @@ public class HuntingClubCrudFeatureTest extends EmbeddedDatabaseTest {
                     model().newOccupation(club, person, OccupationType.SEURAN_YHDYSHENKILO);
 
                     onSavedAndAuthenticated(createUser(person), () -> {
-                        final GISHirvitalousalueDTO htaDto = new GISHirvitalousalueDTO();
-                        htaDto.setNumber(newHta.getNumber());
+                        final HirvitalousalueDTO htaDto = new HirvitalousalueDTO(1, "", "", newHta.getNumber());
 
                         final HuntingClubDTO dto = HuntingClubDTO.create(club, false, null, htaDto);
                         dto.getRhy().setOfficialCode(newRhy.getOfficialCode());

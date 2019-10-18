@@ -8,7 +8,7 @@ import org.joda.time.LocalTime;
 
 public class PublicCalendarEventDTO {
 
-    private long id;
+    private String id;
     private PublicCalendarEventTypeDTO calendarEventType;
     private String name;
     private String description;
@@ -22,11 +22,11 @@ public class PublicCalendarEventDTO {
     @JsonSerialize(using = LocalTimeToStringSerializer.class)
     private LocalTime endTime;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(final long id) {
+    public void setId(final String id) {
         this.id = id;
     }
 

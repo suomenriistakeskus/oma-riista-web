@@ -1,33 +1,38 @@
-<form name="form" role="form" novalidate class="form" ng-submit="submit()">
+<form name="otpForm" class="form" novalidate
+      ng-submit="$ctrl.submit()">
     <div class="modal-header">
         <h3 class="modal-title" translate="login.otp.title"></h3>
     </div>
 
     <div class="modal-body">
-        <p translate="login.otp.instructionText"></p>
+        <p class="text-muted" translate="login.otp.instructionText"></p>
 
         <hr class="invisible"/>
 
-        <div class="form-group text-center" show-errors>
-            <label for="otp" class="control-label">
-                <span translate="login.otp.codeLabel"></span>
-            </label>
+        <div class="row">
+            <div class="col-sm-offset-3 col-sm-6">
+                <div class="form-group text-center" show-errors>
+                    <label for="otp" class="control-label">
+                        <span translate="login.otp.codeLabel"></span>
+                    </label>
 
-            <input type="text" name="otp" id="otp"
-                   class="form-control input-lg"
-                   focus-me
-                   maxlength="6"
-                   required
-                   ng-model="formData.otp"
-                   ng-pattern="/^\d{6}$/">
+                    <input type="text" name="otp" id="otp"
+                           class="form-control input-lg"
+                           focus-me
+                           maxlength="6"
+                           required
+                           ng-model="$ctrl.otp"
+                           ng-pattern="/^\d{6}$/">
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-default" ng-click="cancel()"
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()"
                 translate="global.button.cancel"></button>
 
-        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid"
+        <button type="submit" class="btn btn-primary" ng-disabled="otpForm.$invalid"
                 translate="global.button.ok"></button>
     </div>
 </form>

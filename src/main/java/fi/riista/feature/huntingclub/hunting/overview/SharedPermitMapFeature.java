@@ -1,6 +1,7 @@
 package fi.riista.feature.huntingclub.hunting.overview;
 
 import com.google.common.collect.ImmutableMap;
+import com.querydsl.core.types.Expression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
@@ -20,6 +21,11 @@ import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.huntingclub.area.QHuntingClubArea;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
+import fi.riista.feature.permit.application.QHarvestPermitApplication;
+import fi.riista.feature.permit.area.QHarvestPermitArea;
+import fi.riista.feature.permit.area.partner.QHarvestPermitAreaPartner;
+import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.GISUtils;
 import fi.riista.util.LocalisedString;
@@ -67,7 +73,10 @@ public class SharedPermitMapFeature {
             return new FeatureCollection();
         }
 
-        final Map<Long, Map<String, Object>> permitZones = getPermitZones(harvestPermit, huntingYear, species);
+        final Map<Long, Map<String, Object>> permitZones = Optional.ofNullable(harvestPermit.getPermitDecision())
+                .map(this::getApplicationAreas)
+                .orElseGet(() -> getGroupAreas(harvestPermit, huntingYear, species));
+
         final FeatureCollection combinedFeatures = zoneRepository.getCombinedFeatures(
                 permitZones.keySet(), GISUtils.SRID.WGS84);
 
@@ -94,14 +103,48 @@ public class SharedPermitMapFeature {
                 : Collections.emptyList();
     }
 
-    Map<Long, Map<String, Object>> getPermitZones(final HarvestPermit permit,
-                                                  final int huntingYear,
-                                                  final GameSpecies species) {
+    Map<Long, Map<String, Object>> getApplicationAreas(final PermitDecision permitDecision) {
+        final QPermitDecision DECISION = QPermitDecision.permitDecision;
+        final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
+        final QHarvestPermitArea PERMIT_AREA = QHarvestPermitArea.harvestPermitArea;
+        final QHarvestPermitAreaPartner AREA_PARTNER = QHarvestPermitAreaPartner.harvestPermitAreaPartner;
+        final QHuntingClubArea CLUB_AREA = QHuntingClubArea.huntingClubArea;
+        final QHuntingClub CLUB = QHuntingClub.huntingClub;
+        final QGISZone ZONE = QGISZone.gISZone;
+
+        final Expression<LocalisedString> clubName = CLUB.nameLocalisation();
+
+        return queryFactory.from(DECISION)
+                .join(DECISION.application, APPLICATION)
+                .join(APPLICATION.area, PERMIT_AREA)
+                .join(PERMIT_AREA.partners, AREA_PARTNER)
+                .join(AREA_PARTNER.sourceArea, CLUB_AREA)
+                .join(CLUB_AREA.club, CLUB)
+                .join(CLUB_AREA.zone, ZONE)
+                .where(DECISION.eq(permitDecision))
+                .select(ZONE.id,
+                        CLUB.id,
+                        clubName,
+                        ZONE.computedAreaSize)
+                .distinct()
+                .fetch()
+                .stream()
+                .collect(toMap(tuple -> tuple.get(ZONE.id), tuple -> ImmutableMap.of(
+                        GeoJSONConstants.PROPERTY_CLUB_NAME, tuple.get(clubName).asMap(),
+                        GeoJSONConstants.PROPERTY_HUNTING_CLUB_ID, tuple.get(CLUB.id),
+                        GeoJSONConstants.PROPERTY_AREA_SIZE, tuple.get(ZONE.computedAreaSize))));
+    }
+
+    Map<Long, Map<String, Object>> getGroupAreas(final HarvestPermit permit,
+                                                 final int huntingYear,
+                                                 final GameSpecies species) {
         final QHarvestPermit harvestPermit = QHarvestPermit.harvestPermit;
         final QHuntingClub huntingClub = QHuntingClub.huntingClub;
         final QHuntingClubGroup huntingClubGroup = QHuntingClubGroup.huntingClubGroup;
         final QHuntingClubArea huntingClubArea = QHuntingClubArea.huntingClubArea;
         final QGISZone zone = QGISZone.gISZone;
+
+        final Expression<LocalisedString> huntingClubName = huntingClub.nameLocalisation();
 
         final JPQLQuery<HuntingClub> permitPartnerClubs = JPAExpressions.selectFrom(harvestPermit)
                 .join(harvestPermit.permitPartners, huntingClub)
@@ -121,15 +164,13 @@ public class SharedPermitMapFeature {
                         huntingClubArea.active.isTrue())
                 .select(zone.id,
                         huntingClub.id,
-                        huntingClub.nameFinnish,
-                        huntingClub.nameSwedish,
+                        huntingClubName,
                         zone.computedAreaSize)
                 .distinct()
                 .fetch()
                 .stream()
                 .collect(toMap(tuple -> tuple.get(zone.id), tuple -> ImmutableMap.of(
-                        GeoJSONConstants.PROPERTY_CLUB_NAME, LocalisedString.of(
-                                tuple.get(huntingClub.nameFinnish), tuple.get(huntingClub.nameSwedish)).asMap(),
+                        GeoJSONConstants.PROPERTY_CLUB_NAME, tuple.get(huntingClubName).asMap(),
                         GeoJSONConstants.PROPERTY_HUNTING_CLUB_ID, tuple.get(huntingClub.id),
                         GeoJSONConstants.PROPERTY_AREA_SIZE, tuple.get(zone.computedAreaSize))));
     }

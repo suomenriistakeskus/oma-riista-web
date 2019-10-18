@@ -1,6 +1,6 @@
 package fi.riista.feature.permit.area.rhy;
 
-import fi.riista.feature.common.entity.BaseEntity;
+import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gis.zone.TotalLandWaterSizeDTO;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.area.HarvestPermitArea;
@@ -21,7 +21,7 @@ import java.util.Objects;
 
 @Entity
 @Access(AccessType.FIELD)
-public class HarvestPermitAreaRhy extends BaseEntity<Long> {
+public class HarvestPermitAreaRhy extends LifecycleEntity<Long> {
     private Long id;
 
     @NotNull
@@ -60,6 +60,15 @@ public class HarvestPermitAreaRhy extends BaseEntity<Long> {
     @JoinColumn(nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Riistanhoitoyhdistys rhy;
+
+    public void movePrivateToStateArea() {
+        stateSize += privateSize;
+        stateLandSize += privateLandSize;
+        stateWaterSize += privateWaterSize;
+        privateSize = 0;
+        privateLandSize = 0;
+        privateWaterSize = 0;
+    }
 
     protected HarvestPermitAreaRhy() {
     }

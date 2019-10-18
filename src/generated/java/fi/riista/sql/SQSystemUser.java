@@ -71,11 +71,11 @@ public class SQSystemUser extends RelationalPathSpatial<SQSystemUser> {
 
     public final com.querydsl.sql.PrimaryKey<SQSystemUser> systemUserPkey = createPrimaryKey(userId);
 
-    public final com.querydsl.sql.ForeignKey<SQSystemUserRole> systemUserRoleFk = createForeignKey(role, "name");
-
     public final com.querydsl.sql.ForeignKey<SQPerson> systemUserPersonFk = createForeignKey(personId, "person_id");
 
     public final com.querydsl.sql.ForeignKey<SQTwoFactorAuthenticationMode> systemUserTwoFactorFk = createForeignKey(twoFactorAuthentication, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQSystemUserRole> systemUserRoleFk = createForeignKey(role, "name");
 
     public final com.querydsl.sql.ForeignKey<SQPersistentRememberMeToken> _persistentTokenUserFk = createInvForeignKey(userId, "user_id");
 
@@ -90,6 +90,8 @@ public class SQSystemUser extends RelationalPathSpatial<SQSystemUser> {
     public final com.querydsl.sql.ForeignKey<SQSmsMessage> _smsMessageSystemUserFk = createInvForeignKey(userId, "user_id");
 
     public final com.querydsl.sql.ForeignKey<SQAnnouncement> _announcementUserIdFk = createInvForeignKey(userId, "from_user_id");
+
+    public final com.querydsl.sql.ForeignKey<SQPermitDecision> _permitDecisionHandlerIdFk = createInvForeignKey(userId, "handler_id");
 
     public final com.querydsl.sql.ForeignKey<SQSrvaEvent> _srvaEventApproverAsUserFk = createInvForeignKey(userId, "approver_as_user_id");
 

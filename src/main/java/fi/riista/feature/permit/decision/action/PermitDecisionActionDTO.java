@@ -1,7 +1,6 @@
 package fi.riista.feature.permit.decision.action;
 
-import fi.riista.feature.common.entity.BaseEntityDTO;
-import fi.riista.util.DtoUtil;
+import fi.riista.feature.common.dto.BaseEntityDTO;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDateTime;
@@ -28,17 +27,7 @@ public class PermitDecisionActionDTO extends BaseEntityDTO<Long> {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String decisionText;
 
-    public static PermitDecisionActionDTO create(final PermitDecisionAction entity) {
-        final PermitDecisionActionDTO dto = new PermitDecisionActionDTO();
-        DtoUtil.copyBaseFields(entity, dto);
-
-        dto.setPointOfTime(entity.getPointOfTime().toLocalDateTime());
-        dto.setActionType(entity.getActionType());
-        dto.setCommunicationType(entity.getCommunicationType());
-        dto.setText(entity.getText());
-        dto.setDecisionText(entity.getDecisionText());
-        return dto;
-    }
+    private long attachmentCount;
 
     @Override
     public Long getId() {
@@ -98,5 +87,13 @@ public class PermitDecisionActionDTO extends BaseEntityDTO<Long> {
 
     public void setDecisionText(final String decisionText) {
         this.decisionText = decisionText;
+    }
+
+    public long getAttachmentCount() {
+        return attachmentCount;
+    }
+
+    public void setAttachmentCount(final long attachmentCount) {
+        this.attachmentCount = attachmentCount;
     }
 }

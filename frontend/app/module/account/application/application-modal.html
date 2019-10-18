@@ -1,0 +1,40 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+
+    <h3 class="modal-title">
+        <span ng-bind="$ctrl.applicationSummary.applicationName"></span>
+    </h3>
+</div>
+
+<div class="modal-body">
+    <div ng-switch="$ctrl.applicationSummary.harvestPermitCategory">
+        <mooselike-application-summary
+                ng-switch-when="MOOSELIKE"
+                application="$ctrl.applicationSummary"
+                permit-area="$ctrl.permitArea">
+        </mooselike-application-summary>
+
+        <amendment-application-summary
+                ng-switch-when="MOOSELIKE_NEW"
+                application="$ctrl.applicationSummary"
+                permit-area="$ctrl.permitArea"
+                amendment-application="$ctrl.mooselikeAmendment">
+        </amendment-application-summary>
+
+        <bird-application-summary
+                ng-switch-when="BIRD"
+                application="$ctrl.applicationSummary">
+        </bird-application-summary>
+        <carnivore-application-summary
+                ng-switch-when-separator="|"
+                ng-switch-when="LARGE_CARNIVORE_BEAR|LARGE_CARNIVORE_LYNX|LARGE_CARNIVORE_LYNX_PORONHOITO|LARGE_CARNIVORE_WOLF"
+                application="$ctrl.applicationSummary">
+        </carnivore-application-summary>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-click="$ctrl.cancel()"
+            translate="global.button.close"></button>
+</div>

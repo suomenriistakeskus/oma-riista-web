@@ -1,0 +1,28 @@
+<div class="panel panel-default">
+    <timestamped-panel-heading title-key="'rhy.annualStats.trainings.publicEvents.title'"
+                               last-modified="$ctrl.publicEvents.lastModified">
+    </timestamped-panel-heading>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <tbody>
+                    <tr>
+                        <td class="col-xs-8" translate="rhy.annualStats.trainings.publicEvents.publicEvents"></td>
+                        <td num-pieces="::$ctrl.publicEvents.publicEvents"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" translate="rhy.annualStats.trainings.publicEvents.publicEventParticipants"></td>
+                        <td num-persons="::$ctrl.publicEvents.publicEventParticipants"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="$ctrl.editable" class="text-right">
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.editPublicEvents()"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

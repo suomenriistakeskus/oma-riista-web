@@ -76,7 +76,7 @@ public abstract class LifecycleEntity<T extends Serializable> extends BaseEntity
     @PrePersist
     protected void prePersist() {
         final Date now = now().toDate();
-        final Long activeUserId = getActiveUserId();
+        final long activeUserId = getActiveUserId();
 
         getLifecycleFields().setCreationTime(now);
         getLifecycleFields().setModificationTime(now);
@@ -91,7 +91,7 @@ public abstract class LifecycleEntity<T extends Serializable> extends BaseEntity
     void preUpdate() {
         setModificationTimeToCurrentTime();
 
-        final Long activeUserId = getActiveUserId();
+        final long activeUserId = getActiveUserId();
 
         if (activeUserId >= 0 || getAuditFields().getModifiedByUserId() == null) {
             getAuditFields().setModifiedByUserId(activeUserId);

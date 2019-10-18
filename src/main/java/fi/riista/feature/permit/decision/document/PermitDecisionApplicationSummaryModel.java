@@ -3,12 +3,13 @@ package fi.riista.feature.permit.decision.document;
 import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
-import fi.riista.feature.permit.application.species.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhyDTO;
 import fi.riista.util.F;
 import org.apache.commons.lang.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -65,9 +66,9 @@ public class PermitDecisionApplicationSummaryModel {
     private final long shooterListCount;
     private final long otherAttachmentCount;
 
-    public PermitDecisionApplicationSummaryModel(final Locale locale,
-                                                 final HarvestPermitApplication application,
-                                                 final GISZoneSizeDTO sizeDTO) {
+    public PermitDecisionApplicationSummaryModel(final @Nonnull Locale locale,
+                                                 final @Nonnull HarvestPermitApplication application,
+                                                 final @Nonnull GISZoneSizeDTO sizeDTO) {
         this.locale = Objects.requireNonNull(locale);
         this.speciesAmounts = F.mapNonNullsToList(application.getSpeciesAmounts(),
                 spa -> transformSpeciesAmount(spa, locale));
@@ -110,7 +111,7 @@ public class PermitDecisionApplicationSummaryModel {
         return new SpeciesAmount(
                 StringUtils.capitalize(spa.getGameSpecies().getNameLocalisation().getTranslation(locale)),
                 spa.getAmount(),
-                spa.getDescription());
+                spa.getMooselikeDescription());
     }
 
     public Locale getLocale() {

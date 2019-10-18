@@ -7,6 +7,11 @@ angular.module('app.common.map.bounds', [])
             northEast: WGS84.fromETRS(7776256, 733984)
         };
 
+        var boundsOfMmlBasemap = {
+            southWest: WGS84.fromETRS(6291456, -548576),
+            northEast: WGS84.fromETRS(8388608, 1548576)
+        };
+
         function _isValidBbox(bbox) {
             var isAbsPositive = function (a) {
                 return _.isNumber(a) && Math.abs(a) > 0.001;
@@ -17,6 +22,10 @@ angular.module('app.common.map.bounds', [])
 
         this.getBoundsOfFinland = function () {
             return angular.copy(boundsOfFinland);
+        };
+
+        this.getBoundsOfMmlBasemap = function () {
+            return angular.copy(boundsOfMmlBasemap);
         };
 
         this.isGeoLocationInsideFinland = function (g) {

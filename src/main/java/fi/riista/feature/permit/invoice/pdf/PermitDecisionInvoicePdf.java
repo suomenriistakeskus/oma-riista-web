@@ -2,10 +2,7 @@ package fi.riista.feature.permit.invoice.pdf;
 
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.invoice.Invoice;
-import fi.riista.feature.permit.invoice.InvoiceAccountDetails;
 import fi.riista.util.ContentDispositionUtil;
-import org.iban4j.Bic;
-import org.iban4j.Iban;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -15,9 +12,6 @@ import java.io.IOException;
 import static java.util.Objects.requireNonNull;
 
 public class PermitDecisionInvoicePdf {
-
-    public static final InvoiceAccountDetails DECISION_BANK_ACCOUNT =
-            new InvoiceAccountDetails(Bic.valueOf("NDEAFIHH"), Iban.valueOf("FI5710253000227630"));
 
     public static PermitDecisionInvoicePdf createInvoice(final @Nonnull PermitDecision decision,
                                                          final @Nonnull Invoice invoice) throws IOException {

@@ -20,7 +20,11 @@
             </div>
 
             <div class="col-md-4" ng-if="$ctrl.showOrganisationFilter()">
+                <label class="control-label" translate="occupation.nomination.list.organisationFilter"></label>
+
                 <organisation-selection
+                        show-rk="true"
+                        show-rka="true"
                         area-code="$ctrl.searchParams.areaCode"
                         rhy-code="$ctrl.searchParams.rhyCode"></organisation-selection>
             </div>

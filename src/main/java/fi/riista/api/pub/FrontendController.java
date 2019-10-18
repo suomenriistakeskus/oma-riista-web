@@ -19,6 +19,7 @@ import org.springframework.web.context.support.ServletContextResource;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ public class FrontendController {
 
     private static final String JSP_CLIENT_LOADER = "frontend/client";
 
-    private static final Map<String, String> ASSETS = ImmutableMap.<String, String> builder()
+    private static final Map<String, String> ASSETS = ImmutableMap.<String, String>builder()
             .put("appVersion", "/frontend/js/app.min.js")
             .put("styleVersion", "/frontend/css/app.css")
             .put("templatesVersion", "/frontend/js/templates.js")
@@ -61,8 +62,11 @@ public class FrontendController {
      * Loader for SPA-frontend
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    public String showClient(final Model model) {
+    @CacheControl(policy = {CachePolicy.NO_CACHE, CachePolicy.NO_STORE, CachePolicy.MUST_REVALIDATE})
+    public String showClient(final Model model, final HttpServletResponse response) {
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
+
         if (runtimeEnvironmentUtil.isDevelopmentEnvironment()) {
             VERSION_CACHE.invalidateAll();
         }

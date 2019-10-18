@@ -1,6 +1,5 @@
 package fi.riista.feature.harvestpermit;
 
-import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameCategory;
@@ -11,30 +10,29 @@ import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.harvestpermit.allocation.HarvestPermitAllocation;
 import fi.riista.feature.harvestpermit.allocation.MoosePermitAllocationDTO;
-import fi.riista.feature.harvestpermit.season.MooselikePrice;
+import fi.riista.feature.harvestpermit.payment.HuntingClubPermitPaymentDTO;
+import fi.riista.feature.harvestpermit.payment.HuntingClubPermitTotalPaymentDTO;
+import fi.riista.feature.harvestpermit.payment.MooselikePrice;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitCountDTO;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTO;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitPaymentDTO;
-import fi.riista.feature.huntingclub.permit.HuntingClubPermitTotalPaymentDTO;
-import fi.riista.feature.huntingclub.permit.summary.MooseHuntingSummary;
+import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
+import fi.riista.feature.huntingclub.permit.partner.HarvestPermitPartnerDTO;
+import fi.riista.feature.huntingclub.permit.statistics.HarvestCountDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
-import fi.riista.util.F;
 import fi.riista.util.NumberUtils;
 import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static fi.riista.util.DateUtil.today;
@@ -44,6 +42,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
+
+    private static HarvestPermitPartnerDTO getPartner(final HuntingClubPermitDTO dto, final long partnerId) {
+        return dto.getPartners().stream().filter(p -> Objects.equals(p.getHuntingClubId(), partnerId))
+                .findFirst().orElse(null);
+    }
 
     @Resource
     private HarvestPermitDetailsFeature harvestPermitDetailsFeature;
@@ -63,7 +66,6 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
     private HuntingClubGroup partnerGroup;
     private HuntingClubGroup partnerGroup2;
     private HarvestPermitSpeciesAmount speciesAmount;
-    private MooselikePrice mooselikePrice;
 
     private HarvestPermit nextYearPermit;
     private HuntingClubGroup nextYearHolderGroup;
@@ -88,45 +90,43 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
             permitHolder = model().newHuntingClub(rhy);
             permitPartner = model().newHuntingClub(rhy);
 
-            permit = createPermit(rhy);
-            speciesAmount = createSpeciesAmount(permit, currentHuntingYear);
+            permit = createPermit(rhy, currentHuntingYear);
+            speciesAmount = createSpeciesAmount(permit);
             holderGroup = model().newHuntingClubGroup(permitHolder, speciesAmount);
             partnerGroup = model().newHuntingClubGroup(permitPartner, speciesAmount);
             partnerGroup2 = model().newHuntingClubGroup(permitPartner, speciesAmount);
 
-            mooselikePrice = model().newMooselikePrice(speciesAmount.resolveHuntingYear(), species,
-                    BigDecimal.valueOf(120), BigDecimal.valueOf(50));
-
-            nextYearPermit = createPermit(rhy);
-            nextYearSpeciesAmount = createSpeciesAmount(nextYearPermit, currentHuntingYear + 1);
+            nextYearPermit = createPermit(rhy, currentHuntingYear + 1);
+            nextYearSpeciesAmount = createSpeciesAmount(nextYearPermit);
             nextYearHolderGroup = model().newHuntingClubGroup(permitHolder, nextYearSpeciesAmount);
             nextYearPartnerGroup = model().newHuntingClubGroup(permitPartner, nextYearSpeciesAmount);
             nextYearPartnerGroup2 = model().newHuntingClubGroup(permitPartner, nextYearSpeciesAmount);
-            model().newMooselikePrice(nextYearSpeciesAmount.resolveHuntingYear(), species,
-                    BigDecimal.valueOf(220), BigDecimal.valueOf(250));
 
             model().newOccupation(permitPartner, person, OccupationType.SEURAN_JASEN);
             model().newHuntingClubGroupMember(person, partnerGroup);
 
-            otherSpeciesAmount = createSpeciesAmount(permit, currentHuntingYear, otherSpecies);
+            otherSpeciesAmount = createSpeciesAmount(permit, otherSpecies);
             otherSpeciesPartnerGroup = model().newHuntingClubGroup(permitPartner, otherSpeciesAmount);
         });
     }
 
-    private HarvestPermit createPermit(final Riistanhoitoyhdistys rhy) {
-        final HarvestPermit p = model().newMooselikePermit(rhy);
-        p.setPermitHolder(permitHolder);
+    private HarvestPermit createPermit(final Riistanhoitoyhdistys rhy, final int huntingYear) {
+        final HarvestPermit p = model().newMooselikePermit(rhy, huntingYear);
+        p.setHuntingClub(permitHolder);
+        p.setPermitHolder(PermitHolder.createHolderForClub(permitHolder));
+
         Stream.of(permitHolder, permitPartner).forEach(p.getPermitPartners()::add);
         return p;
     }
 
-    private HarvestPermitSpeciesAmount createSpeciesAmount(final HarvestPermit permit, final int huntingYear) {
-        return createSpeciesAmount(permit, huntingYear, this.species);
+    private HarvestPermitSpeciesAmount createSpeciesAmount(final HarvestPermit permit) {
+        return createSpeciesAmount(permit, this.species);
     }
 
-    private HarvestPermitSpeciesAmount createSpeciesAmount(final HarvestPermit permit, final int huntingYear, final GameSpecies gameSpecies) {
+    private HarvestPermitSpeciesAmount createSpeciesAmount(final HarvestPermit permit, final GameSpecies gameSpecies) {
+        final int huntingYear = permit.getPermitYear();
+
         final HarvestPermitSpeciesAmount s = model().newHarvestPermitSpeciesAmount(permit, gameSpecies);
-        s.setCreditorReference(creditorReference());
         s.setBeginDate(DateUtil.huntingYearBeginDate(huntingYear));
         s.setEndDate(new LocalDate(huntingYear, 12, 31));
         return s;
@@ -142,7 +142,7 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
             final HuntingClubPermitDTO dto =
                     harvestPermitDetailsFeature.getClubPermit(permitPartner.getId(), permit.getId(), species.getOfficialCode());
 
-            assertEquals(speciesAmount.getId(), dto.getSpeciesAmount().getId());
+            assertEquals(speciesAmount.getGameSpecies().getOfficialCode(), dto.getGameSpeciesCode());
         });
     }
 
@@ -156,7 +156,7 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
                 model().newHarvestPermitSpeciesAmount(aPermit1, species, 2.0f);
         speciesAmount2.setBeginDate(today.minusDays(1));
 
-        // This won't be picked into DTO because beginDate is greater than with previous one.
+        // Duplicate species amount for same species is included in sum
         model().newHarvestPermitSpeciesAmount(aPermit1, species, 3.0f).setBeginDate(today);
 
         final GameSpecies deer = model().newDeerSubjectToClubHunting();
@@ -170,14 +170,15 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
                 model().newHarvestPermitSpeciesAmount(aPermit2, species, 8.0f);
         speciesAmount5.setBeginDate(today.minusDays(1));
 
-        // This won't be picked into DTO because beginDate is greater than with previous one.
+        // Duplicate species amount for same species is included in sum
         model().newHarvestPermitSpeciesAmount(aPermit2, species, 13.0f).setBeginDate(today);
 
         // This won't be picked into DTO because of different species.
         model().newHarvestPermitSpeciesAmount(aPermit2, deer, 21.0f).setBeginDate(today.minusDays(2));
 
         final HarvestPermit permit2 = model().newHarvestPermit(permit.getRhy());
-        permit2.setPermitHolder(permitHolder);
+        permit2.setHuntingClub(permitHolder);
+        permit2.setPermitHolder(PermitHolder.createHolderForClub(permitHolder));
         final HarvestPermit aPermit3 = model().newHarvestPermit(permit2);
 
         // This won't be picked into DTO because different original permit.
@@ -188,11 +189,7 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
             final HuntingClubPermitDTO dto =
                     harvestPermitDetailsFeature.getClubPermit(permitPartner.getId(), permit.getId(), species.getOfficialCode());
 
-            assertEquals(
-                    ImmutableMap.of(
-                            aPermit1.getPermitNumber(), speciesAmount2.getAmount(),
-                            aPermit2.getPermitNumber(), speciesAmount5.getAmount()),
-                    dto.getAmendmentPermits());
+            assertEquals(2f + 3f + 8f + 13f, dto.getAmendmentAmount(), 0.001);
         });
     }
 
@@ -216,20 +213,16 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
             final HuntingClubPermitDTO dto =
                     harvestPermitDetailsFeature.getClubPermit(permitPartner.getId(), permit.getId(), species.getOfficialCode());
 
-            final List<MoosePermitAllocationDTO> allocations = dto.getAllocations();
-            assertEquals(2, allocations.size());
-
-            final Map<Long, MoosePermitAllocationDTO> allocationByClubId =
-                    F.index(allocations, MoosePermitAllocationDTO::getHuntingClubId);
+            assertEquals(2, dto.getPartners().size());
 
             assertAllocations(
-                    allocationByClubId.get(permitHolder.getId()),
+                    getPartner(dto, permitHolder.getId()).getAllocation(),
                     holderAllocation.getAdultMales(),
                     holderAllocation.getAdultFemales(),
                     holderAllocation.getYoung(),
                     holderAllocation.getTotal());
 
-            assertAllocations(allocationByClubId.get(permitPartner.getId()), 0, 0, 0, 0f);
+            assertAllocations(getPartner(dto, permitPartner.getId()).getAllocation(), 0, 0, 0, 0f);
         });
     }
 
@@ -240,19 +233,15 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
             final HuntingClubPermitDTO dto =
                     harvestPermitDetailsFeature.getClubPermit(permitPartner.getId(), permit.getId(), species.getOfficialCode());
 
-            final Map<Long, HuntingClubPermitCountDTO> allCounts = dto.getHarvestCounts();
-            assertEquals(2, allCounts.size());
+            assertEquals(2, dto.getPartners().size());
 
-            assertCounts(allCounts.get(permitHolder.getId()), 0, 0, 0, 0, 0, 0, 0, 0);
-            assertCounts(allCounts.get(permitPartner.getId()), 0, 0, 0, 0, 0, 0, 0, 0);
+            assertCounts(getPartner(dto, permitHolder.getId()).getHarvestCount(), 0, 0, 0, 0, 0, 0, 0, 0);
+            assertCounts(getPartner(dto, permitPartner.getId()).getHarvestCount(), 0, 0, 0, 0, 0, 0, 0, 0);
 
-            Map<Long, HuntingClubPermitPaymentDTO> payments = dto.getPayments();
-            assertEquals(2, payments.size());
+            assertPayment(getPartner(dto, permitHolder.getId()).getPayment(), 0, 0);
+            assertPayment(getPartner(dto, permitPartner.getId()).getPayment(), 0, 0);
 
-            assertPayment(payments.get(permitHolder.getId()), 0, 0);
-            assertPayment(payments.get(permitPartner.getId()), 0, 0);
-
-            assertPayment(dto.getTotalPayment(), 0, 0, mooselikePrice);
+            assertPayment(dto.getTotalPayment(), 0, 0);
         });
     }
 
@@ -275,28 +264,22 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
             final HuntingClubPermitDTO dto =
                     harvestPermitDetailsFeature.getClubPermit(permitPartner.getId(), permit.getId(), species.getOfficialCode());
 
-            final Map<Long, HuntingClubPermitCountDTO> allCounts = dto.getHarvestCounts();
-            assertEquals(2, allCounts.size());
+            assertEquals(2, dto.getPartners().size());
 
-            assertCounts(allCounts.get(permitHolder.getId()), 0, 1, 0, 0, 0, 0, 0, 0);
-            assertCounts(allCounts.get(permitPartner.getId()), (2 + 1), 4, 6, 8, 0, 1, 2, 3);
-
-            Map<Long, HuntingClubPermitPaymentDTO> payments = dto.getPayments();
-            assertEquals(2, payments.size());
+            assertCounts(getPartner(dto, permitHolder.getId()).getHarvestCount(), 0, 1, 0, 0, 0, 0, 0, 0);
+            assertCounts(getPartner(dto, permitPartner.getId()).getHarvestCount(), (2 + 1), 4, 6, 8, 0, 1, 2, 3);
 
             int holdersAdultPayment = 120;
             int holdersYoungPayment = 0;
-            assertPayment(payments.get(permitHolder.getId()), holdersAdultPayment, holdersYoungPayment);
+            assertPayment(getPartner(dto, permitHolder.getId()).getPayment(), holdersAdultPayment, holdersYoungPayment);
 
             int partnersAdultPayment = ((2 + 1) + 4 - 0 - 1) * 120;
             int partnersYoungPayment = (6 + 8 - 2 - 3) * 50;
-            assertPayment(payments.get(permitPartner.getId()), partnersAdultPayment, partnersYoungPayment);
+            assertPayment(getPartner(dto, permitPartner.getId()).getPayment(), partnersAdultPayment, partnersYoungPayment);
 
             assertPayment(dto.getTotalPayment(),
                     holdersAdultPayment + partnersAdultPayment,
-                    holdersYoungPayment + partnersYoungPayment,
-                    mooselikePrice);
-            assertEquals(speciesAmount.getEndDate().plusDays(7), dto.getTotalPayment().getDueDate());
+                    holdersYoungPayment + partnersYoungPayment);
 
             assertNotNull(dto.getTotalStatistics());
             assertEquals(6, dto.getTotalStatistics().getDayCount());
@@ -307,11 +290,10 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
             final HuntingClubPermitDTO dtoNextYear =
                     harvestPermitDetailsFeature.getClubPermit(permitPartner.getId(), nextYearPermit.getId(), species.getOfficialCode());
 
-            final Map<Long, HuntingClubPermitCountDTO> nextYearAllCounts = dtoNextYear.getHarvestCounts();
-            assertEquals(2, nextYearAllCounts.size());
+            assertEquals(2, dtoNextYear.getPartners().size());
 
-            assertCounts(nextYearAllCounts.get(permitHolder.getId()), 0, 0, 0, 0, 0, 0, 0, 0);
-            assertCounts(nextYearAllCounts.get(permitPartner.getId()), 0, 0, 0, 0, 0, 0, 0, 0);
+            assertCounts(getPartner(dtoNextYear, permitHolder.getId()).getHarvestCount(), 0, 0, 0, 0, 0, 0, 0, 0);
+            assertCounts(getPartner(dtoNextYear, permitPartner.getId()).getHarvestCount(), 0, 0, 0, 0, 0, 0, 0, 0);
         });
     }
 
@@ -329,20 +311,18 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
             final HuntingClubPermitDTO dto =
                     harvestPermitDetailsFeature.getClubPermit(permitPartner.getId(), permit.getId(), species.getOfficialCode());
 
-            final Map<Long, HuntingClubPermitCountDTO> allCounts = dto.getHarvestCounts();
-            assertEquals(2, allCounts.size());
+            assertEquals(2, dto.getPartners().size());
 
-            assertCounts(allCounts.get(permitHolder.getId()), 1, 0, 0, 0, 0, 0, 0, 0);
-            assertCounts(allCounts.get(permitPartner.getId()), 2 + 1, 0, 0, 0, 0, 0, 0, 0);
+            assertCounts(getPartner(dto, permitHolder.getId()).getHarvestCount(), 1, 0, 0, 0, 0, 0, 0, 0);
+            assertCounts(getPartner(dto, permitPartner.getId()).getHarvestCount(), 2 + 1, 0, 0, 0, 0, 0, 0, 0);
 
             final HuntingClubPermitDTO dtoNextYear =
                     harvestPermitDetailsFeature.getClubPermit(permitPartner.getId(), nextYearPermit.getId(), species.getOfficialCode());
 
-            final Map<Long, HuntingClubPermitCountDTO> nextYearAllCounts = dtoNextYear.getHarvestCounts();
-            assertEquals(2, nextYearAllCounts.size());
+            assertEquals(2, dtoNextYear.getPartners().size());
 
-            assertCounts(nextYearAllCounts.get(permitHolder.getId()), 0, 0, 3, 0, 0, 0, 0, 0);
-            assertCounts(nextYearAllCounts.get(permitPartner.getId()), 0, 0, (2 + 2), 0, 0, 0, 0, 0);
+            assertCounts(getPartner(dtoNextYear, permitHolder.getId()).getHarvestCount(), 0, 0, 3, 0, 0, 0, 0, 0);
+            assertCounts(getPartner(dtoNextYear, permitPartner.getId()).getHarvestCount(), 0, 0, (2 + 2), 0, 0, 0, 0, 0);
         });
     }
 
@@ -350,10 +330,10 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
     public void testGetPermit_forHuntingEndDates() {
         // Create another permit for which partner is added as a permit holder.
         final HarvestPermit anotherPermit = model().newHarvestPermit(permit.getRhy());
-        anotherPermit.setPermitHolder(permitPartner);
+        anotherPermit.setHuntingClub(permitPartner);
+        anotherPermit.setPermitHolder(PermitHolder.createHolderForClub(permitPartner));
         anotherPermit.getPermitPartners().add(permitPartner);
-        HarvestPermitSpeciesAmount spa = model().newHarvestPermitSpeciesAmount(anotherPermit, species);
-        spa.setCreditorReference(creditorReference());
+        model().newHarvestPermitSpeciesAmount(anotherPermit, species);
 
         // Need to flush before creating MooseHuntingSummary in order to have
         // harvest_permit_partners table populated.
@@ -369,9 +349,8 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
             final HuntingClubPermitDTO dto2 =
                     harvestPermitDetailsFeature.getClubPermit(partnerId, anotherPermit.getId(), species.getOfficialCode());
 
-            assertEquals(
-                    summary.getHuntingEndDate(), dto1.getSummaryForPartnersTable().get(partnerId).getHuntingEndDate());
-            assertTrue(dto2.getSummaryForPartnersTable().get(partnerId).isEmpty());
+            assertEquals(summary.getHuntingEndDate(), getPartner(dto1, partnerId).getSummary().getHuntingEndDate());
+            assertTrue(getPartner(dto2, partnerId).getSummary().isEmpty());
         });
     }
 
@@ -410,7 +389,7 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
         assertTrue(NumberUtils.equal(total, allocation.getTotal()));
     }
 
-    private static void assertCounts(HuntingClubPermitCountDTO counts,
+    private static void assertCounts(HarvestCountDTO counts,
                                      int am, int af, int ym, int yf,
                                      int amne, int afne, int ymne, int yfne) {
 
@@ -429,10 +408,12 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
         bigDecimalEquals(adultPayment + youngPayment, dto.getTotalPayment());
     }
 
-    private static void assertPayment(HuntingClubPermitTotalPaymentDTO dto, int adultPayment, int youngPayment, MooselikePrice price) {
-        assertPayment(dto, adultPayment, youngPayment);
-
-        bigDecimalEquals(price.getAdultPrice(), dto.getAdultPrice());
-        bigDecimalEquals(price.getYoungPrice(), dto.getYoungPrice());
+    private static void assertPayment(HuntingClubPermitTotalPaymentDTO dto, int adultPayment, int youngPayment) {
+        final MooselikePrice mooselikePrice = MooselikePrice.get(GameSpecies.OFFICIAL_CODE_MOOSE);
+        bigDecimalEquals(mooselikePrice.getAdultPrice(), dto.getAdultPrice());
+        bigDecimalEquals(mooselikePrice.getYoungPrice(), dto.getYoungPrice());
+        bigDecimalEquals(adultPayment, dto.getAdultsPayment());
+        bigDecimalEquals(youngPayment, dto.getYoungPayment());
+        bigDecimalEquals(adultPayment + youngPayment, dto.getTotalPayment());
     }
 }

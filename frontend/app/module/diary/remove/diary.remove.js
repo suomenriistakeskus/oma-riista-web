@@ -20,7 +20,7 @@ angular.module('app.diary.remove', [])
                                                              DiaryListViewState, diaryEntry) {
         var $ctrl = this;
 
-        $ctrl.diaryEntryType = angular.lowercase(diaryEntry.type);
+        $ctrl.diaryEntryType = diaryEntry.type.toLowerCase();
 
         $ctrl.cancel = function () {
             $uibModalInstance.dismiss('cancel');

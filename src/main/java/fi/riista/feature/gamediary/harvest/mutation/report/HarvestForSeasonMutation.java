@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTOBase;
 import fi.riista.feature.gamediary.harvest.HarvestReportingType;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.HuntingAreaType;
 import fi.riista.feature.gamediary.harvest.HuntingMethod;
 import fi.riista.feature.gamediary.harvest.mutation.HarvestMutationRole;

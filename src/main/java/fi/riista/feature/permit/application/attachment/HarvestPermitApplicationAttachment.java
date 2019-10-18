@@ -3,6 +3,7 @@ package fi.riista.feature.permit.application.attachment;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
+import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -18,8 +19,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.net.URL;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -28,6 +27,8 @@ public class HarvestPermitApplicationAttachment extends BaseEntity<Long> {
     public enum Type {
         SHOOTER_LIST,
         MH_AREA_PERMIT,
+        OFFICIAL_STATEMENT,
+        PROTECTED_AREA,
         OTHER
     }
 
@@ -39,24 +40,22 @@ public class HarvestPermitApplicationAttachment extends BaseEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private HarvestPermitApplication harvestPermitApplication;
 
-    // TODO: Liitetiedoston nimi, joka voidaan poistaa kun LH:sta tulleita hakemuksia ei enää tarvita.
     @NotNull
-    @Size(max = 255)
-    @Column(nullable = false)
-    private String name;
-
-    // TODO: Viittaus LH:n tarjoamaan liitetiedostoon
-    @Column(length = 2048, columnDefinition = "TEXT") // max url length in IE
-    private URL url;
-
     @Enumerated(EnumType.STRING)
-    @NotNull
     @Column(nullable = false)
     private Type attachmentType;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
+    @NotNull
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(nullable = false, unique = true)
     private PersistentFileMetadata attachmentMetadata;
+
+    @Column(columnDefinition = "TEXT")
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String additionalInfo;
+
+    public HarvestPermitApplicationAttachment() {
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,41 +71,12 @@ public class HarvestPermitApplicationAttachment extends BaseEntity<Long> {
         this.id = id;
     }
 
-    public HarvestPermitApplicationAttachment() {
-    }
-
-    public HarvestPermitApplicationAttachment(final HarvestPermitApplication harvestPermitApplication,
-                                              final String name,
-                                              final URL url,
-                                              final Type attachmentType) {
-        this.harvestPermitApplication = harvestPermitApplication;
-        this.name = name;
-        this.url = url;
-        this.attachmentType = attachmentType;
-    }
-
     public HarvestPermitApplication getHarvestPermitApplication() {
         return harvestPermitApplication;
     }
 
     public void setHarvestPermitApplication(HarvestPermitApplication harvestPermitApplication) {
         this.harvestPermitApplication = harvestPermitApplication;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
-    public void setUrl(URL url) {
-        this.url = url;
     }
 
     public Type getAttachmentType() {
@@ -123,5 +93,13 @@ public class HarvestPermitApplicationAttachment extends BaseEntity<Long> {
 
     public void setAttachmentMetadata(final PersistentFileMetadata attachmentMetadata) {
         this.attachmentMetadata = attachmentMetadata;
+    }
+
+    public String getAdditionalInfo() {
+        return additionalInfo;
+    }
+
+    public void setAdditionalInfo(final String additionalInfo) {
+        this.additionalInfo = additionalInfo;
     }
 }

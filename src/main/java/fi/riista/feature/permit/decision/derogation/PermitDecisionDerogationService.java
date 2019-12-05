@@ -6,14 +6,20 @@ import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationRepository;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethods;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReason;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReasonRepository;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationRepository;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.security.EntityPermission;
+import fi.riista.util.F;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +38,12 @@ public class PermitDecisionDerogationService {
 
     @Resource
     private BirdPermitApplicationRepository birdPermitApplicationRepository;
+
+    @Resource
+    private MammalPermitApplicationRepository mammalPermitApplicationRepository;
+
+    @Resource
+    private DerogationPermitApplicationReasonRepository derogationPermitApplicationReasonRepository;
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -55,7 +67,7 @@ public class PermitDecisionDerogationService {
                 permitDecisionDerogationReasonRepository.save(createBirdDerogationReasons(decision, birdApplication));
                 permitDecisionProtectedAreaTypeRepository.save(createProtectedAreaTypeForBird(decision,
                         birdApplication));
-                assignLegalSectionDerogationsFromBirdApplication(decision, birdApplication);
+                assignLegalSectionsDerogations(decision, birdApplication.getForbiddenMethods());
                 break;
             }
             case LARGE_CARNIVORE_BEAR:
@@ -63,6 +75,13 @@ public class PermitDecisionDerogationService {
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF: {
                 permitDecisionDerogationReasonRepository.save(createCarnivoreDerogationReasons(decision));
+                break;
+            }
+            case MAMMAL: {
+                final MammalPermitApplication mammalPermitApplication =
+                        mammalPermitApplicationRepository.findByHarvestPermitApplication(application);
+                createMammalDerogationReasons(decision, application);
+                assignLegalSectionsDerogations(decision, mammalPermitApplication.getForbiddenMethods());
                 break;
             }
             case MOOSELIKE_NEW:
@@ -74,8 +93,9 @@ public class PermitDecisionDerogationService {
 
     }
 
+
     @Transactional(readOnly = true)
-    public PermitDecision requireDecisionDerogationEditable(long decisionId) {
+    public PermitDecision requireDecisionDerogationEditable(final long decisionId) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.UPDATE);
         decision.assertStatus(PermitDecision.Status.DRAFT);
         decision.assertHandler(activeUserService.requireActiveUser());
@@ -83,10 +103,19 @@ public class PermitDecisionDerogationService {
         return decision;
     }
 
-    private void assignLegalSectionDerogationsFromBirdApplication(PermitDecision decision,
-                                                                  BirdPermitApplication birdApplication) {
-        final BirdPermitApplicationForbiddenMethods forbiddenMethods =
-                requireNonNull(birdApplication.getForbiddenMethods());
+    private void createMammalDerogationReasons(@Nonnull final PermitDecision decision,
+                                               final HarvestPermitApplication application) {
+        final List<DerogationPermitApplicationReason> mammalApplicationReasons =
+                derogationPermitApplicationReasonRepository.findByHarvestPermitApplication(application);
+        final ArrayList<PermitDecisionDerogationReason> decisionDerogationReasons =
+                F.mapNonNullsToList(mammalApplicationReasons,
+                        r -> new PermitDecisionDerogationReason(decision, r.getReasonType()));
+        permitDecisionDerogationReasonRepository.save(decisionDerogationReasons);
+    }
+
+    private void assignLegalSectionsDerogations(final PermitDecision decision,
+                                                final DerogationPermitApplicationForbiddenMethods forbiddenMethods) {
+        requireNonNull(forbiddenMethods);
 
         if (hasText(forbiddenMethods.getDeviateSection32())) {
             decision.setLegalSection32(true);
@@ -114,12 +143,12 @@ public class PermitDecisionDerogationService {
 
     private List<PermitDecisionDerogationReason> createBirdDerogationReasons(final PermitDecision decision,
                                                                              final BirdPermitApplication birdApplication) {
-        return PermitDecisionDerogationReasonType.streamSelected(birdApplication.getCause())
+        return PermitDecisionDerogationReasonType.streamSelectedForBird(birdApplication.getCause())
                 .map(type -> new PermitDecisionDerogationReason(decision, type))
                 .collect(Collectors.toList());
     }
 
-    private void assertNoDerogationsExist(PermitDecision decision) {
+    private void assertNoDerogationsExist(final PermitDecision decision) {
         Preconditions.checkState(permitDecisionDerogationReasonRepository.findByPermitDecision(decision).isEmpty());
         Preconditions.checkState(permitDecisionProtectedAreaTypeRepository.findByPermitDecision(decision).isEmpty());
     }

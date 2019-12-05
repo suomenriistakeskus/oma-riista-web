@@ -16,6 +16,11 @@ import fi.riista.feature.permit.application.bird.BirdPermitApplicationSummaryDTO
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationRepository;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationSummaryDTO;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReasonService;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReasonsDTO;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationRepository;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationSummaryDTO;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
@@ -23,6 +28,7 @@ import fi.riista.feature.permit.decision.action.PermitDecisionAction;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachment;
 import fi.riista.feature.permit.decision.authority.PermitDecisionAuthority;
 import fi.riista.feature.permit.decision.delivery.PermitDecisionDelivery;
+import fi.riista.feature.permit.decision.derogation.DerogationLawSection;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReason;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonRepository;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
@@ -50,13 +56,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41A;
+import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41B;
+import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41C;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
 @Service
 public class PermitDecisionTextService {
 
-    private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_MOOSELIKE =
+    private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_AMOUNTS_DESC =
             comparing(PermitDecisionSpeciesAmount::getAmount).reversed();
 
     private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_CARNIVORE =
@@ -98,6 +107,12 @@ public class PermitDecisionTextService {
 
     @Resource
     private CarnivorePermitApplicationRepository carnivorePermitApplicationRepository;
+
+    @Resource
+    private MammalPermitApplicationRepository mammalPermitApplicationRepository;
+
+    @Resource
+    private DerogationPermitApplicationReasonService derogationPermitApplicationReasonService;
 
     @Resource
     private PermitDecisionSpeciesAmountRepository permitDecisionSpeciesAmountRepository;
@@ -164,6 +179,8 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
                 return createCarnivoreApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case MAMMAL:
+                return createMammalApplicationSummaryGenerator(application, locale).generateApplicationMain();
             default:
                 throw new IllegalArgumentException("Unsupported permit category: " +
                         application.getHarvestPermitCategory());
@@ -201,6 +218,21 @@ public class PermitDecisionTextService {
                 messageSource);
     }
 
+
+    @Nonnull
+    private PermitDecisionMammalApplicationSummaryGenerator createMammalApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final MammalPermitApplication mammalPermitApplication =
+                mammalPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final DerogationPermitApplicationReasonsDTO derogationReasons =
+                derogationPermitApplicationReasonService.getDerogationReasons(application, locale);
+        final MammalPermitApplicationSummaryDTO dto =
+                MammalPermitApplicationSummaryDTO.create(application, mammalPermitApplication, derogationReasons);
+        return new PermitDecisionMammalApplicationSummaryGenerator(dto, locale, createSpeciesNames(locale),
+                messageSource);
+    }
+
     @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
     public String generateApplicationReasoning(final PermitDecision decision) {
         final HarvestPermitApplication application = Objects.requireNonNull(decision.getApplication());
@@ -218,6 +250,8 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
                 return createCarnivoreApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case MAMMAL:
+                return createMammalApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
         }
 
         return "";
@@ -249,7 +283,8 @@ public class PermitDecisionTextService {
         switch (category) {
             case MOOSELIKE:
             case MOOSELIKE_NEW:
-                return COMPARATOR_MOOSELIKE;
+            case MAMMAL:
+                return COMPARATOR_AMOUNTS_DESC;
             case BIRD:
                 return COMPARATOR_BIRD_SPECIES;
             case LARGE_CARNIVORE_BEAR:
@@ -307,7 +342,48 @@ public class PermitDecisionTextService {
         sb.append(i18n(decision, "Poikkeusedellytys", "Förutsättning för undantag"));
         sb.append("\n");
 
-        if (hasLawSectionId(derogationReasonList, 1)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 1)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 a §:n 1 momentin 1 kohta: luonnonvaraisen eläimistön tai kasviston " +
+                            "säilyttämiseksi",
+                    "Jaktlagen 41 a § 1 moment 1 punkten: i syfte att bevara vilda djur eller växter"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 2)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 a §:n 1 momentin 2 kohta: viljelmille, karjankasvatukselle, metsätaloudelle, " +
+                            "kalataloudelle, porotaloudelle, vesistölle tai muulle omaisuudelle aiheutuvan erityisen " +
+                            "merkittävän vahingon ehkäisemiseksi",
+                    "Jaktlagen 41 a § 1 moment 2 punkten: i syfte att förebygga allvarlig skada på odlingar, " +
+                            "boskapsuppfödning, skogsbruk, fiskerinäring, renhushållning, vattendrag eller annan " +
+                            "egendom"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 3)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 a §:n 1 momentin 3 kohta: kansanterveyden, yleisen turvallisuuden tai muun " +
+                            "erittäin tärkeän yleisen edun kannalta pakottavista syistä, mukaan lukien taloudelliset " +
+                            "ja sosiaaliset syyt, sekä jos poikkeamisesta on ensisijaisen merkittävää hyötyä " +
+                            "ympäristölle",
+                    "Jaktlagen 41 a § 1 moment 3 punkten: på grund av tvingande skäl med hänsyn till folkhälsan, den " +
+                            "allmänna säkerheten eller något annat mycket viktigt allmänt intresse, inbegripet " +
+                            "ekonomiska och sociala skäl, och om ett tillstånd till undantag medför synnerligen " +
+                            "betydande nytta för miljön"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 4)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 a §:n 1 momentin 4 kohta: näiden lajien tutkimus-, koulutus-, " +
+                            "uudelleensijoittamis- ja istuttamistarkoituksessa taikka eläintautien ehkäisemiseksi",
+                    "Jaktlagen 41 a § 1 moment 4 punkten:  i forsknings-, utbildnings-, omplacerings- och " +
+                            "utplanteringssyfte eller för att förebygga djursjukdomar när det gäller arterna i fråga"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 1)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 1 kohta: kansanterveyden ja yleisen turvallisuuden " +
@@ -315,14 +391,14 @@ public class PermitDecisionTextService {
                     "Jaktlagen 41 b § 1 moment 1 punkten: för att trygga folkhälsan och den allmänna säkerheten"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 2)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 2)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 2 kohta: lentoturvallisuuden takaamiseksi",
                     "Jaktlagen 41 b § 1 moment 2 punkten: för att trygga flygsäkerheten"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 3)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 3)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 3 kohta: viljelmille, kotieläimille, metsille, kalavesille ja " +
@@ -331,14 +407,14 @@ public class PermitDecisionTextService {
                             "skogar, fiskevatten och vattendrag"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 4)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 4)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 4 kohta: kasviston ja eläimistön suojelemiseksi",
                     "Jaktlagen 41 b § 1 moment 4 punkten: för att skydda växter och djur"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 5)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 5)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 5 kohta:  tutkimus- ja koulutustarkoituksessa, kannan " +
@@ -348,7 +424,7 @@ public class PermitDecisionTextService {
                             "återinföra stammen samt möjliggöra uppfödning för nämnda syften"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 6)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 6)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 a §:n 3 momentin mukaisesti tarkoin valvotuissa oloissa valikoiden ja " +
@@ -356,12 +432,50 @@ public class PermitDecisionTextService {
                     "Enligt jaktlagen 41 a § 3 moment för att under strängt övervakade förhållanden, " +
                             "selektivt och begränsat fånga eller döda vissa djur."));
         }
+        if (hasLawSectionId(derogationReasonList, SECTION_41C, 1)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 c §:n 1 kohta: luonnonvaraisen eläimistön tai kasviston säilyttämiseksi",
+                    "Jaktlagen 41 c § 1 punkten:  i syfte att bevara vilda djur eller växter"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41C, 2)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 c §:n 2 kohta: viljelmille, karjankasvatukselle, metsätaloudelle, " +
+                            "kalataloudelle, porotaloudelle, riistataloudelle, vesistölle tai muulle omaisuudelle " +
+                            "aiheutuvan merkittävän vahingon ehkäisemiseksi",
+                    "Jaktlagen 41 c § 2 punkten:  i syfte att förebygga allvarlig skada på odlingar, " +
+                            "boskapsuppfödning, skogsbruk, fiskerinäring, renhushållning, vilthushållning, vattendrag" +
+                            " eller annan egendom"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41C, 3)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 c §:n 3 kohta: kansanterveyden, yleisen turvallisuuden tai muun erittäin " +
+                            "tärkeän yleisen edun kannalta pakottavista syistä, mukaan lukien taloudelliset ja " +
+                            "sosiaaliset syyt, sekä jos poikkeamisesta on ensisijaisen merkittävää hyötyä ympäristölle",
+                    "Jaktlagen 41 c § 3 punkten: av tvingande skäl med hänsyn till folkhälsan, den allmänna " +
+                            "säkerheten eller något annat mycket viktigt allmänt intresse, inbegripet ekonomiska och " +
+                            "sociala skäl, och om ett tillstånd till undantag medför synnerligen betydande nytta för " +
+                            "miljön"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41C, 4)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 c §:n 4 kohta: näiden lajien tutkimus-, koulutus-, uudelleensijoittamis- ja istuttamistarkoituksessa taikka eläintautien ehkäisemiseksi",
+                    "Jaktlagen 41 c § 4 punkten: i forsknings-, utbildnings-, omplacerings- och utplanteringssyfte eller för att förebygga djursjukdomar när det gäller arterna i fråga"));
+        }
         return sb.toString();
     }
 
     private static boolean hasLawSectionId(final List<PermitDecisionDerogationReason> derogationReasonList,
+                                           final DerogationLawSection lawSection,
                                            final int lawSectionId) {
-        return derogationReasonList.stream().anyMatch(d -> d.getReasonType().getLawSectionNumber() == lawSectionId);
+        return derogationReasonList.stream().filter(r -> r.getReasonType().getLawSection() == lawSection)
+                .anyMatch(d -> d.getReasonType().getLawSectionNumber() == lawSectionId);
     }
 
     private static String generateDecisionSectionTable(final PermitDecision decision,
@@ -424,6 +538,7 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case MAMMAL:
                 return i18n(decision,
                         "Suomen riistakeskus on päättänyt myöntää poikkeusluvan seuraavasti:",
                         "Finlands viltcentral har beslutat att bevilja dispens enligt följande:");

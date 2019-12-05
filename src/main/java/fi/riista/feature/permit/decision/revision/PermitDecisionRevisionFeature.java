@@ -93,7 +93,8 @@ public class PermitDecisionRevisionFeature {
     @Transactional(readOnly = true)
     public List<PermitDecisionRevisionDTO> listRevisions(final long id) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(id, EntityPermission.READ);
-        final List<PermitDecisionRevision> allRevisions = permitDecisionRevisionRepository.findByPermitDecision(decision);
+        final List<PermitDecisionRevision> allRevisions =
+                permitDecisionRevisionRepository.findByPermitDecision(decision);
         final Map<Long, String> moderatorIndex = userRepository.getModeratorFullNames(allRevisions);
 
         return F.mapNonNullsToList(allRevisions, r ->
@@ -194,7 +195,8 @@ public class PermitDecisionRevisionFeature {
 
     @Transactional
     public void unlockDecision(final PermitDecisionUnlockDTO dto) {
-        final PermitDecision decision = requireEntityService.requirePermitDecision(dto.getId(), EntityPermission.UPDATE);
+        final PermitDecision decision = requireEntityService.requirePermitDecision(dto.getId(),
+                EntityPermission.UPDATE);
         decision.assertHandler(activeUserService.requireActiveUser());
 
         final PermitDecisionAction action = new PermitDecisionAction();
@@ -209,7 +211,8 @@ public class PermitDecisionRevisionFeature {
     }
 
     private void cancelRevisions(final PermitDecision decision) {
-        final List<PermitDecisionRevision> byPermitDecision = permitDecisionRevisionRepository.findByPermitDecision(decision);
+        final List<PermitDecisionRevision> byPermitDecision =
+                permitDecisionRevisionRepository.findByPermitDecision(decision);
         final List<PermitDecisionRevision> revsToCancel = byPermitDecision.stream()
                 .filter(rev -> !rev.isCancelled())
                 .collect(Collectors.toList());
@@ -259,7 +262,8 @@ public class PermitDecisionRevisionFeature {
 
     @Transactional(readOnly = true, rollbackFor = IOException.class)
     public ResponseEntity<byte[]> getAttachment(final long attachmentId) throws IOException {
-        final PermitDecisionRevisionAttachment attachment = permitDecisionRevisionAttachmentRepository.getOne(attachmentId);
+        final PermitDecisionRevisionAttachment attachment =
+                permitDecisionRevisionAttachmentRepository.getOne(attachmentId);
         final PermitDecision permitDecision = attachment.getDecisionAttachment().getPermitDecision();
         activeUserService.assertHasPermission(permitDecision, EntityPermission.READ);
 
@@ -270,6 +274,12 @@ public class PermitDecisionRevisionFeature {
     public long updateViewCountAndResolveRevisionIdByReceiverUuid(final UUID uuid) {
         final PermitDecisionRevisionReceiver receiver = permitDecisionRevisionReceiverRepository.findByUuid(uuid);
         receiver.setViewCount(receiver.getViewCount() + 1);
+        return receiver.getDecisionRevision().getId();
+    }
+
+    @Transactional(readOnly = true)
+    public long resolveRevisionIdByReceiverUuid(final UUID uuid) {
+        final PermitDecisionRevisionReceiver receiver = permitDecisionRevisionReceiverRepository.findByUuid(uuid);
         return receiver.getDecisionRevision().getId();
     }
 
@@ -303,7 +313,9 @@ public class PermitDecisionRevisionFeature {
             revision.setPostedByMailDate(null);
         }
 
-        final Map<Long, String> moderatorIndex = userRepository.getModeratorFullNames(Collections.singletonList(revision));
+        final Map<Long, String> moderatorIndex =
+                userRepository.getModeratorFullNames(Collections.singletonList(revision));
         return PermitDecisionRevisionDTO.create(revision, moderatorIndex.get(revision.getCreatedByUserId()));
     }
+
 }

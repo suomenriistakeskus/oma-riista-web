@@ -33,7 +33,8 @@ public class PermitDecisionNotificationService {
     private static final LocalisedString TEMPLATE_OTHERS = LocalisedString.of(
             "decision_notification_others", "decision_notification_others.sv");
 
-    private static final String SUBJECT_CONTACT_PERSON = "Suomen riistakeskuksen päätös noudettavissa Oma riista -palvelusta";
+    private static final String SUBJECT_CONTACT_PERSON = "Suomen riistakeskuksen päätös noudettavissa Oma riista " +
+            "-palvelusta";
     private static final String SUBJECT_OTHERS = "Suomen riistakeskuksen päätös tiedoksi";
 
     @Resource
@@ -88,21 +89,25 @@ public class PermitDecisionNotificationService {
             sendEmail(receiver.getEmail(), SUBJECT_CONTACT_PERSON, TEMPLATE, emailLink);
 
         } else {
-            final URI emailLink = permitClientUriFactory.getAbsoluteAnonymousDecisionUri(receiver);
+            final URI emailLink =
+                    permitClientUriFactory.getAbsoluteAnonymousDecisionDownloadPageUri(receiver.getUuid());
             sendEmail(receiver.getEmail(), SUBJECT_CONTACT_PERSON, TEMPLATE_OTHERS, emailLink);
         }
     }
 
     private void sendToOtherReceiver(final PermitDecisionRevisionReceiver receiver) {
-        final URI emailLink = permitClientUriFactory.getAbsoluteAnonymousDecisionUri(receiver);
+        final URI emailLink = permitClientUriFactory.getAbsoluteAnonymousDecisionDownloadPageUri(receiver.getUuid());
+
         sendEmail(receiver.getEmail(), SUBJECT_OTHERS, TEMPLATE_OTHERS, emailLink);
     }
+
+
 
     private void sendEmail(final String email,
                            final String subject,
                            final LocalisedString template,
-                           final URI link) {
-        final Map<String, Object> model = singletonMap("url", link.toString());
+                           final URI decisionLink) {
+        final Map<String, Object> model = singletonMap("url", decisionLink.toString());
 
         mailService.send(MailMessageDTO.builder()
                 .withFrom(mailService.getDefaultFromAddress())
@@ -115,4 +120,5 @@ public class PermitDecisionNotificationService {
                 .appendBody("</body></html>")
                 .build());
     }
+
 }

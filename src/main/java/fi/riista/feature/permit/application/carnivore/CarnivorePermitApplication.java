@@ -3,6 +3,7 @@ package fi.riista.feature.permit.application.carnivore;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaInfo;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
@@ -26,7 +27,7 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class CarnivorePermitApplication extends LifecycleEntity<Long> {
+public class CarnivorePermitApplication extends LifecycleEntity<Long> implements DerogationPermitApplicationAreaInfo {
 
     public static final String ID_COLUMN_NAME = "carnivore_permit_application_id";
 

@@ -42,8 +42,18 @@ angular.module('app.occupation.controllers', [])
                 $ctrl.showBoard = v.board !== null && v.board.length !== 0;
             };
 
+            var updateCurrentOccupations = function() {
+                var currentOccupations = $ctrl.tenses.current(occupationTypes.board, $ctrl.allOccupations);
+                $ctrl.currentBoardRoles = _(currentOccupations.board).filter(function (occ) {
+                    return !!occ.boardRepresentation;
+                }).map(function (occ) {
+                    return occ.boardRepresentation;
+                }).value();
+            };
+
             // show current as default
             $ctrl.showTense($ctrl.tenses.current);
+            updateCurrentOccupations();
 
             function onSuccess() {
                 NotificationService.showDefaultSuccess();
@@ -51,6 +61,7 @@ angular.module('app.occupation.controllers', [])
                 Occupations.query({orgId: orgId}).$promise.then(function (data) {
                     $ctrl.allOccupations = data;
                     $ctrl.showTense($ctrl.selectedTense);
+                    updateCurrentOccupations();
                 });
             }
 
@@ -61,17 +72,13 @@ angular.module('app.occupation.controllers', [])
             }
 
             $ctrl.addOccupation = function () {
-                OccupationDialogService.addOccupation(orgId, occupationTypes, onlyBoard)
+                OccupationDialogService.addOccupation(orgId, occupationTypes, onlyBoard, $ctrl.currentBoardRoles)
                     .then(onSuccess, onFailure);
             };
 
             $ctrl.showSelected = function (selected) {
-                OccupationDialogService.showSelected(selected, orgId, occupationTypes, onlyBoard)
+                OccupationDialogService.showSelected(selected, orgId, occupationTypes, onlyBoard, $ctrl.currentBoardRoles)
                     .then(onSuccess, onFailure);
-            };
-
-            $ctrl.removeSelected = function (selected) {
-                OccupationDialogService.removeSelected(selected, orgId).then(onSuccess, onFailure);
             };
 
             $ctrl.exportToExcel = function (params) {
@@ -85,7 +92,7 @@ angular.module('app.occupation.controllers', [])
         function ($scope, $uibModalInstance,
                   Helpers, CallOrderConfig, TranslatedBlockUI,
                   Occupations, OccupationFindPerson,
-                  orgId, occupation, occupationTypes, existingPersons) {
+                  orgId, occupation, occupationTypes, existingPersons, boardTypes, currentBoardRoles, BoardRepresentationRoles) {
 
             $scope.existingPersons = existingPersons;
             $scope.personDisplayName = function (person) {
@@ -100,6 +107,16 @@ angular.module('app.occupation.controllers', [])
             $scope.callOrderConfig = CallOrderConfig;
             $scope.occupation = occupation;
             $scope.occupationTypes = occupationTypes;
+            $scope.boardTypes = boardTypes;
+            $scope.boardRepresentationRoles = BoardRepresentationRoles;
+
+            $scope.currentBoardRoles = _.filter(currentBoardRoles, function (role) {
+                return role !== $scope.occupation.boardRepresentation;
+            });
+
+            $scope.isBoardRoleDisabled = function (o) {
+                return $scope.currentBoardRoles.indexOf(o) !== -1;
+            };
 
             $scope.searchPerson = {
                 error: false,
@@ -114,6 +131,14 @@ angular.module('app.occupation.controllers', [])
                     $scope.searchPerson.error = false;
                 }
             });
+
+            $scope.isBoardType = function () {
+                if ($scope.boardTypes) {
+                    return $scope.boardTypes.indexOf($scope.occupation.occupationType) !== -1;
+                }
+
+                return false;
+            };
 
             function canEditAddress(person) {
                 return person && !person.registered && (!person.address || person.address.editable);
@@ -209,27 +234,6 @@ angular.module('app.occupation.controllers', [])
                     }, function () {
                         $uibModalInstance.dismiss('error');
                     });
-            };
-            $scope.cancel = function () {
-                $uibModalInstance.dismiss('cancel');
-            };
-        })
-    .controller('OccupationRemoveController',
-        function ($scope, $uibModalInstance, Occupations, CallOrderConfig, orgId, occupation) {
-            $scope.callOrderConfig = CallOrderConfig;
-            $scope.occupation = occupation;
-            $scope.remove = function () {
-                if (occupation.id) {
-                    Occupations.delete({orgId: orgId}, occupation).$promise
-                        .then(function () {
-                            $uibModalInstance.close();
-                        }, function () {
-                            $uibModalInstance.dismiss('error');
-                        });
-
-                } else {
-                    $uibModalInstance.dismiss('error');
-                }
             };
             $scope.cancel = function () {
                 $uibModalInstance.dismiss('cancel');

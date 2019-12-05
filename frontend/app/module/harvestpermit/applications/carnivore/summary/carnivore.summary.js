@@ -227,12 +227,6 @@ angular.module('app.harvestpermit.application.carnivore.summary', ['app.metadata
             };
         }
     })
-    .component('carnivoreApplicationSummaryApplicant', {
-        templateUrl: 'harvestpermit/applications/carnivore/summary/summary-applicant.html',
-        bindings: {
-            application: '<'
-        }
-    })
 
     .component('carnivoreApplicationSummarySpecies', {
         templateUrl: 'harvestpermit/applications/carnivore/summary/summary-species.html',
@@ -244,19 +238,6 @@ angular.module('app.harvestpermit.application.carnivore.summary', ['app.metadata
         templateUrl: 'harvestpermit/applications/carnivore/summary/summary-justification.html',
         bindings: {
             justification: '<'
-        }
-    })
-    .component('carnivoreApplicationDecisionDelivery', {
-        templateUrl: 'harvestpermit/applications/carnivore/summary/summary-decision-delivery.html',
-        bindings: {
-            application: '<'
-        }
-    })
-
-    .component('carnivoreApplicationSummaryDeliveryAddress', {
-        templateUrl: 'harvestpermit/applications/carnivore/summary/summary-delivery-address.html',
-        bindings: {
-            application: '<'
         }
     })
 
@@ -271,21 +252,6 @@ angular.module('app.harvestpermit.application.carnivore.summary', ['app.metadata
         templateUrl: 'harvestpermit/applications/carnivore/summary/summary-area.html',
         bindings: {
             application: '<',
-            attachments: '<',
-            baseUri: '<'
-        },
-        controller: function (FetchAndSaveBlob) {
-            var $ctrl = this;
-
-            $ctrl.downloadAttachment = function (id) {
-                FetchAndSaveBlob.post($ctrl.baseUri + '/' + id);
-            };
-        }
-    })
-
-    .component('carnivoreApplicationSummaryAttachments', {
-        templateUrl: 'harvestpermit/applications/carnivore/summary/summary-attachments.html',
-        bindings: {
             attachments: '<',
             baseUri: '<'
         },

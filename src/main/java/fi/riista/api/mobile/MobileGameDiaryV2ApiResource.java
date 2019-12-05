@@ -132,7 +132,7 @@ public class MobileGameDiaryV2ApiResource {
         dto.setRev(null);
         try {
             return ResponseEntity.ok(feature.createHarvest(dto, API_VERSION));
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             return harvestExceptionMapper.handleException(e);
         }
     }
@@ -146,7 +146,7 @@ public class MobileGameDiaryV2ApiResource {
         dto.setId(id);
         try {
             return ResponseEntity.ok(feature.updateHarvest(dto, API_VERSION));
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             return harvestExceptionMapper.handleException(e);
         }
     }
@@ -156,7 +156,7 @@ public class MobileGameDiaryV2ApiResource {
     public void deleteHarvest(@PathVariable final Long id) {
         try {
             feature.deleteHarvest(id);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.warn("Deletion failed for harvest id " + id, e);
         }
     }
@@ -195,7 +195,7 @@ public class MobileGameDiaryV2ApiResource {
     public void deleteObservation(@PathVariable final Long id) {
         try {
             feature.deleteObservation(id);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.warn("Deletion failed for observation id " + id, e);
         }
     }
@@ -216,6 +216,7 @@ public class MobileGameDiaryV2ApiResource {
         return gameDiaryImageFeature.getGameDiaryImageBytesResized(imageUuid, width, height, keepProportions);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping(value = HARVEST_IMAGE_UPLOAD_RESOURCE_URL)
     public void addImageForHarvest(@RequestParam("harvestId") final long harvestId,
                                    @RequestParam("uuid") final UUID uuid,
@@ -224,6 +225,7 @@ public class MobileGameDiaryV2ApiResource {
         gameDiaryImageFeature.addGameDiaryImageForDiaryEntry(harvestId, GameDiaryEntryType.HARVEST, uuid, file);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping(value = OBSERVATION_IMAGE_UPLOAD_RESOURCE_URL)
     public void addImageForObservation(@RequestParam("observationId") final long observationId,
                                        @RequestParam("uuid") final UUID uuid,

@@ -4,6 +4,7 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 public class HarvestPermitApplicationAdditionalDataDTO {
@@ -19,6 +20,7 @@ public class HarvestPermitApplicationAdditionalDataDTO {
     private boolean deliveryByMail;
 
     @Valid
+    @NotNull
     private DeliveryAddressDTO deliveryAddress;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)

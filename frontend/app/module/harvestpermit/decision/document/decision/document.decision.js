@@ -9,9 +9,9 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                 speciesAmounts: function (Species, PermitDecisionSpecies, $filter, $translate, decisionId) {
                     return PermitDecisionSpecies.getSpecies({decisionId: decisionId}).$promise;
                 },
-                derogationReasons: function (PermitDecisionDerogation, decision) {
+                derogationLawSections: function (PermitDecisionDerogation, decision) {
                     return PermitDecisionDerogation.getReasons({id: decision.id}).$promise.then(function (data) {
-                        return data.reasons;
+                        return data.lawSections;
                     });
                 },
                 protectedAreaTypes: function (PermitDecisionDerogation, decision) {
@@ -25,7 +25,7 @@ angular.module('app.harvestpermit.decision.document.decision', [])
             },
             controllerAs: '$ctrl',
             controller: function (PermitDecisionUtils,
-                                  decision, reference, speciesAmounts, derogationReasons,
+                                  decision, reference, speciesAmounts, derogationLawSections,
                                   protectedAreaTypes, legalFields) {
                 var $ctrl = this;
 
@@ -34,11 +34,13 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                     $ctrl.decision = decision;
                     $ctrl.reference = reference;
                     $ctrl.speciesAmounts = speciesAmounts;
-                    $ctrl.showDerogationReasons = !_.isEmpty(derogationReasons);
+                    $ctrl.showDerogationReasons = !_.isEmpty(derogationLawSections);
                     $ctrl.showProtectedAreaTypes = !_.isEmpty(protectedAreaTypes);
-                    $ctrl.derogationReasons = getSelectedItems(derogationReasons);
+                    $ctrl.derogationLawSections = derogationLawSections;
                     $ctrl.protectedAreaTypes = getSelectedItems(protectedAreaTypes);
                     $ctrl.legalFields = legalFields;
+                    $ctrl.incompleteData = $ctrl.showDerogationReasons && someSectionHasNothingSelected() ||
+                        $ctrl.showProtectedAreaTypes && _.isEmpty($ctrl.protectedAreaTypes);
                 };
 
                 $ctrl.canEditContent = function () {
@@ -46,9 +48,14 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                 };
 
                 $ctrl.denyComplete = function () {
-                    return $ctrl.showDerogationReasons && _.isEmpty($ctrl.derogationReasons) ||
-                        $ctrl.showProtectedAreaTypes && _.isEmpty($ctrl.protectedAreaTypes);
+                    return $ctrl.incompleteData;
                 };
+
+                function someSectionHasNothingSelected() {
+                    return _.some($ctrl.derogationLawSections, function (section) {
+                        return !_.some(section.reasons, 'checked');
+                    });
+                }
 
                 function getSelectedItems(items) {
                     return _.filter(items, 'checked');

@@ -387,8 +387,7 @@
             };
 
             $ctrl.isEventUnpopulated = function (event) {
-                return isEventInPast(event)
-                    && (!event.shootingTestEventId || !!event.lockedTime && !event.numberOfAllParticipants);
+                return isEventInPast(event) && !event.shootingTestEventId;
             };
 
             $ctrl.isEventIncomplete = function (event) {
@@ -494,7 +493,7 @@
                 openOfficialAssignDialog: '&',
                 reload: '&'
             },
-            controller: function (Helpers, NotificationService, ShootingTestEvent) {
+            controller: function ($filter, Helpers, NotificationService, ShootingTestEvent) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
@@ -510,6 +509,25 @@
                     $ctrl.canReopenEvent = $ctrl.hasUpdatePermission && $ctrl.event.isClosed();
 
                     $ctrl.isAnyLifecycleButtonVisible = $ctrl.canOpenEvent || $ctrl.canCloseEvent || $ctrl.canReopenEvent;
+
+                    var $translate = $filter('translate');
+                    $ctrl.confirmMessage = $translate('DIALOGS_CONFIRMATION_MSG');
+                    $ctrl.confirmUnpopulatedWarning = $translate('shootingTest.overview.unpopulatedEventWarningMsg');
+                };
+
+                $ctrl.getCloseConfirmationMsg = function () {
+                    if ($ctrl.event.numberOfAllParticipants > 0) {
+                        return $ctrl.confirmMessage;
+                    }
+
+                    return "<p class='shooting-test-event-alert-box'>" +
+                        "<span class='fa fa-fw fa-exclamation-triangle'></span> " +
+                        "<span>" +
+                        $ctrl.confirmUnpopulatedWarning +
+                        "</span>" +
+                        "</p><span>" +
+                        $ctrl.confirmMessage +
+                        "</span>";
                 };
 
                 $ctrl.closeEvent = function () {

@@ -15,6 +15,11 @@ import fi.riista.feature.permit.application.bird.BirdPermitApplicationSummaryDTO
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationRepository;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationSummaryDTO;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReasonService;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReasonsDTO;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationRepository;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationSummaryDTO;
 import fi.riista.feature.permit.application.mooselike.MooselikePermitApplicationSpeciesAmountDTO;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.hta.HarvestPermitAreaHtaDTO;
@@ -45,6 +50,7 @@ public class HarvestPermitApplicationPdfFeature {
     private static final String JSP_MOOSELIKE_AMENDMENT = "pdf/application-mooselike-amendment";
     private static final String JSP_BIRD = "pdf/application-bird";
     private static final String JSP_CARNIVORE = "pdf/application-carnivore";
+    private static final String JSP_MAMMAL = "pdf/application-mammal";
 
     public static class PdfModel {
         private final String view;
@@ -83,6 +89,12 @@ public class HarvestPermitApplicationPdfFeature {
     private CarnivorePermitApplicationRepository carnivorePermitApplicationRepository;
 
     @Resource
+    MammalPermitApplicationRepository mammalPermitApplicationRepository;
+
+    @Resource
+    DerogationPermitApplicationReasonService derogationPermitApplicationReasonService;
+
+    @Resource
     private GameSpeciesService gameSpeciesService;
 
     @Resource
@@ -114,6 +126,13 @@ public class HarvestPermitApplicationPdfFeature {
             case LARGE_CARNIVORE_WOLF:
                 final CarnivorePermitApplication carnivorePermitApplication = carnivorePermitApplicationRepository.findByHarvestPermitApplication(application);
                 return new PdfModel(JSP_CARNIVORE, CarnivorePermitApplicationSummaryDTO.from(application, carnivorePermitApplication), speciesNameIndex);
+            case MAMMAL:
+                final MammalPermitApplication mammalPermitApplication =
+                        mammalPermitApplicationRepository.findByHarvestPermitApplication(application);
+                final DerogationPermitApplicationReasonsDTO reasonsDTO =
+                        derogationPermitApplicationReasonService.getDerogationReasons(application, locale);
+                return new PdfModel(JSP_MAMMAL, MammalPermitApplicationSummaryDTO.create(application,
+                        mammalPermitApplication, reasonsDTO), speciesNameIndex);
             default:
                 throw new IllegalArgumentException();
         }

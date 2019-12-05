@@ -126,13 +126,13 @@ public class PublicApiResource {
         setLocale(lang);
 
         return occupationSearchFeature.findOccupationsAndOrganisations(PublicOccupationSearchParameters.builder()
-                .withAreaId(areaId)
-                .withRhyId(rhyId)
-                .withOrganisationType(organisationType)
-                .withOccupationType(occupationType)
-                .withPageSize(pageSize)
-                .withPageNumber(pageNumber)
-                .build());
+                                                                               .withAreaId(areaId)
+                                                                               .withRhyId(rhyId)
+                                                                               .withOrganisationType(organisationType)
+                                                                               .withOccupationType(occupationType)
+                                                                               .withPageSize(pageSize)
+                                                                               .withPageNumber(pageNumber)
+                                                                               .build());
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -145,7 +145,8 @@ public class PublicApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/tapahtumat", method = RequestMethod.GET)
     public PublicCalendarEventSearchResultDTO listCalendarEvents(
-            @ModelAttribute @Valid final PublicCalendarEventSearchDTO params, @RequestParam(required = false) final String lang) {
+            @ModelAttribute @Valid final PublicCalendarEventSearchDTO params,
+            @RequestParam(required = false) final String lang) {
 
         setLocale(lang);
         fixBeginToBeBeforeEnd(params);
@@ -200,7 +201,8 @@ public class PublicApiResource {
     @CacheControl(policy = CachePolicy.PUBLIC, maxAge = 600)
     @RequestMapping(value = "/saaliit/susi/kannanhoidollinen/vuodet", method = RequestMethod.GET)
     public List<Map<String, Object>> getWolfYears() {
-        final IntStream range = IntStream.rangeClosed(PublicWolfReportFeature.MIN_YEAR, PublicWolfReportFeature.MAX_YEAR);
+        final IntStream range = IntStream.rangeClosed(PublicWolfReportFeature.MIN_YEAR,
+                                                      PublicWolfReportFeature.MAX_YEAR);
         return generateYearRange(DateTime.now(), range);
     }
 
@@ -223,12 +225,39 @@ public class PublicApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/decision/receiver/download/{uuid:" + Patterns.UUID + "}")
+    public PermitDecisionDownloadDTO getDownloadLinks(@PathVariable final UUID uuid) throws IOException {
+
+        final long revisionId = permitDecisionRevisionFeature.resolveRevisionIdByReceiverUuid(uuid);
+
+        return permitDecisionRevisionDownloadFeature.getDownloadLinks(uuid, revisionId);
+    }
+
+    // TODO: After links in old decision emails are no needed to be rerouted, this can be removed
+    @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/decision/receiver/pdf/download/{uuid:" + Patterns.UUID + "}")
-    public void getAttachment(@PathVariable final UUID uuid,
-                              final HttpServletResponse response) throws IOException {
+    public void getDecisionRedirect(@PathVariable final UUID uuid,
+                                    final HttpServletResponse response) throws IOException {
+        response.sendRedirect("/#/public/decision/" + uuid);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/decision/receiver/decision-pdf/download/{uuid:" + Patterns.UUID + "}")
+    public void getDecision(@PathVariable final UUID uuid,
+                            final HttpServletResponse response) throws IOException {
 
         final long revisionId = permitDecisionRevisionFeature.updateViewCountAndResolveRevisionIdByReceiverUuid(uuid);
         permitDecisionRevisionDownloadFeature.downloadPdfNoAuthorization(revisionId, response);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/decision/receiver/attachment/download/{uuid:" + Patterns.UUID + "}/{attachmentId:\\d+}")
+    public void getAttachment(@PathVariable final UUID uuid, @PathVariable final long attachmentId,
+                              final HttpServletResponse response) throws IOException {
+
+        final long revisionId = permitDecisionRevisionFeature.resolveRevisionIdByReceiverUuid(uuid);
+        permitDecisionRevisionDownloadFeature.downloadDecisionAttachmentNoAuthorization(revisionId, attachmentId,
+                                                                                        response);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -251,8 +280,9 @@ public class PublicApiResource {
             final Interval interval = DateUtil.huntingYearInterval(year);
 
             return ImmutableMap.of("year", year,
-                    "current", interval.contains(now),
-                    "text", String.format("%s-%s", interval.getStart().getYear(), interval.getEnd().getYear()));
+                                   "current", interval.contains(now),
+                                   "text", String.format("%s-%s", interval.getStart().getYear(),
+                                                         interval.getEnd().getYear()));
         }).collect(toList());
     }
 

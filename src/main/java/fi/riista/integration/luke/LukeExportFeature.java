@@ -56,6 +56,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -238,6 +239,11 @@ public class LukeExportFeature {
 
     @Nonnull
     private Map<Long, Occupation> findClubContacts(final Set<HuntingClub> clubs) {
+
+        if (clubs.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
         return occupationRepository
                 .findActiveByOrganisationsAndTypes(F.getUniqueIds(clubs), EnumSet.of(SEURAN_YHDYSHENKILO))
                 .stream()

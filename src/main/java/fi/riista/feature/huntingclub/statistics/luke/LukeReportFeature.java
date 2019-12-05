@@ -3,6 +3,7 @@ package fi.riista.feature.huntingclub.statistics.luke;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.integration.common.HttpProxyService;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.config.RequestConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,13 @@ public class LukeReportFeature {
     private final HttpProxyService httpProxyService;
     private final LukeReportUriBuilderFactory lukeReportUriBuilderFactory;
     private final UsernamePasswordCredentials credentials;
+
+    private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
+            .setConnectTimeout(3000)
+            .setSocketTimeout(5000)
+            // Do not follow redirects and treat anything else than 200 as 404 Not Found.
+            .setRedirectsEnabled(false)
+            .build();
 
     @Autowired
     public LukeReportFeature(final ActiveUserService activeUserService,
@@ -53,7 +61,7 @@ public class LukeReportFeature {
                 uriBuilder.getPermitId(), uriBuilder.getClubId(), lukeReportUrl.getPath());
 
         httpProxyService.downloadFile(httpServletResponse, lukeReportUrl, credentials,
-                null, presentation.getContentType());
+                null, presentation.getContentType(), REQUEST_CONFIG);
     }
 
     public LukeReportParamsDTO getReportParameters(final LukeReportUriBuilder uriBuilder) {

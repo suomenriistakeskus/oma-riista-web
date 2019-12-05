@@ -2,6 +2,8 @@ package fi.riista.integration.koiratutka.export;
 
 import fi.riista.feature.account.area.PersonalArea;
 import fi.riista.feature.account.area.PersonalAreaRepository;
+import fi.riista.feature.account.area.union.PersonalAreaUnion;
+import fi.riista.feature.account.area.union.PersonalAreaUnionRepository;
 import fi.riista.feature.account.audit.AuditService;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
@@ -47,6 +49,9 @@ public class HuntingClubAreaExportFeature {
     private ModeratorAreaRepository moderatorAreaRepository;
 
     @Resource
+    private PersonalAreaUnionRepository personalAreaUnionRepository;
+
+    @Resource
     private GISZoneRepository zoneRepository;
 
     @Resource
@@ -87,7 +92,8 @@ public class HuntingClubAreaExportFeature {
                     // Audit (only if content is actually returned to ignore refresh attempts)
                     auditService.log("exportClubMap", request.getExternalId(), request.getAuditExtraInfo());
 
-                    final GeoJsonMetadata geoJsonMetadata = new GeoJsonMetadata(zoneDTO.getSize(), area, latestModificationTime);
+                    final GeoJsonMetadata geoJsonMetadata = new GeoJsonMetadata(zoneDTO.getSize(), area,
+                            latestModificationTime);
                     final FeatureCollection featureCollection = getFeatures(zoneId, geoJsonMetadata);
 
                     return ResponseEntity.ok()
@@ -118,6 +124,12 @@ public class HuntingClubAreaExportFeature {
             return Optional.of(AreaExportDTO.create(clubAreaOptional.get()));
         }
 
+        final Optional<PersonalAreaUnion> areaUnionOptional = personalAreaUnionRepository.findByExternalId(externalId);
+
+        if (areaUnionOptional.isPresent()) {
+            return AreaExportDTO.create(areaUnionOptional.get());
+        }
+
         final Optional<HarvestPermitArea> permitAreaOptional = harvestPermitAreaRepository.findByExternalId(externalId);
 
         if (permitAreaOptional.isPresent()) {
@@ -146,7 +158,8 @@ public class HuntingClubAreaExportFeature {
 
     @Nonnull
     private FeatureCollection getFeatures(final long zoneId, final GeoJsonMetadata geoJsonMetadata) {
-        final FeatureCollection featureCollection = zoneRepository.getCombinedFeatures(Collections.singleton(zoneId), GISUtils.SRID.WGS84);
+        final FeatureCollection featureCollection = zoneRepository.getCombinedFeatures(Collections.singleton(zoneId),
+                GISUtils.SRID.WGS84);
 
         for (Feature feature : featureCollection) {
             geoJsonMetadata.updateFeature(feature);

@@ -34,7 +34,7 @@ angular.module('app.harvestpermit.decision.revisions', [])
                         .filter(GameSpeciesCodes.isPermitBasedMooselike)
                         .value();
                     $ctrl.showHarvestReports =
-                        decision.harvestPermitCategory === 'BIRD' &&
+                        (decision.harvestPermitCategory === 'BIRD' || decision.harvestPermitCategory === 'MAMMAL') &&
                         decision.status === 'PUBLISHED' &&
                         decision.decisionType === 'HARVEST_PERMIT' &&
                         decision.grantStatus !== 'REJECTED';
@@ -123,8 +123,8 @@ angular.module('app.harvestpermit.decision.revisions', [])
                     window.open('/api/v1/decision/' + decisionId + '/invoice/harvest/' + gameSpeciesCode);
                 };
 
-                $ctrl.downloadBirdHarvestReport = function () {
-                    window.open('/api/v1/decision/' + decisionId + '/bird-harvest-report');
+                $ctrl.downloadPermitHarvestReport = function () {
+                    window.open('/api/v1/decision/' + decisionId + '/permit-harvest-report');
                 };
 
                 $ctrl.moveToInvoices = function () {

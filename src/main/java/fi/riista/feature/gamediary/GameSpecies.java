@@ -158,6 +158,45 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
             26442, 26921, 26922, 26926, 26928, 26931, 27048, 27152, 27381, 27649, 27750, 27759, 27911, 33117, 37122,
             37142, 37166, 37178, 200535);
 
+    public static final ImmutableSet<Integer> MAMMAL_PERMIT_SPECIES = ImmutableSet.of(
+            OFFICIAL_CODE_WOLVERINE,
+            OFFICIAL_CODE_WOLF,
+            OFFICIAL_CODE_BEAR,
+            OFFICIAL_CODE_OTTER,
+            OFFICIAL_CODE_LYNX,
+            OFFICIAL_CODE_EUROPEAN_BEAVER,
+            OFFICIAL_CODE_RINGED_SEAL,
+            OFFICIAL_CODE_HARBOUR_SEAL,
+            OFFICIAL_CODE_GREY_SEAL,
+            OFFICIAL_CODE_EUROPEAN_POLECAT,
+            OFFICIAL_CODE_PINE_MARTEN,
+            OFFICIAL_CODE_MOUNTAIN_HARE,
+
+
+            OFFICIAL_CODE_RABBIT,
+            OFFICIAL_CODE_BROWN_HARE,
+            OFFICIAL_CODE_RED_SQUIRREL,
+            OFFICIAL_CODE_CANADIAN_BEAVER,
+            OFFICIAL_CODE_BLUE_FOX,
+            OFFICIAL_CODE_RED_FOX,
+            OFFICIAL_CODE_BADGER,
+            OFFICIAL_CODE_ERMINE,
+            OFFICIAL_CODE_WILD_BOAR,
+            OFFICIAL_CODE_FALLOW_DEER,
+            OFFICIAL_CODE_RED_DEER,
+            OFFICIAL_CODE_SIKA_DEER,
+            OFFICIAL_CODE_ROE_DEER,
+            OFFICIAL_CODE_MOOSE,
+            OFFICIAL_CODE_WHITE_TAILED_DEER,
+            OFFICIAL_CODE_MUFFLON,
+            OFFICIAL_CODE_RACCOON_DOG,
+            OFFICIAL_CODE_AMERICAN_MINK,
+            OFFICIAL_CODE_RACCOON,
+            OFFICIAL_CODE_MUSKRAT,
+            OFFICIAL_CODE_NUTRIA,
+
+            OFFICIAL_CODE_WILD_FOREST_REINDEER);
+
     private Long id;
 
     @Column(nullable = false)
@@ -229,6 +268,10 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
 
     public static boolean isBirdPermitSpecies(final int gameSpeciesCode) {
         return BIRD_PERMIT_SPECIES.contains(gameSpeciesCode);
+    }
+
+    public static boolean isMammalSpecies(final int gameSpeciesCode) {
+        return MAMMAL_PERMIT_SPECIES.contains(gameSpeciesCode);
     }
 
     public static boolean isWolf(final int speciesCode) {

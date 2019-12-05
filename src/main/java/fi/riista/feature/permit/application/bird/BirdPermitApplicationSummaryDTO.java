@@ -8,13 +8,13 @@ import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
 import fi.riista.feature.permit.application.bird.amount.BirdPermitApplicationSpeciesAmountDTO;
 import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedAreaDTO;
-import fi.riista.feature.permit.application.bird.attachments.BirdPermitApplicationAttachmentDTO;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCauseDTO;
-import fi.riista.feature.permit.application.bird.damage.BirdPermitApplicationDamageDTO;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethodsDTO;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethodsSpeciesDTO;
 import fi.riista.feature.permit.application.bird.period.BirdPermitApplicationSpeciesPeriodDTO;
-import fi.riista.feature.permit.application.bird.population.BirdPermitApplicationSpeciesPopulationDTO;
+import fi.riista.feature.permit.application.derogation.attachments.DerogationPermitApplicationAttachmentDTO;
+import fi.riista.feature.permit.application.derogation.damage.DerogationPermitApplicationDamageDTO;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethodsDTO;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethodsSpeciesDTO;
+import fi.riista.feature.permit.application.derogation.population.DerogationPermitApplicationSpeciesPopulationDTO;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDateTime;
 
@@ -78,18 +78,18 @@ public class BirdPermitApplicationSummaryDTO {
                         .map(BirdPermitApplicationSpeciesPeriodDTO::new)
                         .collect(Collectors.toList()))
                 .withDamage(entity.getSpeciesAmounts().stream()
-                        .map(BirdPermitApplicationDamageDTO::new)
+                        .map(DerogationPermitApplicationDamageDTO::new)
                         .collect(Collectors.toList()))
                 .withPopulation(entity.getSpeciesAmounts().stream()
-                        .map(BirdPermitApplicationSpeciesPopulationDTO::new)
+                        .map(DerogationPermitApplicationSpeciesPopulationDTO::new)
                         .collect(Collectors.toList()))
                 .withAreaAttachments(entity.getAttachments().stream()
                         .filter(a -> a.getAttachmentType() == HarvestPermitApplicationAttachment.Type.PROTECTED_AREA)
-                        .map(BirdPermitApplicationAttachmentDTO::new)
+                        .map(DerogationPermitApplicationAttachmentDTO::new)
                         .collect(Collectors.toList()))
                 .withOtherAttachments(entity.getAttachments().stream()
                         .filter(a -> a.getAttachmentType() == HarvestPermitApplicationAttachment.Type.OTHER)
-                        .map(BirdPermitApplicationAttachmentDTO::new)
+                        .map(DerogationPermitApplicationAttachmentDTO::new)
                         .collect(Collectors.toList()))
                 .withPermitCause(Optional.ofNullable(birdPermitApplication.getCause())
                         .map(BirdPermitApplicationCauseDTO::createFrom)
@@ -98,8 +98,9 @@ public class BirdPermitApplicationSummaryDTO {
                         .map(BirdPermitApplicationProtectedAreaDTO::createFrom)
                         .orElse(null))
                 .withDeviationJustification(Optional.ofNullable(birdPermitApplication.getForbiddenMethods())
-                        .map(deviation -> BirdPermitApplicationForbiddenMethodsDTO.createFrom(deviation, entity.getSpeciesAmounts().stream()
-                                .map(BirdPermitApplicationForbiddenMethodsSpeciesDTO::new)
+                        .map(deviation -> DerogationPermitApplicationForbiddenMethodsDTO.createFrom(deviation,
+                                entity.getSpeciesAmounts().stream()
+                                .map(DerogationPermitApplicationForbiddenMethodsSpeciesDTO::new)
                                 .collect(Collectors.toList())))
                         .orElse(null))
                 .withEmail1(Optional.ofNullable(entity.getEmail1()).orElse(null))
@@ -122,13 +123,13 @@ public class BirdPermitApplicationSummaryDTO {
     private final PermitHolderDTO permitHolder;
     private final List<BirdPermitApplicationSpeciesAmountDTO> speciesAmounts;
     private final List<BirdPermitApplicationSpeciesPeriodDTO> speciesPeriods;
-    private final List<BirdPermitApplicationDamageDTO> damage;
-    private final List<BirdPermitApplicationSpeciesPopulationDTO> population;
-    private final List<BirdPermitApplicationAttachmentDTO> areaAttachments;
-    private final List<BirdPermitApplicationAttachmentDTO> otherAttachments;
+    private final List<DerogationPermitApplicationDamageDTO> damage;
+    private final List<DerogationPermitApplicationSpeciesPopulationDTO> population;
+    private final List<DerogationPermitApplicationAttachmentDTO> areaAttachments;
+    private final List<DerogationPermitApplicationAttachmentDTO> otherAttachments;
     private final BirdPermitApplicationCauseDTO permitCause;
     private final BirdPermitApplicationProtectedAreaDTO protectedArea;
-    private final BirdPermitApplicationForbiddenMethodsDTO forbiddenMethods;
+    private final DerogationPermitApplicationForbiddenMethodsDTO forbiddenMethods;
     private final String email1;
     private final String email2;
     private final Boolean deliveryByMail;
@@ -180,19 +181,19 @@ public class BirdPermitApplicationSummaryDTO {
         return speciesPeriods;
     }
 
-    public List<BirdPermitApplicationDamageDTO> getDamage() {
+    public List<DerogationPermitApplicationDamageDTO> getDamage() {
         return damage;
     }
 
-    public List<BirdPermitApplicationSpeciesPopulationDTO> getPopulation() {
+    public List<DerogationPermitApplicationSpeciesPopulationDTO> getPopulation() {
         return population;
     }
 
-    public List<BirdPermitApplicationAttachmentDTO> getAreaAttachments() {
+    public List<DerogationPermitApplicationAttachmentDTO> getAreaAttachments() {
         return areaAttachments;
     }
 
-    public List<BirdPermitApplicationAttachmentDTO> getOtherAttachments() {
+    public List<DerogationPermitApplicationAttachmentDTO> getOtherAttachments() {
         return otherAttachments;
     }
 
@@ -204,7 +205,7 @@ public class BirdPermitApplicationSummaryDTO {
         return protectedArea;
     }
 
-    public BirdPermitApplicationForbiddenMethodsDTO getForbiddenMethods() {
+    public DerogationPermitApplicationForbiddenMethodsDTO getForbiddenMethods() {
         return forbiddenMethods;
     }
 
@@ -244,13 +245,13 @@ public class BirdPermitApplicationSummaryDTO {
         private PermitHolderDTO permitHolder;
         private List<BirdPermitApplicationSpeciesAmountDTO> speciesAmounts;
         private List<BirdPermitApplicationSpeciesPeriodDTO> speciesPeriods;
-        private List<BirdPermitApplicationDamageDTO> damage;
-        private List<BirdPermitApplicationSpeciesPopulationDTO> population;
-        private List<BirdPermitApplicationAttachmentDTO> areaAttachments;
-        private List<BirdPermitApplicationAttachmentDTO> otherAttachments;
+        private List<DerogationPermitApplicationDamageDTO> damage;
+        private List<DerogationPermitApplicationSpeciesPopulationDTO> population;
+        private List<DerogationPermitApplicationAttachmentDTO> areaAttachments;
+        private List<DerogationPermitApplicationAttachmentDTO> otherAttachments;
         private BirdPermitApplicationCauseDTO permitCause;
         private BirdPermitApplicationProtectedAreaDTO protectedArea;
-        private BirdPermitApplicationForbiddenMethodsDTO forbiddenMethods;
+        private DerogationPermitApplicationForbiddenMethodsDTO forbiddenMethods;
         private String email1;
         private String email2;
         private Boolean deliveryByMail;
@@ -316,22 +317,22 @@ public class BirdPermitApplicationSummaryDTO {
             return this;
         }
 
-        public Builder withDamage(List<BirdPermitApplicationDamageDTO> damage) {
+        public Builder withDamage(List<DerogationPermitApplicationDamageDTO> damage) {
             this.damage = damage;
             return this;
         }
 
-        public Builder withPopulation(List<BirdPermitApplicationSpeciesPopulationDTO> population) {
+        public Builder withPopulation(List<DerogationPermitApplicationSpeciesPopulationDTO> population) {
             this.population = population;
             return this;
         }
 
-        public Builder withAreaAttachments(List<BirdPermitApplicationAttachmentDTO> areaAttachments) {
+        public Builder withAreaAttachments(List<DerogationPermitApplicationAttachmentDTO> areaAttachments) {
             this.areaAttachments = areaAttachments;
             return this;
         }
 
-        public Builder withOtherAttachments(List<BirdPermitApplicationAttachmentDTO> otherAttachments) {
+        public Builder withOtherAttachments(List<DerogationPermitApplicationAttachmentDTO> otherAttachments) {
             this.otherAttachments = otherAttachments;
             return this;
         }
@@ -346,7 +347,7 @@ public class BirdPermitApplicationSummaryDTO {
             return this;
         }
 
-        public Builder withDeviationJustification(BirdPermitApplicationForbiddenMethodsDTO forbiddenMethods) {
+        public Builder withDeviationJustification(DerogationPermitApplicationForbiddenMethodsDTO forbiddenMethods) {
             this.forbiddenMethods = forbiddenMethods;
             return this;
         }

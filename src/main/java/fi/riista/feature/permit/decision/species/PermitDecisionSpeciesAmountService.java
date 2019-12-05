@@ -51,12 +51,14 @@ public class PermitDecisionSpeciesAmountService {
                 return createGenerator(decision).createAllForAmendment(createAmendmentApplicationLookup(application));
 
             case BIRD:
-                return createGenerator(decision).createAllForBird();
+                return createGenerator(decision).createForAllYears();
             case LARGE_CARNIVORE_BEAR:
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
                 return createGenerator(decision).createForCarnivore();
+            case MAMMAL:
+                return createGenerator(decision).createForAllYears();
             default:
                 throw new IllegalArgumentException("Unsupported application category:" + application.getHarvestPermitCategory());
         }
@@ -100,9 +102,9 @@ public class PermitDecisionSpeciesAmountService {
             });
         }
 
-        public List<PermitDecisionSpeciesAmount> createAllForBird() {
+        public List<PermitDecisionSpeciesAmount> createForAllYears() {
             return applicationSpeciesAmounts.stream()
-                    .flatMap(source -> streamValidityYears(source).mapToObj(year -> createBird(source, year)))
+                    .flatMap(source -> streamValidityYears(source).mapToObj(year -> createForYear(source, year)))
                     .collect(toList());
         }
 
@@ -133,30 +135,30 @@ public class PermitDecisionSpeciesAmountService {
             return target;
         }
 
-        // BIRD
+        // MULTI-YEAR APPLICATIONS ( bird, mammal)
 
         @Nonnull
-        private PermitDecisionSpeciesAmount createBird(final HarvestPermitApplicationSpeciesAmount source,
-                                                       final int year) {
+        private PermitDecisionSpeciesAmount createForYear(final HarvestPermitApplicationSpeciesAmount source,
+                                                          final int year) {
             final PermitDecisionSpeciesAmount target = createCommon(source);
-            target.setBeginDate(getBirdBeginDate(source, year));
-            target.setEndDate(getBirdEndDate(source, year));
+            target.setBeginDate(getBeginDateForYear(source, year));
+            target.setEndDate(getEndDateForYear(source, year));
 
             return target;
         }
 
         @Nonnull
-        private LocalDate getBirdBeginDate(final HarvestPermitApplicationSpeciesAmount source, final int year) {
-            return year == 0 ? getBirdFirstYearBeginDate(source) : source.getBeginDate().plusYears(year);
+        private LocalDate getBeginDateForYear(final HarvestPermitApplicationSpeciesAmount source, final int year) {
+            return year == 0 ? getFirstYearBeginDate(source) : source.getBeginDate().plusYears(year);
         }
 
         @Nonnull
-        private LocalDate getBirdEndDate(final HarvestPermitApplicationSpeciesAmount source, final int year) {
+        private LocalDate getEndDateForYear(final HarvestPermitApplicationSpeciesAmount source, final int year) {
             return source.getEndDate().plusYears(year);
         }
 
         @Nonnull
-        private LocalDate getBirdFirstYearBeginDate(final HarvestPermitApplicationSpeciesAmount source) {
+        private LocalDate getFirstYearBeginDate(final HarvestPermitApplicationSpeciesAmount source) {
             if (applicationDate.isAfter(source.getBeginDate()) && source.getEndDate().isAfter(applicationDate)) {
                 return applicationDate;
             }

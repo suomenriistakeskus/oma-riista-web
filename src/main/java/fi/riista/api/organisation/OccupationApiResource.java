@@ -105,12 +105,6 @@ public class OccupationApiResource {
         return occupationCrudFeature.update(dto);
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping(value = "{orgId:\\d+}/occupation/{id:\\d+}")
-    public void deleteOccupation(@PathVariable final long id) {
-        occupationCrudFeature.delete(id);
-    }
-
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/occupationTypes")
     public Map<OrganisationType, OccupationType[]> getOccupationTypes() {

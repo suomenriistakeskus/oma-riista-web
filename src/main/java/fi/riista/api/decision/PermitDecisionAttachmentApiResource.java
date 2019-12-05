@@ -1,7 +1,7 @@
 package fi.riista.api.decision;
 
-import fi.riista.feature.harvestpermit.report.paper.BirdHarvestReportFeature;
-import fi.riista.feature.harvestpermit.report.paper.BirdHarvestReportPdf;
+import fi.riista.feature.harvestpermit.report.paper.PermitHarvestReportFeature;
+import fi.riista.feature.harvestpermit.report.paper.PermitHarvestReportPdf;
 import fi.riista.feature.permit.decision.action.PermitDecisionActionAttachmentDTO;
 import fi.riista.feature.permit.decision.action.PermitDecisionActionAttachmentFeature;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachmentDTO;
@@ -39,7 +39,7 @@ public class PermitDecisionAttachmentApiResource {
     private PermitDecisionActionAttachmentFeature permitDecisionActionAttachmentFeature;
 
     @Resource
-    private BirdHarvestReportFeature birdHarvestReportFeature;
+    private PermitHarvestReportFeature permitHarvestReportFeature;
 
     // ATTACHMENTS
 
@@ -87,7 +87,8 @@ public class PermitDecisionAttachmentApiResource {
 
     // ACTION ATTACHMENT
 
-    @GetMapping(value = "/{decisionId:\\d+}/action/{actionId:\\d+}/attachment", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{decisionId:\\d+}/action/{actionId:\\d+}/attachment", produces =
+            MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<PermitDecisionActionAttachmentDTO> listActionAttachments(final @PathVariable long decisionId,
                                                                          final @PathVariable long actionId) {
         return permitDecisionActionAttachmentFeature.listAttachments(actionId);
@@ -100,7 +101,8 @@ public class PermitDecisionAttachmentApiResource {
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/{decisionId:\\d+}/action/{actionId:\\d+}/attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{decisionId:\\d+}/action/{actionId:\\d+}/attachment", consumes =
+            MediaType.MULTIPART_FORM_DATA_VALUE)
     public void addActionAttachment(final @PathVariable long decisionId,
                                     final @PathVariable long actionId,
                                     final @RequestParam("file") MultipartFile file) throws IOException {
@@ -116,9 +118,9 @@ public class PermitDecisionAttachmentApiResource {
 
     // HARVEST REPORT
 
-    @GetMapping(value = "/{decisionId:\\d+}/bird-harvest-report", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
+    @GetMapping(value = "/{decisionId:\\d+}/permit-harvest-report", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> createBirdHarvestReportPdf(final @PathVariable long decisionId) throws IOException {
-        final BirdHarvestReportPdf pdf = birdHarvestReportFeature.getPdf(decisionId);
+        final PermitHarvestReportPdf pdf = permitHarvestReportFeature.getPdf(decisionId);
         return pdf.asResponseEntity();
     }
 }

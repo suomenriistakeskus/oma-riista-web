@@ -1,6 +1,7 @@
 package fi.riista.integration.koiratutka.export;
 
 import fi.riista.feature.account.area.PersonalArea;
+import fi.riista.feature.account.area.union.PersonalAreaUnion;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.moderatorarea.ModeratorArea;
 import fi.riista.feature.permit.area.HarvestPermitArea;
@@ -9,6 +10,9 @@ import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
 
 import java.util.Date;
+import java.util.Optional;
+
+import static fi.riista.feature.permit.area.HarvestPermitArea.StatusCode.READY;
 
 class AreaExportDTO {
 
@@ -64,6 +68,20 @@ class AreaExportDTO {
                 Integer.toHexString(moderatorArea.getConsistencyVersion()),
                 F.getId(moderatorArea.getZone()),
                 moderatorArea.getYear());
+    }
+
+    public static Optional<AreaExportDTO> create(final PersonalAreaUnion personalAreaUnion) {
+        final HarvestPermitArea harvestPermitArea = personalAreaUnion.getHarvestPermitArea();
+        if (harvestPermitArea.getStatus() == READY) {
+            return Optional.of(new AreaExportDTO(LocalisedString.of(personalAreaUnion.getName()),
+                    EMPTY_NAME,
+                    personalAreaUnion.getModificationTime(),
+                    Integer.toHexString(personalAreaUnion.getConsistencyVersion()),
+                    F.getId(harvestPermitArea.getZone()),
+                    harvestPermitArea.getHuntingYear()));
+        }
+        return Optional.empty();
+
     }
 
     private final LocalisedString areaName;

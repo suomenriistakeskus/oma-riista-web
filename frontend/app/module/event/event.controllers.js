@@ -2,10 +2,10 @@
 
 angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
     .controller('EventListController',
-        function ($scope, $uibModal, Helpers, NotificationService, EventsByYear, EventTypes, Venues, orgId, AnnualStatisticsAvailableYears) {
+        function ($scope, $uibModal, Helpers, NotificationService, EventsByYear, EventTypes, Venues, orgId, AnnualStatisticsEventYears) {
             $scope.events = [];
-            $scope.availableYears = AnnualStatisticsAvailableYears.get();
-            $scope.calendarYear = _.last($scope.availableYears);
+            $scope.availableYears = AnnualStatisticsEventYears.get();
+            $scope.calendarYear = new Date().getFullYear();
             $scope.eventTypeFilter = null;
             EventTypes.then(function (result) {
                 $scope.eventTypes = result.data;

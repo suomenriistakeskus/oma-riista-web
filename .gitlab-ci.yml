@@ -1,0 +1,48 @@
+image: maven:3.6.2-jdk-8
+
+stages:
+  - build
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+cache:
+  paths:
+    - node_modules/
+    - .m2/repository/
+
+build:
+  stage: build
+  before_script:
+    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+  script:
+    - cp "$CONFIG_PROPERTIES_FILE" "./$CONFIG_PROPERTIES_TARGET"
+    - . ${HOME}/.nvm/nvm.sh && nvm install 11 && mvn clean package -P${TARGET_ENV} -Dmaven.test.skip=true --no-transfer-progress
+    - ./scripts/ci/rel-candidate-info.sh
+  artifacts:
+    paths:
+      - target/*.war
+      - target/riistakeskus/WEB-INF/newrelic/newrelic.jar
+      - target/riistakeskus/WEB-INF/newrelic/newrelic.yml
+  only:
+    - master
+  except:
+    - tags
+
+uploadNewApp:
+  stage: deploy
+  when: manual
+  before_script:
+    - apt-get update && apt-get install -y jq python3 python3-pip
+    - pip3 install awscli
+  script:
+    - ./scripts/ci/upload-app.sh
+    - ./scripts/ci/deploy-app.sh
+    - ./scripts/ci/deploy-info.sh
+  dependencies:
+    - build
+  only:
+    - master
+  except:
+    - tags

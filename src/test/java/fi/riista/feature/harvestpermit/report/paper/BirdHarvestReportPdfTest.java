@@ -32,7 +32,7 @@ public class BirdHarvestReportPdfTest {
         createDummyPdf();
     }
 
-    private static BirdHarvestReportPdf createDummyPdf() throws IOException {
+    private static PermitHarvestReportPdf createDummyPdf() throws IOException {
         final PermitHolder permitHolder = PermitHolder.create("Yritys Oy", "1234567",
                 PermitHolder.PermitHolderType.BUSINESS);
 
@@ -80,12 +80,12 @@ public class BirdHarvestReportPdfTest {
 
         final List<PermitDecisionSpeciesAmount> speciesAmountList = Arrays.asList(spa1, spa2);
 
-        final BirdHarvestReportModel model = BirdHarvestReportModel.create(permitDecision, speciesAmountList);
+        final PermitHarvestReportModel model = PermitHarvestReportModel.create(permitDecision, speciesAmountList);
         final Map<Integer, LocalisedString> speciesNameIndex = Collections
                 .singletonMap(41423, new LocalisedString("Varis", "Varis"));
-        final BirdHarvestReportI18n i18n = new BirdHarvestReportI18n(speciesNameIndex, permitDecision.getLocale());
+        final PermitHarvestReportI18n i18n = new PermitHarvestReportI18n(speciesNameIndex, permitDecision.getLocale());
 
-        return BirdHarvestReportPdf.create(model, i18n);
+        return PermitHarvestReportPdf.create(BirdHarvestReportPdfBuilder.getPdf(model, i18n));
     }
 
     public static void main(final String[] args) {

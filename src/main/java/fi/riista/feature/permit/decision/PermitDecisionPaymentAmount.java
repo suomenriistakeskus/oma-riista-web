@@ -13,7 +13,7 @@ import static java.util.Objects.requireNonNull;
 public class PermitDecisionPaymentAmount {
     private static final BigDecimal PRICE_MOOSELIKE = new BigDecimal("90.00");
     private static final BigDecimal PRICE_MOOSELIKE_NEW = new BigDecimal("0.00");
-    private static final BigDecimal PRICE_BIRD = new BigDecimal("70.00");
+    private static final BigDecimal PRICE_BIRD_MAMMAL = new BigDecimal("70.00");
     private static final BigDecimal PRICE_LARGE_CARNIVORE_KANNANHOIDOLLINEN = new BigDecimal("200.00");
     private static final BigDecimal PRICE_OTHER = new BigDecimal("0.00");
     private static final BigDecimal NO_PAYMENT = new BigDecimal("0.00");
@@ -47,7 +47,8 @@ public class PermitDecisionPaymentAmount {
                 case MOOSELIKE_NEW:
                     return PRICE_MOOSELIKE_NEW;
                 case BIRD:
-                    return PRICE_BIRD;
+                case MAMMAL:
+                    return PRICE_BIRD_MAMMAL;
                 case LARGE_CARNIVORE_BEAR:
                 case LARGE_CARNIVORE_LYNX:
                 case LARGE_CARNIVORE_LYNX_PORONHOITO:

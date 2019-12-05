@@ -2,7 +2,6 @@ package fi.riista.api.application;
 
 
 import fi.riista.feature.permit.application.PermitHolderDTO;
-import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationSummaryDTO;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationSummaryFeature;
 import fi.riista.feature.permit.application.bird.amount.BirdPermitApplicationSpeciesAmountDTO;
@@ -10,18 +9,12 @@ import fi.riista.feature.permit.application.bird.amount.BirdPermitApplicationSpe
 import fi.riista.feature.permit.application.bird.applicant.BirdPermitApplicationApplicantFeature;
 import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedAreaDTO;
 import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedAreaFeature;
-import fi.riista.feature.permit.application.bird.attachments.BirdPermitApplicationAttachmentDTO;
-import fi.riista.feature.permit.application.bird.attachments.BirdPermitApplicationAttachmentFeature;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCauseDTO;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCauseFeature;
-import fi.riista.feature.permit.application.bird.damage.BirdPermitApplicationDamageDTO;
-import fi.riista.feature.permit.application.bird.damage.BirdPermitApplicationDamageFeature;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethodsDTO;
 import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethodsFeature;
 import fi.riista.feature.permit.application.bird.period.BirdPermitApplicationSpeciesPeriodFeature;
 import fi.riista.feature.permit.application.bird.period.BirdPermitApplicationSpeciesPeriodInformationDTO;
-import fi.riista.feature.permit.application.bird.population.BirdPermitApplicationSpeciesPopulationDTO;
-import fi.riista.feature.permit.application.bird.population.BirdPermitApplicationSpeciesPopulationFeature;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethodsDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.http.HttpStatus;
@@ -31,7 +24,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -58,12 +50,6 @@ public class BirdPermitApplicationApiResource {
     private BirdPermitApplicationSpeciesPeriodFeature permitApplicationSpeciesPeriodFeature;
 
     @Resource
-    private BirdPermitApplicationDamageFeature birdPermitApplicationDamageFeature;
-
-    @Resource
-    private BirdPermitApplicationSpeciesPopulationFeature birdPermitApplicationSpeciesPopulationFeature;
-
-    @Resource
     private BirdPermitApplicationProtectedAreaFeature birdPermitApplicationProtectedAreaFeature;
 
     @Resource
@@ -72,8 +58,6 @@ public class BirdPermitApplicationApiResource {
     @Resource
     private BirdPermitApplicationCauseFeature birdPermitApplicationCauseFeature;
 
-    @Resource
-    private BirdPermitApplicationAttachmentFeature birdPermitApplicationAttachmentFeature;
 
     // READ
 
@@ -181,99 +165,14 @@ public class BirdPermitApplicationApiResource {
     @PostMapping(value = "/{applicationId:\\d+}/method", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public void updatePermitCause(
             @PathVariable final long applicationId,
-            @Valid @RequestBody final BirdPermitApplicationForbiddenMethodsDTO dto) {
+            @Valid @RequestBody final DerogationPermitApplicationForbiddenMethodsDTO dto) {
         birdPermitApplicationForbiddenMethodsFeature.updateMethodInfo(applicationId, dto);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/{applicationId:\\d+}/method", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public BirdPermitApplicationForbiddenMethodsDTO getDeviationJustification(@PathVariable final long applicationId) {
+    public DerogationPermitApplicationForbiddenMethodsDTO getDeviationJustification(@PathVariable final long applicationId) {
         return birdPermitApplicationForbiddenMethodsFeature.getCurrentMethodInfo(applicationId);
     }
 
-    // DAMAGE, EVICTION, EFFECTS
-
-    static class DamageList {
-        @Valid
-        public List<BirdPermitApplicationDamageDTO> list;
-
-        public List<BirdPermitApplicationDamageDTO> getList() {
-            return list;
-        }
-
-        public void setList(final List<BirdPermitApplicationDamageDTO> list) {
-            this.list = list;
-        }
-    }
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/{applicationId:\\d+}/damage", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public void updateDamage(
-            @PathVariable final long applicationId,
-            @Valid @RequestBody final DamageList request) {
-        birdPermitApplicationDamageFeature.saveSpeciesDamage(applicationId, request.list);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/damage", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<BirdPermitApplicationDamageDTO> getDamage(@PathVariable final long applicationId) {
-        return birdPermitApplicationDamageFeature.getSpeciesDamage(applicationId);
-    }
-
-    // POPULATION
-
-    static class PopulationList {
-        @Valid
-        private List<BirdPermitApplicationSpeciesPopulationDTO> list;
-
-        public List<BirdPermitApplicationSpeciesPopulationDTO> getList() {
-            return list;
-        }
-
-        public void setList(final List<BirdPermitApplicationSpeciesPopulationDTO> list) {
-            this.list = list;
-        }
-    }
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/{applicationId:\\d+}/population", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public void updatePopulation(
-            @PathVariable final long applicationId,
-            @Valid @RequestBody final PopulationList request) {
-        birdPermitApplicationSpeciesPopulationFeature.saveSpeciesPopulation(applicationId, request.list);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/population", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<BirdPermitApplicationSpeciesPopulationDTO> getPopulation(@PathVariable final long applicationId) {
-        return birdPermitApplicationSpeciesPopulationFeature.getSpeciesPopulation(applicationId);
-    }
-
-    // ATTACHMENTS
-
-    static class AttachmentList {
-        @Valid
-        public List<BirdPermitApplicationAttachmentDTO> list;
-
-        public List<BirdPermitApplicationAttachmentDTO> getList() {
-            return list;
-        }
-
-        public void setList(final List<BirdPermitApplicationAttachmentDTO> list) {
-            this.list = list;
-        }
-    }
-
-    @GetMapping(value = "/{applicationId:\\d+}/attachment", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<BirdPermitApplicationAttachmentDTO> listAttachments(final @PathVariable long applicationId,
-                                                                    final @RequestParam(required = false) HarvestPermitApplicationAttachment.Type typeFilter) {
-        return birdPermitApplicationAttachmentFeature.listAttachments(applicationId, typeFilter);
-    }
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/{applicationId:\\d+}/attachment", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public void updateAttachmentDescriptions(@PathVariable final long applicationId,
-                                             @RequestBody @Valid final AttachmentList request) {
-        birdPermitApplicationAttachmentFeature.updateAttachmentDescriptions(applicationId, request.list);
-    }
 }

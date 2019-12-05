@@ -157,6 +157,7 @@ public class DashboardController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate beginDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate,
             @RequestParam final boolean harvestReportOnly,
+            @RequestParam final boolean officialHarvestOnly,
             @RequestParam(required = false) final Integer speciesCode,
             @RequestParam(required = false) final OrganisationType organisationType,
             @RequestParam(required = false) final String officialCode) {
@@ -164,6 +165,7 @@ public class DashboardController {
         dto.setBeginDate(beginDate);
         dto.setEndDate(endDate);
         dto.setHarvestReportOnly(harvestReportOnly);
+        dto.setOfficialHarvestOnly(officialHarvestOnly);
         dto.setSpeciesCode(speciesCode);
         dto.setOfficialCode(officialCode);
         dto.setOrganisationType(organisationType);

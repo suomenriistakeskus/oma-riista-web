@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('app.common.map.services', [])
-    .service('MapUtil', function () {
+    .service('MapUtil', function (leafletData, $timeout) {
         this.isValidLatLng = function (latlng) {
             return _.isObject(latlng) &&
                 isFinite(latlng.lat) &&
@@ -44,6 +44,21 @@ angular.module('app.common.map.services', [])
                 longitude: 570000,
                 zoom: 6
             };
+        };
+
+        // Map container may not be able to resolve map content size in creation time if nested inside e.g. bootstrap modal
+        // Solution is to invalidate map size (force recalculation of container) and recalculate bounding rect
+        this.forceRefreshMapArea = function (mapId, bounds) {
+            leafletData.getMap(mapId).then(function(map) {
+                $timeout(function () {
+                    map.invalidateSize();
+                    //create bounds
+                    leafletData.getMap(mapId).then(function (map) {
+                        var bbox = L.latLngBounds(bounds.toLeafletBounds());
+                        map.fitBounds(bbox);
+                    });
+                });
+            });
         };
     })
     .service('MapState', function (WGS84, MapUtil, LocalStorageService) {

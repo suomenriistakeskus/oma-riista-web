@@ -92,6 +92,24 @@ angular.module('app.common.species', ['ngResource'])
             });
         };
 
+        this.getMammalPermitSpecies = function () {
+            return _.filter(speciesList, function (v) {
+                return v.category === 'GAME_MAMMAL';
+            });
+        };
+
+        this.getCarnivoreSpecies = function () {
+            return _.filter(speciesList, function (v) {
+                return GameSpeciesCodes.isCarnivoreSpecies(v.code);
+            });
+        };
+
+        this.getMooselikeSpecies = function () {
+            return _.filter(speciesList, function (v) {
+                return GameSpeciesCodes.isMooselike(v.code);
+            });
+        };
+
         function cs(category, code, multipleSpecimenAllowedOnHarvest, srvaOrdinal, fi, sv, en) {
             return {
                 category: category,
@@ -160,6 +178,7 @@ angular.module('app.common.species', ['ngResource'])
         var WILD_FOREST_REINDEER = 200556;
         var WOLF = 46549;
         var WOLVERINE = 47212;
+        var OTTER = 47169;
 
         var BEAN_GOOSE = 26287;
 
@@ -175,7 +194,8 @@ angular.module('app.common.species', ['ngResource'])
             'WILD_FOREST_REINDEER': WILD_FOREST_REINDEER,
             'WOLF': WOLF,
             'WOLVERINE': WOLVERINE,
-            'BEAN_GOOSE': BEAN_GOOSE
+            'BEAN_GOOSE': BEAN_GOOSE,
+            'OTTER': OTTER
         });
 
         var deerCodes = [FALLOW_DEER, ROE_DEER, WHITE_TAILED_DEER, WILD_FOREST_REINDEER];
@@ -213,6 +233,10 @@ angular.module('app.common.species', ['ngResource'])
 
         this.isGreySeal = function (gameSpeciesCode) {
             return gameSpeciesCode === GREY_SEAL;
+        };
+
+        this.isOtter = function (gameSpeciesCode) {
+            return gameSpeciesCode === OTTER;
         };
 
         this.isCarnivoreSpecies = function (gameSpeciesCode) {

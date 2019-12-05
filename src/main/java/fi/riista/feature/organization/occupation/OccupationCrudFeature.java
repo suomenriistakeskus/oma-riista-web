@@ -100,6 +100,7 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         entity.setBeginDate(dto.getBeginDate());
         entity.setCallOrder(dto.getCallOrder());
         entity.setAdditionalInfo(dto.getAdditionalInfo());
+        entity.setBoardRepresentation(dto.getBoardRepresentation());
 
         if (dto.getPerson() != null) {
             updatePersonInformation(entity.getPerson(), dto.getPerson());

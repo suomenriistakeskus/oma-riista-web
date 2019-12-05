@@ -47,7 +47,7 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
 
     .controller('MooselikePermitWizardSummaryController', function ($q, $translate, $filter, dialogs,
                                                                     NotificationService, ActiveRoleService, ReasonAsker,
-                                                                    HarvestPermitApplications,
+                                                                    HarvestPermitApplications, DecisionDeliveryAddressModal,
                                                                     wizard, application, isLate, permitArea) {
         var $ctrl = this;
         var dateFilter = $filter('date');
@@ -94,7 +94,24 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
         };
 
         $ctrl.nextDisabled = function (form) {
-            return form.email1.$invalid || form.email2.$invalid || (form.submitDate && form.submitDate.$invalid);
+            return form.email1.$invalid ||
+                form.email2.$invalid ||
+                (form.submitDate && form.submitDate.$invalid) ||
+                $ctrl.deliveryAddressMissing();
+        };
+
+        $ctrl.changeDeliveryAddress = function () {
+            DecisionDeliveryAddressModal.open($ctrl.application.deliveryAddress).then(function (address) {
+                $ctrl.application.deliveryAddress = address;
+            });
+        };
+
+        $ctrl.deliveryAddressMissing = function () {
+            return !$ctrl.application.deliveryAddress ||
+                !$ctrl.application.deliveryAddress.recipient ||
+                !$ctrl.application.deliveryAddress.streetAddress ||
+                !$ctrl.application.deliveryAddress.postalCode ||
+                !$ctrl.application.deliveryAddress.city;
         };
 
         function showApplicationInvalidMessage() {
@@ -106,7 +123,8 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
                 email1: $ctrl.application.email1,
                 email2: $ctrl.application.email2,
                 deliveryByMail: $ctrl.application.deliveryByMail,
-                decisionLanguage: $ctrl.application.decisionLanguage
+                decisionLanguage: $ctrl.application.decisionLanguage,
+                deliveryAddress: $ctrl.application.deliveryAddress
             }).$promise.then(null, function () {
                 NotificationService.showDefaultFailure();
                 return $q.reject();
@@ -207,11 +225,5 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
                 FormPostService.submitFormUsingBlankTarget('/api/v1/application/area/mml/'
                     + $ctrl.application.id + '/print/pdf');
             };
-        }
-    })
-    .component('mooselikeApplicationDecisionDelivery', {
-        templateUrl: 'harvestpermit/applications/mooselike/summary/summary-decision-delivery.html',
-        bindings: {
-            application: '<'
         }
     });

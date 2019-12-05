@@ -25,12 +25,13 @@ public class HarvestPermitApplicationTypeFactoryTest {
     public void testAll_mooseAndBirdShouldBeActive() {
         final LocalDate today = new LocalDate(2019, 4, 3);
         final List<HarvestPermitApplicationTypeDTO> list = factory(today).listAll();
-        // mooselike, bird, bear, lynx, lynx poronhoito
-        assertEquals(5, list.size());
+        // mooselike, bird, bear, lynx, lynx, mammal poronhoito
+        assertEquals(6, list.size());
 
         for (HarvestPermitApplicationTypeDTO dto : list) {
             if (dto.getCategory() == HarvestPermitCategory.MOOSELIKE ||
-                    dto.getCategory() == HarvestPermitCategory.BIRD) {
+                    dto.getCategory() == HarvestPermitCategory.BIRD ||
+                    dto.getCategory() == HarvestPermitCategory.MAMMAL) {
                 assertTrue(dto.isActive());
             } else {
                 assertFalse(dto.isActive());
@@ -69,6 +70,14 @@ public class HarvestPermitApplicationTypeFactoryTest {
         assertForEveryDayOfYear(today -> {
             final HarvestPermitApplicationTypeDTO dto = factory(today).birdForCalendarYear(2019);
             doAssertValuesForAlwaysActive(dto, HarvestPermitCategory.BIRD, new BigDecimal("70.00"));
+        });
+    }
+
+    @Test
+    public void testMammal() {
+        assertForEveryDayOfYear(today -> {
+            final HarvestPermitApplicationTypeDTO dto = factory(today).mammalForCalendarYear(2019);
+            doAssertValuesForAlwaysActive(dto, HarvestPermitCategory.MAMMAL, new BigDecimal("70.00"));
         });
     }
 

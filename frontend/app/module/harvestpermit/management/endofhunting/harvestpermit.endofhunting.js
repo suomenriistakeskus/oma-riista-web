@@ -43,7 +43,7 @@ angular.module('app.harvestpermit.management.endofhunting', [])
                 && moosePermit.permitHolderFinishedHunting
                 && (!moosePermit.huntingFinishedByModeration || isModerator);
 
-            $ctrl.isFinishHuntingByModeratorOverrideVisible = isModerator && !moosePermit.permitHolderFinishedHunting;
+            $ctrl.isFinishHuntingByAdminOverrideVisible = ActiveRoleService.isAdmin() && !moosePermit.permitHolderFinishedHunting;
         };
 
         $ctrl.getGameSpeciesName = function () {
@@ -95,7 +95,7 @@ angular.module('app.harvestpermit.management.endofhunting', [])
             });
         };
 
-        $ctrl.finishHuntingByModeratorOverride = function () {
+        $ctrl.finishHuntingByAdminOverride = function () {
             $state.go('permitmanagement.override', {permitId: moosePermit.id, speciesCode: gameSpeciesCode});
         };
     })

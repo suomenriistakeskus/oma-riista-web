@@ -27,7 +27,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +34,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static fi.riista.util.DateUtil.today;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 
 @Component
@@ -164,7 +164,7 @@ public class HuntingClubMemberInvitationFeature {
                 person == null ? activeUser.isModeratorOrAdmin() : userAuthorizationHelper.isClubContact(club, person);
 
         if (!showInvitations) {
-            return Collections.emptyList();
+            return emptyList();
         }
         final JpaSort sort = new JpaSort(Sort.Direction.ASC,
                 JpaSort.path(HuntingClubMemberInvitation_.person).dot(Person_.lastName),
@@ -183,7 +183,7 @@ public class HuntingClubMemberInvitationFeature {
             if (personId != null && activeUser.isModeratorOrAdmin()) {
                 person = personRepository.getOne(personId);
             } else {
-                return Collections.emptyList();
+                return emptyList();
             }
         }
 
@@ -221,6 +221,10 @@ public class HuntingClubMemberInvitationFeature {
     }
 
     private List<Person> findPersonsByHunterNumber(Set<String> hunterNumbers) {
+        if (hunterNumbers.isEmpty()) {
+            return emptyList();
+        }
+
         return personRepository.findFinnishPersonsByHunterNumber(hunterNumbers);
     }
 }

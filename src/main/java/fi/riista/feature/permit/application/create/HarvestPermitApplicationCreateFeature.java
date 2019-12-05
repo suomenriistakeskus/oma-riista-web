@@ -14,6 +14,8 @@ import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationRepository;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationRepository;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationRepository;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.HarvestPermitAreaRepository;
 import org.springframework.stereotype.Component;
@@ -43,6 +45,9 @@ public class HarvestPermitApplicationCreateFeature {
     private CarnivorePermitApplicationRepository carnivorePermitApplicationRepository;
 
     @Resource
+    private MammalPermitApplicationRepository mammalPermitApplicationRepository;
+
+    @Resource
     private ActiveUserService activeUserService;
 
     @Resource
@@ -52,7 +57,8 @@ public class HarvestPermitApplicationCreateFeature {
     private SecureRandom secureRandom;
 
     @Transactional
-    public HarvestPermitApplicationBasicDetailsDTO create(final HarvestPermitApplicationCreateDTO dto, final Locale locale) {
+    public HarvestPermitApplicationBasicDetailsDTO create(final HarvestPermitApplicationCreateDTO dto,
+                                                          final Locale locale) {
         final HarvestPermitArea permitArea = createPermitAreaIfRequired(dto);
         final Person contactPerson = resolveContactPerson(dto);
 
@@ -90,6 +96,9 @@ public class HarvestPermitApplicationCreateFeature {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_BEAR:
                 carnivorePermitApplicationRepository.save(CarnivorePermitApplication.create(application));
+                break;
+            case MAMMAL:
+                mammalPermitApplicationRepository.save(MammalPermitApplication.create(application));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported permit category:" + dto.getCategory());

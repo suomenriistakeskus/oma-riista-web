@@ -18,7 +18,8 @@
             </div>
         </uib-accordion-heading>
 
-        <bird-application-summary-applicant application="$ctrl.application"></bird-application-summary-applicant>
+        <harvest-permit-application-summary-applicant
+                application="$ctrl.application"></harvest-permit-application-summary-applicant>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -130,8 +131,8 @@
             </div>
         </uib-accordion-heading>
 
-        <bird-application-summary-methods
-                methods="$ctrl.application.forbiddenMethods"></bird-application-summary-methods>
+        <derogation-application-summary-methods methods="$ctrl.application.forbiddenMethods">
+        </derogation-application-summary-methods>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -151,7 +152,8 @@
             </div>
         </uib-accordion-heading>
 
-        <bird-application-summary-damage damage="$ctrl.application.damage"></bird-application-summary-damage>
+        <derogation-application-summary-damage
+                damage="$ctrl.application.damage"></derogation-application-summary-damage>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -196,9 +198,9 @@
             </div>
         </uib-accordion-heading>
 
-        <bird-application-summary-attachments attachments="$ctrl.application.otherAttachments"
-                                              base-uri="$ctrl.attachmentBaseUri">
-        </bird-application-summary-attachments>
+        <derogation-application-summary-attachments attachments="$ctrl.application.otherAttachments"
+                                                    base-uri="$ctrl.attachmentBaseUri">
+        </derogation-application-summary-attachments>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -218,7 +220,7 @@
             </div>
         </uib-accordion-heading>
 
-        <bird-application-decision-delivery application="$ctrl.application">
-        </bird-application-decision-delivery>
+        <harvest-permit-application-decision-delivery application="$ctrl.application">
+        </harvest-permit-application-decision-delivery>
     </div>
 </uib-accordion>

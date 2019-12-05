@@ -15,7 +15,8 @@ public enum HarvestPermitCategory {
     LARGE_CARNIVORE_BEAR(HarvestPermitApplicationName.BEAR, PermitDecisionName.LARGE_CARNIVORE),
     LARGE_CARNIVORE_LYNX(HarvestPermitApplicationName.LYNX, PermitDecisionName.LARGE_CARNIVORE),
     LARGE_CARNIVORE_LYNX_PORONHOITO(HarvestPermitApplicationName.LYNX_PORONHOITO, PermitDecisionName.LARGE_CARNIVORE),
-    LARGE_CARNIVORE_WOLF(HarvestPermitApplicationName.WOLF, PermitDecisionName.LARGE_CARNIVORE);
+    LARGE_CARNIVORE_WOLF(HarvestPermitApplicationName.WOLF, PermitDecisionName.LARGE_CARNIVORE),
+    MAMMAL(HarvestPermitApplicationName.MAMMAL, PermitDecisionName.MAMMAL);
 
     public static final String LARGE_CARNIVORE_CATEGORIES = "LARGE_CARNIVORE";
 
@@ -79,6 +80,7 @@ public enum HarvestPermitCategory {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case MAMMAL:
                 return true;
             default:
                 return false;

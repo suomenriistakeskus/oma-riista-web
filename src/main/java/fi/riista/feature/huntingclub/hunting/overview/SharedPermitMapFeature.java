@@ -1,5 +1,8 @@
 package fi.riista.feature.huntingclub.hunting.overview;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.querydsl.core.types.Expression;
 import com.querydsl.jpa.JPAExpressions;
@@ -30,6 +33,7 @@ import fi.riista.security.EntityPermission;
 import fi.riista.util.GISUtils;
 import fi.riista.util.LocalisedString;
 import org.geojson.FeatureCollection;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,12 +43,63 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @Component
 public class SharedPermitMapFeature {
+
+    private static class CacheKey {
+        private static CacheKey cacheKey(final long harvestPermitId,
+                                         final int huntingYear,
+                                         final int gameSpeciesCode) {
+            return new CacheKey(harvestPermitId, huntingYear, gameSpeciesCode);
+        }
+
+        private final long permitId;
+        private final int huntingYear;
+        private final int speciesCode;
+
+        public CacheKey(final long permitId, final int huntingYear, final int speciesCode) {
+            this.permitId = permitId;
+            this.huntingYear = huntingYear;
+            this.speciesCode = speciesCode;
+        }
+
+        public long getPermitId() {
+            return permitId;
+        }
+
+        public int getHuntingYear() {
+            return huntingYear;
+        }
+
+        public int getSpeciesCode() {
+            return speciesCode;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final CacheKey cacheKey = (CacheKey) o;
+            return permitId == cacheKey.permitId &&
+                    huntingYear == cacheKey.huntingYear &&
+                    speciesCode == cacheKey.speciesCode;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(permitId, huntingYear, speciesCode);
+        }
+    }
 
     @Resource
     private JPQLQueryFactory queryFactory;
@@ -55,39 +110,37 @@ public class SharedPermitMapFeature {
     @Resource
     private RequireEntityService requireEntityService;
 
-    @Resource
     private GISZoneRepository zoneRepository;
 
     @Resource
     private SharedPermitHarvestDTOTransformer sharedPermitHarvestDTOTransformer;
 
-    @Transactional(readOnly = true)
+    private final LoadingCache<CacheKey, FeatureCollection> featureCollectionCache =
+            CacheBuilder.newBuilder()
+                    .expireAfterAccess(1, TimeUnit.MINUTES)
+                    .build(new CacheLoader<CacheKey, FeatureCollection>() {
+                        @Override
+                        public FeatureCollection load(final CacheKey key) {
+                            return SharedPermitMapFeature.this.doLoad(key.getPermitId(), key.getHuntingYear(),
+                                                                      key.getSpeciesCode());
+                        }
+                    });
+
+    @Autowired
+    public void setZoneRepository(final GISZoneRepository gisZoneRepository) {
+        this.zoneRepository = gisZoneRepository;
+    }
+
+    @Transactional(readOnly = true, timeout = 10 * 60)
     public FeatureCollection findPermitArea(final long harvestPermitId,
                                             final int huntingYear,
                                             final int gameSpeciesCode) {
-        final GameSpecies species = gameSpeciesService.requireByOfficialCode(gameSpeciesCode);
-        final HarvestPermit harvestPermit =
-                requireEntityService.requireHarvestPermit(harvestPermitId, EntityPermission.READ);
-
-        if (!harvestPermit.isMooselikePermitType()) {
-            return new FeatureCollection();
+        final CacheKey key = CacheKey.cacheKey(harvestPermitId, huntingYear, gameSpeciesCode);
+        try {
+            return featureCollectionCache.get(key);
+        } catch (ExecutionException ee) {
+            throw new RuntimeException(ee);
         }
-
-        final Map<Long, Map<String, Object>> permitZones = Optional.ofNullable(harvestPermit.getPermitDecision())
-                .map(this::getApplicationAreas)
-                .orElseGet(() -> getGroupAreas(harvestPermit, huntingYear, species));
-
-        final FeatureCollection combinedFeatures = zoneRepository.getCombinedFeatures(
-                permitZones.keySet(), GISUtils.SRID.WGS84);
-
-        combinedFeatures.forEach(feature -> {
-            final long zoneId = Long.parseLong(feature.getId());
-
-            Optional.ofNullable(permitZones.get(zoneId))
-                    .ifPresent(props -> feature.getProperties().putAll(props));
-        });
-
-        return combinedFeatures;
     }
 
     @Transactional(readOnly = true)
@@ -157,11 +210,11 @@ public class SharedPermitMapFeature {
                 .join(huntingClubGroup.huntingArea, huntingClubArea)
                 .join(huntingClubArea.zone, zone)
                 .where(huntingClubGroup.harvestPermit.eq(permit),
-                        huntingClub.in(permitPartnerClubs),
-                        huntingClubGroup.species.eq(species),
-                        huntingClubGroup.huntingYear.eq(huntingYear),
-                        huntingClubArea.huntingYear.eq(huntingYear),
-                        huntingClubArea.active.isTrue())
+                       huntingClub.in(permitPartnerClubs),
+                       huntingClubGroup.species.eq(species),
+                       huntingClubGroup.huntingYear.eq(huntingYear),
+                       huntingClubArea.huntingYear.eq(huntingYear),
+                       huntingClubArea.active.isTrue())
                 .select(zone.id,
                         huntingClub.id,
                         huntingClubName,
@@ -197,9 +250,9 @@ public class SharedPermitMapFeature {
                 .join(huntingClubGroup.huntingDays, groupHuntingDay)
                 .join(groupHuntingDay.harvests, harvest)
                 .where(huntingClubGroup.harvestPermit.eq(permit),
-                        huntingClub.in(permitPartnerClubs),
-                        huntingClubGroup.huntingYear.eq(huntingYear),
-                        huntingClubGroup.species.eq(species))
+                       huntingClub.in(permitPartnerClubs),
+                       huntingClubGroup.huntingYear.eq(huntingYear),
+                       huntingClubGroup.species.eq(species))
                 .orderBy(harvest.pointOfTime.desc(), harvest.id.desc())
                 .select(huntingClub, harvest)
                 .fetch()
@@ -212,5 +265,33 @@ public class SharedPermitMapFeature {
                     return resultHarvest;
                 })
                 .collect(toList());
+    }
+
+
+    private FeatureCollection doLoad(final long harvestPermitId,
+                                     final int huntingYear,
+                                     final int gameSpeciesCode) {
+        final GameSpecies species = gameSpeciesService.requireByOfficialCode(gameSpeciesCode);
+        final HarvestPermit harvestPermit =
+                requireEntityService.requireHarvestPermit(harvestPermitId, EntityPermission.READ);
+
+        if (!harvestPermit.isMooselikePermitType()) {
+            return new FeatureCollection();
+        }
+
+        final Map<Long, Map<String, Object>> permitZones = Optional.ofNullable(harvestPermit.getPermitDecision())
+                .map(this::getApplicationAreas)
+                .orElseGet(() -> getGroupAreas(harvestPermit, huntingYear, species));
+
+        final FeatureCollection combinedFeatures = zoneRepository.getCombinedFeatures(
+                permitZones.keySet(), GISUtils.SRID.WGS84);
+
+        combinedFeatures.forEach(feature -> {
+            final long zoneId = Long.parseLong(feature.getId());
+
+            Optional.ofNullable(permitZones.get(zoneId))
+                    .ifPresent(props -> feature.getProperties().putAll(props));
+        });
+        return combinedFeatures;
     }
 }

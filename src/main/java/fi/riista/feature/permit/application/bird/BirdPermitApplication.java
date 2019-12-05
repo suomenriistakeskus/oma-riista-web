@@ -5,7 +5,7 @@ import fi.riista.feature.gamediary.GameCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedArea;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethods;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -52,12 +52,12 @@ public class BirdPermitApplication extends LifecycleEntity<Long> {
 
     @Embedded
     @Valid
-    private BirdPermitApplicationForbiddenMethods forbiddenMethods;
+    private DerogationPermitApplicationForbiddenMethods forbiddenMethods;
 
     public static BirdPermitApplication create(HarvestPermitApplication application) {
         BirdPermitApplication birdApplication = new BirdPermitApplication();
         birdApplication.setHarvestPermitApplication(application);
-        birdApplication.setForbiddenMethods(new BirdPermitApplicationForbiddenMethods());
+        birdApplication.setForbiddenMethods(new DerogationPermitApplicationForbiddenMethods());
         birdApplication.setCause(new BirdPermitApplicationCause());
         birdApplication.setProtectedArea(new BirdPermitApplicationProtectedArea());
         return birdApplication;
@@ -109,11 +109,11 @@ public class BirdPermitApplication extends LifecycleEntity<Long> {
         this.cause = cause;
     }
 
-    public BirdPermitApplicationForbiddenMethods getForbiddenMethods() {
+    public DerogationPermitApplicationForbiddenMethods getForbiddenMethods() {
         return forbiddenMethods;
     }
 
-    public void setForbiddenMethods(BirdPermitApplicationForbiddenMethods forbiddenMethods) {
+    public void setForbiddenMethods(DerogationPermitApplicationForbiddenMethods forbiddenMethods) {
         this.forbiddenMethods = forbiddenMethods;
     }
 }

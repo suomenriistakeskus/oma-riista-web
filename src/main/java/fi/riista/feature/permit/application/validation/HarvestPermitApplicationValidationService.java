@@ -9,12 +9,18 @@ import fi.riista.feature.permit.application.bird.BirdPermitApplicationValidator;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationRepository;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationValidator;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReason;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReasonRepository;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationRepository;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationValidator;
 import fi.riista.feature.permit.application.mooselike.MooselikePermitApplicationValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class HarvestPermitApplicationValidationService {
@@ -27,6 +33,12 @@ public class HarvestPermitApplicationValidationService {
 
     @Resource
     private CarnivorePermitApplicationRepository carnivorePermitApplicationRepository;
+
+    @Resource
+    private MammalPermitApplicationRepository mammalPermitApplicationRepository;
+
+    @Resource
+    private DerogationPermitApplicationReasonRepository derogationPermitApplicationReasonRepository;
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void validateContent(final HarvestPermitApplication application) {
@@ -50,6 +62,14 @@ public class HarvestPermitApplicationValidationService {
                 final CarnivorePermitApplication carnivoreApplication =
                         carnivorePermitApplicationRepository.findByHarvestPermitApplication(application);
                 CarnivorePermitApplicationValidator.validateContent(application, carnivoreApplication);
+                break;
+            case MAMMAL:
+                final MammalPermitApplication mammalPermitApplication =
+                        mammalPermitApplicationRepository.findByHarvestPermitApplication(application);
+                final List<DerogationPermitApplicationReason> derogationReasons =
+                        derogationPermitApplicationReasonRepository.findByHarvestPermitApplication(application);
+                MammalPermitApplicationValidator.validateContent(application, mammalPermitApplication,
+                        derogationReasons);
                 break;
             default:
                 throw new IllegalArgumentException(
@@ -80,6 +100,14 @@ public class HarvestPermitApplicationValidationService {
                     carnivorePermitApplicationRepository.findByHarvestPermitApplication(application);
                 CarnivorePermitApplicationValidator.validateForSending(application, carnivoreApplication);
                 break;
+            case MAMMAL:
+                final MammalPermitApplication mammalPermitApplication =
+                        mammalPermitApplicationRepository.findByHarvestPermitApplication(application);
+                final List<DerogationPermitApplicationReason> derogationReasons =
+                        derogationPermitApplicationReasonRepository.findByHarvestPermitApplication(application);
+                MammalPermitApplicationValidator.validateForSending(application, mammalPermitApplication,
+                        derogationReasons);
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Cannot validate application for type " + application.getHarvestPermitCategory());
@@ -108,6 +136,14 @@ public class HarvestPermitApplicationValidationService {
                 final CarnivorePermitApplication carnivoreApplication =
                     carnivorePermitApplicationRepository.findByHarvestPermitApplication(application);
                 CarnivorePermitApplicationValidator.validateForAmend(application, carnivoreApplication);
+                break;
+            case MAMMAL:
+                final MammalPermitApplication mammalPermitApplication =
+                        mammalPermitApplicationRepository.findByHarvestPermitApplication(application);
+                final List<DerogationPermitApplicationReason> derogationReasons =
+                        derogationPermitApplicationReasonRepository.findByHarvestPermitApplication(application);
+                MammalPermitApplicationValidator.validateForAmend(application, mammalPermitApplication,
+                        derogationReasons);
                 break;
             default:
                 throw new IllegalArgumentException(

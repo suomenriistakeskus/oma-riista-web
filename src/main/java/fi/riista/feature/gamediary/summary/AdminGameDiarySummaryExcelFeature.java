@@ -112,7 +112,7 @@ public class AdminGameDiarySummaryExcelFeature {
 
         final List<HarvestDTO> harvestDTOList = loadHarvest(createHarvestPredicate(
                 interval, gameSpecies, dto.getOrganisationType(),
-                dto.getOfficialCode(), dto.isHarvestReportOnly()))
+                dto.getOfficialCode(), dto.isHarvestReportOnly(), dto.isOfficialHarvestOnly()))
                 .stream().sorted(Comparator.comparing(HarvestDTO::getPointOfTime)).collect(Collectors.toList());
 
         final List<ObservationDTO> observationDTOList = loadObservations(
@@ -144,11 +144,12 @@ public class AdminGameDiarySummaryExcelFeature {
     }
 
     @Nonnull
-    private BooleanBuilder createHarvestPredicate(final Interval interval,
-                                                  final GameSpecies gameSpecies,
-                                                  final OrganisationType organisationType,
-                                                  final String organisationOfficialCode,
-                                                  final boolean harvestReportOnly) {
+        /*package*/ BooleanBuilder createHarvestPredicate(final Interval interval,
+                                                          final GameSpecies gameSpecies,
+                                                          final OrganisationType organisationType,
+                                                          final String organisationOfficialCode,
+                                                          final boolean harvestReportOnly,
+                                                          final boolean officialHarvestOnly) {
         final QHarvest HARVEST = QHarvest.harvest;
         return new BooleanBuilder()
                 .and(harvestReportOnly
@@ -156,6 +157,10 @@ public class AdminGameDiarySummaryExcelFeature {
                         .and(HARVEST.harvestReportState.ne(HarvestReportState.REJECTED))
                         : HARVEST.harvestReportState.isNull()
                         .or(HARVEST.harvestReportState.ne(HarvestReportState.REJECTED)))
+                .and(officialHarvestOnly
+                        ? HARVEST.harvestReportState.eq(HarvestReportState.APPROVED)
+                        .or(HARVEST.huntingDayOfGroup.isNotNull())
+                        : null)
                 .and(organisationPredicate(HARVEST.rhy, organisationType, organisationOfficialCode))
                 .and(interval != null ? HARVEST.pointOfTime.between(
                         interval.getStart().toDate(),
@@ -204,7 +209,7 @@ public class AdminGameDiarySummaryExcelFeature {
                                         RKA.officialCode.eq(officialCode))));
     }
 
-    private List<HarvestDTO> loadHarvest(final Predicate predicate) {
+    /*package*/ List<HarvestDTO> loadHarvest(final Predicate predicate) {
         final List<HarvestDTO> result = new LinkedList<>();
         int pageCounter = 0;
 

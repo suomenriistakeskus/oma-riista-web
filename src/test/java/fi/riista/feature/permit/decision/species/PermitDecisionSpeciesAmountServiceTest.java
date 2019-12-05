@@ -35,8 +35,10 @@ public class PermitDecisionSpeciesAmountServiceTest implements DefaultEntitySupp
         final GameSpecies moose = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_MOOSE);
         final GameSpecies deer = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER);
 
-        final HarvestPermitApplicationSpeciesAmount a1 = model().newHarvestPermitApplicationSpeciesAmount(application, moose);
-        final HarvestPermitApplicationSpeciesAmount a2 = model().newHarvestPermitApplicationSpeciesAmount(application, deer);
+        final HarvestPermitApplicationSpeciesAmount a1 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , moose);
+        final HarvestPermitApplicationSpeciesAmount a2 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , deer);
         application.getSpeciesAmounts().add(a1);
         application.getSpeciesAmounts().add(a2);
 
@@ -78,9 +80,12 @@ public class PermitDecisionSpeciesAmountServiceTest implements DefaultEntitySupp
         final GameSpecies bird2 = model().newGameSpecies(26291);
         final GameSpecies bird3 = model().newGameSpecies(26298);
 
-        final HarvestPermitApplicationSpeciesAmount a1 = model().newHarvestPermitApplicationSpeciesAmount(application, bird1);
-        final HarvestPermitApplicationSpeciesAmount a2 = model().newHarvestPermitApplicationSpeciesAmount(application, bird2);
-        final HarvestPermitApplicationSpeciesAmount a3 = model().newHarvestPermitApplicationSpeciesAmount(application, bird3);
+        final HarvestPermitApplicationSpeciesAmount a1 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , bird1);
+        final HarvestPermitApplicationSpeciesAmount a2 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , bird2);
+        final HarvestPermitApplicationSpeciesAmount a3 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , bird3);
         application.getSpeciesAmounts().add(a1);
         application.getSpeciesAmounts().add(a2);
         application.getSpeciesAmounts().add(a3);
@@ -100,7 +105,7 @@ public class PermitDecisionSpeciesAmountServiceTest implements DefaultEntitySupp
         final PermitDecisionSpeciesAmountService.Generator generator =
                 PermitDecisionSpeciesAmountService.createGenerator(PermitDecision.createForApplication(application));
 
-        final List<PermitDecisionSpeciesAmount> decisionSpeciesAmounts = generator.createAllForBird();
+        final List<PermitDecisionSpeciesAmount> decisionSpeciesAmounts = generator.createForAllYears();
         assertEquals(4, decisionSpeciesAmounts.size());
 
         final PermitDecisionSpeciesAmount b1 = decisionSpeciesAmounts.stream()

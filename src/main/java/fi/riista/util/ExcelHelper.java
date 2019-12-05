@@ -1,20 +1,30 @@
 package fi.riista.util;
 
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellUtil;
+import org.apache.poi.ss.util.RegionUtil;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+
+import static org.apache.poi.ss.usermodel.BorderStyle.NONE;
+import static org.apache.poi.ss.usermodel.BorderStyle.THIN;
 
 public class ExcelHelper {
 
@@ -83,6 +93,11 @@ public class ExcelHelper {
         return this;
     }
 
+    public ExcelHelper setColumnWidth(final int columnIndex, final int width) {
+        sheet.setColumnWidth(columnIndex, width);
+        return this;
+    }
+
     public ExcelHelper appendHeaderRow(final String[] headers) {
         appendRow();
         for (String header : headers) {
@@ -113,16 +128,39 @@ public class ExcelHelper {
     }
 
     public ExcelHelper appendEmptyCell(int count) {
-        currentColumnIndex += count;
+        for (int i = 0; i < count; i++) {
+            currentRow.createCell(currentColumnIndex);
+            currentColumnIndex++;
+        }
         return this;
     }
 
     public ExcelHelper spanCurrentColumn(int colSpan) {
+        return spanCurrentColumn(colSpan, NONE, NONE, NONE, NONE);
+    }
+
+    public ExcelHelper spanCurrentColumnWithBottomBorder(int colSpan, BorderStyle bottomBorderStyle) {
+        return spanCurrentColumn(colSpan, NONE, bottomBorderStyle, NONE, NONE);
+    }
+
+    public ExcelHelper spanCurrentColumnBordered(int colSpan) {
+        return spanCurrentColumn(colSpan, THIN, THIN, THIN, THIN);
+    }
+
+    public ExcelHelper spanCurrentColumn(int colSpan,
+                                         BorderStyle topBorderStyle, BorderStyle bottomBorderStyle,
+                                         BorderStyle leftBorderStyle, BorderStyle rightBorderStyle) {
         if (colSpan > 1) {
             final int romNum = currentRow.getRowNum();
             final int spanStart = currentColumnIndex - 1; // Merged cell already added
             final int spanEnd = spanStart + colSpan - 1;
-            this.sheet.addMergedRegion(new CellRangeAddress(romNum, romNum, spanStart, spanEnd));
+            final CellRangeAddress range = new CellRangeAddress(romNum, romNum, spanStart, spanEnd);
+            this.sheet.addMergedRegion(range);
+
+            if (topBorderStyle != NONE || bottomBorderStyle != NONE ||
+                    leftBorderStyle != NONE || rightBorderStyle != NONE) {
+                createBorders(range, IndexedColors.BLACK.getIndex(), topBorderStyle, bottomBorderStyle, leftBorderStyle, rightBorderStyle);
+            }
             currentColumnIndex = spanEnd + 1;
         }
         return this;
@@ -144,6 +182,16 @@ public class ExcelHelper {
             final Cell cell = currentRow.createCell(currentColumnIndex);
             final String formatPattern = "%." + precision + "f";
             cell.setCellValue(Double.valueOf(String.format(formatPattern, value)));
+        }
+        currentColumnIndex++;
+        return this;
+    }
+
+    public ExcelHelper appendBigDecimalCell(final BigDecimal value, final CellStyle style) {
+        if (value != null) {
+            final Cell cell = currentRow.createCell(currentColumnIndex);
+            cell.setCellStyle(style);
+            cell.setCellValue(value.doubleValue());
         }
         currentColumnIndex++;
         return this;
@@ -257,6 +305,138 @@ public class ExcelHelper {
 
     public ExcelHelper withFreezePane(final int colSplit, final int rowSplit) {
         sheet.createFreezePane(colSplit, rowSplit);
+        return this;
+    }
+
+    public Sheet getSheet() {
+        return sheet;
+    }
+
+    public ExcelHelper withFont(Font font) {
+        final Cell cell = currentRow.getCell(currentColumnIndex - 1);
+        CellUtil.setFont(cell, font);
+
+        return this;
+    }
+
+    public ExcelHelper withBorders(final BorderStyle topBorderStyle, final BorderStyle bottomBorderStyle,
+                                   final BorderStyle leftBorderStyle, final BorderStyle rightBorderStyle) {
+        final int rowNum = currentRow.getRowNum();
+        final int columnNum = currentColumnIndex - 1;
+        final CellRangeAddress range = new CellRangeAddress(rowNum, rowNum, columnNum, columnNum);
+
+        createBorders(range, IndexedColors.BLACK.getIndex(), topBorderStyle, bottomBorderStyle, leftBorderStyle, rightBorderStyle);
+
+        return this;
+    }
+
+    private void createBorders(final CellRangeAddress range,
+                               final int color,
+                               final BorderStyle topBorderStyle, final BorderStyle bottomBorderStyle,
+                               final BorderStyle leftBorderStyle, final BorderStyle rightBorderStyle) {
+
+        RegionUtil.setBorderTop(topBorderStyle, range, sheet);
+        RegionUtil.setTopBorderColor(color, range, sheet);
+
+        RegionUtil.setBorderBottom(bottomBorderStyle, range, sheet);
+        RegionUtil.setBottomBorderColor(color, range, sheet);
+
+        RegionUtil.setBorderLeft(leftBorderStyle, range, sheet);
+        RegionUtil.setLeftBorderColor(color, range, sheet);
+
+        RegionUtil.setBorderRight(rightBorderStyle, range, sheet);
+        RegionUtil.setRightBorderColor(color, range, sheet);
+    }
+
+    public ExcelHelper appendTextCell(final String value, final CellStyle style) {
+        appendTextCellInternal(value).ifPresent(cell -> {
+            cell.setCellStyle(style);
+        });
+        return this;
+    }
+
+    public ExcelHelper appendFormula(final String formula, final int... cellIndex) {
+        return appendFormula(formula, null, cellIndex);
+    }
+
+    public ExcelHelper appendFormula(final String formula, final CellStyle style, final int... cellIndex) {
+        List<Object> cellAddresses = new ArrayList<>();
+        for (int i : cellIndex) {
+            cellAddresses.add(currentRow.getCell(currentColumnIndex + i).getAddress().formatAsString());
+        }
+        final String formattedFormula = String.format(formula, cellAddresses.toArray());
+
+        final Cell cell = currentRow.createCell(currentColumnIndex++);
+        if (style != null) {
+            cell.setCellStyle(style);
+        }
+        cell.setCellType(CellType.FORMULA);
+        cell.setCellFormula(formattedFormula);
+
+        return this;
+    }
+
+    public ExcelHelper appendFormulaWithConstant(final String formula, final CellStyle style, final Double constant, final int... cellIndex) {
+        List<Object> args = new ArrayList<>();
+        args.add(constant);
+        for (int i : cellIndex) {
+            args.add(currentRow.getCell(currentColumnIndex + i).getAddress().formatAsString());
+        }
+        final String formattedFormula = String.format(formula, args.toArray());
+
+        final Cell cell = currentRow.createCell(currentColumnIndex++);
+        cell.setCellStyle(style);
+        cell.setCellType(CellType.FORMULA);
+        cell.setCellFormula(formattedFormula);
+
+        return this;
+    }
+
+    public ExcelHelper appendColumnSummationFrom(final int startRow, final CellStyle style) {
+        final String startCellAddr = sheet.getRow(startRow).getCell(currentColumnIndex).getAddress().formatAsString();
+        final String lastCellAddr = sheet.getRow(currentRow.getRowNum() - 1).getCell(currentColumnIndex).getAddress().formatAsString();
+
+        String formula = String.format("SUM(%s:%s)", startCellAddr, lastCellAddr);
+
+        final Cell cell = currentRow.createCell(currentColumnIndex++);
+        if (style != null) {
+            cell.setCellStyle(style);
+        }
+        cell.setCellType(CellType.FORMULA);
+        cell.setCellFormula(formula);
+
+        return this;
+    }
+
+    public ExcelHelper addMergedRegion(final int rowStart,
+                                       final int rowEnd,
+                                       final int columnStart,
+                                       final int columnEnd) {
+        final CellRangeAddress range = new CellRangeAddress(rowStart, rowEnd, columnStart, columnEnd);
+        this.sheet.addMergedRegion(range);
+
+        return this;
+    }
+
+    public ExcelHelper addCellStyleForRegion(final CellStyle style,
+                                             final int startRow,
+                                             final int endRow,
+                                             final int startColumn,
+                                             final int endColumn) {
+        for (int i = startColumn; i <= endColumn; i++) {
+            for (int j = startRow; j <= endRow; j++) {
+                addCellStyle(style, j, i);
+            }
+        }
+
+        return this;
+    }
+
+    public ExcelHelper addCellStyle(final CellStyle style, final int row, final int column) {
+        final Row cellRow = this.sheet.getRow(row);
+        final Cell cell = cellRow.getCell(column);
+        cell.setCellStyle(style);
+
         return this;
     }
 }

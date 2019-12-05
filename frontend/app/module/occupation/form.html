@@ -25,6 +25,22 @@
             </div>
         </div>
 
+        <div class="form-group" ng-if="isBoardType()">
+            <label class="col-xs-4 control-label">
+                <span translate="occupation.boardRepresentations"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <select class="form-control"
+                        name="boardRepresentation" id="boardRepresentation"
+                        ng-model="occupation.boardRepresentation"
+                        ng-options="('occupation.boardRepresentation.' + o | translate) disable when isBoardRoleDisabled(o) for o in boardRepresentationRoles"
+                        ie10-optgroup-fix>
+                    <option value="" translate="occupation.boardRepresentation.nothing"></option>
+                </select>
+            </div>
+        </div>
+
         <div class="form-group" show-errors ng-if="callOrderConfig.isCallOrderType(occupation.occupationType)">
             <label for="callOrder" class="col-xs-4 control-label">
                 <span translate="occupation.callOrder"></span>

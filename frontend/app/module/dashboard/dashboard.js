@@ -146,6 +146,7 @@ angular.module('app.dashboard', [])
                 $ctrl.begin = HuntingYearService.getBeginDateStr(huntingYear);
                 $ctrl.end = HuntingYearService.getEndDateStr(huntingYear);
                 $ctrl.harvestReportOnly = false;
+                $ctrl.officialHarvestOnly = false;
             };
 
             $ctrl.selectSpeciesCode = function (gameSpeciesCode) {
@@ -158,6 +159,7 @@ angular.module('app.dashboard', [])
 
                 FormPostService.submitFormUsingBlankTarget('api/v1/dashboard/harvestSummary', {
                     harvestReportOnly: $ctrl.harvestReportOnly,
+                    officialHarvestOnly: $ctrl.officialHarvestOnly,
                     beginDate: Helpers.dateToString($ctrl.begin),
                     endDate: Helpers.dateToString($ctrl.end),
                     speciesCode: $ctrl.filterSpecies ? $ctrl.gameSpeciesCode : null,

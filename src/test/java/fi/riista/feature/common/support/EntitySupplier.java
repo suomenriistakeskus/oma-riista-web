@@ -2,6 +2,7 @@ package fi.riista.feature.common.support;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+import fi.riista.feature.account.area.PersonalArea;
 import fi.riista.feature.account.area.union.PersonalAreaUnion;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.announcement.Announcement;
@@ -66,6 +67,7 @@ import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHunti
 import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
 import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.SpeciesEstimatedAppearance;
 import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.TrendOfPopulationGrowth;
+import fi.riista.feature.moderatorarea.ModeratorArea;
 import fi.riista.feature.organization.AlueellinenRiistaneuvosto;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
@@ -89,6 +91,7 @@ import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsTestDat
 import fi.riista.feature.organization.rhy.annualstats.audit.RhyAnnualStatisticsModeratorUpdateEvent;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.feature.organization.rhy.annualstats.statechange.RhyAnnualStatisticsStateChangeEvent;
+import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectionEvent;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.DeliveryAddress;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
@@ -100,17 +103,22 @@ import fi.riista.feature.permit.application.bird.ProtectedAreaType;
 import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedArea;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartner;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionCompleteStatus;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
+import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachment;
 import fi.riista.feature.permit.decision.delivery.PermitDecisionDelivery;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReason;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonType;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionProtectedAreaType;
 import fi.riista.feature.permit.decision.methods.ForbiddenMethodType;
 import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethod;
+import fi.riista.feature.permit.decision.revision.PermitDecisionRevision;
+import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionAttachment;
+import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionReceiver;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
 import fi.riista.feature.permit.invoice.Invoice;
 import fi.riista.feature.permit.invoice.InvoiceState;
@@ -152,6 +160,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -787,6 +796,37 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
         return add(decision);
     }
 
+    public PermitDecisionAttachment newPermitDecisionAttachment(final PermitDecision decision) {
+        final PermitDecisionAttachment permitDecisionAttachment = new PermitDecisionAttachment(decision,
+                newPersistentFileMetadata());
+        return add(permitDecisionAttachment);
+    }
+
+    public PermitDecisionRevision newPermitDecisionRevision(final PermitDecision decision) {
+        final PermitDecisionRevision revision = new PermitDecisionRevision();
+        revision.setPermitDecision(decision);
+        revision.setDecisionType(PermitDecision.DecisionType.HARVEST_PERMIT);
+        revision.setPdfMetadata(newPersistentFileMetadata());
+        revision.setLockedDate(now());
+        revision.setScheduledPublishDate(now());
+        return add(revision);
+    }
+
+    public PermitDecisionRevisionAttachment newPermitDecisionRevisionAttachment(final PermitDecisionRevision revision,
+                                                                                final PermitDecisionAttachment attachment) {
+        final PermitDecisionRevisionAttachment permitDecisionRevisionAttachment =
+                new PermitDecisionRevisionAttachment(revision, attachment);
+        return add(permitDecisionRevisionAttachment);
+    }
+
+    public PermitDecisionRevisionReceiver newPermitDecisionReceiverForContactPerson(final PermitDecisionRevision revision) {
+        final Person contactPerson = revision.getPermitDecision().getContactPerson();
+
+        final PermitDecisionRevisionReceiver permitDecisionRevisionReceiver =
+                new PermitDecisionRevisionReceiver(revision, PermitDecisionRevisionReceiver.ReceiverType.CONTACT_PERSON,
+                        contactPerson.getEmail(), contactPerson.getFullName(), now());
+        return add(permitDecisionRevisionReceiver);
+    }
 
     public PermitDecisionDelivery newPermitDecisionDelivery(String name, String email) {
 
@@ -866,6 +906,13 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
         application.setStatus(HarvestPermitApplication.Status.ACTIVE);
 
         return add(application);
+    }
+
+    public MammalPermitApplication newMammalPermitApplication(final HarvestPermitApplication application) {
+        final MammalPermitApplication mammalPermitApplication = MammalPermitApplication.create(application);
+        mammalPermitApplication.setAreaSize(1);
+        mammalPermitApplication.setGeoLocation(geoLocation());
+        return add(mammalPermitApplication);
     }
 
     public CarnivorePermitApplication newCarnivorePermitApplication(HarvestPermitApplication application) {
@@ -1705,7 +1752,9 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
                                                               LocalDate date,
                                                               LocalTime beginTime,
                                                               Venue venue) {
-        AdditionalCalendarEvent additionalCalendarEvent = new AdditionalCalendarEvent(date.toDate(), beginTime, beginTime.plusHours(2), event, venue);
+        AdditionalCalendarEvent additionalCalendarEvent = new AdditionalCalendarEvent(date.toDate(), beginTime,
+                beginTime.plusHours(2), event,
+                venue);
         return add(additionalCalendarEvent);
     }
 
@@ -2168,6 +2217,29 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
         return newAccountTransfer(newAccountTransferBatch(bookingDate), invoice, transactionDate, bookingDate);
     }
 
+    public PersonalArea newPersonalArea() {
+        final Person person = newPerson();
+        final GISZone gisZone = newGISZone(1000);
+        final PersonalArea personalArea = new PersonalArea();
+        personalArea.setName(String.format("personal-area-%d", serial()));
+        personalArea.setExternalId(externalAreaId());
+        personalArea.setPerson(person);
+        personalArea.setZone(gisZone);
+        return add(personalArea);
+    }
+
+    public ModeratorArea newModeratorArea(final SystemUser moderator) {
+        final GISZone gisZone = newGISZone(1000);
+        final ModeratorArea moderatorArea = new ModeratorArea();
+        final RiistakeskuksenAlue rka = newRiistakeskuksenAlue();
+        moderatorArea.setName(String.format("moderator-area-%d", serial()));
+        moderatorArea.setExternalId(externalAreaId());
+        moderatorArea.setModerator(moderator);
+        moderatorArea.setZone(gisZone);
+        moderatorArea.setRka(rka);
+        moderatorArea.setYear(huntingYear());
+        return add(moderatorArea);
+    }
 
     public PersonalAreaUnion newPersonalAreaUnion(final String name, final Person person) {
         final PersonalAreaUnion personalAreaUnion = new PersonalAreaUnion();
@@ -2177,6 +2249,7 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
         return add(personalAreaUnion);
 
     }
+
     public HarvestPermitApplicationAttachment newHarvestPermitApplicationAttachment(final HarvestPermitApplication application) {
         final PersistentFileMetadata persistentFileMetadata = newPersistentFileMetadata();
         final HarvestPermitApplicationAttachment attachment = new HarvestPermitApplicationAttachment();
@@ -2191,6 +2264,7 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
         persistentFileMetadata.setId(UUID.randomUUID());
         persistentFileMetadata.setContentType("test");
         persistentFileMetadata.setStorageType(StorageType.LOCAL_FOLDER);
+        persistentFileMetadata.setOriginalFilename("file"+ serial());
         return add(persistentFileMetadata);
     }
 
@@ -2226,6 +2300,32 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
         permitDecisionForbiddenMethod.setGameSpecies(gameSpecies);
         permitDecisionForbiddenMethod.setMethod(forbiddenMethodType);
         return add(permitDecisionForbiddenMethod);
+    }
+
+    public GameDamageInspectionEvent newGameDamageInspectionEvent(final Riistanhoitoyhdistys rhy,
+                                                                  final GameSpecies species) {
+        return newGameDamageInspectionEvent(rhy, species, DateUtil.today().toDate());
+    }
+
+    public GameDamageInspectionEvent newGameDamageInspectionEvent(final Riistanhoitoyhdistys rhy,
+                                                                  final GameSpecies species,
+                                                                  final Date date) {
+        GameDamageInspectionEvent event = new GameDamageInspectionEvent();
+
+        event.setRhy(rhy);
+        event.setGameSpecies(species);
+        event.setInspectorName("Name");
+        event.setGeoLocation(geoLocation());
+        event.setDate(date);
+        event.setBeginTime(new LocalTime(10, 0));
+        event.setEndTime(new LocalTime(11, 0));
+        event.setDescription("Description");
+        event.setHourlyExpensesUnit(BigDecimal.valueOf(1));
+        event.setKilometers(2);
+        event.setKilometerExpensesUnit(BigDecimal.valueOf(3));
+        event.setDailyAllowance(BigDecimal.valueOf(4));
+
+        return add(event);
     }
 
     protected <T extends Persistable<?>> T add(@Nonnull final T object) {

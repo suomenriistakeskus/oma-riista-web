@@ -779,6 +779,14 @@
             "RYHMAN_JASEN": "Gruppens medlem",
             "RYHMAN_METSASTYKSENJOHTAJA": "Jaktledare"
         },
+        "boardRepresentations": "Representationer",
+        "boardRepresentation": {
+            "nothing": "Jvf:s medlem",
+            "METSAHALLITUKSEN_EDUSTAJA": "Forststyrelsens representant",
+            "MAANOMISTAJIEN_EDUSTAJA": "Forsstyrelsens suppleant",
+            "METSAHALLITUKSEN_VARAEDUSTAJA": "Markägarnas representant",
+            "MAANOMISTAJIEN_VARAEDUSTAJA": "Markägarnas suppleant"
+        },
         "occupations": "Uppdrag",
         "board": "Styrelse",
         "name_and_address": "Namn och kontaktinformation",
@@ -825,16 +833,6 @@
             },
             "error": {
                 "person_not_found": "Personen hittas inte"
-            }
-        },
-        "remove": {
-            "title": "Radera uppgift",
-            "info": "Uppdrag ska i allmänhet inte raderas, utan deras start- och slutdatum redigeras. Radering av uppdrag är avsedd för att radera felaktikt inmatad uppgift.",
-            "ssn": "Personbeteckning",
-            "validity": "Tid",
-            "button": {
-                "cancel": "Annullera",
-                "save": "Radera"
             }
         },
         "nominationStatus": {
@@ -1385,6 +1383,47 @@
                         "smallGameLicensesSoldByMetsahallitus": "Av Forststyrelsen sålda småviltslicenser"
                     }
                 }
+            }
+        },
+        "gameDamageInspectionEvent": {
+            "heading": "Riistavahinkotarkastus",
+            "titleAdd": "Lisää riistavahinkotarkastustapahtuma",
+            "titleEdit": "Muokkaa riistavahinkotarkastustapahtumaa",
+            "eventInfo": "Ilmoituksen tiedot",
+            "eventExpenses": "Rhy:n maksamat kustannukset",
+            "add": "Lisää tapahtuma",
+            "datetime": "Aika",
+            "inspectorName": "Riistavahinkotarkastajan nimi",
+            "species": "Eläinlaji",
+            "date": "Päivä",
+            "beginTime": "Lähtö",
+            "endTime": "Paluu",
+            "duration": "Kesto",
+            "formLocation": "Valitse paikka kartalta tai kirjoita paikkatieto",
+            "damageType": "Vahinkotyyppi",
+            "coordinates": "Koordinaatit (ETRS-TM35FIN)",
+            "latitude": "P {{latitude}}",
+            "longitude": "I {{longitude}}",
+            "description": "Kuvaus",
+            "type": {
+                "MOOSELIKE": "Hirvieläin",
+                "LARGE_CARNIVORE": "Suurpeto"
+            },
+            "notInRhyArea": "Ei RHY:n alueella",
+            "hourlyExpensesUnit": "Maksettu tuntipalkkio euroa/h",
+            "rhyExpenses": "Rhy:n maksama palkkio yhteensä, euroa",
+            "kilometers": "Kilometrit",
+            "kilometerExpensesUnit": "Kilometrikorvaus euroa/kilometri",
+            "kilometerExpenses": "Kilometrikorvaus yhteensä, euroa",
+            "dailyAllowance": "Päiväraha euroa",
+            "travelExpenses": "Matkakorvaukset yhteensä, euroa",
+            "totalExpenses": "Yhteensä euroa",
+            "dateTooFarInThePast": "Tilaisuus liian kaukana menneisyydessä",
+            "dateInTheFuture": "Tapahtuma ei voi olla tulevaisuudessa",
+            "endTimeBeforeBeginTime": "Loppuaika ei voi olla ennen alkuaikaa",
+            "exportSummary": {
+                "mooselike": "Hirvieläin, koko Suomi",
+                "largeCarnivore": "Suurpeto, koko Suomi"
             }
         }
     },
@@ -2219,7 +2258,8 @@
                     "LARGE_CARNIVORE_BEAR": "Dispens för björn, stamvårdande",
                     "LARGE_CARNIVORE_LYNX": "Dispens för  lodjur, stamvårdande",
                     "LARGE_CARNIVORE_LYNX_PORONHOITO": "Dispens för  lodjur, stamvårdande, inom renskötselområdet",
-                    "LARGE_CARNIVORE_WOLF": "Dispens för  varg, stamvårdande"
+                    "LARGE_CARNIVORE_WOLF": "Dispens för  varg, stamvårdande",
+                    "MAMMAL": "Dispens för däggdjursvilt"
                 }
             },
             "permits": {
@@ -2241,10 +2281,12 @@
             "applicationPeriod": "Licensansökning:",
             "instructionsTitle": "Ny ansökan",
             "instructions": {
-                "derogationCategory": "Dispenser",
+                "damageBasedDerogationCategory": "Dispenser på skadegrund",
+                "otherDerogationCategory": "Dispenser i stamvårdande syfte",
                 "mooselikeCategory": "Jaktlicens",
                 "birdPath": "i18n/bird-permit-instructions-sv.html",
                 "carnivorePath": "i18n/carnivore-permit-instructions-sv.html",
+                "mammalPath": "i18n/mammal-permit-instructions-sv.html",
                 "mooselikePath": "i18n/mooselike-permit-instructions-sv.html",
                 "mooselike": "Innan tillstånd söks ska föreningen eller sällskapet ange sitt jaktområde. Föreningens områdeskod behövs för ansökan. Vid samlicens bör den förvaltningsmässiga innehavaren ha delägarföreningarnas områdeskoder."
             },
@@ -2259,11 +2301,48 @@
             "amendmentInstruction": "Ansökan görs via sidan för hortdjurslicensens huvudanvändare"
         },
         "wizard": {
+            "period": {
+                "beginDate": "Från",
+                "endDate": "Till",
+                "periodAdditionalInfo": "Tilläggsuppgifter om tidsperioden",
+                "validityYears": "Giltighetstid",
+                "yearsNotSelected": "Välj...",
+                "validity1year": "1 ÅR",
+                "validity2years": "2 ÅR",
+                "validity3years": "3 ÅR",
+                "validity4years": "4 ÅR",
+                "validity5years": "5 ÅR"
+            },
+            "methods": {
+                "instruction1": "Användning av förbjudna metoder",
+                "instruction2": "Du kan även ansökan om dispens att avvika från användning av förbjudna fångstredskap eller -metoder, ifall det för förhindrande av skada är nödvändigt. Redogör och motivera behovet i fältet för Tilläggsinformation",
+                "deviate32Label": "Jag ansöker om dispens för att avvika <strong> från begränsningen av användning av motordrivna fordon enligt jaktlagens 32 §</strong> enligt följande:",
+                "deviate33Label": "Jag ansöker om dispens för att avvika <strong> från bestämmelserna om fångstredskap och fångstmetoder enligt jaktlagens 33 §</strong> enligt följande:",
+                "deviate34Label": "Jag ansöker om om dispens från bestämmelserna i en förordning av statsrådet som utfärdats med stöd av <strong> jaktlagens 34 §</strong> enligt följande:",
+                "deviate35Label": "Jag ansöker om dispens från bestämmelserna om transport av jaktvapen enligt <strong>jaktlagens 35 §</strong> enligt följande:",
+                "deviate51Label": "Jag ansöker om dispens från bestämmelserna om skyldigheten att hålla hundar kopplade enligt <strong>jaktlagens 51 § 1 mom.</strong> enligt följande:",
+                "deviateAdditionalDetails": "Tilläggsuppgifter:",
+                "traps": "Fälla som fångar bytet levande",
+                "tapeRecorders": "Mekanisk anordning som åstadkommer ljud",
+                "otherMethod": "övrigt, vad",
+                "methodJustification1": "Orsak till, varför det är nödvändigt att bl.a. använda förbjudna fångstredskap eller fångstmetoder.",
+                "methodJustification2": "Motivera användningen av de metoder du ansökt om separat för varje art nämnd i ansökan.",
+                "methodsNotInUseForSpecies": "De ansökta metoderna gäller inte för denna art"
+            },
+            "damage": {
+                "instruction1": "Skador",
+                "instruction2": "Beskriv omsorgsfullt de skador som skett på området och framtida skadehot separat för varje i ansökan nämnd art. Uppskatta skadans storlek även i euro. Beskriv även på området utförda fördrivnings- och skyddsmetoder eller andra  åtgärder som utförts för att förhindra skada och deras inverkan separat för varje i ansökan nämnd art.",
+                "instruction3": "Utredning över skadan eller annat som ligger till grund för ansökan. (Ange uppgifterna separat för varje nämnd art i ansökan):",
+                "damageAmount": "Skadans storlek",
+                "damageDescription": "Utredning om skadan",
+                "performedMeasures": "Fördrivnings- och skyddsmetoder eller åtgärder som vidtagits för att förebygga skadan (ange uppgifterna separat för varje i ansökan nämnd art):",
+                "evictionMeasureDescription": "Metod eller åtgärd",
+                "evictionMeasureEffect": "Åtgärdens effekter"
+            },
             "bird": {
                 "attachments": {
                     "instruction1": "Bilagor",
-                    "instruction2": "Som stöd för din ansökan kan du bifoga utlåtanden och övriga utredningar. Vid Finlands viltcentrals prövning om dispens är till exempel ett utlåtande av en hälsoinspektör eller djuruppfödningsgårdens veterinär  nödvändigt för bedömning av  sjukdomsrisker  som fåglarna sprider. Även vid exempelvis ansökan om dispens för flera objekt i samma ansökan, kan du ge en utredning per fastighet om antal skadegörande fåglar,  skador som de förorsakar, åtgärder som vidtagits för att förhindra skador och deras inverkan samt den ansökta dispensmängden. Du kan bifoga fler filer.",
-                    "attachmentDescription": "Bilagans tilläggsuppgifter"
+                    "instruction2": "Som stöd för din ansökan kan du bifoga utlåtanden och övriga utredningar. Vid Finlands viltcentrals prövning om dispens är till exempel ett utlåtande av en hälsoinspektör eller djuruppfödningsgårdens veterinär  nödvändigt för bedömning av  sjukdomsrisker  som fåglarna sprider. Även vid exempelvis ansökan om dispens för flera objekt i samma ansökan, kan du ge en utredning per fastighet om antal skadegörande fåglar,  skador som de förorsakar, åtgärder som vidtagits för att förhindra skador och deras inverkan samt den ansökta dispensmängden. Du kan bifoga fler filer."
                 },
                 "cause": {
                     "instruction1": "Välj den undantagsmotivering, med stöd av vilken du ansöker om dispens.",
@@ -2282,16 +2361,6 @@
                     "causeResearch": "i forsknings- och utbildningssyfte, för att öka och återinföra stammen",
                     "nonLimitlessCauseToolTip": "Anmälningsförfarandet inte möjligt"
                 },
-                "damage": {
-                    "instruction1": "Skador",
-                    "instruction2": "Beskriv omsorgsfullt de skador som skett på området och framtida skadehot separat för varje i ansökan nämnd art. Uppskatta skadans storlek även i euro. Beskriv även på området utförda fördrivnings- och skyddsmetoder eller andra  åtgärder som utförts för att förhindra skada och deras inverkan separat för varje i ansökan nämnd art.",
-                    "instruction3": "Utredning över skadan eller annat som ligger till grund för ansökan. (Ange uppgifterna separat för varje nämnd art i ansökan):",
-                    "damageAmount": "Skadans storlek",
-                    "damageDescription": "Utredning om skadan",
-                    "performedMeasures": "Fördrivnings- och skyddsmetoder eller åtgärder som vidtagits för att förebygga skadan (ange uppgifterna separat för varje i ansökan nämnd art):",
-                    "evictionMeasureDescription": "Metod eller åtgärd",
-                    "evictionMeasureEffect": "Åtgärdens effekter"
-                },
                 "map": {
                     "instructions": "Fyll i alla fält. Ange det namn som bäst beskriver platsen/platserna som skall skyddas, t.ex. bärodlingens, avfallshanteringsanläggningens eller djurproduktionsgårdens namn. Ge objektets adressuppgifter och skadeobjektens sammanlagda areal. Välj från listan typ av objekt som skall skyddas.",
                     "areaName": "Objektets namn som skall skyddas",
@@ -2305,37 +2374,11 @@
                     "geoLocationInstruction": "Märk ut den plats som skall skyddas med en punkt på kartan. <br>Ifall det finns flera skadeobjekt, välj det som enligt ditt tycke är den viktigaste (i den här delen kan du kan endast markera ett objekt på kartan.)",
                     "attachmentInstruction": "Bifoga en karta över området, där området är tydligt markerat. Om det finns flera skadeobjekt, kan du bifoga flera kartor. Bifoga då även en allmän karta, där positionen för alla i ansökan avsedda skadeobjekt framgår. Du kan bifoga kartan med i alla allmänt använda filformat (skanning, foto m.m.)a a vanliga filformat (skanning, foto mm.)"
                 },
-                "methods": {
-                    "instruction1": "Användning av förbjudna metoder",
-                    "instruction2": "Du kan även ansökan om dispens att avvika från användning av förbjudna fångstredskap eller -metoder, ifall det för förhindrande av skada är nödvändigt. Redogör och motivera behovet i fältet för Tilläggsinformation",
-                    "deviate32Label": "Jag ansöker om dispens för att avvika <strong> från begränsningen av användning av motordrivna fordon enligt jaktlagens 32 §</strong> enligt följande:",
-                    "deviate33Label": "Jag ansöker om dispens för att avvika <strong> från bestämmelserna om fångstredskap och fångstmetoder enligt jaktlagens 33 §</strong> enligt följande:",
-                    "deviate34Label": "Jag ansöker om om dispens från bestämmelserna i en förordning av statsrådet som utfärdats med stöd av <strong> jaktlagens 34 §</strong> enligt följande:",
-                    "deviate35Label": "Jag ansöker om dispens från bestämmelserna om transport av jaktvapen enligt <strong>jaktlagens 35 §</strong> enligt följande:",
-                    "deviate51Label": "Jag ansöker om dispens från bestämmelserna om skyldigheten att hålla hundar kopplade enligt <strong>jaktlagens 51 § 1 mom.</strong> enligt följande:",
-                    "deviateAdditionalDetails": "Tilläggsuppgifter:",
-                    "traps": "Fälla som fångar bytet levande",
-                    "tapeRecorders": "Mekanisk anordning som åstadkommer ljud",
-                    "otherMethod": "övrigt, vad",
-                    "methodJustification1": "Orsak till, varför det är nödvändigt att bl.a. använda förbjudna fångstredskap eller fångstmetoder.",
-                    "methodJustification2": "Motivera användningen av de metoder du ansökt om separat för varje art nämnd i ansökan.",
-                    "methodsNotInUseForSpecies": "De ansökta metoderna gäller inte för denna art"
-                },
                 "period": {
                     "instruction1": "Jakttider",
                     "instruction2": "Meddela de årliga dispenstiderna artvis i enlighet med det första året. <br> Ifall följande års ansökta dispenstid avviker från det första årets (till exempel pga ansökan inlämnats sent), skriv in det som tilläggsinformation vid fältet för  tidsperiod.",
                     "instruction3": "Observera, att icke fredade fåglars fredningstid avviker från varandra under häckningstiden i olika delar av Finland. För icke fredade fåglar kan man ansöka om antingen tidsbunden dispens eller om anmälningsförfarande. För viltfåglarnas del kan man inte ansöka om ett s.k. anmälningsförfarande, ansök därför om dispens för viltfåglar och icke fredade fåglar separat om du för de icke fredade fåglarnas del vill ansöka om anmälningsförfarande.",
-                    "beginDate": "Från",
-                    "endDate": "Till",
                     "tooLongPeriodInfo": "Jakttiden kan vara högst ett år.",
-                    "periodAdditionalInfo": "Tilläggsuppgifter om tidsperioden",
-                    "validityYears": "Giltighetstid",
-                    "yearsNotSelected": "Välj...",
-                    "validity1year": "1 ÅR",
-                    "validity2years": "2 ÅR",
-                    "validity3years": "3 ÅR",
-                    "validity4years": "4 ÅR",
-                    "validity5years": "5 ÅR",
                     "validityLimitless": "TILLSVIDARE",
                     "limitlessNotAllowedInfo": "Dispensen kan inte ansökas som ikraftvarande tillsvidare. Granska de valda dispensmotiveringarna, typ av skyddat objekt och djurart."
                 },
@@ -2347,12 +2390,7 @@
                 },
                 "species": {
                     "instructions": "Välj djurarter och antal som ansöks",
-                    "addSpecies": "Lägg till art",
-                    "removeSpecies": "Ta bort",
-                    "species": "Djurart",
-                    "speciesAmount": "Dispensmängd som ansöks",
-                    "ravenNotification": "OBS: Dispensen/licensen kan beviljas endast på renskötselområde",
-                    "amountPerYear": "st / år"
+                    "ravenNotification": "OBS: Dispensen/licensen kan beviljas endast på renskötselområde"
                 },
                 "summary": {
                     "instruction1": "Granska uppgifterna i ansökan",
@@ -2373,8 +2411,7 @@
                 },
                 "attachments": {
                     "instruction1": "Bilagor",
-                    "instruction2": "Du kan bifoga filer som bilagor till motivering för ansökan",
-                    "attachmentDescription": "Bilagans tilläggsuppgifter"
+                    "instruction2": "Du kan bifoga filer som bilagor till motivering för ansökan"
                 },
                 "species": {
                     "title": "Mängd",
@@ -2416,6 +2453,81 @@
                         "invalidCode": "Felaktig kod",
                         "areaNotFound": "Området hittades inte."
                     }
+                }
+            },
+            "mammal": {
+                "attachments": {
+                    "instruction1": "Bilagor",
+                    "instruction2": "Som stöd för din ansökan kan du bifoga utlåtanden och övriga utredningar. Du kan bifoga fler filer."
+                },
+                "applicant": {
+                    "instruction": "Den sökande ska i första hand vara den skadedrabbade. Om den skadedrabbade befullmäktigar t.ex. ett jaktsällskap som sökande, ska den sökande ha en fullmakt av den skadedrabbade. Fullmakten ska bifogas till ansökan vid punkten \"Bilagor\". Den sökande ska vara en person med rättshandlingsförmåga eller ett samfund (t.ex. registrerad förening). Om dispens sökes för ett samfund, rekommenderar Finlands viltcentral, att man antecknar samfundet som sökande och som kontaktperson för ansökan den som enligt föreningens stadgar har namnteckningsrätt. För icke registrerade samfund (t.ex. jaktsällskap) ska man som sökande välja en person som har rättshandlingsförmåga. Personen ska vara densamma som kontaktpersonen.  För en samlicensansökan måste man utse en administrativ innehavare för samlicensen, vilken måste vara densamma som kontaktpersonen."
+                },
+                "cause": {
+                    "instruction1": "Välj den undantagsgrund, med stöd av vilken du ansöker om dispens.",
+                    "instruction2": "Du kan välja flera undantagsgrunder.",
+                    "selectionInstruction": "Välj undantagsgrund från listan",
+                    "reasonSection41A": "Jag ansöker om dispens <strong>i enlighet med JL 41 a § 1 moment §</strong>:",
+                    "REASON_FLORA_41A": "i syfte att bevara vilda växter",
+                    "REASON_FAUNA_41A": "i syfte att bevara vilda djur",
+                    "REASON_CROPS_DAMAGE_41A": "för förebyggande av särskilt betydande skada på odlingar",
+                    "REASON_CATTLE_DAMAGE_41A": "för förebyggande av särskilt betydande skada på boskapsuppfödning",
+                    "REASON_FOREST_DAMAGE_41A": "för förebyggande av särskilt betydande skada på skogsbruk",
+                    "REASON_FISHING_41A": "för förebyggande av särskilt betydande skada på fiskerinäring",
+                    "REASON_REINDEER_HUSBANDRY_41A": "för förebyggande av särskilt betydande skada på renhushållning",
+                    "REASON_WATER_SYSTEM_41A": "för förebyggande av särskilt betydande skada på vattendrag",
+                    "REASON_OTHER_PROPERTY_DAMAGE_41A": "för förebyggande av särskilt betydande skada på annan egendom",
+                    "REASON_PUBLIC_HEALTH_41A": "av tvingande skäl med hänsyn till folkhälsan",
+                    "REASON_PUBLIC_SAFETY_41A": "av tvingande skäl med hänsyn till den allmänna säkerheten",
+                    "REASON_OTHER_COMMON_INTEREST_41A": "något annat mycket viktigt allmänt intresse, inbegripet ekonomiska och sociala skäl och om ett tillstånd till undantag medför synnerligen betydande nytta för miljön",
+                    "REASON_RESEARCH_41A": "i forsknings-, utbildnings-, omplacerings- och utplanteringssyfte eller för att förebygga djursjukdomar när det gäller arterna i fråga",
+                    "reasonSection41C": "Jag ansöker om dispens i enlighet med <strong>JL 41 c §</strong>:",
+                    "REASON_FLORA_41C": "i syfte att bevara vilda växter",
+                    "REASON_FAUNA_41C": "i syfte att bevara vilda djur",
+                    "REASON_CROPS_DAMAGE_41C": "för förebyggande av betydande skada på odlingar",
+                    "REASON_CATTLE_DAMAGE_41C": "för förebyggande av betydande skada på boskapsuppfödning",
+                    "REASON_FOREST_DAMAGE_41C": "för förebyggande av betydande skada på skogsbruk",
+                    "REASON_FISHING_41C": "för förebyggande av betydande skada på fiskerinäring",
+                    "REASON_REINDEER_HUSBANDRY_41C": "för förebyggande av betydande skada på renhushållning",
+                    "REASON_GAME_HUSBANDRY_41C": "för förebyggande av betydande skada på vilthushållning",
+                    "REASON_WATER_SYSTEM_41C": "för förebyggande av betydande skada på vattendrag",
+                    "REASON_OTHER_PROPERTY_DAMAGE_41C": "för förebyggande av betydande allvarlig skada på annan egendom",
+                    "REASON_PUBLIC_HEALTH_41C": "av tvingande skäl med hänsyn till folkhälsan",
+                    "REASON_PUBLIC_SAFETY_41C": "av tvingande skäl med hänsyn till den allmänna säkerheten",
+                    "REASON_OTHER_COMMON_INTEREST_41C": "något annat mycket viktigt allmänt intresse, inbegripet ekonomiska och sociala skäl och om ett tillstånd till undantag medför synnerligen betydande nytta för miljön",
+                    "REASON_RESEARCH_41C": "i forsknings-, utbildnings-, omplacerings- och utplanteringssyfte eller för att förebygga djursjukdomar när det gäller arterna i fråga"
+                },
+                "methods": {
+                    "instructionText": "Du kan också ansöka om dispens från förbudet att använda förbjudna fångstredskap och -metoder, om det är nödvändigt för förhindrande av skada. Förtydliga och motivera behovet i fältet Tilläggsuppgifter."
+                },
+                "species": {
+                    "instructions": "Välj djurarter och antal som ansöks",
+                    "instructionText": "För de stora rovdjurens (järv, lodjur, björn och varg) och utterns del kan du välja endast en art per ansökan. Övriga viltdäggdjursarter kan man välja flera av i samma ansökan.",
+                    "speciesAmount": "Antal djur som ansöks"
+                },
+                "period": {
+                    "instruction1": "Dispensens giltighetstid.",
+                    "instruction2": "En dispens som beviljats med stöd av jaktlagens 41 a § 1 moment för dödande av järv, björn, utter eller varg är i kraft högst 21 dygn.",
+                    "instruction3": "Övriga dispenser förutom i 1 momentet avsedda dispenser är i kraft under giltighetstiden, som ska överensstämma med dispensens syfte och som kan vara i kraft högst fem år.",
+                    "instruction4": "Meddela de årliga dispenstiderna artvis i enlighet med det första året. <br> Ifall följande års ansökta dispenstid avviker från det första årets (till exempel pga ansökan inlämnats sent), skriv in det som tilläggsinformation vid fältet för tidsperiod.",
+                    "speciesMaxPeriod21DaysInfo": "Jakttiden kan vara högst 21 dygns.",
+                    "tooLongPeriodInfo": "Jakttiden kan vara högst ett år.",
+                    "extendedPeriodGroundsTitle": "Grund för giltighetstid längre än ett år",
+                    "extendedPeriodGroundsDescription": "Tilläggsuppgifter",
+                    "protectedAreaName": "Objektets namn som skall skyddas",
+                    "extendedPeriodGrounds": {
+                        "PERMANENT_ESTABLISHMENT": "Permanent grundat objekt",
+                        "PROTECTION_OF_FAUNA": "Skyddande av vilda djur",
+                        "RESEARCH": "Forskningsgrund",
+                        "NATURE_TREATMENT_PROJECT": "Naturvårdsprojekt"
+                    },
+                    "extendedPeriodNotApplicableWarning": "Ansökan omfattar arter vars dispenstid inte kan vara mångårig"
+                },
+                "population": {
+                    "instruction1": "Stammens situation",
+                    "instruction2": "Beskriv stammens situation (antal individer) och beteende på området för de djurarter som anges i dispensen. Ange uppgifterna separat för varje nämnd art i ansökan.",
+                    "populationAmount": "Antal individer",
+                    "populationDescription": "Beskrivning av beteende"
                 }
             },
             "navigation": {
@@ -2479,6 +2591,11 @@
                 "instructionsOne": "Jaktlicens för ett hjortdjur ger rätt att fälla ett vuxet djur eller två kalvar. Jaktlicensen kan preciseras med bestämmelser om hjortdjurens ålder eller kön, om det är nödvändigt för en ändamålsenlig skötsel av hjortdjursstammen.",
                 "instructionsTwo": "Ansökan kan vid behov motiveras.",
                 "description": "Motiveringar",
+                "addSpecies": "Lägg till art",
+                "removeSpecies": "Ta bort",
+                "species": "Djurart",
+                "speciesAmount": "Dispensmängd som ansöks",
+                "amountPerYear": "st / år",
                 "table": {
                     "headerSpecies": "Art",
                     "headerAmount": "Antal jaktlicenser som söks"
@@ -2578,6 +2695,7 @@
                 "instructionsTitle": "Flera behövliga bilagor",
                 "instructionsFreeHunting": "Obs! Finlands viltcentral kontrollerar skyttarnas övriga möjligheter till älgjakt.",
                 "filename": "Filnamn",
+                "attachmentDescription": "Bilagans tilläggsuppgifter",
                 "uploadButton": "Ange den fil som ska laddas ner",
                 "incompatibleFileType": "Filtypen stöds inte",
                 "none": "Inga valda bilagor",
@@ -2609,7 +2727,8 @@
                     "LARGE_CARNIVORE_BEAR": "Dispens för björn, stamvårdande",
                     "LARGE_CARNIVORE_LYNX": "Dispens för  lodjur, stamvårdande",
                     "LARGE_CARNIVORE_LYNX_PORONHOITO": "Dispens för  lodjur, stamvårdande, inom renskötselområdet",
-                    "LARGE_CARNIVORE_WOLF": "Dispens för  varg, stamvårdande"
+                    "LARGE_CARNIVORE_WOLF": "Dispens för  varg, stamvårdande",
+                    "MAMMAL": "Dispens för däggdjursvilt"
                 },
                 "permitType": {
                     "100": "Jaktlicens för hjortdjur",
@@ -2618,7 +2737,8 @@
                     "208": "41 A § Dispens för lodjur, stamvårdande",
                     "209": "41 A § Dispens för varg, stamvårdande",
                     "305": "41 B § Dispens för fågelvilt och icke fredade fåglar",
-                    "346": "41 B § Anmälningsförfarande"
+                    "346": "41 B § Anmälningsförfarande",
+                    "215": "Dispens för däggdjursvilt"
                 },
                 "invalid": "Det finns brister i ansökans uppgifter",
                 "instructionsTitle": "Kontrollera uppgifterna i ansökan",
@@ -2953,9 +3073,10 @@
             },
             "legal": {
                 "deviate32Label": "Beviljas tillstånd att avvika från jaktlagens 32 § om begränsning av användning av motordrivet fordon.",
-                "deviate33Label": "Beviljas dispens att avvika från bestämmelserna om fångstredskap och fångstmetoder enligt jaktlagens 33 §",
-                "deviate34Label": "Beviljas dispens med stöd av jaktlagen 34 § att avvika från bestämmelserna i statsrådets förordning om förbud",
-                "deviate51Label": "Beviljas dispens att avvika från i jaktlagen 51 § 1 moment stadgade skyldighet att hålla hund kopplad"
+                "deviate33Label": "Beviljas dispens att avvika från bestämmelserna om fångstredskap och fångstmetoder enligt jaktlagens 33 §.",
+                "deviate34Label": "Beviljas dispens med stöd av jaktlagen 34 § att avvika från bestämmelserna i statsrådets förordning om förbud.",
+                "deviate35Label": "Beviljas dispens att avvika från bestämmelserna om transport av jaktvapen och jaktbågar enligt jaktlagens 35 §.",
+                "deviate51Label": "Beviljas dispens att avvika från i jaktlagen 51 § 1 moment stadgade skyldighet att hålla hund kopplad."
             },
             "action": {
                 "titleList": "Redigera interimistiska åtgärder",
@@ -3132,7 +3253,7 @@
                 "processingInvoiceNotCreated": "Handläggningsavgift  har inte ännu upprättats, därför att beslutet inte har publicerats",
                 "downloadHarvestInvoice": "Ladda licens-/dispensavgift",
                 "harvestReportTitle": "Blanketter för bytesmeddelande",
-                "downloadBirdHarvestReport": "Ladda blanketter för bytesmeddelande av fåglar ",
+                "downloadBirdHarvestReport": "Ladda blanketter för bytesmeddelande",
                 "electronicProcessingInvoiceNote": "Betalningsblanketterna går inte att ladda, därför att elektronisk leverans har valts i ansökan.",
                 "deliveryType": "Leveranssätt",
                 "deliveryElectronic": "Elektroniskt",
@@ -3177,6 +3298,9 @@
             "protectedAreaTypesTitle": "Typ av objekt som skall skyddas",
             "legalFieldsTitle": "Beviljade undantag för avvikande från bestämmelserna i jaktlagen",
             "reason": {
+                "SECTION_41A": "JL 41 a§:",
+                "SECTION_41B": "JL 41 b§:",
+                "SECTION_41C": "JL 41 c§:",
                 "REASON_PUBLIC_HEALTH": "Trygga folkhälsan",
                 "REASON_PUBLIC_SAFETY": "Trygga den allmänna säkerheten",
                 "REASON_AVIATION_SAFETY": "Trygga flygsäkerheten",
@@ -3188,7 +3312,34 @@
                 "REASON_FLORA": "Skydda växter",
                 "REASON_FAUNA": "Skydda djur",
                 "REASON_RESEARCH": "Forsknings- och utbildningssyfte, öka och återinföra stammen",
-                "REASON_POPULATION_PRESERVATION": "Att vårda stammen"
+                "REASON_POPULATION_PRESERVATION": "Att vårda stammen",
+                "REASON_FLORA_41A": "i syfte att bevara vilda växter",
+                "REASON_FAUNA_41A": "i syfte att bevara vilda djur",
+                "REASON_CROPS_DAMAGE_41A": "för förebyggande av särskilt betydande skada på odlingar",
+                "REASON_CATTLE_DAMAGE_41A": "för förebyggande av särskilt betydande skada på boskapsuppfödning",
+                "REASON_FOREST_DAMAGE_41A": "för förebyggande av särskilt betydande skada på skogsbruk",
+                "REASON_FISHING_41A": "för förebyggande av särskilt betydande skada på fiskerinäring",
+                "REASON_REINDEER_HUSBANDRY_41A": "för förebyggande av särskilt betydande skada på renhushållning",
+                "REASON_WATER_SYSTEM_41A": "för förebyggande av särskilt betydande skada på vattendrag",
+                "REASON_OTHER_PROPERTY_DAMAGE_41A": "för förebyggande av särskilt betydande skada på annan egendom",
+                "REASON_PUBLIC_HEALTH_41A": "av tvingande skäl med hänsyn till folkhälsan",
+                "REASON_PUBLIC_SAFETY_41A": "av tvingande skäl med hänsyn till den allmänna säkerheten",
+                "REASON_OTHER_COMMON_INTEREST_41A": "något annat mycket viktigt allmänt intresse, inbegripet ekonomiska och sociala skäl och om ett tillstånd till undantag medför synnerligen betydande nytta för miljön",
+                "REASON_RESEARCH_41A": " i forsknings-, utbildnings-, omplacerings- och utplanteringssyfte eller för att förebygga djursjukdomar när det gäller arterna i fråga",
+                "REASON_FLORA_41C": "i syfte att bevara vilda växter",
+                "REASON_FAUNA_41C": "i syfte att bevara vilda djur",
+                "REASON_CROPS_DAMAGE_41C": "för förebyggande av betydande skada på odlingar",
+                "REASON_CATTLE_DAMAGE_41C": "för förebyggande av betydande skada på boskapsuppfödning",
+                "REASON_FOREST_DAMAGE_41C": "för förebyggande av betydande skada på skogsbruk",
+                "REASON_FISHING_41C": "för förebyggande av betydande skada på fiskerinäring",
+                "REASON_REINDEER_HUSBANDRY_41C": "för förebyggande av betydande skada på renhushållning",
+                "REASON_GAME_HUSBANDRY_41C": "för förebyggande av betydande skada på vilthushållning",
+                "REASON_WATER_SYSTEM_41C": "för förebyggande av betydande skada på vattendrag",
+                "REASON_OTHER_PROPERTY_DAMAGE_41C": "för förebyggande av betydande skada på annan egendom",
+                "REASON_PUBLIC_HEALTH_41C": "av tvingande skäl med hänsyn till folkhälsan",
+                "REASON_PUBLIC_SAFETY_41C": "av tvingande skäl med hänsyn till den allmänna säkerheten",
+                "REASON_OTHER_COMMON_INTEREST_41C": "något annat mycket viktigt allmänt intresse, inbegripet ekonomiska och sociala skäl och om ett tillstånd till undantag medför synnerligen betydande nytta för miljön",
+                "REASON_RESEARCH_41C": "i forsknings-, utbildnings-, omplacerings- och utplanteringssyfte eller för att förebygga djursjukdomar när det gäller arterna i fråga"
             },
             "area": {
                 "type": {
@@ -3794,7 +3945,7 @@
             "notEdibleCount": "Odugliga som människoföda",
             "finishHunting": "Avsluta jakten",
             "huntingFinished": "Jakten är avslutad",
-            "finishHuntingByModeratorOverride": "Massainmatning av byten",
+            "finishHuntingByAdminOverride": "Massainmatning av byten",
             "permitHolderFinishedHunting": "Licensens jakt har avslutats",
             "amendmentPermitsDoNotMatchHarvests": "Beviljade nya licenser överensstämmer inte med bytet som markerats som odugligt till människoföda.<br><br>Kontrollera att endast de som var odugliga som människoföda, för vilka det beviljats ny licens, markerats. ",
             "restrictionViolated": "Ställda villkor för beviljad licens och för bytets ålder eller kön överensstämmer inte",
@@ -4085,7 +4236,8 @@
             "assignOfficials": "Redigera mottagare",
             "titleListOfficials": "Skjutprovets examinator",
             "addOfficial": "Lägg till som examinator",
-            "numberOfOfficialsNote": "Ska vara minst 2 skjutprovsexaminatorer"
+            "numberOfOfficialsNote": "Ska vara minst 2 skjutprovsexaminatorer",
+            "unpopulatedEventWarningMsg": "Inga händelser har antecknats för skjutprovet."
         },
         "registration": {
             "personNotFound": "Personen hittas inte",

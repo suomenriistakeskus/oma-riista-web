@@ -11,6 +11,7 @@ import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.annualstats.audit.RhyAnnualStatisticsModeratorUpdateEvent;
 import fi.riista.feature.organization.rhy.annualstats.audit.RhyAnnualStatisticsModeratorUpdateEventRepository;
 import fi.riista.feature.organization.rhy.annualstats.statechange.RhyAnnualStatisticsStateTransitionService;
+import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectionEventRepository;
 import fi.riista.util.DateUtil;
 import io.vavr.Tuple2;
 import org.springframework.stereotype.Component;
@@ -59,6 +60,8 @@ import static fi.riista.feature.organization.occupation.OccupationType.METSASTAJ
 import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.NOT_STARTED;
+import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.LARGE_CARNIVORE;
+import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.MOOSELIKE;
 import static fi.riista.feature.shootingtest.ShootingTestType.ROE_DEER;
 import static fi.riista.feature.shootingtest.ShootingTestType.MOOSE;
 import static fi.riista.feature.shootingtest.ShootingTestType.BEAR;
@@ -76,6 +79,9 @@ public class AnnualStatisticsService {
 
     @Resource
     private CalendarEventRepository eventRepository;
+
+    @Resource
+    private GameDamageInspectionEventRepository gameDamageInspectionEventRepository;
 
     @Resource
     private RhyAnnualStatisticsModeratorUpdateEventRepository moderatorUpdateEventRepository;
@@ -99,7 +105,8 @@ public class AnnualStatisticsService {
                                                                 final int calendarYear) {
 
         return new AnnualStatisticsResolver(
-                rhy, calendarYear, occupationRepository, eventRepository, jpaQueryFactory, sqlQueryFactory);
+                rhy, calendarYear, occupationRepository, eventRepository, gameDamageInspectionEventRepository,
+                jpaQueryFactory, sqlQueryFactory);
     }
 
     public AnnualStatisticsResolver getAnnualStatisticsResolver(@Nonnull final RhyAnnualStatistics entity) {
@@ -328,12 +335,32 @@ public class AnnualStatisticsService {
 
         final GameDamageStatistics copy = new GameDamageStatistics(statistics);
         copy.setGameDamageInspectors(resolver.getOccupationTypeCount(RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA));
+
+        if (!copy.isMooselikeDamageInspectionLocationsOverridden()) {
+            copy.setMooselikeDamageInspectionLocations(resolver.getGameDamageInspectionEventCount(MOOSELIKE));
+        }
+        if (!copy.isLargeCarnivoreDamageInspectionLocationsOverridden()) {
+            copy.setLargeCarnivoreDamageInspectionLocations(resolver.getGameDamageInspectionEventCount(LARGE_CARNIVORE));
+        }
+
         return copy;
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateGameDamage(@Nonnull final RhyAnnualStatistics statistics,
                                  @Nonnull final GameDamageStatistics group) {
+
+        final GameDamageStatistics original = statistics.getOrCreateGameDamage();
+
+        final boolean originalMooselikeOverridden = original.isMooselikeDamageInspectionLocationsOverridden();
+        final boolean mooselikeDamageInspectionLocationsOverridden = originalMooselikeOverridden ||
+                !Objects.equals(original.getMooselikeDamageInspectionLocations(), group.getMooselikeDamageInspectionLocations());
+        group.setMooselikeDamageInspectionLocationsOverridden(mooselikeDamageInspectionLocationsOverridden);
+
+        final boolean originalLargeCarnivoreOverridden = original.isLargeCarnivoreDamageInspectionLocationsOverridden();
+        final boolean largeCarnivoreDamageInspectionLocationsOverridden = originalLargeCarnivoreOverridden ||
+                !Objects.equals(original.getLargeCarnivoreDamageInspectionLocations(), group.getLargeCarnivoreDamageInspectionLocations());
+        group.setLargeCarnivoreDamageInspectionLocationsOverridden(largeCarnivoreDamageInspectionLocationsOverridden);
 
         updateGroup(statistics, statistics.getOrCreateGameDamage(), group);
     }

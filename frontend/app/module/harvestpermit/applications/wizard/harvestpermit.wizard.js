@@ -49,6 +49,8 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                 case 'LARGE_CARNIVORE_LYNX_PORONHOITO':
                 case 'LARGE_CARNIVORE_WOLF':
                     return 'carnivore';
+                case 'MAMMAL':
+                    return 'mammal';
                 default:
                     console.log("Unsupported application type: " + applicationType);
                     throw Error('Unknown permit type');
@@ -56,7 +58,8 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
         };
     })
     .service('HarvestPermitApplicationSummaryService', function (MooselikePermitApplication, BirdPermitApplication,
-                                                                 CarnivorePermitApplication, HarvestPermitWizardSelectorService) {
+                                                                 CarnivorePermitApplication, MammalPermitApplication,
+                                                                 HarvestPermitWizardSelectorService) {
         this.getApplicationSummary = function (applicationId, applicationType) {
             var wizard = HarvestPermitWizardSelectorService.getWizardName(applicationType);
             switch (wizard) {
@@ -67,6 +70,8 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                     return BirdPermitApplication.getFullDetails({id: applicationId}).$promise;
                 case 'carnivore':
                     return CarnivorePermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'mammal':
+                    return MammalPermitApplication.getFullDetails({id: applicationId}).$promise;
                 default:
                     console.log("Unsupported application type: " + applicationType);
                     throw Error('Unknown permit type');
@@ -149,8 +154,11 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
 
             $ctrl.$onInit = function () {
                 $ctrl.moosetypes = _.filter($ctrl.applicationTypes, _.matchesProperty('category', 'MOOSELIKE'));
-                $ctrl.derogationTypes = _.filter($ctrl.applicationTypes, function (t) {
-                    return t.category !== 'MOOSELIKE';
+                $ctrl.damageBasedDerogations = _.filter($ctrl.applicationTypes, function (t) {
+                    return t.category === 'BIRD' || t.category === 'MAMMAL';
+                });
+                $ctrl.otherDerogations = _.filter($ctrl.applicationTypes, function (t) {
+                    return t.category !== 'MOOSELIKE' && t.category !== 'BIRD' && t.category !== 'MAMMAL';
                 });
 
             };
@@ -217,6 +225,8 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                     return GameSpeciesCodes.LYNX;
                 } else if (category === 'LARGE_CARNIVORE_WOLF') {
                     return GameSpeciesCodes.WOLF;
+                } else if (category === 'MAMMAL') {
+                    return GameSpeciesCodes.WOLVERINE;
                 } else {
                     console.log('Illegal type ' + category);
                     return null;

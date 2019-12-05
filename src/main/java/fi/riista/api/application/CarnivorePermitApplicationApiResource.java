@@ -1,21 +1,17 @@
 package fi.riista.api.application;
 
-import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationSummaryDTO;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationSummaryFeature;
 import fi.riista.feature.permit.application.carnivore.applicant.CarnivorePermitApplicationApplicantFeature;
-import fi.riista.feature.permit.application.carnivore.area.CarnivorePermitApplicationAddAreaAttachmentDTO;
-import fi.riista.feature.permit.application.carnivore.area.CarnivorePermitApplicationAreaDTO;
-import fi.riista.feature.permit.application.carnivore.area.CarnivorePermitApplicationAreaFeature;
 import fi.riista.feature.permit.application.carnivore.attachments.CarnivorePermitApplicationAttachmentDTO;
 import fi.riista.feature.permit.application.carnivore.attachments.CarnivorePermitApplicationAttachmentFeature;
 import fi.riista.feature.permit.application.carnivore.justification.CarnivorePermitApplicationJustificationDTO;
 import fi.riista.feature.permit.application.carnivore.justification.CarnivorePermitApplicationJustificationFeature;
 import fi.riista.feature.permit.application.carnivore.species.CarnivorePermitApplicationSpeciesAmountDTO;
 import fi.riista.feature.permit.application.carnivore.species.CarnivorePermitApplicationSpeciesAmountFeature;
-import fi.riista.feature.permit.application.partner.ListPermitApplicationAreaPartnersFeature;
+import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaFeature;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.http.HttpStatus;
@@ -43,9 +39,6 @@ public class CarnivorePermitApplicationApiResource {
     private CarnivorePermitApplicationApplicantFeature carnivorePermitApplicationApplicantFeature;
 
     @Resource
-    private CarnivorePermitApplicationAreaFeature carnivorePermitApplicationAreaFeature;
-
-    @Resource
     private CarnivorePermitApplicationSpeciesAmountFeature carnivorePermitApplicationSpeciesAmountFeature;
 
     @Resource
@@ -57,8 +50,6 @@ public class CarnivorePermitApplicationApiResource {
     @Resource
     private CarnivorePermitApplicationSummaryFeature carnivorePermitApplicationSummaryFeature;
 
-    @Resource
-    private ListPermitApplicationAreaPartnersFeature listPermitApplicationAreaPartnersFeature;
     // READ
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -81,37 +72,6 @@ public class CarnivorePermitApplicationApiResource {
                                    @Valid @RequestBody final PermitHolderDTO permitHolder) {
 
         carnivorePermitApplicationApplicantFeature.updatePermitHolder(applicationId, permitHolder);
-    }
-
-    // AREA
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/area", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public CarnivorePermitApplicationAreaDTO getProtectedAreaInfo(@PathVariable final long applicationId) {
-        return carnivorePermitApplicationAreaFeature.getArea(applicationId);
-    }
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/{applicationId:\\d+}/area", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public void updateProtectedAreaInfo(@PathVariable final long applicationId,
-                                        @Valid @RequestBody final CarnivorePermitApplicationAreaDTO dto) {
-        carnivorePermitApplicationAreaFeature.updateProtectedArea(applicationId, dto);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping("/{applicationId:\\d+}/area/clubs")
-    public List<OrganisationNameDTO> listAvailableClubs(@PathVariable final long applicationId) {
-        return listPermitApplicationAreaPartnersFeature.listAvailablePartners(applicationId);
-    }
-
-
-    // AREA ATTACHMENTS
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping("/{applicationId:\\d+}/area-attachment")
-    public void addAreaAttachment(@PathVariable final long applicationId,
-                                  @Valid @RequestBody final CarnivorePermitApplicationAddAreaAttachmentDTO dto) {
-        carnivorePermitApplicationAreaFeature.addAreaAttachment(dto);
     }
 
     // SPECIES AMOUNT

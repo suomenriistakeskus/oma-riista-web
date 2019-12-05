@@ -318,4 +318,43 @@ angular.module('app.common.services', [])
             });
         };
     })
+    .service('ConfirmationDialogService', function ($q, $uibModal) {
+        this.showConfimationDialogWithPrimaryAccept = function (titleKey, bodyKey) {
+            return doShow(titleKey, bodyKey, 'common/confirm-default-accept.html');
+        };
+
+        this.showConfimationDialogWithPrimaryReject = function (titleKey, bodyKey) {
+            return doShow(titleKey, bodyKey, 'common/confirm-default-reject.html');
+        };
+
+        function doShow(titleKey, bodyKey, template) {
+            return $uibModal.open({
+                templateUrl: template,
+                controller: ModalController,
+                controllerAs: '$ctrl',
+                resolve: {
+                    titleKey: _.constant(titleKey),
+                    bodyKey: _.constant(bodyKey)
+                }
+            }).result;
+        }
+
+        function ModalController($uibModalInstance, $translate, titleKey, bodyKey) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.reason = '';
+                $ctrl.modalTitle = $translate.instant(titleKey);
+                $ctrl.message = $translate.instant(bodyKey);
+            };
+
+            $ctrl.cancel = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+
+            $ctrl.ok = function () {
+                $uibModalInstance.close($ctrl.reason);
+            };
+        }
+    })
 ;

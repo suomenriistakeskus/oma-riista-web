@@ -33,6 +33,7 @@ import static fi.riista.feature.shootingtest.ShootingTestEventAuthorization.Shoo
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.READ;
 import static fi.riista.security.EntityPermission.UPDATE;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -102,6 +103,9 @@ public class ShootingTestFeature {
 
     private List<ShootingTestCalendarEventDTO> listCalendarEvents(final Collection<Organisation> rhys,
                                                                   final boolean shortList) {
+        if (rhys.isEmpty()) {
+            return emptyList();
+        }
 
         final LocalDate beginDate = ShootingTest.getBeginDateOfShootingTestEventList(shortList);
         final LocalDate endDate = DateUtil.today();

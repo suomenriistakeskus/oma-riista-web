@@ -211,31 +211,10 @@ angular.module('app.harvestpermit.application.bird.summary', ['app.metadata'])
         }
     })
 
-    .component('birdApplicationSummaryApplicant', {
-        templateUrl: 'harvestpermit/applications/bird/summary/summary-applicant.html',
-        bindings: {
-            application: '<'
-        }
-    })
-
     .component('birdApplicationSummarySpecies', {
         templateUrl: 'harvestpermit/applications/bird/summary/summary-species.html',
         bindings: {
             species: '<'
-        }
-    })
-
-    .component('birdApplicationDecisionDelivery', {
-        templateUrl: 'harvestpermit/applications/bird/summary/summary-decision-delivery.html',
-        bindings: {
-            application: '<'
-        }
-    })
-
-    .component('birdApplicationSummaryDeliveryAddress', {
-        templateUrl: 'harvestpermit/applications/bird/summary/summary-delivery-address.html',
-        bindings: {
-            application: '<'
         }
     })
 
@@ -262,38 +241,11 @@ angular.module('app.harvestpermit.application.bird.summary', ['app.metadata'])
         }
     })
 
-    .component('birdApplicationSummaryMethods', {
-        templateUrl: 'harvestpermit/applications/bird/summary/summary-methods.html',
-        bindings: {
-            methods: '<'
-        },
-        controller: function () {
-            var $ctrl = this;
-
-            $ctrl.$onInit = function () {
-                $ctrl.show32 = !_.isEmpty($ctrl.methods.deviateSection32);
-                $ctrl.show33 = !_.isEmpty($ctrl.methods.deviateSection33) || $ctrl.methods.tapeRecorders;
-                $ctrl.show34 = !_.isEmpty($ctrl.methods.deviateSection34) || $ctrl.methods.traps;
-                $ctrl.show35 = !_.isEmpty($ctrl.methods.deviateSection35);
-                $ctrl.show51 = !_.isEmpty($ctrl.methods.deviateSection51);
-
-                $ctrl.showSpecies = $ctrl.show32 || $ctrl.show33 || $ctrl.show34 || $ctrl.show35 || $ctrl.show51;
-            };
-        }
-    })
-
     .component('birdApplicationSummaryPeriods', {
         templateUrl: 'harvestpermit/applications/bird/summary/summary-periods.html',
         bindings: {
             periods: '<',
             years: '<'
-        }
-    })
-
-    .component('birdApplicationSummaryDamage', {
-        templateUrl: 'harvestpermit/applications/bird/summary/summary-damage.html',
-        bindings: {
-            damage: '<'
         }
     })
 
@@ -304,18 +256,4 @@ angular.module('app.harvestpermit.application.bird.summary', ['app.metadata'])
         }
     })
 
-    .component('birdApplicationSummaryAttachments', {
-        templateUrl: 'harvestpermit/applications/bird/summary/summary-attachments.html',
-        bindings: {
-            attachments: '<',
-            baseUri: '<'
-        },
-        controller: function ($http, $translate, dialogs, FormPostService) {
-            var $ctrl = this;
-
-            $ctrl.downloadAttachment = function (id) {
-                FormPostService.submitFormUsingBlankTarget($ctrl.baseUri + '/' + id);
-            };
-        }
-    })
 ;

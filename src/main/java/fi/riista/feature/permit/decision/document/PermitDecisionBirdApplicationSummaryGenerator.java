@@ -2,11 +2,11 @@ package fi.riista.feature.permit.decision.document;
 
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationSummaryDTO;
 import fi.riista.feature.permit.application.bird.amount.BirdPermitApplicationSpeciesAmountDTO;
-import fi.riista.feature.permit.application.bird.attachments.BirdPermitApplicationAttachmentDTO;
-import fi.riista.feature.permit.application.bird.damage.BirdPermitApplicationDamageDTO;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethodsSpeciesDTO;
 import fi.riista.feature.permit.application.bird.period.BirdPermitApplicationSpeciesPeriodDTO;
-import fi.riista.feature.permit.application.bird.population.BirdPermitApplicationSpeciesPopulationDTO;
+import fi.riista.feature.permit.application.derogation.attachments.DerogationPermitApplicationAttachmentDTO;
+import fi.riista.feature.permit.application.derogation.damage.DerogationPermitApplicationDamageDTO;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethodsSpeciesDTO;
+import fi.riista.feature.permit.application.derogation.population.DerogationPermitApplicationSpeciesPopulationDTO;
 import fi.riista.util.Locales;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -167,7 +167,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.area.map"));
         sb.append(":\n");
 
-        for (final BirdPermitApplicationAttachmentDTO s : model.getAreaAttachments()) {
+        for (final DerogationPermitApplicationAttachmentDTO s : model.getAreaAttachments()) {
             sb.append("\\- ");
             sb.append(s.getName());
             sb.append("\n");
@@ -300,7 +300,8 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.forbidden.justification"));
         sb.append(":\n");
 
-        for (final BirdPermitApplicationForbiddenMethodsSpeciesDTO dto : model.getForbiddenMethods().getSpeciesJustifications()) {
+        for (final DerogationPermitApplicationForbiddenMethodsSpeciesDTO dto :
+                model.getForbiddenMethods().getSpeciesJustifications()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
@@ -324,7 +325,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.damage.amount"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationDamageDTO dto : model.getDamage()) {
+        for (DerogationPermitApplicationDamageDTO dto : model.getDamage()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
@@ -336,7 +337,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.damage.description"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationDamageDTO dto : model.getDamage()) {
+        for (DerogationPermitApplicationDamageDTO dto : model.getDamage()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
@@ -348,7 +349,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.damage.eviction.method"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationDamageDTO dto : model.getDamage()) {
+        for (DerogationPermitApplicationDamageDTO dto : model.getDamage()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
@@ -360,7 +361,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.damage.eviction.effects"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationDamageDTO dto : model.getDamage()) {
+        for (DerogationPermitApplicationDamageDTO dto : model.getDamage()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
@@ -378,7 +379,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.population.amount"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationSpeciesPopulationDTO dto : model.getPopulation()) {
+        for (DerogationPermitApplicationSpeciesPopulationDTO dto : model.getPopulation()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
@@ -390,7 +391,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.population.description"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationSpeciesPopulationDTO dto : model.getPopulation()) {
+        for (DerogationPermitApplicationSpeciesPopulationDTO dto : model.getPopulation()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
@@ -406,7 +407,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
             sb.append(i18n("Liitteet", "Bilagor"));
             sb.append("\n");
 
-            for (BirdPermitApplicationAttachmentDTO s : model.getOtherAttachments()) {
+            for (DerogationPermitApplicationAttachmentDTO s : model.getOtherAttachments()) {
                 sb.append("\\- ");
                 sb.append(s.getName());
                 sb.append("\n");

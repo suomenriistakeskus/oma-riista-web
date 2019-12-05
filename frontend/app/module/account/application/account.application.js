@@ -12,8 +12,8 @@ angular.module('app.account.application', [])
             var isCarnovireApplication = harvestPermitCategory === 'LARGE_CARNIVORE_BEAR' ||
                 harvestPermitCategory === 'LARGE_CARNIVORE_LYNX' ||
                 harvestPermitCategory === 'LARGE_CARNIVORE_LYNX_PORONHOITO' ||
-                harvestPermitCategory === 'LARGE_CARNIVORE_WOLF'
-            ;
+                harvestPermitCategory === 'LARGE_CARNIVORE_WOLF';
+            var isMammalApplication = harvestPermitCategory === 'MAMMAL';
 
             $uibModal.open({
                 templateUrl: 'account/application/application-modal.html',
@@ -22,13 +22,15 @@ angular.module('app.account.application', [])
                 controller: ModalController,
                 resolve: {
                     applicationSummary: function (MooselikePermitApplication, BirdPermitApplication,
-                                                  CarnivorePermitApplication) {
+                                                  CarnivorePermitApplication, MammalPermitApplication) {
                         if (isMooselikeApplication) {
                             return MooselikePermitApplication.getFullDetails({id: application.id}).$promise;
                         } else if (isBirdApplication) {
                             return BirdPermitApplication.getFullDetails({id: application.id}).$promise;
                         } else if (isCarnovireApplication) {
                             return CarnivorePermitApplication.getFullDetails({id: application.id}).$promise;
+                        } else if (isMammalApplication) {
+                            return MammalPermitApplication.getFullDetails({id: application.id}).$promise;
                         } else {
                             return null;
                         }

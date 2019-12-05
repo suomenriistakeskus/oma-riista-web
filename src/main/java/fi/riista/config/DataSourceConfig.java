@@ -72,7 +72,10 @@ public class DataSourceConfig {
     static class TestDatabaseConfiguration {
         @Bean(destroyMethod = "shutdown")
         public DataSource dataSource() {
-            return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2).build();
+            return new EmbeddedDatabaseBuilder()
+                    .setType(EmbeddedDatabaseType.H2)
+                    .setName("testdb;MODE=PostgreSQL")
+                    .build();
         }
 
         @Bean

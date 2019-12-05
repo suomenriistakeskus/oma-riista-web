@@ -2,7 +2,7 @@
     <div class="container">
         <ul class="nav navbar-nav r-subnav-nav" ng-if="$ctrl.coordinatorView">
             <li class="dropdown"
-                active-if-state-includes="rhy.show,rhy.announcements,rhy.events,rhy.locations,rhy.nomination,rhy.occupations,rhy.annualstats"
+                active-if-state-includes="rhy.show,rhy.announcements,rhy.events,rhy.locations,rhy.nomination,rhy.occupations,rhy.annualstats, rhy.gamedamageinspectionevent"
                 uib-dropdown dropdown-append-to-body>
                 <a uib-dropdown-toggle>
                     <span translate="rhy.menu.main"></span>
@@ -13,6 +13,7 @@
                     <li ui-sref-active="active"><a ui-sref="rhy.show" translate="rhy.menu.general"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.announcements" translate="announcements.list.title"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.events" translate="rhy.menu.events"></a></li>
+                    <li ui-sref-active="active"><a ui-sref="rhy.gamedamageinspectionevent" translate="rhy.gameDamageInspectionEvent.heading"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.locations" translate="rhy.menu.venues"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.nomination" translate="rhy.menu.jht"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.occupations" translate="rhy.menu.occupations"></a></li>

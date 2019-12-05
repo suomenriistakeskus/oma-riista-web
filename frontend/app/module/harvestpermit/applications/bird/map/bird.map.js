@@ -12,8 +12,8 @@ angular.module('app.harvestpermit.application.bird.map', ['app.metadata'])
                     protectedAreaInfo: function (BirdPermitApplication, applicationId) {
                         return BirdPermitApplication.getCurrentProtectedArea({id: applicationId}).$promise;
                     },
-                    protectedAreaAttachmentList: function (BirdPermitApplication, applicationId) {
-                        return BirdPermitApplication.listAttachments({
+                    protectedAreaAttachmentList: function (DerogationPermitApplication, applicationId) {
+                        return DerogationPermitApplication.listAttachments({
                             id: applicationId,
                             typeFilter: 'PROTECTED_AREA'
                         }).$promise.then(function (res) {
@@ -30,8 +30,8 @@ angular.module('app.harvestpermit.application.bird.map', ['app.metadata'])
                     protectedAreaInfo: function (BirdPermitApplication, applicationId) {
                         return BirdPermitApplication.getCurrentProtectedArea({id: applicationId}).$promise;
                     },
-                    protectedAreaAttachmentList: function (BirdPermitApplication, applicationId) {
-                        return BirdPermitApplication.listAttachments({
+                    protectedAreaAttachmentList: function (DerogationPermitApplication, applicationId) {
+                        return DerogationPermitApplication.listAttachments({
                             id: applicationId,
                             typeFilter: 'PROTECTED_AREA'
                         }).$promise.then(function (res) {

@@ -11,7 +11,10 @@
                         <td colspan="2" translate="rhy.annualStats.administration.gameDamage.mooselike"></td>
                     </tr>
                     <tr>
-                        <td class="col-xs-8" translate="rhy.annualStats.administration.gameDamage.mooselikeDamageInspectionLocations"></td>
+                        <td class="col-xs-8" ng-switch="$ctrl.gameDamage.mooselikeDamageInspectionLocationsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.gameDamage.mooselikeDamageInspectionLocations"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.gameDamage.mooselikeDamageInspectionLocations"></div>
+                        </td>
                         <td num-pieces="::$ctrl.gameDamage.mooselikeDamageInspectionLocations"></td>
                     </tr>
                     <tr ng-if="false">
@@ -23,7 +26,10 @@
                         <td colspan="2" translate="rhy.annualStats.administration.gameDamage.largeCarnivore"></td>
                     </tr>
                     <tr>
-                        <td class="col-xs-8" translate="rhy.annualStats.administration.gameDamage.largeCarnivoreDamageInspectionLocations"></td>
+                        <td class="col-xs-8" ng-switch="$ctrl.gameDamage.largeCarnivoreDamageInspectionLocationsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.gameDamage.largeCarnivoreDamageInspectionLocations"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.gameDamage.largeCarnivoreDamageInspectionLocations"></div>
+                        </td>
                         <td num-pieces="::$ctrl.gameDamage.largeCarnivoreDamageInspectionLocations"></td>
                     </tr>
                     <tr ng-if="false">

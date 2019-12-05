@@ -6,7 +6,7 @@ import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
 import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedArea;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethods;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
 import fi.riista.feature.permit.application.validation.ValidationUtil;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
@@ -108,7 +108,7 @@ public class BirdPermitApplicationValidator {
             return;
         }
 
-        failValidation("No cause selected");
+        failValidation("No reasons selected");
     }
 
     static void assertPeriodInformationValid(BirdPermitApplication birdApplication,
@@ -130,7 +130,7 @@ public class BirdPermitApplicationValidator {
 
     static void assertMethodsInformationValid(BirdPermitApplication birdApplication,
                                               List<HarvestPermitApplicationSpeciesAmount> speciesAmounts) {
-        final BirdPermitApplicationForbiddenMethods forbiddenMethods = birdApplication.getForbiddenMethods();
+        final DerogationPermitApplicationForbiddenMethods forbiddenMethods = birdApplication.getForbiddenMethods();
         requireNonNull(forbiddenMethods);
 
         if (forbiddenMethods.isTapeRecorders() ||

@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -30,6 +32,15 @@ public class GameSpeciesService {
         return gameSpeciesRepository
                 .findByOfficialCode(officialCode)
                 .orElseThrow(() -> new GameSpeciesNotFoundException(officialCode));
+    }
+
+    @Transactional(readOnly = true)
+    public List<GameSpecies> requireByOfficialCodes(List<Integer> officialCodes) {
+        requireNonNull(officialCodes);
+        checkArgument(!officialCodes.isEmpty());
+
+        return gameSpeciesRepository
+                .findByOfficialCodeIn(officialCodes);
     }
 
     @Transactional(readOnly = true)

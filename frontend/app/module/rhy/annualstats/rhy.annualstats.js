@@ -153,6 +153,13 @@
             };
         })
 
+        .service('AnnualStatisticsEventYears', function () {
+            this.get = function () {
+                // End of range is not inclusive and we want to show events + 1 year future
+                return _.range(2017, new Date().getFullYear() + 2);
+            };
+        })
+
         .service('RhyAnnualStatisticsViewState', function ($state) {
             var self = this;
 

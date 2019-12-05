@@ -8,6 +8,8 @@ public class HarvestPermitApplicationName {
     public static final LocalisedString LYNX = LocalisedString.of("Kannanhoidollinen poikkeuslupa, ilves", "Stamvårdande dispens, lodjur");
     public static final LocalisedString LYNX_PORONHOITO = LocalisedString.of("Kannanhoidollinen poikkeuslupa poronhoitoalueella, ilves", "Stamvårdande dispens inom renskötselområdet, lodjur");
     public static final LocalisedString WOLF = LocalisedString.of("Kannanhoidollinen poikkeuslupa, susi", "Stamvårdande dispens, varg");
+    public static final LocalisedString MAMMAL = LocalisedString.of("Poikkeuslupa riistanisäkkäille", "Dispens för " +
+            "däggdjursvilt");
 
     private HarvestPermitApplicationName() {
         throw new AssertionError();

@@ -72,6 +72,10 @@ public class Occupation extends LifecycleEntity<Long> implements HasBeginAndEndD
     @Column
     private ContactInfoShare contactInfoShare;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private OccupationBoardRepresentationRole boardRepresentation;
+
     public Occupation() {
     }
 
@@ -187,6 +191,14 @@ public class Occupation extends LifecycleEntity<Long> implements HasBeginAndEndD
 
     public void setContactInfoShare(ContactInfoShare contactInfoShare) {
         this.contactInfoShare = contactInfoShare;
+    }
+
+    public OccupationBoardRepresentationRole getBoardRepresentation() {
+        return boardRepresentation;
+    }
+
+    public void setBoardRepresentation(final OccupationBoardRepresentationRole boardRepresentation) {
+        this.boardRepresentation = boardRepresentation;
     }
 
     // Querydsl delegates -->

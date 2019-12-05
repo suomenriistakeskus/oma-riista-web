@@ -21,10 +21,12 @@ class HarvestPermitApplicationTypeFactory {
         return ImmutableList.of(
                 mooselikeForHuntingYear(calendarYear),
                 birdForCalendarYear(calendarYear),
+                mammalForCalendarYear(calendarYear),
                 bearForHuntingYear(calendarYear),
                 lynxForHuntingYear(calendarYear),
                 lynxPoronhoitoForHuntingYear(calendarYear));
     }
+
 
     public HarvestPermitApplicationTypeDTO resolve(final HarvestPermitCategory category,
                                                    final int huntingYear) {
@@ -39,6 +41,8 @@ class HarvestPermitApplicationTypeFactory {
                 return lynxForHuntingYear(huntingYear);
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
                 return lynxPoronhoitoForHuntingYear(huntingYear);
+            case MAMMAL:
+                return mammalForCalendarYear(huntingYear);
             default:
                 throw new IllegalArgumentException("Unknown permit category:" + category);
         }
@@ -59,6 +63,13 @@ class HarvestPermitApplicationTypeFactory {
 
     HarvestPermitApplicationTypeDTO birdForCalendarYear(final int calendarYear) {
         return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.BIRD)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO mammalForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.MAMMAL)
                 .withHuntingYear(calendarYear)
                 .withToday(today)
                 .build();

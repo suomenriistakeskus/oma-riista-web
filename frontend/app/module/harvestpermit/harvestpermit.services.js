@@ -2,7 +2,8 @@
 
 angular.module('app.harvestpermit.services', ['ngResource'])
 
-    .constant('PermitCategories', ['MOOSELIKE', 'MOOSELIKE_NEW', 'BIRD', 'LARGE_CARNIVORE_BEAR', 'LARGE_CARNIVORE_LYNX', 'LARGE_CARNIVORE_LYNX_PORONHOITO'])
+    .constant('PermitCategories', ['MOOSELIKE', 'MOOSELIKE_NEW', 'BIRD',
+        'LARGE_CARNIVORE_BEAR', 'LARGE_CARNIVORE_LYNX', 'LARGE_CARNIVORE_LYNX_PORONHOITO', 'MAMMAL'])
     .constant('DecisionTypes', ['HARVEST_PERMIT', 'CANCEL_APPLICATION', 'IGNORE_APPLICATION'])
     .constant('DecisionGrantStatus', ['UNCHANGED', 'RESTRICTED', 'REJECTED'])
     .constant('AppealStatus', ['INITIATED', 'IGNORED', 'UNCHANGED', 'REPEALED', 'PARTIALLY_REPEALED', 'RETREATMENT'])

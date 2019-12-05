@@ -224,6 +224,15 @@ public abstract class SpringContextIntegrationTest extends SpringRuleConfigurer
         }
     }
 
+    protected void onAuthenticated(final SystemUser user, final Runnable task) {
+        authenticate(user);
+        try {
+            task.run();
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
     protected void onSavedAndAuthenticated(final SystemUser user, final Consumer<SystemUser> task) {
         onSavedAndAuthenticated(user, () -> task.accept(user));
     }

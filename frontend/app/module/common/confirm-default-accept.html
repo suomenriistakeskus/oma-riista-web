@@ -1,0 +1,21 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" ng-bind="::$ctrl.modalTitle"></h3>
+</div>
+
+<div class="modal-body">
+    <label>
+        <span ng-bind="::$ctrl.message"></span>
+    </label>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-click="$ctrl.cancel()"
+            translate="global.no"></button>
+
+    <button type="submit" class="btn btn-primary"
+            ng-disabled="askReasonForm.$invalid"
+            ng-click="$ctrl.ok()"
+            translate="global.yes"></button>
+</div>

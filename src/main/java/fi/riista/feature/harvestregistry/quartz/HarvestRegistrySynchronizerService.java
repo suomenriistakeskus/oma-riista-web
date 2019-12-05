@@ -185,14 +185,12 @@ public class HarvestRegistrySynchronizerService {
     }
 
     private void removeItemsWithHarvestModifiedAfter(final DateTime start, final DateTime end) {
-        LOG.info("Removing items");
         final List<Harvest> unofficialHarvests = queryFactory
                 .selectFrom(HARVEST)
                 .where(HARVEST.lifecycleFields.modificationTime.between(start.toDate(), end.toDate()))
                 .fetch();
         Lists.partition(unofficialHarvests, PAGE_SIZE).forEach(partition ->
                 harvestRegistryItemRepository.deleteByHarvestId(partition));
-        LOG.info("Removed items");
     }
 
 }

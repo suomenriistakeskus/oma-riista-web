@@ -17,15 +17,18 @@ public class PermitTypeCode {
     public static final String WOLF_KANNANHOIDOLLINEN = "209";
     public static final String WOLVERINE_DAMAGE_BASED = "211";
 
+    public static final String MAMMAL_DAMAGE_BASED = "215";
+    
     // These permit types possibly have permitted methods which are otherwise illegal.
     private static final Set<String> PERMITTED_METHOD_ALLOWED = ImmutableSet.of("300", "305", "310", "345", "346",
             "370");
 
     // XXX: Legacy option for harvest reporting. Consider removing.
-    private static final Set<String> PERMIT_TYPES_AS_LIST = ImmutableSet.of("200", "210", "250", "251", "253", "300", "305", "310", "345", "346", "370");
+    private static final Set<String> PERMIT_TYPES_AS_LIST = ImmutableSet.of("200", "210", "250", "251", "253", "300",
+            "305", "310", "345", "346", "370");
 
     public static final Set<String> DEROGATION_PERMIT_CODES = ImmutableSet.of("200", "202", "203", "204", "206",
-            "207", "208", "209", "210", "211", "305", "345", "346", "370");
+            "207", "208", "209", "210", "211", "305", "345", "346", "370", MAMMAL_DAMAGE_BASED);
 
     @Nonnull
     public static String getPermitTypeCode(final HarvestPermitCategory permitCategory, final Integer validityYears) {
@@ -46,6 +49,8 @@ public class PermitTypeCode {
                 return PermitTypeCode.LYNX_KANNANHOIDOLLINEN;
             case LARGE_CARNIVORE_WOLF:
                 return PermitTypeCode.WOLF_KANNANHOIDOLLINEN;
+            case MAMMAL:
+                return MAMMAL_DAMAGE_BASED;
             default:
                 throw new IllegalArgumentException("Unsupported permit category: " + permitCategory);
         }

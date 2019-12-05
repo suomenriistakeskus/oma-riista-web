@@ -14,12 +14,19 @@ public class PermitDecisionName {
     private static final LocalisedString IGNORE_APPLICATION = LocalisedString.of(
             "HAKEMUKSEN TUTKIMATTA JÄTTÄMINEN", "ANSÖKAN LÄMNAS UTAN PRÖVNING");
 
-    public static final LocalisedString MOOSELIKE = LocalisedString.of("Hirvieläinten pyyntilupa", "Jaktlicens för hjortdjur");
-    public static final LocalisedString MOOSELIKE_AMENDMENT = LocalisedString.of("Uusi hirvieläimen pyyntilupa", "Ny jaktlicens för hjortdjur");
-    public static final LocalisedString BIRD = LocalisedString.of("ML 41 B §:n mukainen poikkeuslupa", "Dispens enligt JL 41 B §");
+    public static final LocalisedString MOOSELIKE = LocalisedString.of("Hirvieläinten pyyntilupa", "Jaktlicens för " +
+            "hjortdjur");
+    public static final LocalisedString MOOSELIKE_AMENDMENT = LocalisedString.of("Uusi hirvieläimen pyyntilupa", "Ny " +
+            "jaktlicens för hjortdjur");
+    public static final LocalisedString BIRD = LocalisedString.of("ML 41 B §:n mukainen poikkeuslupa", "Dispens " +
+            "enligt JL 41 B §");
     public static final LocalisedString LARGE_CARNIVORE = LocalisedString.of(
             "ML 41 A §:n mukainen kannanhoidollinen poikkeuslupa",
             "Stamvårdande dispens enligt JL 41 A §");
+    public static final LocalisedString MAMMAL = LocalisedString.of(
+            "Poikkeuslupa riistanisäkkäille",
+            "Dispens för däggdjursvilt");
+
 
     @Nonnull
     public static LocalisedString getDecisionName(final @Nonnull PermitDecision.DecisionType decisionType,

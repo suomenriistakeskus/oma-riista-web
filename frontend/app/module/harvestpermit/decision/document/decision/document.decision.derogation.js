@@ -4,7 +4,7 @@ angular.module('app.harvestpermit.decision.document.decision.derogation', [])
     .component('permitDecisionDerogationReasons', {
         bindings: {
             decisionId: '<',
-            derogationReasons: '<',
+            derogationLawSections: '<',
             canEditContent: '<'
         },
         templateUrl: 'harvestpermit/decision/document/decision/derogation-reasons.html',
@@ -16,6 +16,10 @@ angular.module('app.harvestpermit.decision.document.decision.derogation', [])
                     RefreshDecisionStateService.refresh();
                 });
             };
+
+            $ctrl.getSelectedReasons = function (lawSection) {
+                return _.filter(lawSection.reasons, 'checked');
+            };
         }
     })
 
@@ -25,11 +29,13 @@ angular.module('app.harvestpermit.decision.document.decision.derogation', [])
                 templateUrl: 'harvestpermit/decision/document/decision/derogation-reasons-modal.html',
                 controllerAs: '$ctrl',
                 controller: ModalController,
-                size: 'md',
+                size: 'lg',
                 resolve: {
                     decisionId: _.constant(decisionId),
-                    data: function () {
-                        return PermitDecisionDerogation.getReasons({id: decisionId}).$promise;
+                    derogationLawSections: function () {
+                        return PermitDecisionDerogation.getReasons({id: decisionId}).$promise.then(function (data) {
+                            return data.lawSections;
+                        });
                     }
                 }
             }).result;
@@ -37,17 +43,16 @@ angular.module('app.harvestpermit.decision.document.decision.derogation', [])
             return NotificationService.handleModalPromise(modalPromise);
         };
 
-        function ModalController($uibModalInstance, decisionId, data) {
+        function ModalController($uibModalInstance, decisionId, derogationLawSections) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.derogationReasons = data.reasons;
-                $ctrl.contentValid = !_.isEmpty($ctrl.derogationReasons);
+                $ctrl.derogationLawSections = derogationLawSections;
             };
 
             $ctrl.save = function () {
                 PermitDecisionDerogation.updateReasons({id: decisionId}, {
-                    reasons: $ctrl.derogationReasons
+                    lawSections: $ctrl.derogationLawSections
                 }).$promise.then(function () {
                     $uibModalInstance.close();
                 }, function (err) {

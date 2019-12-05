@@ -8,9 +8,9 @@ import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethods;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
 import fi.riista.feature.permit.application.carnivore.species.CarnivorePermitSpecies;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReason;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonRepository;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonType;
@@ -93,7 +93,8 @@ public class PermitDecisionCreateFeatureTest extends EmbeddedDatabaseTest {
     public void testBird_legalSectionsCopied() {
         final BirdPermitApplication birdPermitApplication = createBirdPermitApplication();
 
-        final BirdPermitApplicationForbiddenMethods forbiddenMethods = birdPermitApplication.getForbiddenMethods();
+        final DerogationPermitApplicationForbiddenMethods forbiddenMethods =
+                birdPermitApplication.getForbiddenMethods();
         forbiddenMethods.setDeviateSection32("deviate");
         forbiddenMethods.setDeviateSection33("deviate");
         forbiddenMethods.setDeviateSection34("deviate");
@@ -117,7 +118,7 @@ public class PermitDecisionCreateFeatureTest extends EmbeddedDatabaseTest {
     public void testBird_legalSectionsCopied_trapsAndTapeRecorders() {
         final BirdPermitApplication birdPermitApplication = createBirdPermitApplication();
 
-        final BirdPermitApplicationForbiddenMethods forbiddenMethods = birdPermitApplication.getForbiddenMethods();
+        final DerogationPermitApplicationForbiddenMethods forbiddenMethods = birdPermitApplication.getForbiddenMethods();
         forbiddenMethods.setTraps(true);
         forbiddenMethods.setTapeRecorders(true);
 
@@ -138,7 +139,8 @@ public class PermitDecisionCreateFeatureTest extends EmbeddedDatabaseTest {
     public void testBird_allCauseFlagsMappable() {
         final BirdPermitApplication birdPermitApplication = createBirdPermitApplication();
 
-        final BirdPermitApplicationCause birdPermitApplicationCause = new BirdPermitApplicationCause();
+        final BirdPermitApplicationCause birdPermitApplicationCause =
+                new BirdPermitApplicationCause();
         setAllCauses(birdPermitApplicationCause);
         birdPermitApplication.setCause(birdPermitApplicationCause);
 

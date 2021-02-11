@@ -110,7 +110,7 @@ public class MooselikePermitListDTO {
         }
 
         private double getPermitAmount() {
-            return speciesAmount.getAmount();
+            return speciesAmount.getSpecimenAmount();
         }
 
         private double getAmendmentAmount() {

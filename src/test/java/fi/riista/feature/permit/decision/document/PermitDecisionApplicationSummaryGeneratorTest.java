@@ -196,7 +196,7 @@ public class PermitDecisionApplicationSummaryGeneratorTest implements DefaultEnt
 
     @Nonnull
     private static GISZoneSizeDTO createAreaSize() {
-        return new GISZoneSizeDTO(new TotalLandWaterSizeDTO(3165.0 * 10_000, 3163 * 10_000, 2 * 10_000),
+        return GISZoneSizeDTO.create(new TotalLandWaterSizeDTO(3165.0 * 10_000, 3163 * 10_000, 2 * 10_000),
                 114.0 * 10_000, 3050.0 * 10_000);
     }
 
@@ -242,14 +242,14 @@ public class PermitDecisionApplicationSummaryGeneratorTest implements DefaultEnt
 
         final HarvestPermitApplicationSpeciesAmount spaMoose = new HarvestPermitApplicationSpeciesAmount();
         spaMoose.setGameSpecies(getEntitySupplier().newGameSpeciesMoose());
-        spaMoose.setAmount(20);
+        spaMoose.setSpecimenAmount(20f);
 
         final GameSpecies deer = getEntitySupplier().newGameSpecies();
         deer.setNameFinnish("valkohäntäpeura");
         deer.setNameSwedish("vitsvanshjort");
         final HarvestPermitApplicationSpeciesAmount spaDeer = new HarvestPermitApplicationSpeciesAmount();
         spaDeer.setGameSpecies(deer);
-        spaDeer.setAmount(700);
+        spaDeer.setSpecimenAmount(700f);
 
         final HuntingClub permitHolder = getEntitySupplier().newHuntingClub();
 

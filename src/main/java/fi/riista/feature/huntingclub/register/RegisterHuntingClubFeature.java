@@ -90,11 +90,11 @@ public class RegisterHuntingClubFeature {
     public List<LHOrganisationSearchDTO> findByName(final String queryString) {
         final List<LHOrganisation> finnishNameMatches = lhOrganisationRepository.findFuzzyFinnishName(
                 queryString, MAX_FUZZY_DISTANCE_ORGANISATION_NAME,
-                new PageRequest(0, MAX_RESULT_ORGANISATION));
+                PageRequest.of(0, MAX_RESULT_ORGANISATION));
 
         final List<LHOrganisation> swedishNameMatches = lhOrganisationRepository.findFuzzySwedishName(
                 queryString, MAX_FUZZY_DISTANCE_ORGANISATION_NAME,
-                new PageRequest(0, MAX_RESULT_ORGANISATION));
+                PageRequest.of(0, MAX_RESULT_ORGANISATION));
 
         return processSearchResults(F.concat(finnishNameMatches, swedishNameMatches));
     }

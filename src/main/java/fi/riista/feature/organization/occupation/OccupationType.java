@@ -83,6 +83,10 @@ public enum OccupationType implements LocalisedEnum {
         return EnumSet.copyOf(VALID_JHT_OCCUPATION_TYPE);
     }
 
+    public static EnumSet<OccupationType> boardValues() {
+        return EnumSet.copyOf(BOARD_VALUES);
+    }
+
     public static OccupationType[] applicableValuesFor(@Nullable final OrganisationType organisationType) {
         return Iterables.toArray(getApplicableTypes(organisationType), OccupationType.class);
     }

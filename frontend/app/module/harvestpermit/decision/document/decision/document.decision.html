@@ -1,7 +1,17 @@
-<permit-decision-section-header decision="$ctrl.decision"
-                                section-id="$ctrl.sectionId"
-                                deny-complete="$ctrl.denyComplete()">
-</permit-decision-section-header>
+<div ng-switch="$ctrl.showGrantStatusHeader">
+    <permit-decision-section-header
+            ng-switch-when="false"
+            decision="$ctrl.decision"
+            section-id="$ctrl.sectionId"
+            deny-complete="$ctrl.denyComplete()">
+    </permit-decision-section-header>
+    <permit-decision-section-header-with-grant-status
+            ng-switch-when="true"
+            decision="$ctrl.decision"
+            section-id="$ctrl.sectionId"
+            deny-complete="$ctrl.denyComplete()">
+    </permit-decision-section-header-with-grant-status>
+</div>
 
 <div ng-switch="$ctrl.decision.decisionType">
     <div ng-switch-when="HARVEST_PERMIT">
@@ -12,29 +22,33 @@
             </permit-decision-protected-area-types>
         </div>
 
-        <permit-decision-legal-fields decision-id="$ctrl.decision.id"
-                                      can-edit-content="$ctrl.canEditContent()"
-                                      legal-fields="$ctrl.legalFields">
-        </permit-decision-legal-fields>
+        <div ng-if="$ctrl.showLegalFields">
+            <permit-decision-legal-fields decision-id="$ctrl.decision.id"
+                                          can-edit-content="$ctrl.canEditContent()"
+                                          legal-fields="$ctrl.legalFields">
+            </permit-decision-legal-fields>
+        </div>
 
         <permit-decision-species-amounts
+                ng-if="$ctrl.showSpeciesAmounts"
                 decision-id="$ctrl.decision.id"
                 permit-type-code="$ctrl.decision.permitTypeCode"
                 can-edit-content="$ctrl.canEditContent()"
-                species-amounts="$ctrl.speciesAmounts">
+                species-amounts="$ctrl.speciesAmounts"
+                harvest-permit-category="$ctrl.decision.harvestPermitCategory">
         </permit-decision-species-amounts>
 
         <div ng-if="$ctrl.showDerogationReasons">
             <permit-decision-derogation-reasons decision-id="$ctrl.decision.id"
                                                 can-edit-content="$ctrl.canEditContent()"
-                                                derogation-reasons="$ctrl.derogationReasons">
+                                                derogation-law-sections="$ctrl.derogationLawSections">
             </permit-decision-derogation-reasons>
         </div>
     </div>
 </div>
 
 <permit-decision-document-text-section
-        section-id="'decisionExtra'"
+        section-id="$ctrl.extraSectionId"
         decision="$ctrl.decision"
         reference="$ctrl.reference">
 </permit-decision-document-text-section>

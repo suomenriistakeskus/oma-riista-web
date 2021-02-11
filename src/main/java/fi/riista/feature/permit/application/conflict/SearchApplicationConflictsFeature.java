@@ -23,6 +23,7 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +58,7 @@ public class SearchApplicationConflictsFeature {
     @Resource
     private SQLQueryFactory sqlQueryFactory;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public Long getPendingBatchId() {
         final QHarvestPermitApplicationConflictBatch BATCH = QHarvestPermitApplicationConflictBatch.harvestPermitApplicationConflictBatch;
@@ -67,6 +69,7 @@ public class SearchApplicationConflictsFeature {
                 .fetchOne();
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public void markBatchComplete(final long batchId) {
         final QHarvestPermitApplicationConflictBatch BATCH = QHarvestPermitApplicationConflictBatch.harvestPermitApplicationConflictBatch;
@@ -77,6 +80,7 @@ public class SearchApplicationConflictsFeature {
                 .execute();
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public boolean isConflictCalculationPending(final long batchId) {
         final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
@@ -107,6 +111,7 @@ public class SearchApplicationConflictsFeature {
         return applicationCount > 0 && (conflictCount == 0 || palstaConflictCount == 0);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public List<Long> getApplicationIdsToCalculate(final long batchId) {
         final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
@@ -134,6 +139,7 @@ public class SearchApplicationConflictsFeature {
                 .fetch();
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public void calculateConflictingApplications(final long applicationId, final long batchId) {
         final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -174,6 +180,7 @@ public class SearchApplicationConflictsFeature {
                 harvestPermitApplicationSpeciesAmountRepository.findSpeciesByApplication(second));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public List<Long> getConflictIdListForSecondStep(final long batchId) {
         final SQHarvestPermitApplicationConflict CONFLICT = SQHarvestPermitApplicationConflict.harvestPermitApplicationConflict;
@@ -201,6 +208,7 @@ public class SearchApplicationConflictsFeature {
                 .fetch();
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public void calculatePalstaListForConflict(final long conflictId) {
         final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -229,7 +237,7 @@ public class SearchApplicationConflictsFeature {
                     palsta.getConflictAreaSize());
         });
 
-        harvestPermitApplicationConflictPalstaRepository.save(listOfConflicts);
+        harvestPermitApplicationConflictPalstaRepository.saveAll(listOfConflicts);
 
         if (listOfConflicts.isEmpty()) {
             LOG.warn("Removing conflict with no palsta conflicts for firstApplicationId={} secondApplicationId={}",

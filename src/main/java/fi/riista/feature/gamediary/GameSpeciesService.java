@@ -1,6 +1,8 @@
 package fi.riista.feature.gamediary;
 
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
+import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.metadata.ObservationContextSensitiveFields_;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.jpa.JpaSubQuery;
@@ -13,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -26,10 +30,19 @@ public class GameSpeciesService {
     private EnumLocaliser enumLocaliser;
 
     @Transactional(readOnly = true)
-    public GameSpecies requireByOfficialCode(int officialCode) {
+    public GameSpecies requireByOfficialCode(final int officialCode) {
         return gameSpeciesRepository
                 .findByOfficialCode(officialCode)
                 .orElseThrow(() -> new GameSpeciesNotFoundException(officialCode));
+    }
+
+    @Transactional(readOnly = true)
+    public List<GameSpecies> requireByOfficialCodes(List<Integer> officialCodes) {
+        requireNonNull(officialCodes);
+        checkArgument(!officialCodes.isEmpty());
+
+        return gameSpeciesRepository
+                .findByOfficialCodeIn(officialCodes);
     }
 
     @Transactional(readOnly = true)
@@ -40,10 +53,14 @@ public class GameSpeciesService {
     }
 
     @Transactional(readOnly = true)
-    public List<GameSpeciesDTO> listRegistrableAsObservationsWithinMooseHunting() {
+    public List<GameSpeciesDTO> listSpeciesForObservationCategory(final ObservationCategory category) {
         return GameSpeciesDTO.transformList(gameSpeciesRepository.findAll(JpaSubQuery
                 .of(GameSpecies_.observationContextSensitiveFields)
-                .exists((root, cb) -> cb.isTrue(root.get(ObservationContextSensitiveFields_.withinMooseHunting)))));
+                .exists((root, cb) -> cb.and(
+                        cb.equal(root.get(ObservationContextSensitiveFields_.observationCategory), category),
+                        cb.equal(
+                                root.get(ObservationContextSensitiveFields_.metadataVersion),
+                                ObservationSpecVersion.MOST_RECENT.toIntValue())))));
     }
 
     @Cacheable(value = "gameSpeciesNameIndex")

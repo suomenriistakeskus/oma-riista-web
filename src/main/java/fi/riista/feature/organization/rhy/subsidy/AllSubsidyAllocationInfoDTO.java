@@ -1,46 +1,39 @@
 package fi.riista.feature.organization.rhy.subsidy;
 
 import fi.riista.feature.organization.rhy.subsidy.compensation.SubsidyAllocationCompensationResultDTO;
+import org.iban4j.Iban;
 
 import javax.annotation.Nonnull;
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
-import static fi.riista.util.NumberUtils.isPositive;
 import static java.util.Objects.requireNonNull;
 
 public class AllSubsidyAllocationInfoDTO {
 
     private final int subsidyYear;
 
-    private final BigDecimal totalSubsidyAmountForBatch1;
-    private final BigDecimal totalSubsidyAmountForBatch2;
-
-    private final boolean subsidyBatch1AlreadyGranted;
-
     private final List<SubsidyAllocatedToCriterionDTO> criteriaSpecificAllocations;
-    private final List<SubsidyAllocationStage4DTO> calculatedRhyAllocations;
+    private final List<RhySubsidyStage5DTO> calculatedRhyAllocations;
 
     private final SubsidyAllocationCompensationResultDTO compensationResult;
 
+    private final Map<Long, Iban> rhyIdToIbanMapping;
+
     public AllSubsidyAllocationInfoDTO(final int subsidyYear,
-                                       @Nonnull final BigDecimal totalSubsidyAmountForBatch1,
-                                       @Nonnull final BigDecimal totalSubsidyAmountForBatch2,
                                        @Nonnull final List<SubsidyAllocatedToCriterionDTO> criteriaSpecificAllocations,
-                                       @Nonnull final List<SubsidyAllocationStage4DTO> calculatedRhyAllocations,
-                                       @Nonnull final SubsidyAllocationCompensationResultDTO compensationResult) {
+                                       @Nonnull final List<RhySubsidyStage5DTO> calculatedRhyAllocations,
+                                       @Nonnull final SubsidyAllocationCompensationResultDTO compensationResult,
+                                       @Nonnull final Map<Long, Iban> rhyIdToIbanMapping) {
 
         this.subsidyYear = subsidyYear;
-
-        this.totalSubsidyAmountForBatch1 = requireNonNull(totalSubsidyAmountForBatch1);
-        this.totalSubsidyAmountForBatch2 = requireNonNull(totalSubsidyAmountForBatch2);
-
-        this.subsidyBatch1AlreadyGranted = isPositive(totalSubsidyAmountForBatch1);
 
         this.criteriaSpecificAllocations = requireNonNull(criteriaSpecificAllocations);
         this.calculatedRhyAllocations = requireNonNull(calculatedRhyAllocations);
 
         this.compensationResult = requireNonNull(compensationResult);
+
+        this.rhyIdToIbanMapping = requireNonNull(rhyIdToIbanMapping);
     }
 
     // Accessors -->
@@ -49,27 +42,19 @@ public class AllSubsidyAllocationInfoDTO {
         return subsidyYear;
     }
 
-    public BigDecimal getTotalSubsidyAmountForBatch1() {
-        return totalSubsidyAmountForBatch1;
-    }
-
-    public BigDecimal getTotalSubsidyAmountForBatch2() {
-        return totalSubsidyAmountForBatch2;
-    }
-
-    public boolean isSubsidyBatch1AlreadyGranted() {
-        return subsidyBatch1AlreadyGranted;
-    }
-
     public List<SubsidyAllocatedToCriterionDTO> getCriteriaSpecificAllocations() {
         return criteriaSpecificAllocations;
     }
 
-    public List<SubsidyAllocationStage4DTO> getCalculatedRhyAllocations() {
+    public List<RhySubsidyStage5DTO> getCalculatedRhyAllocations() {
         return calculatedRhyAllocations;
     }
 
     public SubsidyAllocationCompensationResultDTO getCompensationResult() {
         return compensationResult;
+    }
+
+    public Map<Long, Iban> getRhyIdToIbanMapping() {
+        return rhyIdToIbanMapping;
     }
 }

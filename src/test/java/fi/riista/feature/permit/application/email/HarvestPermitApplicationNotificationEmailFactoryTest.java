@@ -114,7 +114,7 @@ public class HarvestPermitApplicationNotificationEmailFactoryTest extends Spring
     }
 
     @Nonnull
-    private HarvestPermitApplicationNotificationDTO createDTO(final Locale locale) {
+    private static HarvestPermitApplicationNotificationDTO createDTO(final Locale locale) {
         return HarvestPermitApplicationNotificationDTO.builder()
                 .withLocale(locale)
                 .withApplicationNumber(10001)

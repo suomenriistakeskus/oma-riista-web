@@ -269,6 +269,7 @@ angular.module('app.harvestpermit.application.amendment', [])
             }
         }
 
+
         $ctrl.canSave = function () {
             return $ctrl.editable && $ctrl.application.gameSpeciesCode;
         };

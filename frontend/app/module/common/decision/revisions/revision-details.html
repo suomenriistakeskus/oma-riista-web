@@ -1,0 +1,66 @@
+<div class="well" style="font-size: 15px; padding: 40px 20px 15px;">
+    <div class="row">
+        <div class="col-xs-4">
+            <permit-decision-revision-state-icon
+                    icon-type="lock"
+                    icon-enabled="true">
+            </permit-decision-revision-state-icon>
+
+            <div style="margin-left: 75px;">
+                <p>
+                    <strong translate="decision.revision.locked"></strong>
+                </p>
+
+                <p class="text-muted" style="line-height: 1.5em">
+                    <span ng-bind="$ctrl.activeRevision.lockedDate | date:'d.M.yyyy HH:mm'"></span>
+                    <br>
+                    <span ng-bind="$ctrl.activeRevision.lockedByUsername"></span>
+                </p>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <permit-decision-revision-state-icon
+                    icon-type="calendar"
+                    icon-enabled="$ctrl.activeRevision.publishDate">
+            </permit-decision-revision-state-icon>
+
+            <div style="margin-left: 75px;">
+                <p ng-switch="!!$ctrl.activeRevision.publishDate">
+                    <strong ng-switch-when="true"
+                            translate="decision.revision.published"></strong>
+                    <strong class="text-muted" ng-switch-when="false"
+                            translate="decision.revision.scheduledPublishDate"></strong>
+                </p>
+
+                <p class="text-muted" ng-switch="!!$ctrl.activeRevision.publishDate">
+                    <span ng-switch-when="false"
+                          ng-bind="$ctrl.activeRevision.scheduledPublishDate | date:'d.M.yyyy HH:mm'"></span>
+                    <span ng-switch-when="true"
+                          ng-bind="$ctrl.activeRevision.publishDate | date:'d.M.yyyy HH:mm'"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="col-xs-4">
+            <permit-decision-revision-state-icon
+                    icon-type="envelope"
+                    icon-enabled="$ctrl.activeRevision.postedByMailDate">
+            </permit-decision-revision-state-icon>
+
+            <div style="margin-left: 75px;">
+                <p ng-switch="!!$ctrl.activeRevision.postedByMailDate">
+                    <strong ng-switch-when="false"
+                            translate="decision.revision.postalWaiting" class="text-muted"></strong>
+                    <strong ng-switch-when="true"
+                            translate="decision.revision.postalDone"></strong>
+                </p>
+
+                <p class="text-muted" ng-show="$ctrl.activeRevision.postedByMailDate">
+                    <span ng-bind="$ctrl.activeRevision.postedByMailDate | date:'d.M.yyyy HH:mm'"></span>
+                    <br>
+                    <span ng-bind="$ctrl.activeRevision.postedByMailUsername"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

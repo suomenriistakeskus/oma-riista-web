@@ -51,7 +51,7 @@ public class HarvestPermitAmendmentApplicationFeatureTest extends EmbeddedDataba
     public void testOriginalPersonCreateApplication() {
         onSavedAndAuthenticated(createNewUser("original", originalContactPerson), () -> {
             final HarvestPermitAmendmentApplicationDTO dto = feature.createAmendmentApplication(createDto(), Locales.FI);
-            final HarvestPermitApplication application = repository.findOne(dto.getId());
+            final HarvestPermitApplication application = repository.findById(dto.getId()).get();
             assertNotNull(application);
             assertEquals(originalContactPerson, application.getContactPerson());
         });
@@ -61,7 +61,7 @@ public class HarvestPermitAmendmentApplicationFeatureTest extends EmbeddedDataba
     public void testOtherContactPersonCreateApplication() {
         onSavedAndAuthenticated(createNewUser("other", otherContactPerson), () -> {
             final HarvestPermitAmendmentApplicationDTO dto = feature.createAmendmentApplication(createDto(), Locales.FI);
-            final HarvestPermitApplication application = repository.findOne(dto.getId());
+            final HarvestPermitApplication application = repository.findById(dto.getId()).get();
             assertNotNull(application);
             assertEquals(otherContactPerson, application.getContactPerson());
         });
@@ -71,7 +71,7 @@ public class HarvestPermitAmendmentApplicationFeatureTest extends EmbeddedDataba
     public void testModeratorPersonCreateApplication() {
         onSavedAndAuthenticated(createNewModerator(), () -> {
             final HarvestPermitAmendmentApplicationDTO dto = feature.createAmendmentApplication(createDto(), Locales.FI);
-            final HarvestPermitApplication application = repository.findOne(dto.getId());
+            final HarvestPermitApplication application = repository.findById(dto.getId()).get();
             assertNotNull(application);
             assertEquals(originalContactPerson, application.getContactPerson());
         });

@@ -11,13 +11,14 @@
             </a>
         </div>
 
-        <p ng-if="$ctrl.derogationReasons.length == 0"
-           class="text-danger"
-           translate="harvestpermit.derogation.nothingSelectedInstruction">
-        </p>
 
-        <ul>
-            <li ng-repeat="reason in $ctrl.derogationReasons">
+        <ul ng-repeat="lawSection in $ctrl.derogationLawSections">
+            <h5 translate="harvestpermit.derogation.reason.{{lawSection.lawSection}}"></h5>
+            <p ng-if="::$ctrl.getSelectedReasons(lawSection).length === 0"
+               class="text-danger"
+               translate="harvestpermit.derogation.nothingSelectedInstruction">
+            </p>
+            <li ng-repeat="reason in lawSection.reasons" ng-if="reason.checked">
                 <span translate="harvestpermit.derogation.reason.{{reason.reasonType}}"></span>
             </li>
         </ul>

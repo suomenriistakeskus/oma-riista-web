@@ -23,7 +23,7 @@
 <p>Specifikation av djuret som erhållits som byte:</p>
 
 <p>Mängd: {{amount}} st.</p>
-<p>Fångsttid: {{timestamp pointOfTime "dd.MM.yyyy HH:mm"}}</p>
+<p>Fångsttid: {{dateTime pointOfTime "dd.MM.yyyy HH:mm"}}</p>
 
 {{#if geoLocation}}
     <p>Fångstplatsens koordinater: {{geoLocation.latitude}} {{geoLocation.longitude}} ETRS-TM35FIN</p>
@@ -138,5 +138,5 @@
 {{/if}}
 
 <p>
-    (Meddelandets identifikationsuppgifter: {{timestamp timestamp "dd.MM.yyyy HH:mm:ss"}}, id={{id}}, revision={{rev}}, state={{state}}, c={{createdByUserId}}, m={{modifiedByUserId}})
+    (Meddelandets identifikationsuppgifter: {{dateTime timestamp "dd.MM.yyyy HH:mm:ss"}}, id={{id}}, revision={{rev}}, state={{state}}, c={{createdByUserId}}, m={{modifiedByUserId}})
 </p>

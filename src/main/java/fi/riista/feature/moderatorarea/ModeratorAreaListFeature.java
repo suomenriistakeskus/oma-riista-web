@@ -33,7 +33,7 @@ public class ModeratorAreaListFeature {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public Slice<ModeratorAreaDTO> slice(final ModeratorAreaListRequestDTO dto) {
-        final Pageable pageRequest = new PageRequest(dto.getPage(), dto.getSize(), Sort.Direction.DESC, "id");
+        final Pageable pageRequest = PageRequest.of(dto.getPage(), dto.getSize(), Sort.Direction.DESC, "id");
         final Long userId = activeUserService.requireActiveUserId();
         final QModeratorArea AREA = QModeratorArea.moderatorArea;
         final Predicate predicate;

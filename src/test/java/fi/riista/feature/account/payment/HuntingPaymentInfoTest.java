@@ -25,17 +25,25 @@ public class HuntingPaymentInfoTest {
             singletonList(FinnishBankAccount.fromIban(IBAN));
 
     @Test
-    public void testMakeSurePaymentDetailsAreAvailableOnTime() {
-        // When this test fails:
-        // - check payment amount for next hunting season
-        // - check account details for payment
-        // - update check date below and latest hunting year in class HuntingPaymentInfo
-        assertTrue(today().isBefore(new LocalDate(2020, 6, 1)));
+    public void testYear2020_Adult() {
+        final LocalDate dateOfBirth = new LocalDate(2002, 7, 31);
+        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2020, dateOfBirth, INVOICE_REFERENCE);
+        assertNotNull(paymentInfo);
+        verifyCommonPaymentInfo(paymentInfo);
+        assertEquals("39.00", paymentInfo.getAmountText());
+        assertEquals("484800013000353500000390000000000000014507700161000000",
+                paymentInfo.createBarCodeMessage(null));
     }
 
     @Test
-    public void testYear2020() {
-        assertNull(HuntingPaymentInfo.create(2020, DateUtil.today(), INVOICE_REFERENCE));
+    public void testYear2020_Underage() {
+        final LocalDate dateOfBirth = new LocalDate(2002, 8, 1);
+        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2020, dateOfBirth, INVOICE_REFERENCE);
+        assertNotNull(paymentInfo);
+        verifyCommonPaymentInfo(paymentInfo);
+        assertEquals("20.00", paymentInfo.getAmountText());
+        assertEquals("484800013000353500000200000000000000014507700161000000",
+                paymentInfo.createBarCodeMessage(null));
     }
 
     @Test
@@ -43,7 +51,7 @@ public class HuntingPaymentInfoTest {
         final LocalDate dateOfBirth = new LocalDate(2001, 7, 31);
         final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2019, dateOfBirth, INVOICE_REFERENCE);
         assertNotNull(paymentInfo);
-        verifyCommonPaymentInfo(paymentInfo);
+        verifyOldPaymentInfo(paymentInfo);
         assertEquals("39.00", paymentInfo.getAmountText());
         assertEquals("478500001203784420000390000000000000014507700161000000",
                 paymentInfo.createBarCodeMessage(null));
@@ -54,7 +62,7 @@ public class HuntingPaymentInfoTest {
         final LocalDate dateOfBirth = new LocalDate(2001, 8, 1);
         final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2019, dateOfBirth, INVOICE_REFERENCE);
         assertNotNull(paymentInfo);
-        verifyCommonPaymentInfo(paymentInfo);
+        verifyOldPaymentInfo(paymentInfo);
         assertEquals("20.00", paymentInfo.getAmountText());
         assertEquals("478500001203784420000200000000000000014507700161000000",
                 paymentInfo.createBarCodeMessage(null));
@@ -65,7 +73,7 @@ public class HuntingPaymentInfoTest {
         final LocalDate dateOfBirth = new LocalDate(2001, 7, 31);
         final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2018, dateOfBirth, INVOICE_REFERENCE);
         assertNotNull(paymentInfo);
-        verifyCommonPaymentInfo(paymentInfo);
+        verifyOldPaymentInfo(paymentInfo);
         assertEquals("39.00", paymentInfo.getAmountText());
         assertEquals("478500001203784420000390000000000000014507700161000000",
                 paymentInfo.createBarCodeMessage(null));
@@ -73,7 +81,19 @@ public class HuntingPaymentInfoTest {
 
     private static void verifyCommonPaymentInfo(final HuntingPaymentInfo paymentInfo) {
         assertEquals("" +
-                        "OP-Pohjola   FI78 5000 0120 3784 42\n" +
+                        "Danske       FI84 8000 1300 0353 50\n" +
+                        "Nordea       FI12 1660 3000 1072 12",
+                paymentInfo.getPaymentReceiverIban());
+        assertEquals("FI8480001300035350", paymentInfo.getIbanForBarCode().toString());
+        assertEquals("DABAFIHH\n" +
+                        "NDEAFIHH",
+                paymentInfo.getPaymentReceiverBic());
+        assertEquals("1 45077 00161", paymentInfo.getInvoiceReferenceForHuman());
+    }
+
+    private static void verifyOldPaymentInfo(final HuntingPaymentInfo paymentInfo) {
+        assertEquals("" +
+                        "OP           FI78 5000 0120 3784 42\n" +
                         "Nordea       FI12 1660 3000 1072 12\n" +
                         "Danske       FI84 8000 1300 0353 50",
                 paymentInfo.getPaymentReceiverIban());

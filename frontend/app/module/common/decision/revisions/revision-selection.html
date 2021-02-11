@@ -1,0 +1,20 @@
+<form class="form-horizontal">
+    <div class="form-group row">
+        <div class="col-xs-8">
+            <select name="activeRevision" id="activeRevision" class="form-control"
+                    ng-model="$ctrl.activeRevision"
+                    ng-change="$ctrl.updateRevision()"
+                    ng-options="rev as $ctrl.getRevisionName(rev) for rev in ::$ctrl.revisions">
+            </select>
+        </div>
+        <div class="col-xs-4">
+            <button class="btn btn-block btn-primary"
+                    ng-click="$ctrl.downloadPdf()">
+                <span class="fa fa-lg fa-file-pdf-o"></span>
+                &nbsp;
+                <span translate="decision.revision.download"></span>
+            </button>
+        </div>
+    </div>
+</form>
+

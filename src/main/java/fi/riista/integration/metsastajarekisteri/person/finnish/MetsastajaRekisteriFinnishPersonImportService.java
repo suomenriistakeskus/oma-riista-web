@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import fi.riista.config.BatchConfig;
+import fi.riista.config.Constants;
 import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.address.Address;
@@ -18,9 +19,11 @@ import fi.riista.integration.metsastajarekisteri.exception.InvalidRhyException;
 import fi.riista.integration.metsastajarekisteri.person.DeletionCode;
 import fi.riista.integration.metsastajarekisteri.person.MetsastajaRekisteriPerson;
 import fi.riista.util.CountryCode;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import org.hibernate.validator.internal.constraintvalidators.EmailValidator;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,7 +33,6 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -119,11 +121,11 @@ public class MetsastajaRekisteriFinnishPersonImportService {
         }
 
         if (!missingPersons.isEmpty()) {
-            personRepository.save(missingPersons);
+            personRepository.saveAll(missingPersons);
         }
 
         if (!obsoleteAddresses.isEmpty()) {
-            addressRepository.delete(obsoleteAddresses);
+            addressRepository.deleteAll(obsoleteAddresses);
         }
 
         if (!deadPersons.isEmpty()) {
@@ -142,10 +144,10 @@ public class MetsastajaRekisteriFinnishPersonImportService {
 
             LOG.info("Deactivating accounts for deceased personId={}", person.getId());
 
-            final Date deletionTime = item.getDeletionDate() == null ? new Date() : item.getDeletionDate().toDate();
+            final LocalDate deletionTime = item.getDeletionDate() == null ? DateUtil.today() : item.getDeletionDate();
 
             person.setDeletionCode(Person.DeletionCode.D);
-            person.getLifecycleFields().setDeletionTime(deletionTime);
+            person.getLifecycleFields().setDeletionTime(deletionTime.toDateTimeAtStartOfDay(Constants.DEFAULT_TIMEZONE));
             person.setMrSyncTime(syncTime);
 
             return true;
@@ -286,7 +288,6 @@ public class MetsastajaRekisteriFinnishPersonImportService {
                 InnofactorConstants.RHY_NOT_MEMBER_CODE.equals(item.getMembershipRhyOfficialCode()) ||
                 InnofactorConstants.RHY_FOREIGN_MEMBER_CODE.equals(item.getMembershipRhyOfficialCode())) {
             person.setRhyMembership(null);
-
         } else {
             throw new InvalidRhyException("No such RHY with officialCode=" + item.getMembershipRhyOfficialCode());
         }
@@ -384,7 +385,7 @@ public class MetsastajaRekisteriFinnishPersonImportService {
     }
 
     // Load persons in batch using list of SSN. Fetch associations also. Address is stored only for
-    // Finnish persons so address fetchin is done with ssn based query.
+    // Finnish persons so address fetching is done with ssn based query.
     private ImmutableMap<String, Person> loadPersonsByHunterNumber(final List<? extends MetsastajaRekisteriPerson> list) {
         final List<String> hunterNumberArray = F.mapNonNullsToList(list, input -> input.getHunterNumber());
 

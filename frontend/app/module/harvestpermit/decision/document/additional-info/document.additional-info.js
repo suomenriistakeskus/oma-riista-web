@@ -6,12 +6,12 @@ angular.module('app.harvestpermit.decision.document.additionalinfo', [])
             url: '/additional-info',
             templateUrl: 'harvestpermit/decision/document/additional-info/document.additional-info.html',
             controllerAs: '$ctrl',
-            controller: function (PermitDecisionUtils, PermitDecision, PermitDecisionAuthoritiesModal,
+            controller: function (PermitDecisionUtils, PermitDecision, PermitDecisionAuthoritiesModal, PermitDecisionSection,
                                   RefreshDecisionStateService, NotificationService, decision, reference, decisionId) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'additionalInfo';
+                    $ctrl.sectionId = PermitDecisionSection.ADDITIONAL_INFO;
                     $ctrl.decision = decision;
                     $ctrl.sectionContent = PermitDecisionUtils.getSectionContent(decision, $ctrl.sectionId);
                 };
@@ -54,10 +54,10 @@ angular.module('app.harvestpermit.decision.document.additionalinfo', [])
                     referenceAuthorities: function () {
                         return referenceId ? PermitDecision.getAuthorities({id: referenceId}).$promise : null;
                     },
-                    rkaAuthorities: function (DecisionRkaAuthority) {
+                    rkaAuthorities: function (PermitDecisionRkaAuthority) {
                         var swedishLocale = locale === 'sv_FI';
 
-                        return DecisionRkaAuthority.listByDecision({decisionId: decisionId}).$promise.then(function (res) {
+                        return PermitDecisionRkaAuthority.listByPermitDecision({decisionId: decisionId}).$promise.then(function (res) {
                             return _.map(res, function (a) {
                                 var res = _.pick(a, ['firstName', 'lastName', 'phoneNumber', 'email']);
                                 res.title = swedishLocale ? a.titleSwedish : a.titleFinnish;

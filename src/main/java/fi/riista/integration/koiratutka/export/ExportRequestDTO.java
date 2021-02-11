@@ -2,7 +2,7 @@ package fi.riista.integration.koiratutka.export;
 
 import com.google.common.collect.ImmutableMap;
 import fi.riista.util.Patterns;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.NotNull;

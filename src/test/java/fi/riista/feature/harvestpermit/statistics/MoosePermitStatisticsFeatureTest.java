@@ -1,9 +1,8 @@
 package fi.riista.feature.harvestpermit.statistics;
 
 import com.google.common.collect.ImmutableMap;
-import fi.riista.feature.gamediary.GameAge;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.fixture.HarvestSpecimenType;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
@@ -20,10 +19,10 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
-import static fi.riista.feature.gamediary.GameAge.ADULT;
-import static fi.riista.feature.gamediary.GameAge.YOUNG;
-import static fi.riista.feature.gamediary.GameGender.FEMALE;
-import static fi.riista.feature.gamediary.GameGender.MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_MALE;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertEquals;
 
@@ -88,7 +87,7 @@ public class MoosePermitStatisticsFeatureTest extends EmbeddedDatabaseTest imple
     public void testCalculate_onlyHarvests() {
         withMooseHuntingGroupFixture(fixture -> {
             fixture.permit.setPermitAreaSize(permitAreaSize1);
-            fixture.speciesAmount.setAmount(100f);
+            fixture.speciesAmount.setSpecimenAmount(100f);
             createHarvests(fixture);
             persistInNewTransaction();
 
@@ -97,7 +96,7 @@ public class MoosePermitStatisticsFeatureTest extends EmbeddedDatabaseTest imple
 
             withHuntingGroupFixture(fixture.rhy, fixture.species, fixture2 -> {
                 fixture2.permit.setPermitAreaSize(permitAreaSize2);
-                fixture2.speciesAmount.setAmount(100f);
+                fixture2.speciesAmount.setSpecimenAmount(100f);
                 createHarvests(fixture2);
                 persistInNewTransaction();
                 createSummary(fixture2, permitAreaSize2 - 10, effectiveAreaSize2);
@@ -153,17 +152,16 @@ public class MoosePermitStatisticsFeatureTest extends EmbeddedDatabaseTest imple
 
     private void createHarvests(final HuntingGroupFixture fixture) {
         final int year = fixture.speciesAmount.resolveHuntingYear();
-        createHarvests(fixture.group, fixture.species, 1, ADULT, MALE, year);
-        createHarvests(fixture.group, fixture.species, 2, ADULT, FEMALE, year);
-        createHarvests(fixture.group, fixture.species, 6, YOUNG, MALE, year);
-        createHarvests(fixture.group, fixture.species, 8, YOUNG, FEMALE, year);
+        createHarvests(fixture.group, fixture.species, 1, ADULT_MALE, year);
+        createHarvests(fixture.group, fixture.species, 2, ADULT_FEMALE, year);
+        createHarvests(fixture.group, fixture.species, 6, YOUNG_MALE, year);
+        createHarvests(fixture.group, fixture.species, 8, YOUNG_FEMALE, year);
     }
 
     private void createHarvests(final HuntingClubGroup group,
                                 final GameSpecies species,
                                 final int amount,
-                                final GameAge age,
-                                final GameGender gender,
+                                final HarvestSpecimenType specimenType,
                                 final int year) {
 
         final LocalDate beginDate = DateUtil.huntingYearBeginDate(year);
@@ -171,7 +169,7 @@ public class MoosePermitStatisticsFeatureTest extends EmbeddedDatabaseTest imple
         for (int i = 0; i < amount; i++) {
             final Harvest harvest = model().newHarvest(species);
             harvest.updateHuntingDayOfGroup(day, null);
-            model().newHarvestSpecimen(harvest, age, gender);
+            model().newHarvestSpecimen(harvest, specimenType);
         }
     }
 }

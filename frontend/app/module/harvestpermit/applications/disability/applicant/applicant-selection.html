@@ -1,0 +1,53 @@
+<form name="disabilityApplicantForm" r-force-show-errors-check-validity>
+    <div class="col-md-6">
+        <div class="h3">
+            <span class="fa fa-fw fa-university"></span>
+            <span translate="harvestpermit.wizard.applicant.permitHolder"></span>
+        </div>
+
+        <div class="btn-group btn-group-justified" style="margin-bottom: 10px">
+            <a class="btn btn-default"
+               ng-model="$ctrl.permitHolder.type"
+               uib-btn-radio="'PERSON'">
+                    <span class="fa fa-fw fa-check text-primary"
+                          ng-show="$ctrl.permitHolder.type === 'PERSON'"></span>
+                <span translate="harvestpermit.wizard.applicant.person"></span>
+            </a>
+            <a class="btn btn-default"
+               ng-model="$ctrl.permitHolder.type"
+               uib-btn-radio="'OTHER'">
+                    <span class="fa fa-fw fa-check text-primary"
+                          ng-show="$ctrl.permitHolder.type === 'OTHER'"></span>
+                <span translate="harvestpermit.wizard.applicant.other"></span>
+            </a>
+        </div>
+
+        <div class="well" style="min-height: 140px;"
+             ng-switch="$ctrl.permitHolder.type">
+            <div ng-switch-when="PERSON">
+                <permit-application-wizard-contact-person
+                        person="$ctrl.contactPerson"></permit-application-wizard-contact-person>
+            </div>
+
+            <div ng-switch-when="OTHER">
+                <div class="form-group" show-errors>
+                    <label class="control-label" for="permitHolderNameOther"
+                           translate="harvestpermit.wizard.applicant.otherName">
+                    </label>
+
+                    <textarea class="form-control" rows="1"
+                              name="permitHolderNameOther" id="permitHolderNameOther"
+                              ng-model="$ctrl.permitHolder.name"
+                              maxlength="255"
+                              required></textarea>
+
+                    <p class="help-block has-error"
+                       ng-show="disabilityApplicantForm.permitHolderNameOther.$invalid && disabilityApplicantForm.permitHolderNameOther.$touched"
+                       ng-messages="disabilityApplicantForm.permitHolderNameRy.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

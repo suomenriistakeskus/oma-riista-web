@@ -20,9 +20,8 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ProcessDeceasedPersonFeatureTest extends EmbeddedDatabaseTest {
@@ -164,7 +163,7 @@ public class ProcessDeceasedPersonFeatureTest extends EmbeddedDatabaseTest {
 
         processDeceasedPersonFeature.execute();
 
-        assertNotNull(huntingClubMemberInvitationRepository.findOne(invitation1.getId()));
-        assertNull(huntingClubMemberInvitationRepository.findOne(invitation2.getId()));
+        assertTrue(huntingClubMemberInvitationRepository.findById(invitation1.getId()).isPresent());
+        assertFalse(huntingClubMemberInvitationRepository.findById(invitation2.getId()).isPresent());
     }
 }

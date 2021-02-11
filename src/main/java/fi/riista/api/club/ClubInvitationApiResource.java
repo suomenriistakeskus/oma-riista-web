@@ -35,7 +35,7 @@ public class ClubInvitationApiResource {
     @RequestMapping(
             method = RequestMethod.POST,
             value = "/{clubId:\\d+}/validateHunterNumbers",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Set<String> findInvalidHunterNumbers(@PathVariable long clubId,
                                                 @RequestParam Set<String> hunterNumbers) {
         return huntingClubInvitationFeature.findInvalidHunterNumbers(clubId, hunterNumbers);
@@ -44,7 +44,7 @@ public class ClubInvitationApiResource {
     @RequestMapping(
             method = RequestMethod.POST,
             value = "/{clubId:\\d+}/invite",
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public void inviteMembers(@PathVariable long clubId,
                               @RequestBody @Valid HuntingClubMemberInvitationCreateDTO dto) {
@@ -54,7 +54,7 @@ public class ClubInvitationApiResource {
     @RequestMapping(
             method = RequestMethod.GET,
             value = "/{clubId:\\d+}/invitation",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<HuntingClubMemberInvitationDTO> listInvitations(@PathVariable long clubId) {
         return huntingClubInvitationFeature.listInvitations(clubId);

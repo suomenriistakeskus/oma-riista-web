@@ -74,7 +74,7 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="result" type="SRVAEventResult"/>
+            <xs:element name="result" type="SRVAEventResult" minOccurs="0"/>
             <xs:element name="numberOfParticipants" type="xs:int" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>
@@ -101,8 +101,8 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="gender" type="gameGender"/>
-            <xs:element name="age" type="gameAge"/>
+            <xs:element name="gender" type="gameGender" minOccurs="0"/>
+            <xs:element name="age" type="gameAge" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 

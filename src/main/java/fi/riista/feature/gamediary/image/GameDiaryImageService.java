@@ -43,7 +43,7 @@ import java.util.UUID;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.hasRelationWithId;
 import static java.util.stream.Collectors.toList;
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.springframework.data.jpa.domain.Specification.where;
 
 @Component
 public class GameDiaryImageService {
@@ -286,11 +286,11 @@ public class GameDiaryImageService {
     }
 
     private GameDiaryImage findGameDiaryImageByUuid(final UUID uuid) {
-        return gameDiaryImageRepository.findOne(joinFileMetadata(uuid));
+        return gameDiaryImageRepository.findOne(joinFileMetadata(uuid)).orElse(null);
     }
 
     private Optional<GameDiaryImage> findOne(final Specification<GameDiaryImage> spec) {
-        return Optional.ofNullable(gameDiaryImageRepository.findOne(spec));
+        return gameDiaryImageRepository.findOne(spec);
     }
 
     private boolean checkImageWithIdDoesNotAlreadyExist(final UUID imageId) {

@@ -17,7 +17,7 @@ angular.module('app.club.permits', [])
 
     .config(function ($stateProvider) {
         $stateProvider
-            .state('club.permit', {
+            .state('club.moosepermit', {
                 url: '/permit?huntingYear&species',
                 wideLayout: true,
                 params: {
@@ -25,7 +25,7 @@ angular.module('app.club.permits', [])
                     species: null
                 },
                 resolve: {
-                    initialState: _.constant('club.permit'),
+                    stateBase: _.constant('club'),
                     huntingYears: function (ClubPermits, clubId) {
                         return ClubPermits.huntingYears({clubId: clubId}).$promise;
                     },
@@ -37,7 +37,7 @@ angular.module('app.club.permits', [])
                     '@club': {
                         templateUrl: 'harvestpermit/moosepermit/layout.html'
                     },
-                    'left@club.permit': {
+                    'left@club.moosepermit': {
                         templateUrl: 'harvestpermit/moosepermit/list/list.html',
                         controller: 'MoosePermitListController',
                         controllerAs: '$ctrl',
@@ -59,7 +59,7 @@ angular.module('app.club.permits', [])
                     }
                 }
             })
-            .state('club.permit.table', {
+            .state('club.moosepermit.table', {
                 url: '/{permitId:[0-9]{1,8}}/table',
                 wideLayout: true,
                 templateUrl: 'harvestpermit/moosepermit/table/permit-tables.html',
@@ -78,21 +78,7 @@ angular.module('app.club.permits', [])
                     }
                 }
             })
-            .state('club.permit.lukereports', {
-                url: '/{permitId:[0-9]{1,8}}/luke-reports',
-                wideLayout: true,
-                templateUrl: 'harvestpermit/moosepermit/luke/luke-reports.html',
-                controller: 'MoosePermitLukeReportsController',
-                resolve: {
-                    permitId: function ($stateParams, MoosePermitSelection) {
-                        return MoosePermitSelection.updateSelectedPermitId($stateParams);
-                    },
-                    lukeReportParams: function (MoosePermits, clubId, permitId) {
-                        return MoosePermits.lukeReportParams({clubId: clubId, permitId: permitId}).$promise;
-                    }
-                }
-            })
-            .state('club.permit.map', {
+            .state('club.moosepermit.map', {
                 url: '/{permitId:[0-9]{1,8}}/map',
                 templateUrl: 'harvestpermit/moosepermit/map/permit-map.html',
                 controller: 'MoosePermitMapController',
@@ -126,7 +112,7 @@ angular.module('app.club.permits', [])
                     }
                 }
             })
-            .state('club.permit.rhystats', {
+            .state('club.moosepermit.rhystats', {
                 url: '/{permitId:[0-9]{1,8}}/rhy-stats',
                 template: '<moose-permit-statistics-simple-table statistics="$ctrl.statistics"></moose-permit-statistics-simple-table>',
                 controller: function (statistics) {

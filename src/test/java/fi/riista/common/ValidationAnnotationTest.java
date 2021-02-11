@@ -8,7 +8,7 @@ import fi.riista.validation.DoNotValidate;
 import fi.riista.validation.XssSafe;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.junit.Test;
 import org.springframework.core.annotation.AnnotationUtils;

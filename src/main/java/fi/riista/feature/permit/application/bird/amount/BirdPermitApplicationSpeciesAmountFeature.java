@@ -51,8 +51,8 @@ public class BirdPermitApplicationSpeciesAmountFeature {
         final Updater speciesUpdater = new Updater(existingSpecies, createCallback(application));
         speciesUpdater.processAll(dtoList);
 
-        harvestPermitApplicationSpeciesAmountRepository.save(speciesUpdater.getResultList());
-        harvestPermitApplicationSpeciesAmountRepository.delete(speciesUpdater.getMissing());
+        harvestPermitApplicationSpeciesAmountRepository.saveAll(speciesUpdater.getResultList());
+        harvestPermitApplicationSpeciesAmountRepository.deleteAll(speciesUpdater.getMissing());
     }
 
     @Nonnull
@@ -62,13 +62,13 @@ public class BirdPermitApplicationSpeciesAmountFeature {
             public HarvestPermitApplicationSpeciesAmount create(final BirdPermitApplicationSpeciesAmountDTO dto) {
                 final GameSpecies gameSpecies = gameSpeciesService.requireByOfficialCode(dto.getGameSpeciesCode());
 
-                return new HarvestPermitApplicationSpeciesAmount(application, gameSpecies, dto.getAmount());
+                return HarvestPermitApplicationSpeciesAmount.createForHarvest(application, gameSpecies, dto.getAmount());
             }
 
             @Override
             public void update(final HarvestPermitApplicationSpeciesAmount entity,
                                final BirdPermitApplicationSpeciesAmountDTO dto) {
-                entity.setAmount(dto.getAmount());
+                entity.setSpecimenAmount(dto.getAmount());
             }
 
             @Override

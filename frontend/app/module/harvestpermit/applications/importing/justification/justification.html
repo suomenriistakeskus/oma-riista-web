@@ -1,0 +1,79 @@
+<form name="importingJustificationForm" r-force-show-errors-check-validity>
+    <div class="alert alert-info">
+        <span class="fa fa-info-circle"></span>
+
+        <div class="alert-content">
+            <p class="alert-title" translate="harvestpermit.wizard.importing.justification.instructionsTitle"></p>
+
+            <p translate="harvestpermit.wizard.carnivore.justification.instructions"></p>
+        </div>
+    </div>
+
+    <div class="form-group row" show-errors>
+        <div class="col-xs-4">
+            <label class="control-label"
+                   for="countryOfOrigin"
+                   translate="harvestpermit.wizard.importing.justification.countryOfOrigin">
+            </label>
+
+            <input type="text" class="form-control"
+                   name="countryOfOrigin"
+                   id="countryOfOrigin"
+                   ng-model="$ctrl.data.countryOfOrigin"
+                   required>
+        </div>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="details"
+               translate="harvestpermit.wizard.importing.justification.details">
+        </label>
+
+        <textarea class="form-control" rows="4"
+                  name="details"
+                  id="details"
+                  ng-model="$ctrl.data.details"
+                  required></textarea>
+    </div>
+
+    <hr class="invisible">
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="purpose"
+               translate="harvestpermit.wizard.importing.justification.purpose"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="purpose"
+                  id="purpose"
+                  ng-model="$ctrl.data.purpose"
+                  required></textarea>
+    </div>
+
+    <hr class="invisible">
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="release"
+               translate="harvestpermit.wizard.importing.justification.release"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="release"
+                  id="release"
+                  ng-model="$ctrl.data.release"
+                  required></textarea>
+    </div>
+
+    <hr class="invisible">
+</form>
+
+<hr class="invisible">
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(importingJustificationForm)"
+        previous="$ctrl.previous(importingJustificationForm)"
+        next-disabled="$ctrl.nextDisabled(importingJustificationForm)"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

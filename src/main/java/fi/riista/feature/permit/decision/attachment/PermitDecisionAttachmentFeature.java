@@ -66,11 +66,27 @@ public class PermitDecisionAttachmentFeature {
 
     @Transactional
     public void addAttachment(final PermitDecisionAttachmentUploadDTO dto) {
-        final PermitDecision decision = requireEntityService.requirePermitDecision(dto.getDecisionId(), EntityPermission.UPDATE);
+        final PermitDecision decision =
+                requireEntityService.requirePermitDecision(dto.getDecisionId(), EntityPermission.UPDATE);
         decision.assertHandler(activeUserService.requireActiveUser());
 
-        final PermitDecisionAttachment attachment = new PermitDecisionAttachment(decision, storeAttachment(dto.getFile()));
+        final PermitDecisionAttachment attachment =
+                new PermitDecisionAttachment(decision, storeAttachment(dto.getFile()));
         attachment.setOrderingNumber(getNextOrderingNumber(decision));
+        attachment.setDescription(dto.getDescription());
+
+        permitDecisionAttachmentRepository.save(attachment);
+    }
+
+    @Transactional
+    public void addAdditionalAttachment(final PermitDecisionAttachmentUploadDTO dto) {
+        final PermitDecision decision =
+                requireEntityService.requirePermitDecision(dto.getDecisionId(), EntityPermission.UPDATE);
+        // Not asserting handler here since other persons will attach these
+
+        final PermitDecisionAttachment attachment =
+                new PermitDecisionAttachment(decision, storeAttachment(dto.getFile()));
+        attachment.setOrderingNumber(null);
         attachment.setDescription(dto.getDescription());
 
         permitDecisionAttachmentRepository.save(attachment);
@@ -103,8 +119,8 @@ public class PermitDecisionAttachmentFeature {
         decision.assertHandler(activeUserService.requireActiveUser());
 
         final String attachmentName = new LocalisedString(
-                "Saate hirvieläinten pyyntiluvan saajille 2019",
-                "Följebrev till mottagarna av hjortdjurslicenser 2019")
+                "Saate hirvieläinten pyyntiluvan saajille 2020",
+                "Följebrev till mottagarna av hjortdjurslicenser 2020")
                 .getTranslation(decision.getLocale());
         final String attachmentResourceName = new LocalisedString(
                 "moose-decision-attachment-fi.pdf",
@@ -123,21 +139,26 @@ public class PermitDecisionAttachmentFeature {
     }
 
     @Transactional
-    public void deleteAttachment(final long attachmentId) {
-        final PermitDecisionAttachment attachment = requireAttachment(attachmentId, EntityPermission.UPDATE);
-        attachment.getPermitDecision().assertHandler(activeUserService.requireActiveUser());
+    public void deleteAttachment(final long decisionId, final long attachmentId) {
+        final PermitDecisionAttachment attachment = requireAttachment(decisionId, attachmentId, EntityPermission.UPDATE);
+        final PermitDecision permitDecision = attachment.getPermitDecision();
+        // Not asserting handler here since other persons will add/delete attachments after publishing
 
         attachment.softDelete();
 
-        updateDecisionOrdering(attachment.getPermitDecision());
-        updateDecisionText(attachment.getPermitDecision());
+        updateDecisionOrdering(permitDecision);
+        updateDecisionText(permitDecision);
     }
 
     private static void updateDecisionOrdering(final PermitDecision decision) {
         int counter = 1;
 
         for (final PermitDecisionAttachment attachment : decision.getSortedAttachments()) {
-            attachment.setOrderingNumber(attachment.isDeleted() && attachment.getOrderingNumber() != null ? null : counter++);
+            if (attachment.getOrderingNumber() != null){
+                attachment.setOrderingNumber(attachment.isDeleted()
+                    ? null
+                    : counter++);
+            }
         }
     }
 
@@ -146,8 +167,9 @@ public class PermitDecisionAttachmentFeature {
     }
 
     @Transactional(readOnly = true, rollbackFor = IOException.class)
-    public ResponseEntity<byte[]> getAttachment(final long attachmentId) throws IOException {
-        final PermitDecisionAttachment attachment = requireAttachment(attachmentId, EntityPermission.READ);
+    public ResponseEntity<byte[]> getAttachment(final long decisionId, final long attachmentId) throws IOException {
+        final PermitDecisionAttachment attachment = requireAttachment(decisionId, attachmentId, EntityPermission.READ);
+
         return fileDownloadService.download(attachment.getAttachmentMetadata());
     }
 
@@ -175,10 +197,12 @@ public class PermitDecisionAttachmentFeature {
     }
 
     @Nonnull
-    private PermitDecisionAttachment requireAttachment(final long attachmentId,
+    private PermitDecisionAttachment requireAttachment(final long decisionId, final long attachmentId,
                                                        final EntityPermission permission) {
         final PermitDecisionAttachment attachment = permitDecisionAttachmentRepository.getOne(attachmentId);
-        activeUserService.assertHasPermission(attachment.getPermitDecision(), permission);
+        final PermitDecision permitDecision = attachment.getPermitDecision();
+        activeUserService.assertHasPermission(permitDecision, permission);
+        Preconditions.checkArgument(permitDecision.getId() == decisionId, "Decision does not match attachment");
         return attachment;
     }
 

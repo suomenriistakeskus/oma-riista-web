@@ -1,7 +1,7 @@
 package fi.riista.feature.permit.application.create;
 
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nullable;

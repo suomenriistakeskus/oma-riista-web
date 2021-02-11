@@ -7,6 +7,7 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.security.EntityPermission;
 import fi.riista.security.UserInfo;
 import fi.riista.security.authorization.AbstractEntityAuthorization;
@@ -20,6 +21,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 
+import static fi.riista.feature.account.user.SystemUserPrivilege.MODERATE_DISABILITY_PERMIT_APPLICATION;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
 
@@ -43,7 +45,8 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
         PERMIT_HOLDER,
         PERMIT_PARTNER,
         HUNTING_LEADER_OF_PERMIT_PARTNER,
-        HUNTING_LEADER_OF_PERMIT_HOLDER
+        HUNTING_LEADER_OF_PERMIT_HOLDER,
+        HARVEST_PERMIT_MODERATOR
     }
 
     @Resource
@@ -55,7 +58,7 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
     public HarvestPermitAuthorization() {
         allow(EntityPermission.READ,
                 SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                Role.HARVEST_PERMIT_MODERATOR,
                 Role.CONTACT_PERSON_FOR_PERMIT,
                 Role.PERMIT_HOLDER,
                 Role.PERMIT_PARTNER,
@@ -64,36 +67,36 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
 
         allow(EntityPermission.UPDATE,
                 SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                Role.HARVEST_PERMIT_MODERATOR,
                 Role.CONTACT_PERSON_FOR_PERMIT);
 
         allow(Permission.UPDATE_ALLOCATIONS,
                 SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                Role.HARVEST_PERMIT_MODERATOR,
                 Role.CONTACT_PERSON_FOR_PERMIT,
                 Role.CONTACT_PERSON_OF_PERMIT_HOLDER,
                 Role.HUNTING_LEADER_OF_PERMIT_HOLDER);
 
         allow(Permission.ACCEPT_REJECT_HARVEST,
                 SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                Role.HARVEST_PERMIT_MODERATOR,
                 Role.CONTACT_PERSON_FOR_PERMIT);
 
         allow(Permission.CREATE_REMOVE_HARVEST_REPORT,
                 SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                Role.HARVEST_PERMIT_MODERATOR,
                 Role.CONTACT_PERSON_FOR_PERMIT);
 
         allow(Permission.CREATE_REMOVE_MOOSE_HARVEST_REPORT,
                 SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                Role.HARVEST_PERMIT_MODERATOR,
                 Role.CONTACT_PERSON_FOR_PERMIT,
                 Role.CONTACT_PERSON_OF_PERMIT_HOLDER,
                 Role.HUNTING_LEADER_OF_PERMIT_HOLDER);
 
         allow(Permission.LIST_LEADERS,
                 SystemUser.Role.ROLE_ADMIN,
-                SystemUser.Role.ROLE_MODERATOR,
+                Role.HARVEST_PERMIT_MODERATOR,
                 Role.CONTACT_PERSON_FOR_PERMIT,
                 Role.CONTACT_PERSON_OF_PERMIT_PARTNER,
                 Role.CONTACT_PERSON_OF_PERMIT_HOLDER,
@@ -107,43 +110,57 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
     protected void authorizeTarget(@Nonnull final AuthorizationTokenCollector collector,
                                    @Nonnull final HarvestPermit permit,
                                    @Nonnull final UserInfo userInfo) {
-        userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
-            // Luvan yhteyshenkilö
-            collector.addAuthorizationRole(Role.CONTACT_PERSON_FOR_PERMIT, () ->
-                    permit.hasContactPerson(activePerson));
+        if (PermitTypeCode.isDisabilityPermitTypeCode(permit.getPermitTypeCode())) {
+            collector.addAuthorizationRole(Role.HARVEST_PERMIT_MODERATOR, () ->
+                    userInfo.hasPrivilege(MODERATE_DISABILITY_PERMIT_APPLICATION));
 
-            // Jäsen seurassa joka on luvan saaja
-            collector.addAuthorizationRole(Role.PERMIT_HOLDER, () ->
-                    isMemberOfPermitHolder(permit, activePerson));
+            userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
+                // Luvan yhteyshenkilö
+                collector.addAuthorizationRole(Role.CONTACT_PERSON_FOR_PERMIT, () ->
+                        permit.hasContactPerson(activePerson));
+            });
+        } else {
+            collector.addAuthorizationRole(Role.HARVEST_PERMIT_MODERATOR, () ->
+                    userInfo.isModerator());
 
-            // Jäsen seurassa joka on luvan osakas
-            collector.addAuthorizationRole(Role.PERMIT_PARTNER, () ->
-                    isMemberOfPermitPartner(permit, activePerson));
+            userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
+                // Luvan yhteyshenkilö
+                collector.addAuthorizationRole(Role.CONTACT_PERSON_FOR_PERMIT, () ->
+                        permit.hasContactPerson(activePerson));
 
-            // Yhteyshenkilö luvan saajan seurassa
-            collector.addAuthorizationRole(Role.CONTACT_PERSON_OF_PERMIT_HOLDER, () ->
-                    isContactInPermitHolderClub(permit, activePerson));
+                // Jäsen seurassa joka on luvan saaja
+                collector.addAuthorizationRole(Role.PERMIT_HOLDER, () ->
+                        isMemberOfPermitHolder(permit, activePerson));
 
-            // Yhteyshenkilö luvan osakkaan seurassa
-            collector.addAuthorizationRole(Role.CONTACT_PERSON_OF_PERMIT_PARTNER, () ->
-                    isContactInPermitPartnerClub(permit, activePerson));
+                // Jäsen seurassa joka on luvan osakas
+                collector.addAuthorizationRole(Role.PERMIT_PARTNER, () ->
+                        isMemberOfPermitPartner(permit, activePerson));
 
-            // Metsästyksenjohtaja luvan osakkaan seurassa
-            collector.addAuthorizationRole(Role.HUNTING_LEADER_OF_PERMIT_PARTNER, () ->
-                    isLeaderInPermitPartnerClubGroup(permit, activePerson));
+                // Yhteyshenkilö luvan saajan seurassa
+                collector.addAuthorizationRole(Role.CONTACT_PERSON_OF_PERMIT_HOLDER, () ->
+                        isContactInPermitHolderClub(permit, activePerson));
 
-            // Metsästyksenjohtaja luvan saajan seurassa
-            collector.addAuthorizationRole(Role.HUNTING_LEADER_OF_PERMIT_HOLDER, () ->
-                    isLeaderInPermitHolderClubGroup(permit, activePerson));
+                // Yhteyshenkilö luvan osakkaan seurassa
+                collector.addAuthorizationRole(Role.CONTACT_PERSON_OF_PERMIT_PARTNER, () ->
+                        isContactInPermitPartnerClub(permit, activePerson));
 
-            // Toiminnanohjaaja (tiedoksi)
-            collector.addAuthorizationRole(Role.PERMIT_RELATED_RHY_COORDINATOR, () ->
-                    isCoordinator(permit.getRelatedRhys()));
+                // Metsästyksenjohtaja luvan osakkaan seurassa
+                collector.addAuthorizationRole(Role.HUNTING_LEADER_OF_PERMIT_PARTNER, () ->
+                        isLeaderInPermitPartnerClubGroup(permit, activePerson));
 
-            // Toiminnanohjaaja
-            collector.addAuthorizationRole(Role.PERMIT_RHY_COORDINATOR, () ->
-                    isCoordinator(permit.getRhy(), permit.getHarvests()));
-        });
+                // Metsästyksenjohtaja luvan saajan seurassa
+                collector.addAuthorizationRole(Role.HUNTING_LEADER_OF_PERMIT_HOLDER, () ->
+                        isLeaderInPermitHolderClubGroup(permit, activePerson));
+
+                // Toiminnanohjaaja (tiedoksi)
+                collector.addAuthorizationRole(Role.PERMIT_RELATED_RHY_COORDINATOR, () ->
+                        isCoordinator(permit.getRelatedRhys()));
+
+                // Toiminnanohjaaja
+                collector.addAuthorizationRole(Role.PERMIT_RHY_COORDINATOR, () ->
+                        isCoordinator(permit.getRhy(), permit.getHarvests()));
+            });
+        }
     }
 
     private boolean isContactInPermitHolderClub(final HarvestPermit permit, final Person person) {

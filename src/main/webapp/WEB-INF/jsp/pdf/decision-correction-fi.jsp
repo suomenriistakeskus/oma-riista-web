@@ -4,8 +4,8 @@
 
     <p>
         Maksuvelvollinen, joka katsoo, että valtion maksuperustelain (150/1992) 6 §:n sekä Suomen riistakeskuksen ja
-        riistanhoitoyhdistysten julkisten hallintotehtävien maksuista vuosina 2017–2019 annetun maa- ja
-        metsätalousministeriön asetuksen (1463/2016) 1 §:n perusteella määrätyn maksun määräämisessä on tapahtunut
+        riistanhoitoyhdistysten julkisten hallintotehtävien maksuista vuosina 2020 ja 2021 annetun maa- ja
+        metsätalousministeriön asetuksen (1319/2019) 1 §:n perusteella määrätyn maksun määräämisessä on tapahtunut
         virhe, voi vaatia siihen valtion maksuperustelain 11 b §:n nojalla oikaisua. Oikaisuvaatimus on tehtävä
         kirjallisesti.
     </p>

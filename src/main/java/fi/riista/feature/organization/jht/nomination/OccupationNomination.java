@@ -90,6 +90,7 @@ public class OccupationNomination extends LifecycleEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Person person;
 
+    // Person who made the proposal of the nomination (coordinator in rhy)
     @ManyToOne(fetch = FetchType.LAZY)
     private Person rhyPerson;
 

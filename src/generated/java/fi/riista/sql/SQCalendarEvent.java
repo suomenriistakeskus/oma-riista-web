@@ -63,15 +63,17 @@ public class SQCalendarEvent extends RelationalPathSpatial<SQCalendarEvent> {
 
     public final BooleanPath publicVisibility = createBoolean("publicVisibility");
 
+    public final BooleanPath remoteEvent = createBoolean("remoteEvent");
+
     public final NumberPath<Long> venueId = createNumber("venueId", Long.class);
 
     public final com.querydsl.sql.PrimaryKey<SQCalendarEvent> calendarEventPkey = createPrimaryKey(calendarEventId);
 
+    public final com.querydsl.sql.ForeignKey<SQCalendarEventType> calendarEventTypeFk = createForeignKey(calendarEventType, "name");
+
     public final com.querydsl.sql.ForeignKey<SQOrganisation> calendarEventOrganisationFk = createForeignKey(organisationId, "organisation_id");
 
     public final com.querydsl.sql.ForeignKey<SQVenue> calendarEventVenueFk = createForeignKey(venueId, "venue_id");
-
-    public final com.querydsl.sql.ForeignKey<SQCalendarEventType> calendarEventTypeFk = createForeignKey(calendarEventType, "name");
 
     public final com.querydsl.sql.ForeignKey<SQShootingTestEvent> _shootingTestEventCalendarEventFk = createInvForeignKey(calendarEventId, "calendar_event_id");
 
@@ -121,6 +123,7 @@ public class SQCalendarEvent extends RelationalPathSpatial<SQCalendarEvent> {
         addMetadata(organisationId, ColumnMetadata.named("organisation_id").withIndex(15).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(participants, ColumnMetadata.named("participants").withIndex(19).ofType(Types.INTEGER).withSize(10));
         addMetadata(publicVisibility, ColumnMetadata.named("public_visibility").withIndex(17).ofType(Types.BIT).withSize(1).notNull());
+        addMetadata(remoteEvent, ColumnMetadata.named("remote_event").withIndex(20).ofType(Types.BIT).withSize(1).notNull());
         addMetadata(venueId, ColumnMetadata.named("venue_id").withIndex(16).ofType(Types.BIGINT).withSize(19).notNull());
     }
 

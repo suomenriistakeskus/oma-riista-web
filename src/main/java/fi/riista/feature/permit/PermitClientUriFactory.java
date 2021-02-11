@@ -2,7 +2,6 @@ package fi.riista.feature.permit;
 
 import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionReceiver;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -40,10 +39,26 @@ public class PermitClientUriFactory {
                 .toUri();
     }
 
-    public URI getAbsoluteAnonymousDecisionUri(final PermitDecisionRevisionReceiver receiver) {
+    public URI getAbsoluteAnonymousDecisionDownloadPageUri(final UUID receiverUid) {
         return UriComponentsBuilder.fromUri(runtimeEnvironmentUtil.getBackendBaseUri())
-                .replacePath("/api/v1/anon/decision/receiver/pdf/download/{uuid}")
-                .buildAndExpand(receiver.getUuid().toString())
+                .replacePath("/")
+                .fragment("/public/decision/{uuid}")
+                .buildAndExpand(receiverUid.toString())
+                .toUri();
+    }
+
+    public URI getAbsoluteAnonymousDecisionPdfDownloadUri(final UUID receiverUid) {
+        return UriComponentsBuilder.fromUri(runtimeEnvironmentUtil.getBackendBaseUri())
+                .replacePath("/api/v1/anon/decision/receiver/decision-pdf/download/{uuid}")
+                .buildAndExpand(receiverUid.toString())
+                .toUri();
+    }
+
+    public URI getAbsoluteAnonymousDecisionAttachmentUri(final UUID receiverUid,
+                                                         final long attachmentId) {
+        return UriComponentsBuilder.fromUri(runtimeEnvironmentUtil.getBackendBaseUri())
+                .replacePath("/api/v1/anon/decision/receiver/attachment/download/{uuid}/{attachmentId}")
+                .buildAndExpand(receiverUid.toString(), String.valueOf(attachmentId))
                 .toUri();
     }
 

@@ -9,12 +9,12 @@ import java.util.UUID;
 public class MobileGameDiaryFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
-    private MobileGameDiaryFeature mobileGameDiaryFeature;
+    private MobileGameDiaryFeature feature;
 
     @Test
     public void testDeleteImage_notFound() {
         persistAndAuthenticateWithNewUser(true);
-        mobileGameDiaryFeature.deleteGameDiaryImage(UUID.randomUUID());
+        feature.deleteGameDiaryImage(UUID.randomUUID());
     }
 
 }

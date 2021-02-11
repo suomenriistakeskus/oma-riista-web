@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="col-xs-8">
+        <p class="decision-section-title"
+           translate="decision.document.sectionId.{{$ctrl.sectionId}}"></p>
+    </div>
+
+    <div class="col-xs-4 text-right">
+        <nomination-decision-section-header-buttons
+                decision="$ctrl.decision"
+                section-id="$ctrl.sectionId"
+                deny-complete="$ctrl.denyComplete()">
+        </nomination-decision-section-header-buttons>
+    </div>
+</div>
+
+<hr class="invisible"/>

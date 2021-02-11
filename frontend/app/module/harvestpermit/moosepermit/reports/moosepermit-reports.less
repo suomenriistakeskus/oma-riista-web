@@ -1,0 +1,85 @@
+@r-moosepermit-reports-left-sidebar-width: 340px;
+
+.r-moosepemit-reports-layout {
+  .make-row(0);
+  
+  .left-column {
+    position: fixed;
+    width: @r-moosepermit-reports-left-sidebar-width;
+    top: @main-nav-height;
+    bottom: 0;
+    overflow: auto;
+    overflow-x: hidden;
+    min-height: 1px;
+    background: @panel-bg;
+    padding: 0 10px;
+
+    .org-presentation-selection {
+      margin-top: 30px;
+
+      ul {
+        list-style: none;
+        padding-left: 0px;
+      }
+
+
+      .organisation-level-selection {
+        margin-left: 5px;
+
+        a {
+          font-size: 20px;
+          color: @r-green;
+          margin-bottom: 10px;
+        }
+
+        .presentation-selection {
+          a {
+            color: @text-color;
+            font-size: 16px;
+            margin-bottom: 5px;
+          }
+
+          .file-selection {
+            margin-left: 15px;
+
+            a {
+              font-size: 14px;
+            }
+
+            a.active {
+              color: @r-green;
+            }
+
+            .file-group-title {
+              font-weight: bold;
+              margin-left: 15px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .main-column {
+    position: fixed;
+    top: @main-nav-height;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin-left: @r-moosepermit-reports-left-sidebar-width;
+    background: @panel-bg;
+    overflow: auto;
+
+    .container-fluid {
+      padding: 10px;
+      height: 100%;
+
+    }
+
+    .luke-instruction {
+      margin-left: 40px;
+      margin-right: 40px;
+      margin-top: 25px;
+    }
+  }
+}

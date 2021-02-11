@@ -33,7 +33,10 @@ public class HarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
         this.id = speciesAmount.getId();
         this.rev = speciesAmount.getConsistencyVersion();
         this.gameSpecies = GameSpeciesDTO.create(species);
-        this.amount = speciesAmount.getAmount();
+        this.amount = speciesAmount.getSpecimenAmount();
+        this.nestAmount = speciesAmount.getNestAmount();
+        this.eggAmount = speciesAmount.getEggAmount();
+        this.constructionAmount = speciesAmount.getConstructionAmount();
         this.restrictionType = speciesAmount.getRestrictionType();
         this.restrictionAmount = speciesAmount.getRestrictionAmount();
     }
@@ -41,7 +44,10 @@ public class HarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
     private Long id;
     private Integer rev;
     private GameSpeciesDTO gameSpecies;
-    private float amount;
+    private Float amount;
+    private Integer nestAmount;
+    private Integer eggAmount;
+    private Integer constructionAmount;
     private HarvestPermitSpeciesAmount.RestrictionType restrictionType;
     private Float restrictionAmount;
 
@@ -69,12 +75,36 @@ public class HarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
         this.gameSpecies = gameSpecies;
     }
 
-    public float getAmount() {
+    public Float getAmount() {
         return amount;
     }
 
-    public void setAmount(float amount) {
+    public void setAmount(Float amount) {
         this.amount = amount;
+    }
+
+    public Integer getNestAmount() {
+        return nestAmount;
+    }
+
+    public void setNestAmount(final Integer nestAmount) {
+        this.nestAmount = nestAmount;
+    }
+
+    public Integer getEggAmount() {
+        return eggAmount;
+    }
+
+    public void setEggAmount(final Integer eggAmount) {
+        this.eggAmount = eggAmount;
+    }
+
+    public Integer getConstructionAmount() {
+        return constructionAmount;
+    }
+
+    public void setConstructionAmount(final Integer constructionAmount) {
+        this.constructionAmount = constructionAmount;
     }
 
     public HarvestPermitSpeciesAmount.RestrictionType getRestrictionType() {

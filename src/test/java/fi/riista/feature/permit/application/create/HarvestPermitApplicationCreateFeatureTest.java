@@ -7,6 +7,8 @@ import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationRepository;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationRepository;
+import fi.riista.feature.permit.application.importing.ImportingPermitApplication;
+import fi.riista.feature.permit.application.importing.ImportingPermitApplicationRepository;
 import fi.riista.feature.permit.area.HarvestPermitAreaRepository;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.Locales;
@@ -15,6 +17,7 @@ import org.junit.Test;
 import javax.annotation.Resource;
 
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.BIRD;
+import static fi.riista.feature.harvestpermit.HarvestPermitCategory.IMPORTING;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_BEAR;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_LYNX;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_LYNX_PORONHOITO;
@@ -39,6 +42,9 @@ public class HarvestPermitApplicationCreateFeatureTest extends EmbeddedDatabaseT
     private BirdPermitApplicationRepository birdPermitApplicationRepository;
 
     @Resource
+    private ImportingPermitApplicationRepository importingPermitApplicationRepository;
+
+    @Resource
     private HarvestPermitAreaRepository areaRepository;
 
     @Test
@@ -54,7 +60,7 @@ public class HarvestPermitApplicationCreateFeatureTest extends EmbeddedDatabaseT
             assertEquals(2019, harvestPermitApplicationBasicDetailsDTO.getHuntingYear());
             assertNotNull(harvestPermitApplicationBasicDetailsDTO.getId());
 
-            final HarvestPermitApplication application = applicationRepository.findOne(harvestPermitApplicationBasicDetailsDTO.getId());
+            final HarvestPermitApplication application = applicationRepository.findById(harvestPermitApplicationBasicDetailsDTO.getId()).get();
             assertEquals(MOOSELIKE, application.getHarvestPermitCategory());
 
             assertNotNull(application.getArea());
@@ -64,7 +70,7 @@ public class HarvestPermitApplicationCreateFeatureTest extends EmbeddedDatabaseT
     }
 
     @Test
-    public void createCarnivore_bird() {
+    public void testCreateBird() {
         final HarvestPermitApplicationCreateDTO dto = new HarvestPermitApplicationCreateDTO();
         dto.setCategory(BIRD);
         dto.setHuntingYear(2019);
@@ -76,10 +82,30 @@ public class HarvestPermitApplicationCreateFeatureTest extends EmbeddedDatabaseT
             assertEquals(2019, harvestPermitApplicationBasicDetailsDTO.getHuntingYear());
             assertNotNull(harvestPermitApplicationBasicDetailsDTO.getId());
 
-            final HarvestPermitApplication application = applicationRepository.findOne(harvestPermitApplicationBasicDetailsDTO.getId());
+            final HarvestPermitApplication application = applicationRepository.findById(harvestPermitApplicationBasicDetailsDTO.getId()).get();
             assertEquals(dto.getCategory(), application.getHarvestPermitCategory());
             final BirdPermitApplication birdPermitApplication = birdPermitApplicationRepository.findByHarvestPermitApplication(application);
             assertNotNull(birdPermitApplication);
+        });
+    }
+
+    @Test
+    public void testCreateImporting() {
+        final HarvestPermitApplicationCreateDTO dto = new HarvestPermitApplicationCreateDTO();
+        dto.setCategory(IMPORTING);
+        dto.setHuntingYear(2020);
+        dto.setApplicationName("importing 2020");
+
+        onSavedAndAuthenticated(createUserWithPerson("applicant"), () -> {
+            final HarvestPermitApplicationBasicDetailsDTO harvestPermitApplicationBasicDetailsDTO = feature.create(dto, Locales.FI);
+
+            assertEquals(2020, harvestPermitApplicationBasicDetailsDTO.getHuntingYear());
+            assertNotNull(harvestPermitApplicationBasicDetailsDTO.getId());
+
+            final HarvestPermitApplication application = applicationRepository.findById(harvestPermitApplicationBasicDetailsDTO.getId()).get();
+            assertEquals(dto.getCategory(), application.getHarvestPermitCategory());
+            final ImportingPermitApplication importingApplication = importingPermitApplicationRepository.findByHarvestPermitApplication(application);
+            assertNotNull(importingApplication);
         });
     }
 
@@ -130,7 +156,7 @@ public class HarvestPermitApplicationCreateFeatureTest extends EmbeddedDatabaseT
             assertEquals(2019, harvestPermitApplicationBasicDetailsDTO.getHuntingYear());
             assertNotNull(harvestPermitApplicationBasicDetailsDTO.getId());
 
-            final HarvestPermitApplication application = applicationRepository.findOne(harvestPermitApplicationBasicDetailsDTO.getId());
+            final HarvestPermitApplication application = applicationRepository.findById(harvestPermitApplicationBasicDetailsDTO.getId()).get();
             assertEquals(dto.getCategory(), application.getHarvestPermitCategory());
             final CarnivorePermitApplication carnivorePermitApplication = carnivorePermitApplicationRepository.findByHarvestPermitApplication(application);
             assertNotNull(carnivorePermitApplication);

@@ -9,6 +9,7 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import org.joda.time.DateTime;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -24,11 +25,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -49,9 +47,8 @@ public class AmendmentApplicationData extends LifecycleEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY)
     private Harvest nonEdibleHarvest;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column
-    private Date pointOfTime;
+    private DateTime pointOfTime;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -109,11 +106,11 @@ public class AmendmentApplicationData extends LifecycleEntity<Long> {
         this.nonEdibleHarvest = nonEdibleHarvest;
     }
 
-    public Date getPointOfTime() {
+    public DateTime getPointOfTime() {
         return pointOfTime;
     }
 
-    public void setPointOfTime(final Date pointOfTime) {
+    public void setPointOfTime(final DateTime pointOfTime) {
         this.pointOfTime = pointOfTime;
     }
 

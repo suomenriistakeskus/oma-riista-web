@@ -19,40 +19,44 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+
+import static java.util.Objects.requireNonNull;
 
 public abstract class GameDiaryEntryDTO extends BaseEntityDTO<Long> {
 
     private Long id;
-
     private Integer rev;
 
     private final GameDiaryEntryType type;
 
     @Valid
     @NotNull
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     private GeoLocation geoLocation;
 
     @NotNull
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     private LocalDateTime pointOfTime;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     private String description;
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
+    /**
+     * Indicates whether game entry is editable in personal diary.
+     *
+     * Note! The logic for determining editability is different in club hunting view.
+     */
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     private boolean canEdit;
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     private final List<UUID> imageIds = new ArrayList<>();
 
     protected GameDiaryEntryDTO(@Nonnull final GameDiaryEntryType type) {
-        this.type = Objects.requireNonNull(type);
+        this.type = requireNonNull(type);
     }
 
     public boolean hasImageId(final UUID id) {
@@ -113,7 +117,7 @@ public abstract class GameDiaryEntryDTO extends BaseEntityDTO<Long> {
         return canEdit;
     }
 
-    public void setCanEdit(boolean canEdit) {
+    public void setCanEdit(final boolean canEdit) {
         this.canEdit = canEdit;
     }
 
@@ -139,7 +143,7 @@ public abstract class GameDiaryEntryDTO extends BaseEntityDTO<Long> {
         }
 
         public SELF withIdAndRev(@Nonnull final BaseEntity<Long> entity) {
-            Objects.requireNonNull(entity);
+            requireNonNull(entity);
             DtoUtil.copyBaseFields(entity, dto);
             return self();
         }
@@ -170,13 +174,11 @@ public abstract class GameDiaryEntryDTO extends BaseEntityDTO<Long> {
         }
 
         protected SELF populateWithEntry(@Nonnull final GameDiaryEntry entry) {
-            Objects.requireNonNull(entry);
+            requireNonNull(entry);
 
             return withIdAndRev(entry)
                     .withGeoLocation(entry.getGeoLocation())
-                    .withPointOfTime(Optional
-                            .ofNullable(DateUtil.toLocalDateTimeNullSafe(entry.getPointOfTime()))
-                            .orElse(null))
+                    .withPointOfTime(DateUtil.toLocalDateTimeNullSafe(entry.getPointOfTime()))
                     .withDescription(entry.getDescription());
         }
 
@@ -188,7 +190,7 @@ public abstract class GameDiaryEntryDTO extends BaseEntityDTO<Long> {
         }
 
         public SELF chain(@Nonnull final Consumer<SELF> consumer) {
-            Objects.requireNonNull(consumer);
+            requireNonNull(consumer);
             consumer.accept(self());
             return self();
         }
@@ -201,5 +203,4 @@ public abstract class GameDiaryEntryDTO extends BaseEntityDTO<Long> {
 
         protected abstract SELF self();
     }
-
 }

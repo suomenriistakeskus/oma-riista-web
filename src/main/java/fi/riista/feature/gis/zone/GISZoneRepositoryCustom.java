@@ -1,11 +1,11 @@
 package fi.riista.feature.gis.zone;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.gis.GISBounds;
 import fi.riista.integration.koiratutka.HuntingClubAreaImportFeatureDTO;
 import fi.riista.util.GISUtils;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,6 +20,8 @@ public interface GISZoneRepositoryCustom {
     List<Feature> getOtherFeatures(long zoneId, GISUtils.SRID srid);
 
     Geometry getStateGeometry(long zoneId, GISUtils.SRID srid);
+
+    Geometry getStateGeometry(Geometry geom, GISUtils.SRID srid);
 
     void updatePalstaFeatures(long zoneId, FeatureCollection featureCollection);
 
@@ -49,7 +51,7 @@ public interface GISZoneRepositoryCustom {
 
     List<GISZoneSizeByOfficialCodeDTO> calculateRhyAreaSize(long zoneId);
 
-    List<GISZoneSizeByOfficialCodeDTO> calculateVerotusLohkoAreaSize(long zoneId);
+    List<GISZoneSizeByOfficialCodeDTO> calculateVerotusLohkoAreaSize(int huntingYear, long zoneId);
 
     Map<String, Double> calculateHtaAreaSize(long zoneId);
 

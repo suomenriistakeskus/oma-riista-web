@@ -160,28 +160,27 @@
 
 <div class="modal-footer">
     <div class="row">
-        <div class="col-xs-5">
+        <div class="col-xs-6">
             <div class="btn-group btn-group-justified">
                 <label class="btn btn-default"
                        ng-model="$ctrl.fragmentStatus"
                        ng-change="$ctrl.setFragmentStatus($ctrl.fragmentStatus)"
                        uib-btn-radio="false">
-                    <span class="fa fa-fw fa-lg fa-ban text-danger"
-                          ng-class="{'invisible': $ctrl.fragmentStatus}"></span>
-                    Alue ei ole sirpale
+                    <span class="fa fa-fw fa-lg fa-plus-circle text-primary"
+                          ng-class="{'invisible': $ctrl.fragmentStatus === null || $ctrl.fragmentStatus}"></span>
+                    <span translate="harvestpermit.application.fragment.clear"></span>
                 </label>
 
                 <label class="btn btn-default"
                        ng-model="$ctrl.fragmentStatus"
                        ng-change="$ctrl.setFragmentStatus($ctrl.fragmentStatus)"
                        uib-btn-radio="true">
-                    <span class="fa fa-fw fa-lg fa-check-circle text-primary"
-                          ng-class="{'invisible': !$ctrl.fragmentStatus}"></span>
-                    Alue on sirpale
+                    <img src="/static/decision/fragment.svg" ng-class="{'invisible': !$ctrl.fragmentStatus}">
+                    <span translate="harvestpermit.application.fragment.confirm"></span>
                 </label>
             </div>
         </div>
-        <div class="col-xs-7">
+        <div class="col-xs-6">
             <button type="button" class="btn btn-default"
                     ng-click="$ctrl.close()"
                     translate="global.button.close"></button>

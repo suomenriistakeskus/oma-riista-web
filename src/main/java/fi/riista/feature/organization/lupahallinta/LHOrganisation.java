@@ -2,7 +2,7 @@ package fi.riista.feature.organization.lupahallinta;
 
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.util.LocalisedString;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Access;

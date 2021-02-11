@@ -11,7 +11,7 @@ angular.module('app.harvestpermit.application.carnivore.attachments', ['app.meta
                 resolve: {
                     states: function () {
                         return {
-                            previous: 'map',
+                            previous: 'mapdetails',
                             next: 'summary'
                         };
                     },
@@ -33,7 +33,7 @@ angular.module('app.harvestpermit.application.carnivore.attachments', ['app.meta
                 resolve: {
                     states: function () {
                         return {
-                            previous: 'map',
+                            previous: 'mapdetails',
                             next: 'summary'
                         };
                     },

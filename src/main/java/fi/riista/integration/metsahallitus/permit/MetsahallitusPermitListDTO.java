@@ -1,6 +1,5 @@
 package fi.riista.integration.metsahallitus.permit;
 
-import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -17,7 +16,7 @@ public class MetsahallitusPermitListDTO {
                 permit.getAreaNameLocalisation().asMap(),
                 permit.getBeginDate(),
                 permit.getEndDate(),
-                DateUtil.toDateTimeNullSafe(permit.getCreationTime()),
+                permit.getCreationTime(),
                 permit.getUrl());
     }
 

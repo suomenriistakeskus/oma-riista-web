@@ -1,0 +1,135 @@
+<ng-form name="weaponTransportationReasonForm" r-force-show-errors-check-validity>
+    <div class="alert alert-info">
+        <span class="fa fa-info-circle"></span>
+
+        <div class="alert-content">
+            <p translate="harvestpermit.wizard.weaponTransportation.reason.instructions"></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <div class="h3">
+                <span translate="harvestpermit.wizard.weaponTransportation.reason.title"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="radio">
+            <label>
+                <input type="radio" name="reasonType"
+                       id="reasonTypeReindeer"
+                       ng-model="$ctrl.reason.reasonType"
+                       value="POROMIES">
+                <span translate="harvestpermit.wizard.weaponTransportation.reason.type.POROMIES"></span>
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" name="reasonType"
+                       id="reasonTypeOther"
+                       ng-model="$ctrl.reason.reasonType"
+                       value="MUU">
+                <span translate="harvestpermit.wizard.weaponTransportation.reason.type.MUU"></span>
+            </label>
+        </div>
+    </div>
+
+    <div ng-if="$ctrl.reason.reasonType === 'MUU'" style="padding-left: 20px" class="form-group" show-errors>
+        <label for="reasonDescription" class="control-label">
+            <span translate="harvestpermit.wizard.weaponTransportation.reason.additionalInfoTitle"></span>
+        </label>
+
+        <input name="reasonDescription" id="reasonDescription"
+               class="form-control"
+               ng-model="$ctrl.reason.reasonDescription"
+               minlength="2"
+               maxlength="255"
+               required="$ctrl.reason.reasonType === 'MUU'"/>
+        <p class="help-block has-error"
+           ng-show="weaponTransportationReasonForm.reasonDescription.$invalid"
+           ng-messages="weaponTransportationReasonForm.reasonDescription.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+        </p>
+    </div>
+
+    <hr/>
+
+    <div class="row">
+        <div class="col-xs-6 col-sm-4 form-group" show-errors>
+            <label for="beginDate" class="control-label">
+                <span translate="global.beginDate"></span>
+            </label>
+
+            <div class="input-group" ng-controller="DatePickerController">
+                <input type="text" class="form-control"
+                       name="beginDate" id="beginDate"
+                       ng-model="$ctrl.reason.beginDate"
+                       required
+                       date-between-min-max
+                       max-date="$ctrl.endDate"
+                       uib-datepicker-popup is-open="isDatePickerOpen"/>
+
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+            </div>
+            <p class="help-block has-error"
+               ng-show="weaponTransportationReasonForm.beginDate.$invalid"
+               ng-messages="weaponTransportationReasonForm.beginDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+
+        <div class="col-xs-6 col-sm-4 form-group" show-errors>
+            <label for="endDate" class="control-label">
+                <span translate="global.endDate"></span>
+            </label>
+
+            <div class="input-group" ng-controller="DatePickerController">
+                <input type="text" class="form-control"
+                       name="endDate" id="endDate"
+                       ng-model="$ctrl.reason.endDate"
+                       required
+                       date-between-min-max
+                       min-date="$ctrl.beginDate"
+                       uib-datepicker-popup is-open="isDatePickerOpen"/>
+
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+            </div>
+            <p class="help-block has-error"
+               ng-show="weaponTransportationReasonForm.endDate.$invalid"
+               ng-messages="weaponTransportationReasonForm.endDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 text-danger"
+             ng-if="$ctrl.isPeriodTooLong()"
+             translate="harvestpermit.wizard.weaponTransportation.reason.periodTooLong"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 text-danger"
+             ng-if="$ctrl.isEndDateBeforeBeginDate()"
+             translate="harvestpermit.wizard.weaponTransportation.reason.endDateBeforeBeginDate"></div>
+    </div>
+</ng-form>
+
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(weaponTransportationReasonForm)"
+        previous="$ctrl.previous(weaponTransportationReasonForm)"
+        next-disabled="$ctrl.isNextDisabled(weaponTransportationReasonForm)"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

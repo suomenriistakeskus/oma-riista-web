@@ -158,6 +158,27 @@
 
             }
         })
+        .component('accountProfileForeignHunter', {
+            templateUrl: 'account/profile/profile_hunter_foreign.html',
+            bindings: {
+                profile: '<'
+            },
+            controller: function ($window, AccountService) {
+                var $ctrl = this;
+
+                $ctrl.$onInit = function () {
+                    $ctrl.pdfOptions = AccountService.getPdfOptions($ctrl.profile);
+                    $ctrl.pdfSelection = $ctrl.pdfOptions[0];
+                };
+
+                $ctrl.printPdf = function () {
+                    if ($ctrl.pdfSelection) {
+                        $window.open($ctrl.pdfSelection.url);
+                    }
+                };
+
+            }
+        })
         .component('accountProfileAddress', {
             templateUrl: 'account/profile/profile_address.html',
             bindings: {

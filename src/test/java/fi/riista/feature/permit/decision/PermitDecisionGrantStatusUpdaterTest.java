@@ -1,5 +1,6 @@
 package fi.riista.feature.permit.decision;
 
+import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
@@ -18,7 +19,7 @@ public class PermitDecisionGrantStatusUpdaterTest {
         final List<HarvestPermitApplicationSpeciesAmount> a = singletonList(createApplicationAmount(1, 0.5f));
         final List<PermitDecisionSpeciesAmount> b = singletonList(createDecisionAmount(1, 0.5f));
 
-        assertEquals(PermitDecision.GrantStatus.UNCHANGED, calculate(a, b));
+        assertEquals(GrantStatus.UNCHANGED, calculate(a, b));
     }
 
     @Test
@@ -26,7 +27,7 @@ public class PermitDecisionGrantStatusUpdaterTest {
         final List<HarvestPermitApplicationSpeciesAmount> a = singletonList(createApplicationAmount(1, 0.5f));
         final List<PermitDecisionSpeciesAmount> b = singletonList(createDecisionAmount(1, 0f));
 
-        assertEquals(PermitDecision.GrantStatus.REJECTED, calculate(a, b));
+        assertEquals(GrantStatus.REJECTED, calculate(a, b));
     }
 
     @Test
@@ -34,7 +35,7 @@ public class PermitDecisionGrantStatusUpdaterTest {
         final List<HarvestPermitApplicationSpeciesAmount> a = singletonList(createApplicationAmount(1, 1.0f));
         final List<PermitDecisionSpeciesAmount> b = singletonList(createDecisionAmount(1, 0.5f));
 
-        assertEquals(PermitDecision.GrantStatus.RESTRICTED, calculate(a, b));
+        assertEquals(GrantStatus.RESTRICTED, calculate(a, b));
     }
 
     // Multiple species
@@ -49,7 +50,7 @@ public class PermitDecisionGrantStatusUpdaterTest {
                 createDecisionAmount(1, 0.5f),
                 createDecisionAmount(2, 1.5f));
 
-        assertEquals(PermitDecision.GrantStatus.UNCHANGED, calculate(a, b));
+        assertEquals(GrantStatus.UNCHANGED, calculate(a, b));
     }
 
     @Test
@@ -62,7 +63,7 @@ public class PermitDecisionGrantStatusUpdaterTest {
                 createDecisionAmount(1, 0),
                 createDecisionAmount(2, 0));
 
-        assertEquals(PermitDecision.GrantStatus.REJECTED, calculate(a, b));
+        assertEquals(GrantStatus.REJECTED, calculate(a, b));
     }
 
     @Test
@@ -75,7 +76,7 @@ public class PermitDecisionGrantStatusUpdaterTest {
                 createDecisionAmount(1, 0.5f),
                 createDecisionAmount(2, 1.0f));
 
-        assertEquals(PermitDecision.GrantStatus.RESTRICTED, calculate(a, b));
+        assertEquals(GrantStatus.RESTRICTED, calculate(a, b));
     }
 
     // Multiple years
@@ -94,7 +95,7 @@ public class PermitDecisionGrantStatusUpdaterTest {
                 createDecisionAmount(2, 2.0f),
                 createDecisionAmount(2, 5.0f));
 
-        assertEquals(PermitDecision.GrantStatus.UNCHANGED, calculate(a, b));
+        assertEquals(GrantStatus.UNCHANGED, calculate(a, b));
 
     }
 
@@ -112,7 +113,7 @@ public class PermitDecisionGrantStatusUpdaterTest {
                 createDecisionAmount(2, 0),
                 createDecisionAmount(2, 0));
 
-        assertEquals(PermitDecision.GrantStatus.REJECTED, calculate(a, b));
+        assertEquals(GrantStatus.REJECTED, calculate(a, b));
     }
 
     @Test
@@ -129,7 +130,7 @@ public class PermitDecisionGrantStatusUpdaterTest {
                 createDecisionAmount(2, 0),
                 createDecisionAmount(2, 5.0f));
 
-        assertEquals(PermitDecision.GrantStatus.RESTRICTED, calculate(a, b));
+        assertEquals(GrantStatus.RESTRICTED, calculate(a, b));
     }
 
     @Test
@@ -146,29 +147,29 @@ public class PermitDecisionGrantStatusUpdaterTest {
                 createDecisionAmount(2, 3.0f),
                 createDecisionAmount(2, 4.0f));
 
-        assertEquals(PermitDecision.GrantStatus.RESTRICTED, calculate(a, b));
+        assertEquals(GrantStatus.RESTRICTED, calculate(a, b));
     }
 
-    private PermitDecision.GrantStatus calculate(final List<HarvestPermitApplicationSpeciesAmount> a,
-                                                 final List<PermitDecisionSpeciesAmount> b) {
+    private static GrantStatus calculate(final List<HarvestPermitApplicationSpeciesAmount> a,
+                                         final List<PermitDecisionSpeciesAmount> b) {
         return new PermitDecisionGrantStatusUpdater(a, b).calculate();
     }
 
-    private HarvestPermitApplicationSpeciesAmount createApplicationAmount(final int speciesCode, final float amount) {
+    private static HarvestPermitApplicationSpeciesAmount createApplicationAmount(final int speciesCode, final float amount) {
         final HarvestPermitApplicationSpeciesAmount speciesAmount = new HarvestPermitApplicationSpeciesAmount();
         final GameSpecies species = new GameSpecies();
         species.setOfficialCode(speciesCode);
         speciesAmount.setGameSpecies(species);
-        speciesAmount.setAmount(amount);
+        speciesAmount.setSpecimenAmount(amount);
         return speciesAmount;
     }
 
-    private PermitDecisionSpeciesAmount createDecisionAmount(final int speciesCode, final float amount) {
+    private static PermitDecisionSpeciesAmount createDecisionAmount(final int speciesCode, final float amount) {
         final PermitDecisionSpeciesAmount speciesAmount = new PermitDecisionSpeciesAmount();
         final GameSpecies species = new GameSpecies();
         species.setOfficialCode(speciesCode);
         speciesAmount.setGameSpecies(species);
-        speciesAmount.setAmount(amount);
+        speciesAmount.setSpecimenAmount(amount);
         return speciesAmount;
     }
 }

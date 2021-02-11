@@ -172,7 +172,7 @@ public class PermitCSVImporter {
 
                 hpsa.setHarvestPermit(harvestPermit);
                 hpsa.setGameSpecies(gameSpecies);
-                hpsa.setAmount(csvAmount.getAmount().floatValue());
+                hpsa.setSpecimenAmount(csvAmount.getAmount().floatValue());
                 hpsa.setRestrictionType(restrictionType);
                 hpsa.setRestrictionAmount(restrictionAmount);
                 hpsa.setBeginDate(csvAmount.getBeginDate());

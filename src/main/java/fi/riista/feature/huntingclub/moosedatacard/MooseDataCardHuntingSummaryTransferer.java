@@ -23,7 +23,6 @@ import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import org.joda.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,12 +54,11 @@ public class MooseDataCardHuntingSummaryTransferer {
         Objects.requireNonNull(club, "club is null");
         Objects.requireNonNull(permit, "permit is null");
 
-        final Specification<MooseHuntingSummary> summaryFindSpec = Specifications
+        final Specification<MooseHuntingSummary> summaryFindSpec = Specification
                 .where(equal(MooseHuntingSummary_.club, club))
                 .and(equal(MooseHuntingSummary_.harvestPermit, permit));
 
         return Try.of(() -> summaryRepo.findOne(summaryFindSpec))
-                .map(Optional::ofNullable)
                 .filter(Optional::isPresent)
                 .recover(noSuchElementEx -> {
 

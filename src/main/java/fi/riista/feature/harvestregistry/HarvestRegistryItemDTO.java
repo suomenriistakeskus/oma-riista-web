@@ -1,13 +1,15 @@
 package fi.riista.feature.harvestregistry;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fi.riista.config.jackson.LocalTimeToStringSerializer;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.util.DateUtil;
 import fi.riista.util.LocalisedString;
-import org.joda.time.LocalDateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 
 import javax.annotation.Nonnull;
 import java.util.function.Supplier;
@@ -22,7 +24,10 @@ public class HarvestRegistryItemDTO implements HasID<Long> {
 
     private final String shooterHunterNumber;
 
-    private final LocalDateTime pointOfTime;
+    private final LocalDate date;
+
+    @JsonSerialize(using = LocalTimeToStringSerializer.class)
+    private final LocalTime time;
 
     private final LocalisedString species;
 
@@ -60,7 +65,10 @@ public class HarvestRegistryItemDTO implements HasID<Long> {
                 .withShooterName(entity.getShooterName())
                 .withShooterAddress(HarvestRegistryShooterAddressDTO.createFrom(entity))
                 .withShooterHunterNumber(entity.getShooterHunterNumber())
-                .withPointOfTime(DateUtil.toLocalDateTimeNullSafe(entity.getPointOfTime()))
+                .withDate(entity.getPointOfTime().toLocalDate())
+                .withTime(entity.isTimeOfDayValid()
+                        ? entity.getPointOfTime().toLocalTime()
+                        : null)
                 .withSpecies(gameSpecies.getNameLocalisation())
                 .withSpeciesCode(gameSpecies.getOfficialCode())
                 .withAmount(entity.getAmount())
@@ -89,8 +97,12 @@ public class HarvestRegistryItemDTO implements HasID<Long> {
         return shooterHunterNumber;
     }
 
-    public LocalDateTime getPointOfTime() {
-        return pointOfTime;
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public LocalTime getTime() {
+        return time;
     }
 
     public LocalisedString getSpecies() {
@@ -141,18 +153,18 @@ public class HarvestRegistryItemDTO implements HasID<Long> {
         return shooterAddress;
     }
 
-    private HarvestRegistryItemDTO(final long id, final String shooterName, final String shooterHunterNumber,
-                                   final LocalDateTime pointOfTime, final LocalisedString species,
-                                   final Integer speciesCode,
-                                   final Integer amount, final GameGender gender, final GameAge age,
-                                   final Double weight, final GeoLocation geoLocation,
-                                   final LocalisedString municipality, final LocalisedString harvestArea,
-                                   final LocalisedString rka, final LocalisedString rhy,
-                                   final HarvestRegistryShooterAddressDTO shooterAddress) {
+    public HarvestRegistryItemDTO(final long id, final String shooterName, final String shooterHunterNumber,
+                                  final LocalDate date, final LocalTime time, final LocalisedString species,
+                                  final Integer speciesCode, final Integer amount, final GameGender gender,
+                                  final GameAge age, final Double weight, final GeoLocation geoLocation,
+                                  final LocalisedString municipality, final LocalisedString harvestArea,
+                                  final LocalisedString rka, final LocalisedString rhy,
+                                  final HarvestRegistryShooterAddressDTO shooterAddress) {
         this.id = id;
         this.shooterName = shooterName;
         this.shooterHunterNumber = shooterHunterNumber;
-        this.pointOfTime = pointOfTime;
+        this.date = date;
+        this.time = time;
         this.species = species;
         this.speciesCode = speciesCode;
         this.amount = amount;
@@ -167,12 +179,12 @@ public class HarvestRegistryItemDTO implements HasID<Long> {
         this.shooterAddress = shooterAddress;
     }
 
-
     public static final class Builder {
         private Long id;
         private String shooterName;
         private String shooterHunterNumber;
-        private LocalDateTime pointOfTime;
+        private LocalDate date;
+        private LocalTime time;
         private LocalisedString species;
         private Integer speciesCode;
         private Integer amount;
@@ -208,8 +220,13 @@ public class HarvestRegistryItemDTO implements HasID<Long> {
             return this;
         }
 
-        public Builder withPointOfTime(LocalDateTime pointOfTime) {
-            this.pointOfTime = pointOfTime;
+        public Builder withDate(LocalDate date) {
+            this.date = date;
+            return this;
+        }
+
+        public Builder withTime(LocalTime time) {
+            this.time = time;
             return this;
         }
 
@@ -274,7 +291,7 @@ public class HarvestRegistryItemDTO implements HasID<Long> {
         }
 
         public HarvestRegistryItemDTO build() {
-            return new HarvestRegistryItemDTO(id, shooterName, shooterHunterNumber, pointOfTime, species, speciesCode,
+            return new HarvestRegistryItemDTO(id, shooterName, shooterHunterNumber, date, time, species, speciesCode,
                     amount, gender, age, weight, geoLocation, municipality, harvestArea, rka, rhy, shooterAddress);
         }
     }

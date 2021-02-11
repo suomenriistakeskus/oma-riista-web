@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -29,65 +28,78 @@ public class AccountStatementParser {
 
         try {
 
-            final String firstRawLine = cs.readFirstLine();
-            final LocalDate statementDate;
+            final LocalDate statementDateOnFirstLine =
+                    parseDateFromBankAccountHeaderLine(cs.readFirstLine(), Optional.of(1));
 
-            // The first line has an unknown format except for the account statement date.
-            if (firstRawLine.trim().length() < 25 && firstRawLine.matches(".\\d{6}.+")) {
-                statementDate = LocalDateFormatter.parseDate(firstRawLine.substring(1, 7));
-            } else {
-                throw new AccountStatementParseException(
-                        format("Could not interpret the first line of account statement: %s", firstRawLine));
-            }
-
-            final AtomicInteger lineNumberHolder = new AtomicInteger(2);
-            final AtomicReference<String> unparseableLine = new AtomicReference<>();
+            final AtomicInteger lineNumberHolder = new AtomicInteger(1);
 
             final List<AccountStatementLine> validLines = cs.lines()
                     .skip(1)
                     .filter(line -> {
-                        if (unparseableLine.get() != null) {
-                            throw AccountStatementParseException
-                                    .invalidContent(lineNumberHolder.get(), unparseableLine.get());
-                        }
+                        final int currentLineNum = lineNumberHolder.incrementAndGet();
 
-                        // Each valid line starts with '3' or '5'. Currently, the last line is
-                        // known to have a differing and an unknown format.
+                        // Each account transfer line starts with '3' or '5'.
                         if (!line.startsWith("3") && !line.startsWith("5")) {
-                            unparseableLine.set(line);
+
+                            // Bank account header line starts with '0'. Check that account statement date is consistent.
+                            if (line.startsWith("0")) {
+                                final Optional<Integer> lineNumberOpt = Optional.of(currentLineNum);
+                                final LocalDate statementDate = parseDateFromBankAccountHeaderLine(line, lineNumberOpt);
+
+                                if (!statementDate.equals(statementDateOnFirstLine)) {
+                                    throw new AccountStatementParseException(format(
+                                            "Account statement date mismatch at line%s: %s", lineNumberOpt, statementDate));
+                                }
+                            } else if (!line.startsWith("9")) {
+                                // The lines starting with '9' are some kind of summary/assembly lines for each bank account.
+                                // The format of '9' lines is unknown.
+                                throw AccountStatementParseException.invalidContent(currentLineNum, line);
+                            }
+
                             return false;
                         }
 
                         return true;
                     })
-                    .map(line -> parseLine(line, Optional.of(lineNumberHolder.getAndIncrement())))
+                    .map(line -> parseAccountTransferLine(line, Optional.of(lineNumberHolder.get())))
                     .collect(toList());
 
-            return new AccountStatement(statementDate, validLines);
+            return new AccountStatement(statementDateOnFirstLine, validLines);
 
         } catch (final IOException ioe) {
             throw new AccountStatementParseException("Parsing account statement failed", ioe);
         }
     }
 
-    public static AccountStatementLine parseLine(final String line, final Optional<Integer> lineNumOpt) {
+    private static LocalDate parseDateFromBankAccountHeaderLine(final String line, final Optional<Integer> lineNumOpt) {
+        // The first line has an unknown format except for the account statement date.
+        if (line.trim().length() < 25 && line.matches(".\\d{6}.+")) {
+            return LocalDateFormatter.parseDate(line.substring(1, 7));
+        } else {
+            throw new AccountStatementParseException(format(
+                    "Could not interpret the bank account header line at %s: %s", formatLineNumber(lineNumOpt), line));
+        }
+    }
+
+    public static AccountStatementLine parseAccountTransferLine(final String line, final Optional<Integer> lineNumOpt) {
         try {
             final AccountStatementLine parsedLine = MANAGER.load(AccountStatementLine.class, line);
             AccountStatementLineValidator.validate(parsedLine);
             return parsedLine;
 
         } catch (final FixedFormatException e) {
-
-            final String lineNumStr = lineNumOpt.map(lineNum -> " #" + lineNum).orElse("");
-            final String errMsg = format("Error while parsing account statement line%s: %s", lineNumStr, line);
-
+            final String errMsg =
+                    format("Error while parsing account statement line%s: %s", formatLineNumber(lineNumOpt), line);
             throw new AccountStatementParseException(errMsg, e);
 
         } catch (final AccountStatementLineValidationException e) {
-            final String lineNumStr = lineNumOpt.map(lineNum -> format(" #%d", lineNum)).orElse("");
             final String errMsg = format(
-                    "Validation of account statement line%s failed: %s", lineNumStr, e.getMessage());
+                    "Validation of account statement line%s failed: %s", formatLineNumber(lineNumOpt), e.getMessage());
             throw new AccountStatementLineValidationException(errMsg, e);
         }
+    }
+
+    private static String formatLineNumber(final Optional<Integer> lineNumOpt) {
+        return lineNumOpt.map(lineNum -> format(" #%d", lineNum)).orElse("");
     }
 }

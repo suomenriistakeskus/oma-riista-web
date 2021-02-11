@@ -1,9 +1,8 @@
 package fi.riista.feature.pub.statistics;
 
+import fi.riista.config.Constants;
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameCategory;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestLukeStatus;
@@ -22,14 +21,15 @@ import org.junit.Test;
 import javax.annotation.Resource;
 import java.util.Map;
 
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 public class PublicWolfReportFeatureTest extends EmbeddedDatabaseTest {
 
@@ -48,11 +48,11 @@ public class PublicWolfReportFeatureTest extends EmbeddedDatabaseTest {
 
         Harvest harvest = model().newHarvest(wolf, author, author);
         harvest.setAmount(1);
-        harvest.setPointOfTime(new LocalDate(2015, 3, 31).toDate());
+        harvest.setPointOfTime(new LocalDate(2015, 3, 31).toDateTimeAtStartOfDay(Constants.DEFAULT_TIMEZONE));
         harvest.setGeoLocation(new GeoLocation(1312312, 2354123));
         harvest.setLukeStatus(HarvestLukeStatus.CONFIRMED_NOT_ALPHA);
 
-        model().newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE);
+        model().newHarvestSpecimen(harvest, ADULT_MALE);
 
         harvest.setHarvestReportState(HarvestReportState.APPROVED);
         harvest.setHarvestReportAuthor(author);

@@ -5,6 +5,7 @@ import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchDTO;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionRepository;
 import fi.riista.feature.permit.decision.QPermitDecision;
@@ -69,8 +70,7 @@ public class PermitDecisionReferenceFeature {
     @Transactional
     public void updateReference(final UpdatePermitDecisionReferenceDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(dto.getId(), EntityPermission.UPDATE);
-        decision.assertStatus(PermitDecision.Status.DRAFT);
-        decision.assertHandler(activeUserService.requireActiveUser());
+        decision.assertEditableBy(activeUserService.requireActiveUser());
 
         final PermitDecision reference = permitDecisionRepository.getOne(dto.getReferenceId());
         decision.setReference(reference);

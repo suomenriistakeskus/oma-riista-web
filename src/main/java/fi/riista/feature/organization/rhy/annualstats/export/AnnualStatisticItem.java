@@ -53,6 +53,7 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     })),
 
     SUM_OF_LUKE_CALCULATIONS(asNumber(i -> i.getLuke().sumOfAllLukeCalculations())),
+    SUM_OF_LUKE_CALCULATIONS_2018(asNumber(i -> i.getLuke().sumOfAllLukeCalculations2018())),
     SRVA_ALL_MOOSELIKE_EVENTS(asNumber(i -> i.getSrva().countMooselikes())),
 
     // Overridden by SRVA_ALL_MOOSELIKE_EVENTS
@@ -130,6 +131,7 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     SRVA_ACCIDENTS_BEAR(asNumber(i -> i.getSrva().getAccident().getBears())),
     SRVA_ACCIDENTS_WOLF(asNumber(i -> i.getSrva().getAccident().getWolves())),
     SRVA_ACCIDENTS_WOLVERINE(asNumber(i -> i.getSrva().getAccident().getWolverines())),
+    SRVA_ACCIDENTS_OTHER_SPECIES(asNumber(i -> i.getSrva().getAccident().getOtherSpecies())),
 
     // SRVA DEPORTATION
 
@@ -144,6 +146,7 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     SRVA_DEPORTATIONS_BEAR(asNumber(i -> i.getSrva().getDeportation().getBears())),
     SRVA_DEPORTATIONS_WOLF(asNumber(i -> i.getSrva().getDeportation().getWolves())),
     SRVA_DEPORTATIONS_WOLVERINE(asNumber(i -> i.getSrva().getDeportation().getWolverines())),
+    SRVA_DEPORTATIONS_OTHER_SPECIES(asNumber(i -> i.getSrva().getDeportation().getOtherSpecies())),
 
     // SRVA INJURY
 
@@ -158,6 +161,7 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     SRVA_INJURIES_BEAR(asNumber(i -> i.getSrva().getInjury().getBears())),
     SRVA_INJURIES_WOLF(asNumber(i -> i.getSrva().getInjury().getWolves())),
     SRVA_INJURIES_WOLVERINE(asNumber(i -> i.getSrva().getInjury().getWolverines())),
+    SRVA_INJURIES_OTHER_SPECIES(asNumber(i -> i.getSrva().getInjury().getOtherSpecies())),
 
     // TRAINING SUMMARY
 
@@ -315,7 +319,12 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     WATER_BIRD_CALCULATION_LOCATIONS_2017(asNumber(i -> i.getLuke().getWaterBirdCouples())),
 
     TOTAL_WATER_BIRD_CALCULATION_LOCATIONS(asNumber(i -> i.getLuke().sumOfWaterBirdCalculationLocations())),
+
+    NORTHERN_LAPLAND_WILLOW_GROUSE_LINES(asNumber(i -> i.getLuke().getNorthernLaplandWillowGrouseLines())),
+
     LUKE_CARNIVORE_CONTACT_PERSONS(asNumber(i -> i.getLuke().getCarnivoreContactPersons())),
+    LUKE_CARNIVORE_DNA_COLLECTORS(asNumber(i -> i.getLuke().getCarnivoreDnaCollectors())),
+    TOTAL_LUKE_CARNIVORE_PERSONS(asNumber(i -> i.getLuke().sumOfCarnivorePersons())),
 
     // METSÄHALLITUS
 

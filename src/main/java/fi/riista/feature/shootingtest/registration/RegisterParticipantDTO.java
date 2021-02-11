@@ -1,6 +1,6 @@
 package fi.riista.feature.shootingtest.registration;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;

@@ -68,7 +68,7 @@ public class EmailTokenService {
 
     @Transactional(readOnly = true)
     public EmailToken validate(final String key) {
-        final EmailToken emailToken = emailTokenRepository.findOne(key);
+        final EmailToken emailToken = emailTokenRepository.findById(key).orElse(null);
 
         if (emailToken == null) {
             LOG.error("Could not find token {}", key);

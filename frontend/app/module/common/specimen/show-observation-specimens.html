@@ -89,7 +89,7 @@
             <th translate="gamediary.mooselikeAbbrv.mooselikeFemale3CalfsAmount"></th>
             <th ng-if="!$ctrl.entry.isMoose()"
                 translate="gamediary.mooselikeAbbrv.mooselikeFemale4CalfsAmount"></th>
-            <th ng-if="$ctrl.entry.isMoose()" translate="gamediary.mooselikeAbbrv.mooselikeCalfAmount"></th>
+            <th ng-if="$ctrl.showCalfAmount" translate="gamediary.mooselikeAbbrv.mooselikeCalfAmount"></th>
             <th translate="gamediary.mooselikeAbbrv.mooselikeUnknownSpecimenAmount"></th>
         </tr>
         </thead>
@@ -101,7 +101,7 @@
             <td>{{ $ctrl.entry.mooselikeFemale2CalfsAmount }}</td>
             <td>{{ $ctrl.entry.mooselikeFemale3CalfsAmount }}</td>
             <td ng-if="!$ctrl.entry.isMoose()">{{ $ctrl.entry.mooselikeFemale4CalfsAmount }}</td>
-            <td ng-if="$ctrl.entry.isMoose()">{{ $ctrl.entry.mooselikeCalfAmount }}</td>
+            <td ng-if="$ctrl.showCalfAmount">{{ $ctrl.entry.mooselikeCalfAmount }}</td>
             <td>{{ $ctrl.entry.mooselikeUnknownSpecimenAmount }}</td>
         </tr>
         </tbody>

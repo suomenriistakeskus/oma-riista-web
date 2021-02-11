@@ -12,10 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static fi.riista.feature.organization.calendar.CalendarEventType.VUOSIKOKOUS;
-import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
 
-public class OrganisationCrudFeatureTest  extends EmbeddedDatabaseTest {
+public class OrganisationCrudFeatureTest extends EmbeddedDatabaseTest {
     @Resource
     private OrganisationCrudFeature organisationCrudFeature;
 
@@ -51,7 +50,7 @@ public class OrganisationCrudFeatureTest  extends EmbeddedDatabaseTest {
             createEventsAndVenues(rhy);
 
             onSavedAndAuthenticated(createUser(coordinator), () -> {
-                List<CalendarEventDTO> events = organisationCrudFeature.listEvents(rhy.getId());
+                final List<CalendarEventDTO> events = organisationCrudFeature.listEvents(rhy.getId());
 
                 assertEquals(NR_OF_EVENTS + NR_OF_EVENTS_PAST_YEAR, events.size());
             });
@@ -64,7 +63,8 @@ public class OrganisationCrudFeatureTest  extends EmbeddedDatabaseTest {
             createEventsAndVenues(rhy);
 
             onSavedAndAuthenticated(createUser(coordinator), () -> {
-                List<CalendarEventDTO> events = organisationCrudFeature.listEventsByYear(rhy.getId(), eventDatePastYear.getYear());
+                final List<CalendarEventDTO> events = organisationCrudFeature
+                        .listEventsByYear(rhy.getId(), eventDatePastYear.getYear());
                 assertEquals(NR_OF_EVENTS_PAST_YEAR, events.size());
             });
         });

@@ -40,7 +40,7 @@ public class HarvestReportExportToLupahallintaFeature {
 
         return queryFactory.selectFrom(PERMIT)
                 .where(PERMIT.harvestReportState.eq(HarvestReportState.APPROVED))
-                .where(PERMIT.lifecycleFields.modificationTime.goe(changedAfter.toDate()))
+                .where(PERMIT.lifecycleFields.modificationTime.goe(changedAfter))
                 .fetch().stream()
                 .flatMap(permit -> HarvestReportExportCSVDTO.create(permit, messageSource).stream())
                 .collect(toList());

@@ -6,7 +6,7 @@ import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.calendar.CalendarEventRepository;
 import fi.riista.feature.organization.calendar.CalendarEventSearchParamsDTO;
 import fi.riista.feature.organization.calendar.CalendarEventSearchResultDTO;
-import fi.riista.feature.organization.calendar.CalendarEventType;
+import fi.riista.feature.organization.calendar.CalendarEventGroupType;
 import fi.riista.feature.organization.calendar.Venue;
 import fi.riista.feature.organization.calendar.VenueRepository;
 import fi.riista.feature.pub.PublicDTOFactory;
@@ -68,8 +68,8 @@ public class PublicCalendarEventSearchFeature {
         return toCalendarEventDTOs(result, lastPage, maxResults);
     }
 
-    public List<PublicCalendarEventTypeDTO> getCalendarEventTypes() {
-        return F.mapNonNullsToList(CalendarEventType.values(), dtoFactory::create);
+    public List<PublicCalendarEventGroupTypeDTO> getCalendarEventGroupTypes() {
+        return F.mapNonNullsToList(CalendarEventGroupType.values(), dtoFactory::create);
     }
 
     private PublicCalendarEventSearchResultDTO toCalendarEventDTOs(
@@ -118,7 +118,7 @@ public class PublicCalendarEventSearchFeature {
             return emptyMap();
         }
 
-        return F.indexById(organisationRepository.findAll(organisationIds));
+        return F.indexById(organisationRepository.findAllById(organisationIds));
     }
 
     private Map<Long, Venue> getVenueIdToVenue(final HashSet<Long> venueIds) {
@@ -126,6 +126,6 @@ public class PublicCalendarEventSearchFeature {
             return emptyMap();
         }
 
-        return F.indexById(venueRepository.findAll(venueIds));
+        return F.indexById(venueRepository.findAllById(venueIds));
     }
 }

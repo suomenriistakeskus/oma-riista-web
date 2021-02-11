@@ -1,5 +1,8 @@
 package fi.riista.integration.srva;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.common.entity.GeoLocation;
@@ -45,10 +48,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -83,22 +87,49 @@ public class SrvaExportFeature {
     @Value("#{environment['git.commit.id.describe']}")
     private String version;
 
+    private final LoadingCache<Integer, List<SrvaPublicExportDTO>> publicDtoCache =
+            CacheBuilder.newBuilder()
+                    .expireAfterAccess(1, TimeUnit.MINUTES)
+                    .build(new CacheLoader<Integer, List<SrvaPublicExportDTO>>() {
+                        @Override
+                        public List<SrvaPublicExportDTO> load(final Integer calendarYear) {
+                            return doLoadPublicResult(calendarYear);
+                        }
+                    });
+
+    // PUBLIC EXPORT
+
     @Transactional(readOnly = true)
     public List<SrvaPublicExportDTO> exportPublic(final int calendarYear) {
         if (calendarYear < MIN_YEAR || calendarYear > DateUtil.today().getYear()) {
             return Collections.emptyList();
         }
 
+        try {
+            return publicDtoCache.get(calendarYear);
+        } catch (final ExecutionException ee) {
+            throw new RuntimeException(ee);
+        }
+
+    }
+
+    // For testing
+    /*package*/ void invalidatePublicDtoCache() {
+        publicDtoCache.invalidateAll();
+    }
+
+    private List<SrvaPublicExportDTO> doLoadPublicResult(final int calendarYear) {
         final QSrvaEvent SRVA_EVENT = QSrvaEvent.srvaEvent;
         final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
 
-        final Date yearStart = new LocalDate(calendarYear, 1, 1).toDateTimeAtStartOfDay().toDate();
-        final Date yearEnd = new LocalDate(calendarYear + 1, 1, 1).toDateTimeAtStartOfDay().toDate();
+        final DateTime yearStart = new LocalDate(calendarYear, 1, 1).toDateTimeAtStartOfDay();
+        final DateTime yearEnd = new LocalDate(calendarYear + 1, 1, 1).toDateTimeAtStartOfDay();
         final List<SrvaEvent> srvaEvents = jpqlQueryFactory.selectFrom(SRVA_EVENT)
                 .join(SRVA_EVENT.species, SPECIES)
                 .where(SRVA_EVENT.state.eq(SrvaEventStateEnum.APPROVED))
                 .where(SRVA_EVENT.eventName.eq(SrvaEventNameEnum.ACCIDENT))
-                .where(SRVA_EVENT.eventType.in(SrvaEventTypeEnum.TRAFFIC_ACCIDENT,SrvaEventTypeEnum.RAILWAY_ACCIDENT))
+                .where(SRVA_EVENT.eventType.in(SrvaEventTypeEnum.TRAFFIC_ACCIDENT,
+                        SrvaEventTypeEnum.RAILWAY_ACCIDENT))
                 .where(SRVA_EVENT.pointOfTime.between(yearStart, yearEnd))
                 .where(SPECIES.officialCode.in(
                         GameSpecies.OFFICIAL_CODE_MOOSE,
@@ -113,11 +144,14 @@ public class SrvaExportFeature {
         return Lists.partition(srvaEvents, 4096).stream()
                 .flatMap(this::transformEventsToPublicDtoStream)
                 .collect(toList());
+
     }
 
     private Stream<SrvaPublicExportDTO> transformEventsToPublicDtoStream(final List<SrvaEvent> srvaEvents) {
-        final Function<SrvaEvent, GameSpecies> srvaEventToSpecies = SrvaJpaUtils.getSrvaEventToSpeciesMapping(srvaEvents, gameSpeciesRepo);
-        final Map<SrvaEvent, List<SrvaSpecimen>> groupedSpecimens = SrvaJpaUtils.getSpecimensGroupedBySrvaEvent(srvaEvents, srvaSpecimenRepo);
+        final Function<SrvaEvent, GameSpecies> srvaEventToSpecies =
+                SrvaJpaUtils.getSrvaEventToSpeciesMapping(srvaEvents, gameSpeciesRepo);
+        final Map<SrvaEvent, List<SrvaSpecimen>> groupedSpecimens =
+                SrvaJpaUtils.getSpecimensGroupedBySrvaEvent(srvaEvents, srvaSpecimenRepo);
 
         return srvaEvents.stream()
                 .map(event -> SrvaPublicExportDTO.create(
@@ -125,6 +159,8 @@ public class SrvaExportFeature {
                         Optional.ofNullable(srvaEventToSpecies.apply(event)).map(GameSpecies::getOfficialCode).orElse(null),
                         Optional.ofNullable(groupedSpecimens.get(event)).map(SrvaSpecimenDTO::create).orElse(null)));
     }
+
+    // RVR EXPORT
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasPrivilege('EXPORT_SRVA_RVR')")
@@ -135,7 +171,8 @@ public class SrvaExportFeature {
     // Do not call this method directory, it's not authorized!
     @Transactional(readOnly = true)
     public RVR_SrvaEvents getRVREventsForXmlMarshal() {
-        final List<SrvaEvent> srvaEvents = srvaEventRepository.findAll(SrvaSpecs.equalState(SrvaEventStateEnum.APPROVED));
+        final List<SrvaEvent> srvaEvents =
+                srvaEventRepository.findAll(SrvaSpecs.equalState(SrvaEventStateEnum.APPROVED));
 
         // To prevent too many parameters (2^15 is max) to SQL IN clause, process in smaller batches
         final List<RVR_SrvaEvent> rvrEventList = Lists.partition(srvaEvents, 4096).stream()
@@ -150,10 +187,14 @@ public class SrvaExportFeature {
     }
 
     private Stream<? extends RVR_SrvaEvent> transformToRVREventStream(final List<SrvaEvent> srvaEvents) {
-        final Function<SrvaEvent, GameSpecies> srvaEventToSpecies = SrvaJpaUtils.getSrvaEventToSpeciesMapping(srvaEvents, gameSpeciesRepo);
-        final Function<SrvaEvent, Riistanhoitoyhdistys> srvaEventToRhy = SrvaJpaUtils.getSrvaEventToRhyMapping(srvaEvents, riistanhoitoyhdistysRepo);
-        final Map<SrvaEvent, List<SrvaSpecimen>> groupedSpecimens = SrvaJpaUtils.getSpecimensGroupedBySrvaEvent(srvaEvents, srvaSpecimenRepo);
-        final Map<SrvaEvent, List<SrvaMethod>> groupedMethods = SrvaJpaUtils.getMethodsGroupedBySrvaEvent(srvaEvents, srvaMethodRepo);
+        final Function<SrvaEvent, GameSpecies> srvaEventToSpecies =
+                SrvaJpaUtils.getSrvaEventToSpeciesMapping(srvaEvents, gameSpeciesRepo);
+        final Function<SrvaEvent, Riistanhoitoyhdistys> srvaEventToRhy =
+                SrvaJpaUtils.getSrvaEventToRhyMapping(srvaEvents, riistanhoitoyhdistysRepo);
+        final Map<SrvaEvent, List<SrvaSpecimen>> groupedSpecimens =
+                SrvaJpaUtils.getSpecimensGroupedBySrvaEvent(srvaEvents, srvaSpecimenRepo);
+        final Map<SrvaEvent, List<SrvaMethod>> groupedMethods = SrvaJpaUtils.getMethodsGroupedBySrvaEvent(srvaEvents,
+                srvaMethodRepo);
 
         return constructExportData(srvaEvents, srvaEventToSpecies, srvaEventToRhy, groupedSpecimens, groupedMethods);
     }
@@ -172,7 +213,7 @@ public class SrvaExportFeature {
             rvrEvent.setId(event.getId());
             rvrEvent.setRev(event.getConsistencyVersion());
             rvrEvent.setGeoLocation(createRvrGeoLocation(event.getGeoLocation()));
-            rvrEvent.setPointOfTime(new DateTime(event.getPointOfTime().getTime()));
+            rvrEvent.setPointOfTime(event.getPointOfTime());
             rvrEvent.setOtherSpeciesDescription(event.getOtherSpeciesDescription());
             rvrEvent.setTotalSpecimenAmount(event.getTotalSpecimenAmount());
             rvrEvent.setPersonCount(event.getPersonCount());

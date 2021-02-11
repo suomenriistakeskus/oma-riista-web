@@ -1,0 +1,7 @@
+<p ng-show="::($ctrl.attachments.length === 0)">
+    <span class="text-muted" translate="harvestpermit.wizard.attachments.none"></span>
+</p>
+
+<p ng-repeat="a in ::$ctrl.attachments">
+    <a ng-click="$ctrl.downloadAttachment(a.id)" ng-bind="::a.name"></a>
+</p>

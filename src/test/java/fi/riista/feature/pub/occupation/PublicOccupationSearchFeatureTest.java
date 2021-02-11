@@ -1,6 +1,7 @@
 package fi.riista.feature.pub.occupation;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.AlueellinenRiistaneuvosto;
@@ -9,6 +10,7 @@ import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationGroupType;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
@@ -24,7 +26,11 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,7 +41,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
@@ -50,13 +56,13 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
     private PublicOccupationSearchFeature occupationSearchFeature;
 
     @Nonnull
-    private static CustomTypeSafeMatcher<PublicOccupationTypeDTO> equalToOccupationType(final OrganisationType organisationType,
-                                                                                        final OccupationType occupationType) {
-        return new CustomTypeSafeMatcher<PublicOccupationTypeDTO>(
-                String.format("occupationType=%s organisationType=%s", occupationType, organisationType)) {
+    private static CustomTypeSafeMatcher<PublicOccupationGroupTypeDTO> equalToOccupationGroupType(final OrganisationType organisationType,
+                                                                                                  final OccupationGroupType occupationGroupType) {
+        return new CustomTypeSafeMatcher<PublicOccupationGroupTypeDTO>(
+                String.format("occupationGroupType=%s organisationType=%s", occupationGroupType, organisationType)) {
             @Override
-            protected boolean matchesSafely(final PublicOccupationTypeDTO o) {
-                return o.getOccupationType() == occupationType && o.getOrganisationType() == organisationType;
+            protected boolean matchesSafely(final PublicOccupationGroupTypeDTO o) {
+                return o.getOccupationType() == occupationGroupType && o.getOrganisationType() == organisationType;
             }
         };
     }
@@ -128,37 +134,38 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testOccupationTypes() {
-        final List<PublicOccupationTypeDTO> result = occupationSearchFeature.getAllOccupationTypes();
+    public void testOccupationGroupTypes() {
+        final List<PublicOccupationGroupTypeDTO> result = occupationSearchFeature.getAllOccupationGroupTypes();
 
         assertThat(result, contains(Arrays.asList(
-                equalToOccupationType(OrganisationType.RK, OccupationType.PUHEENJOHTAJA),
-                equalToOccupationType(OrganisationType.RK, OccupationType.VARAPUHEENJOHTAJA),
-                equalToOccupationType(OrganisationType.RK, OccupationType.HALLITUKSEN_JASEN),
-                equalToOccupationType(OrganisationType.RK, OccupationType.HALLITUKSEN_VARAJASEN),
-                equalToOccupationType(OrganisationType.VRN, OccupationType.PUHEENJOHTAJA),
-                equalToOccupationType(OrganisationType.VRN, OccupationType.VARAPUHEENJOHTAJA),
-                equalToOccupationType(OrganisationType.VRN, OccupationType.JASEN),
-                equalToOccupationType(OrganisationType.VRN, OccupationType.VARAJASEN),
-                equalToOccupationType(OrganisationType.ARN, OccupationType.PUHEENJOHTAJA),
-                equalToOccupationType(OrganisationType.ARN, OccupationType.VARAPUHEENJOHTAJA),
-                equalToOccupationType(OrganisationType.ARN, OccupationType.JASEN),
-                equalToOccupationType(OrganisationType.ARN, OccupationType.VARAJASEN),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.TOIMINNANOHJAAJA),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.SRVA_YHTEYSHENKILO),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.PETOYHDYSHENKILO),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.METSASTYKSENVALVOJA),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.METSASTAJATUTKINNON_VASTAANOTTAJA),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.METSASTAJATUTKINTOON_VALMENTAVAN_KOULUTUKSEN_KOULUTTAJA),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.PUHEENJOHTAJA),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.VARAPUHEENJOHTAJA),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.HALLITUKSEN_JASEN),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.HALLITUKSEN_VARAJASEN),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.JALJESTYSKOIRAN_OHJAAJA_HIRVI),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET),
-                equalToOccupationType(OrganisationType.RHY, OccupationType.JALJESTYSKOIRAN_OHJAAJA_SUURPEDOT)
+                equalToOccupationGroupType(OrganisationType.RK, OccupationGroupType.PUHEENJOHTAJA),
+                equalToOccupationGroupType(OrganisationType.RK, OccupationGroupType.VARAPUHEENJOHTAJA),
+                equalToOccupationGroupType(OrganisationType.RK, OccupationGroupType.HALLITUKSEN_JASEN),
+                equalToOccupationGroupType(OrganisationType.RK, OccupationGroupType.HALLITUKSEN_VARAJASEN),
+                equalToOccupationGroupType(OrganisationType.VRN, OccupationGroupType.PUHEENJOHTAJA),
+                equalToOccupationGroupType(OrganisationType.VRN, OccupationGroupType.VARAPUHEENJOHTAJA),
+                equalToOccupationGroupType(OrganisationType.VRN, OccupationGroupType.JASEN),
+                equalToOccupationGroupType(OrganisationType.VRN, OccupationGroupType.VARAJASEN),
+                equalToOccupationGroupType(OrganisationType.ARN, OccupationGroupType.PUHEENJOHTAJA),
+                equalToOccupationGroupType(OrganisationType.ARN, OccupationGroupType.VARAPUHEENJOHTAJA),
+                equalToOccupationGroupType(OrganisationType.ARN, OccupationGroupType.JASEN),
+                equalToOccupationGroupType(OrganisationType.ARN, OccupationGroupType.VARAJASEN),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.TOIMINNANOHJAAJA),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.SRVA_YHTEYSHENKILO),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.PETOYHDYSHENKILO),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.METSASTYKSENVALVOJA),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.METSASTAJATUTKINNON_VASTAANOTTAJA),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.AMPUMAKOKEEN_VASTAANOTTAJA),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.METSASTAJATUTKINTOON_VALMENTAVAN_KOULUTUKSEN_KOULUTTAJA),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.PUHEENJOHTAJA),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.VARAPUHEENJOHTAJA),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.HALLITUKSEN_JASEN),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.HALLITUKSEN_VARAJASEN),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.JALJESTYSKOIRAN_OHJAAJA_HIRVI),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.JALJESTYSKOIRAN_OHJAAJA_SUURPEDOT),
+                equalToOccupationGroupType(OrganisationType.RHY, OccupationGroupType.HALLITUS)
         )));
     }
 
@@ -178,7 +185,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOccupationType(ImmutableSet.of(OccupationType.TOIMINNANOHJAAJA))
                         .withOrganisationType(OrganisationType.RHY)
                         .build());
 
@@ -202,7 +209,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOccupationType(ImmutableSet.of(OccupationType.TOIMINNANOHJAAJA))
                         .withOrganisationType(OrganisationType.RHY)
                         .build());
 
@@ -228,7 +235,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOccupationType(ImmutableSet.of(OccupationType.TOIMINNANOHJAAJA))
                         .withOrganisationType(OrganisationType.RHY)
                         .build());
 
@@ -259,7 +266,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOccupationType(ImmutableSet.of(OccupationType.TOIMINNANOHJAAJA))
                         .withOrganisationType(OrganisationType.RHY)
                         .build());
 
@@ -377,7 +384,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.SRVA_YHTEYSHENKILO)
+                        .withOccupationType(ImmutableSet.of(OccupationType.SRVA_YHTEYSHENKILO))
                         .withOrganisationType(OrganisationType.RHY)
                         .withAreaId(rka.getOfficialCode())
                         .build());
@@ -396,13 +403,48 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.SRVA_YHTEYSHENKILO)
+                        .withOccupationType(ImmutableSet.of(OccupationType.SRVA_YHTEYSHENKILO))
                         .withOrganisationType(OrganisationType.RHY)
-                        .withRhyId(rhy.getOfficialCode())
+                        .withRhyIds(Collections.singletonList(rhy.getOfficialCode()))
                         .build());
 
         assertThat(result.getOccupations(), hasSize(1));
         assertThat(result.getOrganisations(), hasSize(1));
+    }
+
+    @Test
+    public void testOccupations_ByMultipleRhys() {
+
+        final RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue("650");
+        final Collection<OccupationType> occupationTypes = Lists.newArrayList(
+                OccupationType.SRVA_YHTEYSHENKILO,
+                OccupationType.TOIMINNANOHJAAJA,
+                OccupationType.PETOYHDYSHENKILO);
+        final Collection<Riistanhoitoyhdistys> rhys = Lists.newArrayList(
+                model().newRiistanhoitoyhdistys(rka),
+                model().newRiistanhoitoyhdistys(rka),
+                model().newRiistanhoitoyhdistys(rka));
+
+        Collection<String> rhyIds = new ArrayList<>();
+
+        for (Riistanhoitoyhdistys rhy : rhys) {
+            for (OccupationType occupation : occupationTypes) {
+                model().newOccupation(rhy, model().newPerson(), occupation);
+            }
+            rhyIds.add(rhy.getOfficialCode());
+        }
+
+        persistInNewTransaction();
+
+        final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
+                PublicOccupationSearchParameters.builder()
+                        .withOccupationType(ImmutableSet.of(OccupationType.SRVA_YHTEYSHENKILO))
+                        .withOrganisationType(OrganisationType.RHY)
+                        .withRhyIds(rhyIds)
+                        .build());
+
+        assertThat(result.getOccupations(), hasSize(3));
+        assertThat(result.getOrganisations(), hasSize(3));
     }
 
     @Test
@@ -508,7 +550,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOccupationType(ImmutableSet.of(OccupationType.TOIMINNANOHJAAJA))
                         .withOrganisationType(OrganisationType.RHY)
                         .build(),
                 maxResults);
@@ -530,7 +572,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOccupationType(ImmutableSet.of(OccupationType.TOIMINNANOHJAAJA))
                         .withOrganisationType(OrganisationType.RHY)
                         .build(),
                 maxResults);
@@ -547,7 +589,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOccupationType(ImmutableSet.of(OccupationType.TOIMINNANOHJAAJA))
                         .withOrganisationType(OrganisationType.RHY)
                         .withPageSize(maxResults + 1)
                         .withPageNumber(0)
@@ -577,7 +619,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
         // Fetch first page
         final PublicOccupationsAndOrganisationsDTO firstPage = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOccupationType(ImmutableSet.of(OccupationType.TOIMINNANOHJAAJA))
                         .withOrganisationType(OrganisationType.RHY)
                         .withPageNumber(firstPageOffset)
                         .withPageSize(pageSize)
@@ -592,7 +634,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
         // Fetch second page
         final PublicOccupationsAndOrganisationsDTO secondPage = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.TOIMINNANOHJAAJA)
+                        .withOccupationType(ImmutableSet.of(OccupationType.TOIMINNANOHJAAJA))
                         .withOrganisationType(OrganisationType.RHY)
                         .withPageNumber(secondPageOffset)
                         .withPageSize(pageSize)
@@ -615,7 +657,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withRhyId(rhy.getOfficialCode())
+                        .withRhyIds(Collections.singletonList(rhy.getOfficialCode()))
                         .build());
 
         final List<PublicOccupationDTO> occupations = result.getOccupations();
@@ -638,7 +680,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.SRVA_YHTEYSHENKILO)
+                        .withOccupationType(ImmutableSet.of(OccupationType.SRVA_YHTEYSHENKILO))
                         .withOrganisationType(OrganisationType.RHY)
                         .build());
 
@@ -663,7 +705,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withRhyId(rhy.getOfficialCode())
+                        .withRhyIds(Collections.singletonList(rhy.getOfficialCode()))
                         .build());
 
         final List<PublicOccupationDTO> occupations = result.getOccupations();
@@ -688,7 +730,7 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
 
         final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
                 PublicOccupationSearchParameters.builder()
-                        .withOccupationType(OccupationType.SRVA_YHTEYSHENKILO)
+                        .withOccupationType(ImmutableSet.of(OccupationType.SRVA_YHTEYSHENKILO))
                         .withOrganisationType(OrganisationType.RHY)
                         .build());
 
@@ -701,4 +743,33 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
         Assert.assertTrue(secondPersonName.contains(person2.getFirstName()));
     }
 
+    @Test
+    public void testGetBoardMembers() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        final Person person = model().newPerson();
+        model().newOccupation(rhy, person, OccupationType.PUHEENJOHTAJA);
+        final Person person2 = model().newPerson();
+        model().newOccupation(rhy, person2, OccupationType.VARAPUHEENJOHTAJA);
+        final Person person3 = model().newPerson();
+        model().newOccupation(rhy, person3, OccupationType.HALLITUKSEN_JASEN);
+        final Person person4 = model().newPerson();
+        model().newOccupation(rhy, person4, OccupationType.HALLITUKSEN_VARAJASEN);
+        final Person person5 = model().newPerson();
+        model().newOccupation(rhy, person5, OccupationType.TOIMINNANOHJAAJA);
+
+        persistInNewTransaction();
+
+        final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
+                PublicOccupationSearchParameters.builder()
+                        .withOccupationType(OccupationGroupType.getOccupationTypes(OccupationGroupType.HALLITUS))
+                        .withOrganisationType(OrganisationType.RHY)
+                        .build());
+
+        final List<PublicOccupationDTO> occupations = result.getOccupations();
+        assertThat(occupations, hasSize(4));
+        final long coordinatorCount = occupations.stream()
+                .filter(occupation -> occupation.getOccupationType().getOccupationType() == OccupationType.TOIMINNANOHJAAJA)
+                .count();
+        assertEquals(0, coordinatorCount);
+    }
 }

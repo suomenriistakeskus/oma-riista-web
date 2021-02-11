@@ -1,15 +1,12 @@
 package fi.riista.feature.organization.occupation.search;
 
-import fi.riista.feature.organization.occupation.search.OccupationContactSearchDTO;
-import fi.riista.feature.organization.occupation.search.OccupationContactSearchResultDTO;
+import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.feature.organization.occupation.search.ContactSearchFeature;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
 import org.junit.Test;

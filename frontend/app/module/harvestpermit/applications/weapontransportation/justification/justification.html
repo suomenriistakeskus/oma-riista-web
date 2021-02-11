@@ -1,0 +1,202 @@
+<ng-form name="weaponTransportationJustificationForm" r-force-show-errors-check-validity>
+    <div class="alert alert-info">
+        <span class="fa fa-info-circle"></span>
+
+        <div class="alert-content">
+            <p class="alert-title" translate="harvestpermit.wizard.weaponTransportation.justification.instructionsTitle"></p>
+
+            <p translate="harvestpermit.wizard.weaponTransportation.justification.instructions"></p>
+        </div>
+    </div>
+
+    <div class="row" ng-repeat="vehicle in $ctrl.justification.vehicles">
+        <div class="form-group col-xs-3" show-errors>
+            <label class="control-label"
+                   for="vehicleType-{{vehicle.key}}"
+                   translate="harvestpermit.wizard.weaponTransportation.justification.vehicleTypeTitle">
+            </label>
+            <select class="form-control"
+                    name="vehicleType-{{vehicle.key}}"
+                    id="vehicleType-{{vehicle.key}}"
+                    ng-model="vehicle.type"
+                    ng-options="type as ('harvestpermit.wizard.weaponTransportation.justification.vehicleType.' + type | translate) for type in ::$ctrl.vehicleTypes"
+                    required
+                    ie10-optgroup-fix>
+                <option disabled value="" translate="harvestpermit.wizard.weaponTransportation.justification.selectVehicleType"></option>
+            </select>
+        </div>
+        <div class="form-group col-xs-4" show-errors>
+            <label class="control-label"
+                   for="vehicleRegisterNumber-{{vehicle.key}}"
+                   translate="harvestpermit.wizard.weaponTransportation.justification.vehicleRegisterNumber">
+            </label>
+
+            <input name="vehicleRegisterNumber-{{vehicle.key}}" id="vehicleRegisterNumber-{{vehicle.key}}"
+                   class="form-control"
+                   ng-model="vehicle.registerNumber"
+                   maxlength="255"/>
+            <p class="help-block has-error"
+               ng-show="weaponTransportationJustificationForm['vehicleRegisterNumber-{{vehicle.key}}'].$invalid"
+               ng-messages="weaponTransportationJustificationForm['vehicleRegisterNumber-{{vehicle.key}}'].$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+        <div class="form-group col-xs-4" show-errors ng-if="vehicle.type === 'MUU'">
+            <label class="control-label"
+                   for="vehicleDescription-{{vehicle.key}}"
+                   translate="harvestpermit.wizard.weaponTransportation.justification.vehicleDescription">
+            </label>
+
+            <input name="vehicleDescription-{{vehicle.key}}" id="vehicleDescription-{{vehicle.key}}"
+                   class="form-control"
+                   ng-model="vehicle.description"
+                   minlength="2"
+                   maxlength="255"
+                   required/>
+            <p class="help-block has-error"
+               ng-show="weaponTransportationJustificationForm['vehicleDescription-{{vehicle.key}}'].$invalid"
+               ng-messages="weaponTransportationJustificationForm['vehicleDescription-{{vehicle.key}}'].$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+        <div class="col-xs-1 pull-right" style="padding-top: 24px">
+            <a class="btn btn-link"
+               ng-click="$ctrl.removeVehicle(vehicle.key)"
+               ng-show="$ctrl.justification.vehicles.length > 1">
+                <span class="fa fa-fw fa-remove text-danger"></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-3">
+            <button class="btn btn-primary btn-block"
+                    type="button"
+                    ng-click="$ctrl.addVehicle()"
+                    translate="harvestpermit.wizard.weaponTransportation.justification.addVehicle"></button>
+        </div>
+    </div>
+
+    <hr class="invisible"/>
+
+    <div class="row" ng-repeat="weapon in $ctrl.justification.transportedWeapons">
+        <div class="form-group col-xs-3" show-errors>
+            <label class="control-label"
+                   for="weaponType-{{weapon.key}}"
+                   translate="harvestpermit.wizard.weaponTransportation.justification.weaponTypeTitle">
+            </label>
+            <select class="form-control"
+                    name="weaponType-{{weapon.key}}"
+                    id="weaponType-{{weapon.key}}"
+                    ng-model="weapon.type"
+                    ng-options="type as ('harvestpermit.wizard.weaponTransportation.justification.weaponType.' + type | translate) for type in ::$ctrl.weaponTypes"
+                    required
+                    ie10-optgroup-fix>
+                <option disabled value="" translate="harvestpermit.wizard.weaponTransportation.justification.selectWeaponType"></option>
+            </select>
+        </div>
+        <div class="form-group col-xs-2" show-errors>
+            <label class="control-label"
+                   for="weaponAmount-{{weapon.key}}"
+                   translate="harvestpermit.wizard.weaponTransportation.justification.weaponAmount">
+            </label>
+
+            <input type="number"
+                   name="weaponAmount-{{weapon.key}}" id="weaponAmount-{{weapon.key}}"
+                   class="form-control"
+                   ng-model="weapon.amount"
+                   min="1"
+                   max="999"
+                   step="1"
+                   required/>
+            <p class="help-block has-error"
+               ng-show="weaponTransportationJustificationForm['weaponAmount-{{weapon.key}}'].$invalid"
+               ng-messages="weaponTransportationJustificationForm['weaponAmount-{{weapon.key}}'].$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+        <div class="form-group col-xs-2" show-errors ng-if="weapon.type !== 'METSASTYSJOUSI'">
+            <label class="control-label"
+                   for="weaponCaliber-{{weapon.key}}"
+                   translate="harvestpermit.wizard.weaponTransportation.justification.weaponCaliber">
+            </label>
+
+            <input name="weaponCaliber-{{weapon.key}}" id="weaponCaliber-{{weapon.key}}"
+                   class="form-control"
+                   ng-model="weapon.caliber"
+                   maxlength="255"/>
+            <p class="help-block has-error"
+               ng-show="weaponTransportationJustificationForm['weaponCaliber-{{weapon.key}}'].$invalid"
+               ng-messages="weaponTransportationJustificationForm['weaponCaliber-{{weapon.key}}'].$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+
+        <div class="form-group col-xs-4" show-errors ng-if="weapon.type === 'MUU'">
+            <label class="control-label"
+                   for="weaponDescription-{{weapon.key}}"
+                   translate="harvestpermit.wizard.weaponTransportation.justification.weaponDescription">
+            </label>
+
+            <input name="weaponDescription-{{weapon.key}}" id="weaponDescription-{{weapon.key}}"
+                   class="form-control"
+                   ng-model="weapon.description"
+                   minlength="2"
+                   maxlength="255"
+                   required/>
+            <p class="help-block has-error"
+               ng-show="weaponTransportationJustificationForm['weaponDescription-{{weapon.key}}'].$invalid"
+               ng-messages="weaponTransportationJustificationForm['weaponDescription-{{weapon.key}}'].$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+        <div class="col-xs-1 pull-right" style="padding-top: 24px">
+            <a class="btn btn-link"
+               ng-click="$ctrl.removeWeapon(weapon.key)"
+               ng-show="$ctrl.justification.transportedWeapons.length > 1">
+                <span class="fa fa-fw fa-remove text-danger"></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-3">
+            <button class="btn btn-primary btn-block"
+                    type="button"
+                    ng-click="$ctrl.addWeapon()"
+                    translate="harvestpermit.wizard.weaponTransportation.justification.addWeapon"></button>
+        </div>
+    </div>
+
+    <hr class="invisible"/>
+
+    <div class="row">
+        <div class="col-xs-12 form-group" show-errors>
+            <label for="justification" class="control-label">
+                <span translate="harvestpermit.wizard.weaponTransportation.justification.justification"></span>
+            </label>
+
+            <textarea class="form-control" rows="4"
+                      name="justification"
+                      id="justification"
+                      ng-model="$ctrl.justification.justification"
+                      minlength="5"
+                      required></textarea>
+
+            <p class="help-block has-error"
+               ng-show="weaponTransportationJustificationForm.justification.$invalid"
+               ng-messages="weaponTransportationJustificationForm.justification.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+</ng-form>
+
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(weaponTransportationJustificationForm)"
+        previous="$ctrl.previous(weaponTransportationJustificationForm)"
+        next-disabled="$ctrl.isNextDisabled(weaponTransportationJustificationForm)"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

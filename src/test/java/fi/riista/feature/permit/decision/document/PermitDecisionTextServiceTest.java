@@ -4,11 +4,9 @@ import com.google.common.collect.ImmutableList;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.delivery.PermitDecisionDelivery;
 import fi.riista.test.EmbeddedDatabaseTest;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
 import javax.annotation.Resource;
-
 import java.util.Arrays;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;

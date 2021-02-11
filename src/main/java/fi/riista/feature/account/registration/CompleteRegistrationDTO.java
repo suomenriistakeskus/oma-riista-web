@@ -3,7 +3,7 @@ package fi.riista.feature.account.registration;
 import fi.riista.validation.PhoneNumber;
 import fi.riista.validation.VetumaTransactionId;
 import fi.riista.validation.XssSafe;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.NotNull;

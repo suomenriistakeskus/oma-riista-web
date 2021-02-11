@@ -1,8 +1,9 @@
 package fi.riista.feature.permit.decision.action;
 
+import fi.riista.feature.common.decision.DecisionActionCommunicationType;
+import fi.riista.feature.common.decision.DecisionActionType;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.permit.decision.PermitDecision;
-import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 
@@ -19,6 +20,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,27 +28,6 @@ import java.util.List;
 @Entity
 @Access(AccessType.FIELD)
 public class PermitDecisionAction extends LifecycleEntity<Long> {
-
-    public enum ActionType {
-        SELVITYSPYYNTO,
-        SELVITYS,
-        TIETOPYYNTO,
-        TIETOPYYNTOVASTAUS,
-        LAUSUNTOPYYNTO,
-        LAUSUNTO,
-        KUULEMINEN,
-        VASTASELITYSPYYNTO,
-        VASTASELITYS,
-        TAYDENNYS,
-        MUU
-    }
-
-    public enum CommunicationType {
-        TELEPHONE,
-        EMAIL,
-        MEETING,
-        MAIL
-    }
 
     private Long id;
 
@@ -61,11 +42,11 @@ public class PermitDecisionAction extends LifecycleEntity<Long> {
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private ActionType actionType;
+    private DecisionActionType actionType;
 
     @Enumerated(EnumType.STRING)
     @Column
-    private CommunicationType communicationType;
+    private DecisionActionCommunicationType communicationType;
 
     @NotBlank
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -111,19 +92,19 @@ public class PermitDecisionAction extends LifecycleEntity<Long> {
         this.pointOfTime = pointOfTime;
     }
 
-    public ActionType getActionType() {
+    public DecisionActionType getActionType() {
         return actionType;
     }
 
-    public void setActionType(final ActionType actionType) {
+    public void setActionType(final DecisionActionType actionType) {
         this.actionType = actionType;
     }
 
-    public CommunicationType getCommunicationType() {
+    public DecisionActionCommunicationType getCommunicationType() {
         return communicationType;
     }
 
-    public void setCommunicationType(final CommunicationType communicationType) {
+    public void setCommunicationType(final DecisionActionCommunicationType communicationType) {
         this.communicationType = communicationType;
     }
 

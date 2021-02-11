@@ -6,6 +6,9 @@ import fi.riista.feature.permit.application.IllegalPermitApplicationStateTransit
 import fi.riista.util.F;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public class ValidationUtil {
 
@@ -43,9 +46,12 @@ public class ValidationUtil {
         }
     }
 
-    public static void validateCommonContent(HarvestPermitApplication application) {
+    public static void validateCommonHarvestPermitContent(HarvestPermitApplication application) {
         ValidationUtil.validateSpeciesAmounts(application);
+        ValidationUtil.validateCommonContent(application);
+    }
 
+    public static void validateCommonContent(HarvestPermitApplication application) {
         if (application.getRhy() == null) {
             throw new IllegalStateException("Application RHY is not available");
         }
@@ -53,7 +59,6 @@ public class ValidationUtil {
         if (application.getDeliveryByMail() == null) {
             throw new IllegalStateException("deliveryByMail is missing");
         }
-
     }
 
     public static void validateSpeciesAmounts(HarvestPermitApplication application) {
@@ -68,11 +73,54 @@ public class ValidationUtil {
             throw new IllegalStateException("speciesAmount species are not unique");
         }
 
-        for (final HarvestPermitApplicationSpeciesAmount speciesAmount : application.getSpeciesAmounts()) {
-            if (speciesAmount.getAmount() < 1.0) {
-                throw new IllegalStateException("speciesAmount is invalid: " + speciesAmount.getAmount());
+        // TODO: Handle in category spesific validator
+        switch (application.getHarvestPermitCategory()) {
+            case NEST_REMOVAL: {
+                assertSpecimenAmountsNull(application.getSpeciesAmounts());
+                assertNestRemovalAmountsPresent(application.getSpeciesAmounts());
+                break;
             }
+            case IMPORTING: {
+                assertImportingAmountsPresent(application.getSpeciesAmounts());
+                break;
+            }
+            default: {
+                assertSpecimenAmountsPresent(application.getSpeciesAmounts());
+                break;
+            }
+
         }
     }
 
+    private static void assertNestRemovalAmountsPresent(final List<HarvestPermitApplicationSpeciesAmount> speciesAmounts) {
+        speciesAmounts.forEach(spa -> Stream.of(spa.getNestAmount(),
+                spa.getEggAmount(),
+                spa.getConstructionAmount())
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Nest removal amounts not present")));
+    }
+
+    private static void assertImportingAmountsPresent(final List<HarvestPermitApplicationSpeciesAmount> speciesAmounts) {
+        speciesAmounts.forEach(spa -> Stream.of(spa.getSpecimenAmount(), spa.getEggAmount())
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("Importing amounts not present")));
+    }
+
+    private static void assertSpecimenAmountsNull(final Iterable<HarvestPermitApplicationSpeciesAmount> speciesAmounts) {
+        speciesAmounts.forEach(spa -> {
+            if (spa.getSpecimenAmount() != null) {
+                throw new IllegalStateException("Specimen amount should be null");
+            }
+        });
+    }
+
+    private static void assertSpecimenAmountsPresent(final Iterable<HarvestPermitApplicationSpeciesAmount> speciesAmounts) {
+        speciesAmounts.forEach(spa -> {
+            if (spa.getSpecimenAmount() == null) {
+                throw new IllegalStateException("Specimen amount should NOT be null");
+            }
+        });
+    }
 }

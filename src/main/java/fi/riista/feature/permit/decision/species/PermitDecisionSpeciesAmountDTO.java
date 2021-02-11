@@ -4,22 +4,25 @@ import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
 public class PermitDecisionSpeciesAmountDTO implements Has2BeginEndDates, HasID<Long> {
-    private static final int MAX_SPECIES_AMOUNT = 100_000;
-    private static final int MIN_SPECIES_AMOUNT = 0;
+    public static final int MAX_SPECIES_AMOUNT_VALUE = 100_000;
+    public static final int MIN_SPECIES_AMOUNT_VALUE = 0;
 
     @Nonnull
     public static PermitDecisionSpeciesAmountDTO create(@Nonnull final PermitDecisionSpeciesAmount speciesAmount,
                                                         @Nonnull final HarvestPermitApplication application,
-                                                        final float applicationAmount) {
+                                                        @Nonnull final HarvestPermitApplicationSpeciesAmount applicationAmount) {
         return new PermitDecisionSpeciesAmountDTO(
                 speciesAmount,
                 speciesAmount.getGameSpecies(),
@@ -34,19 +37,26 @@ public class PermitDecisionSpeciesAmountDTO implements Has2BeginEndDates, HasID<
             @Nonnull final PermitDecisionSpeciesAmount speciesAmount,
             @Nonnull final GameSpecies species,
             @Nonnull final HarvestPermitApplication application,
-            final float applicationAmount) {
+            @Nonnull final HarvestPermitApplicationSpeciesAmount applicationAmount) {
         requireNonNull(speciesAmount, "speciesAmount must not be null");
         requireNonNull(species, "species must not be null");
         requireNonNull(application);
+        requireNonNull(applicationAmount, "applicationAmount must not be null");
 
         copyDatesFrom(speciesAmount);
 
         this.id = speciesAmount.getId();
         this.gameSpeciesCode = speciesAmount.getGameSpecies().getOfficialCode();
-        this.amount = speciesAmount.getAmount();
+        this.specimenAmount = speciesAmount.getSpecimenAmount();
+        this.nestAmount = speciesAmount.getNestAmount();
+        this.eggAmount = speciesAmount.getEggAmount();
+        this.constructionAmount = speciesAmount.getConstructionAmount();
         this.restrictionType = speciesAmount.getRestrictionType();
         this.restrictionAmount = speciesAmount.getRestrictionAmount();
-        this.applicationAmount = applicationAmount;
+        this.applicationSpecimenAmount = applicationAmount.getSpecimenAmount();
+        this.applicationNestAmount = applicationAmount.getNestAmount();
+        this.applicationEggAmount = applicationAmount.getEggAmount();
+        this.applicationConstructionAmount = applicationAmount.getConstructionAmount();
         this.amountComplete = speciesAmount.isAmountComplete();
         this.forbiddenMethodComplete = speciesAmount.isForbiddenMethodComplete();
 
@@ -60,8 +70,14 @@ public class PermitDecisionSpeciesAmountDTO implements Has2BeginEndDates, HasID<
     @NotNull
     private Long id;
     private int gameSpeciesCode;
-    private float amount;
-    private float applicationAmount;
+    private Float specimenAmount;
+    private Integer nestAmount;
+    private Integer eggAmount;
+    private Integer constructionAmount;
+    private Float applicationSpecimenAmount;
+    private Integer applicationNestAmount;
+    private Integer applicationEggAmount;
+    private Integer applicationConstructionAmount;
     private PermitDecisionSpeciesAmount.RestrictionType restrictionType;
     private Float restrictionAmount;
 
@@ -82,13 +98,25 @@ public class PermitDecisionSpeciesAmountDTO implements Has2BeginEndDates, HasID<
     private boolean forbiddenMethodComplete;
 
     @AssertTrue
-    public boolean isValidAmount() {
-        return amount >= MIN_SPECIES_AMOUNT && amount < MAX_SPECIES_AMOUNT;
+    public boolean isPresentAmountsValid() {
+        return specimenAmount != null
+                || Stream.of(nestAmount, eggAmount, constructionAmount)
+                .filter(Objects::nonNull)
+                .allMatch(number -> number.compareTo(MIN_SPECIES_AMOUNT_VALUE) >= 0 && number.compareTo(MAX_SPECIES_AMOUNT_VALUE) <= 0);
+    }
+
+    @AssertTrue
+    public boolean isSomeAmountPresent() {
+        return Stream.of(specimenAmount, nestAmount, eggAmount, constructionAmount)
+                .filter(Objects::nonNull)
+                .map(anyAmount->true)
+                .findAny()
+                .orElse(false);
     }
 
     @AssertTrue
     public boolean isRestrictionAmountValid() {
-        return restrictionAmount == null || amount > 0 && restrictionAmount > 0 && restrictionAmount <= amount;
+        return restrictionAmount == null || specimenAmount > 0 && restrictionAmount > 0 && restrictionAmount <= specimenAmount;
     }
 
     @Override
@@ -108,20 +136,68 @@ public class PermitDecisionSpeciesAmountDTO implements Has2BeginEndDates, HasID<
         this.gameSpeciesCode = gameSpeciesCode;
     }
 
-    public float getAmount() {
-        return amount;
+    public Float getSpecimenAmount() {
+        return specimenAmount;
     }
 
-    public void setAmount(float amount) {
-        this.amount = amount;
+    public void setSpecimenAmount(final Float specimenAmount) {
+        this.specimenAmount = specimenAmount;
     }
 
-    public float getApplicationAmount() {
-        return applicationAmount;
+    public Integer getNestAmount() {
+        return nestAmount;
     }
 
-    public void setApplicationAmount(final float applicationAmount) {
-        this.applicationAmount = applicationAmount;
+    public void setNestAmount(final Integer nestAmount) {
+        this.nestAmount = nestAmount;
+    }
+
+    public Integer getEggAmount() {
+        return eggAmount;
+    }
+
+    public void setEggAmount(final Integer eggAmount) {
+        this.eggAmount = eggAmount;
+    }
+
+    public Integer getConstructionAmount() {
+        return constructionAmount;
+    }
+
+    public void setConstructionAmount(final Integer constructionAmount) {
+        this.constructionAmount = constructionAmount;
+    }
+
+    public Float getApplicationSpecimenAmount() {
+        return applicationSpecimenAmount;
+    }
+
+    public void setApplicationSpecimenAmount(final Float applicationSpecimenAmount) {
+        this.applicationSpecimenAmount = applicationSpecimenAmount;
+    }
+
+    public Integer getApplicationNestAmount() {
+        return applicationNestAmount;
+    }
+
+    public void setApplicationNestAmount(final Integer applicationNestAmount) {
+        this.applicationNestAmount = applicationNestAmount;
+    }
+
+    public Integer getApplicationEggAmount() {
+        return applicationEggAmount;
+    }
+
+    public void setApplicationEggAmount(final Integer applicationEggAmount) {
+        this.applicationEggAmount = applicationEggAmount;
+    }
+
+    public Integer getApplicationConstructionAmount() {
+        return applicationConstructionAmount;
+    }
+
+    public void setApplicationConstructionAmount(final Integer applicationConstructionAmount) {
+        this.applicationConstructionAmount = applicationConstructionAmount;
     }
 
     public PermitDecisionSpeciesAmount.RestrictionType getRestrictionType() {

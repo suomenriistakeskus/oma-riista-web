@@ -17,15 +17,16 @@ public class MobileVersionApiResource {
     private final Map<String, Object> VERSION_RESPONSE;
 
     public MobileVersionApiResource() {
-        this.VERSION_RESPONSE = ImmutableMap.<String, Object> builder()
-                .put("android", "2.1.0")
-                .put("ios", "2.0.0.0")
+        this.VERSION_RESPONSE = ImmutableMap
+                .<String, Object> builder()
+                .put("android", "2.4.0")
+                .put("ios", "2.4.1.1")
                 .put("wp", "1.8.0.0")
                 .build();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = LATEST_RELEASE_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = LATEST_RELEASE_URL, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> getLatestRelease() {
         return VERSION_RESPONSE;
     }

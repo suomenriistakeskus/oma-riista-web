@@ -19,6 +19,9 @@ import fi.riista.integration.metsastajarekisteri.person.MetsastajaRekisteriPerso
 import fi.riista.integration.metsastajarekisteri.person.finnish.MetsastajaRekisteriFinnishPersonImportService;
 import fi.riista.integration.metsastajarekisteri.person.finnish.MetsastajaRekisteriFinnishPersonValidator;
 import fi.riista.integration.metsastajarekisteri.person.finnish.MetsastajaRekisteriFinnishPersonWriter;
+import fi.riista.integration.metsastajarekisteri.person.finnish.statistics.RhyMembershipImportFilterer;
+import fi.riista.integration.metsastajarekisteri.person.finnish.statistics.RhyMembershipImportService;
+import fi.riista.integration.metsastajarekisteri.person.finnish.statistics.RhyMembershipImportWriter;
 import fi.riista.integration.metsastajarekisteri.person.foreign.MetsastajaRekisteriForeignPersonImportService;
 import fi.riista.integration.metsastajarekisteri.person.foreign.MetsastajaRekisteriForeignPersonValidator;
 import fi.riista.integration.metsastajarekisteri.person.foreign.MetsastajaRekisteriForeignPersonWriter;
@@ -57,6 +60,7 @@ public class InnofactorImportConfig {
     public static final String MR_PERSON_READER = "innofactorPersonReader";
     public static final String MR_FINNISH_PERSON_IMPORT = "innofactorFinnishPersonImport";
     public static final String MR_FOREIGN_PERSON_IMPORT = "innofactorForeignPersonImport";
+    public static final String MR_RHY_MEMBER_STATS_IMPORT = "innofactorRhyMemberStatisticsImport";
 
     public static final String ARCHIVE_STEP = "innofactorArchiveStep";
     public static final String POST_PROCESS_STEP = "innofactorPostProcessStep";
@@ -74,6 +78,9 @@ public class InnofactorImportConfig {
     private MetsastajaRekisteriForeignPersonImportService foreignPersonImportService;
 
     @Resource
+    private RhyMembershipImportService statisticsService;
+
+    @Resource
     private MetsastajaRekisteriBufferedReaderFactory bufferedReaderFactory;
 
     @Resource
@@ -84,12 +91,14 @@ public class InnofactorImportConfig {
 
     @Bean(name = JOB_NAME)
     public Job innofactorImportJob(@Qualifier(MR_FINNISH_PERSON_IMPORT) final Step finnishPersonImportStep,
-                                   @Qualifier(MR_FOREIGN_PERSON_IMPORT) final Step foreignPersonImportStep) {
+                                   @Qualifier(MR_FOREIGN_PERSON_IMPORT) final Step foreignPersonImportStep,
+                                   @Qualifier(MR_RHY_MEMBER_STATS_IMPORT) final Step memberStatisticsImportStep) {
         return jobBuilder.get(JOB_NAME)
                 .incrementer(new RunIdIncrementer())
                 .validator(MetsastajaRekisteriJobParameters.createValidator())
                 .start(finnishPersonImportStep)
                 .next(foreignPersonImportStep)
+                .next(memberStatisticsImportStep)
                 .next(innofactorArchiveStep())
                 .next(innofactorPostProcessStep())
                 .build();
@@ -157,6 +166,40 @@ public class InnofactorImportConfig {
                 .build();
     }
 
+    @Bean(name = MR_RHY_MEMBER_STATS_IMPORT)
+    public Step memberStatisticsImportStep(@Qualifier(MR_PERSON_READER) final ItemReader<InnofactorImportFileLine> reader,
+                                           @Qualifier(MR_RHY_MEMBER_STATS_IMPORT) final ItemWriter<MetsastajaRekisteriPerson> writer) {
+
+        final CompositeItemProcessor<InnofactorImportFileLine, MetsastajaRekisteriPerson> processorChain =
+                new CompositeItemProcessor<>();
+
+        processorChain.setDelegates(asList(
+                new RhyMembershipImportFilterer(),
+                new MetsastajaRekisteriPersonFormatter(),
+                new MetsastajaRekisteriFinnishPersonValidator()
+        ));
+
+        return stepBuilder.get(MR_RHY_MEMBER_STATS_IMPORT)
+                .<InnofactorImportFileLine, MetsastajaRekisteriPerson>chunk(BatchConfig.BATCH_SIZE)
+                .reader(reader)
+                .processor(processorChain)
+                .writer(writer)
+                .faultTolerant()
+                .skipLimit(200)
+                .skip(PersistenceException.class)
+                .skip(org.hibernate.exception.ConstraintViolationException.class)
+                .skip(DataIntegrityViolationException.class)
+                .skip(InvalidHunterDateFieldException.class)
+                .skip(InvalidHunterInvoiceReferenceException.class)
+                .skip(InvalidHunterNumberException.class)
+                .skip(InvalidSsnException.class)
+                .skip(IllegalAgeException.class)
+                .skip(InvalidPersonName.class)
+                .skip(InvalidRhyException.class)
+                .listener(new LoggingBatchListener())
+                .build();
+    }
+
     @Bean
     @StepScope
     @Qualifier(MR_PERSON_READER)
@@ -191,6 +234,15 @@ public class InnofactorImportConfig {
             @Value("#{jobParameters['importTimestamp']}") final long importTimestamp) {
 
         return new MetsastajaRekisteriFinnishPersonWriter(finnishPersonImportService, importTimestamp);
+    }
+
+    @Bean
+    @StepScope
+    @Qualifier(MR_RHY_MEMBER_STATS_IMPORT)
+    public RhyMembershipImportWriter memberStatisticsWriter(
+            @Value("#{jobParameters['importTimestamp']}") final long importTimestamp) {
+
+        return new RhyMembershipImportWriter(statisticsService, importTimestamp);
     }
 
     @Bean

@@ -2,6 +2,7 @@ package fi.riista.feature.permit.decision.legal;
 
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.security.EntityPermission;
 import org.springframework.stereotype.Component;
@@ -36,8 +37,7 @@ public class PermitDecisionLegalFieldsFeature {
     public void updateFields(final long decisionId, final PermitDecisionLegalFieldsDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.UPDATE);
 
-        decision.assertStatus(PermitDecision.Status.DRAFT);
-        decision.assertHandler(activeUserService.requireActiveUser());
+        decision.assertEditableBy(activeUserService.requireActiveUser());
 
         decision.setLegalSection32(dto.isLegalSection32());
         decision.setLegalSection33(dto.isLegalSection33());

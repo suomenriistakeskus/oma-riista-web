@@ -185,14 +185,14 @@
             Tässä kuitissa mainittu metsästäjä on vastuuvakuutettu maksupäivästä lukien kuitin voimassaolon loppuun.
             Vakuutus kattaa ampuma-aseella toiselle aiheutetut vahingot - ei kuitenkaan esinevahinkoja.
             Vakuutukseen liittyvä metsästäjän yksityistapaturmavakuutus kattaa aseen laukeamisesta tai räjähtämisestä
-            metsästäjälle itselleen aiheutuneet vahingot. Vakuutus on näiltä osin voimassa myös Pohjoismaissa ja
+            metsästäjälle itselleen aiheutuneet vahingot. Vakuutus on näiltä osin voimassa myös Pohjoismaissa, Sveitsissä ja
             EU-maissa. Vahingoittunutta eläintä poliisin toimeksiannosta Suomessa jäljittävä riistanhoitomaksun
             maksanut metsästäjä kuuluu vakuutuksen piiriin samoin kuin hänen jäljitystehtävää suorittava koiransa.
             Vahingon tapahduttua ottakaa viipymättä yhteys LähiTapiolaan, puh. 010 19 5105
         </p>
 
         <p class="small-print">
-            Jos haluatte vaihtaa riistanhoitoyhdistystä, on siitä ilmoitettava metsästäjärekisteriin sähköpostilla, faksilla tai postitse.
+            Jos haluatte vaihtaa riistanhoitoyhdistystä, on siitä ilmoitettava metsästäjärekisteriin sähköpostilla tai postitse.
         </p>
 
         <p class="small-print">

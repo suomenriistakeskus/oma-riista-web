@@ -15,7 +15,18 @@ public enum HarvestPermitCategory {
     LARGE_CARNIVORE_BEAR(HarvestPermitApplicationName.BEAR, PermitDecisionName.LARGE_CARNIVORE),
     LARGE_CARNIVORE_LYNX(HarvestPermitApplicationName.LYNX, PermitDecisionName.LARGE_CARNIVORE),
     LARGE_CARNIVORE_LYNX_PORONHOITO(HarvestPermitApplicationName.LYNX_PORONHOITO, PermitDecisionName.LARGE_CARNIVORE),
-    LARGE_CARNIVORE_WOLF(HarvestPermitApplicationName.WOLF, PermitDecisionName.LARGE_CARNIVORE);
+    LARGE_CARNIVORE_WOLF(HarvestPermitApplicationName.WOLF, PermitDecisionName.LARGE_CARNIVORE),
+    MAMMAL(HarvestPermitApplicationName.MAMMAL, PermitDecisionName.MAMMAL),
+    NEST_REMOVAL(HarvestPermitApplicationName.NEST_REMOVAL, PermitDecisionName.NEST_REMOVAL),
+    LAW_SECTION_TEN(HarvestPermitApplicationName.LAW_SECTION_TEN, PermitDecisionName.LAW_SECTION_TEN),
+    WEAPON_TRANSPORTATION(HarvestPermitApplicationName.WEAPON_TRANSPORTATION, PermitDecisionName.WEAPON_TRANSPORTATION),
+    DISABILITY(HarvestPermitApplicationName.DISABILITY, PermitDecisionName.DISABILITY),
+    DOG_UNLEASH(HarvestPermitApplicationName.DOG_UNLEASH, PermitDecisionName.DOG_UNLEASH),
+    DOG_DISTURBANCE(HarvestPermitApplicationName.DOG_DISTURBANCE, PermitDecisionName.DOG_DISTURBANCE),
+    DEPORTATION(HarvestPermitApplicationName.DEPORTATION, PermitDecisionName.DEPORTATION),
+    RESEARCH(HarvestPermitApplicationName.RESEARCH, PermitDecisionName.RESEARCH),
+    IMPORTING(HarvestPermitApplicationName.IMPORTING, PermitDecisionName.IMPORTING),
+    GAME_MANAGEMENT(HarvestPermitApplicationName.GAME_MANAGEMENT, PermitDecisionName.GAME_MANAGEMENT);
 
     public static final String LARGE_CARNIVORE_CATEGORIES = "LARGE_CARNIVORE";
 
@@ -79,10 +90,53 @@ public enum HarvestPermitCategory {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case MAMMAL:
+            case NEST_REMOVAL:
                 return true;
             default:
                 return false;
         }
     }
 
+    public boolean hasSpeciesAmount() {
+        switch (this) {
+            case DISABILITY:
+            case DOG_DISTURBANCE:
+            case DOG_UNLEASH:
+            case WEAPON_TRANSPORTATION:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    public boolean hasNatura() {
+        switch (this) {
+            case DOG_DISTURBANCE:
+            case DOG_UNLEASH:
+            case BIRD:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isAreaSizeRequired() {
+        switch (this){
+            case BIRD:
+            case LARGE_CARNIVORE_BEAR:
+            case LARGE_CARNIVORE_LYNX:
+            case LARGE_CARNIVORE_LYNX_PORONHOITO:
+            case LARGE_CARNIVORE_WOLF:
+            case MAMMAL:
+            case NEST_REMOVAL:
+            case LAW_SECTION_TEN:
+            case WEAPON_TRANSPORTATION:
+            case DOG_DISTURBANCE:
+            case DOG_UNLEASH:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

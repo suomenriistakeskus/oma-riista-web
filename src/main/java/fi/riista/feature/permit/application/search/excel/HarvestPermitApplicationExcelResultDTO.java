@@ -1,8 +1,13 @@
 package fi.riista.feature.permit.application.search.excel;
 
+import fi.riista.feature.common.decision.AppealStatus;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.common.decision.GrantStatus;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmountDTO;
 import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.application.bird.ProtectedAreaType;
 import fi.riista.feature.permit.decision.PermitDecision;
@@ -11,6 +16,8 @@ import fi.riista.feature.permit.decision.methods.ForbiddenMethodType;
 import fi.riista.util.LocalisedString;
 import org.joda.time.LocalDateTime;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class HarvestPermitApplicationExcelResultDTO {
@@ -29,15 +36,18 @@ public class HarvestPermitApplicationExcelResultDTO {
     private final PermitHolderDTO permitHolder;
     private final String handler;
     private final HarvestPermitApplication.Status status;
-    private final Set<LocalisedString> gameSpeciesNames;
-    private final PermitDecision.Status decisionStatus;
+    private final List<GameSpeciesDTO> gameSpecies;
+    private final DecisionStatus decisionStatus;
+    private final LocalDateTime decisionPublishDate;
     private final PermitDecision.DecisionType decisionType;
-    private final PermitDecision.GrantStatus grantStatus;
-    private final PermitDecision.AppealStatus appealStatus;
+    private final GrantStatus grantStatus;
+    private final AppealStatus appealStatus;
     private final Set<ProtectedAreaType> protectedAreaTypes;
     private final Set<ForbiddenMethodType> forbiddenMethodTypes;
     private final Set<PermitDecisionDerogationReasonType> decisionDerogationReasonTypes;
     private final OrganisationNameDTO rhy;
+    private final Map<Integer, HarvestPermitApplicationSpeciesAmountDTO> appliedSpeciesAmountsBySpecies;
+    private final Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>> decisionSpeciesAmountsBySpecies;
 
     public int getApplicationYear() {
         return applicationYear;
@@ -79,23 +89,27 @@ public class HarvestPermitApplicationExcelResultDTO {
         return status;
     }
 
-    public Set<LocalisedString> getGameSpeciesNames() {
-        return gameSpeciesNames;
+    public List<GameSpeciesDTO> getGameSpecies() {
+        return gameSpecies;
     }
 
-    public PermitDecision.Status getDecisionStatus() {
+    public DecisionStatus getDecisionStatus() {
         return decisionStatus;
+    }
+
+    public LocalDateTime getDecisionPublishDate() {
+        return decisionPublishDate;
     }
 
     public PermitDecision.DecisionType getDecisionType() {
         return decisionType;
     }
 
-    public PermitDecision.GrantStatus getGrantStatus() {
+    public GrantStatus getGrantStatus() {
         return grantStatus;
     }
 
-    public PermitDecision.AppealStatus getAppealStatus() {
+    public AppealStatus getAppealStatus() {
         return appealStatus;
     }
 
@@ -111,6 +125,14 @@ public class HarvestPermitApplicationExcelResultDTO {
         return decisionDerogationReasonTypes;
     }
 
+    public Map<Integer, HarvestPermitApplicationSpeciesAmountDTO> getAppliedSpeciesAmountsBySpecies() {
+        return appliedSpeciesAmountsBySpecies;
+    }
+
+    public Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>> getDecisionSpeciesAmountsBySpecies() {
+        return decisionSpeciesAmountsBySpecies;
+    }
+
     public OrganisationNameDTO getRhy() {
         return rhy;
     }
@@ -121,15 +143,18 @@ public class HarvestPermitApplicationExcelResultDTO {
                                                    final LocalisedString rhyName, final LocalDateTime submitDate,
                                                    final String contactPerson, final PermitHolderDTO permitHolder,
                                                    final String handler, final HarvestPermitApplication.Status status,
-                                                   final Set<LocalisedString> gameSpeciesNames,
-                                                   final PermitDecision.Status decisionStatus,
+                                                   final List<GameSpeciesDTO> gameSpecies,
+                                                   final DecisionStatus decisionStatus,
+                                                   final LocalDateTime decisionPublishDate,
                                                    final PermitDecision.DecisionType decisionType,
-                                                   final PermitDecision.GrantStatus grantStatus,
-                                                   final PermitDecision.AppealStatus appealStatus,
+                                                   final GrantStatus grantStatus,
+                                                   final AppealStatus appealStatus,
                                                    final Set<ProtectedAreaType> protectedAreaTypes,
                                                    final Set<ForbiddenMethodType> forbiddenMethodTypes,
                                                    final Set<PermitDecisionDerogationReasonType> decisionDerogationReasonTypes,
-                                                   final OrganisationNameDTO rhy) {
+                                                   final OrganisationNameDTO rhy,
+                                                   final Map<Integer, HarvestPermitApplicationSpeciesAmountDTO> appliedSpeciesAmountsBySpecies,
+                                                   final Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>> decisionSpeciesAmountsBySpecies) {
         this.applicationYear = applicationYear;
         this.harvestPermitCategory = harvestPermitCategory;
         this.applicationNumber = applicationNumber;
@@ -140,8 +165,9 @@ public class HarvestPermitApplicationExcelResultDTO {
         this.permitHolder = permitHolder;
         this.handler = handler;
         this.status = status;
-        this.gameSpeciesNames = gameSpeciesNames;
+        this.gameSpecies = gameSpecies;
         this.decisionStatus = decisionStatus;
+        this.decisionPublishDate = decisionPublishDate;
         this.decisionType = decisionType;
         this.grantStatus = grantStatus;
         this.appealStatus = appealStatus;
@@ -149,6 +175,8 @@ public class HarvestPermitApplicationExcelResultDTO {
         this.forbiddenMethodTypes = forbiddenMethodTypes;
         this.decisionDerogationReasonTypes = decisionDerogationReasonTypes;
         this.rhy = rhy;
+        this.appliedSpeciesAmountsBySpecies = appliedSpeciesAmountsBySpecies;
+        this.decisionSpeciesAmountsBySpecies = decisionSpeciesAmountsBySpecies;
     }
 
     public static final class Builder {
@@ -162,30 +190,33 @@ public class HarvestPermitApplicationExcelResultDTO {
         private PermitHolderDTO permitHolder;
         private String handler;
         private HarvestPermitApplication.Status status;
-        private Set<LocalisedString> gameSpeciesNames;
-        private PermitDecision.Status decisionStatus;
+        private List<GameSpeciesDTO> gameSpecies;
+        private DecisionStatus decisionStatus;
+        private LocalDateTime decisionPublishDate;
         private PermitDecision.DecisionType decisionType;
-        private PermitDecision.GrantStatus grantStatus;
-        private PermitDecision.AppealStatus appealStatus;
+        private GrantStatus grantStatus;
+        private AppealStatus appealStatus;
         private Set<ProtectedAreaType> protectedAreaTypes;
         private Set<ForbiddenMethodType> forbiddenMethodTypes;
         private Set<PermitDecisionDerogationReasonType> decisionDerogationReasonTypes;
         private OrganisationNameDTO rhy;
+        private Map<Integer, HarvestPermitApplicationSpeciesAmountDTO> appliedSpeciesAmountsBySpecies;
+        private Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>> decisionSpeciesAmountsBySpecies;
 
         private Builder() {
         }
 
-        public Builder withApplicationYear(int applicationYear) {
+        public Builder withApplicationYear(final int applicationYear) {
             this.applicationYear = applicationYear;
             return this;
         }
 
-        public Builder withHarvestPermitCategory(HarvestPermitCategory harvestPermitCategory) {
+        public Builder withHarvestPermitCategory(final HarvestPermitCategory harvestPermitCategory) {
             this.harvestPermitCategory = harvestPermitCategory;
             return this;
         }
 
-        public Builder withApplicationNumber(Integer applicationNumber) {
+        public Builder withApplicationNumber(final Integer applicationNumber) {
             this.applicationNumber = applicationNumber;
             return this;
         }
@@ -195,86 +226,102 @@ public class HarvestPermitApplicationExcelResultDTO {
             return this;
         }
 
-        public Builder withRhyName(LocalisedString rhyName) {
+        public Builder withRhyName(final LocalisedString rhyName) {
             this.rhyName = rhyName;
             return this;
         }
 
-        public Builder withSubmitDate(LocalDateTime submitDate) {
+        public Builder withSubmitDate(final LocalDateTime submitDate) {
             this.submitDate = submitDate;
             return this;
         }
 
-        public Builder withContactPerson(String contactPerson) {
+        public Builder withContactPerson(final String contactPerson) {
             this.contactPerson = contactPerson;
             return this;
         }
 
-        public Builder withPermitHolder(PermitHolderDTO permitHolder) {
+        public Builder withPermitHolder(final PermitHolderDTO permitHolder) {
             this.permitHolder = permitHolder;
             return this;
         }
 
-        public Builder withHandler(String handler) {
+        public Builder withHandler(final String handler) {
             this.handler = handler;
             return this;
         }
 
-        public Builder withStatus(HarvestPermitApplication.Status status) {
+        public Builder withStatus(final HarvestPermitApplication.Status status) {
             this.status = status;
             return this;
         }
 
-        public Builder withGameSpeciesNames(Set<LocalisedString> gameSpeciesNames) {
-            this.gameSpeciesNames = gameSpeciesNames;
+        public Builder withGameSpecies(final List<GameSpeciesDTO> gameSpecies) {
+            this.gameSpecies = gameSpecies;
             return this;
         }
 
-        public Builder withDecisionStatus(PermitDecision.Status decisionStatus) {
+        public Builder withDecisionStatus(final DecisionStatus decisionStatus) {
             this.decisionStatus = decisionStatus;
             return this;
         }
 
-        public Builder withDecisionType(PermitDecision.DecisionType decisionType) {
+        public Builder withDecisionPublishDate(final LocalDateTime decisionPublishDate) {
+            this.decisionPublishDate = decisionPublishDate;
+            return this;
+        }
+
+        public Builder withDecisionType(final PermitDecision.DecisionType decisionType) {
             this.decisionType = decisionType;
             return this;
         }
 
-        public Builder withGrantStatus(PermitDecision.GrantStatus grantStatus) {
+        public Builder withGrantStatus(final GrantStatus grantStatus) {
             this.grantStatus = grantStatus;
             return this;
         }
 
-        public Builder withAppealStatus(PermitDecision.AppealStatus appealStatus) {
+        public Builder withAppealStatus(final AppealStatus appealStatus) {
             this.appealStatus = appealStatus;
             return this;
         }
 
-        public Builder withProtectedAreaTypes(Set<ProtectedAreaType> protectedAreaTypes) {
+        public Builder withProtectedAreaTypes(final Set<ProtectedAreaType> protectedAreaTypes) {
             this.protectedAreaTypes = protectedAreaTypes;
             return this;
         }
 
-        public Builder withForbiddenMethodTypes(Set<ForbiddenMethodType> forbiddenMethodTypes) {
+        public Builder withForbiddenMethodTypes(final Set<ForbiddenMethodType> forbiddenMethodTypes) {
             this.forbiddenMethodTypes = forbiddenMethodTypes;
             return this;
         }
 
-        public Builder withDecisionDerogationReasonTypes(Set<PermitDecisionDerogationReasonType> decisionDerogationReasonTypes) {
+        public Builder withDecisionDerogationReasonTypes(final Set<PermitDecisionDerogationReasonType> decisionDerogationReasonTypes) {
             this.decisionDerogationReasonTypes = decisionDerogationReasonTypes;
             return this;
         }
 
-        public Builder withRhy(OrganisationNameDTO rhy) {
+        public Builder withRhy(final OrganisationNameDTO rhy) {
             this.rhy = rhy;
+            return this;
+        }
+
+        public Builder withAppliedSpeciesAmountsBySpecies(final Map<Integer, HarvestPermitApplicationSpeciesAmountDTO> appliedSpeciesAmountsBySpecies) {
+            this.appliedSpeciesAmountsBySpecies = appliedSpeciesAmountsBySpecies;
+            return this;
+        }
+
+        public Builder withPermitSpeciesAmountsBySpecies(final Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>> decisionSpeciesAmountsBySpecies) {
+            this.decisionSpeciesAmountsBySpecies = decisionSpeciesAmountsBySpecies;
             return this;
         }
 
         public HarvestPermitApplicationExcelResultDTO build() {
             return new HarvestPermitApplicationExcelResultDTO(applicationYear, harvestPermitCategory,
                     applicationNumber, rkaName, rhyName, submitDate, contactPerson, permitHolder, handler, status,
-                    gameSpeciesNames, decisionStatus, decisionType, grantStatus, appealStatus, protectedAreaTypes,
-                    forbiddenMethodTypes, decisionDerogationReasonTypes, rhy);
+                    gameSpecies, decisionStatus, decisionPublishDate, decisionType, grantStatus, appealStatus,
+                    protectedAreaTypes, forbiddenMethodTypes, decisionDerogationReasonTypes, rhy, appliedSpeciesAmountsBySpecies,
+                    decisionSpeciesAmountsBySpecies);
         }
     }
 }

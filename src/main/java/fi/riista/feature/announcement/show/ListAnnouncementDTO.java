@@ -8,7 +8,6 @@ import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 import org.joda.time.LocalDate;
@@ -73,7 +72,7 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
 
         DtoUtil.copyBaseFields(announcement, dto);
 
-        dto.setDate(DateUtil.toLocalDateNullSafe(announcement.getLifecycleFields().getCreationTime()));
+        dto.setDate(announcement.getLifecycleFields().getCreationTime().toLocalDate());
         dto.setBody(announcement.getBody());
         dto.setSubject(announcement.getSubject());
         dto.setSenderType(announcement.getSenderType());

@@ -24,6 +24,7 @@ import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.Jyvitys
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_AMOUNT_TOTAL;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_APPLICANT;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_APPLICATION_AMOUNT;
+import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_APPLICATION_NUMBER;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_CALF_QUOTA;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_OFFICIAL_CODE;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_PRIVATE_LAND;
@@ -46,6 +47,7 @@ import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.Jyvitys
 
 public class JyvitysExcelVerotuslohkoStyleApplier implements JyvitysExcelCellAddressManipulation {
     private static final List<JyvitysExcelVerotuslohkoStaticField> WRAPPED_TEXT_FIELDS = ImmutableList.of(
+            VEROTUSLOHKO_APPLICATION_NUMBER,
             VEROTUSLOHKO_APPLICANT,
             VEROTUSLOHKO_PRIVATE_LAND,
             VEROTUSLOHKO_STATE_LAND,

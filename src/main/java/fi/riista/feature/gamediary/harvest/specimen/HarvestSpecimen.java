@@ -60,24 +60,53 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HarvestSpe
     @Column
     private GameFitnessClass fitnessClass;
 
+    // Yksi tai molemmat sarvet pudonneet
+    @Column
+    private Boolean antlersLost;
+
     @Enumerated(EnumType.STRING)
     @Column
     private GameAntlersType antlersType;
 
+    // Sarvien kärkiväli (cm)
     @Min(0)
-    @Max(999)
+    @Max(200)
     @Column
     private Integer antlersWidth;
 
     @Min(0)
-    @Max(50)
+    @Max(30)
     @Column
     private Integer antlerPointsLeft;
 
     @Min(0)
-    @Max(50)
+    @Max(30)
     @Column
     private Integer antlerPointsRight;
+
+    // Sarvien tyven ympärysmitta (cm)
+    @Min(0)
+    @Max(50)
+    @Column
+    private Integer antlersGirth;
+
+    // Sarven pituus (cm)
+    @Min(0)
+    @Max(100)
+    @Column
+    private Integer antlersLength;
+
+    // Sarvien sisäleveys (cm)
+    @Min(0)
+    @Max(100)
+    @Column
+    private Integer antlersInnerWidth;
+
+    // Sarvirungon leveys (cm)
+    @Min(0)
+    @Max(10)
+    @Column
+    private Integer antlerShaftWidth;
 
     @Column
     private Boolean notEdible;
@@ -110,6 +139,17 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HarvestSpe
     @AssertTrue(message = "{HarvestSpecimen.weightOutOfAcceptableLimits}")
     public boolean isWeightWithinAcceptableLimits() {
         return Stream.of(weight, weightEstimated, weightMeasured).noneMatch(w -> w != null && (w < 0.0 || w > 999.99));
+    }
+
+    @AssertTrue
+    public boolean isValueForSomeBusinessFieldGiven() {
+        return !allBusinessFieldsNull();
+    }
+
+    // This method was moved from HarvestSpecimenBusinessFields interface because of a bug in iOS app v2.4.1.1.
+    @AssertTrue
+    public boolean isAllAntlerFieldsNullWhenNotAdultMale() {
+        return isAdultMale() || allAntlerFieldsNull();
     }
 
     // Accessors -->
@@ -198,6 +238,16 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HarvestSpe
     }
 
     @Override
+    public Boolean getAntlersLost() {
+        return antlersLost;
+    }
+
+    @Override
+    public void setAntlersLost(final Boolean antlersLost) {
+        this.antlersLost = antlersLost;
+    }
+
+    @Override
     public GameAntlersType getAntlersType() {
         return antlersType;
     }
@@ -235,6 +285,46 @@ public class HarvestSpecimen extends LifecycleEntity<Long> implements HarvestSpe
     @Override
     public void setAntlerPointsRight(final Integer antlerPointsRight) {
         this.antlerPointsRight = antlerPointsRight;
+    }
+
+    @Override
+    public Integer getAntlersGirth() {
+        return antlersGirth;
+    }
+
+    @Override
+    public void setAntlersGirth(final Integer antlersGirth) {
+        this.antlersGirth = antlersGirth;
+    }
+
+    @Override
+    public Integer getAntlersLength() {
+        return antlersLength;
+    }
+
+    @Override
+    public void setAntlersLength(final Integer antlersLength) {
+        this.antlersLength = antlersLength;
+    }
+
+    @Override
+    public Integer getAntlersInnerWidth() {
+        return antlersInnerWidth;
+    }
+
+    @Override
+    public void setAntlersInnerWidth(final Integer antlersInnerWidth) {
+        this.antlersInnerWidth = antlersInnerWidth;
+    }
+
+    @Override
+    public Integer getAntlerShaftWidth() {
+        return antlerShaftWidth;
+    }
+
+    @Override
+    public void setAntlerShaftWidth(final Integer antlerShaftWidth) {
+        this.antlerShaftWidth = antlerShaftWidth;
     }
 
     @Override

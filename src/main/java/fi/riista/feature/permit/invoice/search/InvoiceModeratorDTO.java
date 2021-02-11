@@ -44,6 +44,7 @@ public class InvoiceModeratorDTO extends BaseEntityDTO<Long> {
 
     private Long permitDecisionId;
     private String permitNumber;
+    private String permitTypeCode;
 
     private InvoiceFivaldiState fivaldiState;
 
@@ -180,6 +181,14 @@ public class InvoiceModeratorDTO extends BaseEntityDTO<Long> {
 
     public void setPermitNumber(final String permitNumber) {
         this.permitNumber = permitNumber;
+    }
+
+    public String getPermitTypeCode() {
+        return permitTypeCode;
+    }
+
+    public void setPermitTypeCode(final String permitTypeCode) {
+        this.permitTypeCode = permitTypeCode;
     }
 
     public InvoiceFivaldiState getFivaldiState() {

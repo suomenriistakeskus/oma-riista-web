@@ -49,7 +49,7 @@ public final class SubsidyAllocationCompensationRound {
                 .stream()
                 .map(input -> {
                     final BigDecimal decrement = SubsidyCalculation
-                            .calculateDecrement(input.getTotalSubsidyCalculatedForCurrentYear(), decrementMultiplier);
+                            .calculateDecrement(input.getCalculatedSubsidy(), decrementMultiplier);
 
                     return SubsidyCompensationOutputDTO.decreased(input, decrement);
                 });

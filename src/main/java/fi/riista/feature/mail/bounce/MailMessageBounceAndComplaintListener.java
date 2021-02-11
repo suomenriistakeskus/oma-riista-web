@@ -9,6 +9,7 @@ import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.config.properties.AWSConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -38,12 +39,14 @@ public class MailMessageBounceAndComplaintListener {
     @Resource
     private CustomJacksonObjectMapper objectMapper;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public void pollForBounces() throws IOException {
         receiveAndHandleMessages(awsConfigProperties.getSesBounceQueue(),
                 AmazonSesBounceNotification.class,
                 bounceNotification -> mailMessageBounceService.storeBounce(bounceNotification));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public void pollForComplaints() throws IOException {
         receiveAndHandleMessages(awsConfigProperties.getSesComplaintQueue(),
                 AmazonSesComplaintNotification.class,

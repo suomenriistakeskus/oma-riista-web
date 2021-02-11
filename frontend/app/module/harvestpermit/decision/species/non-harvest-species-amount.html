@@ -1,0 +1,247 @@
+<form name="speciesAmountForm"
+      role="form" class="form"
+      novalidate autocomplete="off"
+      r-force-show-errors-check-validity>
+    <div class="modal-header">
+        <div class="modal-title">
+            <span ng-bind="$ctrl.gameSpeciesCode | translateSpeciesCode"></span>
+        </div>
+        <button riista-modal-close></button>
+    </div>
+
+    <div class="modal-body">
+                <div class="row" style="margin-bottom: 6px">
+                    <div class="col-xs-2 col-xs-offset-2">
+                        <strong translate="decision.species.modal.applicationSpecimenAmount"></strong>
+                    </div>
+                    <div class="col-xs-2">
+                        <strong translate="decision.species.modal.decisionSpecimenAmount"></strong>
+                    </div>
+                    <div class="col-xs-2">
+                        <strong translate="decision.species.modal.applicationEggAmount"></strong>
+                    </div>
+                    <div class="col-xs-2">
+                        <strong translate="decision.species.modal.decisionEggAmount"></strong>
+                    </div>
+                </div>
+
+                <div class="row" ng-repeat="spa in $ctrl.speciesAmountList track by spa.id">
+                    <div class="col-xs-2">
+                        <div class="form-group">
+                            <p class="form-control-static">
+                                <strong ng-bind="spa.year"></strong>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-xs-2">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input class="form-control no-spinner"
+                                       disabled
+                                       ng-value="spa.applicationSpecimenAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-2">
+                        <div class="form-group" show-errors>
+                            <div class="input-group">
+                                <input name="amount-specimen-{{spa.id}}" id="amount-specimen-{{spa.id}}" type="number"
+                                       class="form-control no-spinner"
+                                       ng-model="spa.specimenAmount"
+                                       min="0"
+                                       ng-max="spa.applicationSpecimenAmount"
+                                       step="1"
+                                       ng-disabled="!spa.applicationSpecimenAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-2">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input class="form-control no-spinner"
+                                       disabled
+                                       ng-value="spa.applicationEggAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-2">
+                        <div class="form-group" show-errors>
+                            <div class="input-group">
+                                <input name="amount-egg-{{spa.id}}" id="amount-egg-{{spa.id}}" type="number"
+                                       class="form-control no-spinner"
+                                       ng-model="spa.eggAmount"
+                                       min="0"
+                                       ng-max="spa.applicationEggAmount"
+                                       step="1"
+                                       ng-disabled="!spa.applicationEggAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                            <p class="help-block has-error"
+                               ng-show="speciesAmountForm['amount-'+spa.id].$invalid"
+                               ng-messages="speciesAmountForm['amount-'+spa.id].$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+        </div>
+
+        <div class="row" style="margin-top: 10px">
+            <div class="col-xs-6">
+                <fieldset>
+                    <legend translate="decision.species.modal.beginAndEndDate1"></legend>
+                </fieldset>
+            </div>
+
+            <div class="col-xs-6">
+                <fieldset>
+                    <legend translate="decision.species.modal.beginAndEndDate2"></legend>
+                </fieldset>
+            </div>
+        </div>
+
+        <div class="row"
+             ng-repeat="spa in $ctrl.speciesAmountList track by spa.id">
+            <div class="col-xs-6">
+                <div class="row">
+                    <div class="col-xs-5">
+                        <div class="form-group" show-errors>
+                            <div class="input-group" ng-controller="DatePickerController">
+                                <input id="beginDate-{{spa.id}}" type="text" name="beginDate-{{spa.id}}"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       ng-model="spa.beginDate"
+                                       ng-change="speciesAmountForm['endDate-'+spa.id].$validate()"
+                                       min-date="spa.minBeginDate"
+                                       max-date="[spa.endDate, spa.maxBeginDate]"
+                                       date-between-min-max
+                                       required/>
+                                <div class="input-group-addon" ng-click="toggleDatePopup($event)">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </div>
+                            </div>
+
+                            <p class="help-block"
+                               ng-show="speciesAmountForm['beginDate-'+spa.id].$invalid"
+                               ng-messages="speciesAmountForm['beginDate-'+spa.id].$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-1 text-center">
+                        <p style="font-size: 26px">&dash;</p>
+                    </div>
+
+                    <div class="col-xs-5">
+                        <div class="form-group" show-errors>
+                            <div class="input-group" ng-controller="DatePickerController">
+                                <input id="endDate-{{spa.id}}" type="text" name="endDate-{{spa.id}}"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       ng-model="spa.endDate"
+                                       ng-change="speciesAmountForm['beginDate-'+spa.id].$validate()"
+                                       min-date="spa.beginDate"
+                                       date-between-min-max
+                                       required/>
+
+                                <div class="input-group-addon" ng-click="toggleDatePopup($event)">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </div>
+                            </div>
+
+                            <p class="help-block has-error"
+                               ng-show="speciesAmountForm['endDate-' + spa.id].$invalid"
+                               ng-messages="speciesAmountForm['endDate-' + spa.id].$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-6">
+                <div class="row">
+                    <div class="col-xs-5">
+                        <div class="form-group" show-errors>
+                            <div class="input-group" ng-controller="DatePickerController">
+                                <input id="beginDate2-{{spa.id}}" type="text" name="beginDate2-{{spa.id}}"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       ng-model="spa.beginDate2"
+                                       ng-change="speciesAmountForm['endDate2-'+spa.id].$validate()"
+                                       max-date="spa.endDate2"
+                                       date-between-min-max
+                                       ng-required="spa.endDate2"/>
+
+                                <div class="input-group-addon" ng-click="toggleDatePopup($event)">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </div>
+                            </div>
+
+                            <p class="help-block has-error"
+                               ng-show="speciesAmountForm['beginDate2-'+spa.id].$invalid"
+                               ng-messages="speciesAmountForm['beginDate2-'+spa.id].$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-1 text-center">
+                        <p style="font-size: 26px">&dash;</p>
+                    </div>
+
+                    <div class="col-xs-5">
+                        <div class="form-group" show-errors>
+                            <div class="input-group" ng-controller="DatePickerController">
+                                <input id="endDate2-{{spa.id}}" type="text" name="endDate2-{{spa.id}}"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       ng-model="spa.endDate2"
+                                       ng-change="speciesAmountForm['beginDate2-'+spa.id].$validate()"
+                                       min-date="spa.beginDate2"
+                                       date-between-min-max
+                                       ng-required="spa.beginDate2"/>
+
+                                <div class="input-group-addon" ng-click="toggleDatePopup($event)">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </div>
+                            </div>
+
+                            <p class="help-block has-error"
+                               ng-show="speciesAmountForm['endDate2-' + spa.id].$invalid"
+                               ng-messages="speciesAmountForm['endDate2-' + spa.id].$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-12" ng-if="$ctrl.showDurationError(spa)">
+                <p class="text-danger" translate="decision.species.modal.errorOver365"></p>
+            </div>
+
+            <div class="col-xs-12" ng-if="$ctrl.showOverlapError(spa)">
+                <p class="text-danger" translate="decision.species.modal.errorOverlap"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="!$ctrl.isValid(speciesAmountForm)"
+                translate="global.button.save"></button>
+    </div>
+</form>

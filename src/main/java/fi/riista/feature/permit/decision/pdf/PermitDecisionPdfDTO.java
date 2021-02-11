@@ -1,76 +1,24 @@
 package fi.riista.feature.permit.decision.pdf;
 
-import fi.riista.feature.common.dto.Has2BeginEndDatesDTO;
+import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.DeliveryAddressDTO;
-import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
 import fi.riista.feature.permit.decision.document.PermitDecisionDocumentHeadingDTO;
-import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
-import fi.riista.util.F;
 import fi.riista.util.Locales;
 import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 import java.util.Objects;
 
+import static fi.riista.feature.permit.decision.PermitDecision.DecisionType.CANCEL_ANNUAL_RENEWAL;
 import static org.springframework.util.StringUtils.hasText;
 
 public class PermitDecisionPdfDTO {
-    public static class SpeciesAmount extends Has2BeginEndDatesDTO {
-        public SpeciesAmount(@Nonnull final HarvestPermitApplicationSpeciesAmount spa) {
-            Objects.requireNonNull(spa, "speciesAmount must not be null");
-
-            this.id = spa.getId();
-            this.speciesName = spa.getGameSpecies().getNameFinnish();
-            this.amount = spa.getAmount();
-        }
-
-        public SpeciesAmount(@Nonnull final PermitDecisionSpeciesAmount speciesAmount) {
-            Objects.requireNonNull(speciesAmount, "speciesAmount must not be null");
-            super.copyDatesFrom(speciesAmount);
-
-            this.id = speciesAmount.getId();
-            this.speciesName = speciesAmount.getGameSpecies().getNameFinnish();
-            this.amount = speciesAmount.getAmount();
-            this.restrictionType = speciesAmount.getRestrictionType();
-            this.restrictionAmount = speciesAmount.getRestrictionAmount();
-        }
-
-        private Long id;
-        private final String speciesName;
-        private final float amount;
-        private PermitDecisionSpeciesAmount.RestrictionType restrictionType;
-        private Float restrictionAmount;
-
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(final Long id) {
-            this.id = id;
-        }
-
-        public String getSpeciesName() {
-            return speciesName;
-        }
-
-        public float getAmount() {
-            return amount;
-        }
-
-        public PermitDecisionSpeciesAmount.RestrictionType getRestrictionType() {
-            return restrictionType;
-        }
-
-        public Float getRestrictionAmount() {
-            return restrictionAmount;
-        }
-    }
 
     private final boolean swedish;
     private final String permitNumber;
@@ -81,9 +29,9 @@ public class PermitDecisionPdfDTO {
     private final PersonContactInfoDTO contactPerson;
     private final DeliveryAddressDTO deliveryAddress;
     private final LocalDateTime publishDate;
-    private final List<SpeciesAmount> decisionSpeciesAmounts;
-    private final List<SpeciesAmount> applicationSpeciesAmounts;
-    private final PermitDecision.GrantStatus grantStatus;
+    private final GrantStatus grantStatus;
+    private final boolean classified;
+    private final PermitDecision.DecisionType decisionType;
 
     public boolean isIncludeApplicationReasoning() {
         return hasText(document.getApplicationReasoning());
@@ -98,11 +46,11 @@ public class PermitDecisionPdfDTO {
     }
 
     public boolean isIncludeRestriction() {
-        return !isRejected() && (hasText(document.getRestriction()) || hasText(document.getRestrictionExtra()));
+        return !isRejected() && !isAnnualRenewalCanceled() && (hasText(document.getRestriction()) || hasText(document.getRestrictionExtra()));
     }
 
     public boolean isIncludeExecution() {
-        return !isRejected() && hasText(document.getExecution());
+        return !isRejected() && !isAnnualRenewalCanceled() && hasText(document.getExecution());
     }
 
     public boolean isIncludePayment() {
@@ -115,9 +63,7 @@ public class PermitDecisionPdfDTO {
 
     public PermitDecisionPdfDTO(final @Nonnull String permitNumber,
                                 final @Nonnull PermitDecision decision,
-                                final @Nonnull PermitDecisionDocument document,
-                                final @Nonnull List<PermitDecisionSpeciesAmount> decisionSpeciesAmounts,
-                                final @Nonnull List<HarvestPermitApplicationSpeciesAmount> applicationSpeciesAmounts) {
+                                final @Nonnull PermitDecisionDocument document) {
         Objects.requireNonNull(decision);
         Objects.requireNonNull(document);
         Objects.requireNonNull(decision.getContactPerson());
@@ -135,9 +81,9 @@ public class PermitDecisionPdfDTO {
                 ? OrganisationNameDTO.create(decision.getHuntingClub())
                 : null;
 
-        this.decisionSpeciesAmounts = F.mapNonNullsToList(decisionSpeciesAmounts, SpeciesAmount::new);
-        this.applicationSpeciesAmounts = F.mapNonNullsToList(applicationSpeciesAmounts, SpeciesAmount::new);
         this.grantStatus = decision.getGrantStatus();
+        this.classified = PermitTypeCode.isDisabilityPermitTypeCode(decision.getPermitTypeCode());
+        this.decisionType = decision.getDecisionType();
     }
 
     public String getPermitNumber() {
@@ -176,15 +122,15 @@ public class PermitDecisionPdfDTO {
         return publishDate;
     }
 
-    public List<SpeciesAmount> getDecisionSpeciesAmounts() {
-        return decisionSpeciesAmounts;
-    }
-
-    public List<SpeciesAmount> getApplicationSpeciesAmounts() {
-        return applicationSpeciesAmounts;
-    }
-
     public boolean isRejected() {
-        return PermitDecision.GrantStatus.REJECTED.equals(grantStatus);
+        return GrantStatus.REJECTED.equals(grantStatus);
+    }
+
+    public boolean isClassified() {
+        return classified;
+    }
+
+    public boolean isAnnualRenewalCanceled() {
+        return  decisionType == CANCEL_ANNUAL_RENEWAL;
     }
 }

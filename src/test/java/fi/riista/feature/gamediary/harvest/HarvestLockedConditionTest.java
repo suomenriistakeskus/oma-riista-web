@@ -9,29 +9,24 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.NumberSequence;
 import fi.riista.util.ValueGeneratorMixin;
-import fi.riista.util.VersionedTestExecutionSupport;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
 import java.util.function.Predicate;
 
+import static com.google.common.base.Predicates.alwaysFalse;
+import static com.google.common.base.Predicates.alwaysTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
-public class HarvestLockedConditionTest implements ValueGeneratorMixin, VersionedTestExecutionSupport<HarvestSpecVersion> {
-    private static final Predicate<Harvest> ALWAYS_TRUE = h -> true;
-    private static final Predicate<Harvest> ALWAYS_FALSE = h -> false;
+@RunWith(Theories.class)
+public class HarvestLockedConditionTest implements ValueGeneratorMixin {
 
     @Override
     public NumberGenerator getNumberGenerator() {
         return NumberSequence.INSTANCE;
-    }
-
-    @Override
-    public List<HarvestSpecVersion> getTestExecutionVersions() {
-        return new ArrayList<>(EnumSet.allOf(HarvestSpecVersion.class));
     }
 
     private Person activePerson;
@@ -44,44 +39,39 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         contactPersonTester = HarvestLockedCondition.createContactPersonTester(activePerson);
     }
 
-    private void assertMobileCanEdit(final boolean expectedResult, final Harvest harvest,
+    private void assertMobileCanEdit(final boolean expectedResult,
+                                     final Harvest harvest,
                                      final HarvestSpecVersion specVersion) {
-        assertEquals(expectedResult, HarvestLockedCondition.canEdit(
-                activePerson, harvest, specVersion,
-                ALWAYS_FALSE, contactPersonTester));
+
+        assertEquals(expectedResult, HarvestLockedCondition
+                .canEditFromMobile(activePerson, harvest, specVersion, alwaysFalse(), contactPersonTester));
     }
 
     private void assertWebCanEdit(final boolean expectedResult, final Harvest harvest) {
-        assertEquals(expectedResult, HarvestLockedCondition.canEdit(
-                activePerson, harvest, null,
-                ALWAYS_FALSE, contactPersonTester));
+        assertEquals(expectedResult, HarvestLockedCondition
+                .canEditFromWeb(activePerson, harvest, alwaysFalse(), contactPersonTester));
     }
 
     private static void assertModeratorCanEdit(final boolean expectedResult, final Harvest harvest) {
-        assertEquals(expectedResult, HarvestLockedCondition.canEdit(
-                null, harvest, null,
-                ALWAYS_FALSE, ALWAYS_FALSE));
+        assertEquals(expectedResult, HarvestLockedCondition
+                .canEditFromWeb(null, harvest, alwaysFalse(), alwaysFalse()));
     }
 
     // DIARY
 
-    @Test
-    public void testHarvest_Diary() {
+    @Theory
+    public void testHarvest_diary(final HarvestSpecVersion specVersion) {
         final Harvest harvest = new Harvest();
         harvest.setAuthor(activePerson);
         harvest.setActor(activePerson);
 
         assertWebCanEdit(true, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(true, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(true, harvest, specVersion);
         assertModeratorCanEdit(false, harvest);
     }
 
-    @Test
-    public void testHarvest_Diary_Mooselike_AsModerator() {
+    @Theory
+    public void testHarvest_diary_mooselike_asModerator(final HarvestSpecVersion specVersion) {
         final GameSpecies species = new GameSpecies();
 
         final Harvest harvest = new Harvest();
@@ -89,23 +79,21 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setActor(activePerson);
         harvest.setSpecies(species);
 
-        for (int speciesCode : GameSpecies.ALL_GAME_SPECIES_CODES) {
+        for (final int speciesCode : GameSpecies.ALL_GAME_SPECIES_CODES) {
             species.setOfficialCode(speciesCode);
 
-            forEachVersion(specVersion -> {
-                if (GameSpecies.isMooseOrDeerRequiringPermitForHunting(speciesCode)) {
-                    assertModeratorCanEdit(true, harvest);
-                } else {
-                    assertModeratorCanEdit(false, harvest);
-                }
-            });
+            if (GameSpecies.isMooseOrDeerRequiringPermitForHunting(speciesCode)) {
+                assertModeratorCanEdit(true, harvest);
+            } else {
+                assertModeratorCanEdit(false, harvest);
+            }
         }
     }
 
     // HUNTING DAY
 
-    @Test
-    public void testHarvest_WithHuntingDay() {
+    @Theory
+    public void testHarvest_withHuntingDay(final HarvestSpecVersion specVersion) {
         final Harvest harvest = new Harvest();
         harvest.setAuthor(activePerson);
         harvest.setActor(activePerson);
@@ -113,23 +101,19 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
 
         assertWebCanEdit(true, harvest);
 
-        forEachVersion(specVersion -> {
-            assertEquals(false, HarvestLockedCondition.canEdit(
-                    activePerson, harvest, specVersion,
-                    ALWAYS_TRUE, ALWAYS_FALSE));
+        assertFalse(HarvestLockedCondition
+                .canEditFromMobile(activePerson, harvest, specVersion, alwaysTrue(), alwaysFalse()));
 
-            assertEquals(false, HarvestLockedCondition.canEdit(
-                    activePerson, harvest, specVersion,
-                    ALWAYS_FALSE, ALWAYS_FALSE));
-        });
+        assertFalse(HarvestLockedCondition
+                .canEditFromMobile(activePerson, harvest, specVersion, alwaysFalse(), alwaysFalse()));
 
         assertModeratorCanEdit(true, harvest);
     }
 
     // SEASON
 
-    @Test
-    public void testHarvest_WithSeason_ReportSentForApproval() {
+    @Theory
+    public void testHarvest_withSeason_reportSentForApproval(final HarvestSpecVersion specVersion) {
         final Harvest harvest = new Harvest();
         harvest.setAuthor(activePerson);
         harvest.setActor(activePerson);
@@ -137,20 +121,13 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
 
         assertWebCanEdit(true, harvest);
-
-        forEachVersion(specVersion -> {
-            if (specVersion.supportsHarvestReport()) {
-                assertMobileCanEdit(true, harvest, specVersion);
-            } else {
-                assertMobileCanEdit(false, harvest, specVersion);
-            }
-        });
+        assertMobileCanEdit(specVersion.supportsHarvestReport(), harvest, specVersion);
 
         assertModeratorCanEdit(true, harvest);
     }
 
-    @Test
-    public void testHarvest_WithSeason_ReportApproved() {
+    @Theory
+    public void testHarvest_withSeason_reportApproved(final HarvestSpecVersion specVersion) {
         final Harvest harvest = new Harvest();
         harvest.setAuthor(activePerson);
         harvest.setActor(activePerson);
@@ -158,16 +135,12 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setHarvestReportState(HarvestReportState.APPROVED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(false, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 
-    @Test
-    public void testHarvest_WithSeason_ReportRejected() {
+    @Theory
+    public void testHarvest_withSeason_reportRejected(final HarvestSpecVersion specVersion) {
         final Harvest harvest = new Harvest();
         harvest.setAuthor(activePerson);
         harvest.setActor(activePerson);
@@ -175,11 +148,7 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setHarvestReportState(HarvestReportState.REJECTED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(false, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 
@@ -187,8 +156,8 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
 
     // accepted for permit
 
-    @Test
-    public void testHarvest_WithPermit_Accepted() {
+    @Theory
+    public void testHarvest_withPermit_accepted(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
 
         final Harvest harvest = new Harvest();
@@ -198,16 +167,12 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(false, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_AsContactPerson() {
+    @Theory
+    public void testHarvest_withPermit_accepted_asContactPerson(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setOriginalContactPerson(activePerson);
 
@@ -218,20 +183,13 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
 
         assertWebCanEdit(true, harvest);
-
-        forEachVersion(specVersion -> {
-            if (specVersion.supportsHarvestPermitState()) {
-                assertMobileCanEdit(true, harvest, specVersion);
-            } else {
-                assertMobileCanEdit(false, harvest, specVersion);
-            }
-        });
+        assertMobileCanEdit(true, harvest, specVersion);
     }
 
     // accepted for permit with normal harvest report
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_WithReportSentForApproval() {
+    @Theory
+    public void testHarvest_withPermit_accepted_withReportSentForApproval(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
 
         final Harvest harvest = new Harvest();
@@ -242,16 +200,12 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(false, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_WithReportSentForApproval_AsContactPerson() {
+    @Theory
+    public void testHarvest_withPermit_accepted_withReportSentForApproval_asContactPerson(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setOriginalContactPerson(activePerson);
 
@@ -263,18 +217,11 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
 
         assertWebCanEdit(true, harvest);
-
-        forEachVersion(specVersion -> {
-            if (specVersion.supportsHarvestPermitState()) {
-                assertMobileCanEdit(true, harvest, specVersion);
-            } else {
-                assertMobileCanEdit(false, harvest, specVersion);
-            }
-        });
+        assertMobileCanEdit(true, harvest, specVersion);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_WithReportApproved() {
+    @Theory
+    public void testHarvest_withPermit_accepted_withReportApproved(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
 
         final Harvest harvest = new Harvest();
@@ -285,16 +232,12 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setHarvestReportState(HarvestReportState.APPROVED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(false, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_WithReportApproved_AsContactPerson() {
+    @Theory
+    public void testHarvest_withPermit_accepted_withReportApproved_asContactPerson(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setOriginalContactPerson(activePerson);
 
@@ -306,14 +249,11 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setHarvestReportState(HarvestReportState.APPROVED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
+        assertMobileCanEdit(false, harvest, specVersion);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_WithReportRejected() {
+    @Theory
+    public void testHarvest_withPermit_accepted_withReportRejected(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
 
         final Harvest harvest = new Harvest();
@@ -324,16 +264,12 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setHarvestReportState(HarvestReportState.REJECTED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(false, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_WithReportRejected_AsContactPerson() {
+    @Theory
+    public void testHarvest_withPermit_accepted_withReportRejected_asContactPerson(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setOriginalContactPerson(activePerson);
 
@@ -345,16 +281,13 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setHarvestReportState(HarvestReportState.REJECTED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
+        assertMobileCanEdit(false, harvest, specVersion);
     }
 
     // accepted for permit with end of hunting report
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_EndOfHuntingSentForApproval() {
+    @Theory
+    public void testHarvest_withPermit_accepted_endOfHuntingSentForApproval(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setOriginalContactPerson(activePerson);
         permit.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
@@ -366,16 +299,12 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(false, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_EndOfHuntingApproved() {
+    @Theory
+    public void testHarvest_withPermit_accepted_endOfHuntingApproved(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setOriginalContactPerson(activePerson);
         permit.setHarvestReportState(HarvestReportState.APPROVED);
@@ -387,16 +316,12 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(false, harvest, specVersion);
         assertModeratorCanEdit(false, harvest);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Accepted_EndOfHuntingRejected() {
+    @Theory
+    public void testHarvest_withPermit_accepted_endOfHuntingRejected(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setOriginalContactPerson(activePerson);
         permit.setHarvestReportState(HarvestReportState.REJECTED);
@@ -408,18 +333,14 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
 
         assertWebCanEdit(false, harvest);
-
-        forEachVersion(specVersion -> {
-            assertMobileCanEdit(false, harvest, specVersion);
-        });
-
+        assertMobileCanEdit(false, harvest, specVersion);
         assertModeratorCanEdit(false, harvest);
     }
 
     // rejected for permit
 
-    @Test
-    public void testHarvest_WithPermit_Rejected_EndOfHuntingSentForApproval() {
+    @Theory
+    public void testHarvest_withPermit_rejected_endOfHuntingSentForApproval(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
 
@@ -430,20 +351,12 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.REJECTED);
 
         assertWebCanEdit(true, harvest);
-
-        forEachVersion(specVersion -> {
-            if (specVersion.supportsHarvestPermitState()) {
-                assertMobileCanEdit(true, harvest, specVersion);
-            } else {
-                assertMobileCanEdit(false, harvest, specVersion);
-            }
-        });
-
+        assertMobileCanEdit(true, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Rejected_EndOfHuntingAccepted() {
+    @Theory
+    public void testHarvest_withPermit_rejected_endOfHuntingAccepted(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setHarvestReportState(HarvestReportState.APPROVED);
 
@@ -454,20 +367,12 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.REJECTED);
 
         assertWebCanEdit(true, harvest);
-
-        forEachVersion(specVersion -> {
-            if (specVersion.supportsHarvestPermitState()) {
-                assertMobileCanEdit(true, harvest, specVersion);
-            } else {
-                assertMobileCanEdit(false, harvest, specVersion);
-            }
-        });
-
+        assertMobileCanEdit(true, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 
-    @Test
-    public void testHarvest_WithPermit_Rejected_EndOfHuntingRejected() {
+    @Theory
+    public void testHarvest_withPermit_rejected_endOfHuntingRejected(final HarvestSpecVersion specVersion) {
         final HarvestPermit permit = new HarvestPermit();
         permit.setHarvestReportState(HarvestReportState.REJECTED);
 
@@ -478,15 +383,7 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin, Versione
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.REJECTED);
 
         assertWebCanEdit(true, harvest);
-
-        forEachVersion(specVersion -> {
-            if (specVersion.supportsHarvestPermitState()) {
-                assertMobileCanEdit(true, harvest, specVersion);
-            } else {
-                assertMobileCanEdit(false, harvest, specVersion);
-            }
-        });
-
+        assertMobileCanEdit(true, harvest, specVersion);
         assertModeratorCanEdit(true, harvest);
     }
 }

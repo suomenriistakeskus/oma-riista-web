@@ -5,9 +5,7 @@ import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
 import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
-import fi.riista.feature.organization.person.PersonWithNameDTO;
 import org.hibernate.validator.constraints.SafeHtml;
-import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
 import javax.validation.Valid;
@@ -26,7 +24,7 @@ public abstract class SrvaEventDTOBase extends GameDiaryEntryDTO {
 
         final DTO dto = builder.withIdAndRev(entity)
                 .withGeoLocation(entity.getGeoLocation())
-                .withPointOfTime(LocalDateTime.fromDateFields(entity.getPointOfTime()))
+                .withPointOfTime(entity.getPointOfTime().toLocalDateTime())
                 .withDescription(entity.getDescription())
                 .build();
 
@@ -107,7 +105,7 @@ public abstract class SrvaEventDTOBase extends GameDiaryEntryDTO {
         return eventName;
     }
 
-    public void setEventName(SrvaEventNameEnum eventName) {
+    public void setEventName(final SrvaEventNameEnum eventName) {
         this.eventName = eventName;
     }
 

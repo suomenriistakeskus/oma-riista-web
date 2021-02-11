@@ -20,8 +20,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
@@ -38,7 +36,7 @@ import static java.util.Comparator.comparingLong;
 import static java.util.Objects.requireNonNull;
 
 @Entity
-@Table(name = "rhy_annual_statistics", uniqueConstraints = {@UniqueConstraint(columnNames = {"rhy_id", "year"})})
+//@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"rhy_id", "year"})}
 @Access(value = AccessType.FIELD)
 public class RhyAnnualStatistics extends LifecycleEntity<Long> {
 
@@ -370,9 +368,9 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
 
     public DateTime getLastModifiedTimeOfQuantitiesContributingToSubsidy() {
         final Stream<DateTime> editTimestamps = Stream
-                .<AnnualStatisticsNonComputedFields> of(huntingControl, jhtTraining, hunterTraining, youthTraining,
+                .<AnnualStatisticsManuallyEditableFields> of(huntingControl, jhtTraining, hunterTraining, youthTraining,
                         otherHunterTraining, otherHuntingRelated, luke, metsahallitus)
-                .map(AnnualStatisticsNonComputedFields::getLastModified);
+                .map(AnnualStatisticsManuallyEditableFields::getLastModified);
 
         return Stream
                 .concat(editTimestamps, Stream.of(hunterExamTraining.getHunterExamTrainingEventsLastOverridden()))
@@ -383,8 +381,8 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
 
     public DateTime getLastModifiedTimeOfJhtQuantities() {
         final Stream<DateTime> editTimestamps = Stream
-                .<AnnualStatisticsNonComputedFields> of(gameDamage, huntingControl, otherPublicAdmin)
-                .map(AnnualStatisticsNonComputedFields::getLastModified);
+                .<AnnualStatisticsManuallyEditableFields> of(gameDamage, huntingControl, otherPublicAdmin)
+                .map(AnnualStatisticsManuallyEditableFields::getLastModified);
 
         final Stream<DateTime> moderatorOverrideTmestamps = Stream
                 .of(hunterExams.getHunterExamEventsLastOverridden(),

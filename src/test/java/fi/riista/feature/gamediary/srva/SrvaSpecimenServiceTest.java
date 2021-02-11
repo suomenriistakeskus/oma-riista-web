@@ -2,13 +2,11 @@ package fi.riista.feature.gamediary.srva;
 
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
+import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
+import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
+import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenRepository;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenService;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.feature.gamediary.srva.SrvaEventDTO;
-import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
-import fi.riista.feature.gamediary.srva.SrvaEvent;
-import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
-import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenRepository;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 

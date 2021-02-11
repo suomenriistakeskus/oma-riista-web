@@ -3,8 +3,10 @@ package fi.riista.feature.shootingtest;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.BigDecimalComparison;
+import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.CriteriaUtils;
 import fi.riista.validation.FinnishHunterNumber;
+import org.joda.time.DateTime;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -16,13 +18,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,9 +49,8 @@ public class ShootingTestParticipant extends LifecycleEntity<Long> {
     private Person person;
 
     @NotNull
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date registrationTime;
+    private DateTime registrationTime;
 
     @Column(nullable = false)
     private boolean mooseTestIntended;
@@ -121,7 +119,7 @@ public class ShootingTestParticipant extends LifecycleEntity<Long> {
     }
 
     public void registerAgain() {
-        setRegistrationTime(new Date());
+        setRegistrationTime(DateUtil.now());
         this.completed = false;
     }
 
@@ -206,11 +204,11 @@ public class ShootingTestParticipant extends LifecycleEntity<Long> {
         this.person = person;
     }
 
-    public Date getRegistrationTime() {
+    public DateTime getRegistrationTime() {
         return registrationTime;
     }
 
-    public void setRegistrationTime(final Date registrationTime) {
+    public void setRegistrationTime(final DateTime registrationTime) {
         this.registrationTime = registrationTime;
     }
 

@@ -7,6 +7,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
+import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Objects;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class HuntingClubGroupCrudFeature_CopyTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
@@ -26,6 +28,19 @@ public class HuntingClubGroupCrudFeature_CopyTest extends EmbeddedDatabaseTest i
 
     @Resource
     private OccupationRepository occupationRepository;
+
+    @Test(expected = AccessDeniedException.class)
+    public void testUnauthorized() {
+        withMooseHuntingGroupFixture(fixture -> {
+            final HuntingClubGroupCopyDTO dto = new HuntingClubGroupCopyDTO();
+            dto.setHuntingYear(2020);
+            dto.setHuntingAreaId(fixture.clubArea.getId());
+            persistInNewTransaction();
+
+            huntingClubGroupCrudFeature.copy(fixture.group.getId(), dto);
+            fail("Should have thrown an exception");
+        });
+    }
 
     @Test
     public void testCopySameYear() {
@@ -69,7 +84,8 @@ public class HuntingClubGroupCrudFeature_CopyTest extends EmbeddedDatabaseTest i
                 assertEquals(original.getNameSwedish(), copy.getNameSwedish());
             }
 
-            assertOccupations(occupationRepository.findByOrganisation(original), occupationRepository.findByOrganisation(copy));
+            assertOccupations(occupationRepository.findByOrganisation(original),
+                    occupationRepository.findByOrganisation(copy));
         });
     }
 

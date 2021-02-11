@@ -1,27 +1,28 @@
 <div class="modal-header">
     <button riista-modal-close></button>
-    <h3 class="modal-title" translate="harvestpermit.decision.action.attachments.title"></h3>
+    <h3 class="modal-title" translate="decision.action.attachments.title"></h3>
 </div>
 
 <div class="modal-body" style="min-height: 400px;">
     <div class="form-group">
         <div class="row" ng-if="!$ctrl.readOnly">
-            <div class="col-xs-8">
-                <div ng-show="$ctrl.upload.status === 'UPLOADING'"
+            <div class="col-xs-8"
+            ng-switch="$ctrl.upload.status">
+                <div ng-switch-when="'UPLOADING'"
                      class="alert alert-info text-center">
-                    <span translate="harvestpermit.decision.action.attachments.uploadingInProgress"></span>
+                    <span translate="decision.action.attachments.uploadingInProgress"></span>
 
                     <div class="progress progress-striped active">
                         <div class="progress-bar" role="progressbar" style="width: 100%"></div>
                     </div>
                 </div>
 
-                <div ng-show="$ctrl.upload.status === 'SUCCESS'"
+                <div ng-switch-when="'SUCCESS'"
                      class="alert alert-success text-center">
-                    <span translate="harvestpermit.decision.action.attachments.uploadingComplete"></span>
+                    <span translate="decision.action.attachments.uploadingComplete"></span>
                 </div>
 
-                <div ng-show="$ctrl.upload.status === 'ERROR'"
+                <div ng-switch-when="'ERROR'"
                      class="alert alert-warning text-center">
                     <span translate="global.messages.error"></span>
                 </div>
@@ -36,7 +37,7 @@
                      on-upload="$ctrl.onUpload(files)"
                      on-success="$ctrl.onSuccess(response)"
                      on-error="$ctrl.onError(response)">
-                    <span translate="harvestpermit.decision.action.attachments.add"></span>
+                    <span translate="decision.action.attachments.add"></span>
                 </div>
             </div>
         </div>
@@ -45,13 +46,13 @@
     <table class="table">
         <thead>
         <tr>
-            <th translate="harvestpermit.decision.action.attachments.filename"></th>
-            <th translate="harvestpermit.decision.action.attachments.creationDate"></th>
+            <th translate="decision.action.attachments.filename"></th>
+            <th translate="decision.action.attachments.creationDate"></th>
             <th>&nbsp;</th>
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="a in $ctrl.attachments">
+        <tr ng-repeat="a in $ctrl.attachments track by a.id">
             <td>
                 <a ng-click="$ctrl.download(a)" ng-bind="a.filename"></a>
             </td>

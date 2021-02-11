@@ -281,7 +281,7 @@ public class PersonalAreaUnionFeature {
         return personalAreaUnionToBasicDetailsDTOTransformer.apply(fetch);
     }
 
-    private BooleanExpression buildPredicate(final Person person, final int huntingYear) {
+    private static BooleanExpression buildPredicate(final Person person, final int huntingYear) {
         return UNION.person.eq(person).and(UNION.harvestPermitArea.huntingYear.eq(huntingYear));
     }
 

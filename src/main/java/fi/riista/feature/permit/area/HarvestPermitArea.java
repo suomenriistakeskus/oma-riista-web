@@ -12,6 +12,8 @@ import fi.riista.feature.permit.area.verotuslohko.HarvestPermitAreaVerotusLohko;
 import fi.riista.util.DateUtil;
 import fi.riista.util.RandomStringUtil;
 import org.joda.time.DateTime;
+import org.joda.time.Hours;
+import org.joda.time.ReadablePeriod;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -41,6 +43,8 @@ import java.util.Set;
 @Entity
 @Access(AccessType.FIELD)
 public class HarvestPermitArea extends LifecycleEntity<Long> {
+
+    public static ReadablePeriod CALCULATION_RETRY_PERIOD = Hours.ONE;
 
     public enum StatusCode {
         // Permit area is not ready to be used in Lupahallinta
@@ -184,14 +188,28 @@ public class HarvestPermitArea extends LifecycleEntity<Long> {
         return updateStatus(StatusCode.INCOMPLETE);
     }
 
+    /**
+     * Update status and status time stamp. If update is effective, the returned
+     * transient entity should be persisted. Update is effective when status changes
+     * or processing is restarted.
+     *
+     * @param code New status code
+     * @return Event entity which should be persisted if present
+     */
     @Transient
     private Optional<HarvestPermitAreaEvent> updateStatus(StatusCode code) {
+        final DateTime now = DateUtil.now();
+
         if (this.status == code) {
-            return Optional.empty();
+            // Return empty unless processing retry period has passed in order to update status time
+            if (this.status != StatusCode.PROCESSING || now.minus(CALCULATION_RETRY_PERIOD).isBefore(this.statusTime)) {
+                return Optional.empty();
+
+            }
         }
 
         this.status = code;
-        this.statusTime = DateUtil.now();
+        this.statusTime = now;
 
         return Optional.of(new HarvestPermitAreaEvent(this, code));
     }

@@ -4,11 +4,10 @@ import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersionSupport;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 public abstract class HuntingDiaryEntryDTO extends GameDiaryEntryDTO {
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     private int gameSpeciesCode;
 
     public HuntingDiaryEntryDTO(@Nonnull final GameDiaryEntryType type) {
@@ -32,11 +31,5 @@ public abstract class HuntingDiaryEntryDTO extends GameDiaryEntryDTO {
             dto.setGameSpeciesCode(gameSpeciesCode);
             return self();
         }
-
-        public SELF populateWith(@Nonnull final GameSpecies species) {
-            Objects.requireNonNull(species);
-            return withGameSpeciesCode(species.getOfficialCode());
-        }
     }
-
 }

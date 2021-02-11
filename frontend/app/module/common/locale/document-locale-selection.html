@@ -1,0 +1,10 @@
+<div class="btn-group btn-group-justified">
+    <label class="btn btn-default form-control-static"
+           ng-repeat="a in $ctrl.localeOptions"
+           ng-model="$ctrl.locale"
+           uib-btn-radio="a.code">
+
+        <span class="text-primary fa fa-fw fa-check" ng-show="$ctrl.locale === a.code"></span>
+        <span ng-bind="a.localisationKey | translate"></span>
+    </label>
+</div>

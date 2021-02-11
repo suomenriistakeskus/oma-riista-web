@@ -18,8 +18,13 @@ public class MetsahallitusGeometryLookupFeature {
     private MetsahallitusPienriistaRepository metsahallitusPienriistaRepository;
 
     @Transactional(readOnly = true)
-    public List<MetsahallitusHirviDTO> listHirvi(final int year) {
+    public List<MetsahallitusHirviDTO> listHirviAll(final int year) {
         return metsahallitusHirviRepository.findAll(year);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MetsahallitusHirviDTO> listHirviPublic(final int year) {
+        return metsahallitusHirviRepository.findAllPublic(year);
     }
 
     @Transactional(readOnly = true)

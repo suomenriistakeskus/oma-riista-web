@@ -16,6 +16,8 @@ import fi.riista.feature.permit.area.HarvestPermitAreaEventRepository;
 import fi.riista.feature.permit.area.hta.HarvestPermitAreaHtaDTO;
 import fi.riista.feature.permit.area.hta.HarvestPermitAreaHtaRepository;
 import fi.riista.feature.permit.area.mml.HarvestPermitAreaMmlRepository;
+import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerDTO;
+import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerService;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhyDTO;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhyRepository;
 import fi.riista.feature.permit.area.verotuslohko.HarvestPermitAreaVerotusLohkoRepository;
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import static java.util.Collections.emptySet;
@@ -66,15 +69,23 @@ public class HarvestPermitApplicationGeometryFeature {
     @Resource
     private AmendmentApplicationDataRepository amendmentApplicationDataRepository;
 
+    @Resource
+    private HarvestPermitAreaPartnerService harvestPermitAreaPartnerService;
+
     @Transactional(readOnly = true)
-    public MooselikePermitApplicationAreaDTO getPermitArea(final long applicationId) {
+    public MooselikePermitApplicationAreaDTO getPermitArea(final long applicationId, final Locale locale) {
         final HarvestPermitArea permitArea = requirePermitArea(applicationId, EntityPermission.READ);
         final GISZoneSizeDTO areaSize = gisZoneRepository.getAreaSize(permitArea.getZone().getId());
+
+        final String unionAreaId = permitArea.getExternalId();
+        final List<HarvestPermitAreaPartnerDTO> areaPartners =
+                harvestPermitAreaPartnerService.listPartners(permitArea, locale);
 
         final List<HarvestPermitAreaRhyDTO> rhy = F.mapNonNullsToList(permitArea.getRhy(), HarvestPermitAreaRhyDTO::create);
         final List<HarvestPermitAreaHtaDTO> hta = F.mapNonNullsToList(permitArea.getHta(), HarvestPermitAreaHtaDTO::create);
 
-        return new MooselikePermitApplicationAreaDTO(permitArea.getStatus(), areaSize, permitArea.isFreeHunting(), rhy, hta);
+        return new MooselikePermitApplicationAreaDTO(permitArea.getStatus(), areaSize, permitArea.isFreeHunting(), rhy, hta,
+                unionAreaId, areaPartners);
     }
 
     private HarvestPermitArea requirePermitArea(final long applicationId, final EntityPermission permission) {

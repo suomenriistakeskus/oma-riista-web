@@ -49,6 +49,28 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                 case 'LARGE_CARNIVORE_LYNX_PORONHOITO':
                 case 'LARGE_CARNIVORE_WOLF':
                     return 'carnivore';
+                case 'MAMMAL':
+                    return 'mammal';
+                case 'NEST_REMOVAL':
+                    return 'nestremoval';
+                case 'LAW_SECTION_TEN':
+                    return 'lawsectionten';
+                case 'WEAPON_TRANSPORTATION':
+                    return 'weapontransportation';
+                case 'DISABILITY':
+                    return 'disability';
+                case 'DOG_UNLEASH':
+                    return 'dogunleash';
+                case 'DOG_DISTURBANCE':
+                    return 'dogdisturbance';
+                case 'DEPORTATION':
+                    return 'deportation';
+                case 'RESEARCH':
+                    return 'research';
+                case 'IMPORTING':
+                    return 'importing';
+                case 'GAME_MANAGEMENT':
+                    return "gamemanagement";
                 default:
                     console.log("Unsupported application type: " + applicationType);
                     throw Error('Unknown permit type');
@@ -56,7 +78,13 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
         };
     })
     .service('HarvestPermitApplicationSummaryService', function (MooselikePermitApplication, BirdPermitApplication,
-                                                                 CarnivorePermitApplication, HarvestPermitWizardSelectorService) {
+                                                                 CarnivorePermitApplication, MammalPermitApplication,
+                                                                 NestRemovalPermitApplication, LawSectionTenPermitApplication,
+                                                                 WeaponTransportationPermitApplication,
+                                                                 HarvestPermitWizardSelectorService, DisabilityPermitApplication,
+                                                                 DogDisturbanceApplication, DogUnleashApplication,
+                                                                 DeportationPermitApplication, ResearchPermitApplication,
+                                                                 ImportingPermitApplication, GameManagementPermitApplication) {
         this.getApplicationSummary = function (applicationId, applicationType) {
             var wizard = HarvestPermitWizardSelectorService.getWizardName(applicationType);
             switch (wizard) {
@@ -67,6 +95,28 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                     return BirdPermitApplication.getFullDetails({id: applicationId}).$promise;
                 case 'carnivore':
                     return CarnivorePermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'mammal':
+                    return MammalPermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'nestremoval':
+                    return NestRemovalPermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'lawsectionten':
+                    return LawSectionTenPermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'weapontransportation':
+                    return WeaponTransportationPermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'disability':
+                    return DisabilityPermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'dogdisturbance':
+                    return DogDisturbanceApplication.getFullDetails({id: applicationId}).$promise;
+                case 'dogunleash':
+                    return DogUnleashApplication.getFullDetails({id: applicationId}).$promise;
+                case 'deportation':
+                    return DeportationPermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'research':
+                    return ResearchPermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'importing':
+                    return ImportingPermitApplication.getFullDetails({id: applicationId}).$promise;
+                case 'gamemanagement':
+                    return GameManagementPermitApplication.getFullDetails({id: applicationId}).$promise;
                 default:
                     console.log("Unsupported application type: " + applicationType);
                     throw Error('Unknown permit type');
@@ -144,15 +194,16 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
             applicationTypes: '<',
             onSelect: '&'
         },
-        controller: function () {
+        controller: function (HarvestPermitCategoryType) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.moosetypes = _.filter($ctrl.applicationTypes, _.matchesProperty('category', 'MOOSELIKE'));
-                $ctrl.derogationTypes = _.filter($ctrl.applicationTypes, function (t) {
-                    return t.category !== 'MOOSELIKE';
-                });
-
+                $ctrl.moosetypes = HarvestPermitCategoryType.getMooseTypes($ctrl.applicationTypes);
+                $ctrl.otherHarvestPermitTypes = HarvestPermitCategoryType.getOtherHarvestPermitTypes($ctrl.applicationTypes);
+                $ctrl.damageBasedDerogations = HarvestPermitCategoryType.getDamageBasedDerogationTypes($ctrl.applicationTypes);
+                $ctrl.otherDerogations = HarvestPermitCategoryType.getOtherDerogationTypes($ctrl.applicationTypes);
+                $ctrl.otherPermitTypes = HarvestPermitCategoryType.getOtherPermitTypes($ctrl.applicationTypes);
+                $ctrl.dogEventPermitTypes = HarvestPermitCategoryType.getDogEventPermitTypes($ctrl.applicationTypes);
             };
         }
     })
@@ -164,11 +215,15 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
             selectedCategoryPrice: '<',
             onCreate: '&'
         },
-        controller: function (HarvestPermitWizardSelectorService) {
+        controller: function (HarvestPermitWizardSelectorService, HarvestPermitCategoryType) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
                 $ctrl.wizardType = HarvestPermitWizardSelectorService.getWizardName($ctrl.selectedCategory);
+            };
+
+            $ctrl.hasPermission = function () {
+                return HarvestPermitCategoryType.hasPermission($ctrl.selectedCategory);
             };
         }
     })
@@ -193,33 +248,92 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
             onSelectType: '&'
         },
         controllerAs: '$ctrl',
-        controller: function (ActiveRoleService, GameSpeciesCodes, isProductionEnvironment) {
+        controller: function (ActiveRoleService, GameSpeciesCodes, isProductionEnvironment, HarvestPermitCategoryType) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
                 var isModerator = ActiveRoleService.isModerator();
-                $ctrl.speciesCode = resolveSpeciesCode($ctrl.type.category);
+                $ctrl.imageFileName = resolveImageFileName($ctrl.type.category);
+                $ctrl.imagePath = resolveImagePath($ctrl.type.category);
                 $ctrl.isActive = function () {
                     return isModerator || $ctrl.type.active || !isProductionEnvironment;
                 };
             };
 
-            function resolveSpeciesCode(category) {
-                if (category === 'MOOSELIKE') {
-                    return GameSpeciesCodes.MOOSE;
-                } else if (category === 'BIRD') {
-                    return GameSpeciesCodes.BEAN_GOOSE;
-                } else if (category === 'LARGE_CARNIVORE_BEAR') {
-                    return GameSpeciesCodes.BEAR;
-                } else if (category === 'LARGE_CARNIVORE_LYNX') {
-                    return GameSpeciesCodes.LYNX;
-                } else if (category === 'LARGE_CARNIVORE_LYNX_PORONHOITO') {
-                    return GameSpeciesCodes.LYNX;
-                } else if (category === 'LARGE_CARNIVORE_WOLF') {
-                    return GameSpeciesCodes.WOLF;
-                } else {
-                    console.log('Illegal type ' + category);
-                    return null;
+            $ctrl.isLargeCarnivoreLynx = function () {
+                return $ctrl.type.category === 'LARGE_CARNIVORE_LYNX';
+            };
+
+            $ctrl.hasPermission = function () {
+                return HarvestPermitCategoryType.hasPermission($ctrl.type.category);
+            };
+
+            function resolveImageFileName(category) {
+                switch (category) {
+                    case 'MOOSELIKE':
+                        return GameSpeciesCodes.MOOSE;
+                    case 'BIRD':
+                        return GameSpeciesCodes.BEAN_GOOSE;
+                    case 'LARGE_CARNIVORE_BEAR':
+                        return GameSpeciesCodes.BEAR;
+                    case 'LARGE_CARNIVORE_LYNX':
+                        return GameSpeciesCodes.LYNX;
+                    case 'LARGE_CARNIVORE_LYNX_PORONHOITO':
+                        return GameSpeciesCodes.LYNX;
+                    case 'LARGE_CARNIVORE_WOLF':
+                        return GameSpeciesCodes.WOLF;
+                    case 'MAMMAL':
+                        return GameSpeciesCodes.BROWN_HARE;
+                    case 'NEST_REMOVAL':
+                        return GameSpeciesCodes.EUROPEAN_BEAVER;
+                    case 'LAW_SECTION_TEN':
+                        return GameSpeciesCodes.RINGED_SEAL;
+                    case 'WEAPON_TRANSPORTATION':
+                        return 'weapon_transportation';
+                    case 'DISABILITY':
+                        return 'disability';
+                    case 'DOG_UNLEASH':
+                        return 'dog_unleash';
+                    case 'DOG_DISTURBANCE':
+                        return 'dog_disturbance';
+                    case 'DEPORTATION':
+                        return 'deportation';
+                    case 'RESEARCH':
+                        return 'research';
+                    case 'IMPORTING':
+                        return 'importing';
+                    case 'GAME_MANAGEMENT':
+                        return 'game_management';
+                    default:
+                        console.log('Illegal type ' + category);
+                        return null;
+                }
+            }
+
+            function resolveImagePath(category) {
+                switch (category) {
+                    case 'MOOSELIKE':
+                    case 'BIRD':
+                    case 'LARGE_CARNIVORE_BEAR':
+                    case 'LARGE_CARNIVORE_LYNX':
+                    case 'LARGE_CARNIVORE_LYNX_PORONHOITO':
+                    case 'LARGE_CARNIVORE_WOLF':
+                    case 'MAMMAL':
+                    case 'NEST_REMOVAL':
+                    case 'LAW_SECTION_TEN':
+                        return 'elainlajikuvat';
+                    case 'DOG_UNLEASH':
+                    case 'DOG_DISTURBANCE':
+                    case 'WEAPON_TRANSPORTATION':
+                    case 'DISABILITY':
+                    case 'DEPORTATION':
+                    case 'RESEARCH':
+                    case 'IMPORTING':
+                    case 'GAME_MANAGEMENT':
+                        return 'permitselectionimages';
+                    default:
+                        console.log('Illegal type ' + category);
+                        return null;
                 }
             }
 
@@ -267,4 +381,22 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
         }
 
 
+    })
+    .directive('rValidateGreaterOrEqual', function () {
+        return {
+            restrict: 'A',
+            require: 'ngModel',
+            link: function (scope, elem, attrs, ctrl) {
+                scope.$watchGroup([attrs.rValidateGreaterOrEqual, attrs.ngModel], function (newValues) {
+                    if (_.isNil(newValues[0]) || _.isNil(newValues[1])) {
+                        // One or both value is not defined and validity cannot be checked.
+                        // Must set as valid, otherwise optional field can be invalid state when empty.
+                        ctrl.$setValidity('greaterOrEqual', true);
+                    } else {
+                        // Compare values. Note, works with date strings (YYYY-MM-DD) too.
+                        ctrl.$setValidity('greaterOrEqual', newValues[0] <= newValues[1]);
+                    }
+                });
+            }
+        };
     });

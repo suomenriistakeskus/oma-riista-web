@@ -75,7 +75,7 @@ public class HuntingClub extends Organisation {
         return subtype == null && clubPerson == null && businessId == null && associationRegistryNumber == null ||
                 subtype == HuntingClubSubtype.PERSON && businessId == null && associationRegistryNumber == null ||
                 subtype == HuntingClubSubtype.BUSINESS && clubPerson == null && associationRegistryNumber == null ||
-                subtype == HuntingClubSubtype.RY && clubPerson == null && businessId == null;
+                subtype == HuntingClubSubtype.RY && clubPerson == null;
     }
 
     public HuntingClub() {

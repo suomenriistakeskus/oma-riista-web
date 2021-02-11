@@ -2,9 +2,11 @@ package fi.riista.feature.permit.application;
 
 import fi.riista.feature.permit.application.validation.HarvestPermitApplicationValidationService;
 import fi.riista.feature.permit.area.HarvestPermitArea;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionAmendUpdater;
 import fi.riista.feature.permit.decision.PermitDecisionRepository;
+import fi.riista.feature.common.decision.DecisionActionType;
 import fi.riista.feature.permit.decision.action.PermitDecisionAction;
 import fi.riista.feature.permit.decision.action.PermitDecisionActionRepository;
 import fi.riista.util.DateUtil;
@@ -38,7 +40,7 @@ public class AmendApplicationFeature {
         final HarvestPermitApplication application =
                 harvestPermitApplicationAuthorizationService.amendApplication(applicationId);
         final PermitDecision permitDecision = requireDecision(application);
-        permitDecision.assertStatus(PermitDecision.Status.DRAFT);
+        permitDecision.assertStatus(DecisionStatus.DRAFT);
 
         application.startAmending();
 
@@ -70,7 +72,7 @@ public class AmendApplicationFeature {
         action.setPermitDecision(permitDecision);
         action.setPointOfTime(DateUtil.now());
         action.setText(dto.getChangeReason());
-        action.setActionType(PermitDecisionAction.ActionType.TAYDENNYS);
+        action.setActionType(DecisionActionType.TAYDENNYS);
 
         permitDecisionActionRepository.save(action);
 

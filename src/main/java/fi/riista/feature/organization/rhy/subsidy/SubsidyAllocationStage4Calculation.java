@@ -10,10 +10,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static fi.riista.feature.organization.rhy.subsidy.compensation.SubsidyAllocationCompensationResultDTO.noCompensationDone;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 
 // In stage 4, lower limits imposed by subsidies granted last year are
 // calculated. RHYs whose subsidies are falling below calculated lower limits
@@ -24,12 +24,12 @@ public final class SubsidyAllocationStage4Calculation {
     // calculated on the basis of subsidy granted last year. Compensation is done at the expense
     // of RHYs exceeding lower limit.
     public static SubsidyAllocationStage4ResultDTO calculateCompensation(
-            @Nonnull final List<SubsidyAllocationStage3DTO> rhyAllocations) {
+            @Nonnull final List<RhySubsidyStage3DTO> rhyAllocations) {
 
         requireNonNull(rhyAllocations);
 
         final List<SubsidyCompensationInputDTO> compensationInputs =
-                F.mapNonNullsToList(rhyAllocations, SubsidyAllocationStage3DTO::toCompensationInput);
+                F.mapNonNullsToList(rhyAllocations, RhySubsidyStage3DTO::toCompensationInput);
 
         final SubsidyAllocationCompensationResultDTO compensationResult =
                 SubsidyAllocationCompensationCalculation.executeCompensationIfNeeded(compensationInputs);
@@ -38,68 +38,55 @@ public final class SubsidyAllocationStage4Calculation {
             return createResultWithoutCompensation(rhyAllocations);
         }
 
-        final List<Stage4RoundingResultDTO> roundingResults =
+        final List<RhySubsidyRoundingStage4DTO> roundingResults =
                 SubsidyAllocationStage4Rounding.roundCompensatedSubsidies(compensationResult);
 
         return createCompensatedResult(rhyAllocations, compensationResult, roundingResults);
     }
 
     private static SubsidyAllocationStage4ResultDTO createResultWithoutCompensation(
-            final List<SubsidyAllocationStage3DTO> rhyAllocations) {
+            final List<RhySubsidyStage3DTO> inputRhyAllocations) {
 
-        return new SubsidyAllocationStage4ResultDTO(noCompensationDone(), rhyAllocations
-                .stream()
-                .map(allocation -> toStage4DTO(allocation, null))
-                .collect(toList()));
+        final List<RhySubsidyStage4DTO> resultRhyAllocations =
+                F.mapNonNullsToList(inputRhyAllocations, allocation -> toStage4DTO(allocation, null));
+
+        return new SubsidyAllocationStage4ResultDTO(resultRhyAllocations, noCompensationDone());
     }
 
     private static SubsidyAllocationStage4ResultDTO createCompensatedResult(
-            final List<SubsidyAllocationStage3DTO> rhyAllocations,
+            final List<RhySubsidyStage3DTO> rhyAllocations,
             final SubsidyAllocationCompensationResultDTO compensationResult,
-            final List<Stage4RoundingResultDTO> roundingResults) {
+            final List<RhySubsidyRoundingStage4DTO> roundingResults) {
 
-        final Map<String, Stage4RoundingResultDTO> roundingResultsByRhyCode =
-                F.index(roundingResults, Stage4RoundingResultDTO::getRhyCode);
+        final Map<String, RhySubsidyRoundingStage4DTO> roundingResultsByRhyCode =
+                F.index(roundingResults, RhySubsidyRoundingStage4DTO::getRhyCode);
 
-        final List<SubsidyAllocationStage4DTO> resultAllocations = F.mapNonNullsToList(rhyAllocations, allocation -> {
+        final List<RhySubsidyStage4DTO> resultAllocations = F.mapNonNullsToList(rhyAllocations, allocation -> {
 
             final String rhyCode = allocation.getRhyCode();
-            final Stage4RoundingResultDTO roundingResult = roundingResultsByRhyCode.get(rhyCode);
+            final RhySubsidyRoundingStage4DTO roundingResult = roundingResultsByRhyCode.get(rhyCode);
 
             return toStage4DTO(allocation, roundingResult);
         });
 
-        return new SubsidyAllocationStage4ResultDTO(compensationResult, resultAllocations);
+        return new SubsidyAllocationStage4ResultDTO(resultAllocations, compensationResult);
     }
 
-    private static SubsidyAllocationStage4DTO toStage4DTO(@Nonnull final SubsidyAllocationStage3DTO allocation,
-                                                          @Nullable final Stage4RoundingResultDTO roundingResult) {
+    private static RhySubsidyStage4DTO toStage4DTO(@Nonnull final RhySubsidyStage3DTO stage3Allocation,
+                                                   @Nullable final RhySubsidyRoundingStage4DTO rhyRoundingResult) {
 
-        final BigDecimal calculatedSubsidyBeforeFinalRounding;
-        final BigDecimal calculatedSubsidyAfterFinalRounding;
-        final int givenRemainderEuros;
+        final SubsidyRoundingDTO rounding = Optional
+                .ofNullable(rhyRoundingResult)
+                .map(RhySubsidyRoundingStage4DTO::getRoundingResult)
+                .orElseGet(() -> {
 
-        if (roundingResult != null) {
-            calculatedSubsidyBeforeFinalRounding = roundingResult.getSubsidyBeforeRounding();
-            calculatedSubsidyAfterFinalRounding = roundingResult.getSubsidyAfterRounding();
-            givenRemainderEuros = roundingResult.getGivenRemainderEuros();
-        } else {
-            // Use result of previous stage.
-            calculatedSubsidyBeforeFinalRounding = allocation.getTotalRoundedShare();
-            calculatedSubsidyAfterFinalRounding = allocation.getTotalRoundedShare();
+                    final BigDecimal statisticsBasedSubsidy =
+                            stage3Allocation.getCalculation().getSubsidyAfterStage2RemainderAllocation();
 
-            givenRemainderEuros = 0;
-        }
+                    return new SubsidyRoundingDTO(statisticsBasedSubsidy, statisticsBasedSubsidy, 0);
+                });
 
-        return new SubsidyAllocationStage4DTO(
-                allocation.getRhy(),
-                allocation.getRka(),
-                allocation.getCalculatedShares(),
-                calculatedSubsidyBeforeFinalRounding,
-                calculatedSubsidyAfterFinalRounding,
-                allocation.getSubsidyBatchInfo(),
-                allocation.getRemainderEurosGivenInStage2(),
-                givenRemainderEuros);
+        return new RhySubsidyStage4DTO(stage3Allocation, rounding);
     }
 
     private SubsidyAllocationStage4Calculation() {

@@ -7,15 +7,14 @@ CREATE TABLE import_organisation (
   name_swedish             VARCHAR(255) NOT NULL,
   longitude                INTEGER,
   latitude                 INTEGER,
-  poronhoitoalue_id        VARCHAR(255),
-  hallialue_id             VARCHAR(255),
   is_at_coast              BOOLEAN,
+  active                   BOOLEAN NOT NULL,
   PRIMARY KEY (organisation_type, official_code)
 );
 
 \COPY import_organisation FROM './csv/organisation.csv' WITH DELIMITER ';' NULL '' ENCODING 'UTF-8';
 
-INSERT INTO organisation (organisation_type, official_code, name_finnish, name_swedish, longitude, latitude, poronhoitoalue_id, hallialue_id, is_at_coast)
+INSERT INTO organisation (organisation_type, official_code, name_finnish, name_swedish, longitude, latitude, is_at_coast, active)
   SELECT
     organisation_type,
     official_code,
@@ -23,9 +22,8 @@ INSERT INTO organisation (organisation_type, official_code, name_finnish, name_s
     name_swedish,
     longitude,
     latitude,
-    poronhoitoalue_id,
-    hallialue_id,
-    is_at_coast
+    is_at_coast,
+    active
   FROM import_organisation;
 
 UPDATE organisation

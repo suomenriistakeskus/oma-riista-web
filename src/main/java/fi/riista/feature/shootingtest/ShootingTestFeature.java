@@ -33,6 +33,7 @@ import static fi.riista.feature.shootingtest.ShootingTestEventAuthorization.Shoo
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.READ;
 import static fi.riista.security.EntityPermission.UPDATE;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -76,11 +77,18 @@ public class ShootingTestFeature {
     @Transactional(readOnly = true)
     public List<ShootingTestCalendarEventDTO> listCalendarEvents(final long rhyId) {
         final Riistanhoitoyhdistys rhy = getRhyAssertingReadPermissionForShootingTestEvents(rhyId);
+        return listCalendarEvents(singleton(rhy), true);
+    }
 
-        final boolean isCoordinatorOrModerator =
-                activeUserService.isModeratorOrAdmin() || userAuthorizationHelper.isCoordinator(rhy);
+    @Transactional(readOnly = true)
+    public List<ShootingTestCalendarEventDTO> listCalendarEvents(final long rhyId, final int year) {
+        final Riistanhoitoyhdistys rhy =
+                requireEntityService.requireRiistanhoitoyhdistys(rhyId, RhyPermission.VIEW_SHOOTING_TEST_EVENTS_BY_YEAR);
 
-        return listCalendarEvents(singleton(rhy), !isCoordinatorOrModerator);
+        final LocalDate beginDate = new LocalDate(year, 1, 1);
+        final LocalDate endDate = DateUtil.currentYear() == year ? DateUtil.today() : new LocalDate(year, 12, 31);
+
+        return listCalendarEvents(singleton(rhy), beginDate, endDate);
     }
 
     @Transactional(readOnly = true)
@@ -102,9 +110,18 @@ public class ShootingTestFeature {
 
     private List<ShootingTestCalendarEventDTO> listCalendarEvents(final Collection<Organisation> rhys,
                                                                   final boolean shortList) {
-
         final LocalDate beginDate = ShootingTest.getBeginDateOfShootingTestEventList(shortList);
         final LocalDate endDate = DateUtil.today();
+
+        return listCalendarEvents(rhys, beginDate, endDate);
+    }
+
+    private List<ShootingTestCalendarEventDTO> listCalendarEvents(final Collection<Organisation> rhys,
+                                                                  final LocalDate beginDate,
+                                                                  final LocalDate endDate) {
+        if (rhys.isEmpty()) {
+            return emptyList();
+        }
 
         return calendarEventTransformer.apply(calendarEventRepository.findBy(
                 rhys, CalendarEventType.shootingTestTypes(), beginDate.toDate(), endDate.toDate()));
@@ -180,7 +197,7 @@ public class ShootingTestFeature {
         dto.setDateOfBirth(person.parseDateOfBirth());
 
 
-        dto.setRegistrationTime(DateUtil.toDateTimeNullSafe(participant.getRegistrationTime()));
+        dto.setRegistrationTime(participant.getRegistrationTime());
         dto.setCompleted(participant.isCompleted());
 
         dto.setAttempts(attemptRepository.findByParticipant(participant)

@@ -4,7 +4,9 @@ import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import fi.riista.feature.common.entity.Required;
+import fi.riista.feature.common.entity.RequiredWithinDeerPilot;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.feature.gamediary.observation.metadata.GameSpeciesObservationFieldRequirementsDTO.ContextSensitiveFieldSetDTO;
@@ -18,6 +20,8 @@ import java.util.Set;
 
 import static fi.riista.feature.common.entity.Required.NO;
 import static fi.riista.feature.common.entity.Required.YES;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
 import static fi.riista.feature.gamediary.observation.ObservationType.JALKI;
 import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.RIISTAKAMERA;
@@ -39,7 +43,7 @@ public class ObservationFieldsMetadataServiceTest extends EmbeddedDatabaseTest {
 
         // Should be used as input.
         newBaseFields(species, NO);
-        newContextSensitiveFields(species, false, NAKO);
+        newContextSensitiveFields(species, NORMAL, NAKO);
 
         // differing metadata version
         newBaseFields(species, YES).setMetadataVersion(Integer.MAX_VALUE);
@@ -53,7 +57,9 @@ public class ObservationFieldsMetadataServiceTest extends EmbeddedDatabaseTest {
 
         assertTrue(Objects.equal(species.getId(), metadata.getGameSpeciesId()));
         assertEquals(species.getOfficialCode(), metadata.getGameSpeciesCode());
-        assertEquals(NO, metadata.getBaseFields().get(ObservationFieldRequirements.FIELD_WITHIN_MOOSE_HUNTING));
+        assertEquals(
+                RequiredWithinDeerPilot.NO,
+                metadata.getBaseFields().get(ObservationFieldRequirements.FIELD_WITHIN_MOOSE_HUNTING));
     }
 
     @Test
@@ -62,14 +68,14 @@ public class ObservationFieldsMetadataServiceTest extends EmbeddedDatabaseTest {
 
         // Should be used as input.
         newBaseFields(species, YES);
-        newContextSensitiveFields(species, true, NAKO);
-        newContextSensitiveFields(species, false, JALKI);
+        newContextSensitiveFields(species, MOOSE_HUNTING, NAKO);
+        newContextSensitiveFields(species, NORMAL, JALKI);
 
         // differing metadata version
-        newContextSensitiveFields(species, true, RIISTAKAMERA).setMetadataVersion(Integer.MAX_VALUE);
+        newContextSensitiveFields(species, MOOSE_HUNTING, RIISTAKAMERA).setMetadataVersion(Integer.MAX_VALUE);
 
         // differing species
-        newContextSensitiveFields(model().newGameSpecies(), true, ULOSTE);
+        newContextSensitiveFields(model().newGameSpecies(), MOOSE_HUNTING, ULOSTE);
 
         persistInNewTransaction();
 
@@ -89,17 +95,17 @@ public class ObservationFieldsMetadataServiceTest extends EmbeddedDatabaseTest {
     public void testGetObservationFieldsMetadata_isComposedOfMetadataForSingleSpecies() {
         final GameSpecies species1 = model().newGameSpecies();
         newBaseFields(species1, NO);
-        randomizeRequirements(newContextSensitiveFields(species1, false, NAKO));
-        randomizeRequirements(newContextSensitiveFields(species1, false, JALKI));
+        randomizeRequirements(newContextSensitiveFields(species1, NORMAL, NAKO));
+        randomizeRequirements(newContextSensitiveFields(species1, NORMAL, JALKI));
 
         final GameSpecies species2 = model().newGameSpecies();
         newBaseFields(species2, YES);
-        randomizeRequirements(newContextSensitiveFields(species2, true, NAKO));
-        randomizeRequirements(newContextSensitiveFields(species2, false, JALKI));
+        randomizeRequirements(newContextSensitiveFields(species2, MOOSE_HUNTING, NAKO));
+        randomizeRequirements(newContextSensitiveFields(species2, NORMAL, JALKI));
 
         // differing metadata version for this species
         newBaseFields(species2, NO).setMetadataVersion(Integer.MAX_VALUE);
-        newContextSensitiveFields(species2, false, RIISTAKAMERA).setMetadataVersion(Integer.MAX_VALUE);
+        newContextSensitiveFields(species2, NORMAL, RIISTAKAMERA).setMetadataVersion(Integer.MAX_VALUE);
 
         persistInNewTransaction();
 
@@ -116,7 +122,7 @@ public class ObservationFieldsMetadataServiceTest extends EmbeddedDatabaseTest {
                                     final GameSpeciesObservationFieldRequirementsDTO actual) {
 
         assertEquals(expected.getGameSpeciesCode(), actual.getGameSpeciesCode());
-        assertEquals(Maps.filterValues(expected.getBaseFields(), val -> val != NO), actual.getBaseFields());
+        assertEquals(Maps.filterValues(expected.getBaseFields(), val -> val != RequiredWithinDeerPilot.NO), actual.getBaseFields());
         assertEquals(expected.getSpecimenFields(), actual.getSpecimenFields());
 
         final int numExpectedCtxFieldsets = expected.getContextSensitiveFieldSets().size();
@@ -152,11 +158,11 @@ public class ObservationFieldsMetadataServiceTest extends EmbeddedDatabaseTest {
     }
 
     private ObservationContextSensitiveFields newContextSensitiveFields(final GameSpecies species,
-                                                                        final boolean withinMooseHunting,
+                                                                        final ObservationCategory observationCategory,
                                                                         final ObservationType observationType) {
 
         return model().newObservationContextSensitiveFields(
-                species, withinMooseHunting, observationType, DEFAULT_SPEC_VERSION);
+                species, observationCategory, observationType, DEFAULT_SPEC_VERSION);
     }
 
     private void randomizeRequirements(final ObservationContextSensitiveFields ctxFields) {

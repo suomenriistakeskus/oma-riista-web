@@ -2,178 +2,103 @@
 
 <div class="alert alert-info"
      ng-if="$ctrl.activeRevision === null"
-     translate="harvestpermit.decision.revision.notLocked"></div>
+     translate="decision.revision.notLocked"></div>
 
-<div ng-if="$ctrl.activeRevision !== null">
+<div ng-show="$ctrl.activeRevision !== null">
     <div class="row">
         <div class="col-xs-1">
-            <h4 style="margin-top: 6px" translate="harvestpermit.decision.revision.decision"></h4>
+            <h4 style="margin-top: 6px" translate="decision.revision.decision"></h4>
         </div>
 
         <div class="col-xs-6">
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <div class="col-xs-8">
-                        <select name="activeRevision" id="activeRevision" class="form-control"
-                                ng-model="$ctrl.activeRevision"
-                                ng-change="$ctrl.onActiveRevisionChanged($ctrl.activeRevision)"
-                                ng-options="rev as $ctrl.getRevisionName(rev) for rev in ::$ctrl.revisions">
-                        </select>
-                    </div>
-                    <div class="col-xs-4">
-                        <button class="btn btn-block btn-primary"
-                                ng-click="$ctrl.downloadPdf($ctrl.activeRevision.id)">
-                            <span class="fa fa-lg fa-file-pdf-o"></span>
-                            &nbsp;
-                            <span translate="harvestpermit.decision.revision.download"></span>
-                        </button>
-                    </div>
-                </div>
-            </form>
+            <decisision-revision-selection revisions="$ctrl.revisions"
+                                           on-active-revision-changed="$ctrl.onActiveRevisionChanged(revision)"
+                                           download-pdf="$ctrl.downloadPdf()">
+            </decisision-revision-selection>
         </div>
-        <div class="col-xs-5 text-right">
-            <button class="btn btn-default"
-                    ng-show="$ctrl.decision.harvestPermitId"
-                    ng-click="$ctrl.moveToPermit()">
-                <span translate="harvestpermit.decision.revision.moveToPermit"></span>
-                <span class="fa fa-fw fa-chevron-right"></span>
-            </button>
-        </div>
-    </div>
-
-    <div class="well" style="font-size: 15px; padding: 40px 20px 15px;">
-        <div class="row">
-            <div class="col-xs-4">
-                <permit-decision-revision-state-icon
-                        icon-type="lock"
-                        icon-enabled="true">
-                </permit-decision-revision-state-icon>
-
-                <div style="margin-left: 75px;">
-                    <p>
-                        <strong translate="harvestpermit.decision.revision.locked"></strong>
-                    </p>
-
-                    <p class="text-muted" style="line-height: 1.5em">
-                        <span ng-bind="$ctrl.activeRevision.lockedDate | date:'d.M.yyyy HH:mm'"></span>
-                        <br>
-                        <span ng-bind="$ctrl.activeRevision.lockedByUsername"></span>
-                    </p>
-                </div>
+        <div class="col-xs-5 text-right" ng-switch="::$ctrl.permits.length">
+            <div ng-switch-when="0"></div>
+            <div ng-switch-when="1">
+                <button class="btn btn-default"
+                        ng-click="$ctrl.moveToOnlyPermit()">
+                    <span translate="decision.revision.moveToPermit"></span>
+                    <span class="fa fa-fw fa-chevron-right"></span>
+                </button>
             </div>
-            <div class="col-xs-4">
-                <permit-decision-revision-state-icon
-                        icon-type="calendar"
-                        icon-enabled="$ctrl.activeRevision.publishDate">
-                </permit-decision-revision-state-icon>
-
-                <div style="margin-left: 75px;">
-                    <p>
-                        <strong ng-show="$ctrl.activeRevision.publishDate"
-                                translate="harvestpermit.decision.revision.published"></strong>
-                        <strong class="text-muted" ng-hide="$ctrl.activeRevision.publishDate">Julkaisu</strong>
-                    </p>
-
-                    <p class="text-muted">
-                        <span ng-hide="$ctrl.activeRevision.publishDate"
-                              ng-bind="$ctrl.activeRevision.scheduledPublishDate | date:'d.M.yyyy HH:mm'"></span>
-                        <span ng-show="$ctrl.activeRevision.publishDate"
-                              ng-bind="$ctrl.activeRevision.publishDate | date:'d.M.yyyy HH:mm'"></span>
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-xs-4" ng-if="$ctrl.activeRevision.postalByMail">
-                <permit-decision-revision-state-icon
-                        icon-type="envelope"
-                        icon-enabled="$ctrl.activeRevision.postedByMailDate">
-                </permit-decision-revision-state-icon>
-
-                <div style="margin-left: 75px;">
-                    <p>
-                        <strong ng-show="$ctrl.activeRevision.postedByMailDate"
-                                translate="harvestpermit.decision.revision.postalDone"></strong>
-                        <strong ng-hide="$ctrl.activeRevision.postedByMailDate"
-                                translate="harvestpermit.decision.revision.postalWaiting" class="text-muted"></strong>
-                    </p>
-
-                    <p class="text-muted" ng-show="$ctrl.activeRevision.postedByMailDate">
-                        <span ng-bind="$ctrl.activeRevision.postedByMailDate | date:'d.M.yyyy HH:mm'"></span>
-                        <br>
-                        <span ng-bind="$ctrl.activeRevision.postedByMailUsername"></span>
-                    </p>
-                </div>
+            <div ng-switch-default>
+                <button class="btn btn-default dropdown" uib-dropdown dropdown-append-to-body uib-dropdown-toggle>
+                    <span translate="decision.revision.permitMenu"></span>
+                    <span class="caret"></span>
+                    <ul class="dropdown-menu " uib-dropdown-menu>
+                        <li ng-repeat="p in $ctrl.permits | orderBy:'permitNumber':($ctrl.reversePermits) track by p.id">
+                            <a ng-click="$ctrl.moveToPermit(p.id)">
+                                <span ng-bind="::p.permitNumber"></span>
+                                <span class="fa fa-fw fa-chevron-right"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </button>
             </div>
         </div>
     </div>
 
-    <hr>
-
-    <h4 translate="harvestpermit.decision.revision.attachments"></h4>
-
-    <div class="well"
-         ng-if="!$ctrl.activeRevision.attachments || $ctrl.activeRevision.attachments.length === 0"
-         translate="harvestpermit.decision.revision.noAttachments"></div>
-
-    <p ng-repeat="a in $ctrl.activeRevision.attachments track by a.id">
-        <a ng-click="$ctrl.downloadAttachment(a)">
-            <span class="fa fa-lg fa-fw fa-file-pdf-o"></span>
-            <span ng-bind="a.description"></span>
-        </a>
-    </p>
+    <decision-revision-details active-revision="$ctrl.activeRevision"></decision-revision-details>
 
     <hr>
 
+    <decision-revision-attachments attachments="$ctrl.attachments"
+                                   download-url="$ctrl.attachmentDownloadUrl"
+                                   allow-edit-of-additional-attachments="$ctrl.allowEditOfAdditionalAttachments"
+                                   open-attachment-dialog="$ctrl.openAttachmentEditor()"></decision-revision-attachments>
+    <hr>
     <div class="row">
         <div class="col-xs-6">
-            <h4 translate="harvestpermit.decision.revision.invoiceForms"></h4>
+            <h4 translate="decision.revision.invoiceForms"></h4>
         </div>
 
         <div class="col-xs-6 text-right">
             <button class="btn btn-default"
                     ng-disabled="!$ctrl.decision.applicationNumber"
                     ng-click="$ctrl.moveToInvoices()">
-                <span translate="harvestpermit.decision.revision.moveToInvoices"></span>
+                <span translate="decision.revision.moveToInvoices"></span>
                 <span class="fa fa-fw fa-chevron-right"></span>
             </button>
         </div>
     </div>
 
-    <div ng-switch="$ctrl.decision.hasDecisionInvoice">
-        <div ng-switch-when="true">
-            <div ng-switch="$ctrl.getProcessingInvoiceDownloadStatus()">
-                <p ng-switch-when="NOT_AVAILABLE" class="text-danger">
-                    <span class="fa fa-lg fa-fw fa-file-pdf-o"></span>
-                    <span translate="harvestpermit.decision.revision.processingInvoiceNotCreated"></span>
-                </p>
+    <div ng-if="$ctrl.decision.hasDecisionInvoice">
+        <div ng-switch="$ctrl.getProcessingInvoiceDownloadStatus()">
+            <p ng-switch-when="NOT_AVAILABLE" class="text-danger">
+                <span class="fa fa-lg fa-fw fa-file-pdf-o"></span>
+                <span translate="decision.revision.processingInvoiceNotCreated"></span>
+            </p>
 
-                <p ng-switch-when="DISABLED_BY_ELECTRONIC_INVOICING" class="text-danger">
-                    <span class="fa fa-lg fa-fw fa-file-pdf-o"></span>
-                    <span translate="harvestpermit.decision.revision.electronicProcessingInvoiceNote"></span>
-                </p>
+            <p ng-switch-when="DISABLED_BY_ELECTRONIC_INVOICING" class="text-danger">
+                <span class="fa fa-lg fa-fw fa-file-pdf-o"></span>
+                <span translate="decision.revision.electronicProcessingInvoiceNote"></span>
+            </p>
 
-                <p ng-switch-default>
-                    <a ng-click="$ctrl.downloadProcessingInvoice()">
-                        <span class="fa fa-lg fa-fw fa-file-pdf-o text-primary"></span>
-                        <span translate="harvestpermit.decision.revision.downloadProcessingInvoice"></span>
-                    </a>
-                </p>
-            </div>
-
-            <div ng-if="$ctrl.decision.hasHarvestInvoices">
-                <p ng-repeat="gameSpeciesCode in $ctrl.mooselikeSpeciesCodes track by gameSpeciesCode">
-                    <a ng-click="$ctrl.downloadHarvestInvoice(gameSpeciesCode)">
-                        <span class="fa fa-lg fa-fw fa-file-pdf-o text-primary"></span>
-                        <span translate="harvestpermit.decision.revision.downloadHarvestInvoice"></span>
-                        (<span ng-bind="::(gameSpeciesCode | translateSpeciesCode)"></span>)
-                    </a>
-                </p>
-            </div>
+            <p ng-switch-default>
+                <a ng-click="$ctrl.downloadProcessingInvoice()">
+                    <span class="fa fa-lg fa-fw fa-file-pdf-o text-primary"></span>
+                    <span translate="decision.revision.downloadProcessingInvoice"></span>
+                </a>
+            </p>
         </div>
+    </div>
 
-        <div ng-switch-when="false" class="well">
-            <span translate="harvestpermit.decision.revision.noInvoices"></span>
-        </div>
+    <div ng-if="$ctrl.decision.hasHarvestInvoices">
+        <p ng-repeat="gameSpeciesCode in $ctrl.mooselikeSpeciesCodes track by gameSpeciesCode">
+            <a ng-click="$ctrl.downloadHarvestInvoice(gameSpeciesCode)">
+                <span class="fa fa-lg fa-fw fa-file-pdf-o text-primary"></span>
+                <span translate="decision.revision.downloadHarvestInvoice"></span>
+                (<span ng-bind="::(gameSpeciesCode | translateSpeciesCode)"></span>)
+            </a>
+        </p>
+    </div>
+
+    <div ng-if="!$ctrl.decision.hasDecisionInvoice && !$ctrl.decision.hasHarvestInvoices" class="well">
+        <span translate="decision.revision.noInvoices"></span>
     </div>
 
     <hr>
@@ -181,21 +106,21 @@
     <div ng-if="$ctrl.showHarvestReports">
         <div class="row">
             <div class="col-xs-12">
-                <h4 translate="harvestpermit.decision.revision.harvestReportTitle"></h4>
+                <h4 translate="decision.revision.harvestReportTitle"></h4>
             </div>
         </div>
 
         <p>
-            <a ng-click="$ctrl.downloadBirdHarvestReport()">
+            <a ng-click="$ctrl.downloadPermitHarvestReport()">
                 <span class="fa fa-lg fa-fw fa-file-pdf-o text-primary"></span>
-                <span translate="harvestpermit.decision.revision.downloadBirdHarvestReport"></span>
+                <span translate="decision.revision.downloadBirdHarvestReport"></span>
             </a>
         </p>
 
         <hr>
     </div>
 
-    <h4 translate="harvestpermit.decision.revision.deliveryType"></h4>
+    <h4 translate="decision.revision.deliveryType"></h4>
 
     <div class="well" ng-if="!$ctrl.activeRevision.postalByMail">
         <div class="row">
@@ -204,10 +129,10 @@
             </div>
             <div class="col-xs-11">
                 <p>
-                    <strong translate="harvestpermit.decision.revision.deliveryElectronic"></strong>
+                    <strong translate="decision.revision.deliveryElectronic"></strong>
                 </p>
 
-                <p class="text-muted" translate="harvestpermit.decision.revision.deliveryElectronicNote"></p>
+                <p class="text-muted" translate="decision.revision.deliveryElectronicNote"></p>
             </div>
         </div>
     </div>
@@ -220,11 +145,11 @@
 
             <div class="col-xs-7">
                 <p>
-                    <strong translate="harvestpermit.decision.revision.deliveryPostal"></strong>
+                    <strong translate="decision.revision.deliveryPostal"></strong>
                 </p>
 
                 <p class="text-muted" style="margin-top: 20px;"
-                   translate="harvestpermit.decision.revision.deliveryPostalNote"></p>
+                   translate="decision.revision.deliveryPostalNote"></p>
             </div>
             <div class="col-xs-4 text-right">
                 <p><br></p>
@@ -251,11 +176,11 @@
                 </div>
 
                 <p ng-if="!$ctrl.activeRevision.posted" class="form-control-static">
-                    <strong translate="harvestpermit.decision.revision.postalNotDone"></strong>
+                    <strong translate="decision.revision.postalNotDone"></strong>
                 </p>
 
                 <p ng-if="$ctrl.activeRevision.posted" class="form-control-static">
-                    <strong class="text-primary" translate="harvestpermit.decision.revision.postalDone"></strong>
+                    <strong class="text-primary" translate="decision.revision.postalDone"></strong>
                 </p>
             </div>
         </div>
@@ -264,15 +189,15 @@
     <div ng-if="$ctrl.contactPersonReceivers.length > 0">
         <hr>
 
-        <h4 translate="harvestpermit.decision.revision.recipientsContactPerson"></h4>
+        <h4 translate="decision.revision.recipientsContactPerson"></h4>
 
         <div class="table-responsive">
             <table class="table table-condensed">
                 <thead>
                 <tr>
-                    <th class="col-xs-4" translate="harvestpermit.decision.revision.recipientName"></th>
-                    <th class="col-xs-4" translate="harvestpermit.decision.revision.recipientEmail"></th>
-                    <th class="col-xs-4" translate="harvestpermit.decision.revision.recipientSent"></th>
+                    <th class="col-xs-4" translate="decision.revision.recipientName"></th>
+                    <th class="col-xs-4" translate="decision.revision.recipientEmail"></th>
+                    <th class="col-xs-4" translate="decision.revision.recipientSent"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -280,11 +205,11 @@
                     <td ng-bind="r.name"></td>
                     <td>
                         <span ng-if="r.email" ng-bind="r.email"></span>
-                        <span ng-if="!r.email" translate="harvestpermit.decision.revision.recipientPostal"></span>
+                        <span ng-if="!r.email" translate="decision.revision.recipientPostal"></span>
                     </td>
                     <td>
                         <span ng-if="r.email" ng-bind="r.sentDate | date:'d.M.yyyy HH:mm'"></span>
-                        <span ng-if="!r.email" translate="harvestpermit.decision.revision.recipientPostal"></span>
+                        <span ng-if="!r.email" translate="decision.revision.recipientPostal"></span>
                     </td>
                 </tr>
                 </tbody>
@@ -295,15 +220,15 @@
     <div ng-if="$ctrl.otherReceivers.length > 0">
         <hr>
 
-        <h4 translate="harvestpermit.decision.revision.recipientsOther"></h4>
+        <h4 translate="decision.revision.recipientsOther"></h4>
 
         <div class="table-responsive">
             <table class="table table-condensed">
                 <thead>
                 <tr>
-                    <th class="col-xs-4" translate="harvestpermit.decision.revision.recipientName"></th>
-                    <th class="col-xs-4" translate="harvestpermit.decision.revision.recipientEmail"></th>
-                    <th class="col-xs-4" translate="harvestpermit.decision.revision.recipientSent"></th>
+                    <th class="col-xs-4" translate="decision.revision.recipientName"></th>
+                    <th class="col-xs-4" translate="decision.revision.recipientEmail"></th>
+                    <th class="col-xs-4" translate="decision.revision.recipientSent"></th>
                 </tr>
                 </thead>
                 <tbody>

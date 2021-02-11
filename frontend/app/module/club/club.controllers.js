@@ -49,7 +49,8 @@ angular.module('app.club.controllers', [])
 
             .state('club.harvestsummary', {
                 url: '/harvestsummary?year',
-                templateUrl: 'club/harvestsummary.html',
+                templateUrl: 'club/harvestsummary/harvestsummary.html',
+                controllerAs: '$ctrl',
                 controller: 'ClubHarvestSummaryController',
                 resolve: {
                     year: function ($stateParams) {
@@ -196,39 +197,5 @@ angular.module('app.club.controllers', [])
             $scope.save = function (member) {
                 var updates = [{occupationId: member.id, share: member.contactInfoShare}];
                 Account.contactShare(updates).$promise.then(ok, fail);
-            };
-        })
-
-    .controller('ClubHarvestSummaryController',
-        function ($scope, $state, $stateParams, $translate,
-                  summary, year) {
-
-            $scope.summary = summary;
-
-            $scope.getGameCategory = function (index, item) {
-                // show category only for the first of each category
-                var currentCategoryId = item.species.categoryId;
-                if (index === 0 || currentCategoryId !== summary.items[index - 1].species.categoryId) {
-                    return $translate.instant('club.harvestsummary.gameCategory' + currentCategoryId);
-                }
-                return '';
-            };
-            $scope.searchModel = {
-                year: year
-            };
-            $scope.years = _.range(2014, new Date().getFullYear() + 1);
-
-            if (angular.isArray($scope.summary.items)) {
-                var sortFields = ['species.categoryId', 'count', 'species.code'];
-                var sortOrders = ['asc', 'desc', 'asc'];
-
-                $scope.summary.items = _.orderBy($scope.summary.items, sortFields, sortOrders);
-            }
-
-            $scope.yearChanged = function () {
-                var params = angular.copy($stateParams);
-                params.year = $scope.searchModel.year;
-
-                $state.transitionTo($state.current, params, {reload: true, inherit: false, notify: true});
             };
         });

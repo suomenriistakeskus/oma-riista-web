@@ -5,8 +5,8 @@ import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.mail.token.EmailToken;
 import fi.riista.util.DateUtil;
 import fi.riista.validation.VetumaTransactionId;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import org.joda.time.DateTime;
 import org.joda.time.ReadableDuration;
 

@@ -1,6 +1,5 @@
 package fi.riista.feature.gis.zone;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.OnlyStateAreaService;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
@@ -10,6 +9,7 @@ import fi.riista.util.GISUtils;
 import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,12 +20,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static fi.riista.feature.gis.zone.GISZoneConstants.AREA_SIZE_CALCULATION_FAILED;
+import static fi.riista.feature.gis.zone.GISZoneConstants.AREA_SIZE_NOT_AVAILABLE;
 import static java.util.Collections.singletonList;
 
 @Service
 public class GISZoneEditService {
     private static final GISUtils.SRID EDITOR_SRID = GISUtils.SRID.WGS84;
-    private static final int AREA_SIZE_NOT_AVAILABLE = -1;
 
     @Resource
     private GISZoneRepository zoneRepository;
@@ -40,7 +41,8 @@ public class GISZoneEditService {
     public FeatureCollection getFeatures(final GISZone zone) {
         final List<Feature> palstaFeatures = zoneRepository.getPalstaFeatures(zone.getId(), EDITOR_SRID);
         final List<Feature> otherFeatures = zoneRepository.getOtherFeatures(zone.getId(), EDITOR_SRID);
-        final List<Feature> metsahallitusFeatures = metsahallitusRepository.findByZoneAsFeatures(zone.getId(), EDITOR_SRID);
+        final List<Feature> metsahallitusFeatures = metsahallitusRepository.findByZoneAsFeatures(zone.getId(),
+                EDITOR_SRID);
         final Feature excludedFeature = zone.getExcludedAsGeoJSON(GeoJSONConstants.ID_EXCLUDED).orElse(null);
         final GISBounds bounds = zoneRepository.getBounds(zone.getId(), EDITOR_SRID);
 
@@ -67,11 +69,21 @@ public class GISZoneEditService {
         zoneRepository.calculateCombinedGeometry(zone.getId());
     }
 
-    @Transactional(noRollbackFor = RuntimeException.class, propagation = Propagation.MANDATORY)
+    // Open new transaction in order to be able to mark calculation failed in case of failure
+    @Transactional(timeout = 900, propagation = Propagation.REQUIRES_NEW)
     public void updateAreaSize(final long zoneId) {
         final boolean onlyStateLand = onlyStateAreaService.shouldContainOnlyStateLand(singletonList(zoneId));
         zoneRepository.calculateAreaSize(zoneId, onlyStateLand);
         zoneRepository.getOne(zoneId).forceRevisionUpdate();
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public void markCalculationFailed(final long zoneId) {
+        final GISZone zone = zoneRepository.getOne(zoneId);
+        zone.setComputedAreaSize(AREA_SIZE_CALCULATION_FAILED);
+        zone.setWaterAreaSize(AREA_SIZE_CALCULATION_FAILED);
+        zone.setStateLandAreaSize(null);
+        zone.setPrivateLandAreaSize(null);
     }
 
     private static FeatureCollection createFeatureCollection(final List<Feature> palstaFeatures,

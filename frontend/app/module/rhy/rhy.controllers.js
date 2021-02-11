@@ -87,7 +87,23 @@ angular.module('app.rhy.controllers', [])
             .state('rhy.events', {
                 url: '/events',
                 templateUrl: 'event/event_list.html',
-                controller: 'EventListController'
+                controller: 'EventListController',
+                resolve: {
+                    availableYears: function(rhyId, RhyExistenceYears) {
+                        var currentYear = moment().year();
+
+                        return RhyExistenceYears.get({rhyId: rhyId}).$promise.then(function (years) {
+                            if (_.last(years) === currentYear) {
+                                years.push(currentYear + 1);
+                            }
+                            return years;
+                        });
+                    },
+                    calendarYear: function(availableYears) {
+                        var currentYear = moment().year();
+                        return Math.min(_.last(availableYears), currentYear);
+                    }
+                }
             })
             .state('rhy.locations', {
                 url: '/locations',
@@ -150,6 +166,17 @@ angular.module('app.rhy.controllers', [])
                     }
                 }
             })
+            .state('rhy.srva.callring', {
+                url: '/callring',
+                templateUrl: 'srva/callring.html',
+                controller: 'SrvaCallringRotationController',
+                controllerAs: '$ctrl',
+                resolve: {
+                    rotation: function (Rhys, rhyId) {
+                        return Rhys.getSrvaRotation({id: rhyId}).$promise;
+                    }
+                }
+            })
             .state('rhy.moosepermit', {
                 url: '/moosepermit?huntingYear&species',
                 wideLayout: true,
@@ -158,7 +185,7 @@ angular.module('app.rhy.controllers', [])
                     species: null
                 },
                 resolve: {
-                    initialState: _.constant('rhy.moosepermit'),
+                    stateBase: _.constant('rhy'),
                     huntingYears: function (Rhys, orgId) {
                         return Rhys.moosePermitHuntingYears({id: orgId}).$promise;
                     },
@@ -205,21 +232,6 @@ angular.module('app.rhy.controllers', [])
                             permitId: permitId,
                             species: selectedYearAndSpecies.species
                         }).$promise;
-                    }
-                }
-            })
-            .state('rhy.moosepermit.lukereports', {
-                url: '/{permitId:[0-9]{1,8}}/luke-reports',
-                wideLayout: true,
-                templateUrl: 'harvestpermit/moosepermit/luke/luke-reports.html',
-                controller: 'MoosePermitLukeReportsController',
-                resolve: {
-                    permitId: function ($stateParams, MoosePermitSelection) {
-                        return MoosePermitSelection.updateSelectedPermitId($stateParams);
-                    },
-                    clubId: _.constant(null),
-                    lukeReportParams: function (MoosePermits, permitId) {
-                        return MoosePermits.lukeReportParams({permitId: permitId}).$promise;
                     }
                 }
             })
@@ -331,6 +343,12 @@ angular.module('app.rhy.controllers', [])
             });
     })
 
+    .factory('RhyExistenceYears', function ($resource) {
+        return $resource('/api/v1/riistanhoitoyhdistys/:rhyId/yearsofexistence', {rhyId: '@rhyId'}, {
+            'get': {method: 'GET', isArray: true}
+        });
+    })
+
     .controller('RhyShowController',
         function ($scope, $state, $uibModal, rhy, NotificationService, MapDefaults, MapBounds, MapState, GIS) {
             $scope.data = rhy;
@@ -379,6 +397,7 @@ angular.module('app.rhy.controllers', [])
                 });
             };
         })
+
     .controller('RHYEditController',
         function ($scope, $uibModalInstance, Rhys, rhy) {
             $scope.rhy = rhy;
@@ -418,6 +437,7 @@ angular.module('app.rhy.controllers', [])
                 });
             };
         })
+
     .controller('ValidRhyEmailController', function ($scope) {
         var validDomain = '@rhy.riista.fi';
         var getUser = function (email) {
@@ -442,6 +462,7 @@ angular.module('app.rhy.controllers', [])
             return [email + validDomain];
         };
     })
+
     .component('organisationSelectByRhy', {
         templateUrl: 'rhy/organisation-select-by-rhy.html',
         bindings: {

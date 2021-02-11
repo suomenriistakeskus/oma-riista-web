@@ -1,0 +1,16 @@
+<ul class="nav nav-pills nav-decision-document nav-stacked">
+    <li active-if-state-includes="{{$ctrl.getStateName('general')}}">
+        <a ng-click="$ctrl.focus('general')">
+            <span class="fa fa-2x fa-fw fa-check-circle text-primary"></span>
+            <span translate="decision.document.general"></span>
+        </a>
+    </li>
+    <li ng-repeat="sectionId in $ctrl.sectionIds" active-if-state-includes="{{$ctrl.getStateName(sectionId)}}">
+        <a ng-click="$ctrl.focus(sectionId)">
+            <span class="fa fa-2x fa-fw fa-check-circle"
+                  ng-class="$ctrl.isComplete(sectionId) ? 'text-primary' :  'text-muted'">
+            </span>
+            <span translate="decision.document.sectionId.{{::sectionId}}"></span>
+        </a>
+    </li>
+</ul>

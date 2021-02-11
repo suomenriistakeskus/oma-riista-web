@@ -2,22 +2,28 @@ package fi.riista.feature.harvestpermit;
 
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpecies_;
+import fi.riista.feature.harvestpermit.search.HarvestPermitDecisionOrigin;
 import fi.riista.feature.organization.Organisation_;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.common.decision.GrantStatus;
+import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.PermitDecision_;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.JpaSpecs;
 import fi.riista.util.jpa.JpaSubQuery;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 
 import javax.annotation.Nonnull;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
+import java.util.ArrayList;
+import java.util.List;
 
 import static fi.riista.util.jpa.JpaPreds.beginsWithIgnoreCase;
 import static fi.riista.util.jpa.JpaPreds.overlapsInterval;
@@ -59,6 +65,16 @@ public final class HarvestPermitSpecs {
                 });
     }
 
+    public static Specification<HarvestPermit> withDecisionGrantStatus(@Nonnull final List<GrantStatus> grantStatuses) {
+        return (root, query, cb) -> {
+            final Join<HarvestPermit, PermitDecision> decision = root.join(HarvestPermit_.permitDecision, JoinType.LEFT);
+            final Path<GrantStatus> grantStatusPath = decision.get(PermitDecision_.grantStatus);
+            final List<Predicate> grantStatusPredicate = new ArrayList<>();
+            grantStatuses.forEach(grantStatus -> grantStatusPredicate.add(cb.equal(grantStatusPath, grantStatus)));
+            return cb.or(grantStatusPredicate.toArray(new Predicate[]{}));
+        };
+    }
+
     public static Specification<HarvestPermit> withYear(@Nonnull final String year) {
         return (root, query, cb) -> beginsWithIgnoreCase(cb, root.get(HarvestPermit_.permitNumber), year);
     }
@@ -76,7 +92,7 @@ public final class HarvestPermitSpecs {
         final Specification<HarvestPermit> contactPerson = pathToValueExists(
                 HarvestPermitContactPerson_.harvestPermit, HarvestPermitContactPerson_.contactPerson, person);
 
-        return Specifications
+        return Specification
                 .where(equal(HarvestPermit_.originalContactPerson, person))
                 .or(contactPerson);
     }
@@ -120,5 +136,16 @@ public final class HarvestPermitSpecs {
 
     public static Specification<HarvestPermit> withPermitTypeCode(final String permitTypeCode) {
         return JpaSpecs.equal(HarvestPermit_.permitTypeCode, permitTypeCode);
+    }
+
+    public static Specification<HarvestPermit> withDecisionOrigin(final HarvestPermitDecisionOrigin origin) {
+        switch (origin){
+            case LUPAHALLINTA:
+                return JpaSpecs.isNull(HarvestPermit_.permitDecision);
+            case OMA_RIISTA:
+                return JpaSpecs.isNotNull(HarvestPermit_.permitDecision);
+            default:
+                throw new IllegalArgumentException("Unexpected value: " + origin);
+        }
     }
 }

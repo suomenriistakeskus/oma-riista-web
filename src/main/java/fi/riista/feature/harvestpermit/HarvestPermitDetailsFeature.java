@@ -2,17 +2,21 @@ package fi.riista.feature.harvestpermit;
 
 import com.google.common.base.Preconditions;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
+import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.harvestpermit.statistics.HarvestPermitUsageDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTO;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTOFactory;
 import fi.riista.feature.organization.OrganisationNameDTO;
+import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionRepository;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.F;
@@ -60,6 +64,9 @@ public class HarvestPermitDetailsFeature {
     @Resource
     private PermitDecisionRepository permitDecisionRepository;
 
+    @Resource
+    private DeerPilotService deerPilotService;
+
     @Transactional(readOnly = true)
     public OrganisationNameDTO getRhyCode(long permitId) {
         final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
@@ -82,8 +89,19 @@ public class HarvestPermitDetailsFeature {
                 permitDecisionRepository.findCancelledAndIgnoredPermitNumbersByOriginalPermit(harvestPermit) : emptyList();
         amendmentPermitNumbers.addAll(cancelledAndIgnoredPermitNumbers);
 
+        final PermitDecision decision = harvestPermit.getPermitDecision();
+
+        final GrantStatus grantStatus = Optional.ofNullable(decision)
+                .map(PermitDecision::getGrantStatus)
+                .orElse(null);
+
+        final PermitDecision.DecisionType decisionType = Optional.ofNullable(decision)
+                .map(PermitDecision::getDecisionType)
+                .orElse(null);
+
         return HarvestPermitDTO.create(harvestPermit, harvestPermit.getSpeciesAmounts(),
-                amendmentPermitNumbers, amendmentPermitSpeciesAmounts, activeUser);
+                amendmentPermitNumbers, amendmentPermitSpeciesAmounts,
+                activeUser, grantStatus, decisionType);
     }
 
     @Transactional(readOnly = true)
@@ -107,7 +125,11 @@ public class HarvestPermitDetailsFeature {
                         .thenComparing(Harvest::getPointOfTime, reverseOrder()))
                 .collect(toList());
 
-        return resolveHarvestCreators(harvestPermit, harvestDTOTransformer.apply(sortedHarvests));
+        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED
+                // TODO Remove this when deer pilot 2020 is over.
+                .revertIfNotOnDeerPilot(deerPilotService.isPilotPermit(harvestPermitId));
+
+        return resolveHarvestCreators(harvestPermit, harvestDTOTransformer.apply(sortedHarvests, specVersion));
     }
 
     private List<HarvestDTO> resolveHarvestCreators(final HarvestPermit permit, final List<HarvestDTO> harvests) {
@@ -140,9 +162,9 @@ public class HarvestPermitDetailsFeature {
     }
 
     @Transactional(readOnly = true)
-    public HuntingClubPermitDTO getClubPermit(long permitId, int officialCodeMoose) {
+    public HuntingClubPermitDTO getClubPermit(long permitId, int speciesCode) {
         final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
 
-        return huntingClubPermitDTOFactory.getDTO(permit, officialCodeMoose, null);
+        return huntingClubPermitDTOFactory.getDTO(permit, speciesCode, null);
     }
 }

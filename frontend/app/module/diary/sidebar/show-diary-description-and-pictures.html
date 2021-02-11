@@ -1,0 +1,8 @@
+<div class="r-gamediary-entry-description">
+    <p ng-repeat="paragraph in ::$ctrl.entry.description.split('\n') track by $index"
+       ng-bind="::paragraph"></p>
+</div>
+
+<div ng-repeat="uuid in ::$ctrl.entry.imageIds" class="r-gamediary-entry-show-image">
+    <img ng-src="{{::$ctrl.getUrl(uuid, 330, 330, true)}}"/>
+</div>

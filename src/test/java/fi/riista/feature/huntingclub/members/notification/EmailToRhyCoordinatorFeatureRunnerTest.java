@@ -11,9 +11,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -35,8 +35,8 @@ public class EmailToRhyCoordinatorFeatureRunnerTest extends EmbeddedDatabaseTest
     private HuntingLeaderFinderService feature;
     private HuntingLeaderEmailSenderService mailer;
     private List<Occupation> occupations;
-    private ArgumentCaptor<Date> beginCaptor;
-    private ArgumentCaptor<Date> endCaptor;
+    private ArgumentCaptor<DateTime> beginCaptor;
+    private ArgumentCaptor<DateTime> endCaptor;
     private ArgumentCaptor<Integer> huntingYearCaptor;
 
     @Before
@@ -57,8 +57,8 @@ public class EmailToRhyCoordinatorFeatureRunnerTest extends EmbeddedDatabaseTest
 
         when(feature.findChangedLeaders(any(), any(), anyInt())).thenReturn(occupations);
 
-        beginCaptor = ArgumentCaptor.forClass(Date.class);
-        endCaptor = ArgumentCaptor.forClass(Date.class);
+        beginCaptor = ArgumentCaptor.forClass(DateTime.class);
+        endCaptor = ArgumentCaptor.forClass(DateTime.class);
         huntingYearCaptor = ArgumentCaptor.forClass(int.class);
     }
 
@@ -69,16 +69,27 @@ public class EmailToRhyCoordinatorFeatureRunnerTest extends EmbeddedDatabaseTest
 
     @Test
     public void testFirstCallWhenLastRunIsNull() {
-        doTest(DateTime.now().minusDays(1), DateTime.now());
+        onSavedAndAuthenticated(createNewAdmin(), () -> {
+            doTest(DateTime.now().minusDays(1), DateTime.now());
+        });
     }
 
     @Test
     public void testFistCallEndIsSecondCallStart() {
-        final DateTime firstCallEnd = DateTime.now();
-        doTest(DateTime.now().minusDays(1), firstCallEnd);
-        setupMocks();
-        tick();
-        doTest(firstCallEnd, DateTime.now());
+        onSavedAndAuthenticated(createNewAdmin(), () -> {
+            final DateTime firstCallEnd = DateTime.now();
+            doTest(DateTime.now().minusDays(1), firstCallEnd);
+            setupMocks();
+            tick();
+            doTest(firstCallEnd, DateTime.now());
+        });
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testUnauthorized() {
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+            doTest(DateTime.now().minusDays(1), DateTime.now());
+        });
     }
 
     private static void tick() {
@@ -91,8 +102,8 @@ public class EmailToRhyCoordinatorFeatureRunnerTest extends EmbeddedDatabaseTest
         verify(feature).findChangedLeaders(beginCaptor.capture(), endCaptor.capture(), huntingYearCaptor.capture());
         verify(mailer).sendMails(eq(occupations));
 
-        assertEquals(expectedBegin.toDate(), beginCaptor.getValue());
-        assertEquals(expectedEnd.toDate(), endCaptor.getValue());
+        assertEquals(expectedBegin, beginCaptor.getValue());
+        assertEquals(expectedEnd, endCaptor.getValue());
 
         final int currentHuntingYear = DateUtil.huntingYear();
         assertEquals(Integer.valueOf(currentHuntingYear), huntingYearCaptor.getValue());

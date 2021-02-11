@@ -1,8 +1,6 @@
 package fi.riista.api.gis;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.gis.GISBounds;
-import fi.riista.feature.gis.GISWGS84Point;
 import fi.riista.feature.gis.kiinteisto.PropertyGeometryLookupFeature;
 import fi.riista.feature.gis.metsahallitus.MetsahallitusGeometryLookupFeature;
 import fi.riista.feature.gis.metsahallitus.MetsahallitusHirviDTO;
@@ -15,6 +13,7 @@ import net.rossillo.spring.web.mvc.CachePolicy;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,7 +38,7 @@ public class GISGeometryApiResource {
     private MetsahallitusGeometryLookupFeature metsahallitusGeometryLookupFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/rhy/bounds", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/rhy/bounds", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getRhyBounds(@RequestParam String officialCode) {
         return toResponseEntity(coordinateRhyLookupFeature.getRhyBounds(officialCode));
     }
@@ -86,9 +85,9 @@ public class GISGeometryApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/mh/hirvi", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/mh/hirvi", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MetsahallitusHirviDTO> listMetsahallitusHirvi(@RequestParam int year) {
-        return metsahallitusGeometryLookupFeature.listHirvi(year);
+        return metsahallitusGeometryLookupFeature.listHirviAll(year);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

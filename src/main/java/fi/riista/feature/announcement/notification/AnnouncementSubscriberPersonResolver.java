@@ -3,6 +3,7 @@ package fi.riista.feature.announcement.notification;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -17,7 +18,9 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.person.QPerson;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
+import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysEmailService;
 import fi.riista.feature.push.QMobileClientDevice;
+import fi.riista.util.F;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +34,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -46,6 +52,9 @@ public class AnnouncementSubscriberPersonResolver {
 
     @Resource
     private AnnouncementSubscriberRepository announcementSubscriberRepository;
+
+    @Resource
+    private RiistanhoitoyhdistysEmailService riistanhoitoyhdistysEmailService;
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public AnnouncementNotificationTargets collectTargets(final Announcement announcement,
@@ -75,13 +84,23 @@ public class AnnouncementSubscriberPersonResolver {
                 announcementSubscriberRepository.findByAnnouncement(announcement);
 
         if (announcementSubscribers.size() > 0) {
-            final List<Long> subscriberPersonIds = collectReceiverPersonIds(announcementSubscribers);
+            final Map<Boolean, List<AnnouncementSubscriber>> subscriberMapping = announcementSubscribers.stream()
+                    .collect(partitioningBy(subscriber -> subscriber.getOccupationType() == OccupationType.TOIMINNANOHJAAJA));
+            final List<AnnouncementSubscriber> personSubscribers = subscriberMapping.get(false);
+            final List<Long> personSubscriberIds = collectReceiverPersonIds(personSubscribers);
+
+            final List<AnnouncementSubscriber> coordinatorSubscribers = subscriberMapping.get(true);
+            final List<Long> coordinatorSubscriberIds = collectReceiverPersonIds(coordinatorSubscribers);
+
+            final List<Long> subscriberPersonIds = F.concat(personSubscriberIds, coordinatorSubscriberIds);
 
             if (subscriberPersonIds.size() > 0) {
                 pushTokens.addAll(getPushTokensForPersonIds(subscriberPersonIds));
 
                 if (sendEmail) {
-                    emails.addAll(getEmailsForPersonIds(subscriberPersonIds));
+                    final Set<String> personEmails = getEmailsForPersonIds(personSubscriberIds);
+                    final Set<String> coordinatorEmails = getEmailsForCoordinatorIds(coordinatorSubscriberIds);
+                    Sets.union(personEmails, coordinatorEmails).copyInto(emails);
                 }
             }
         }
@@ -116,6 +135,10 @@ public class AnnouncementSubscriberPersonResolver {
     }
 
     private List<Long> collectReceiverPersonIds(final List<AnnouncementSubscriber> subscribers) {
+        if (F.isNullOrEmpty(subscribers)) {
+            return emptyList();
+        }
+
         final Set<Long> allPersonIds = new HashSet<>();
 
         // Group subscribers to reduce number of queries
@@ -130,6 +153,10 @@ public class AnnouncementSubscriberPersonResolver {
     }
 
     private Set<String> getEmailsForPersonIds(final List<Long> personIds) {
+        if (F.isNullOrEmpty(personIds)) {
+            return emptySet();
+        }
+
         final QPerson PERSON = QPerson.person;
 
         return Lists.partition(personIds, 1000).stream()
@@ -145,6 +172,27 @@ public class AnnouncementSubscriberPersonResolver {
                 .filter(email -> email.contains("@"))
                 .map(email -> email.trim().toLowerCase())
                 .collect(toSet());
+    }
+
+    private Set<String> getEmailsForCoordinatorIds(final List<Long> coordinatorIds) {
+        if (F.isNullOrEmpty(coordinatorIds)) {
+            return emptySet();
+        }
+
+        final QPerson PERSON = QPerson.person;
+        final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
+
+        final Set<Long> rhyIds = jpqlQueryFactory.select(RHY.id)
+                .from(PERSON)
+                .where(PERSON.id.in(coordinatorIds))
+                .join(PERSON.rhyMembership, RHY)
+                .fetch()
+                .stream()
+                .collect(toSet());
+
+        final Map<Long, Set<String>> rhyEmails = riistanhoitoyhdistysEmailService.resolveEmails(rhyIds);
+
+        return rhyEmails.values().stream().flatMap(Set::stream).collect(toSet());
     }
 
     private List<String> getPushTokensForPersonIds(final List<Long> personIds) {

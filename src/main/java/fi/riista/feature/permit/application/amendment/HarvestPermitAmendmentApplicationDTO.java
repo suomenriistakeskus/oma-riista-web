@@ -87,7 +87,7 @@ public class HarvestPermitAmendmentApplicationDTO extends BaseEntityDTO<Long> {
     public HarvestPermitAmendmentApplicationDTO(final Harvest harvest, final HarvestSpecimen specimen) {
         this.nonEdibleHarvestId = F.getId(harvest);
         this.gameSpeciesCode = harvest.getSpecies().getOfficialCode();
-        this.pointOfTime = DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTime());
+        this.pointOfTime = harvest.getPointOfTime().toLocalDateTime();
         this.age = specimen.getAge();
         this.gender = specimen.getGender();
         this.shooter = PersonWithHunterNumberDTO.create(harvest.getActualShooter());

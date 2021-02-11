@@ -1,11 +1,5 @@
 package fi.riista.feature.pub.statistics;
 
-import static fi.riista.util.DateUtil.today;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import fi.riista.feature.gamediary.GameAge;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
@@ -15,9 +9,25 @@ import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
 import javax.annotation.Resource;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_NO_GENDER;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_UNKNOWN_GENDER;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.FEMALE_NO_AGE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.FEMALE_UNKNOWN_AGE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.MALE_NO_AGE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.MALE_UNKNOWN_AGE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.UNKNOWN_AGE_AND_GENDER;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.UNKNOWN_AGE_NO_GENDER;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_NO_GENDER;
+import static fi.riista.util.DateUtil.today;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
 
@@ -31,10 +41,10 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
         withRhy(rhy1 -> withRhy(rhy2 -> withRhy(rhy3 -> withRhy(rhy4 -> {
 
             GameSpecies species1 = model().newGameSpecies();
-            model().newHarvest(species1, GameAge.YOUNG, GameGender.MALE, rhy1);
-            model().newHarvest(species1, GameAge.YOUNG, GameGender.FEMALE, rhy2);
-            model().newHarvest(species1, GameAge.ADULT, GameGender.MALE, rhy3);
-            model().newHarvest(species1, GameAge.ADULT, GameGender.MALE, rhy4);
+            model().newHarvest(species1, YOUNG_MALE, rhy1);
+            model().newHarvest(species1, YOUNG_FEMALE, rhy2);
+            model().newHarvest(species1, ADULT_MALE, rhy3);
+            model().newHarvest(species1, ADULT_MALE, rhy4);
 
             persistInNewTransaction();
 
@@ -61,8 +71,8 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
             GameSpecies species1 = model().newGameSpecies();
 
             // Harvest for today
-            model().newHarvest(species1, GameAge.YOUNG, GameGender.MALE, rhy1);
-            model().newHarvest(species1, GameAge.YOUNG, GameGender.FEMALE, rhy2);
+            model().newHarvest(species1, YOUNG_MALE, rhy1);
+            model().newHarvest(species1, YOUNG_FEMALE, rhy2);
 
             persistInNewTransaction();
 
@@ -95,8 +105,8 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
     @Test
     public void testSummary_withNullSpecies() {
         withRhy(rhy -> {
-            model().newHarvest(model().newGameSpecies(), GameAge.ADULT, null, rhy);
-            model().newHarvest(model().newGameSpecies(), GameAge.YOUNG, GameGender.FEMALE, rhy);
+            model().newHarvest(model().newGameSpecies(), ADULT_NO_GENDER, rhy);
+            model().newHarvest(model().newGameSpecies(), YOUNG_FEMALE, rhy);
 
             persistInNewTransaction();
 
@@ -117,12 +127,12 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
         withRhy(rhy1 -> withRhy(rhy2 -> withRhy(rhy3 -> withRhy(rhy4 -> withRhy(rhy5 -> withRhy(rhy6 -> {
 
             GameSpecies species1 = model().newGameSpecies();
-            model().newHarvest(species1, GameAge.YOUNG, GameGender.MALE, rhy1);
-            model().newHarvest(species1, GameAge.YOUNG, GameGender.FEMALE, rhy2);
-            model().newHarvest(species1, GameAge.ADULT, GameGender.MALE, rhy3);
-            model().newHarvest(species1, GameAge.ADULT, GameGender.UNKNOWN, rhy4);
-            model().newHarvest(species1, GameAge.UNKNOWN, GameGender.MALE, rhy5);
-            model().newHarvest(species1, GameAge.UNKNOWN, GameGender.UNKNOWN, rhy6);
+            model().newHarvest(species1, YOUNG_MALE, rhy1);
+            model().newHarvest(species1, YOUNG_FEMALE, rhy2);
+            model().newHarvest(species1, ADULT_MALE, rhy3);
+            model().newHarvest(species1, ADULT_UNKNOWN_GENDER, rhy4);
+            model().newHarvest(species1, MALE_UNKNOWN_AGE, rhy5);
+            model().newHarvest(species1, UNKNOWN_AGE_AND_GENDER, rhy6);
 
             persistInNewTransaction();
 
@@ -144,9 +154,9 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
         withRhy(rhy1 -> withRhy(rhy2 -> withRhy(rhy3 -> {
 
             GameSpecies species1 = model().newGameSpecies();
-            model().newHarvest(species1, GameAge.YOUNG, null, rhy1);
-            model().newHarvest(species1, null, GameGender.MALE, rhy2);
-            model().newHarvest(species1, GameAge.UNKNOWN, null, rhy3);
+            model().newHarvest(species1, YOUNG_NO_GENDER, rhy1);
+            model().newHarvest(species1, MALE_NO_AGE, rhy2);
+            model().newHarvest(species1, UNKNOWN_AGE_NO_GENDER, rhy3);
 
             persistInNewTransaction();
 
@@ -170,11 +180,11 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
         Riistanhoitoyhdistys rhy2 = newRhy(alue1);
 
         GameSpecies species = model().newGameSpecies();
-        Harvest h1 = model().newHarvest(species, GameAge.ADULT, GameGender.MALE, rhy1);
-        model().newHarvestSpecimen(h1, GameAge.ADULT, GameGender.MALE);
+        Harvest h1 = model().newHarvest(species, ADULT_MALE, rhy1);
+        model().newHarvestSpecimen(h1, ADULT_MALE);
         h1.setAmount(2);
 
-        model().newHarvest(species, GameAge.ADULT, GameGender.MALE, rhy2);
+        model().newHarvest(species, ADULT_MALE, rhy2);
 
         persistInNewTransaction();
 
@@ -198,8 +208,8 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
 
         Riistanhoitoyhdistys rhy1 = newRhy(alue1);
         Harvest harvest1 = model().newHarvest(species, rhy1);
-        model().newHarvestSpecimen(harvest1, GameAge.YOUNG, null);
-        model().newHarvestSpecimen(harvest1, null, GameGender.MALE);
+        model().newHarvestSpecimen(harvest1, YOUNG_NO_GENDER);
+        model().newHarvestSpecimen(harvest1, MALE_NO_AGE);
         harvest1.setAmount(2);
 
         Riistanhoitoyhdistys rhy2 = newRhy(alue1);
@@ -208,9 +218,9 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
 
         Riistanhoitoyhdistys rhy3 = newRhy(alue2);
         Harvest harvest3 = model().newHarvest(species, rhy3);
-        model().newHarvestSpecimen(harvest3, GameAge.ADULT, null);
-        model().newHarvestSpecimen(harvest3, null, GameGender.FEMALE);
-        model().newHarvestSpecimen(harvest3, GameAge.ADULT, GameGender.MALE);
+        model().newHarvestSpecimen(harvest3, ADULT_NO_GENDER);
+        model().newHarvestSpecimen(harvest3, FEMALE_NO_AGE);
+        model().newHarvestSpecimen(harvest3, ADULT_MALE);
         harvest3.setAmount(5);
 
         persistInNewTransaction();
@@ -260,15 +270,15 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
 
         Riistanhoitoyhdistys rhy1 = newRhy(alue);
         Harvest harvest1 = model().newHarvest(species, rhy1);
-        model().newHarvestSpecimen(harvest1, GameAge.YOUNG, null);
-        model().newHarvestSpecimen(harvest1, null, GameGender.MALE);
+        model().newHarvestSpecimen(harvest1, YOUNG_NO_GENDER);
+        model().newHarvestSpecimen(harvest1, MALE_NO_AGE);
         harvest1.setAmount(2);
 
         Riistanhoitoyhdistys rhy2 = newRhy(alue);
         Harvest harvest2 = model().newHarvest(species, rhy2);
-        model().newHarvestSpecimen(harvest2, GameAge.ADULT, null);
-        model().newHarvestSpecimen(harvest2, null, GameGender.FEMALE);
-        model().newHarvestSpecimen(harvest2, GameAge.ADULT, GameGender.MALE);
+        model().newHarvestSpecimen(harvest2, ADULT_NO_GENDER);
+        model().newHarvestSpecimen(harvest2, FEMALE_NO_AGE);
+        model().newHarvestSpecimen(harvest2, ADULT_MALE);
         harvest2.setAmount(5);
 
         Riistanhoitoyhdistys rhy3 = newRhy(alue);
@@ -333,15 +343,15 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
         Riistanhoitoyhdistys rhy4 = newRhy(alue2);
 
         GameSpecies species1 = model().newGameSpecies();
-        model().newHarvest(species1, GameAge.YOUNG, GameGender.MALE, rhy1);
-        model().newHarvest(species1, GameAge.YOUNG, GameGender.FEMALE, rhy2);
-        model().newHarvest(species1, GameAge.ADULT, GameGender.MALE, rhy3);
-        model().newHarvest(species1, GameAge.ADULT, GameGender.MALE, rhy4);
+        model().newHarvest(species1, YOUNG_MALE, rhy1);
+        model().newHarvest(species1, YOUNG_FEMALE, rhy2);
+        model().newHarvest(species1, ADULT_MALE, rhy3);
+        model().newHarvest(species1, ADULT_MALE, rhy4);
 
         // Wrong species, should not be counted
         GameSpecies species2 = model().newGameSpecies();
-        model().newHarvest(species2, GameAge.ADULT, GameGender.MALE, rhy1);
-        model().newHarvest(species2, GameAge.YOUNG, GameGender.FEMALE, rhy2);
+        model().newHarvest(species2, ADULT_MALE, rhy1);
+        model().newHarvest(species2, YOUNG_FEMALE, rhy2);
 
         persistInNewTransaction();
 
@@ -394,17 +404,17 @@ public class PublicHarvestPivotTableFeatureTest extends EmbeddedDatabaseTest {
         Riistanhoitoyhdistys rhy6 = newRhy(alue2);
 
         GameSpecies species1 = model().newGameSpecies();
-        model().newHarvest(species1, GameAge.YOUNG, GameGender.MALE, rhy1);
-        model().newHarvest(species1, GameAge.YOUNG, GameGender.FEMALE, rhy1);
-        model().newHarvest(species1, GameAge.UNKNOWN, GameGender.FEMALE, rhy2);
-        model().newHarvest(species1, GameAge.ADULT, GameGender.FEMALE, rhy2);
-        model().newHarvest(species1, GameAge.ADULT, GameGender.UNKNOWN, rhy3);
-        model().newHarvest(species1, GameAge.ADULT, GameGender.MALE, rhy3);
+        model().newHarvest(species1, YOUNG_MALE, rhy1);
+        model().newHarvest(species1, YOUNG_FEMALE, rhy1);
+        model().newHarvest(species1, FEMALE_UNKNOWN_AGE, rhy2);
+        model().newHarvest(species1, ADULT_FEMALE, rhy2);
+        model().newHarvest(species1, ADULT_UNKNOWN_GENDER, rhy3);
+        model().newHarvest(species1, ADULT_MALE, rhy3);
 
         // Wrong RKA
-        model().newHarvest(species1, GameAge.ADULT, GameGender.MALE, rhy4);
-        model().newHarvest(species1, GameAge.ADULT, GameGender.MALE, rhy5);
-        model().newHarvest(species1, GameAge.ADULT, GameGender.MALE, rhy6);
+        model().newHarvest(species1, ADULT_MALE, rhy4);
+        model().newHarvest(species1, ADULT_MALE, rhy5);
+        model().newHarvest(species1, ADULT_MALE, rhy6);
 
         persistInNewTransaction();
 

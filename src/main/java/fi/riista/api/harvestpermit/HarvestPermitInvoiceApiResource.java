@@ -28,17 +28,17 @@ public class HarvestPermitInvoiceApiResource {
     @Resource
     private PermitInvoicePaymentFeature invoicePaymentFeature;
 
-    @GetMapping(value = "/due", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/due", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<PermitInvoiceListDTO> listDueByPermit(final @PathVariable long permitId, final Locale locale) {
         return invoiceListFeature.listDueByPermit(permitId, locale);
     }
 
-    @GetMapping(value = "/paid", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/paid", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<PermitInvoiceListDTO> listPaidByPermit(final @PathVariable long permitId, final Locale locale) {
         return invoiceListFeature.listPaidByPermit(permitId, locale);
     }
 
-    @GetMapping(value = "/{invoiceId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{invoiceId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public PermitInvoiceListDTO getInvoice(final @PathVariable long permitId,
                                            final @PathVariable long invoiceId,
                                            final Locale locale) {
@@ -52,7 +52,7 @@ public class HarvestPermitInvoiceApiResource {
         return invoiceListFeature.getPaymentReceiptPdfFile(permitId, invoiceId);
     }
 
-    @PostMapping(value = "/{invoiceId:\\d+}/payment", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/{invoiceId:\\d+}/payment", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, String> getPaymentForm(final @PathVariable long permitId, final @PathVariable long invoiceId) {
         return invoicePaymentFeature.getPaymentForm(permitId, invoiceId);
     }

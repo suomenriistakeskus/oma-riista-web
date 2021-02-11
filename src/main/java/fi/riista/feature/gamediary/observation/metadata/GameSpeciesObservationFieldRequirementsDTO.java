@@ -5,6 +5,9 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import fi.riista.feature.common.entity.Required;
+import fi.riista.feature.common.entity.RequiredWithinDeerPilot;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
+import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.feature.gamediary.observation.specimen.GameMarking;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps;
@@ -26,7 +29,12 @@ public class GameSpeciesObservationFieldRequirementsDTO {
 
     public static class ContextSensitiveFieldSetDTO implements Comparable<ContextSensitiveFieldSetDTO> {
 
-        private final boolean withinMooseHunting;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private final Boolean withinMooseHunting;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private final ObservationCategory category;
+
         private final ObservationType type;
 
         private final Map<String, Enum<?>> baseFields;
@@ -44,8 +52,17 @@ public class GameSpeciesObservationFieldRequirementsDTO {
         public ContextSensitiveFieldSetDTO(@Nonnull final ObservationContextSensitiveFields ctxFields,
                                            final boolean omitNullValueRequirements) {
 
-            this.withinMooseHunting = ctxFields.isWithinMooseHunting();
             this.type = ctxFields.getObservationType();
+
+            if (ObservationSpecVersion.fromIntValue(ctxFields.getMetadataVersion()).supportsCategory()) {
+                // Within deer hunting observations are supported => use category
+                this.withinMooseHunting = null;
+                this.category = ctxFields.getObservationCategory();
+            } else {
+                // Within deer hunting observations are *not* supported => use withinMooseHunting
+                this.withinMooseHunting = ctxFields.isWithinMooseHunting();
+                this.category = null;
+            }
 
             final Predicate<Required> staticTest = required -> !omitNullValueRequirements || required != Required.NO;
 
@@ -88,8 +105,12 @@ public class GameSpeciesObservationFieldRequirementsDTO {
 
         // Accessors/mutators -->
 
-        public boolean isWithinMooseHunting() {
+        public Boolean isWithinMooseHunting() {
             return withinMooseHunting;
+        }
+
+        public ObservationCategory getCategory() {
+            return category;
         }
 
         public ObservationType getType() {
@@ -127,7 +148,7 @@ public class GameSpeciesObservationFieldRequirementsDTO {
 
     private final int gameSpeciesCode;
 
-    private final Map<String, Required> baseFields;
+    private final Map<String, RequiredWithinDeerPilot> baseFields;
     private final Map<String, Required> specimenFields = Collections.emptyMap(); // currently empty
 
     private final List<ContextSensitiveFieldSetDTO> contextSensitiveFieldSets;
@@ -154,10 +175,20 @@ public class GameSpeciesObservationFieldRequirementsDTO {
         this.gameSpeciesCode = Objects.requireNonNull(baseFields.getSpecies(), "species is null").getOfficialCode();
 
         final Required withinMooseHuntingReq = baseFields.getWithinMooseHunting();
+        final RequiredWithinDeerPilot withinDeerHuntingReq = baseFields.getWithinDeerHunting();
+        final ImmutableMap.Builder<String, RequiredWithinDeerPilot> baseFieldBuilder = ImmutableMap.builder();
 
-        this.baseFields = omitNullValueRequirements && withinMooseHuntingReq == Required.NO
-                ? Collections.emptyMap()
-                : ImmutableMap.of(ObservationFieldRequirements.FIELD_WITHIN_MOOSE_HUNTING, withinMooseHuntingReq);
+        if (!omitNullValueRequirements || withinMooseHuntingReq != Required.NO) {
+            baseFieldBuilder.put(
+                    ObservationFieldRequirements.FIELD_WITHIN_MOOSE_HUNTING,
+                    RequiredWithinDeerPilot.from(withinMooseHuntingReq));
+        }
+
+        if (!omitNullValueRequirements || withinDeerHuntingReq != RequiredWithinDeerPilot.NO) {
+            baseFieldBuilder.put(ObservationFieldRequirements.FIELD_WITHIN_DEER_HUNTING, withinDeerHuntingReq);
+        }
+
+        this.baseFields = baseFieldBuilder.build();
 
         this.contextSensitiveFieldSets = ctxFieldsets.stream()
                 .map(ctxFields -> new ContextSensitiveFieldSetDTO(ctxFields, omitNullValueRequirements))
@@ -187,7 +218,7 @@ public class GameSpeciesObservationFieldRequirementsDTO {
         return gameSpeciesCode;
     }
 
-    public Map<String, Required> getBaseFields() {
+    public Map<String, RequiredWithinDeerPilot> getBaseFields() {
         return baseFields;
     }
 

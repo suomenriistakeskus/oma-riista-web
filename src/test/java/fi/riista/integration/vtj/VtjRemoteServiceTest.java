@@ -1,5 +1,6 @@
 package fi.riista.integration.vtj;
 
+import fi.riista.config.VtjRemoteServiceTestContext;
 import fi.riista.util.JCEUtil;
 import fi.vrk.xml.schema.vtjkysely.VTJHenkiloVastaussanoma;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -22,7 +23,7 @@ import static org.junit.Assert.fail;
 
 @Ignore("If you want to run these, remove ignore and add correct username and password in your properties")
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = VtjRemoteServiceTestContext.class)
 public class VtjRemoteServiceTest {
     private static final String END_USER = "omariista_integration_test";
 

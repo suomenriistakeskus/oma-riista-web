@@ -11,15 +11,15 @@
 
 <table class="table table-bordered table-striped">
     <tr>
-        <td class="col-sm-6">Luvansaajia</td>
+        <td class="col-sm-6" translate="reporting.dashboard.mhPermitsTab.permitHolders"></td>
         <td class="col-sm-6" ng-bind="::$ctrl.metrics.hunterCount"></td>
     </tr>
     <tr ng-if="$ctrl.metrics.invalidPeriodPermitCount > 0">
-        <td class="col-sm-6">Lupia joista puuttuu lupa-aika</td>
+        <td class="col-sm-6" translate="reporting.dashboard.mhPermitsTab.invalidPeriod"></td>
         <td class="col-sm-6" ng-bind="::$ctrl.metrics.invalidPeriodPermitCount"></td>
     </tr>
     <tr ng-if="$ctrl.metrics.swedishTypeMissingPermitCount > 0">
-        <td class="col-sm-6">Lupia joista puuttuu ruotsinkielinen lupatyyppi</td>
+        <td class="col-sm-6" translate="reporting.dashboard.mhPermitsTab.swedishMissing"></td>
         <td class="col-sm-6" ng-bind="::$ctrl.metrics.swedishTypeMissingPermitCount"></td>
     </tr>
 </table>

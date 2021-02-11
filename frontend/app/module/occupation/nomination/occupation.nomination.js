@@ -103,7 +103,7 @@
         };
 
         function searchParamsToRequestData(params, defaultPageSize) {
-            var commonSearchParams = ['occupationType', 'rhyCode', 'ssn', 'hunterNumber', 'beginDate', 'endDate'];
+            var commonSearchParams = ['occupationType', 'areaCode', 'rhyCode', 'ssn', 'hunterNumber', 'beginDate', 'endDate'];
 
             var isTrainingSearch = params.nominationStatus === 'KOULUTUS';
             var data = _.pick(params, commonSearchParams.concat(isTrainingSearch
@@ -121,7 +121,7 @@
             var showAll = params.nominationStatus === 'EHDOLLA' || params.nominationStatus === 'ESITETTY';
             var requestData = searchParamsToRequestData(params, showAll ? 2000 : 50);
 
-            if (params.nominationStatus !== 'KOULUTUS' && !params.rhyCode) {
+            if (params.nominationStatus !== 'KOULUTUS' && (!params.rhyCode && !params.areaCode)) {
                 return $q.when({content: []});
             }
 

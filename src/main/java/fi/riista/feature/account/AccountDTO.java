@@ -10,7 +10,7 @@ import fi.riista.feature.organization.address.AddressSource;
 import fi.riista.util.Patterns;
 import fi.riista.validation.DoNotValidate;
 import fi.riista.validation.FinnishHunterNumber;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -132,6 +132,8 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     private boolean enableSrva;
     private boolean enableShootingTests;
+
+    private boolean deerPilotUser;
 
     @Override
     public Long getId() {
@@ -487,5 +489,13 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     public void setPrivileges(final Set<SystemUserPrivilege> privileges) {
         this.privileges = privileges;
+    }
+
+    public boolean isDeerPilotUser() {
+        return deerPilotUser;
+    }
+
+    public void setDeerPilotUser(final boolean deerPilotUser) {
+        this.deerPilotUser = deerPilotUser;
     }
 }

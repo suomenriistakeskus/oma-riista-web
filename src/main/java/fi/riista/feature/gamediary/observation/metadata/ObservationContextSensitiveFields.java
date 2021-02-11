@@ -4,11 +4,12 @@ import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.Required;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpecies_;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
+import fi.riista.feature.gamediary.observation.ObservationCategoryConverter;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.feature.gamediary.observation.specimen.GameMarking;
 import fi.riista.feature.gamediary.observation.specimen.ObservedGameAge;
 import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
-import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.CriteriaUtils;
 import org.hibernate.annotations.OptimisticLock;
 import org.joda.time.DateTime;
@@ -16,6 +17,7 @@ import org.joda.time.DateTime;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -54,10 +56,12 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     private GameSpecies species;
 
     /**
-     * Ilmaisee, onko havaintokonteksti sidottu hirvenmetsästykseen.
+     * Ilmaisee, onko havaintokonteksti sidottu metsästykseen.
      */
-    @Column(nullable = false)
-    private boolean withinMooseHunting;
+    @NotNull
+    @Column(nullable = false, length = 1)
+    @Convert(converter = ObservationCategoryConverter.class)
+    private ObservationCategory observationCategory;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -240,30 +244,33 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
     @Column(nullable = false)
     private Required mooselikeUnknownSpecimenAmount = NO;
 
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private DynamicObservationFieldPresence deerHuntingType = DynamicObservationFieldPresence.NO;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private DynamicObservationFieldPresence deerHuntingTypeDescription = DynamicObservationFieldPresence.NO;
+
     // Public default constructor needed for tests.
     public ObservationContextSensitiveFields() {
     }
 
     public ObservationContextSensitiveFields(final GameSpecies species,
-                                             final boolean withinMooseHunting,
-                                             final ObservationType observationType,
-                                             final int metadataVersion) {
-
-        this(species, withinMooseHunting, observationType, metadataVersion, DateUtil.now());
-    }
-
-    public ObservationContextSensitiveFields(final GameSpecies species,
-                                             final boolean withinMooseHunting,
+                                             final ObservationCategory observationCategory,
                                              final ObservationType observationType,
                                              final int metadataVersion,
                                              final DateTime creationTime) {
 
         setSpecies(species);
-        this.withinMooseHunting = withinMooseHunting;
         this.observationType = observationType;
+        this.observationCategory = observationCategory;
         this.metadataVersion = metadataVersion;
         this.creationTime = creationTime;
         this.modificationTime = creationTime;
+
     }
 
     @AssertTrue
@@ -401,6 +408,10 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
         that.lengthOfPaw = this.lengthOfPaw;
     }
 
+    public boolean isWithinMooseHunting() {
+        return this.observationCategory == ObservationCategory.MOOSE_HUNTING;
+    }
+
     // Accessors -->
 
     @Id
@@ -435,12 +446,12 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
         this.species = species;
     }
 
-    public boolean isWithinMooseHunting() {
-        return withinMooseHunting;
+    public ObservationCategory getObservationCategory() {
+        return this.observationCategory;
     }
 
-    public void setWithinMooseHunting(final boolean withinMooseHunting) {
-        this.withinMooseHunting = withinMooseHunting;
+    public void setObservationCategory(final ObservationCategory category) {
+        this.observationCategory = category;
     }
 
     public ObservationType getObservationType() {
@@ -655,4 +666,19 @@ public class ObservationContextSensitiveFields extends BaseEntity<Long> {
         this.mooselikeUnknownSpecimenAmount = mooselikeUnknownSpecimenAmount;
     }
 
+    public DynamicObservationFieldPresence getDeerHuntingType() {
+        return deerHuntingType;
+    }
+
+    public void setDeerHuntingType(DynamicObservationFieldPresence deerHuntingType) {
+        this.deerHuntingType = deerHuntingType;
+    }
+
+    public DynamicObservationFieldPresence getDeerHuntingTypeDescription() {
+        return deerHuntingTypeDescription;
+    }
+
+    public void setDeerHuntingTypeDescription(DynamicObservationFieldPresence deerHuntingTypeDescription) {
+        this.deerHuntingTypeDescription = deerHuntingTypeDescription;
+    }
 }

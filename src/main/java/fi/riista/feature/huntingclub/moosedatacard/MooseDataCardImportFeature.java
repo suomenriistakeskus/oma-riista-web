@@ -2,14 +2,14 @@ package fi.riista.feature.huntingclub.moosedatacard;
 
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gamediary.GameDiaryEntry_;
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.harvest.Harvest;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen_;
-import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen_;
-import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenRepository;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen_;
+import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenRepository;
+import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen_;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup_;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
@@ -35,9 +35,10 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static fi.riista.util.DateUtil.huntingYear;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.inCollection;
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.springframework.data.jpa.domain.Specification.where;
 
 @Service
 public class MooseDataCardImportFeature {
@@ -52,9 +53,6 @@ public class MooseDataCardImportFeature {
 
     @Resource
     private RequireEntityService requireEntityService;
-
-    @Resource
-    private MooseDataCardImportRepository importRepo;
 
     @Resource
     private GroupHuntingDayRepository huntingDayRepo;
@@ -90,7 +88,12 @@ public class MooseDataCardImportFeature {
 
     private List<String> importMooseDataCard(@Nonnull final MultipartFile xmlFile, @Nonnull final MultipartFile pdfFile)
             throws MooseDataCardImportException {
-        
+
+        if (huntingYear() >= 2020) {
+            // OR-5337: Feature is currently disabled
+            throw new UnsupportedOperationException("Not supported from hunting year 2020 onwards");
+        }
+
         /*
          * Import process is split into two phases: validation and data persistence. Validation is
          * done first in a read-only transaction and, if passed, the parsed moose data card and

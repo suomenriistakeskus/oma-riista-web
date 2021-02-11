@@ -14,7 +14,7 @@ import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.util.LocalisedString;
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 import org.springframework.util.StringUtils;

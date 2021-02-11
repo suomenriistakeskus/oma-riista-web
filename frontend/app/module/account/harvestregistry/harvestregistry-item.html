@@ -8,10 +8,10 @@
         <span class="text-capitalize text-title" ng-bind="::$ctrl.item.species | rI18nNameFilter"></span>
     </div>
     <div class="col-xs-3 form-control-static text-muted">
-        <span ng-bind="::($ctrl.item.pointOfTime | date: 'd.M.yyyy')"></span>
+        <span ng-bind="::($ctrl.item.date | date: 'd.M.yyyy')"></span>
     </div>
     <div class="col-xs-2 form-control-static text-muted">
-        <span ng-bind="::($ctrl.item.pointOfTime | date: 'HH.mm')"></span>
+        <span ng-if="$ctrl.item.time" ng-bind="::($ctrl.item.time)"></span>
     </div>
     <div class="col-xs-1 text-right">
         <a ng-if="$ctrl.collapsed" class="fa fa-fw  text-primary fa-2x fa-chevron-right "
@@ -66,9 +66,9 @@
                 </div>
 
                 <div class="col-xs-4" ng-if="::$ctrl.item.municipality">
-                    <h5 translate="harvestRegistry.item.municipality | rI18nNameFilter"></h5>
+                    <h5 translate="harvestRegistry.item.municipality"></h5>
                     <label>
-                        <span ng-bind="::$ctrl.item.municipality"/>
+                        <span ng-bind="::$ctrl.item.municipality | rI18nNameFilter"/>
                     </label>
                 </div>
 

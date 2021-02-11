@@ -31,6 +31,7 @@ public class ListHarvestPermitDTO implements HasID<Long> {
 
         return new ListHarvestPermitDTO(
                 permit.getId(),
+                permit.getPermitTypeCode(),
                 permit.getPermitType(),
                 permit.getPermitNumber(),
                 speciesAmounts,
@@ -39,12 +40,14 @@ public class ListHarvestPermitDTO implements HasID<Long> {
     }
 
     private ListHarvestPermitDTO(final @Nonnull Long id,
+                                 final @Nonnull String permitTypeCode,
                                  final @Nonnull String permitType,
                                  final @Nonnull String permitNumber,
                                  final @Nonnull List<HarvestPermitSpeciesAmountDTO> speciesAmounts,
                                  final @Nonnull List<HarvestPermitContactPersonDTO> contactPersons,
                                  final HarvestReportState harvestReportState) {
         this.id = requireNonNull(id);
+        this.permitTypeCode = permitTypeCode;
         this.permitType = requireNonNull(permitType);
         this.permitNumber = requireNonNull(permitNumber);
         this.speciesAmounts = requireNonNull(speciesAmounts);
@@ -53,6 +56,7 @@ public class ListHarvestPermitDTO implements HasID<Long> {
     }
 
     private final Long id;
+    private final String permitTypeCode;
     private final String permitType;
     private final String permitNumber;
     private final HarvestReportState harvestReportState;
@@ -62,6 +66,10 @@ public class ListHarvestPermitDTO implements HasID<Long> {
     @Override
     public Long getId() {
         return id;
+    }
+
+    public String getPermitTypeCode() {
+        return permitTypeCode;
     }
 
     public String getPermitType() {

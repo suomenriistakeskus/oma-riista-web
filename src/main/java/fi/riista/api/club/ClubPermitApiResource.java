@@ -33,7 +33,7 @@ public class ClubPermitApiResource {
     private MoosePermitTodoFeature moosePermitTodoFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/huntingyears", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/huntingyears", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MooselikeHuntingYearDTO> listHuntingYears(@PathVariable long clubId) {
         return harvestPermitListFeature.listClubPermitHuntingYears(clubId);
     }
@@ -47,7 +47,7 @@ public class ClubPermitApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{permitId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{permitId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public HuntingClubPermitDTO get(@PathVariable long clubId,
                                     @PathVariable long permitId,
                                     @RequestParam int species) {
@@ -55,7 +55,7 @@ public class ClubPermitApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/todo", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/todo", produces = MediaType.APPLICATION_JSON_VALUE)
     public MoosePermitTodoDTO listMoosePermitTodosForClub(@PathVariable long clubId,
                                                           @RequestParam int year) {
         return moosePermitTodoFeature.listTodosForClub(clubId, year);

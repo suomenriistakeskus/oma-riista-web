@@ -8,19 +8,19 @@ import static java.math.BigDecimal.ZERO;
 
 public interface SubsidyCompensationNeed {
 
-    BigDecimal countDifferenceOfTotalCalculatedSubsidyToLowerLimit();
+    BigDecimal countDifferenceOfCalculatedSubsidyToLowerLimit();
 
-    BigDecimal getCalculatedSubsidyForSecondBatch();
+    BigDecimal getCalculatedSubsidy();
 
     default boolean isExactlyAtLowerLimit() {
-        return countDifferenceOfTotalCalculatedSubsidyToLowerLimit().compareTo(ZERO) == 0;
+        return countDifferenceOfCalculatedSubsidyToLowerLimit().compareTo(ZERO) == 0;
     }
 
     // Returns zero if there is no need for compensation.
     default BigDecimal countAmountOfCompensationNeed() {
         return ZERO_MONETARY_AMOUNT
-                .min(countDifferenceOfTotalCalculatedSubsidyToLowerLimit())
-                .min(getCalculatedSubsidyForSecondBatch())
+                .min(countDifferenceOfCalculatedSubsidyToLowerLimit())
+                .min(getCalculatedSubsidy())
                 .negate();
     }
 

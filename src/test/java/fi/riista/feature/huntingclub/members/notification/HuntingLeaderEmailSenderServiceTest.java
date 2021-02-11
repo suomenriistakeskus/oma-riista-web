@@ -182,7 +182,7 @@ public class HuntingLeaderEmailSenderServiceTest extends EmbeddedDatabaseTest {
             assertEquals(expected.getCallOrder(), actual.getOrder());
             assertEquals(expected.getPerson().getFullName(), actual.getName());
             assertEquals(expected.getPerson().getHunterNumber(), actual.getHunterNumber());
-            assertEquals(LeaderEmailDTO.DATE_FORMAT.print(expected.getModificationTime().getTime()), actual.getDate());
+            assertEquals(LeaderEmailDTO.DATE_FORMAT.print(expected.getModificationTime()), actual.getDate());
             assertEquals(expected.getModificationTime(), actual.getDateForTests());
         }
     }

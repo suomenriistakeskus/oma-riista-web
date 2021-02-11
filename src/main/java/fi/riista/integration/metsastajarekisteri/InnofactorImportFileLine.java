@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 import fi.riista.integration.metsastajarekisteri.person.DeletionCode;
 import fi.riista.validation.FinnishHunterNumber;
 import fi.riista.validation.FinnishSocialSecurityNumber;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.joda.time.LocalDate;
 

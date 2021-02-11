@@ -37,7 +37,7 @@ public class GISLookupApiResource {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("NONE"));
     }
 
-    @RequestMapping(value = "/rhy", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/rhy", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getRhyForCoordinates(@RequestParam double latitude, @RequestParam double longitude) {
         final GISPoint gisPoint = GISPoint.create(latitude, longitude);
         final OrganisationNameDTO rhyWithName = coordinateRhyLookupFeature.findByGeoLocation(gisPoint);
@@ -48,7 +48,7 @@ public class GISLookupApiResource {
         return ResponseEntity.notFound().build();
     }
 
-    @RequestMapping(value = "/municipality", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/municipality", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getMunicipalityForCoordinates(@RequestParam int latitude, @RequestParam int longitude) {
         final OrganisationNameDTO municipality = coordinateMunicipalityLookupFeature.findByGeoLocation(new GeoLocation(latitude, longitude));
 

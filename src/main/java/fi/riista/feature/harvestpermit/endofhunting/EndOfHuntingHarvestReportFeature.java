@@ -1,22 +1,20 @@
 package fi.riista.feature.harvestpermit.endofhunting;
 
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.common.CommitHookService;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitAuthorization;
 import fi.riista.feature.harvestpermit.report.HarvestReportModeratorService;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
-import fi.riista.feature.harvestpermit.report.email.HarvestReportNotificationService;
 import fi.riista.feature.harvestpermit.statistics.HarvestPermitUsageDTO;
-import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DtoUtil;
-import org.joda.time.DateTime;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 public class EndOfHuntingHarvestReportFeature {
@@ -36,16 +33,16 @@ public class EndOfHuntingHarvestReportFeature {
     private RequireEntityService requireEntityService;
 
     @Resource
-    private CommitHookService commitHookService;
+    private HarvestReportModeratorService harvestReportModeratorService;
 
     @Resource
-    private HarvestReportNotificationService harvestReportNotificationService;
+    private DeerPilotService deerPilotService;
 
     @Resource
     private HarvestDTOTransformer harvestDTOTransformer;
 
     @Resource
-    private HarvestReportModeratorService harvestReportModeratorService;
+    private EndOfHuntingReportCreateService endOfHuntingReportCreateService;
 
     @Transactional(readOnly = true)
     public EndOfHuntingHarvestReportDTO getEndOfHuntingReport(final long permitId) {
@@ -61,9 +58,14 @@ public class EndOfHuntingHarvestReportFeature {
         final SystemUser activeUser = activeUserService.requireActiveUser();
         final List<Harvest> acceptedHarvests = harvestPermit.getAcceptedHarvestForEndOfHuntingReport();
 
-        final List<HarvestDTO> harvestDTOs = harvestDTOTransformer.apply(acceptedHarvests);
-        final List<HarvestPermitUsageDTO> usage = HarvestPermitUsageDTO.createUsage(
-                harvestPermit.getSpeciesAmounts(), acceptedHarvests);
+        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED
+                // TODO Remove this when deer pilot 2020 is over.
+                .revertIfNotOnDeerPilot(deerPilotService.isPilotPermit(harvestPermit.getId()));
+
+        final List<HarvestDTO> harvestDTOs = harvestDTOTransformer.apply(acceptedHarvests, specVersion);
+
+        final List<HarvestPermitUsageDTO> usage =
+                HarvestPermitUsageDTO.createUsage(harvestPermit.getSpeciesAmounts(), acceptedHarvests);
 
         return new EndOfHuntingHarvestReportDTO(harvestPermit, activeUser, usage, harvestDTOs);
     }
@@ -79,52 +81,9 @@ public class EndOfHuntingHarvestReportFeature {
         final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(permitId,
                 HarvestPermitAuthorization.Permission.CREATE_REMOVE_HARVEST_REPORT);
 
-        if (harvestPermit.isMooselikePermitType() || harvestPermit.isAmendmentPermit()) {
-            throw new IllegalStateException("Can not crete report to permit which type is " + harvestPermit.getPermitTypeCode());
-        }
-
-        if (harvestPermit.isHarvestReportDone()) {
-            throw new IllegalStateException("Harvest report already done for permit");
-        }
-
-        if (harvestPermit.hasHarvestProposedToPermit()) {
-            throw new IllegalStateException("Can not create report to permit which has proposed harvests.");
-        }
-
-        final SystemUser activeUser = activeUserService.requireActiveUser();
-
-        if (endOfHuntingReportComments != null && !activeUser.isModeratorOrAdmin()) {
-            throw new IllegalArgumentException("Only moderators can add comments");
-        }
-
-        if (activeUser.isModeratorOrAdmin()) {
-            harvestReportModeratorService.approvePermitHarvestReportsInBulk(activeUser, harvestPermit);
-        }
-
-        harvestPermit.setHarvestReportDate(DateTime.now());
-        harvestPermit.setHarvestReportState(activeUser.isModeratorOrAdmin()
-                ? HarvestReportState.APPROVED
-                : HarvestReportState.SENT_FOR_APPROVAL);
-        harvestPermit.setHarvestReportAuthor(getEndOfHuntingReportAuthor(activeUser, harvestPermit));
-        harvestPermit.setHarvestReportModeratorOverride(activeUser.isModeratorOrAdmin());
-        if (endOfHuntingReportComments != null) {
-            harvestPermit.setEndOfHuntingReportComments(endOfHuntingReportComments.getEndOfHuntingReportComments());
-        }
-
-        commitHookService.runInTransactionAfterCommit(() -> {
-            harvestReportNotificationService.sendNotificationForPermit(harvestPermit.getId());
-        });
+        endOfHuntingReportCreateService.createEndOfHuntingReport(harvestPermit, endOfHuntingReportComments);
 
         return getEndOfHuntingReport(harvestPermit);
-    }
-
-    @Nonnull
-    private static Person getEndOfHuntingReportAuthor(final SystemUser activeUser, final HarvestPermit permit) {
-        if (activeUser.isModeratorOrAdmin()) {
-            return permit.getOriginalContactPerson();
-        } else {
-            return Objects.requireNonNull(activeUser.getPerson(), "active person is missing");
-        }
     }
 
     @Transactional

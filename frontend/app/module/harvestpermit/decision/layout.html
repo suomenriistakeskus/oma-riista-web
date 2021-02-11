@@ -2,35 +2,42 @@
     <li class="">
         <a ui-sref="jht.applications">
             <span class="fa fa-fw fa-arrow-left"></span>
-            <span translate="harvestpermit.decision.menu.back"></span>
+            <span translate="decision.menu.back"></span>
         </a>
     </li>
 
     <li active-if-state-includes="jht.decision.application">
         <a ui-sref="jht.decision.application.overview">
             <span class="fa fa-fw fa-sticky-note"></span>
-            <span translate="harvestpermit.decision.menu.summary"></span>
+            <span translate="decision.menu.summary"></span>
         </a>
     </li>
 
     <li active-if-state-includes="jht.decision.area" ng-if="$ctrl.hasArea">
         <a ui-sref="jht.decision.area">
             <span class="fa fa-fw fa-map-marker"></span>
-            <span translate="harvestpermit.decision.menu.area"></span>
+            <span translate="decision.menu.area"></span>
+        </a>
+    </li>
+
+    <li active-if-state-includes="jht.decision.natura" ng-if="$ctrl.hasNatura">
+        <a ui-sref="jht.decision.natura">
+            <span class="fa fa-fw fa-map-marker"></span>
+            <span translate="decision.menu.natura"></span>
         </a>
     </li>
 
     <li active-if-state-includes="jht.decision.document">
         <a ui-sref="jht.decision.document.general">
             <span class="fa fa-fw fa-legal"></span>
-            <span translate="harvestpermit.decision.menu.decision"></span>
+            <span translate="decision.menu.decision"></span>
         </a>
     </li>
 
     <li active-if-state-includes="jht.decision.revisions">
         <a ui-sref="jht.decision.revisions">
             <span class="fa fa-fw fa-paper-plane"></span>
-            <span translate="harvestpermit.decision.menu.revision"></span>
+            <span translate="decision.menu.revision"></span>
         </a>
     </li>
 </ul>

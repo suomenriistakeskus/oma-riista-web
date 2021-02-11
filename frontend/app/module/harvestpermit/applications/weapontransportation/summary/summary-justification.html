@@ -1,0 +1,48 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th style="width: 20%" translate="harvestpermit.wizard.weaponTransportation.justification.vehicleTypeTitle"></th>
+        <th style="width: 60%"></th>
+        <th style="width: 20%" translate="harvestpermit.wizard.weaponTransportation.justification.vehicleRegisterNumber"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr  ng-repeat="vehicle in $ctrl.justification.vehicles track by $index">
+        <td translate="harvestpermit.wizard.weaponTransportation.justification.vehicleType.{{vehicle.type}}"></td>
+        <td ng-bind="vehicle.description"></td>
+        <td ng-bind="vehicle.registerNumber"></td>
+    </tr>
+    </tbody>
+</table>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th style="width: 20%" translate="harvestpermit.wizard.weaponTransportation.justification.weaponTypeTitle"></th>
+        <th style="width: 40%"></th>
+        <th style="width: 20%" translate="harvestpermit.wizard.weaponTransportation.justification.weaponAmount"></th>
+        <th style="width: 20%" translate="harvestpermit.wizard.weaponTransportation.justification.weaponCaliber"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="weaponInformation in $ctrl.justification.transportedWeapons track by $index">
+        <td translate="harvestpermit.wizard.weaponTransportation.justification.weaponType.{{weaponInformation.type}}"></td>
+        <td ng-bind="weaponInformation.description"></td>
+        <td ng-bind="weaponInformation.amount"></td>
+        <td ng-bind="weaponInformation.caliber"></td>
+    </tr>
+    </tbody>
+</table>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th translate="harvestpermit.wizard.weaponTransportation.justification.justification"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td ng-bind="$ctrl.justification.justification"></td>
+    </tr>
+    </tbody>
+</table>

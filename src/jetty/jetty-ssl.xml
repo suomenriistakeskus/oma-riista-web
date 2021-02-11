@@ -6,7 +6,7 @@
 <!-- This configuration must be used in conjunction with jetty.xml -->
 <!-- and either jetty-https.xml or jetty-spdy.xml (but not both)   -->
 <!-- ============================================================= -->
-<Configure id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
+<Configure id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
     <Set name="KeyStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.keystore" default="src/jetty/jetty.keystore"/></Set>
     <Set name="KeyStorePassword"><Property name="jetty.keystore.password" default="qwerty"/></Set>
     <Set name="KeyManagerPassword"><Property name="jetty.keymanager.password" default="qwerty"/></Set>
@@ -22,6 +22,36 @@
             <Item>SSL_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
             <Item>SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
             <Item>SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA</Item>
+            <Item>TLS_RSA_WITH_AES_256_CBC_SHA256</Item>
+            <Item>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA</Item>
+            <Item>TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA</Item>
+            <Item>TLS_RSA_WITH_AES_256_CBC_SHA</Item>
+            <Item>TLS_RSA_WITH_AES_256_CBC_SHA</Item>
+            <Item>TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA</Item>
+            <Item>TLS_ECDH_RSA_WITH_AES_256_CBC_SHA</Item>
+            <Item>TLS_DHE_RSA_WITH_AES_256_CBC_SHA</Item>
+            <Item>TLS_DHE_DSS_WITH_AES_256_CBC_SHA</Item>
+            <Item>TLS_RSA_WITH_AES_128_CBC_SHA256</Item>
+            <Item>TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA</Item>
+            <Item>TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA</Item>
+            <Item>TLS_RSA_WITH_AES_128_CBC_SHA</Item>
+            <Item>TLS_RSA_WITH_AES_128_CBC_SHA</Item>
+            <Item>TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA</Item>
+            <Item>TLS_ECDH_RSA_WITH_AES_128_CBC_SHA</Item>
+            <Item>TLS_DHE_RSA_WITH_AES_128_CBC_SHA</Item>
+            <Item>TLS_DHE_DSS_WITH_AES_128_CBC_SHA</Item>
+            <Item>TLS_RSA_WITH_AES_256_GCM_SHA384</Item>
+            <Item>TLS_RSA_WITH_AES_128_GCM_SHA256</Item>
+            <Item>TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA</Item>
+            <Item>TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+            <Item>SSL_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+            <Item>SSL_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+            <Item>TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA</Item>
+            <Item>TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+            <Item>SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+            <Item>SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA</Item>
+            <Item>SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA</Item>
+            <Item>SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA</Item>
         </Array>
     </Set>
 

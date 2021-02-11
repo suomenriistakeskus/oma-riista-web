@@ -93,10 +93,10 @@ public class HuntingLeaderEmailSenderService {
         final List<GroupEmailDTO> groups = getHuntingGroups(changedLeaders);
 
         final Set<Long> uniqueClubIds = groups.stream().map(GroupEmailDTO::getClubId).collect(toSet());
-        final Map<Long, HuntingClub> clubIndex = F.indexById(huntingClubRepository.findAll(uniqueClubIds));
+        final Map<Long, HuntingClub> clubIndex = F.indexById(huntingClubRepository.findAllById(uniqueClubIds));
 
         final Set<Long> uniqueRhyIds = groups.stream().map(GroupEmailDTO::getRhyId).collect(toSet());
-        final Map<Long, Riistanhoitoyhdistys> rhyIndex = F.indexById(rhyRepository.findAll(uniqueRhyIds));
+        final Map<Long, Riistanhoitoyhdistys> rhyIndex = F.indexById(rhyRepository.findAllById(uniqueRhyIds));
 
         final Map<HuntingClub, List<GroupEmailDTO>> groupsByClubId =
                 groups.stream().collect(groupingBy(dto -> clubIndex.get(dto.getClubId())));

@@ -13,7 +13,6 @@ public class HarvestPermitAreaFragmentRequestDTO {
     @NotNull
     private Integer fragmentSizeLimit;
 
-    @NotNull
     @Valid
     private GISWGS84Point location;
 

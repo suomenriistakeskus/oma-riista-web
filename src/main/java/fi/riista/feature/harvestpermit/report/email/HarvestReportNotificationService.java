@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -67,8 +68,10 @@ public class HarvestReportNotificationService {
         }
 
         final HarvestQuota harvestQuota = harvest.getHarvestQuota();
-        final Municipality municipality = StringUtils.isNotBlank(harvest.getMunicipalityCode())
-                ? municipalityRepository.findOne(harvest.getMunicipalityCode()) : null;
+        final Municipality municipality = Optional.ofNullable(harvest.getMunicipalityCode())
+                .flatMap(municipalityRepository::findById)
+                .orElse(null);
+
         mailService.send(new HarvestReportNotification(handlebars, messageSource)
                 .withHarvest(harvest)
                 .withRiistakeskuksenAlue(rka)
@@ -140,7 +143,7 @@ public class HarvestReportNotificationService {
         return result;
     }
 
-    private Organisation findRka(HarvestPermit harvestPermit) {
+    private static Organisation findRka(HarvestPermit harvestPermit) {
         Objects.requireNonNull(harvestPermit);
         return harvestPermit.getRhy().getClosestAncestorOfType(OrganisationType.RKA).orElse(null);
     }

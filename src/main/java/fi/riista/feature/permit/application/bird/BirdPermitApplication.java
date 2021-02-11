@@ -1,11 +1,14 @@
 package fi.riista.feature.permit.application.bird;
 
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.GameCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedArea;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethods;
+import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaInfo;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
+import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -24,7 +27,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class BirdPermitApplication extends LifecycleEntity<Long> {
+public class BirdPermitApplication extends LifecycleEntity<Long> implements DerogationPermitApplicationAreaInfo {
 
     public static final String ID_COLUMN_NAME = "bird_permit_application_id";
 
@@ -52,12 +55,16 @@ public class BirdPermitApplication extends LifecycleEntity<Long> {
 
     @Embedded
     @Valid
-    private BirdPermitApplicationForbiddenMethods forbiddenMethods;
+    private DerogationPermitApplicationForbiddenMethods forbiddenMethods;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Column(columnDefinition = "TEXT")
+    private String areaDescription;
 
     public static BirdPermitApplication create(HarvestPermitApplication application) {
         BirdPermitApplication birdApplication = new BirdPermitApplication();
         birdApplication.setHarvestPermitApplication(application);
-        birdApplication.setForbiddenMethods(new BirdPermitApplicationForbiddenMethods());
+        birdApplication.setForbiddenMethods(new DerogationPermitApplicationForbiddenMethods());
         birdApplication.setCause(new BirdPermitApplicationCause());
         birdApplication.setProtectedArea(new BirdPermitApplicationProtectedArea());
         return birdApplication;
@@ -109,11 +116,41 @@ public class BirdPermitApplication extends LifecycleEntity<Long> {
         this.cause = cause;
     }
 
-    public BirdPermitApplicationForbiddenMethods getForbiddenMethods() {
+    public DerogationPermitApplicationForbiddenMethods getForbiddenMethods() {
         return forbiddenMethods;
     }
 
-    public void setForbiddenMethods(BirdPermitApplicationForbiddenMethods forbiddenMethods) {
+    public void setForbiddenMethods(DerogationPermitApplicationForbiddenMethods forbiddenMethods) {
         this.forbiddenMethods = forbiddenMethods;
+    }
+
+    @Override
+    public Integer getAreaSize() {
+        return this.protectedArea.getProtectedAreaSize();
+    }
+
+    @Override
+    public void setAreaSize(final Integer size) {
+        this.protectedArea.setAreaSize(size);
+    }
+
+    @Override
+    public GeoLocation getGeoLocation() {
+        return this.protectedArea.getGeoLocation();
+    }
+
+    @Override
+    public void setGeoLocation(final GeoLocation geoLocation) {
+        this.protectedArea.setGeoLocation(geoLocation);
+    }
+
+    @Override
+    public String getAreaDescription() {
+        return this.areaDescription;
+    }
+
+    @Override
+    public void setAreaDescription(final String areaDescription) {
+        this.areaDescription = areaDescription;
     }
 }

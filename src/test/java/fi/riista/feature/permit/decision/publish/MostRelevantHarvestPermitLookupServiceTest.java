@@ -1,7 +1,7 @@
 package fi.riista.feature.permit.decision.publish;
 
 import com.google.common.collect.ImmutableSet;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import org.junit.Test;
 
 import static fi.riista.feature.permit.decision.publish.MostRelevantHarvestPermitLookupService.mostRelevantPermitNumber;
@@ -9,9 +9,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class MostRelevantHarvestPermitLookupServiceTest {
-    private final String p1 = PermitNumberUtil.createPermitNumber(2019, 1, 100);
-    private final String p2 = PermitNumberUtil.createPermitNumber(2020, 1, 100);
-    private final String p3 = PermitNumberUtil.createPermitNumber(2021, 1, 100);
+    private final String p1 = DocumentNumberUtil.createDocumentNumber(2019, 1, 100);
+    private final String p2 = DocumentNumberUtil.createDocumentNumber(2020, 1, 100);
+    private final String p3 = DocumentNumberUtil.createDocumentNumber(2021, 1, 100);
 
     @Test
     public void testLookupMostRelevant_emptySets() {

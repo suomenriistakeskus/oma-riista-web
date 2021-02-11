@@ -22,10 +22,6 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 @ComponentScan({"fi.riista.test", "fi.riista.util"})
 public class IntegrationTestApplicationContext {
 
-    static {
-        LiquibaseConfig.replaceLiquibaseServiceLocator();
-    }
-
     @Primary
     @Bean
     public PasswordEncoder passwordEncoder() {

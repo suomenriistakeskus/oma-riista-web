@@ -43,7 +43,8 @@ public enum CalendarEventType implements LocalisedEnum {
     AMPUMAKOULUTUS,
     JALJESTAJAKOULUTUS,
     MUU_TAPAHTUMA,
-    RHY_HALLITUKSEN_KOKOUS;
+    RHY_HALLITUKSEN_KOKOUS,
+    HIRVIELAINTEN_VEROTUSSUUNNITTELU;
 
     private static final ImmutableSet<CalendarEventType> JHT_TYPES = immutableEnumSet(
             AMPUMAKOE, JOUSIAMPUMAKOE, METSASTAJAKURSSI, METSASTAJATUTKINTO);
@@ -56,6 +57,15 @@ public enum CalendarEventType implements LocalisedEnum {
 
     private static final ImmutableSet<CalendarEventType> INACTIVE_CALENDAR_EVENTS =
             immutableEnumSet(KOULUTUSTILAISUUS, NUORISOTAPAHTUMA);
+
+    private static final ImmutableSet<CalendarEventType> REMOTE_EVENT_ALLOWED_TYPES =
+            immutableEnumSet(METSASTYKSENJOHTAJA_HIRVIELAIMET, METSASTYKSENJOHTAJA_SUURPEDOT,
+                    METSASTAJAKOULUTUS_HIRVIELAIMET, METSASTAJAKOULUTUS_SUURPEDOT, SRVAKOULUTUS,
+                    PETOYHDYSHENKILO_KOULUTUS, VAHINKOKOULUTUS, AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS,
+                    METSASTAJATUTKINNONVASTAANOTTAJA_KOULUTUS, RIISTAVAHINKOTARKASTAJA_KOULUTUS,
+                    METSASTYKSENVALVOJA_KOULUTUS, PIENPETOJEN_PYYNTI_KOULUTUS, RIISTALASKENTA_KOULUTUS,
+                    RIISTAKANTOJEN_HOITO_KOULUTUS, RIISTAN_ELINYMPARISTON_HOITO_KOULUTUS, MUU_RIISTANHOITOKOULUTUS,
+                    AMPUMAKOULUTUS, JALJESTAJAKOULUTUS);
 
     public static EnumSet<CalendarEventType> jhtTypes() {
         return EnumSet.copyOf(JHT_TYPES);
@@ -83,5 +93,9 @@ public enum CalendarEventType implements LocalisedEnum {
 
     public boolean isShootingTest() {
         return SHOOTING_TEST_TYPES.contains(this);
+    }
+
+    public boolean isRemoteEventAllowed() {
+        return REMOTE_EVENT_ALLOWED_TYPES.contains(this);
     }
 }

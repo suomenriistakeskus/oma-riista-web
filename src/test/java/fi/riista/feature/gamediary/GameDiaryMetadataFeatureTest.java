@@ -2,34 +2,38 @@ package fi.riista.feature.gamediary;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Municipality;
-import fi.riista.feature.common.entity.Required;
 import fi.riista.feature.gamediary.harvest.HarvestReportingType;
-import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsQuery;
-import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsQueryResponse;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestField;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsRequestDTO;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsResponseDTO;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestSpecimenField;
 import fi.riista.feature.gis.MockGISQueryService;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
-import fi.riista.feature.harvestpermit.season.HarvestQuota;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Resource;
 
-import static java.util.Collections.emptySet;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
+import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.CURRENTLY_SUPPORTED;
+import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest {
+public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     @Resource
-    private GameDiaryMetadataFeature gameDiaryMetadataFeature;
+    private GameDiaryMetadataFeature feature;
 
     @Test
-    public void testGetHarvestFields_InsideSeason() {
+    public void testGetRequiredHarvestFields_insideSeason() {
         final GameSpecies species = model().newGameSpecies();
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final Municipality municipality = model().newMunicipality();
@@ -38,230 +42,291 @@ public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest {
         final LocalDate seasonEnd = new LocalDate(2017, 12, 31);
         final HarvestSeason harvestSeason = model().newHarvestSeason(species, seasonBegin, seasonEnd, seasonEnd);
 
-        final RequiredHarvestFieldsQuery query = new RequiredHarvestFieldsQuery(
-                species.getOfficialCode(), seasonBegin, geoLocation, false);
+        onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
-        persistInNewTransaction();
+            final RequiredHarvestFieldsRequestDTO request =
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), seasonBegin, geoLocation, false, null);
 
-        final RequiredHarvestFieldsQueryResponse response = gameDiaryMetadataFeature.getHarvestFields(query);
+            final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
-        assertNotNull(response.getFields());
-        assertNotNull(response.getSeason());
-        assertNotNull(response.getRhy());
-        assertNotNull(response.getMunicipalityName());
-        assertNotNull(response.getPropertyIdentifier());
-        assertNull(response.getHarvestArea());
-        assertNull(response.getSeason().getSpecies());
+            assertNotNull(response.getFields());
+            assertNotNull(response.getSeason());
+            assertNotNull(response.getRhy());
+            assertNotNull(response.getMunicipalityName());
+            assertNotNull(response.getPropertyIdentifier());
+            assertNull(response.getHarvestArea());
+            assertNull(response.getSeason().getSpecies());
 
-        assertEquals(HarvestReportingType.SEASON, response.getReportingType());
-        assertEquals(Required.NO, response.getFields().getPermitNumber());
-        assertEquals(harvestSeason.getId(), response.getSeason().getId());
-        assertEquals(harvestSeason.getNameLocalisation().asMap(), response.getSeason().getName());
-        assertEquals(harvestSeason.getBeginDate(), response.getSeason().getBeginDate());
-        assertEquals(harvestSeason.getEndDate(), response.getSeason().getEndDate());
-        assertEquals(harvestSeason.getEndOfReportingDate(), response.getSeason().getEndOfReportingDate());
-        assertEquals(harvestSeason.getBeginDate2(), response.getSeason().getBeginDate2());
-        assertEquals(harvestSeason.getEndDate2(), response.getSeason().getEndDate2());
-        assertEquals(harvestSeason.getEndOfReportingDate2(), response.getSeason().getEndOfReportingDate2());
-        assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
-        assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
-        assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
-        assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
-        assertEquals(MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(), response.getPropertyIdentifier());
+            assertEquals(HarvestReportingType.SEASON, response.getReportingType());
+            assertEquals(RequiredHarvestField.NO, response.getFields().getReport().getPermitNumber());
+            assertEquals(harvestSeason.getId(), response.getSeason().getId());
+            assertEquals(harvestSeason.getNameLocalisation().asMap(), response.getSeason().getName());
+            assertEquals(harvestSeason.getBeginDate(), response.getSeason().getBeginDate());
+            assertEquals(harvestSeason.getEndDate(), response.getSeason().getEndDate());
+            assertEquals(harvestSeason.getEndOfReportingDate(), response.getSeason().getEndOfReportingDate());
+            assertEquals(harvestSeason.getBeginDate2(), response.getSeason().getBeginDate2());
+            assertEquals(harvestSeason.getEndDate2(), response.getSeason().getEndDate2());
+            assertEquals(harvestSeason.getEndOfReportingDate2(), response.getSeason().getEndOfReportingDate2());
+            assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
+            assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
+            assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
+            assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
+            assertEquals(
+                    MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(),
+                    response.getPropertyIdentifier());
+        });
     }
 
     @Test
-    public void testGetHarvestFields_InsideSeasonWithQuota() {
-        final GameSpecies species = model().newGameSpecies();
+    public void testGetRequiredHarvestFields_insideSeasonWithQuota() {
+        final GameSpecies species = model().newGameSpecies(OFFICIAL_CODE_BEAR);
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final Municipality municipality = model().newMunicipality();
         final GeoLocation geoLocation = new GeoLocation(1, 1);
         final LocalDate seasonBegin = new LocalDate(2017, 8, 1);
         final LocalDate seasonEnd = new LocalDate(2017, 12, 31);
         final HarvestSeason harvestSeason = model().newHarvestSeason(species, seasonBegin, seasonEnd, seasonEnd);
-        final HarvestArea harvestArea = model().newHarvestArea(rhy);
-        final HarvestQuota harvestQuota = model().newHarvestQuota(harvestSeason, harvestArea, 10);
+        final HarvestArea harvestArea = model().newHarvestAreaContaining(geoLocation);
+        model().newHarvestQuota(harvestSeason, harvestArea, 10);
 
-        final RequiredHarvestFieldsQuery query = new RequiredHarvestFieldsQuery(
-                species.getOfficialCode(), seasonBegin, geoLocation, false);
+        onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
-        persistInNewTransaction();
+            final RequiredHarvestFieldsRequestDTO request =
+                    new RequiredHarvestFieldsRequestDTO(
+                            species.getOfficialCode(), seasonBegin, geoLocation, false, null);
 
-        final RequiredHarvestFieldsQueryResponse response = gameDiaryMetadataFeature.getHarvestFields(query);
+            final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
-        assertNotNull(response.getFields());
-        assertNotNull(response.getSeason());
-        assertNotNull(response.getRhy());
-        assertNotNull(response.getMunicipalityName());
-        assertNotNull(response.getPropertyIdentifier());
-        assertNotNull(response.getHarvestArea());
-        assertNull(response.getSeason().getSpecies());
+            assertNotNull(response.getFields());
+            assertNotNull(response.getSeason());
+            assertNotNull(response.getRhy());
+            assertNotNull(response.getMunicipalityName());
+            assertNotNull(response.getPropertyIdentifier());
+            assertNotNull(response.getHarvestArea());
+            assertNull(response.getSeason().getSpecies());
 
-        assertEquals(HarvestReportingType.SEASON, response.getReportingType());
-        assertEquals(Required.NO, response.getFields().getPermitNumber());
-        assertEquals(harvestSeason.getId(), response.getSeason().getId());
-        assertEquals(harvestSeason.getNameLocalisation().asMap(), response.getSeason().getName());
-        assertEquals(harvestSeason.getBeginDate(), response.getSeason().getBeginDate());
-        assertEquals(harvestSeason.getEndDate(), response.getSeason().getEndDate());
-        assertEquals(harvestSeason.getEndOfReportingDate(), response.getSeason().getEndOfReportingDate());
-        assertEquals(harvestSeason.getBeginDate2(), response.getSeason().getBeginDate2());
-        assertEquals(harvestSeason.getEndDate2(), response.getSeason().getEndDate2());
-        assertEquals(harvestSeason.getEndOfReportingDate2(), response.getSeason().getEndOfReportingDate2());
-        assertEquals(harvestArea.getNameFinnish(), response.getHarvestArea().getNameFI());
-        assertEquals(harvestArea.getNameSwedish(), response.getHarvestArea().getNameSV());
-        assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
-        assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
-        assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
-        assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
-        assertEquals(MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(), response.getPropertyIdentifier());
+            assertEquals(HarvestReportingType.SEASON, response.getReportingType());
+            assertEquals(RequiredHarvestField.NO, response.getFields().getReport().getPermitNumber());
+            assertEquals(harvestSeason.getId(), response.getSeason().getId());
+            assertEquals(harvestSeason.getNameLocalisation().asMap(), response.getSeason().getName());
+            assertEquals(harvestSeason.getBeginDate(), response.getSeason().getBeginDate());
+            assertEquals(harvestSeason.getEndDate(), response.getSeason().getEndDate());
+            assertEquals(harvestSeason.getEndOfReportingDate(), response.getSeason().getEndOfReportingDate());
+            assertEquals(harvestSeason.getBeginDate2(), response.getSeason().getBeginDate2());
+            assertEquals(harvestSeason.getEndDate2(), response.getSeason().getEndDate2());
+            assertEquals(harvestSeason.getEndOfReportingDate2(), response.getSeason().getEndOfReportingDate2());
+            assertEquals(harvestArea.getNameFinnish(), response.getHarvestArea().getNameFI());
+            assertEquals(harvestArea.getNameSwedish(), response.getHarvestArea().getNameSV());
+            assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
+            assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
+            assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
+            assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
+            assertEquals(
+                    MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(),
+                    response.getPropertyIdentifier());
+        });
     }
 
     @Test
-    public void testGetHarvestFields_InsideSeasonWithQuota_QuotaNotFound() {
-        final GameSpecies species = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_BEAR);
+    public void testGetRequiredHarvestFields_insideSeasonWithQuota_quotaNotFound() {
+        final GameSpecies species = model().newGameSpecies(OFFICIAL_CODE_BEAR);
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final Municipality municipality = model().newMunicipality();
         final GeoLocation geoLocation = new GeoLocation(1, 1);
         final LocalDate seasonBegin = new LocalDate(2017, 8, 1);
         final LocalDate seasonEnd = new LocalDate(2017, 12, 31);
         final HarvestSeason harvestSeason = model().newHarvestSeason(species, seasonBegin, seasonEnd, seasonEnd);
+
         // Harvest area without RHY
-        final HarvestArea harvestArea = model().newHarvestArea(HarvestArea.HarvestAreaType.PORONHOITOALUE, "b", "b", emptySet());
-        final HarvestQuota harvestQuota = model().newHarvestQuota(harvestSeason, harvestArea, 10);
+        final HarvestArea harvestArea =
+                model().newHarvestArea(HarvestArea.HarvestAreaType.PORONHOITOALUE, "b", "b");
 
-        final RequiredHarvestFieldsQuery query = new RequiredHarvestFieldsQuery(
-                species.getOfficialCode(), seasonBegin, geoLocation, false);
+        model().newHarvestQuota(harvestSeason, harvestArea, 10);
 
-        persistInNewTransaction();
+        onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
-        final RequiredHarvestFieldsQueryResponse response = gameDiaryMetadataFeature.getHarvestFields(query);
+            final RequiredHarvestFieldsRequestDTO request =
+                    new RequiredHarvestFieldsRequestDTO(
+                            species.getOfficialCode(), seasonBegin, geoLocation, false, null);
 
-        assertNotNull(response.getFields());
-        assertNull(response.getSeason());
-        assertNotNull(response.getRhy());
-        assertNotNull(response.getMunicipalityName());
-        assertNotNull(response.getPropertyIdentifier());
-        assertNull(response.getHarvestArea());
+            final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
-        assertEquals(HarvestReportingType.PERMIT, response.getReportingType());
-        assertEquals(Required.YES, response.getFields().getPermitNumber());
-        assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
-        assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
-        assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
-        assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
-        assertEquals(MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(), response.getPropertyIdentifier());
+            assertNotNull(response.getFields());
+            assertNull(response.getSeason());
+            assertNotNull(response.getRhy());
+            assertNotNull(response.getMunicipalityName());
+            assertNotNull(response.getPropertyIdentifier());
+            assertNull(response.getHarvestArea());
+
+            assertEquals(HarvestReportingType.PERMIT, response.getReportingType());
+            assertEquals(RequiredHarvestField.YES, response.getFields().getReport().getPermitNumber());
+            assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
+            assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
+            assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
+            assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
+            assertEquals(
+                    MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(),
+                    response.getPropertyIdentifier());
+        });
     }
 
     @Test
-    public void testGetHarvestFields_WithPermit() {
+    public void testGetRequiredHarvestFields_withPermit() {
         final GameSpecies species = model().newGameSpecies();
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final Municipality municipality = model().newMunicipality();
         final GeoLocation geoLocation = new GeoLocation(1, 1);
 
-        final RequiredHarvestFieldsQuery query = new RequiredHarvestFieldsQuery(
-                species.getOfficialCode(), DateUtil.today(), geoLocation, true);
+        onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
-        persistInNewTransaction();
+            final RequiredHarvestFieldsRequestDTO request =
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, true, null);
 
-        final RequiredHarvestFieldsQueryResponse response = gameDiaryMetadataFeature.getHarvestFields(query);
+            final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
-        assertNotNull(response.getFields());
-        assertNull(response.getSeason());
-        assertNotNull(response.getRhy());
-        assertNotNull(response.getMunicipalityName());
-        assertNotNull(response.getPropertyIdentifier());
-        assertNull(response.getHarvestArea());
+            assertNotNull(response.getFields());
+            assertNull(response.getSeason());
+            assertNotNull(response.getRhy());
+            assertNotNull(response.getMunicipalityName());
+            assertNotNull(response.getPropertyIdentifier());
+            assertNull(response.getHarvestArea());
 
-        assertEquals(HarvestReportingType.PERMIT, response.getReportingType());
-        assertEquals(Required.YES, response.getFields().getPermitNumber());
-        assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
-        assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
-        assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
-        assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
-        assertEquals(MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(), response.getPropertyIdentifier());
+            assertEquals(HarvestReportingType.PERMIT, response.getReportingType());
+            assertEquals(RequiredHarvestField.YES, response.getFields().getReport().getPermitNumber());
+            assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
+            assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
+            assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
+            assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
+            assertEquals(
+                    MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(),
+                    response.getPropertyIdentifier());
+        });
     }
 
     @Test
-    public void testGetHarvestFields_SeasonNotFound_FreeHuntingAllowed() {
+    public void testGetRequiredHarvestFields_seasonNotFound_freeHuntingAllowed() {
         final GameSpecies species = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_MOOSE);
+        model().newRiistanhoitoyhdistys();
+        model().newMunicipality();
+        final GeoLocation geoLocation = new GeoLocation(1, 1);
+
+        onSavedAndAuthenticated(createUserWithPerson(), () -> {
+
+            final RequiredHarvestFieldsRequestDTO request =
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, false, null);
+
+            final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
+
+            assertNotNull(response.getFields());
+            assertNull(response.getSeason());
+            assertNull(response.getRhy());
+            assertNull(response.getMunicipalityName());
+            assertNull(response.getPropertyIdentifier());
+            assertNull(response.getHarvestArea());
+
+            assertEquals(HarvestReportingType.BASIC, response.getReportingType());
+            assertEquals(RequiredHarvestField.NO, response.getFields().getReport().getPermitNumber());
+        });
+    }
+
+    @Test
+    public void testGetRequiredHarvestFields_seasonNotFound_permitRequired() {
+        final GameSpecies species = model().newGameSpecies(OFFICIAL_CODE_BEAR);
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
         final Municipality municipality = model().newMunicipality();
         final GeoLocation geoLocation = new GeoLocation(1, 1);
 
-        final RequiredHarvestFieldsQuery query = new RequiredHarvestFieldsQuery(
-                species.getOfficialCode(), DateUtil.today(), geoLocation, false);
+        onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
-        persistInNewTransaction();
+            final RequiredHarvestFieldsRequestDTO request =
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, false, null);
 
-        final RequiredHarvestFieldsQueryResponse response = gameDiaryMetadataFeature.getHarvestFields(query);
+            final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
-        assertNotNull(response.getFields());
-        assertNull(response.getSeason());
-        assertNull(response.getRhy());
-        assertNull(response.getMunicipalityName());
-        assertNull(response.getPropertyIdentifier());
-        assertNull(response.getHarvestArea());
+            assertNotNull(response.getFields());
+            assertNull(response.getSeason());
+            assertNotNull(response.getRhy());
+            assertNotNull(response.getMunicipalityName());
+            assertNotNull(response.getPropertyIdentifier());
+            assertNull(response.getHarvestArea());
 
-        assertEquals(HarvestReportingType.BASIC, response.getReportingType());
-        assertEquals(Required.NO, response.getFields().getPermitNumber());
+            assertEquals(HarvestReportingType.PERMIT, response.getReportingType());
+            assertEquals(RequiredHarvestField.YES, response.getFields().getReport().getPermitNumber());
+            assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
+            assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
+            assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
+            assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
+            assertEquals(
+                    MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(),
+                    response.getPropertyIdentifier());
+        });
     }
 
     @Test
-    public void testGetHarvestFields_SeasonNotFound_PermitRequired() {
-        final GameSpecies species = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_BEAR);
-        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
-        final Municipality municipality = model().newMunicipality();
-        final GeoLocation geoLocation = new GeoLocation(1, 1);
-
-        final RequiredHarvestFieldsQuery query = new RequiredHarvestFieldsQuery(
-                species.getOfficialCode(), DateUtil.today(), geoLocation, false);
-
-        persistInNewTransaction();
-
-        final RequiredHarvestFieldsQueryResponse response = gameDiaryMetadataFeature.getHarvestFields(query);
-
-        assertNotNull(response.getFields());
-        assertNull(response.getSeason());
-        assertNotNull(response.getRhy());
-        assertNotNull(response.getMunicipalityName());
-        assertNotNull(response.getPropertyIdentifier());
-        assertNull(response.getHarvestArea());
-
-        assertEquals(HarvestReportingType.PERMIT, response.getReportingType());
-        assertEquals(Required.YES, response.getFields().getPermitNumber());
-        assertEquals(rhy.getOfficialCode(), response.getRhy().getOfficialCode());
-        assertEquals(rhy.getNameFinnish(), response.getRhy().getNameFI());
-        assertEquals(rhy.getNameSwedish(), response.getRhy().getNameSV());
-        assertEquals(municipality.getNameLocalisation().asMap(), response.getMunicipalityName());
-        assertEquals(MockGISQueryService.PROPERTY_QUERY_RESULT.getPropertyIdentifier(), response.getPropertyIdentifier());
-    }
-
-    @Test
-    public void testGetHarvestFields_RhyNotFound() {
+    public void testGetRequiredHarvestFields_rhyNotFound() {
         final GameSpecies species = model().newGameSpecies();
         final GeoLocation geoLocation = MockGISQueryService.RHY_GEOLOCATION_NOT_FOUND;
 
-        final RequiredHarvestFieldsQuery query = new RequiredHarvestFieldsQuery(
-                species.getOfficialCode(), DateUtil.today(), geoLocation, false);
+        onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
-        persistInNewTransaction();
+            final RequiredHarvestFieldsRequestDTO request =
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, false, null);
 
-        final RequiredHarvestFieldsQueryResponse response = gameDiaryMetadataFeature.getHarvestFields(query);
+            final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
-        assertNotNull(response.getFields());
-        assertNull(response.getSeason());
-        assertNull(response.getRhy());
-        assertNull(response.getMunicipalityName());
-        assertNull(response.getPropertyIdentifier());
-        assertNull(response.getHarvestArea());
+            assertNotNull(response.getFields());
+            assertNull(response.getSeason());
+            assertNull(response.getRhy());
+            assertNull(response.getMunicipalityName());
+            assertNull(response.getPropertyIdentifier());
+            assertNull(response.getHarvestArea());
 
-        assertEquals(HarvestReportingType.BASIC, response.getReportingType());
-        assertEquals(Required.NO, response.getFields().getPermitNumber());
+            assertEquals(HarvestReportingType.BASIC, response.getReportingType());
+            assertEquals(RequiredHarvestField.NO, response.getFields().getReport().getPermitNumber());
+        });
     }
 
     @Test
-    public void testGetHarvestFields_Mooselike() {
+    public void testGetRequiredHarvestFields_withPermit_withPersonId() {
+        testGetRequiredHarvestFields_withPermit_withPersonId(false);
+    }
 
+    @Test
+    public void testGetRequiredHarvestFields_withPermit_withPersonId_withinDeerPilot() {
+        testGetRequiredHarvestFields_withPermit_withPersonId(true);
+    }
+
+    private void testGetRequiredHarvestFields_withPermit_withPersonId(final boolean withinDeerPilot) {
+        withDeerHuntingGroupFixture(fixt -> {
+            if (withinDeerPilot) {
+                model().newDeerPilot(fixt.permit);
+            }
+
+            final Person author = fixt.groupMember;
+
+            onSavedAndAuthenticated(createNewModerator(), () -> {
+
+                final RequiredHarvestFieldsRequestDTO request =
+                        new RequiredHarvestFieldsRequestDTO(
+                                fixt.species.getOfficialCode(), today(), fixt.zoneCentroid, true, author.getId());
+
+                final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
+
+                assertEquals(withinDeerPilot
+                                ? RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE
+                                : RequiredHarvestSpecimenField.NO,
+                        response.getFields().getSpecimen().getAntlersLost());
+            });
+        });
+    }
+
+    @Ignore
+    @Test
+    public void testGetRequiredHarvestFields_mooselike() {
+
+    }
+
+    private RequiredHarvestFieldsResponseDTO getRequiredFields(final RequiredHarvestFieldsRequestDTO request) {
+        return feature.getRequiredHarvestFields(request, CURRENTLY_SUPPORTED);
     }
 }

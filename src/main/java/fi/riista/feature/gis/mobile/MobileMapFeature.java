@@ -13,6 +13,8 @@ import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.area.HuntingClubAreaRepository;
+import fi.riista.feature.moderatorarea.ModeratorArea;
+import fi.riista.feature.moderatorarea.ModeratorAreaRepository;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.Occupation;
@@ -56,6 +58,9 @@ public class MobileMapFeature {
     private PersonalAreaRepository personalAreaRepository;
 
     @Resource
+    private ModeratorAreaRepository moderatorAreaRepository;
+
+    @Resource
     private GISZoneRepository gisZoneRepository;
 
     @Resource
@@ -81,6 +86,11 @@ public class MobileMapFeature {
             return new MobileAreaDTO(personalAreaOptional.get());
         }
 
+        final Optional<ModeratorArea> moderatorAreaOptional = moderatorAreaRepository.findByExternalId(externalId);
+
+        if (moderatorAreaOptional.isPresent()) {
+            return new MobileAreaDTO(moderatorAreaOptional.get());
+        }
         return null;
     }
 
@@ -110,7 +120,8 @@ public class MobileMapFeature {
             permitAreas.addAll(harvestPermitAreaRepository.listActiveApplicationAreas(club, huntingYear));
         }
 
-        final List<PersonalArea> personalAreas = personalAreaRepository.findAllAsList(QPersonalArea.personalArea.person.eq(person));
+        final List<PersonalArea> personalAreas =
+                personalAreaRepository.findAllAsList(QPersonalArea.personalArea.person.eq(person));
         final Predicate<GISZone> areaSizeFilter = filterWithZoneAreaSizePositive(clubAreas, permitAreas, personalAreas);
 
         return Streams.concat(

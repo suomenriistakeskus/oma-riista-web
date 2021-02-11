@@ -1,9 +1,10 @@
 package fi.riista.security.crypto;
 
-import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.crypto.keygen.BytesKeyGenerator;
 import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.security.crypto.keygen.StringKeyGenerator;
+
+import java.util.Base64;
 
 public class Base64StringKeyGenerator implements StringKeyGenerator {
 
@@ -19,6 +20,6 @@ public class Base64StringKeyGenerator implements StringKeyGenerator {
 
     @Override
     public String generateKey() {
-        return new String(Base64.encode(keyGenerator.generateKey()));
+        return new String(Base64.getEncoder().encode(keyGenerator.generateKey()));
     }
 }

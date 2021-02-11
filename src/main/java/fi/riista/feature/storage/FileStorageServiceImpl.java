@@ -68,7 +68,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     @Transactional(readOnly = true)
     public Optional<PersistentFileMetadata> getMetadata(final UUID uuid) {
-        return Optional.ofNullable(metadataRepository.findOne(uuid));
+        return metadataRepository.findById(uuid);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     @Transactional(readOnly = true)
     public boolean exists(final UUID uuid) {
-        return metadataRepository.findOne(uuid) != null;
+        return metadataRepository.findById(uuid).isPresent();
     }
 
     @Override

@@ -1,0 +1,32 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p translate="harvestpermit.wizard.gameManagement.justification.instructions"></p>
+    </div>
+</div>
+
+<form name="justificationForm" r-force-show-errors-check-validity>
+    <div>
+        <div class="form-group" show-errors>
+            <textarea class="form-control" rows="50"
+                      name="justification" id="justification"
+                      ng-model="$ctrl.justification.justification"
+                      minlength="5"
+                      required></textarea>
+
+            <p class="help-block has-error"
+               ng-show="justificationForm.justification.$invalid && justificationForm.justification.$touched"
+               ng-messages="justificationForm.justification.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+</form>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(justificationForm)"
+        previous="$ctrl.previous(justificationForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(justificationForm)">
+</permit-application-wizard-navigation>

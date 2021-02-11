@@ -1,0 +1,31 @@
+<h4 translate="decision.revision.attachments"></h4>
+
+<div class="well"
+     ng-if="!$ctrl.decisionAttachments || $ctrl.decisionAttachments.length === 0"
+     translate="decision.revision.noAttachments"></div>
+
+<p ng-repeat="a in $ctrl.decisionAttachments track by a.id">
+    <a ng-click="$ctrl.downloadAttachment(a)">
+        <span class="fa fa-lg fa-fw fa-file-pdf-o"></span>
+        <span ng-bind="a.description"></span>
+    </a>
+</p>
+
+<hr>
+<div class="row">
+    <div class="col-xs-8">
+        <h5 translate="decision.revision.additionalAttachments"></h5>
+    </div>
+    <div class="col-xs-4 text-right">
+        <button type="button" class="btn btn-primary"
+                translate="decision.revision.addAttachment"
+                ng-if="$ctrl.allowEditOfAdditionalAttachments"
+                ng-click="$ctrl.openAttachmentDialog()"></button>
+    </div>
+</div>
+<p ng-repeat="a in $ctrl.additionalAttachments track by a.id">
+    <a ng-click="$ctrl.downloadAttachment(a)">
+        <span class="fa fa-lg fa-fw fa-file-pdf-o"></span>
+        <span ng-bind="a.description"></span>
+    </a>
+</p>

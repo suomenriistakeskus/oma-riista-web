@@ -1,10 +1,10 @@
 package fi.riista.feature.harvestpermit;
 
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.gamediary.GameAge;
+import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.gamediary.GameCategory;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.fixture.HarvestSpecimenType;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.observation.Observation;
@@ -24,6 +24,7 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.application.PermitHolder;
+import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.NumberUtils;
@@ -35,10 +36,15 @@ import javax.annotation.Resource;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_MALE;
 import static fi.riista.util.DateUtil.today;
 import static fi.riista.util.NumberUtils.bigDecimalEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
@@ -247,18 +253,18 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testGetPermit_forHarvestsAndObservations() {
-        createHuntingDay(holderGroup, 1, 0, GameAge.ADULT, GameGender.FEMALE, 1);
+        createHuntingDay(holderGroup, 1, 0, ADULT_FEMALE, 1);
 
-        createHuntingDay(partnerGroup, 2, 0, GameAge.ADULT, GameGender.MALE, 1);
-        createHuntingDay(partnerGroup, 4, 1, GameAge.ADULT, GameGender.FEMALE, 2);
-        createHuntingDay(partnerGroup, 6, 2, GameAge.YOUNG, GameGender.MALE, 3);
-        createHuntingDay(partnerGroup, 8, 3, GameAge.YOUNG, GameGender.FEMALE, 4);
-        createHuntingDay(partnerGroup2, 1, 0, GameAge.ADULT, GameGender.MALE, 1);
+        createHuntingDay(partnerGroup, 2, 0, ADULT_MALE, 1);
+        createHuntingDay(partnerGroup, 4, 1, ADULT_FEMALE, 2);
+        createHuntingDay(partnerGroup, 6, 2, YOUNG_MALE, 3);
+        createHuntingDay(partnerGroup, 8, 3, YOUNG_FEMALE, 4);
+        createHuntingDay(partnerGroup2, 1, 0, ADULT_MALE, 1);
 
         // this should not be counted to statistics, becuase group species does not match
         final GroupHuntingDay notCountedDay = model().newGroupHuntingDay(otherSpeciesPartnerGroup, today());
         notCountedDay.setNumberOfHunters(1);
-        createHarvest(false, GameAge.ADULT, GameGender.MALE, notCountedDay, this.otherSpecies);
+        createHarvest(false, ADULT_MALE, notCountedDay, this.otherSpecies);
 
         onSavedAndAuthenticated(user, () -> {
             final HuntingClubPermitDTO dto =
@@ -299,13 +305,13 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testGetPermit_multiplePermits() {
-        createHuntingDay(holderGroup, 1, 0, GameAge.ADULT, GameGender.MALE, 1);
-        createHuntingDay(partnerGroup, 2, 0, GameAge.ADULT, GameGender.MALE, 1);
-        createHuntingDay(partnerGroup2, 1, 0, GameAge.ADULT, GameGender.MALE, 1);
+        createHuntingDay(holderGroup, 1, 0, ADULT_MALE, 1);
+        createHuntingDay(partnerGroup, 2, 0, ADULT_MALE, 1);
+        createHuntingDay(partnerGroup2, 1, 0, ADULT_MALE, 1);
 
-        createHuntingDay(nextYearHolderGroup, 3, 0, GameAge.YOUNG, GameGender.MALE, 1);
-        createHuntingDay(nextYearPartnerGroup, 2, 0, GameAge.YOUNG, GameGender.MALE, 1);
-        createHuntingDay(nextYearPartnerGroup2, 2, 0, GameAge.YOUNG, GameGender.MALE, 1);
+        createHuntingDay(nextYearHolderGroup, 3, 0, YOUNG_MALE, 1);
+        createHuntingDay(nextYearPartnerGroup, 2, 0, YOUNG_MALE, 1);
+        createHuntingDay(nextYearPartnerGroup2, 2, 0, YOUNG_MALE, 1);
 
         onSavedAndAuthenticated(user, () -> {
             final HuntingClubPermitDTO dto =
@@ -354,13 +360,36 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private void createHuntingDay(HuntingClubGroup group, int howManyHarvestsAndObservations, int howManyNotEdible, GameAge age, GameGender gender, int numberOfHunters) {
+    @Test
+    public void testGetPermit_forGrantStatus() {
+        final PermitDecision decision = model().newPermitDecision(model().newRiistanhoitoyhdistys());
+        decision.setGrantStatus(GrantStatus.UNCHANGED);
+        final HarvestPermit permitWithDecision = model().newHarvestPermit(user.getPerson());
+        permitWithDecision.setPermitDecision(decision);
+        onSavedAndAuthenticated(user, () -> {
+            final HarvestPermitDTO dto = harvestPermitDetailsFeature.getPermit(permitWithDecision.getId());
+            assertNotNull(dto);
+            assertEquals(GrantStatus.UNCHANGED, dto.getGrantStatus());
+        });
+    }
+
+    @Test
+    public void testGetPermit_forGrantStatusNoDecision() {
+        onSavedAndAuthenticated(user, () -> {
+            final HarvestPermitDTO dto = harvestPermitDetailsFeature.getPermit(permit.getId());
+            assertNotNull(dto);
+            assertNull(dto.getGrantStatus());
+        });
+    }
+
+    private void createHuntingDay(HuntingClubGroup group, int howManyHarvestsAndObservations, int howManyNotEdible,
+                                  HarvestSpecimenType specimenType, int numberOfHunters) {
         final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, today().minusDays(dayCount++));
         huntingDay.setNumberOfHunters(numberOfHunters);
 
         for (int i = 0; i < howManyHarvestsAndObservations; i++) {
-            createHarvest(i < howManyNotEdible, age, gender, huntingDay, this.species);
-            createHarvest(i < howManyNotEdible, age, gender, huntingDay, this.otherSpecies);
+            createHarvest(i < howManyNotEdible, specimenType, huntingDay, this.species);
+            createHarvest(i < howManyNotEdible, specimenType, huntingDay, this.otherSpecies);
             createObservation(huntingDay, this.species);
             createObservation(huntingDay, this.otherSpecies);
         }
@@ -372,11 +401,11 @@ public class HarvestPermitDetailsFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private void createHarvest(
-            boolean notEdible, GameAge age, GameGender gender, GroupHuntingDay huntingDay, GameSpecies species) {
+            boolean notEdible, HarvestSpecimenType specimenType, GroupHuntingDay huntingDay, GameSpecies species) {
 
         final Harvest harvest = model().newHarvest(species, model().newPerson(), huntingDay);
 
-        final HarvestSpecimen specimen = model().newHarvestSpecimen(harvest, age, gender);
+        final HarvestSpecimen specimen = model().newHarvestSpecimen(harvest, specimenType);
         specimen.setNotEdible(notEdible);
     }
 

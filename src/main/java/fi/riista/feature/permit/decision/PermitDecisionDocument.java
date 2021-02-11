@@ -18,55 +18,55 @@ public class PermitDecisionDocument implements Serializable {
         Objects.requireNonNull(sectionId, "sectionId is null");
 
         switch (sectionId) {
-            case application:
+            case APPLICATION:
                 this.application = value;
                 break;
-            case applicationReasoning:
+            case APPLICATION_REASONING:
                 this.applicationReasoning = value;
                 break;
-            case processing:
+            case PROCESSING:
                 this.processing = value;
                 break;
-            case decision:
+            case DECISION:
                 this.decision = value;
                 break;
-            case decisionExtra:
+            case DECISION_EXTRA:
                 this.decisionExtra = value;
                 break;
-            case decisionReasoning:
+            case DECISION_REASONING:
                 this.decisionReasoning = value;
                 break;
-            case restriction:
+            case RESTRICTION:
                 this.restriction = value;
                 break;
-            case restrictionExtra:
+            case RESTRICTION_EXTRA:
                 this.restrictionExtra = value;
                 break;
-            case execution:
+            case EXECUTION:
                 this.execution = value;
                 break;
-            case legalAdvice:
+            case LEGAL_ADVICE:
                 this.legalAdvice = value;
                 break;
-            case notificationObligation:
+            case NOTIFICATION_OBLIGATION:
                 this.notificationObligation = value;
                 break;
-            case appeal:
+            case APPEAL:
                 this.appeal = value;
                 break;
-            case additionalInfo:
+            case ADDITIONAL_INFO:
                 this.additionalInfo = value;
                 break;
-            case delivery:
+            case DELIVERY:
                 this.delivery = value;
                 break;
-            case payment:
+            case PAYMENT:
                 this.payment = value;
                 break;
-            case administrativeCourt:
+            case ADMINISTRATIVE_COURT:
                 this.administrativeCourt = value;
                 break;
-            case attachments:
+            case ATTACHMENTS:
                 this.attachments = value;
                 break;
             default:

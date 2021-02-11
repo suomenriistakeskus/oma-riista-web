@@ -2,6 +2,7 @@ package fi.riista.feature.organization.calendar;
 
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.organization.OrganisationRepository;
+import fi.riista.feature.organization.rhy.RhyEventTimeException;
 import fi.riista.feature.shootingtest.ShootingTestEventRepository;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
@@ -48,8 +49,7 @@ public class CalendarEventCrudFeature extends AbstractCrudFeature<Long, Calendar
         final LocalDate date = dto.getDate();
         final boolean canUpdateAllFields;
 
-        checkArgument(activeUserService.isModeratorOrAdmin() || !(date.getYear() < today.minusDays(15).getYear()),
-                "Calendar event too far in the past.");
+        RhyEventTimeException.assertEventNotTooFarInPast(date, activeUserService.isModeratorOrAdmin());
 
         if (entity.isNew()) {
             checkArgument(!eventType.isShootingTest() || date.isAfter(today.plusDays(6)),
@@ -79,6 +79,7 @@ public class CalendarEventCrudFeature extends AbstractCrudFeature<Long, Calendar
             entity.setVenue(venueRepository.getOne(dto.getVenue().getId()));
             entity.setPublicVisibility(dto.getPublicVisibility());
             entity.setExcludedFromStatistics(dto.getExcludedFromStatistics());
+            entity.setRemoteEvent(dto.isRemoteEvent());
         }
 
         entity.setName(dto.getName());

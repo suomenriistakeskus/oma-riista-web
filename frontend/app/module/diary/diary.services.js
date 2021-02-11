@@ -46,7 +46,8 @@ angular.module('app.diary.services', ['ngResource'])
 
     .factory('DiaryEntryRepositoryFactory', function ($resource, $http,
                                                       Helpers, DiaryEntryType, DiaryImageService,
-                                                      GameSpeciesCodes, SrvaOtherSpeciesService) {
+                                                      GameSpeciesCodes, SrvaOtherSpeciesService,
+                                                      ObservationCategory) {
         function appendTransform(defaults, transform) {
             defaults = angular.isArray(defaults) ? defaults : [defaults];
             return defaults.concat(transform);
@@ -93,28 +94,26 @@ angular.module('app.diary.services', ['ngResource'])
                 isRoeDeer: function () {
                     return GameSpeciesCodes.isRoeDeer(this.gameSpeciesCode);
                 },
+                isWhiteTailedDeer: function () {
+                    return GameSpeciesCodes.isWhiteTailedDeer(this.gameSpeciesCode);
+                },
                 isGreySeal: function () {
                     return GameSpeciesCodes.isGreySeal(this.gameSpeciesCode);
                 },
                 isMooselike: function () {
                     return GameSpeciesCodes.isMooselike(this.gameSpeciesCode);
                 },
+                isObservationWithinHunting: function () {
+                    return this.isObservation() && ObservationCategory.isWithinHunting(this.observationCategory);
+                },
+                isObservationWithinDeerHunting: function () {
+                    return this.isObservation() && ObservationCategory.isWithinDeerHunting(this.observationCategory);
+                },
                 isPermitBasedDeer: function () {
                     return GameSpeciesCodes.isPermitBasedDeer(this.gameSpeciesCode);
                 },
                 isPermitBasedMooselike: function () {
                     return GameSpeciesCodes.isPermitBasedMooselike(this.gameSpeciesCode);
-                },
-                isAntlersPossible: function () {
-                    return this.isPermitBasedMooselike()
-                        && !_.isEmpty(this.specimens)
-                        && this.specimens[0].age === 'ADULT'
-                        && this.specimens[0].gender === 'MALE';
-                },
-                isAlonePossible: function () {
-                    return this.isMoose()
-                        && !_.isEmpty(this.specimens)
-                        && this.specimens[0].age === 'YOUNG';
                 },
                 getRepository: function () {
                     return repository;

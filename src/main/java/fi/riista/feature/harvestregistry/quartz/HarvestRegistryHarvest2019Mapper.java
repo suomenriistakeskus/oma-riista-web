@@ -34,7 +34,7 @@ public final class HarvestRegistryHarvest2019Mapper {
                                                         final Set<HarvestSpecimen> specimens,
                                                         final String rkaCode, final String rhyCode) {
         Preconditions.checkArgument(
-                harvest.getPointOfTime().before(END_TIMESTAMP_2019),
+                harvest.getPointOfTime().toLocalDate().isBefore(END_TIMESTAMP_2019),
                 "Point of time is too late for this transformer.");
         final AttributeCategory attributeCategory =
                 SPECIES_TO_ATTRIBUTES_MAPPING.get(harvest.getSpecies().getOfficialCode());
@@ -136,7 +136,7 @@ public final class HarvestRegistryHarvest2019Mapper {
                     .put(GameSpecies.OFFICIAL_CODE_FALLOW_DEER, AttributeCategory.COMMON_PLUS_AGE_AND_GENDER)
                     // Saksanhirvi
                     .put(GameSpecies.OFFICIAL_CODE_RED_DEER, AttributeCategory.COMMON_PLUS_AGE_AND_GENDER)
-                    // Japanin hirvi
+                    // Japaninpeura
                     .put(GameSpecies.OFFICIAL_CODE_SIKA_DEER, AttributeCategory.COMMON_PLUS_AGE_AND_GENDER)
                     // Metsäkauris
                     .put(GameSpecies.OFFICIAL_CODE_ROE_DEER, AttributeCategory.COMMON_PLUS_AGE_AND_GENDER)

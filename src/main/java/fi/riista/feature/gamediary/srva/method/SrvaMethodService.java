@@ -60,7 +60,7 @@ public class SrvaMethodService {
             return srvaMethod;
         }).collect(Collectors.toList());
 
-        final List<SrvaMethod> savedMethods = srvaMethodRepository.save(methodEntities);
+        final List<SrvaMethod> savedMethods = srvaMethodRepository.saveAll(methodEntities);
         srvaMethodRepository.flush();
         return savedMethods;
     }

@@ -1,21 +1,21 @@
 package fi.riista.feature.pub.calendar;
 
-import fi.riista.feature.organization.calendar.CalendarEventType;
+import fi.riista.feature.organization.calendar.CalendarEventGroupType;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
+import java.util.Collection;
 
 public class PublicCalendarEventSearchDTO {
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String areaId;
 
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String rhyId;
+    private Collection<String> rhyId;
 
-    private CalendarEventType calendarEventType;
+    private CalendarEventGroupType calendarEventType;
 
     @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -38,19 +38,19 @@ public class PublicCalendarEventSearchDTO {
         this.areaId = areaId;
     }
 
-    public String getRhyId() {
+    public Collection<String> getRhyIds() {
         return rhyId;
     }
 
-    public void setRhyId(final String rhyId) {
-        this.rhyId = rhyId;
+    public void setRhyId(final Collection<String> rhyIds) {
+        this.rhyId = rhyIds;
     }
 
-    public CalendarEventType getCalendarEventType() {
+    public CalendarEventGroupType getCalendarEventType() {
         return calendarEventType;
     }
 
-    public void setCalendarEventType(final CalendarEventType calendarEventType) {
+    public void setCalendarEventType(final CalendarEventGroupType calendarEventType) {
         this.calendarEventType = calendarEventType;
     }
 
@@ -84,19 +84,6 @@ public class PublicCalendarEventSearchDTO {
 
     public void setPageNumber(final Integer pageNumber) {
         this.pageNumber = pageNumber;
-    }
-
-    @Override
-    public String toString() {
-        return "PublicCalendarEventSearchDTO{" +
-                "areaId='" + areaId + '\'' +
-                ", rhyId='" + rhyId + '\'' +
-                ", calendarEventType=" + calendarEventType +
-                ", begin=" + begin +
-                ", end=" + end +
-                ", pageSize=" + pageSize +
-                ", pageNumber=" + pageNumber +
-                '}';
     }
 
 }

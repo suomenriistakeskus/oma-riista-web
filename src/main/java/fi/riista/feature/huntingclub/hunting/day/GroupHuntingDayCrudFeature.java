@@ -3,17 +3,19 @@ package fi.riista.feature.huntingclub.hunting.day;
 import com.google.common.base.Preconditions;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
+import fi.riista.feature.huntingclub.hunting.rejection.AcceptClubDiaryObservationDTO;
 import fi.riista.feature.huntingclub.permit.endofhunting.HuntingFinishingService;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
-import fi.riista.util.jpa.JpaSpecs;
 import org.joda.time.LocalDate;
-import org.joda.time.LocalTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-
-import static fi.riista.util.jpa.JpaSpecs.equal;
+import java.util.Optional;
 
 @Component
 public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupHuntingDay, GroupHuntingDayDTO> {
@@ -48,6 +49,9 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
 
     @Resource
     private HuntingFinishingService huntingFinishingService;
+
+    @Resource
+    private ActiveUserService activeUserService;
 
     @Override
     protected JpaRepository<GroupHuntingDay, Long> getRepository() {
@@ -112,6 +116,7 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
         }
         entity.setSnowDepth(dto.getSnowDepth());
 
+        entity.setCreatedBySystem(Optional.ofNullable(dto.getCreatedBySystem()).orElse(false));
         final int huntingYear = entity.getGroup().getHuntingYear();
         Preconditions.checkArgument(isDateWithingHuntingYear(huntingYear, entity.getStartDate(), entity.getEndDate()));
     }
@@ -145,32 +150,41 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
 
     @Transactional(readOnly = true)
     public List<GroupHuntingDayDTO> findByClubGroup(final long huntingClubGroupId) {
-        final HuntingClubGroup group = requireEntityService.requireHuntingGroup(huntingClubGroupId, EntityPermission.READ);
+        final HuntingClubGroup group =
+                requireEntityService.requireHuntingGroup(huntingClubGroupId, EntityPermission.READ);
 
         return service.findByClubGroup(group);
     }
 
     @Transactional
     public GroupHuntingDayDTO getOrCreate(final long huntingClubGroupId, final LocalDate date) {
-        final HuntingClubGroup group = requireEntityService.requireHuntingGroup(huntingClubGroupId, EntityPermission.READ);
+        final HuntingClubGroup group =
+                requireEntityService.requireHuntingGroup(huntingClubGroupId, EntityPermission.READ);
 
-        Preconditions.checkArgument(!group.getSpecies().isMoose(), "This method should not be called for moose");
-
-        final GroupHuntingDay day = huntingDayRepository.findOne(JpaSpecs.and(
-                equal(GroupHuntingDay_.group, group),
-                equal(GroupHuntingDay_.startDate, date)
-        ));
-        if (day != null) {
-            return toDTO(day);
+        if (!activeUserService.isModeratorOrAdmin()) {
+            Preconditions.checkArgument(!group.getSpecies().isMoose(), "This method should not be called for moose");
         }
-        final GroupHuntingDayDTO dto = new GroupHuntingDayDTO();
-        dto.setHuntingGroupId(huntingClubGroupId);
 
-        dto.setStartDate(date);
-        dto.setStartTime(new LocalTime(0, 0));
+        final boolean dayExists = service.existsGroupHuntingDay(group, date);
+        final GroupHuntingDay day = service.findOrCreateGroupHuntingDay(group, date);
 
-        dto.setEndDate(date);
-        dto.setEndTime(new LocalTime(23, 59, 59));
-        return create(dto);
+        // Checking of day.isNew() does not work here due it's persisted in findOrCreateGroupHuntingDay()
+        // thus it's always false.
+        if (!dayExists) {
+            activeUserService.assertHasPermission(day, getCreatePermission(day, null));
+        }
+        return toDTO(day);
+    }
+
+    @Transactional
+    public void acceptClubDiaryObservationToHuntingDay(final AcceptClubDiaryObservationDTO dto) {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final Observation observation = gameObservationRepository.getOne(dto.getObservationId());
+        final Long huntingDayId = getOrCreate(dto.getGroupId(), observation.getPointOfTimeAsLocalDate()).getId();
+        service.linkDiaryEntryToHuntingDay(observation, huntingDayId, activeUser.getPerson());
+
+        if (activeUser.isModeratorOrAdmin()) {
+            observation.setModeratorOverride(true);
+        }
     }
 }

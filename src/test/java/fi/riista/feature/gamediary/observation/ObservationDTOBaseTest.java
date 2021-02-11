@@ -18,6 +18,6 @@ public class ObservationDTOBaseTest {
         dto.setMooselikeFemale4CalfsAmount(19);
         dto.setMooselikeUnknownSpecimenAmount(23);
 
-        assertEquals(3 + 5 + 7 + 2 * 11 + 3 * 13 + 4 * 17 + 5 * 19 + 23, dto.getSumOfMooselikeAmountFields());
+        assertEquals(3 + 5 + 7 + 2 * 11 + 3 * 13 + 4 * 17 + 5 * 19 + 23, dto.getSumOfMooselikeAmounts());
     }
 }

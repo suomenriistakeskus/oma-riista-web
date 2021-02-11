@@ -1,7 +1,6 @@
 package fi.riista.feature.storage.backend.s3;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.SDKGlobalConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -49,10 +48,6 @@ public class S3FileStorage implements FileStorageSpi {
         return StorageType.AWS_S3_BUCKET;
     }
 
-    public S3FileStorage() {
-        System.setProperty(SDKGlobalConfiguration.ENABLE_S3_SIGV4_SYSTEM_PROPERTY, "true");
-    }
-
     @PreDestroy
     public void stopTransferManager() {
         this.transferManager.shutdownNow();
@@ -73,7 +68,7 @@ public class S3FileStorage implements FileStorageSpi {
         metadata.setResourceUrl(S3Util.createResourceURL(bucketName, objectKey));
 
         final ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(Objects.requireNonNull(metadata.getContentSize()));
+        objectMetadata.setContentLength(metadata.getContentSize());
         objectMetadata.setContentType(Objects.requireNonNull(metadata.getContentType()));
 
         if (metadata.getMd5Hash() != null) {

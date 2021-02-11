@@ -1,6 +1,5 @@
 package fi.riista.feature.account.audit;
 
-import fi.riista.feature.account.audit.AuditService;
 import fi.riista.feature.account.user.ActiveUserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;

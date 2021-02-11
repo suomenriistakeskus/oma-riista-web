@@ -37,7 +37,7 @@ public class MetsahallitusPermitImportFeature {
             return null;
         });
 
-        metsahallitusPermitRepository.save(savedOrModifierPermits);
+        metsahallitusPermitRepository.saveAll(savedOrModifierPermits);
         metsahallitusPermitRepository.flush();
 
         return F.getUniqueIds(savedOrModifierPermits);

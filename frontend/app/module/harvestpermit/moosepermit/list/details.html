@@ -42,7 +42,7 @@
                 </button>
 
                 <ul uib-dropdown-menu>
-                    <li ng-if="$ctrl.isMoosePermit">
+                    <li ng-if="$ctrl.isMoosePermit || ($ctrl.isMooseWhiteTailedDeerPermit && $ctrl.huntingYear > 2018)">
                         <a ng-click="$ctrl.lukereports()">
                             <span class="fa fa-bar-chart"></span>
                             <span translate="club.permit.button.lukeReports"></span>

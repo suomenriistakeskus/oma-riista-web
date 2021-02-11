@@ -4,10 +4,10 @@ angular.module('app.harvestpermit.search.permit', [])
 
     .controller('PermitSearchController', function ($translate,
                                                     HarvestPermitSearchStateHolder, HarvestPermits, TranslatedBlockUI,
-                                                    areas, species, permitTypes, rhyId) {
+                                                    FetchAndSaveBlob, areas, species, permitTypes, rhyId) {
         var $ctrl = this;
         $ctrl.allSpecies = species;
-        $ctrl.permitTypes = permitTypes;
+        $ctrl.permitTypes = initializePermitTypes(permitTypes);
         $ctrl.speciesSortProperty = 'name.' + $translate.use();
         $ctrl.areas = areas;
         $ctrl.moderatorView = rhyId === null;
@@ -33,26 +33,34 @@ angular.module('app.harvestpermit.search.permit', [])
             ordinalSort: 'DESC'
         };
 
-        function search() {
-            HarvestPermitSearchStateHolder.setState({
-                searchParams: $ctrl.searchParams,
-                searchSort: $ctrl.searchSort
-            });
-
+        function getSearchParams() {
             var requestParams = angular.copy($ctrl.searchParams);
+            if (requestParams.permitType) {
+                delete requestParams.permitType.category;
+                delete requestParams.permitType.permitTypeName;
+                delete requestParams.permitType.sortOrder;
+            }
             requestParams.reportNotDone = $ctrl.searchParams.state === 'EMPTY';
             if (requestParams.reportNotDone) {
                 requestParams.state = null;
+                requestParams.decisionStatuses = ['UNCHANGED', 'RESTRICTED'];
             }
             requestParams.rhyId = rhyId;
             requestParams.sortingType = $ctrl.searchSort.sortingType;
             requestParams.permitNumberSort = $ctrl.searchSort.permitNumberSort;
             requestParams.yearSort = $ctrl.searchSort.yearSort;
             requestParams.ordinalSort = $ctrl.searchSort.ordinalSort;
+            return requestParams;
+        }
 
+        function search() {
+            HarvestPermitSearchStateHolder.setState({
+                searchParams: $ctrl.searchParams,
+                searchSort: $ctrl.searchSort
+            });
             TranslatedBlockUI.start('global.block.wait');
             var searchMethod = rhyId ? HarvestPermits.rhySearch : HarvestPermits.search;
-            searchMethod(requestParams).$promise.then(function (data) {
+            searchMethod(getSearchParams()).$promise.then(function (data) {
                 $ctrl.permits = data;
             }).finally(function () {
                 TranslatedBlockUI.stop();
@@ -81,6 +89,50 @@ angular.module('app.harvestpermit.search.permit', [])
                 $ctrl.allSpecies = species;
             }
         };
+
+        $ctrl.exportToExcel = function () {
+            FetchAndSaveBlob.post('/api/v1/harvestpermit/admin/export', getSearchParams());
+        };
+
+        function initializePermitTypes(permitTypes) {
+            return _.chain(permitTypes)
+                .map(function (permitType) {
+                    return _.assign(permitType, {
+                        category: mapPermitOrigin(permitType.origin),
+                        permitTypeName: mapPermitType(permitType),
+                        sortOrder: deduceSortOrder(permitType.origin)
+                    });
+                })
+                .value();
+        }
+
+        function mapPermitType(permitType) {
+            switch (permitType.origin) {
+                case 'LUPAHALLINTA':
+                    return permitType.permitType;
+                case 'OMA_RIISTA':
+                    return $translate.instant('harvestpermit.wizard.summary.permitType.' + permitType.permitTypeCode);
+            }
+
+        }
+
+        function mapPermitOrigin(origin) {
+            switch (origin) {
+                case 'LUPAHALLINTA':
+                    return 'Lupahallinta';
+                case 'OMA_RIISTA':
+                    return 'Oma riista';
+            }
+        }
+
+        function deduceSortOrder(origin) {
+            switch (origin) {
+                case 'OMA_RIISTA':
+                    return 0;
+                case 'LUPAHALLINTA':
+                    return 1;
+            }
+        }
     })
 
     .component('searchPermitList', {
@@ -88,6 +140,13 @@ angular.module('app.harvestpermit.search.permit', [])
         bindings: {
             permits: '<',
             showOpenPermit: '<'
+        },
+        controller: function (PermitTypeCode) {
+            var $ctrl = this;
+
+            $ctrl.hasPermission = function (permit) {
+                return PermitTypeCode.hasPermission(permit.permitTypeCode);
+            };
         }
     })
 

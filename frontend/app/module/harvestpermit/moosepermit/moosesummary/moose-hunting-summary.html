@@ -502,8 +502,10 @@
                                        class="form-control"
                                        uib-datepicker-popup is-open="isDatePickerOpen"
                                        date-between-min-max
-                                       max-date="$ctrl.mooseHeatEndDate"
-                                       ng-model="$ctrl.mooseHeatBeginDate">
+                                       min-date="$ctrl.beginDate"
+                                       max-date="$ctrl.mooseHeatBeginDateMax"
+                                       ng-model="$ctrl.mooseHeatBeginDate"
+                                       ng-change="$ctrl.updateDateConstraints()">
 
                                 <span class="input-group-btn">
                                     <button type="button" class="btn btn-default" tabindex="-1"
@@ -536,8 +538,10 @@
                                        class="form-control"
                                        uib-datepicker-popup is-open="isDatePickerOpen"
                                        date-between-min-max
-                                       min-date="$ctrl.mooseHeatBeginDate"
-                                       ng-model="$ctrl.mooseHeatEndDate">
+                                       min-date="$ctrl.mooseHeatEndDateMin"
+                                       max-date="$ctrl.endDate"
+                                       ng-model="$ctrl.mooseHeatEndDate"
+                                       ng-change="$ctrl.updateDateConstraints()">
 
                                 <span class="input-group-btn">
                                     <button type="button" class="btn btn-default" tabindex="-1"
@@ -572,8 +576,10 @@
                                        class="form-control"
                                        uib-datepicker-popup is-open="isDatePickerOpen"
                                        date-between-min-max
-                                       max-date="$ctrl.mooseFawnEndDate"
-                                       ng-model="$ctrl.mooseFawnBeginDate">
+                                       min-date="$ctrl.beginDate"
+                                       max-date="$ctrl.mooseFawnBeginDateMax"
+                                       ng-model="$ctrl.mooseFawnBeginDate"
+                                       ng-change="$ctrl.updateDateConstraints()">
 
                                 <span class="input-group-btn">
                                     <button type="button" class="btn btn-default" tabindex="-1"
@@ -606,8 +612,10 @@
                                        class="form-control"
                                        uib-datepicker-popup is-open="isDatePickerOpen"
                                        date-between-min-max
-                                       min-date="$ctrl.mooseFawnBeginDate"
-                                       ng-model="$ctrl.mooseFawnEndDate">
+                                       min-date="$ctrl.mooseFawnEndDateMin"
+                                       max-date="$ctrl.endDate"
+                                       ng-model="$ctrl.mooseFawnEndDate"
+                                       ng-change="$ctrl.updateDateConstraints()">
 
                                 <span class="input-group-btn">
                                     <button type="button" class="btn btn-default" tabindex="-1"
@@ -735,8 +743,10 @@
                                            class="form-control"
                                            uib-datepicker-popup is-open="isDatePickerOpen"
                                            date-between-min-max
-                                           max-date="$ctrl.dateOfLastDeerFlySeen"
-                                           ng-model="$ctrl.dateOfFirstDeerFlySeen">
+                                           min-date="$ctrl.beginDate"
+                                           max-date="$ctrl.dateOfFirstDeerFlySeenMax"
+                                           ng-model="$ctrl.dateOfFirstDeerFlySeen"
+                                           ng-change="$ctrl.updateDateConstraints()">
 
                                     <span class="input-group-btn">
                                         <button type="button" class="btn btn-default" tabindex="-1"
@@ -769,8 +779,10 @@
                                            class="form-control"
                                            uib-datepicker-popup is-open="isDatePickerOpen"
                                            date-between-min-max
-                                           min-date="$ctrl.dateOfFirstDeerFlySeen"
-                                           ng-model="$ctrl.dateOfLastDeerFlySeen">
+                                           min-date="$ctrl.dateOfLastDeerFlySeenMin"
+                                           max-date="$ctrl.endDate"
+                                           ng-model="$ctrl.dateOfLastDeerFlySeen"
+                                           ng-change="$ctrl.updateDateConstraints()">
 
                                     <span class="input-group-btn">
                                         <button type="button" class="btn btn-default" tabindex="-1"

@@ -5,6 +5,7 @@ import fi.riista.feature.mail.delivery.MailDeliveryService;
 import fi.riista.feature.mail.queue.MailDeliveryQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ public class MailServiceImpl implements MailService {
         mailDeliveryQueue.scheduleForDelivery(dto);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processOutgoingMail() {

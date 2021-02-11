@@ -1,0 +1,56 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.attachments.instructionsTitle"></p>
+        <p translate="harvestpermit.wizard.importing.attachments.instruction"></p>
+    </div>
+</div>
+
+<form name="attachmentForm" class="application-wizard-attachment-list">
+    <div ng-repeat="a in $ctrl.attachmentList track by a.id">
+        <div class="row">
+            <div class="col-xs-6">
+                <div class="left-column">
+                    <div class="attachment-logo">
+                        <span class="fa fa-2x fa-file-o"></span>
+                    </div>
+
+                    <div class="attachment-name" ng-bind="a.name"></div>
+
+                    <a class="remove-button" ng-click="$ctrl.removeAttachment(a)">
+                        <span class="fa fa-lg fa-fw fa-remove text-danger"></span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-xs-6">
+                <div class="form-group">
+                    <label class="control-label" for="additionalInfo-{{a.id}}"
+                           translate="harvestpermit.wizard.attachments.attachmentDescription"></label>
+
+                    <textarea class="form-control" rows="4"
+                              name="additionalInfo-{{a.id}}" id="additionalInfo-{{a.id}}"
+                              ng-model="a.additionalInfo"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<hr class="invisible">
+
+<permit-application-attachment-upload
+        uri="$ctrl.attachmentBaseUri"
+        attachment-type="'OTHER'"
+        done="$ctrl.attachmentUploadComplete(fileName, response)"></permit-application-attachment-upload>
+
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit()"
+        previous="$ctrl.previous()"
+        previous-disabled="$ctrl.previousDisabled(attachmentForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(attachmentForm)">
+</permit-application-wizard-navigation>

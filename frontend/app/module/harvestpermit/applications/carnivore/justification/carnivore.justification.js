@@ -55,7 +55,7 @@ angular.module('app.harvestpermit.application.carnivore.justification', ['app.me
         };
 
         $ctrl.exit = function (form) {
-            ApplicationWizardNavigationHelper.previous(invalid(form), $ctrl.save, wizard.exit);
+            ApplicationWizardNavigationHelper.exit(invalid(form), $ctrl.save, wizard.exit);
         };
 
         $ctrl.previous = function (form) {

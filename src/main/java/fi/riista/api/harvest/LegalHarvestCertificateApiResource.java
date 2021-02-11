@@ -70,17 +70,18 @@ public class LegalHarvestCertificateApiResource {
     @PostMapping(value = "{harvestId:\\d+}/print/pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void pdf(final @PathVariable long harvestId,
                     final HttpServletRequest httpServletRequest,
-                    final HttpServletResponse httpServletResponse,
-                    final Locale locale) {
+                    final HttpServletResponse httpServletResponse) {
         httpServletResponse.addHeader(HttpHeaders.CONTENT_TYPE, MediaTypeExtras.APPLICATION_PDF_VALUE);
 
-        ContentDispositionUtil.addHeader(httpServletResponse, LegalHarvestCertificatePdfFeature.createFileName(locale));
+        final Locale harvestCertificateLocale = legalHarvestCertificatePdfFeature.getHarvestCertificateLocale(harvestId);
+
+        ContentDispositionUtil.addHeader(httpServletResponse, LegalHarvestCertificatePdfFeature.createFileName(harvestCertificateLocale));
 
         try (final OutputStream os = httpServletResponse.getOutputStream()) {
             pdfExportFactory.create(httpServletRequest)
                     .withNoHeaderRight()
                     .withHtmlPath(getHtmlPath(harvestId))
-                    .withLanguage(locale)
+                    .withLanguage(harvestCertificateLocale)
                     .build()
                     .export(os);
 

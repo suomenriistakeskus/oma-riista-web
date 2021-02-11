@@ -2,6 +2,7 @@ package fi.riista.feature.permit.decision.species;
 
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.test.DefaultEntitySupplierProvider;
+import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
@@ -41,11 +42,12 @@ public class PermitDecisionSpeciesAmountDateRestrictionTest implements DefaultEn
     @Test
     public void testAssertValid_MooselikeAmendment() {
         initTest(PermitTypeCode.MOOSELIKE_AMENDMENT);
+        final int huntingYear = DateUtil.huntingYear();
 
-        assertFalse(isValid(2019, 7, 31));
-        assertTrue(isValid(2019, 8, 1));
-        assertTrue(isValid(2020, 7, 31));
-        assertFalse(isValid(2020, 8, 1));
+        assertFalse(isValid(huntingYear, 7, 31));
+        assertTrue(isValid(huntingYear, 8, 1));
+        assertTrue(isValid(huntingYear + 1, 7, 31));
+        assertFalse(isValid(huntingYear + 1, 8, 1));
     }
 
     @Test
@@ -102,9 +104,10 @@ public class PermitDecisionSpeciesAmountDateRestrictionTest implements DefaultEn
     @Test
     public void testResolveMinAndMaxBeginDate_MooselikeAmendment() {
         initTest(PermitTypeCode.MOOSELIKE_AMENDMENT);
+        final int huntingYear = DateUtil.huntingYear();
 
-        assertEquals(new LocalDate(2019, 8, 1), restriction.resolveMinBeginDate());
-        assertEquals(new LocalDate(2020, 7, 31), restriction.resolveMaxBeginDate());
+        assertEquals(new LocalDate(huntingYear, 8, 1), restriction.resolveMinBeginDate());
+        assertEquals(new LocalDate(huntingYear + 1, 7, 31), restriction.resolveMaxBeginDate());
     }
 
     @Test

@@ -25,7 +25,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(value = "/api/v1/invoice")
@@ -40,30 +40,30 @@ public class InvoiceApiResource {
     @Resource
     private InvoicePaymentLineFeature invoicePaymentLineFeature;
 
-    @PostMapping(produces = APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(produces = APPLICATION_JSON_VALUE)
     public List<InvoiceSearchResultDTO> searchInvoices(@Valid @RequestBody final InvoiceSearchFilterDTO dto) {
         return invoiceSearchFeature.searchInvoices(dto);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{invoiceId:\\d+}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{invoiceId:\\d+}", produces = APPLICATION_JSON_VALUE)
     public InvoiceModeratorDTO getInvoice(@PathVariable final long invoiceId) {
         return invoiceModeratorFeature.getInvoice(invoiceId);
     }
 
-    @PutMapping(value = "/{invoiceId:\\d+}/disableelectronicinvoicing", produces = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{invoiceId:\\d+}/disableelectronicinvoicing", produces = APPLICATION_JSON_VALUE)
     public InvoiceModeratorDTO disableElectronicInvoicing(@PathVariable final long invoiceId) {
         return invoiceModeratorFeature.disableElectronicInvoicing(invoiceId);
     }
 
-    @PostMapping(value = "/{invoiceId:\\d+}/paymentline", produces = APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/{invoiceId:\\d+}/paymentline", produces = APPLICATION_JSON_VALUE)
     public InvoiceModeratorDTO addInvoicePaymentLine(@PathVariable final long invoiceId,
                                                      @Valid @RequestBody final AddInvoicePaymentLineDTO dto) {
 
         return invoicePaymentLineFeature.addInvoicePaymentLine(invoiceId, dto);
     }
 
-    @DeleteMapping(value = "/paymentline/{invoicePaymentLineId:\\d+}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @DeleteMapping(value = "/paymentline/{invoicePaymentLineId:\\d+}", produces = APPLICATION_JSON_VALUE)
     public InvoiceModeratorDTO removePaymentLine(@PathVariable final long invoicePaymentLineId) {
         return invoicePaymentLineFeature.removeInvoicePaymentLine(invoicePaymentLineId);
     }

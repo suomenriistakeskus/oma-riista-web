@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static fi.riista.util.jpa.JpaSpecs.equal;
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.springframework.data.jpa.domain.Specification.where;
 
 public interface BasicClubHuntingSummaryRepository extends BaseRepository<BasicClubHuntingSummary, Long> {
 
@@ -23,9 +23,9 @@ public interface BasicClubHuntingSummaryRepository extends BaseRepository<BasicC
         Objects.requireNonNull(club, "club is null");
         Objects.requireNonNull(speciesAmount, "speciesAmount is null");
 
-        return Optional.ofNullable(findOne(where(
+        return findOne(where(
                 equal(BasicClubHuntingSummary_.speciesAmount, speciesAmount))
-                        .and(equal(BasicClubHuntingSummary_.club, club))));
+                        .and(equal(BasicClubHuntingSummary_.club, club)));
     }
 
     default Optional<BasicClubHuntingSummary> findByClubAndSpeciesAmount(

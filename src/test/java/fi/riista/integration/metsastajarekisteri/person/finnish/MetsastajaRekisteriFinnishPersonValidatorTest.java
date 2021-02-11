@@ -126,6 +126,12 @@ public class MetsastajaRekisteriFinnishPersonValidatorTest {
         validate();
     }
 
+    @Test(expected = IllegalAgeException.class)
+    public void testInvalidSsnBecauseOfNotBornYetPerson() {
+        person.setSsn("170357A585Y");
+        validate();
+    }
+
     // Hunter number
 
     @Test

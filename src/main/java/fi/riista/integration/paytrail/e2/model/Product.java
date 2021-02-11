@@ -2,7 +2,7 @@ package fi.riista.integration.paytrail.e2.model;
 
 import fi.riista.util.BigDecimalMoney;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;

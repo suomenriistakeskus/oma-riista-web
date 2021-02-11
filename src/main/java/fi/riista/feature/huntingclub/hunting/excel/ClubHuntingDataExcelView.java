@@ -31,17 +31,20 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
     private final Map<Integer, LocalisedString> species;
     private final List<ClubHuntingDataExcelDTO> groupData;
     private final String filename;
+    private final boolean includeDeerPilotFields;
 
     public ClubHuntingDataExcelView(final EnumLocaliser localiser,
                                     final Map<Integer, LocalisedString> species,
                                     final LocalisedString clubName,
-                                    final List<ClubHuntingDataExcelDTO> groupData) {
+                                    final List<ClubHuntingDataExcelDTO> groupData,
+                                    final boolean includeDeerPilotFields) {
         this.localiser = localiser;
         this.species = species;
         this.groupData = groupData;
         this.filename = String.format("%s - %s.xlsx",
                 localiser.getTranslation(clubName),
                 Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
+        this.includeDeerPilotFields = includeDeerPilotFields;
     }
 
     @Override
@@ -61,7 +64,7 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
     private void createDaysSheet(Workbook workbook) {
         final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("huntingDays"));
         helper.appendHeaderRow(concatAndTranslate(new String[]{
-                "groupName", "startDate", "startTime", "endDate", "endTime", "breakDuration", "hungingDuration", "showDepth",
+                "groupName", "startDate", "startTime", "endDate", "endTime", "breakDuration", "huntingDuration", "showDepth",
                 "groupHuntingMethod", "numberOfHunters", "numberOfHounds"
         }));
 
@@ -88,9 +91,9 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
 
     private void createHarvestsSheet(Workbook workbook) {
         final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("harvests"));
-        helper.appendHeaderRow(concatAndTranslate(getCommonHeaders(), "gender", "age", "notEdible",
-                "weightEstimated", "weightMeasured", "fitnessClass", "antlersType", "antlersWidth",
-                "antlerPointsLeft", "antlerPointsRight", "additionalInfo"));
+        helper.appendHeaderRow(concatAndTranslate(F.concat(getCommonHeaders(), getWithinDeerHuntingHeaders()),
+                "gender", "age", "notEdible", "weightEstimated", "weightMeasured", "fitnessClass", "antlersType",
+                "antlersWidth", "antlerPointsLeft", "antlerPointsRight", "additionalInfo"));
 
         for (final ClubHuntingDataExcelDTO group : groupData) {
             final String groupName = localiser.getTranslation(group.getGroupName());
@@ -98,6 +101,7 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
             for (HarvestDTO harvest : group.getHarvests()) {
                 helper.appendRow();
                 addCommonColumns(helper, groupName, harvest, harvest.getAuthorInfo(), harvest.getActorInfo());
+                addWithinDeerHuntingCells(helper, harvest);
 
                 HarvestSpecimenDTO specimen = harvest.getSpecimens().get(0);
                 helper.appendTextCell(localise(specimen.getGender()))
@@ -118,8 +122,8 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
 
     private void createObservationsSheet(Workbook workbook) {
         final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("observations"));
-        helper.appendHeaderRow(concatAndTranslate(getCommonHeaders(), "observationType", "amount",
-                "mooselikeMaleAmount", "mooselikeFemaleAmount", "mooselikeFemale1CalfAmount",
+        helper.appendHeaderRow(concatAndTranslate(F.concat(getCommonHeaders(), getWithinDeerHuntingHeaders()),
+                "observationType", "amount", "mooselikeMaleAmount", "mooselikeFemaleAmount", "mooselikeFemale1CalfAmount",
                 "mooselikeFemale2CalfsAmount", "mooselikeFemale3CalfsAmount", "mooselikeFemale4CalfsAmount",
                 "mooselikeCalfAmount", "mooselikeUnknownSpecimenAmount", "gender", "age", "gameMarking",
                 "observedGameState"));
@@ -134,6 +138,7 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
                     helper.appendRow();
                     addCommonColumns(helper, groupName, observation, observation.getAuthorInfo(), observation.getActorInfo());
 
+                    addWithinDeerHuntingCells(helper, observation);
                     helper.appendTextCell(localise(observation.getObservationType()))
                             .appendNumberCell(observation.getAmount());
                     addMooseLikeCells(helper, observation);
@@ -142,6 +147,7 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
                         helper.appendRow();
                         addCommonColumns(helper, groupName, observation, observation.getAuthorInfo(), observation.getActorInfo());
 
+                        addWithinDeerHuntingCells(helper, observation);
                         helper.appendTextCell(localise(observation.getObservationType()))
                                 .appendNumberCell(1);
                         addMooseLikeCells(helper, observation);
@@ -166,6 +172,29 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
                 .appendNumberCell(observation.getMooselikeFemale4CalfsAmount())
                 .appendNumberCell(observation.getMooselikeCalfAmount())
                 .appendNumberCell(observation.getMooselikeUnknownSpecimenAmount());
+    }
+
+    private void addWithinDeerHuntingCells(ExcelHelper helper, ObservationDTO observation) {
+        if (includeDeerPilotFields) {
+            helper.appendTextCell(localiser.getTranslation(observation.getDeerHuntingType()))
+                    .appendTextCell(observation.getDeerHuntingTypeDescription());
+        }
+    }
+
+    private void addWithinDeerHuntingCells(ExcelHelper helper, HarvestDTO harvest) {
+        if (includeDeerPilotFields) {
+            helper.appendTextCell(localiser.getTranslation(harvest.getDeerHuntingType()))
+                    .appendTextCell(harvest.getDeerHuntingOtherTypeDescription());
+        }
+    }
+
+    private  String[] getWithinDeerHuntingHeaders() {
+
+        if (!includeDeerPilotFields) {
+            return new String[]{};
+        }
+
+        return new String[]{ "deerHuntingType", "deerHuntingTypeDescription" };
     }
 
     private void addCommonColumns(ExcelHelper helper,

@@ -1,6 +1,5 @@
 package fi.riista.feature.permitplanning.hirvityvitys;
 
-
 import com.google.common.collect.ImmutableList;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gis.verotuslohko.GISVerotusLohko;
@@ -139,16 +138,21 @@ public class JyvitysExcelTest {
 
     // TEST VALUES ON SUMMARY SHEET
 
-
     @Test
     public void testRhyInformation() {
         assertEquals(rhyDTO.getName(), template.getCell(template.address("A1")).getStringCellValue());
     }
 
     @Test
+    public void testApplicationNumbers() {
+        assertEquals(0, getSummarySheetCell("A8").getNumericCellValue(), 0.01);
+        assertEquals(1, getSummarySheetCell("A9").getNumericCellValue(), 0.01);
+    }
+
+    @Test
     public void testApplicantNames() {
-        assertEquals("hakija 0", getSummarySheetCell("A8").getStringCellValue());
-        assertEquals("hakija 1", getSummarySheetCell("A9").getStringCellValue());
+        assertEquals("hakija 0", getSummarySheetCell("B8").getStringCellValue());
+        assertEquals("hakija 1", getSummarySheetCell("B9").getStringCellValue());
     }
 
     @Test
@@ -168,12 +172,10 @@ public class JyvitysExcelTest {
         assertEquals(70.0, getSummarySheetCell(summarySheetQuotaAddress).getNumericCellValue(), 0.01);
     }
 
-
     @Test
     public void testFormulasSummary_sumMatches() {
         reEvaluateAllFormulas();
 
-        assertEquals("SUM(B8:B9)", getSummarySheetCell("B10").getCellFormula());
         assertEquals("SUM(C8:C9)", getSummarySheetCell("C10").getCellFormula());
         assertEquals("SUM(D8:D9)", getSummarySheetCell("D10").getCellFormula());
         assertEquals("SUM(E8:E9)", getSummarySheetCell("E10").getCellFormula());
@@ -181,9 +183,10 @@ public class JyvitysExcelTest {
         assertEquals("SUM(G8:G9)", getSummarySheetCell("G10").getCellFormula());
         assertEquals("SUM(H8:H9)", getSummarySheetCell("H10").getCellFormula());
         assertEquals("SUM(I8:I9)", getSummarySheetCell("I10").getCellFormula());
-        assertEquals("SUM(M8:M9)", getSummarySheetCell("M10").getCellFormula());
+        assertEquals("SUM(J8:J9)", getSummarySheetCell("J10").getCellFormula());
         assertEquals("SUM(N8:N9)", getSummarySheetCell("N10").getCellFormula());
         assertEquals("SUM(O8:O9)", getSummarySheetCell("O10").getCellFormula());
+        assertEquals("SUM(P8:P9)", getSummarySheetCell("P10").getCellFormula());
     }
 
     @Test
@@ -195,19 +198,18 @@ public class JyvitysExcelTest {
         reEvaluateAllFormulas();
 
         // First applicant
-        assertEquals(0.5, evaluateFormulaNumeric(getSummarySheetCell("Q8")), 0.01);
         assertEquals(0.5, evaluateFormulaNumeric(getSummarySheetCell("R8")), 0.01);
+        assertEquals(0.5, evaluateFormulaNumeric(getSummarySheetCell("S8")), 0.01);
 
         // Second applicant
-        assertEquals(0.5, evaluateFormulaNumeric(getSummarySheetCell("Q9")), 0.01);
         assertEquals(0.5, evaluateFormulaNumeric(getSummarySheetCell("R9")), 0.01);
+        assertEquals(0.5, evaluateFormulaNumeric(getSummarySheetCell("S9")), 0.01);
 
     }
 
     private double evaluateFormulaNumeric(Cell cell) {
         return workbook.getCreationHelper().createFormulaEvaluator().evaluateInCell(cell).getNumericCellValue();
     }
-
 
     // TEST VALUES ON VEROTUSLOHKO SHEETS
 
@@ -235,8 +237,8 @@ public class JyvitysExcelTest {
 
     @Test
     public void testVerotuslohko_quotaByLand() {
-        assertEquals("G13*B10/1000", getCell(1, "C13").getCellFormula().replaceAll("\\s", ""));
-        assertEquals("G13*B10/1000", getCell(2, "C13").getCellFormula().replaceAll("\\s", ""));
+        assertEquals("G13*C10/1000", getCell(1, "C13").getCellFormula().replaceAll("\\s", ""));
+        assertEquals("G13*C10/1000", getCell(2, "C13").getCellFormula().replaceAll("\\s", ""));
     }
 
     @Test
@@ -253,31 +255,31 @@ public class JyvitysExcelTest {
 
     @Test
     public void testVerotuslohko_privateAreaForCalculcation() {
-        assertEquals("B10", getCell(1, "J18").getCellFormula());
-        assertEquals("B10", getCell(2, "J18").getCellFormula());
+        assertEquals("C10", getCell(1, "J18").getCellFormula());
+        assertEquals("C10", getCell(2, "J18").getCellFormula());
     }
 
     @Test
     public void testFormulasVerotuslohko_sumMatches() {
         reEvaluateAllFormulas();
 
-        assertEquals("SUM(B8:B9)", getCell(1, "B10").getCellFormula());
         assertEquals("SUM(C8:C9)", getCell(1, "C10").getCellFormula());
-        assertEquals("SUM(E8:E9)", getCell(1, "E10").getCellFormula());
+        assertEquals("SUM(D8:D9)", getCell(1, "D10").getCellFormula());
         assertEquals("SUM(F8:F9)", getCell(1, "F10").getCellFormula());
         assertEquals("SUM(G8:G9)", getCell(1, "G10").getCellFormula());
         assertEquals("SUM(H8:H9)", getCell(1, "H10").getCellFormula());
         assertEquals("SUM(I8:I9)", getCell(1, "I10").getCellFormula());
         assertEquals("SUM(J8:J9)", getCell(1, "J10").getCellFormula());
+        assertEquals("SUM(K8:K9)", getCell(1, "K10").getCellFormula());
 
-        assertEquals("SUM(B8:B9)", getCell(2, "B10").getCellFormula());
         assertEquals("SUM(C8:C9)", getCell(2, "C10").getCellFormula());
-        assertEquals("SUM(E8:E9)", getCell(2, "E10").getCellFormula());
+        assertEquals("SUM(D8:D9)", getCell(2, "D10").getCellFormula());
         assertEquals("SUM(F8:F9)", getCell(2, "F10").getCellFormula());
         assertEquals("SUM(G8:G9)", getCell(2, "G10").getCellFormula());
         assertEquals("SUM(H8:H9)", getCell(2, "H10").getCellFormula());
         assertEquals("SUM(I8:I9)", getCell(2, "I10").getCellFormula());
         assertEquals("SUM(J8:J9)", getCell(2, "J10").getCellFormula());
+        assertEquals("SUM(K8:K9)", getCell(2, "K10").getCellFormula());
     }
 
     @Test
@@ -289,57 +291,56 @@ public class JyvitysExcelTest {
     @Test
     public void testFormulas_permitsPerShooter() {
         // Permits per shooter multiplier
-        assertEquals("IF( I10 > 0, C14 / I10, 0)", getCell(2, "G14").getCellFormula());
+        assertEquals("IF( J10 > 0, C14 / J10, 0)", getCell(2, "G14").getCellFormula());
     }
 
     @Test
     public void testFormulas_permitsPerShooterZeroWithNoShooters() {
         // Shooter counts to zero for both applications
-        getSummarySheetCell("E8").setCellValue(0.0);
-        getSummarySheetCell("E9").setCellValue(0.0);
         getSummarySheetCell("F8").setCellValue(0.0);
         getSummarySheetCell("F9").setCellValue(0.0);
+        getSummarySheetCell("G8").setCellValue(0.0);
+        getSummarySheetCell("G9").setCellValue(0.0);
 
         reEvaluateAllFormulas();
         // Total shooter count
-        assertEquals(0.0, getCell(1, "H10").getNumericCellValue(), 0.01);
+        assertEquals(0.0, getCell(1, "I10").getNumericCellValue(), 0.01);
         // Permits per shooter multiplier
         assertEquals(0.0, getCell(1, "G14").getNumericCellValue(), 0.01);
 
     }
 
-
     @Test
     public void testFormulas_suggestion() {
         // By land
-        assertEquals("B8 * G13 / 1000", getCell(1, "K8").getCellFormula());
-        assertEquals("B9 * G13 / 1000", getCell(1, "K9").getCellFormula());
-        assertEquals("B8 * G13 / 1000", getCell(2, "K8").getCellFormula());
-        assertEquals("B9 * G13 / 1000", getCell(2, "K9").getCellFormula());
+        assertEquals("C8 * G13 / 1000", getCell(1, "L8").getCellFormula());
+        assertEquals("C9 * G13 / 1000", getCell(1, "L9").getCellFormula());
+        assertEquals("C8 * G13 / 1000", getCell(2, "L8").getCellFormula());
+        assertEquals("C9 * G13 / 1000", getCell(2, "L9").getCellFormula());
 
         // By shooters
-        assertEquals("I8 * G14", getCell(1, "L8").getCellFormula());
-        assertEquals("I9 * G14", getCell(1, "L9").getCellFormula());
-        assertEquals("I8 * G14", getCell(2, "L8").getCellFormula());
-        assertEquals("I9 * G14", getCell(2, "L9").getCellFormula());
+        assertEquals("J8 * G14", getCell(1, "M8").getCellFormula());
+        assertEquals("J9 * G14", getCell(1, "M9").getCellFormula());
+        assertEquals("J8 * G14", getCell(2, "M8").getCellFormula());
+        assertEquals("J9 * G14", getCell(2, "M9").getCellFormula());
 
         // Combined
-        assertEquals("K8 + L8", getCell(1, "M8").getCellFormula());
-        assertEquals("K9 + L9", getCell(1, "M9").getCellFormula());
-        assertEquals("K8 + L8", getCell(2, "M8").getCellFormula());
-        assertEquals("K9 + L9", getCell(2, "M9").getCellFormula());
+        assertEquals("L8 + M8", getCell(1, "N8").getCellFormula());
+        assertEquals("L9 + M9", getCell(1, "N9").getCellFormula());
+        assertEquals("L8 + M8", getCell(2, "N8").getCellFormula());
+        assertEquals("L9 + M9", getCell(2, "N9").getCellFormula());
 
         // Total suggestion
-        assertEquals("M8", getCell(1, "N8").getCellFormula());
-        assertEquals("M9", getCell(1, "N9").getCellFormula());
-        assertEquals("M8", getCell(2, "N8").getCellFormula());
-        assertEquals("M9", getCell(2, "N9").getCellFormula());
+        assertEquals("N8", getCell(1, "O8").getCellFormula());
+        assertEquals("N9", getCell(1, "O9").getCellFormula());
+        assertEquals("N8", getCell(2, "O8").getCellFormula());
+        assertEquals("N9", getCell(2, "O9").getCellFormula());
 
         // Adults
-        assertEquals("ROUND( ( 2 * N8 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(1, "O8").getCellFormula());
-        assertEquals("ROUND( ( 2 * N9 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(1, "O9").getCellFormula());
-        assertEquals("ROUND( ( 2 * N8 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(2, "O8").getCellFormula());
-        assertEquals("ROUND( ( 2 * N9 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(2, "O9").getCellFormula());
+        assertEquals("ROUND( ( 2 * O8 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(1, "P8").getCellFormula());
+        assertEquals("ROUND( ( 2 * O9 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(1, "P9").getCellFormula());
+        assertEquals("ROUND( ( 2 * O8 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(2, "P8").getCellFormula());
+        assertEquals("ROUND( ( 2 * O9 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(2, "P9").getCellFormula());
 
     }
 
@@ -360,6 +361,7 @@ public class JyvitysExcelTest {
 
         }).collect(Collectors.toList());
         return JyvitysExcelApplicationDTO.Builder.builder()
+                .withApplicationNumber(counter)
                 .withApplicant("hakija " + counter)
                 .withAppliedAmount(APPLIED_AMOUNT)
                 .withOtherRhysInArea(counter % 2 == 0 ? ImmutableList.of("Toinen rhy", "Kolmas rhy", "Neljäs rhy") : ImmutableList.of())
@@ -369,10 +371,9 @@ public class JyvitysExcelTest {
                 .build();
     }
 
-    private double ha(final double hectares) {
+    private static double ha(final double hectares) {
         return hectares * HECTARE_IN_SQUARE_METERS;
     }
-
 
     private void reEvaluateAllFormulas() {
         workbook.getCreationHelper().createFormulaEvaluator().evaluateAll();

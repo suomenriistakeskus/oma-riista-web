@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class OtherPublicAdminStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<OtherPublicAdminStatistics>,
+        AnnualStatisticsManuallyEditableFields<OtherPublicAdminStatistics>,
         Serializable {
 
     public static final OtherPublicAdminStatistics reduce(@Nullable final OtherPublicAdminStatistics a,
@@ -59,6 +60,7 @@ public class OtherPublicAdminStatistics
     private Integer mutualAckShootingCertificates;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "other_admin_data_last_modified")
     private DateTime lastModified;
 

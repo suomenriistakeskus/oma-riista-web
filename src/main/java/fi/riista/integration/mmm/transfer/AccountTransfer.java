@@ -3,7 +3,7 @@ package fi.riista.integration.mmm.transfer;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.IbanConverter;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.iban4j.Iban;
 import org.joda.time.LocalDate;
 

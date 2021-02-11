@@ -2,7 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats.audit;
 
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.BaseEntity;
-import fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsNonComputedFields;
+import fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsManuallyEditableFields;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import org.joda.time.DateTime;
@@ -76,7 +76,7 @@ public class RhyAnnualStatisticsModeratorUpdateEvent extends BaseEntity<Long> {
     }
 
     public RhyAnnualStatisticsModeratorUpdateEvent(@Nonnull final RhyAnnualStatistics statistics,
-                                                   @Nonnull final AnnualStatisticsNonComputedFields<?> fieldset,
+                                                   @Nonnull final AnnualStatisticsManuallyEditableFields<?> fieldset,
                                                    @Nonnull final SystemUser user) {
 
         this(statistics, fieldset.getGroup(), fieldset.getLastModified(), user.getId().longValue());

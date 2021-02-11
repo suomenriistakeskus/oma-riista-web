@@ -4,9 +4,11 @@ import com.google.common.base.Throwables;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.EntityLifecycleFields;
+import fi.riista.util.DateUtil;
 import fi.riista.validation.PhoneNumber;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.joda.time.DateTime;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -24,12 +26,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -54,9 +53,8 @@ public class SMSPersistentMessage extends BaseEntity<Long> {
     private SMSMessageStatus status;
 
     @NotNull
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date statusTimestamp;
+    private DateTime statusTimestamp;
 
     @Column(columnDefinition = "text")
     private String statusMessage;
@@ -106,7 +104,7 @@ public class SMSPersistentMessage extends BaseEntity<Long> {
 
     @PrePersist
     protected void prePersist() {
-        final Date now = new Date();
+        final DateTime now = DateUtil.now();
 
         getLifecycleFields().setCreationTime(now);
         getLifecycleFields().setModificationTime(now);
@@ -114,18 +112,18 @@ public class SMSPersistentMessage extends BaseEntity<Long> {
 
     @PreUpdate
     void preUpdate() {
-        getLifecycleFields().setModificationTime(new Date());
+        getLifecycleFields().setModificationTime(DateUtil.now());
     }
 
-    public Date getCreationTime() {
+    public DateTime getCreationTime() {
         return getLifecycleFields().getCreationTime();
     }
 
-    public Date getModificationTime() {
+    public DateTime getModificationTime() {
         return getLifecycleFields().getModificationTime();
     }
 
-    public Date getDeletionTime() {
+    public DateTime getDeletionTime() {
         return getLifecycleFields().getDeletionTime();
     }
 
@@ -151,18 +149,18 @@ public class SMSPersistentMessage extends BaseEntity<Long> {
 
     public void setStatus(SMSMessageStatus status, String statusMessage) {
         this.status = Objects.requireNonNull(status);
-        this.statusTimestamp = new Date();
+        this.statusTimestamp = DateUtil.now();
         this.statusMessage = statusMessage;
     }
 
     public void setErrorStatus(Throwable ex) {
         this.status = SMSMessageStatus.ERROR;
-        this.statusTimestamp = new Date();
+        this.statusTimestamp = DateUtil.now();
         this.statusMessage = "Caught exception " + ex.getClass().getName() + " : " +
                 Throwables.getRootCause(ex).getMessage();
     }
 
-    public Date getStatusTimestamp() {
+    public DateTime getStatusTimestamp() {
         return statusTimestamp;
     }
 

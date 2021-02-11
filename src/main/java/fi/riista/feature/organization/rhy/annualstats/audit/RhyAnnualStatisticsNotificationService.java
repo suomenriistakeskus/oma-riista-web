@@ -150,7 +150,7 @@ public class RhyAnnualStatisticsNotificationService {
                         .groupBy(STATS.id)
                         .transform(groupBy(STATS.id).as(lastModified));
 
-        return statisticsRepository.findAll(statisticsIdToModificationTime.keySet());
+        return statisticsRepository.findAllById(statisticsIdToModificationTime.keySet());
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
@@ -181,7 +181,7 @@ public class RhyAnnualStatisticsNotificationService {
         }
 
         final Set<Long> uniqueRhyIds = F.mapNonNullsToSet(collection, getRhyId);
-        final List<Riistanhoitoyhdistys> involvedRhys = rhyRepository.findAll(uniqueRhyIds);
+        final List<Riistanhoitoyhdistys> involvedRhys = rhyRepository.findAllById(uniqueRhyIds);
         final Map<Long, Riistanhoitoyhdistys> rhyIndex = F.indexById(involvedRhys);
 
         final Map<Long, Set<String>> rhyIdToEmails = emailService.resolveEmails(uniqueRhyIds);

@@ -3,13 +3,13 @@ package fi.riista.feature.gamediary.observation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import fi.riista.feature.gamediary.DeerHuntingType;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
 import fi.riista.feature.gamediary.observation.metadata.ObservationContext;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenDTO;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps;
-import fi.riista.util.F;
 import fi.riista.validation.PhoneNumber;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -21,13 +21,10 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static fi.riista.util.F.coalesceAsInt;
-
-public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
+public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO implements HasMooselikeObservationAmounts {
 
     @NotNull
     private ObservationType observationType;
@@ -37,7 +34,15 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
     @Max(Observation.MAX_AMOUNT)
     private Integer amount;
 
-    private Boolean withinMooseHunting;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private ObservationCategory observationCategory;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private DeerHuntingType deerHuntingType;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String deerHuntingTypeDescription;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Min(0)
@@ -124,8 +129,9 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
         super(GameDiaryEntryType.OBSERVATION);
     }
 
-    public boolean observedWithinMooseHunting() {
-        return Boolean.TRUE.equals(withinMooseHunting);
+    public boolean observedWithinHunting() {
+        return observationCategory == ObservationCategory.MOOSE_HUNTING
+                || observationCategory == ObservationCategory.DEER_HUNTING;
     }
 
     @AssertFalse
@@ -144,25 +150,10 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
 
     public ObservationContext getObservationContext() {
         return new ObservationContext(
-                getObservationSpecVersion(), getGameSpeciesCode(), observedWithinMooseHunting(), getObservationType());
-    }
-
-    public boolean containsAnyMooselikeAmount() {
-        return F.anyNonNull(
-                mooselikeMaleAmount, mooselikeFemaleAmount, mooselikeCalfAmount, mooselikeFemale1CalfAmount,
-                mooselikeFemale2CalfsAmount, mooselikeFemale3CalfsAmount, mooselikeFemale4CalfsAmount,
-                mooselikeUnknownSpecimenAmount);
-    }
-
-    public int getSumOfMooselikeAmountFields() {
-        return coalesceAsInt(mooselikeMaleAmount, 0)
-                + coalesceAsInt(mooselikeFemaleAmount, 0)
-                + coalesceAsInt(mooselikeCalfAmount, 0)
-                + 2 * coalesceAsInt(mooselikeFemale1CalfAmount, 0)
-                + 3 * coalesceAsInt(mooselikeFemale2CalfsAmount, 0)
-                + 4 * coalesceAsInt(mooselikeFemale3CalfsAmount, 0)
-                + 5 * coalesceAsInt(mooselikeFemale4CalfsAmount, 0)
-                + coalesceAsInt(mooselikeUnknownSpecimenAmount, 0);
+                getObservationSpecVersion(),
+                getGameSpeciesCode(),
+                getObservationCategory(),
+                getObservationType());
     }
 
     // Accessors -->
@@ -185,14 +176,31 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
         this.amount = amount;
     }
 
-    public Boolean getWithinMooseHunting() {
-        return withinMooseHunting;
+    public ObservationCategory getObservationCategory() {
+        return observationCategory;
     }
 
-    public void setWithinMooseHunting(final Boolean withinMooseHunting) {
-        this.withinMooseHunting = withinMooseHunting;
+    public void setObservationCategory(final ObservationCategory observationCategory) {
+        this.observationCategory = observationCategory;
     }
 
+    public DeerHuntingType getDeerHuntingType() {
+        return deerHuntingType;
+    }
+
+    public void setDeerHuntingType(final DeerHuntingType deerHuntingType) {
+        this.deerHuntingType = deerHuntingType;
+    }
+
+    public String getDeerHuntingTypeDescription() {
+        return deerHuntingTypeDescription;
+    }
+
+    public void setDeerHuntingTypeDescription(final String deerHuntingTypeDescription) {
+        this.deerHuntingTypeDescription = deerHuntingTypeDescription;
+    }
+
+    @Override
     public Integer getMooselikeMaleAmount() {
         return mooselikeMaleAmount;
     }
@@ -201,6 +209,7 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
         this.mooselikeMaleAmount = mooselikeMaleAmount;
     }
 
+    @Override
     public Integer getMooselikeFemaleAmount() {
         return mooselikeFemaleAmount;
     }
@@ -209,6 +218,7 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
         this.mooselikeFemaleAmount = mooselikeFemaleAmount;
     }
 
+    @Override
     public Integer getMooselikeCalfAmount() {
         return mooselikeCalfAmount;
     }
@@ -217,6 +227,7 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
         this.mooselikeCalfAmount = mooselikeCalfAmount;
     }
 
+    @Override
     public Integer getMooselikeFemale1CalfAmount() {
         return mooselikeFemale1CalfAmount;
     }
@@ -225,6 +236,7 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
         this.mooselikeFemale1CalfAmount = mooselikeFemale1CalfAmount;
     }
 
+    @Override
     public Integer getMooselikeFemale2CalfsAmount() {
         return mooselikeFemale2CalfsAmount;
     }
@@ -233,6 +245,7 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
         this.mooselikeFemale2CalfsAmount = mooselikeFemale2CalfsAmount;
     }
 
+    @Override
     public Integer getMooselikeFemale3CalfsAmount() {
         return mooselikeFemale3CalfsAmount;
     }
@@ -241,6 +254,7 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
         this.mooselikeFemale3CalfsAmount = mooselikeFemale3CalfsAmount;
     }
 
+    @Override
     public Integer getMooselikeFemale4CalfsAmount() {
         return mooselikeFemale4CalfsAmount;
     }
@@ -249,6 +263,7 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
         this.mooselikeFemale4CalfsAmount = mooselikeFemale4CalfsAmount;
     }
 
+    @Override
     public Integer getMooselikeUnknownSpecimenAmount() {
         return mooselikeUnknownSpecimenAmount;
     }
@@ -336,8 +351,8 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
     public static abstract class Builder<DTO extends ObservationDTOBase, SELF extends Builder<DTO, SELF>>
             extends HuntingDiaryEntryDTO.Builder<DTO, SELF> {
 
-        public SELF withWithinMooseHunting(@Nullable final Boolean withinMooseHunting) {
-            dto.setWithinMooseHunting(withinMooseHunting);
+        public SELF withObservationCategory(@Nullable final ObservationCategory observationCategory) {
+            dto.setObservationCategory(observationCategory);
             return self();
         }
 
@@ -346,36 +361,31 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO {
             return self();
         }
 
+        public SELF withDeerHuntingType(@Nullable final DeerHuntingType deerHuntingType) {
+            dto.setDeerHuntingType(deerHuntingType);
+            return self();
+        }
+
+        public SELF withDeerHuntingTypeDescription(@Nullable final String deerHuntingTypeDescription) {
+            dto.setDeerHuntingTypeDescription(deerHuntingTypeDescription);
+            return self();
+        }
+
         public SELF withAmount(@Nullable final Integer amount) {
             dto.setAmount(amount);
             return self();
         }
 
-        // ASSOCIATIONS MUST NOT BE TRAVERSED IN THIS METHOD (except for identifiers that are
-        // part of the entity itself).
-        public SELF populateWith(@Nonnull final Observation observation, final boolean populateLargeCarnivoreFields) {
-            return populateWithEntry(observation)
-                    .withWithinMooseHunting(observation.getWithinMooseHunting())
-                    .withObservationType(observation.getObservationType())
-                    .withAmount(observation.getAmount())
-                    .withSpecimens(observation.getAmount() != null ? new ArrayList<>() : null)
-                    .chain(self -> {
-                        dto.setMooselikeMaleAmount(observation.getMooselikeMaleAmount());
-                        dto.setMooselikeFemaleAmount(observation.getMooselikeFemaleAmount());
-                        dto.setMooselikeCalfAmount(observation.getMooselikeCalfAmount());
-                        dto.setMooselikeFemale1CalfAmount(observation.getMooselikeFemale1CalfAmount());
-                        dto.setMooselikeFemale2CalfsAmount(observation.getMooselikeFemale2CalfsAmount());
-                        dto.setMooselikeFemale3CalfsAmount(observation.getMooselikeFemale3CalfsAmount());
-                        dto.setMooselikeFemale4CalfsAmount(observation.getMooselikeFemale4CalfsAmount());
-                        dto.setMooselikeUnknownSpecimenAmount(observation.getMooselikeUnknownSpecimenAmount());
-
-                        if (populateLargeCarnivoreFields) {
-                            dto.setVerifiedByCarnivoreAuthority(observation.getVerifiedByCarnivoreAuthority());
-                            dto.setObserverName(observation.getObserverName());
-                            dto.setObserverPhoneNumber(observation.getObserverPhoneNumber());
-                            dto.setOfficialAdditionalInfo(observation.getOfficialAdditionalInfo());
-                        }
-                    });
+        public SELF withMooselikeAmountsFrom(@Nonnull final Observation observation) {
+            dto.setMooselikeMaleAmount(observation.getMooselikeMaleAmount());
+            dto.setMooselikeFemaleAmount(observation.getMooselikeFemaleAmount());
+            dto.setMooselikeCalfAmount(observation.getMooselikeCalfAmount());
+            dto.setMooselikeFemale1CalfAmount(observation.getMooselikeFemale1CalfAmount());
+            dto.setMooselikeFemale2CalfsAmount(observation.getMooselikeFemale2CalfsAmount());
+            dto.setMooselikeFemale3CalfsAmount(observation.getMooselikeFemale3CalfsAmount());
+            dto.setMooselikeFemale4CalfsAmount(observation.getMooselikeFemale4CalfsAmount());
+            dto.setMooselikeUnknownSpecimenAmount(observation.getMooselikeUnknownSpecimenAmount());
+            return self();
         }
 
         public SELF withSpecimens(@Nullable final List<ObservationSpecimenDTO> specimens) {

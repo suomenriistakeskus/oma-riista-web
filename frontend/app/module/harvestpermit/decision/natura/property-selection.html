@@ -1,0 +1,41 @@
+<strong translate="decision.natura.selectedPropertiesTitle"></strong>
+
+<form class="form"
+      name="propertyForm" id="propertyForm" role="form"
+      ng-submit="$ctrl.searchProperty($ctrl.propertyCode)"
+      r-force-show-errors-check-validity>
+
+    <div class="form-group" show-errors>
+        <div class="input-group">
+            <input type="text"
+                   name="propertyCode" id="propertyCode"
+                   class="form-control"
+                   ng-model="$ctrl.propertyCode"
+                   r-validate-property-code>
+            <span class="input-group-addon glyphicon glyphicon-search"
+                  ng-click="$ctrl.searchProperty($ctrl.propertyCode)"></span>
+        </div>
+        <div class="help-block" ng-messages="propertyForm.propertyCode.$error">
+            <span ng-messages-include="common/errorMessages.html"></span>
+            <div ng-message="propertyCode" translate="decision.natura.propertyCodeError"></div>
+        </div>
+    </div>
+
+</form>
+
+<div class="panel-body">
+    <table class="table">
+        <tbody><tr ng-repeat="(id, property) in $ctrl.properties track by id">
+            <td><div class="row">
+                <div class="col-xs-2"><span class="fa fa-eye" ng-click="$ctrl.view(id)"></span></div>
+                <div class="col-xs-7">{{ ::id | formatPropertyIdentifier }}</div>
+                <div class="col-xs-3">
+                    <button class="btn btn-xs btn-default" ng-click="$ctrl.remove(id)">
+                        <span translate="global.button.delete"></span>
+                        <span class="glyphicon glyphicon-remove text-danger"></span>
+                    </button>
+                </div>
+            </div></td>
+        </tr></tbody>
+    </table>
+</div>

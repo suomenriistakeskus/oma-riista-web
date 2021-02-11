@@ -126,7 +126,7 @@ public class MetsahallitusPermitImportFeatureTest extends EmbeddedDatabaseTest {
 
     private static MetsahallitusPermitImportDTO incompleteDto(final String permitNumber) {
         final MetsahallitusPermitImportDTO dto = new MetsahallitusPermitImportDTO();
-        dto.setTilauksenTila(MetsahallitusPermitImportDTO.PAID);
+        dto.setTilauksenTila(MetsahallitusPermitImportDTO.PAID_1);
         dto.setLuvanTunnus(permitNumber);
 
         dto.setLupaTyyppi("testilupatyyppi");

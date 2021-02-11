@@ -1,33 +1,52 @@
 package fi.riista.feature.gamediary.fixture;
 
-import com.google.common.base.Preconditions;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenOpsForTest;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenPopulator;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ValueGeneratorMixin;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static fi.riista.test.TestUtils.createList;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
 @FunctionalInterface
 public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
 
+    default HarvestSpecVersion getDefaultSpecVersion() {
+        // TODO Switch to `CURRENTLY_SUPPORTED` when deer pilot 2020 is over.
+        return HarvestSpecVersion._7;
+    }
+
     default Builder create(@Nonnull final GameSpecies species) {
         return create(species, 0);
     }
 
-    default Builder create(@Nonnull final GameSpecies species, final int numIdentifiedSpecimens) {
-        Preconditions.checkArgument(numIdentifiedSpecimens >= 0, "numIdentifiedSpecimens must not be negative");
+    default Builder create(@Nonnull final HarvestSpecVersion specVersion, @Nonnull final GameSpecies species) {
+        return create(specVersion, species, 0);
+    }
 
-        final Builder builder = new Builder(this)
-                .populateWith(species)
+    default Builder create(@Nonnull final GameSpecies species, final int numIdentifiedSpecimens) {
+        return create(getDefaultSpecVersion(), species, numIdentifiedSpecimens);
+    }
+
+    default Builder create(@Nonnull final HarvestSpecVersion specVersion,
+                           @Nonnull final GameSpecies species,
+                           final int numIdentifiedSpecimens) {
+
+        checkArgument(numIdentifiedSpecimens >= 0, "numIdentifiedSpecimens must not be negative");
+
+        final Builder builder = new Builder(specVersion, this)
+                .withGameSpeciesCode(species.getOfficialCode())
                 .withGeoLocation(geoLocation(GeoLocation.Source.MANUAL))
                 .withPointOfTime(DateUtil.localDateTime())
                 .withDescription("description");
@@ -38,55 +57,85 @@ public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
     }
 
     default Builder create(@Nonnull final Harvest harvest) {
-        Objects.requireNonNull(harvest);
-        return create(harvest, harvest.getSpecies());
+        return create(getDefaultSpecVersion(), harvest);
+    }
+
+    default Builder create(@Nonnull final HarvestSpecVersion specVersion, @Nonnull final Harvest harvest) {
+        requireNonNull(harvest);
+        return create(specVersion, harvest, harvest.getSpecies());
     }
 
     default Builder create(@Nonnull final Harvest harvest, @Nonnull final GameSpecies species) {
-        return new Builder(this)
+        return create(getDefaultSpecVersion(), harvest, species);
+    }
+
+    default Builder create(@Nonnull final HarvestSpecVersion specVersion,
+                           @Nonnull final Harvest harvest,
+                           @Nonnull final GameSpecies species) {
+
+        return new Builder(specVersion, this)
                 .populateWith(harvest)
                 .populateWith(harvest.getHarvestPermit())
-                .populateWith(species);
+                .withGameSpeciesCode(species.getOfficialCode())
+                .withActorInfo(harvest.getActor())
+                .withAuthorInfo(harvest.getAuthor());
     }
 
     default Builder create(@Nonnull final Harvest harvest, final int numIdentifiedSpecimens) {
-        Objects.requireNonNull(harvest);
-        return create(harvest, harvest.getSpecies(), numIdentifiedSpecimens);
+        return create(getDefaultSpecVersion(), harvest, numIdentifiedSpecimens);
+    }
+
+    default Builder create(@Nonnull final HarvestSpecVersion specVersion,
+                           @Nonnull final Harvest harvest,
+                           final int numIdentifiedSpecimens) {
+
+        requireNonNull(harvest);
+        return create(specVersion, harvest, harvest.getSpecies(), numIdentifiedSpecimens);
     }
 
     default Builder create(@Nonnull final Harvest harvest,
                            @Nonnull final GameSpecies species,
                            final int numIdentifiedSpecimens) {
 
-        Preconditions.checkArgument(numIdentifiedSpecimens >= 0, "numIdentifiedSpecimens must not be negative");
+        return create(getDefaultSpecVersion(), harvest, species, numIdentifiedSpecimens);
+    }
 
-        return create(harvest, species).chain(self -> {
+    default Builder create(@Nonnull final HarvestSpecVersion specVersion,
+                           @Nonnull final Harvest harvest,
+                           @Nonnull final GameSpecies species,
+                           final int numIdentifiedSpecimens) {
+
+        checkArgument(numIdentifiedSpecimens >= 0, "numIdentifiedSpecimens must not be negative");
+
+        return create(specVersion, harvest, species).chain(self -> {
             if (numIdentifiedSpecimens > 0) {
                 self.withAmount(numIdentifiedSpecimens).withSpecimens(numIdentifiedSpecimens);
             }
         });
     }
 
-    default Builder create(@Nonnull final HarvestDTO initial) {
-        return new Builder(this) {
-            @Override
-            protected HarvestDTO createDTO() {
-                return initial;
-            }
-        };
-    }
-
     class Builder extends HarvestDTO.Builder<Builder> {
 
         private final ValueGeneratorMixin values;
 
-        public Builder(@Nonnull final ValueGeneratorMixin mixin) {
-            this.values = Objects.requireNonNull(mixin);
+        public Builder(@Nonnull final HarvestSpecVersion specVersion, @Nonnull final ValueGeneratorMixin mixin) {
+            super(specVersion);
+
+            this.values = requireNonNull(mixin);
+        }
+
+        public Builder withSpecimen(@Nonnull final HarvestSpecimenType specimenType) {
+            final HarvestSpecimenDTO specimen = new HarvestSpecimenDTO();
+            dto.setSpecimens(singletonList(specimen));
+
+            createSpecimenPopulator().mutateContent(specimen, specimenType);
+
+            return self();
         }
 
         public Builder withSpecimens(final int numSpecimens) {
-            final HarvestSpecimenOpsForTest ops = getSpecimenOps();
-            return withSpecimens(createList(numSpecimens, ops::createDTO));
+            dto.setSpecimens(createList(numSpecimens, HarvestSpecimenDTO::new));
+            return mutateSpecimens();
         }
 
         public Builder mutate() {
@@ -95,26 +144,19 @@ public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
                     .withDescription(ofNullable(dto.getDescription()).orElse("") + "CHANGED");
         }
 
-        public Builder mutate(final GroupHuntingDay huntingDay) {
-            final int seconds = values.nextIntBetween(0, huntingDay.calculateHuntingDayDurationInMinutes() - 1);
-            return withGeoLocation(values.geoLocation(GeoLocation.Source.MANUAL))
-                    .withPointOfTime(huntingDay.getStartAsLocalDateTime().plusSeconds(seconds))
-                    .withDescription(ofNullable(dto.getDescription()).orElse("") + "CHANGED");
-        }
-
         public Builder mutateSpecimens() {
-            final HarvestSpecimenOpsForTest ops = getSpecimenOps();
-            dto.getSpecimens().forEach(ops::mutateContent);
-            return this;
+            final HarvestSpecimenPopulator populator = createSpecimenPopulator();
+            dto.getSpecimens().forEach(populator::mutateContent);
+            return self();
         }
 
         public Builder linkToHuntingDay(@Nonnull final GroupHuntingDay huntingDay) {
-            Objects.requireNonNull(huntingDay);
+            requireNonNull(huntingDay);
             dto.setHuntingDayId(huntingDay.getId());
             if (!huntingDay.containsInstant(dto.getPointOfTime())) {
                 dto.setPointOfTime(huntingDay.getStartAsLocalDateTime());
             }
-            return this;
+            return self();
         }
 
         @Override
@@ -122,9 +164,12 @@ public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
             return this;
         }
 
-        protected HarvestSpecimenOpsForTest getSpecimenOps() {
-            return new HarvestSpecimenOpsForTest(
-                    dto.getGameSpeciesCode(), dto.getHarvestSpecVersion(), values.getNumberGenerator());
+        protected HarvestSpecimenPopulator createSpecimenPopulator() {
+            return new HarvestSpecimenPopulator(
+                    dto.getGameSpeciesCode(),
+                    dto.getHarvestSpecVersion(),
+                    DateUtil.huntingYearContaining(dto.getPointOfTime().toLocalDate()),
+                    values.getNumberGenerator());
         }
     }
 }

@@ -1,0 +1,22 @@
+<ul class="nav nav-pills nav-justified">
+    <li class="disabled" active-if-state-includes="**.applicant">
+        <a translate="harvestpermit.wizard.navigation.applicant"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.basicinfo">
+        <a translate="harvestpermit.wizard.disability.basicInfo.navigationTitle"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.justification">
+        <a translate="harvestpermit.wizard.disability.justification.navigationTitle"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.attachments">
+        <a translate="harvestpermit.wizard.navigation.attachments"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.summary">
+        <a translate="harvestpermit.wizard.navigation.summary"></a>
+    </li>
+</ul>
+
+<div class="col-md-offset-1 col-md-10">
+    <h2 ng-bind="$ctrl.applicationBasicDetails.applicationName"></h2>
+    <div ui-view autoscroll="false" class="permit-application-wizard-container"></div>
+</div>

@@ -1,8 +1,8 @@
 package fi.riista.config.jpa;
 
-import org.hibernate.spatial.dialect.postgis.PostgisDialect;
+import org.hibernate.spatial.dialect.postgis.PostgisPG95Dialect;
 
-public class CustomPostgisDialect extends PostgisDialect {
+public class CustomPostgisDialect extends PostgisPG95Dialect {
     public CustomPostgisDialect() {
         super();
 

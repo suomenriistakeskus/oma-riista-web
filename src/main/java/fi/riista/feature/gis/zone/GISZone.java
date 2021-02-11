@@ -1,11 +1,11 @@
 package fi.riista.feature.gis.zone;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.hibernate.annotations.Type;
+import org.locationtech.jts.geom.Geometry;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -52,10 +52,12 @@ public class GISZone extends LifecycleEntity<Long> {
     @OneToOne(fetch = FetchType.LAZY)
     private PersistentFileMetadata uploadFile;
 
-    @Type(type = "org.hibernate.spatial.GeometryType")
+    @Type(type = "jts_geometry")
+    @Column(name = "geom", columnDefinition = "Geometry")
     private Geometry geom;
 
-    @Type(type = "org.hibernate.spatial.GeometryType")
+    @Type(type = "jts_geometry")
+    @Column(name = "excluded_geom", columnDefinition = "Geometry")
     private Geometry excludedGeom;
 
     @Column(nullable = false)

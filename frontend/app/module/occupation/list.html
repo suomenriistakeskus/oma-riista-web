@@ -47,8 +47,8 @@
             <thead>
                 <tr>
                     <th class="col-xs-3" translate="occupation.occupation"></th>
-                    <th class="col-xs-5" translate="occupation.name_and_address"></th>
-                    <th class="col-xs-3" translate="occupation.phonenumber_and_email"></th>
+                    <th class="col-xs-4" translate="occupation.name_and_address"></th>
+                    <th class="col-xs-4" translate="occupation.phonenumber_and_email"></th>
                     <th class="col-xs-1">&nbsp;</th>
                 </tr>
             </thead>
@@ -107,10 +107,6 @@
                                 ng-disabled="!$ctrl.canModify(occupation)">
                             <span class="glyphicon glyphicon-edit" title="{{'occupation.button.edit' | translate}}"></span>
                         </button>
-                        <button type="button" ng-click="$ctrl.removeSelected(occupation)" class="btn btn-link"
-                                ng-disabled="!$ctrl.canModify(occupation)">
-                            <span class="glyphicon glyphicon-remove " title="{{'occupation.button.remove' | translate}}"></span>
-                        </button>
                     </td>
                 </tr>
             </tbody>
@@ -124,8 +120,9 @@
             <thead>
                 <tr>
                     <th class="col-xs-3" translate="occupation.occupation"></th>
-                    <th class="col-xs-5" translate="occupation.name_and_address"></th>
-                    <th class="col-xs-3" translate="occupation.phonenumber_and_email"></th>
+                    <th class="col-xs-4" translate="occupation.name_and_address"></th>
+                    <th class="col-xs-2" translate="occupation.phonenumber_and_email"></th>
+                    <th class="col-xs-2" translate="occupation.boardRepresentations"></th>
                     <th class="col-xs-1">&nbsp;</th>
                 </tr>
             </thead>
@@ -179,14 +176,13 @@
                             <span ng-if="!occupation.person.email" translate="occupation.no_email"></span>
                         </div>
                     </td>
+                    <td>
+                        <div ng-if="occupation.boardRepresentation" ng-bind="'occupation.boardRepresentation.'+occupation.boardRepresentation | translate"/>
+                    </td>
                     <td class="text-right r-table-actions-cell">
                         <button type="button" ng-click="$ctrl.showSelected(occupation)" class="btn btn-link"
                                 ng-disabled="!$ctrl.canModify(occupation)">
                             <span class="glyphicon glyphicon-edit" title="{{'occupation.button.edit' | translate}}"></span>
-                        </button>
-                        <button type="button" ng-click="$ctrl.removeSelected(occupation)" class="btn btn-link"
-                                ng-disabled="!$ctrl.canModify(occupation)">
-                            <span class="glyphicon glyphicon-remove " title="{{'occupation.button.remove' | translate}}"></span>
                         </button>
                     </td>
                 </tr>

@@ -2,7 +2,7 @@
     <div class="container">
         <ul class="nav navbar-nav r-subnav-nav" ng-if="$ctrl.coordinatorView">
             <li class="dropdown"
-                active-if-state-includes="rhy.show,rhy.announcements,rhy.events,rhy.locations,rhy.nomination,rhy.occupations,rhy.annualstats"
+                active-if-state-includes="rhy.show,rhy.announcements,rhy.events,rhy.locations,rhy.nomination,rhy.occupations,rhy.annualstats, rhy.gamedamageinspectionevent, rhy.annualreport, rhy.huntingcontrolevent"
                 uib-dropdown dropdown-append-to-body>
                 <a uib-dropdown-toggle>
                     <span translate="rhy.menu.main"></span>
@@ -13,10 +13,13 @@
                     <li ui-sref-active="active"><a ui-sref="rhy.show" translate="rhy.menu.general"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.announcements" translate="announcements.list.title"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.events" translate="rhy.menu.events"></a></li>
+                    <li ui-sref-active="active"><a ui-sref="rhy.gamedamageinspectionevent" translate="rhy.gameDamageInspectionEvent.heading"></a></li>
+                    <li ui-sref-active="active"><a ui-sref="rhy.huntingcontrolevent" translate="rhy.huntingControlEvent.heading"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.locations" translate="rhy.menu.venues"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.nomination" translate="rhy.menu.jht"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.occupations" translate="rhy.menu.occupations"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.annualstats({activeTab: 0})" translate="rhy.menu.annualStatistics"></a></li>
+                    <li ui-sref-active="active"><a ui-sref="rhy.annualreport" translate="rhy.annualReport.heading"></a></li>
                 </ul>
             </li>
             <li ui-sref-active="active"><a ui-sref="rhy.harvestreports" translate="rhy.menu.harvestreports"></a></li>
@@ -33,8 +36,8 @@
                     <li ui-sref-active="active"><a ui-sref="rhy.moosepermitapplications" translate="rhy.menu.mooselikeApplications"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.moosepermit" translate="rhy.menu.mooselikePermits"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.harvestmap" translate="rhy.menu.mooselikeHarvestMap"></a></li>
-                    <li ui-sref-active="active"><a ui-sref="rhy.moosepermitstatistics"
-                                                   translate="rhy.menu.mooselikeStats"></a></li>
+                    <li ui-sref-active="active"><a ui-sref="rhy.moosepermitstatistics" translate="rhy.menu.mooselikeStats"></a></li>
+                    <li ui-sref-active="active"><a ui-sref="rhy.reports" translate="rhy.menu.mooselikeReports"></a></li>
                 </ul>
             </li>
 
@@ -54,6 +57,9 @@
                 <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
                     <li ui-sref-active="active"><a ui-sref="rhy.srva.list" translate="rhy.menu.srvaList"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.srva.map" translate="global.map.map"></a></li>
+                    <li ui-sref-active="active" ng-if="$ctrl.coordinatorView">
+                        <a ui-sref="rhy.srva.callring" translate="rhy.menu.srvaCallRing"></a>
+                    </li>
                 </ul>
             </li>
             <li class="dropdown"

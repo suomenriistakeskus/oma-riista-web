@@ -3,7 +3,7 @@ package fi.riista.feature.permit.application.send;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationAuthorizationService;
-import fi.riista.feature.permit.application.HarvestPermitApplicationNumberService;
+import fi.riista.feature.permit.application.DocumentNumberAllocationService;
 import fi.riista.feature.permit.application.validation.HarvestPermitApplicationValidationService;
 import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
@@ -27,7 +27,7 @@ public class HarvestPermitApplicationSendFeature {
     private ActiveUserService activeUserService;
 
     @Resource
-    private HarvestPermitApplicationNumberService harvestPermitNumberService;
+    private DocumentNumberAllocationService documentNumberAllocationService;
 
     @Transactional
     public void sendApplication(final HarvestPermitApplicationSendDTO dto) {
@@ -37,7 +37,7 @@ public class HarvestPermitApplicationSendFeature {
         // validate
         harvestPermitApplicationValidationService.validateApplicationForSending(application);
 
-        application.setApplicationNumber(harvestPermitNumberService.getNextApplicationNumber());
+        application.setApplicationNumber(documentNumberAllocationService.allocateNextNumber());
         application.setStatus(HarvestPermitApplication.Status.ACTIVE);
         application.setUuid(UUID.randomUUID());
 

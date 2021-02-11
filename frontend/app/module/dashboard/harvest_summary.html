@@ -1,12 +1,23 @@
 <form>
     <div class="row">
+        <div class="col-xs-3 col-xs-offset-9">
+            <div class="form-group">
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="officialHarvestOnly" id="officialHarvestOnly"
+                           ng-model="$ctrl.officialHarvestOnly">
+                    <span translate="reporting.dashboard.harvestTab.collector.approvedHarvestsOnly"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-xs-6">
         </div>
         <div class="col-xs-3">
             <div class="form-group">
                 <label class="checkbox-inline">
                     <input type="checkbox" name="filterSpecies" id="filterSpecies" ng-model="$ctrl.filterSpecies">
-                    Rajoita eläinlaji
+                    <span translate="reporting.dashboard.harvestTab.collector.limitSpecies"></span>
                 </label>
             </div>
         </div>
@@ -15,7 +26,7 @@
                 <label class="checkbox-inline">
                     <input type="checkbox" name="harvestReportOnly" id="harvestReportOnly"
                            ng-model="$ctrl.harvestReportOnly">
-                    Vain saalisilmoitukset
+                    <span translate="reporting.dashboard.harvestTab.collector.onlyHarvestReports"></span>
                 </label>
             </div>
         </div>
@@ -25,6 +36,7 @@
             <organisation-selection
                     show-rk="true"
                     show-rka="true"
+                    show-inactive-rhys="true"
                     area-code="$ctrl.areaCode"
                     rhy-code="$ctrl.rhyCode"></organisation-selection>
         </div>
@@ -79,7 +91,7 @@
                 <div class="btn-group">
                     <button type="button" class="btn btn-primary"
                             ng-click="$ctrl.exportExcel()">
-                        Tee poiminta
+                        <span translate="reporting.dashboard.harvestTab.collector.exportToExcel"></span>
                     </button>
                 </div>
             </div>

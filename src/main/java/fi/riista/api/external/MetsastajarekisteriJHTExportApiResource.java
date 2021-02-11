@@ -19,7 +19,7 @@ public class MetsastajarekisteriJHTExportApiResource {
     private MrJhtExportFeature mrJhtExportFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/jht", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/jht", produces = MediaType.APPLICATION_JSON_VALUE)
     public MR_JHT_Jht exportJson() {
         return mrJhtExportFeature.export();
     }

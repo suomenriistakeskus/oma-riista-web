@@ -1,5 +1,7 @@
 package fi.riista.feature.common.entity;
 
+import org.joda.time.DateTime;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Embedded;
@@ -8,7 +10,6 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.validation.Valid;
 import java.io.Serializable;
-import java.util.Date;
 
 import static fi.riista.util.DateUtil.now;
 
@@ -38,15 +39,15 @@ public abstract class LifecycleEntity<T extends Serializable> extends BaseEntity
         return auditFields;
     }
 
-    public Date getCreationTime() {
+    public DateTime getCreationTime() {
         return getLifecycleFields().getCreationTime();
     }
 
-    public Date getModificationTime() {
+    public DateTime getModificationTime() {
         return getLifecycleFields().getModificationTime();
     }
 
-    public Date getDeletionTime() {
+    public DateTime getDeletionTime() {
         return getLifecycleFields().getDeletionTime();
     }
 
@@ -56,7 +57,7 @@ public abstract class LifecycleEntity<T extends Serializable> extends BaseEntity
 
     public void softDelete() {
         if (!isDeleted()) {
-            getLifecycleFields().setDeletionTime(now().toDate());
+            getLifecycleFields().setDeletionTime(now());
             getAuditFields().setDeletedByUserId(getActiveUserId());
         }
     }
@@ -75,7 +76,7 @@ public abstract class LifecycleEntity<T extends Serializable> extends BaseEntity
 
     @PrePersist
     protected void prePersist() {
-        final Date now = now().toDate();
+        final DateTime now = now();
         final long activeUserId = getActiveUserId();
 
         getLifecycleFields().setCreationTime(now);
@@ -103,6 +104,6 @@ public abstract class LifecycleEntity<T extends Serializable> extends BaseEntity
     }
 
     public void setModificationTimeToCurrentTime() {
-        getLifecycleFields().setModificationTime(now().toDate());
+        getLifecycleFields().setModificationTime(now());
     }
 }

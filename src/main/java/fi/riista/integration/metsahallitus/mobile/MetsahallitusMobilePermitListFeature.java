@@ -28,7 +28,7 @@ public class MetsahallitusMobilePermitListFeature {
         final List<MetsahallitusPermit> list = metsahallitusPermitRepository.findByPerson(person);
 
         return list.stream()
-                .filter(p -> MetsahallitusPermitImportDTO.PAID.equals(p.getStatus()))
+                .filter(p -> MetsahallitusPermitImportDTO.PAID_CODES.contains(p.getStatus()))
                 .map(MetsahallitusMobilePermitDTO::create)
                 .collect(toList());
     }

@@ -22,7 +22,6 @@ import fi.riista.feature.permitplanning.hirvityvitys.dto.JyvitysExcelApplication
 import fi.riista.feature.permitplanning.hirvityvitys.dto.JyvitysExcelApplicationVerotuslohkoDTO;
 import fi.riista.feature.permitplanning.hirvityvitys.dto.JyvitysExcelRhyDTO;
 import fi.riista.feature.permitplanning.hirvityvitys.dto.JyvitysExcelVerotuslohkoDTO;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,18 +57,19 @@ public class JyvitysExcelFeature {
     private ActiveUserService activeUserService;
 
     @Transactional(readOnly = true)
-    public JyvitysExcelView export(@Nonnull final String officialCode) {
+    public JyvitysExcelView export(final int huntingYear, @Nonnull final String officialCode) {
         requireNonNull(officialCode);
         Preconditions.checkState(activeUserService.isModeratorOrAdmin(), "Unauthorized access");
 
         final Riistanhoitoyhdistys rhy = riistanhoitoyhdistysRepository.findByOfficialCode(officialCode);
-        final List<GISVerotusLohko> verotusLohkos = fetchVerotusLohkos(rhy.getOfficialCode());
+        final List<GISVerotusLohko> verotusLohkos = fetchVerotusLohkos(huntingYear, rhy.getOfficialCode());
 
         final ArrayList<JyvitysExcelVerotuslohkoDTO> jyvitysExcelVerotuslohkoDTOS =
                 F.mapNonNullsToList(verotusLohkos, lohko ->
                         JyvitysExcelVerotuslohkoDTO.from(lohko));
-        final JyvitysExcelRhyDTO jyvitysExcelRhyDTO = new JyvitysExcelRhyDTO(i18n.getTranslation(rhy.getNameLocalisation()), jyvitysExcelVerotuslohkoDTOS);
-        final List<HarvestPermitApplication> applications = fetchActiveApplicationsInRhy(rhy);
+        final JyvitysExcelRhyDTO jyvitysExcelRhyDTO =
+                new JyvitysExcelRhyDTO(i18n.getTranslation(rhy.getNameLocalisation()), jyvitysExcelVerotuslohkoDTOS);
+        final List<HarvestPermitApplication> applications = fetchActiveApplicationsInRhy(huntingYear, rhy);
 
         final Map<Long, Float> amountIndex = fetchMooseAmounts(F.getUniqueIds(applications));
         final List<JyvitysExcelApplicationDTO> applicationDTOS = mapApplicationsToDTOs(rhy, applications, amountIndex);
@@ -83,13 +83,15 @@ public class JyvitysExcelFeature {
                                                                    final Map<Long, Float> amountMap) {
         return F.mapNonNullsToList(applications, application ->
                 JyvitysExcelApplicationDTO.Builder.builder()
+                        .withApplicationNumber(requireNonNull(application.getApplicationNumber()))
                         .withApplicant(extractApplicantName(application))
                         .withOtherRhysInArea(collectOtherRhys(rhy, application))
                         .withShooterOnlyClub(getIntValueOrZero(application.getShooterOnlyClub()))
                         .withShooterOtherClubPassive(getIntValueOrZero(application.getShooterOtherClubPassive()))
 
                         .withAppliedAmount(amountMap.getOrDefault(application.getId(), 0f))
-                        .withLohkoList(F.mapNonNullsToList(application.getArea().getVerotusLohko(), JyvitysExcelApplicationVerotuslohkoDTO::new))
+                        .withLohkoList(F.mapNonNullsToList(application.getArea().getVerotusLohko(),
+                                JyvitysExcelApplicationVerotuslohkoDTO::new))
                         .build());
     }
 
@@ -101,20 +103,23 @@ public class JyvitysExcelFeature {
                 .collect(Collectors.toList());
     }
 
-    private String extractApplicantName(final HarvestPermitApplication application) {
+    private static String extractApplicantName(final HarvestPermitApplication application) {
         return Optional.ofNullable(application.getHuntingClub())
                 .map(HuntingClub::getNameFinnish)
                 .orElseGet(() -> application.getContactPerson().getFullName());
     }
 
 
-    private List<GISVerotusLohko> fetchVerotusLohkos(final String rhyCode) {
+    private List<GISVerotusLohko> fetchVerotusLohkos(final int huntingYear, final String rhyCode) {
         final QGISVerotusLohko LOHKO = QGISVerotusLohko.gISVerotusLohko;
-        return verotusLohkoRepository.findAllAsList(LOHKO.officialCode.startsWith(rhyCode));
+        return verotusLohkoRepository.findAllAsList(
+                LOHKO.huntingYear.eq(huntingYear)
+                        .and(LOHKO.officialCode.startsWith(rhyCode)));
     }
 
-    private List<HarvestPermitApplication> fetchActiveApplicationsInRhy(final Riistanhoitoyhdistys rhy) {
-        final int applicationYear = DateUtil.huntingYear() + 1;
+    private List<HarvestPermitApplication> fetchActiveApplicationsInRhy(final int huntingYear,
+                                                                        final Riistanhoitoyhdistys rhy) {
+
 
         QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
         QHarvestPermitArea AREA = QHarvestPermitArea.harvestPermitArea;
@@ -126,20 +131,22 @@ public class JyvitysExcelFeature {
                 .innerJoin(AREA.rhy, HPARHY)
                 .where(HPARHY.rhy.eq(rhy))
                 .where(APPLICATION.status.eq(HarvestPermitApplication.Status.ACTIVE))
-                .where(APPLICATION.applicationYear.eq(applicationYear))
+                .where(APPLICATION.applicationYear.eq(huntingYear))
+                .orderBy(APPLICATION.applicationNumber.desc())
                 .fetch();
     }
 
     private Map<Long, Float> fetchMooseAmounts(final Collection<Long> applicationIds) {
-        QHarvestPermitApplicationSpeciesAmount SPA = QHarvestPermitApplicationSpeciesAmount.harvestPermitApplicationSpeciesAmount;
+        QHarvestPermitApplicationSpeciesAmount SPA =
+                QHarvestPermitApplicationSpeciesAmount.harvestPermitApplicationSpeciesAmount;
         QGameSpecies SPECIES = QGameSpecies.gameSpecies;
 
         return jpqlQueryFactory.query()
-                .select(SPA.harvestPermitApplication.id, SPA.amount)
+                .select(SPA.harvestPermitApplication.id, SPA.specimenAmount)
                 .from(SPA)
                 .innerJoin(SPA.gameSpecies, SPECIES)
                 .where(SPA.harvestPermitApplication.id.in(applicationIds))
                 .where(SPECIES.officialCode.eq(GameSpecies.OFFICIAL_CODE_MOOSE))
-                .transform(GroupBy.groupBy(SPA.harvestPermitApplication.id).as(SPA.amount));
+                .transform(GroupBy.groupBy(SPA.harvestPermitApplication.id).as(SPA.specimenAmount));
     }
 }

@@ -1,0 +1,33 @@
+<table class="table">
+    <tbody>
+    <tr>
+        <th class="col-xs-3" translate="harvestpermit.wizard.summary.permitTypeTitle"></th>
+        <td translate="harvestpermit.wizard.summary.permitCategory.{{$ctrl.application.harvestPermitCategory}}"></td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.applicant.contactPerson"></th>
+        <td>
+            <permit-application-wizard-contact-person
+                    person="$ctrl.application.contactPerson"></permit-application-wizard-contact-person>
+        </td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.applicant.permitHolder"></th>
+        <td>
+            <harvest-permit-permit-application-wizard-applicant-type
+                    subtype="$ctrl.application.permitHolder.type">
+            </harvest-permit-permit-application-wizard-applicant-type>
+        </td>
+    </tr>
+    <tr>
+        <th></th>
+        <td>
+            <div>
+                <span ng-bind="$ctrl.application.permitHolder.name"></span>
+                <span ng-if="$ctrl.application.permitHolder.code">- {{$ctrl.application.permitHolder.code}}</span>
+
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>

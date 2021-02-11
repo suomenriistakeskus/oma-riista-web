@@ -1,14 +1,18 @@
 package fi.riista.feature.organization.jht.nomination;
 
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.jht.JHTPeriod;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.joda.time.LocalDate;
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -16,8 +20,12 @@ import java.util.List;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.ESITETTY;
 import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
+import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 import static fi.riista.util.DateUtil.today;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class OccupationNominationCrudFeatureTest extends EmbeddedDatabaseTest {
 
@@ -27,11 +35,90 @@ public class OccupationNominationCrudFeatureTest extends EmbeddedDatabaseTest {
     @Resource
     private OccupationRepository occupationRepository;
 
+    private RiistakeskuksenAlue rka;
+    private Riistanhoitoyhdistys rhy;
+    private Person person;
+    private Person rhyPerson;
+
+    @Before
+    public void setup() {
+        rka = model().newRiistakeskuksenAlue("500");
+        rhy = model().newRiistanhoitoyhdistys(rka, "550");
+        person = model().newPerson();
+        rhyPerson = model().newPerson();
+
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testAutorization_normalUser() {
+        onSavedAndAuthenticated(createNewUser("user"),
+                () -> occupationNominationCrudFeature.search(new OccupationNominationSearchDTO()));
+    }
+
+    @Test
+    public void testReturnsEmptyListWhenRkaIsNotFound() {
+        final OccupationNominationSearchDTO searchDTO = new OccupationNominationSearchDTO();
+        searchDTO.setAreaCode("600");
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+            final Page<OccupationNominationDTO> resultDTO = occupationNominationCrudFeature.search(searchDTO);
+            assertThat(resultDTO.getContent(), hasSize(0));
+        });
+    }
+
+    @Test
+    public void testReturnsEmptyListWhenRhyIsNotFound() {
+        final OccupationNominationSearchDTO searchDTO = new OccupationNominationSearchDTO();
+        searchDTO.setRhyCode("650");
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+            final Page<OccupationNominationDTO> resultDTO = occupationNominationCrudFeature.search(searchDTO);
+            assertThat(resultDTO.getContent(), hasSize(0));
+        });
+    }
+
+    @Test
+    public void testReturnsEmptyListWhenPersonIsNotFound() {
+        final OccupationNominationSearchDTO searchDTO = new OccupationNominationSearchDTO();
+        searchDTO.setHunterNumber("55555555");
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+            final Page<OccupationNominationDTO> resultDTO = occupationNominationCrudFeature.search(searchDTO);
+            assertThat(resultDTO.getContent(), hasSize(0));
+        });
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCoordinatorNotAllowedToSearchByArea() {
+        final Person coordinator = model().newPerson();
+        model().newOccupation(rhy, coordinator, TOIMINNANOHJAAJA);
+
+        final OccupationNominationSearchDTO searchDTO = new OccupationNominationSearchDTO();
+        searchDTO.setAreaCode(rka.getOfficialCode());
+        searchDTO.setNominationStatus(ESITETTY);
+
+        onSavedAndAuthenticated(createNewUser("coordinator", coordinator), () -> {
+            occupationNominationCrudFeature.search(searchDTO);
+            fail("Should throw an exception");
+        });
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testCoordinatorNotAllowedToSearchFromDifferentRhy() {
+        final Riistanhoitoyhdistys anotherRhy = model().newRiistanhoitoyhdistys();
+
+        final OccupationNominationSearchDTO searchDTO = new OccupationNominationSearchDTO();
+        searchDTO.setRhyCode(anotherRhy.getOfficialCode());
+        searchDTO.setNominationStatus(ESITETTY);
+
+        final Person coordinator = model().newPerson();
+        model().newOccupation(rhy, coordinator, TOIMINNANOHJAAJA);
+        onSavedAndAuthenticated(createNewUser("coordinator", coordinator), () -> {
+            occupationNominationCrudFeature.search(searchDTO);
+            fail("Should throw an exception");
+        });
+    }
+
+
     @Test
     public void testCurrentOccupationSetToEndBeforeNewOccupation() {
-        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
-        final Person person = model().newPerson();
-        final Person rhyPerson = model().newPerson();
         final JHTPeriod jhtPeriod = new JHTPeriod(today());
         final OccupationNomination occupationNomination = model().newOccupationNomination(
                 rhy, AMPUMAKOKEEN_VASTAANOTTAJA, person, rhyPerson);
@@ -48,7 +135,7 @@ public class OccupationNominationCrudFeatureTest extends EmbeddedDatabaseTest {
             occupationNominationCrudFeature.accept(occupationNomination.getId(), jhtPeriod);
 
             // Sort occupations by creation order
-            final List<Occupation> occupationList = occupationRepository.findAll(new Sort(Sort.Direction.ASC, "id"));
+            final List<Occupation> occupationList = occupationRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
             assertEquals(2, occupationList.size());
 
             final Occupation first = occupationList.get(0);
@@ -63,9 +150,6 @@ public class OccupationNominationCrudFeatureTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testOccupationsInFutureRemoved() {
-        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
-        final Person person = model().newPerson();
-        final Person rhyPerson = model().newPerson();
         final JHTPeriod jhtPeriod = new JHTPeriod(today());
         final OccupationNomination occupationNomination = model().newOccupationNomination(
                 rhy, METSASTYKSENVALVOJA, person, rhyPerson);
@@ -82,7 +166,7 @@ public class OccupationNominationCrudFeatureTest extends EmbeddedDatabaseTest {
             occupationNominationCrudFeature.accept(occupationNomination.getId(), jhtPeriod);
 
             // Sort occupations by creation order
-            final List<Occupation> occupationList = occupationRepository.findAll(new Sort(Sort.Direction.ASC, "id"));
+            final List<Occupation> occupationList = occupationRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
             assertEquals(1, occupationList.size());
 
             final Occupation first = occupationList.get(0);
@@ -91,4 +175,5 @@ public class OccupationNominationCrudFeatureTest extends EmbeddedDatabaseTest {
             assertEquals("new endDate equals JHT period", jhtPeriod.getEndDate(), first.getEndDate());
         });
     }
+
 }

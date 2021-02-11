@@ -1,0 +1,14 @@
+<table>
+    <tbody>
+        <tr ng-repeat="entry in $ctrl.huntingDay.gameEntries track by (entry.type + entry.id)"
+            ng-class="{'text-muted': !entry.huntingDayId}">
+            <td colspan="3" ng-click="$ctrl.onSelectEntry({entry:entry, day: day})">
+                <club-hunting-day-entry entry="entry"></club-hunting-day-entry>
+            </td>
+        </tr>
+        <tr ng-show="$ctrl.huntingDay.totalHarvestSpecimenCount === 0">
+            <td colspan="3"><span class="count-zero" translate="club.hunting.huntingDay.noHarvests"></span></td>
+        </tr>
+    </tbody>
+</table>
+

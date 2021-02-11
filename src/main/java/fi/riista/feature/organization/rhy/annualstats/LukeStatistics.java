@@ -3,6 +3,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 @Embeddable
 @Access(AccessType.FIELD)
 public class LukeStatistics
-        implements AnnualStatisticsFieldsetReadiness, AnnualStatisticsNonComputedFields<LukeStatistics>, Serializable {
+        implements AnnualStatisticsFieldsetReadiness, AnnualStatisticsManuallyEditableFields<LukeStatistics>, Serializable {
 
     public static final LukeStatistics reduce(@Nullable final LukeStatistics a, @Nullable final LukeStatistics b) {
         final LukeStatistics result = new LukeStatistics();
@@ -33,7 +34,9 @@ public class LukeStatistics
         result.setFieldTriangles(nullableIntSum(a, b, LukeStatistics::getFieldTriangles));
         result.setWaterBirdBroods(nullableIntSum(a, b, LukeStatistics::getWaterBirdBroods));
         result.setWaterBirdCouples(nullableIntSum(a, b, LukeStatistics::getWaterBirdCouples));
+        result.setNorthernLaplandWillowGrouseLines(nullableIntSum(a, b, LukeStatistics::getNorthernLaplandWillowGrouseLines));
         result.setCarnivoreContactPersons(nullableIntSum(a, b, LukeStatistics::getCarnivoreContactPersons));
+        result.setCarnivoreDnaCollectors(nullableIntSum(a, b, LukeStatistics::getCarnivoreDnaCollectors));
         result.setLastModified(nullsafeMax(a, b, LukeStatistics::getLastModified));
         return result;
     }
@@ -75,12 +78,23 @@ public class LukeStatistics
     @Column(name = "luke_water_bird_couples")
     private Integer waterBirdCouples;
 
+    // Lasketut Ylä-Lapin riekkojen linjalaskennat
+    @Min(0)
+    @Column(name = "luke_northern_lapland_willow_grouse_lines")
+    private Integer northernLaplandWillowGrouseLines;
+
     // Suurpetohavaintoja kirjanneiden petoyhdyshenkilöiden määrä, hlö
     @Min(0)
     @Column(name = "luke_carnivore_contact_persons")
     private Integer carnivoreContactPersons;
 
+    // Suurpetojen DNA-näytteitä keränneiden henkilöiden määrä
+    @Min(0)
+    @Column(name = "luke_carnivore_dna_collectors")
+    private Integer carnivoreDnaCollectors;
+
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "luke_game_calculations_last_modified")
     private DateTime lastModified;
 
@@ -95,7 +109,9 @@ public class LukeStatistics
         this.fieldTriangles = that.fieldTriangles;
         this.waterBirdBroods = that.waterBirdBroods;
         this.waterBirdCouples = that.waterBirdCouples;
+        this.northernLaplandWillowGrouseLines = that.northernLaplandWillowGrouseLines;
         this.carnivoreContactPersons = that.carnivoreContactPersons;
+        this.carnivoreDnaCollectors = that.carnivoreDnaCollectors;
         this.lastModified = that.lastModified;
     }
 
@@ -112,8 +128,10 @@ public class LukeStatistics
                 Objects.equals(summerGameTriangles, that.summerGameTriangles) &&
                 Objects.equals(fieldTriangles, that.fieldTriangles) &&
                 Objects.equals(waterBirdBroods, that.waterBirdBroods) &&
-                Objects.equals(waterBirdCouples, that.waterBirdCouples) && 
-                Objects.equals(carnivoreContactPersons, that.carnivoreContactPersons);
+                Objects.equals(waterBirdCouples, that.waterBirdCouples) &&
+                Objects.equals(northernLaplandWillowGrouseLines, that.northernLaplandWillowGrouseLines) &&
+                Objects.equals(carnivoreContactPersons, that.carnivoreContactPersons) &&
+                Objects.equals(carnivoreDnaCollectors, that.carnivoreDnaCollectors);
     }
 
     @Override
@@ -125,7 +143,9 @@ public class LukeStatistics
         this.fieldTriangles = that.fieldTriangles;
         this.waterBirdBroods = that.waterBirdBroods;
         this.waterBirdCouples = that.waterBirdCouples;
+        this.northernLaplandWillowGrouseLines = that.northernLaplandWillowGrouseLines;
         this.carnivoreContactPersons = that.carnivoreContactPersons;
+        this.carnivoreDnaCollectors = that.carnivoreDnaCollectors;
     }
 
     @Override
@@ -137,7 +157,7 @@ public class LukeStatistics
     public boolean isCompleteForApproval() {
         return F.allNotNull(
                 winterGameTriangles, summerGameTriangles, fieldTriangles, waterBirdBroods, waterBirdCouples,
-                carnivoreContactPersons);
+                northernLaplandWillowGrouseLines, carnivoreContactPersons, carnivoreDnaCollectors);
     }
 
     public Integer sumOfWinterAndSummerGameTriangles() {
@@ -151,7 +171,17 @@ public class LukeStatistics
     @JsonGetter(value = "sum")
     public Integer sumOfAllLukeCalculations() {
         return nullableIntSum(
+                winterGameTriangles, summerGameTriangles, fieldTriangles, waterBirdBroods, waterBirdCouples,
+                northernLaplandWillowGrouseLines);
+    }
+
+    public Integer sumOfAllLukeCalculations2018() {
+        return nullableIntSum(
                 winterGameTriangles, summerGameTriangles, fieldTriangles, waterBirdBroods, waterBirdCouples);
+    }
+
+    public Integer sumOfCarnivorePersons() {
+        return nullableIntSum(carnivoreContactPersons, carnivoreDnaCollectors);
     }
 
     // Accessors -->
@@ -196,12 +226,28 @@ public class LukeStatistics
         this.waterBirdCouples = waterBirdCouples;
     }
 
+    public Integer getNorthernLaplandWillowGrouseLines() {
+        return northernLaplandWillowGrouseLines;
+    }
+
+    public void setNorthernLaplandWillowGrouseLines(final Integer northernLaplandWillowGrouseLines) {
+        this.northernLaplandWillowGrouseLines = northernLaplandWillowGrouseLines;
+    }
+
     public Integer getCarnivoreContactPersons() {
         return carnivoreContactPersons;
     }
 
     public void setCarnivoreContactPersons(final Integer carnivoreContactPersons) {
         this.carnivoreContactPersons = carnivoreContactPersons;
+    }
+
+    public Integer getCarnivoreDnaCollectors() {
+        return carnivoreDnaCollectors;
+    }
+
+    public void setCarnivoreDnaCollectors(final Integer carnivoreDnaCollectors) {
+        this.carnivoreDnaCollectors = carnivoreDnaCollectors;
     }
 
     @Override

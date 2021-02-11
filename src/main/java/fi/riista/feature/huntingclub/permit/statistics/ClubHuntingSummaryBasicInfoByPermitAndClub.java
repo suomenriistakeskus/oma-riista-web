@@ -5,15 +5,16 @@ import fi.riista.feature.huntingclub.HuntingClub;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 public class ClubHuntingSummaryBasicInfoByPermitAndClub {
     private final Map<PermitAndClubId, ClubHuntingSummaryBasicInfoDTO> summaries;
@@ -44,5 +45,14 @@ public class ClubHuntingSummaryBasicInfoByPermitAndClub {
 
     public Stream<ClubHuntingSummaryBasicInfoDTO> streamSummaries() {
         return summaries.values().stream();
+    }
+
+    /**
+     * @return all (with finished AND unfinished hunting summary) permit partner club ids
+     */
+    public Set<Long> allClubIds() {
+        return summaries.keySet().stream()
+                .map(PermitAndClubId::getClubId)
+                .collect(toSet());
     }
 }

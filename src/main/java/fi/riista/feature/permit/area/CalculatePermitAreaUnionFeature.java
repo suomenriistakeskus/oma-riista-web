@@ -2,7 +2,6 @@ package fi.riista.feature.permit.area;
 
 import com.google.common.base.Stopwatch;
 import com.newrelic.api.agent.Trace;
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.gis.OnlyStateAreaService;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
@@ -28,6 +27,7 @@ import fi.riista.feature.permit.area.verotuslohko.HarvestPermitAreaVerotusLohkoR
 import fi.riista.util.F;
 import fi.riista.util.GISUtils;
 import io.sentry.Sentry;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -215,10 +215,10 @@ public class CalculatePermitAreaUnionFeature {
         harvestPermitAreaVerotusLohkoRepository.deleteByHarvestPermitArea(harvestPermitArea);
         harvestPermitAreaMmlRepository.deleteByHarvestPermitArea(harvestPermitArea);
 
-        harvestPermitAreaRhyRepository.save(rhyAreaSizeList);
-        harvestPermitAreaHtaRepository.save(htaAreaSizeList);
-        harvestPermitAreaVerotusLohkoRepository.save(verotusLohkoAreaSizeList);
-        harvestPermitAreaMmlRepository.save(mmls);
+        harvestPermitAreaRhyRepository.saveAll(rhyAreaSizeList);
+        harvestPermitAreaHtaRepository.saveAll(htaAreaSizeList);
+        harvestPermitAreaVerotusLohkoRepository.saveAll(verotusLohkoAreaSizeList);
+        harvestPermitAreaMmlRepository.saveAll(mmls);
 
         updatePermitApplication(harvestPermitArea, rhyAreaSizeList);
     }
@@ -254,11 +254,13 @@ public class CalculatePermitAreaUnionFeature {
 
     private List<HarvestPermitAreaVerotusLohko> calculateVerotusLohkoAreaSize(final HarvestPermitArea harvestPermitArea,
                                                                               final long zoneId) {
-        final List<GISZoneSizeByOfficialCodeDTO> verotusLohkoAreaSizeList = gisZoneRepository.calculateVerotusLohkoAreaSize(zoneId);
-        final Set<String> officialCodes = F.mapNonNullsToSet(verotusLohkoAreaSizeList, GISZoneSizeByOfficialCodeDTO::getOfficialCode);
-        final List<GISVerotusLohkoDTO> dtoList = officialCodes.isEmpty()
-                ? Collections.emptyList()
-                : verotusLohkoRepository.findWithoutGeometry(officialCodes);
+        final List<GISZoneSizeByOfficialCodeDTO> verotusLohkoAreaSizeList =
+                gisZoneRepository.calculateVerotusLohkoAreaSize( harvestPermitArea.getHuntingYear(), zoneId);
+        final Set<String> officialCodes =
+                F.mapNonNullsToSet(verotusLohkoAreaSizeList, GISZoneSizeByOfficialCodeDTO::getOfficialCode);
+        final List<GISVerotusLohkoDTO> dtoList =
+                verotusLohkoRepository.findWithoutGeometry(harvestPermitArea.getHuntingYear(), officialCodes);
+
         final Map<String, GISVerotusLohkoDTO> dtoMapping = F.index(dtoList, GISVerotusLohkoDTO::getOfficialCode);
 
         return verotusLohkoAreaSizeList.stream()

@@ -1,0 +1,101 @@
+<form name="summaryForm">
+    <div class="row">
+        <div class="col-xs-4">
+            <h4 translate="harvestpermit.wizard.summary.delivery.decisionRecipient"></h4>
+        </div>
+        <div class="col-xs-4">
+            <h4 translate="harvestpermit.wizard.summary.delivery.title"></h4>
+
+            <p>
+                <span class="text-muted" translate="harvestpermit.wizard.summary.delivery.instructions"></span>
+            </p>
+        </div>
+
+        <div class="col-xs-4">
+            <h4 translate="harvestpermit.wizard.summary.decisionLanguage"></h4>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-4">
+            <harvest-permit-application-summary-delivery-address
+                    application="$ctrl.application"></harvest-permit-application-summary-delivery-address>
+
+            <a ng-click="$ctrl.changeDeliveryAddress()"
+               translate="harvestpermit.wizard.summary.delivery.changeRecipient"></a>
+
+            <p class="text-danger"
+               ng-show="$ctrl.deliveryAddressMissing()">
+                <span translate="harvestpermit.wizard.summary.delivery.deliveryAddressMissing"></span></p>
+        </div>
+        <div class="col-xs-4">
+            <permit-application-delivery-select
+                    on-select-method="$ctrl.setDeliveryByMail(sendByMail)"
+                    delivery-by-mail="$ctrl.application.deliveryByMail">
+            </permit-application-delivery-select>
+        </div>
+
+        <div class="col-xs-4">
+            <permit-application-language-select on-select-language="$ctrl.setDecisionLanguage(lang)"
+                                                selected-language="$ctrl.application.decisionLanguage">
+            </permit-application-language-select>
+        </div>
+    </div>
+
+    <div class="row" ng-if="$ctrl.showSubmitDate">
+        <div class="col-xs-6 text-right">
+            <span translate="harvestpermit.wizard.summary.submitDate"></span>
+            <span class="text-danger fa fa-asterisk"></span>
+        </div>
+        <div class="col-xs-3">
+            <div class="input-group"
+                 ng-controller="DatePickerController">
+
+                <input type="text" name="submitDate" id="submitDate"
+                       class="form-control"
+                       uib-datepicker-popup is-open="isDatePickerOpen"
+                       date-between-min-max
+                       ng-model="$ctrl.submitDate"
+                       ng-model-options="{ updateOn: 'blur' }"
+                       required
+                       max-date="today()">
+
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+            </div>
+
+            <p class="help-block has-error"
+               ng-show="summaryForm.submitDate.$invalid"
+               ng-messages="summaryForm.submitDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+</form>
+
+<hr class="invisible">
+
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.bird.summary.instruction1"></p>
+        <p translate="harvestpermit.wizard.bird.summary.instruction2"></p>
+    </div>
+</div>
+
+<importing-application-summary
+        application="$ctrl.application">
+</importing-application-summary>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(summaryForm)"
+        previous="$ctrl.previous(summaryForm)"
+        next="$ctrl.next(summaryForm)"
+        next-title="{{ 'harvestpermit.wizard.navigation.send' }}"
+        next-disabled="$ctrl.nextDisabled(summaryForm)">
+</permit-application-wizard-navigation>

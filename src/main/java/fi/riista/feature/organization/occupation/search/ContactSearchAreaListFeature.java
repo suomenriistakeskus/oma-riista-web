@@ -29,7 +29,7 @@ public class ContactSearchAreaListFeature {
         // criteria for this type of organisations.
         List<Organisation> areas = organisationRepository.findByOrganisationType(
                 OrganisationType.RKA,
-                new JpaSort(Organisation_.officialCode, Organisation_.id));
+                JpaSort.of(Organisation_.officialCode, Organisation_.id));
 
         return F.mapNonNullsToList(areas, area -> {
             return dtoFactory.createOrganisationWithSubOrganisations(area);

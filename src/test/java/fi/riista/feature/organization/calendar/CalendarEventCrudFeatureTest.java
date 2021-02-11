@@ -1,6 +1,7 @@
 package fi.riista.feature.organization.calendar;
 
 import fi.riista.feature.organization.OrganisationDTO;
+import fi.riista.feature.organization.rhy.RhyEventTimeException;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.joda.time.LocalDate;
@@ -43,7 +44,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                 final CalendarEventDTO outputDto = feature.create(inputDto);
 
                 runInTransaction(() -> {
-                    final CalendarEvent event = repository.findOne(outputDto.getId());
+                    final CalendarEvent event = repository.findById(outputDto.getId()).get();
                     assertNotNull(event);
 
                     assertEquals(rhy.getId(), event.getOrganisation().getId());
@@ -93,7 +94,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                     assertEquals(2, outputAdditionalDTOs.size());
 
                     final AdditionalCalendarEvent event1 =
-                            additionalCalendarEventRepository.findOne(outputAdditionalDTOs.get(0).getId());
+                            additionalCalendarEventRepository.findById(outputAdditionalDTOs.get(0).getId()).get();
                     assertNotNull(event1);
                     assertEquals(date1, event1.getDateAsLocalDate());
                     assertEquals(beginTime1, event1.getBeginTime());
@@ -101,7 +102,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                     assertEquals(venue2, event1.getVenue());
 
                     final AdditionalCalendarEvent event2 =
-                            additionalCalendarEventRepository.findOne(outputAdditionalDTOs.get(1).getId());
+                            additionalCalendarEventRepository.findById(outputAdditionalDTOs.get(1).getId()).get();
                     assertNotNull(event2);
                     assertEquals(date2, event2.getDateAsLocalDate());
                     assertEquals(beginTime2, event2.getBeginTime());
@@ -112,7 +113,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RhyEventTimeException.class)
     public void testCreateTwoYearsPastAsCoordinator() {
         withRhyAndCoordinator((rhy, coordinator) -> {
             final Venue venue = model().newVenue();
@@ -134,7 +135,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                 final CalendarEventDTO outputDto = feature.create(inputDto);
 
                 runInTransaction(() -> {
-                    final CalendarEvent event = repository.findOne(outputDto.getId());
+                    final CalendarEvent event = repository.findById(outputDto.getId()).get();
                     assertNotNull(event);
 
                     assertEquals(rhy.getId(), event.getOrganisation().getId());
@@ -205,10 +206,10 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
         return dto;
     }
 
-    private AdditionalCalendarEventDTO createAdditionalCalendarEventDTO(final Venue venue,
-                                                                        final LocalDate date,
-                                                                        final LocalTime beginTime,
-                                                                        final LocalTime endTime) {
+    private static AdditionalCalendarEventDTO createAdditionalCalendarEventDTO(final Venue venue,
+                                                                               final LocalDate date,
+                                                                               final LocalTime beginTime,
+                                                                               final LocalTime endTime) {
         final AdditionalCalendarEventDTO dto = new AdditionalCalendarEventDTO();
 
         dto.setDate(date);
@@ -245,7 +246,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                 feature.update(dto);
 
                 runInTransaction(() -> {
-                    final CalendarEvent reloaded = repository.findOne(event.getId());
+                    final CalendarEvent reloaded = repository.findById(event.getId()).get();
 
                     assertEquals(rhy.getId(), reloaded.getOrganisation().getId());
                     assertEquals(venue2.getId(), reloaded.getVenue().getId());
@@ -286,7 +287,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                 feature.update(dto);
 
                 runInTransaction(() -> {
-                    final CalendarEvent reloaded = repository.findOne(event.getId());
+                    final CalendarEvent reloaded = repository.getOne(event.getId());
 
                     assertEquals(rhy.getId(), reloaded.getOrganisation().getId());
                     assertEquals(venue2.getId(), reloaded.getVenue().getId());
@@ -409,7 +410,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                 feature.update(dto);
 
                 runInTransaction(() -> {
-                    final CalendarEvent updatedEvent = repository.findOne(event.getId());
+                    final CalendarEvent updatedEvent = repository.findById(event.getId()).get();
 
                     List<AdditionalCalendarEvent> reloadedAdditionalEvents =
                             additionalCalendarEventRepository.findByCalendarEvent(updatedEvent);
@@ -450,7 +451,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                 assertEquals(1, updatedDTO.getRev().longValue());
 
                 runInTransaction(() -> {
-                    final CalendarEvent event = repository.findOne(updatedDTO.getId());
+                    final CalendarEvent event = repository.findById(updatedDTO.getId()).get();
                     assertEquals(1, event.getConsistencyVersion().intValue());
                 });
             });
@@ -482,7 +483,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                 feature.update(dto);
 
                 runInTransaction(() -> {
-                    final CalendarEvent reloaded = repository.findOne(event.getId());
+                    final CalendarEvent reloaded = repository.findById(event.getId()).get();
 
                     // Assert immutable fields.
                     assertEquals(rhy.getId(), reloaded.getOrganisation().getId());
@@ -500,7 +501,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
         }));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RhyEventTimeException.class)
     public void testUpdateToTwoYearsPastAsCoordinator() {
         withRhyAndCoordinator((rhy, coordinator) -> {
             final CalendarEvent event = model().newCalendarEvent(rhy, false, today());
@@ -537,7 +538,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                 feature.update(dto);
 
                 runInTransaction(() -> {
-                    final CalendarEvent reloaded = repository.findOne(event.getId());
+                    final CalendarEvent reloaded = repository.findById(event.getId()).get();
 
                     assertEquals(dto.getDate(), reloaded.getDateAsLocalDate());
 
@@ -629,7 +630,7 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                 final CalendarEventDTO outputDTO = feature.create(calendarEventDTO);
 
                 runInTransaction(() -> {
-                    CalendarEvent event = repository.findOne(outputDTO.getId());
+                    CalendarEvent event = repository.findById(outputDTO.getId()).get();
                     assertEquals(2, event.getAdditionalCalendarEvents().size());
 
                     feature.delete(event);

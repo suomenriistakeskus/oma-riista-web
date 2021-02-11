@@ -8,6 +8,7 @@ import fi.riista.security.authentication.CustomUserDetailsService;
 import fi.riista.security.authentication.RiistaPasswordEncoder;
 import fi.riista.security.jwt.JwtAuthenticationProvider;
 import fi.riista.security.otp.OneTimePasswordAuthenticationProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -21,7 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configurers.GlobalAuthenticationConfigurerAdapter;
+import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
@@ -52,6 +53,11 @@ public class SecurityConfig {
         return hierarchy;
     }
 
+    @Bean
+    public SecurityConfigurationProperties securityConfigurationProperties() {
+        return new SecurityConfigurationProperties();
+    }
+
     @EnableGlobalMethodSecurity(prePostEnabled = true, order = AopConfig.ORDER_METHOD_SECURITY)
     public static class MethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
         @Resource
@@ -72,12 +78,17 @@ public class SecurityConfig {
     }
 
     @Configuration
-    public static class AuthenticationManagerConfiguration extends GlobalAuthenticationConfigurerAdapter {
+    @EnableGlobalAuthentication
+    public static class AuthenticationManagerConfiguration {
+
         @Resource
         private ApplicationEventPublisher applicationEventPublisher;
 
-        @Override
-        public void init(AuthenticationManagerBuilder auth) throws Exception {
+        @Resource
+        private SecurityConfigurationProperties securityConfigurationProperties;
+
+        @Autowired
+        public void configureGlobal(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(daoAuthenticationProvider())
                     .authenticationProvider(jwtAuthenticationProvider())
                     .authenticationProvider(preAuthenticatedAuthenticationProvider())
@@ -105,7 +116,7 @@ public class SecurityConfig {
 
         @Bean
         public JwtAuthenticationProvider jwtAuthenticationProvider() {
-            return new JwtAuthenticationProvider(securityConfigurationProperties().getJwtSecret(), userDetailsService());
+            return new JwtAuthenticationProvider(securityConfigurationProperties.getJwtSecret(), userDetailsService());
         }
 
         @Bean
@@ -115,11 +126,6 @@ public class SecurityConfig {
             provider.setPreAuthenticatedUserDetailsService(
                     new UserDetailsByNameServiceWrapper<>(userDetailsService()));
             return provider;
-        }
-
-        @Bean
-        public SecurityConfigurationProperties securityConfigurationProperties() {
-            return new SecurityConfigurationProperties();
         }
     }
 }

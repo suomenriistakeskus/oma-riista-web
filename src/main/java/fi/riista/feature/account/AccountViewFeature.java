@@ -1,5 +1,6 @@
 package fi.riista.feature.account;
 
+import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.organization.person.Person;
@@ -24,15 +25,20 @@ public class AccountViewFeature {
     @Resource
     private PersonRepository personRepository;
 
+    @Resource
+    private DeerPilotService deerPilotService;
+
     @Transactional(readOnly = true)
     public AccountDTO getActiveAccount(final HttpServletRequest request) {
         final SystemUser activeUser = activeUserService.requireActiveUser();
         final boolean isRememberMe = CustomSpringSessionRememberMeServices.isRememberMeActive(request);
+        final boolean isDeerPilotUser = deerPilotService.isPilotUser();
 
         return AccountDTOBuilder.create()
                 .withRememberMe(isRememberMe)
                 .withUser(activeUser)
                 .withRoles(roleService.getRoles(activeUser))
+                .withDeerPilot(isDeerPilotUser)
                 .build();
     }
 

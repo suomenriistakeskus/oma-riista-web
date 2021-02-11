@@ -1,15 +1,6 @@
 
 package fi.riista.integration.common.export.srva;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import fi.riista.integration.support.LocalDateTimeAdapter;
 import org.joda.time.LocalDateTime;
 import org.jvnet.jaxb2_commons.lang.Equals2;
@@ -23,6 +14,16 @@ import org.jvnet.jaxb2_commons.lang.ToString2;
 import org.jvnet.jaxb2_commons.lang.ToStringStrategy2;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -47,7 +48,7 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
  *         &lt;element name="otherTypeDescription" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *         &lt;element name="method" type="{http://riista.fi/integration/common/export/2018/10}SRVAMethod" maxOccurs="unbounded" minOccurs="0"/&gt;
  *         &lt;element name="otherMethodDescription" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
- *         &lt;element name="result" type="{http://riista.fi/integration/common/export/2018/10}SRVAEventResult"/&gt;
+ *         &lt;element name="result" type="{http://riista.fi/integration/common/export/2018/10}SRVAEventResult" minOccurs="0"/&gt;
  *         &lt;element name="numberOfParticipants" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="numberOfWorkHours" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
@@ -55,8 +56,8 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SRVAEvent", propOrder = {
@@ -101,7 +102,6 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
     @XmlSchemaType(name = "token")
     protected List<CEV_SRVAMethod> method;
     protected String otherMethodDescription;
-    @XmlElement(required = true)
     @XmlSchemaType(name = "token")
     protected CEV_SRVAEventResult result;
     protected Integer numberOfParticipants;

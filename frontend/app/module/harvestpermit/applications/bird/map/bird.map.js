@@ -11,14 +11,6 @@ angular.module('app.harvestpermit.application.bird.map', ['app.metadata'])
                 resolve: {
                     protectedAreaInfo: function (BirdPermitApplication, applicationId) {
                         return BirdPermitApplication.getCurrentProtectedArea({id: applicationId}).$promise;
-                    },
-                    protectedAreaAttachmentList: function (BirdPermitApplication, applicationId) {
-                        return BirdPermitApplication.listAttachments({
-                            id: applicationId,
-                            typeFilter: 'PROTECTED_AREA'
-                        }).$promise.then(function (res) {
-                            return _.sortBy(res, 'id');
-                        });
                     }
                 }
             }).state('jht.decision.application.wizard.bird.map', {
@@ -29,14 +21,46 @@ angular.module('app.harvestpermit.application.bird.map', ['app.metadata'])
                 resolve: {
                     protectedAreaInfo: function (BirdPermitApplication, applicationId) {
                         return BirdPermitApplication.getCurrentProtectedArea({id: applicationId}).$promise;
+                    }
+                }
+            })
+            .state('profile.permitwizard.bird.mapdetails', {
+                url: '/mapdetails',
+                templateUrl: 'harvestpermit/applications/wizard/area/mapdetails.html',
+                controller: 'DerogationPermitWizardMapDetailsController',
+                controllerAs: '$ctrl',
+                resolve: {
+                    areaInfo: function (DerogationPermitApplication, applicationId) {
+                        return DerogationPermitApplication.getArea({id: applicationId}).$promise;
                     },
-                    protectedAreaAttachmentList: function (BirdPermitApplication, applicationId) {
-                        return BirdPermitApplication.listAttachments({
-                            id: applicationId,
-                            typeFilter: 'PROTECTED_AREA'
-                        }).$promise.then(function (res) {
-                            return _.sortBy(res, 'id');
-                        });
+                    attachmentList: function (HarvestPermitApplications, applicationId) {
+                        return HarvestPermitApplications.getAttachments({id: applicationId}).$promise;
+                    },
+                    states: function () {
+                        return {
+                            previous: 'map',
+                            next: 'cause'
+                        };
+                    }
+                }
+            })
+            .state('jht.decision.application.wizard.bird.mapdetails', {
+                url: '/mapdetails',
+                templateUrl: 'harvestpermit/applications/wizard/area/mapdetails.html',
+                controller: 'DerogationPermitWizardMapDetailsController',
+                controllerAs: '$ctrl',
+                resolve: {
+                    areaInfo: function (DerogationPermitApplication, applicationId) {
+                        return DerogationPermitApplication.getArea({id: applicationId}).$promise;
+                    },
+                    attachmentList: function (HarvestPermitApplications, applicationId) {
+                        return HarvestPermitApplications.getAttachments({id: applicationId}).$promise;
+                    },
+                    states: function () {
+                        return {
+                            previous: 'map',
+                            next: 'cause'
+                        };
                     }
                 }
             });
@@ -45,14 +69,11 @@ angular.module('app.harvestpermit.application.bird.map', ['app.metadata'])
     .controller('BirdPermitWizardMapController', function ($scope, $http, $translate, dialogs,
                                                            ProtectedAreaTypes, BirdPermitApplication,
                                                            UnsavedChangesConfirmationService, ApplicationWizardNavigationHelper,
-                                                           wizard, applicationId,
-                                                           protectedAreaAttachmentList, protectedAreaInfo) {
+                                                           wizard, applicationId, protectedAreaInfo) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             $ctrl.protectedAreaInfo = protectedAreaInfo;
-            $ctrl.protectedAreaAttachmentList = protectedAreaAttachmentList;
-            $ctrl.attachmentBaseUri = '/api/v1/harvestpermit/application/' + applicationId + '/attachment';
             $ctrl.availableProtectedAreaTypes = ProtectedAreaTypes;
             $scope.$watch('protectedAreaForm.$pristine', function (newVal, oldVal) {
                 if (oldVal && !newVal) {
@@ -78,7 +99,7 @@ angular.module('app.harvestpermit.application.bird.map', ['app.metadata'])
 
         $ctrl.next = function () {
             $ctrl.save().then(function () {
-                wizard.goto('cause');
+                wizard.goto('mapdetails');
             });
         };
 
@@ -86,31 +107,9 @@ angular.module('app.harvestpermit.application.bird.map', ['app.metadata'])
             return invalid(form);
         };
 
-        $ctrl.attachmentUploadComplete = function (fileName, response) {
-            $ctrl.protectedAreaAttachmentList.push({
-                id: response.id,
-                name: fileName
-            });
-        };
-
-        $ctrl.removeAttachment = function (attachment) {
-            var modalTitle = $translate.instant('harvestpermit.wizard.attachments.deleteConfirmation.title');
-            var modalBody = $translate.instant('harvestpermit.wizard.attachments.deleteConfirmation.body');
-
-            dialogs.confirm(modalTitle, modalBody).result.then(function () {
-                var indexToRemove = _.findIndex($ctrl.protectedAreaAttachmentList, ['id', attachment.id]);
-                if (indexToRemove >= 0) {
-                    $http.delete($ctrl.attachmentBaseUri + '/' + attachment.id).then(function () {
-                        $ctrl.protectedAreaAttachmentList.splice(indexToRemove, 1);
-                    });
-                }
-            });
-        };
-
         function invalid(form) {
             return form.$invalid
-                || !validLocation($ctrl.protectedAreaInfo.geoLocation)
-                || _.isEmpty($ctrl.protectedAreaAttachmentList);
+                || !validLocation($ctrl.protectedAreaInfo.geoLocation);
         }
 
         function validLocation(l) {

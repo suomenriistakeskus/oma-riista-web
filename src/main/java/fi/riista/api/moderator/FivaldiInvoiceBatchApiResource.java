@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 @RestController
@@ -27,19 +27,19 @@ public class FivaldiInvoiceBatchApiResource {
     private FivaldiInvoiceBatchFeature feature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/availableyearmonths", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/availableyearmonths", produces = APPLICATION_JSON_VALUE)
     public List<YearMonth> listAvailableFivaldiBatchMonths() {
         return feature.getAvailableFivaldiBatchMonths();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/batch/new", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/batch/new", produces = APPLICATION_JSON_VALUE)
     public List<FivaldiBatchDTO> getNewFivaldiBatches() {
         return feature.getNewFivaldiBatches();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/batch/{year:\\d+}/{month:\\d+}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/batch/{year:\\d+}/{month:\\d+}", produces = APPLICATION_JSON_VALUE)
     public List<FivaldiBatchDTO> getPreviousFivaldiBatches(final @PathVariable int year,
                                                            final @PathVariable int month) {
 

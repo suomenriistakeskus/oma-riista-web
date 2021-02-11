@@ -79,13 +79,13 @@ public class AccountApiResource {
     private AccountShootingTestFeature accountShootingTestFeature;
 
     @CacheControl(policy = {CachePolicy.NO_CACHE, CachePolicy.NO_STORE, CachePolicy.MUST_REVALIDATE})
-    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public AccountDTO getAccount(final HttpServletRequest request) {
         return accountViewFeature.getActiveAccount(request);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "{personId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "{personId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public AccountDTO getAccountForPerson(@PathVariable final long personId) {
         return accountViewFeature.getAccount(personId);
     }
@@ -162,25 +162,25 @@ public class AccountApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/permittodocount", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/permittodocount", produces = MediaType.APPLICATION_JSON_VALUE)
     public AccountPermitTodoCountDTO permitTodoCount() {
         return accountTodoFeature.countPermitTodos();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/invitationtodocount", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/invitationtodocount", produces = MediaType.APPLICATION_JSON_VALUE)
     public AccountTodoCountDTO invitationTodoCount() {
         return accountTodoFeature.countInvitationTodos();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/srvatodocount", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/srvatodocount", produces = MediaType.APPLICATION_JSON_VALUE)
     public AccountTodoCountDTO srvaTodoCount(@RequestParam final long rhyId) {
         return accountTodoFeature.countSrvaTodos(rhyId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/shootingtesttodocount", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/shootingtesttodocount", produces = MediaType.APPLICATION_JSON_VALUE)
     public AccountTodoCountDTO shootingTestTodoCount(@RequestParam final long rhyId) {
         return accountTodoFeature.countShootingTestTodos(rhyId);
     }
@@ -190,7 +190,7 @@ public class AccountApiResource {
         return hunterPaymentPdfFeature.create(personId, huntingYear);
     }
 
-    @GetMapping(value = "invitation", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "invitation", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<HuntingClubMemberInvitationDTO> myInvitations(@RequestParam(required = false) final Long personId) {
         return huntingClubInvitationFeature.listMyInvitations(personId);
@@ -207,7 +207,7 @@ public class AccountApiResource {
         return listAnnouncementFeature.listMine(pageRequest);
     }
 
-    @GetMapping(value = "shootingtests", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "shootingtests", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<AccountShootingTestDTO> myShootingTests(@RequestParam(required = false) final Long personId) {
         return accountShootingTestFeature.listMyShootingTests(personId);

@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
-import org.springframework.data.jpa.domain.Specifications;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,8 +51,8 @@ public class MobileSrvaCrudFeature extends AbstractSrvaCrudFeature<MobileSrvaEve
     @Transactional(readOnly = true)
     public List<MobileSrvaEventDTO> listSrvaEventsForActiveUser(@Nonnull final SrvaEventSpecVersion srvaEventSpecVersion) {
         final Person person = activeUserService.requireActivePerson();
-        final Specifications<SrvaEvent> specs = Specifications.where(SrvaSpecs.author(person));
-        final JpaSort sort = new JpaSort(Sort.Direction.DESC, SrvaEvent_.pointOfTime, SrvaEvent_.id);
+        final Specification<SrvaEvent> specs = Specification.where(SrvaSpecs.author(person));
+        final JpaSort sort = JpaSort.of(Sort.Direction.DESC, SrvaEvent_.pointOfTime, SrvaEvent_.id);
         final List<SrvaEvent> events = getRepository().findAll(specs, sort);
 
         return mobileSrvaEventDTOTransformer.apply(events, srvaEventSpecVersion);
@@ -102,7 +102,7 @@ public class MobileSrvaCrudFeature extends AbstractSrvaCrudFeature<MobileSrvaEve
 
         gameDiaryImageService.addGameDiaryImageWithoutDiaryEntryAssociation(uuid, file);
 
-        final SrvaEvent srvaEvent = getRepository().findOne(eventId);
+        final SrvaEvent srvaEvent = getRepository().findById(eventId).get();
 
         gameDiaryImageService.associateSrvaEventWithImage(srvaEvent, uuid);
 

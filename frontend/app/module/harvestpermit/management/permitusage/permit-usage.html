@@ -1,0 +1,151 @@
+<div>
+    <a class="btn btn-default"
+       ui-sref="permitmanagement.dashboard">
+        <span class="fa fa-chevron-left"></span>
+        &nbsp;
+        <span translate="global.button.back"></span>
+    </a>
+</div>
+
+<form name="form" role="form" class="form form-horizontal" ng-submit="$ctrl.save(form)">
+    <div class="permit-management-title-box">
+        <div class="permit-management-main-title">
+            <span translate="harvestpermit.management.dashboard.permitUsage.pageTitle"></span>
+        </div>
+    </div>
+
+    <div class="permit-management-section">
+        <div class="section-title">
+            <span class="fa fa-file-text"></span>
+            &nbsp;
+            <span translate="harvestpermit.management.dashboard.permitUsage.pageInfo"></span>
+        </div>
+
+        <div ng-repeat="usage in $ctrl.permitUsages">
+            <h5 ng-bind="$ctrl.getSpeciesName(usage.speciesCode) | capitalize"></h5>
+            <div class="row" style="padding-left: 16px">
+                <div ng-if="usage.permitSpecimenAmount" class="col-xs-4">
+                    <span translate="harvestpermit.management.dashboard.permitUsage.specimenAmount"></span>
+                    <i>
+                        (
+                        <span translate="harvestpermit.management.dashboard.permitUsage.remainingSpecimen"></span>
+                        :
+                        <span ng-bind="usage.permitSpecimenAmount - usage.usedSpecimenAmount"></span>
+                        <span translate="global.pcs"></span>
+                        )
+                    </i>
+
+                    <div class="form-group" style="margin-top: 8px" show-errors>
+                        <div class="col-xs-3">
+                            <input type="number" class="form-control"
+                                   name="amount-specimen-{{usage.speciesCode}}" id="amount-specimen-{{usage.speciesCode}}"
+                                   min="0"
+                                   step="1"
+                                   max="{{usage.permitSpecimenAmount}}"
+                                   ng-model="usage.usedSpecimenAmount"
+                                   required/>
+                        </div>
+                        <div style="padding-top: 12px" translate="global.pcs"></div>
+                    </div>
+                </div>
+                <div ng-if="usage.permitEggAmount" class="col-xs-4">
+                    <span translate="harvestpermit.management.dashboard.permitUsage.eggAmount"></span>
+                    <i>
+                        (
+                        <span translate="harvestpermit.management.dashboard.permitUsage.remainingSpecimen"></span>
+                        :
+                        <span ng-bind="usage.permitEggAmount - usage.usedEggAmount"></span>
+                        <span translate="global.pcs"></span>
+                        )
+                    </i>
+
+                    <div class="form-group" style="margin-top: 8px" show-errors>
+                        <div class="col-xs-3">
+                            <input type="number" class="form-control"
+                                   name="amount-egg-{{usage.speciesCode}}" id="amount-egg-{{usage.speciesCode}}"
+                                   min="0"
+                                   step="1"
+                                   max="{{usage.permitEggAmount}}"
+                                   ng-model="usage.usedEggAmount"
+                                   required/>
+                        </div>
+                        <div style="padding-top: 12px" translate="global.pcs"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <table class="table table-condensed">
+                    <thead>
+                    <tr>
+                        <th class="col-xs-3" translate="harvestpermit.management.dashboard.permitUsage.location"></th>
+                        <th class="col-xs-2" translate="harvestpermit.management.dashboard.permitUsage.locationInstruction"></th>
+                        <th class="col-xs-4"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr ng-repeat="location in usage.permitUsageLocations">
+                        <td>
+                            <div translate="harvestpermit.management.dashboard.permitUsage.latitude" translate-values="location.geoLocation"></div>
+                            <div translate="harvestpermit.management.dashboard.permitUsage.longitude" translate-values="location.geoLocation"></div>
+                        </td>
+                        <td>
+                            <button type="button" ng-click="$ctrl.addLocationFromMap(usage, location, form)" class="btn btn-primary">
+                                <span class="fa fa-map-marker"></span> &nbsp;
+                                <span translate="harvestpermit.management.dashboard.permitUsage.location"></span>
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-link"
+                                    ng-click="$ctrl.removeLocation(usage, location, form)">
+                                <span class="glyphicon glyphicon-remove text-danger"
+                                      title="{{'event.button.remove' | translate}}"></span>
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <button type="button" ng-click="$ctrl.addLocation(usage, form)" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-plus"></span> &nbsp;
+                    <span translate="harvestpermit.management.dashboard.permitUsage.addLocation"></span>
+                </button>
+            </div>
+
+            <hr>
+
+        </div>
+    </div>
+
+    <div>
+        <button type="submit"
+                class="btn btn-primary"
+                ng-disabled="form.$invalid || form.$pristine || !$ctrl.isLocationsValid()">
+            <span class="fa fa-file-text"></span>
+            &nbsp;
+            <span translate="harvestpermit.management.dashboard.permitUsage.save"></span>
+        </button>
+    </div>
+
+    <i>
+        <div ng-switch="!!$ctrl.lastModifier" style="margin-top: 15px">
+            <div ng-switch-when="true">
+                <span translate="harvestpermit.management.dashboard.permitUsage.modificationTime"></span>
+                &nbsp;
+                <span>{{($ctrl.lastModifier.timestamp | date:'d.M.yyyy HH:mm')}}</span>
+                <div>
+                    <span ng-if="$ctrl.lastModifier.adminOrModerator" translate="global.organisationType.RK"></span>
+                    <span>{{$ctrl.lastModifier.firstName}}&nbsp{{$ctrl.lastModifier.lastName}}</span>
+                </div>
+            </div>
+            <div ng-switch-default>
+                <span translate="harvestpermit.management.dashboard.permitUsage.modificationTime"></span>
+                &nbsp;
+                <span>-</span>
+            </div>
+        </div>
+    </i>
+</form>

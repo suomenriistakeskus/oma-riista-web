@@ -1,0 +1,147 @@
+<ul class="nav nav-tabs-riista"
+    ng-if="$ctrl.permit.gameSpeciesCodes.length > 1">
+    <li ng-class="{'active': $ctrl.selectedGameSpeciesCode === gameSpeciesCode}"
+        ng-click="$ctrl.changeGameSpeciesCode(gameSpeciesCode)"
+        ng-repeat="gameSpeciesCode in $ctrl.permit.gameSpeciesCodes">
+        <a ng-bind="$ctrl.getGameSpeciesName(gameSpeciesCode)"></a>
+    </li>
+</ul>
+
+<hr class="invisible">
+
+<div class="col-md-4 col-sm-6">
+    <div class="panel panel-permit-management">
+        <div class="panel-heading">
+            <p class="panel-title">
+                <span class="fa fa-2x fa-pencil-square"></span>
+                <span translate="harvestpermit.management.dashboard.allocation.title"></span>
+            </p>
+        </div>
+
+        <div class="panel-body">
+            <p>
+                <span translate="harvestpermit.management.dashboard.allocation.instruction"></span>
+                <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
+            </p>
+            <p></p>
+        </div>
+
+        <div class="panel-buttons">
+            <button class="btn btn-primary" ng-click="$ctrl.editAllocations()">
+                <span translate="harvestpermit.management.dashboard.allocation.button"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4 col-sm-6">
+    <div class="panel panel-permit-management">
+        <div class="panel-heading">
+            <p class="panel-title">
+                <span class="fa fa-2x fa-group"></span>
+                <span translate="harvestpermit.management.dashboard.huntingGroupLeaders.title"></span>
+            </p>
+        </div>
+
+        <div class="panel-body">
+            <span translate="harvestpermit.management.dashboard.huntingGroupLeaders.instruction"></span>
+            <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
+            <span translate="harvestpermit.management.dashboard.huntingGroupLeaders.instruction2"></span>.
+        </div>
+
+        <div class="panel-buttons">
+            <button class="btn btn-primary" ng-click="$ctrl.showHuntingGroupLeaders()">
+                <span translate="harvestpermit.management.dashboard.huntingGroupLeaders.button"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4 col-sm-6">
+    <div class="panel panel-permit-management">
+        <div class="panel-heading">
+            <p class="panel-title">
+                <span class="fa fa-2x fa-map-marker"></span>
+                <span translate="harvestpermit.management.dashboard.partnerMap.title"></span>
+            </p>
+        </div>
+
+        <div class="panel-body">
+            <span translate="harvestpermit.management.dashboard.partnerMap.instruction"></span>
+            <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
+            <span translate="harvestpermit.management.dashboard.partnerMap.instruction2"></span>
+        </div>
+
+        <div class="panel-buttons">
+            <button class="btn btn-primary" ng-click="$ctrl.showMap()">
+                <span translate="harvestpermit.management.dashboard.partnerMap.button"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4 col-sm-6">
+    <div class="panel panel-permit-management">
+        <div class="panel-heading">
+            <p class="panel-title">
+                <span class="fa fa-2x fa-table"></span>
+                <span translate="harvestpermit.management.dashboard.tables.title"></span>
+            </p>
+        </div>
+
+        <div class="panel-body">
+            <span translate="harvestpermit.management.dashboard.tables.instruction"></span>
+            <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
+        </div>
+
+        <div class="panel-buttons">
+            <button class="btn btn-primary" ng-click="$ctrl.showTables()">
+                <span translate="harvestpermit.management.dashboard.tables.button"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4 col-sm-6"
+     ng-if="::$ctrl.permit.gameSpeciesCodes.length > 0">
+    <div class="panel panel-permit-management">
+        <div class="panel-heading">
+            <p class="panel-title">
+                <span class="fa fa-2x fa-gavel"></span>
+                <span translate="harvestpermit.management.dashboard.amendmentPermit.title"></span>
+            </p>
+        </div>
+
+        <div class="panel-body">
+            <span translate="harvestpermit.management.dashboard.amendmentPermit.instruction"></span>
+        </div>
+
+        <div class="panel-buttons">
+            <button class="btn btn-primary" ng-click="$ctrl.listAmendmentApplications()">
+                <span translate="harvestpermit.management.dashboard.amendmentPermit.button"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4 col-sm-6">
+    <div class="panel panel-permit-management">
+        <div class="panel-heading">
+            <p class="panel-title">
+                <span class="fa fa-2x fa-file-text"></span>
+                <span translate="harvestpermit.management.dashboard.endOfHunting.title"></span>
+            </p>
+        </div>
+
+        <div class="panel-body">
+            <span translate="harvestpermit.management.dashboard.endOfHunting.instruction"></span>
+            <strong ng-bind="$ctrl.getSelectedSpeciesName()"></strong>.
+        </div>
+
+        <div class="panel-buttons">
+            <button class="btn btn-primary" ng-click="$ctrl.endHuntingForMooselikePermit()">
+                <span translate="harvestpermit.management.dashboard.endOfHunting.button"></span>
+            </button>
+        </div>
+    </div>
+</div>

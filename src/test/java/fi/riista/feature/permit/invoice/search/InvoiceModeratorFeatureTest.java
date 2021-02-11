@@ -46,7 +46,7 @@ public class InvoiceModeratorFeatureTest extends EmbeddedDatabaseTest {
                 feature.disableElectronicInvoicing(invoiceId);
 
                 runInTransaction(() -> {
-                    final Invoice refreshed = invoiceRepository.findOne(invoiceId);
+                    final Invoice refreshed = invoiceRepository.findById(invoiceId).orElse(null);
                     assertFalse(refreshed.isElectronicInvoicingEnabled());
 
                     assertInvoiceEventCreated(invoice, InvoiceStateChangeEventType.ELECTRONIC_INVOICING_DISABLED);
@@ -67,6 +67,7 @@ public class InvoiceModeratorFeatureTest extends EmbeddedDatabaseTest {
     @Test
     public void testCreateInvoiceReminder_smokeTestForHarvestInvoice() {
         final Invoice invoice = model().newPermitHarvestInvoice(model().newGameSpeciesMoose()).getInvoice();
+
         testCreateInvoiceReminder(invoice);
     }
 
@@ -79,7 +80,7 @@ public class InvoiceModeratorFeatureTest extends EmbeddedDatabaseTest {
                 feature.createInvoiceReminder(invoiceId);
 
                 runInTransaction(() -> {
-                    final Invoice refreshed = invoiceRepository.findOne(invoiceId);
+                    final Invoice refreshed = invoiceRepository.findById(invoiceId).orElse(null);
                     assertEquals(InvoiceState.REMINDER, refreshed.getState());
 
                     assertInvoiceEventCreated(refreshed, InvoiceStateChangeEventType.OVERDUE_REMINDER_CREATED);

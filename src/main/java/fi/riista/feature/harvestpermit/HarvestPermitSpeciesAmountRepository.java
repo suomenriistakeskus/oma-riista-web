@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.fetch;
 import static java.util.Objects.requireNonNull;
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.springframework.data.jpa.domain.Specification.where;
 
-public interface HarvestPermitSpeciesAmountRepository extends BaseRepository<HarvestPermitSpeciesAmount, Long> {
+public interface HarvestPermitSpeciesAmountRepository extends BaseRepository<HarvestPermitSpeciesAmount, Long>, HarvestPermitSpeciesAmountRepositoryCustom {
 
     List<HarvestPermitSpeciesAmount> findByHarvestPermit(HarvestPermit harvestPermit);
 
@@ -85,7 +85,7 @@ public interface HarvestPermitSpeciesAmountRepository extends BaseRepository<Har
 
         return getAmendmentPermitSpeciesAmounts(permit, species).stream().collect(Collectors.toMap(
                 speciesAmount -> speciesAmount.getHarvestPermit().getPermitNumber(),
-                HarvestPermitSpeciesAmount::getAmount,
+                HarvestPermitSpeciesAmount::getSpecimenAmount,
                 (u, v) -> u + v,
                 TreeMap::new));
     }

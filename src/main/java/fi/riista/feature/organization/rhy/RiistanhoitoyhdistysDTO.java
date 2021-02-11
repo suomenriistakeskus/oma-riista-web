@@ -2,7 +2,7 @@ package fi.riista.feature.organization.rhy;
 
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.address.AddressDTO;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
 

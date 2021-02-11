@@ -10,6 +10,7 @@ import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.Functions;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -42,13 +45,12 @@ public class ObservationDTOTransformer extends ObservationDTOTransformerBase<Obs
     @Nonnull
     public List<ObservationDTO> transform(@Nonnull final List<Observation> observations,
                                           final boolean includeLargeCarnivoreFieldsOnlyIfAuthorOrObserver) {
-
-        Objects.requireNonNull(observations);
+        requireNonNull(observations);
 
         final Person authenticatedPerson = getAuthenticatedPerson();
 
-        final Function<Observation, GameSpecies> observationToSpecies = getGameDiaryEntryToSpeciesMapping(observations);
-        final Function<Observation, Person> observationToAuthor = getGameDiaryEntryToAuthorMapping(observations);
+        final Function<Observation, GameSpecies> observationToSpecies = getObservationToSpeciesMapping(observations);
+        final Function<Observation, Person> observationToAuthor = getObservationToAuthorMapping(observations);
         final Function<Observation, Person> observationToObserver = getObservationToObserverMapping(observations);
 
         final Map<Observation, List<ObservationSpecimen>> groupedSpecimens =
@@ -56,9 +58,11 @@ public class ObservationDTOTransformer extends ObservationDTOTransformerBase<Obs
         final Map<Observation, List<GameDiaryImage>> groupedImages = getImagesGroupedByObservations(observations);
 
         final Map<Observation, Organisation> observationToGroupOfHuntingDay = getGroupOfHuntingDay(observations);
-        final Function<Observation, Person> observationToHuntingDayApprover = getApproverToHuntingDay(observations);
+        final Function<Observation, Person> observationToHuntingDayApprover =
+                getObservationToApproverToHuntingDayMapping(observations);
 
         return observations.stream().filter(Objects::nonNull).map(observation -> {
+
             final Person author = observationToAuthor.apply(observation);
             final Person observer = observationToObserver.apply(observation);
             final Organisation groupOfHuntingDay = observationToGroupOfHuntingDay.get(observation);
@@ -92,33 +96,64 @@ public class ObservationDTOTransformer extends ObservationDTOTransformerBase<Obs
 
         final boolean authorOrObserver = author.equals(authenticatedPerson) || observer.equals(authenticatedPerson);
 
+        final boolean isLockedOutOfPersonalDiaryEdits = ObservationLockChecker
+                .isLockedOutOfPersonalDiaryEdits(observation, authorOrObserver, MOST_RECENT);
+
         final ObservationDTO dto = ObservationDTO.builder()
-                .populateWith(observation, authorOrObserver || !includeLargeCarnivoreFieldsOnlyIfAuthorOrObserver)
-                .populateWith(species)
+                .withIdAndRev(observation)
+
+                .withGeoLocation(observation.getGeoLocation())
+                .withPointOfTime(DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTime()))
+
+                .withGameSpeciesCode(species.getOfficialCode())
+                .withObservationCategory(observation.getObservationCategory())
+                .withObservationType(observation.getObservationType())
+                .withDeerHuntingType(observation.getDeerHuntingType())
+                .withDeerHuntingTypeDescription(observation.getDeerHuntingTypeDescription())
+
+                .withAmount(observation.getAmount())
+                .withMooselikeAmountsFrom(observation)
                 .populateSpecimensWith(specimens)
+
                 .withAuthorInfo(author)
                 .withActorInfo(observer)
-                .withCanEdit(isObservationEditable(observation, authorOrObserver))
+
+                .withDescription(authorOrObserver ? observation.getDescription() : null)
+
                 .withGroupOfHuntingDay(groupOfHuntingDay)
                 .withApproverToHuntingDay(approverToHuntingDay)
+
+                // Indicates whether observation is editable in personal diary.
+                // Note! The logic for determining editability is different in club hunting view.
+                .withCanEdit(!isLockedOutOfPersonalDiaryEdits)
+
                 .build();
+
+        dto.setRhyId(F.getId(observation.getRhy()));
+        dto.setHuntingDayId(F.getId(observation.getHuntingDayOfGroup()));
+        dto.setPointOfTimeApprovedToHuntingDay(
+                DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTimeApprovedToHuntingDay()));
+
+        dto.setModeratorOverride(observation.isModeratorOverride());
+        dto.setUpdateableOnlyByCarnivoreAuthority(observation.isAnyLargeCarnivoreFieldPresent());
+
+        dto.setPack(ObservationSpecimenOps.isPack(species.getOfficialCode(), observation.getAmount()));
+        dto.setLitter(ObservationSpecimenOps.isLitter(species.getOfficialCode(), specimens));
+
+        if (authorOrObserver || !includeLargeCarnivoreFieldsOnlyIfAuthorOrObserver) {
+            dto.setVerifiedByCarnivoreAuthority(observation.getVerifiedByCarnivoreAuthority());
+            dto.setObserverName(observation.getObserverName());
+            dto.setObserverPhoneNumber(observation.getObserverPhoneNumber());
+            dto.setOfficialAdditionalInfo(observation.getOfficialAdditionalInfo());
+        }
 
         if (authorOrObserver) {
             if (images != null) {
                 F.mapNonNulls(images, dto.getImageIds(), Functions.idOf(GameDiaryImage::getFileMetadata));
             }
-        } else {
-            dto.setDescription(null);
         }
 
-        dto.setPack(ObservationSpecimenOps.isPack(species.getOfficialCode(), observation.getAmount()));
-        dto.setLitter(ObservationSpecimenOps.isLitter(species.getOfficialCode(), specimens));
-
         return dto;
-    }
-
-    private Function<Observation, Person> getApproverToHuntingDay(final Iterable<Observation> observations) {
-        return createGameDiaryEntryToPersonMapping(observations, Observation::getApproverToHuntingDay, false);
     }
 
     private Map<Observation, Organisation> getGroupOfHuntingDay(final List<Observation> observations) {

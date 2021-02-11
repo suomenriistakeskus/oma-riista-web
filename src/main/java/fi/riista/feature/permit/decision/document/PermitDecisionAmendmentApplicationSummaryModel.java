@@ -63,7 +63,7 @@ public class PermitDecisionAmendmentApplicationSummaryModel {
 
         this.speciesAmount = new SpeciesAmount(
                 StringUtils.capitalize(spa.getGameSpecies().getNameLocalisation().getTranslation(locale)),
-                spa.getAmount());
+                spa.getSpecimenAmount());
         this.originalPermitNumber = data.getOriginalPermit().getPermitNumber();
         this.pointOfTime = DTF.print(DateUtil.toLocalDateTimeNullSafe(data.getPointOfTime()));
         this.age = data.getAge();

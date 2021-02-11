@@ -1,0 +1,26 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th style="width: 20%" translate="harvestpermit.wizard.species.table.headerSpecies"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.beginDate"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.endDate"></th>
+        <th style="width: 20%" translate="harvestpermit.wizard.period.validityYears"></th>
+        <th translate="harvestpermit.wizard.period.periodAdditionalInfo"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="spa in ::$ctrl.periods track by spa.gameSpeciesCode">
+        <td ng-bind="spa.gameSpeciesCode | translateSpeciesCode"></td>
+        <td ng-bind="spa.beginDate | date:'dd.MM.yyyy'"></td>
+        <td ng-bind="spa.endDate | date:'dd.MM.yyyy'"> </td>
+        <td ng-switch="spa.validityYears">
+            <div ng-switch-when="1"><span translate="harvestpermit.wizard.period.validity1year"></span></div>
+            <div ng-switch-when="2"><span translate="harvestpermit.wizard.period.validity2years"></span></div>
+            <div ng-switch-when="3"><span translate="harvestpermit.wizard.period.validity3years"></span></div>
+            <div ng-switch-when="4"><span translate="harvestpermit.wizard.period.validity4years"></span></div>
+            <div ng-switch-when="5"><span translate="harvestpermit.wizard.period.validity5years"></span></div>
+        </td>
+        <td ng-bind="spa.additionalPeriodInfo"></td>
+    </tr>
+    </tbody>
+</table>

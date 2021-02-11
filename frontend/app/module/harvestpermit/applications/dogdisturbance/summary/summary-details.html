@@ -1,0 +1,45 @@
+<p ng-show="::$ctrl.event.skipped">
+    <span class="text-muted" translate="harvestpermit.wizard.dogdisturbance.eventDetails.{{::$ctrl.event.eventType}}.skipStep"></span>
+</p>
+
+<table class="table" ng-show="::!$ctrl.event.skipped">
+    <tbody>
+    <tr>
+        <th class="col-xs-3" translate="harvestpermit.wizard.dogdisturbance.summary.eventDate"></th>
+        <td>
+            <r-show-dates begin-date="::$ctrl.event.beginDate" end-date="::$ctrl.event.endDate"></r-show-dates>
+        </td>
+    </tr>
+    <tr>
+        <th translate="global.species"></th>
+        <td>
+            {{ ::$ctrl.event.speciesCode | translateSpeciesCode | capitalize }}
+        </td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.dogdisturbance.summary.dogsAmount"></th>
+        <td>
+            <span ng-bind="::$ctrl.event.dogsAmount"></span>
+        </td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.dogdisturbance.summary.eventDescription"></th>
+        <td>
+            <r-paragraphed-text content="::$ctrl.event.eventDescription"></r-paragraphed-text>
+        </td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.wizard.dogdisturbance.summary.contacts"></th>
+        <td>
+            <div class="row" ng-repeat="contact in ::$ctrl.event.contacts | orderBy:'id' track by contact.id">
+                <strong class="col-xs-4" ng-bind="::contact.name"></strong>
+                <span class="col-xs-4" ng-bind="::contact.phone"></span>
+                <span class="col-xs-4">
+                    <a ng-bind="::contact.mail" href="mailto:{{::contact.mail}}"></a>
+                </span>
+                <hr class="invisible">
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>

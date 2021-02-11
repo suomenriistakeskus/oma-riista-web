@@ -33,7 +33,8 @@ public class MooseHuntingSummaryDTOTransformer {
 
     public MooseHuntingSummaryDTO transform(final MooseHuntingSummary summary) {
         final HarvestPermit harvestPermit = summary.getHarvestPermit();
-        final HarvestPermitSpeciesAmount mooseAmount = harvestPermitSpeciesAmountRepository.getMooseAmount(harvestPermit);
+        final HarvestPermitSpeciesAmount mooseAmount =
+                harvestPermitSpeciesAmountRepository.getMooseAmount(harvestPermit);
         final boolean locked = lockConditionService.isMooseHuntingSummaryLocked(mooseAmount, summary.getClub());
         final int permitAreaSize = harvestPermitPartnerAreaService.getPermitAreaSizeLookupWithFallback(summary);
 
@@ -136,4 +137,5 @@ public class MooseHuntingSummaryDTOTransformer {
     private static SpeciesEstimatedAppearanceWithPiglets newIfNull(final SpeciesEstimatedAppearanceWithPiglets speciesAppearance) {
         return Optional.ofNullable(speciesAppearance).orElseGet(SpeciesEstimatedAppearanceWithPiglets::new);
     }
+
 }

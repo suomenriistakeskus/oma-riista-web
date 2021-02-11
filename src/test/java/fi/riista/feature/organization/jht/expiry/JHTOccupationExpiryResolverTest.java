@@ -8,13 +8,14 @@ import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.Locales;
 import org.joda.time.LocalDate;
 import org.junit.Test;
+import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class JHTOccupationExpiryResolverTest extends EmbeddedDatabaseTest {
 
@@ -49,9 +50,7 @@ public class JHTOccupationExpiryResolverTest extends EmbeddedDatabaseTest {
         final Occupation missingEmail = model().newOccupation(rhy, personWithoutEmail, OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA);
         missingEmail.setEndDate(occupationEndDate);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> {
+        onSavedAndAuthenticated(createNewAdmin(), () -> {
             final List<JHTOccupationExpiryDTO> dtoList = jhtOccupationExpiryResolver.resolve(occupationEndDate);
 
             assertEquals(1, dtoList.size());
@@ -70,4 +69,24 @@ public class JHTOccupationExpiryResolverTest extends EmbeddedDatabaseTest {
         });
     }
 
+    @Test(expected = AccessDeniedException.class)
+    public void testResolve_unauthorized() {
+        final LocalDate occupationEndDate = new LocalDate(2018, 11, 3);
+
+        final Person person = model().newPerson();
+        person.setLanguageCode("sv");
+        person.setEmail("person@invalid");
+        person.setFirstName("First");
+        person.setLastName("Last");
+
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        rhy.setEmail("rhy@invalid");
+
+        final Occupation occupation = model().newOccupation(rhy, person, OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA);
+        occupation.setEndDate(occupationEndDate);
+
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+            jhtOccupationExpiryResolver.resolve(occupationEndDate);
+        });
+    }
 }

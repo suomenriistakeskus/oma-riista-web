@@ -51,12 +51,21 @@ public class PermitDecisionSpeciesAmountService {
                 return createGenerator(decision).createAllForAmendment(createAmendmentApplicationLookup(application));
 
             case BIRD:
-                return createGenerator(decision).createAllForBird();
+            case MAMMAL:
+            case DEPORTATION:
+            case RESEARCH:
+            case IMPORTING:
+            case GAME_MANAGEMENT:
+                return createGenerator(decision).createForAllYears();
             case LARGE_CARNIVORE_BEAR:
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
                 return createGenerator(decision).createForCarnivore();
+            case NEST_REMOVAL:
+                return createGenerator(decision).createForNestRemoval();
+            case LAW_SECTION_TEN:
+                return createGenerator(decision).createForLawSectionTen();
             default:
                 throw new IllegalArgumentException("Unsupported application category:" + application.getHarvestPermitCategory());
         }
@@ -93,6 +102,16 @@ public class PermitDecisionSpeciesAmountService {
             return F.mapNonNullsToList(applicationSpeciesAmounts, this::createCarnivore);
         }
 
+        public List<PermitDecisionSpeciesAmount> createForNestRemoval() {
+            return F.mapNonNullsToList(applicationSpeciesAmounts, this::createNestRemoval);
+        }
+
+        public List<PermitDecisionSpeciesAmount> createForLawSectionTen() {
+            Preconditions.checkState(applicationSpeciesAmounts.size() == 1,
+                    "Law section ten application should have exactly one species");
+            return F.mapNonNullsToList(applicationSpeciesAmounts, this::createLawSectionTen);
+        }
+
         public List<PermitDecisionSpeciesAmount> createAllForAmendment(final Function<Integer, Has2BeginEndDates> lookupOriginalAmount) {
             return F.mapNonNullsToList(applicationSpeciesAmounts, source -> {
                 final int speciesCode = source.getGameSpecies().getOfficialCode();
@@ -100,9 +119,9 @@ public class PermitDecisionSpeciesAmountService {
             });
         }
 
-        public List<PermitDecisionSpeciesAmount> createAllForBird() {
+        public List<PermitDecisionSpeciesAmount> createForAllYears() {
             return applicationSpeciesAmounts.stream()
-                    .flatMap(source -> streamValidityYears(source).mapToObj(year -> createBird(source, year)))
+                    .flatMap(source -> streamValidityYears(source).mapToObj(year -> createForYear(source, year)))
                     .collect(toList());
         }
 
@@ -110,7 +129,10 @@ public class PermitDecisionSpeciesAmountService {
             final PermitDecisionSpeciesAmount target = new PermitDecisionSpeciesAmount();
             target.setPermitDecision(decision);
             target.setGameSpecies(source.getGameSpecies());
-            target.setAmount(source.getAmount());
+            target.setSpecimenAmount(source.getSpecimenAmount());
+            target.setNestAmount(source.getNestAmount());
+            target.setEggAmount(source.getEggAmount());
+            target.setConstructionAmount(source.getConstructionAmount());
             return target;
         }
 
@@ -119,8 +141,14 @@ public class PermitDecisionSpeciesAmountService {
         @Nonnull
         private PermitDecisionSpeciesAmount createMooselike(final HarvestPermitApplicationSpeciesAmount source) {
             final PermitDecisionSpeciesAmount target = createCommon(source);
-            target.setBeginDate(PermitDecisionSpeciesAmount.getDefaultMooselikeBeginDate(decision.getDecisionYear()));
-            target.setEndDate(PermitDecisionSpeciesAmount.getDefaultMooselikeEndDate(decision.getDecisionYear()));
+            final int speciesCode = target.getGameSpecies().getOfficialCode();
+
+            target.setBeginDate(PermitDecisionMooselikeHuntingDates.getDefaultMooselikeBeginDate(
+                    speciesCode,
+                    decision.getDecisionYear()));
+            target.setEndDate(PermitDecisionMooselikeHuntingDates.getDefaultMooselikeEndDate(
+                    speciesCode,
+                    decision.getDecisionYear()));
 
             return target;
         }
@@ -133,30 +161,30 @@ public class PermitDecisionSpeciesAmountService {
             return target;
         }
 
-        // BIRD
+        // MULTI-YEAR APPLICATIONS
 
         @Nonnull
-        private PermitDecisionSpeciesAmount createBird(final HarvestPermitApplicationSpeciesAmount source,
-                                                       final int year) {
+        private PermitDecisionSpeciesAmount createForYear(final HarvestPermitApplicationSpeciesAmount source,
+                                                          final int year) {
             final PermitDecisionSpeciesAmount target = createCommon(source);
-            target.setBeginDate(getBirdBeginDate(source, year));
-            target.setEndDate(getBirdEndDate(source, year));
+            target.setBeginDate(getBeginDateForYear(source, year));
+            target.setEndDate(getEndDateForYear(source, year));
 
             return target;
         }
 
         @Nonnull
-        private LocalDate getBirdBeginDate(final HarvestPermitApplicationSpeciesAmount source, final int year) {
-            return year == 0 ? getBirdFirstYearBeginDate(source) : source.getBeginDate().plusYears(year);
+        private LocalDate getBeginDateForYear(final HarvestPermitApplicationSpeciesAmount source, final int year) {
+            return year == 0 ? getFirstYearBeginDate(source) : source.getBeginDate().plusYears(year);
         }
 
         @Nonnull
-        private LocalDate getBirdEndDate(final HarvestPermitApplicationSpeciesAmount source, final int year) {
+        private static LocalDate getEndDateForYear(final HarvestPermitApplicationSpeciesAmount source, final int year) {
             return source.getEndDate().plusYears(year);
         }
 
         @Nonnull
-        private LocalDate getBirdFirstYearBeginDate(final HarvestPermitApplicationSpeciesAmount source) {
+        private LocalDate getFirstYearBeginDate(final HarvestPermitApplicationSpeciesAmount source) {
             if (applicationDate.isAfter(source.getBeginDate()) && source.getEndDate().isAfter(applicationDate)) {
                 return applicationDate;
             }
@@ -175,6 +203,39 @@ public class PermitDecisionSpeciesAmountService {
 
         @Nonnull
         private PermitDecisionSpeciesAmount createCarnivore(final HarvestPermitApplicationSpeciesAmount source) {
+            final PermitDecisionSpeciesAmount target = createCommon(source);
+            target.setBeginDate(requireNonNull(source.getBeginDate()));
+            target.setEndDate(requireNonNull(source.getEndDate()));
+
+            return target;
+        }
+
+        // NEST REMOVAL
+
+        @Nonnull
+        private PermitDecisionSpeciesAmount createNestRemoval(final HarvestPermitApplicationSpeciesAmount source) {
+            final PermitDecisionSpeciesAmount target = createCommon(source);
+            target.setBeginDate(requireNonNull(source.getBeginDate()));
+            target.setEndDate(requireNonNull(source.getEndDate()));
+
+            return target;
+        }
+
+        // LAW SECTION TEN
+
+        @Nonnull
+        private PermitDecisionSpeciesAmount createLawSectionTen(final HarvestPermitApplicationSpeciesAmount source) {
+            final PermitDecisionSpeciesAmount target = createCommon(source);
+            target.setBeginDate(requireNonNull(source.getBeginDate()));
+            target.setEndDate(requireNonNull(source.getEndDate()));
+
+            return target;
+        }
+
+        // GAME MANAGEMENT
+
+        @Nonnull
+        private PermitDecisionSpeciesAmount createGameManagement(final HarvestPermitApplicationSpeciesAmount source) {
             final PermitDecisionSpeciesAmount target = createCommon(source);
             target.setBeginDate(requireNonNull(source.getBeginDate()));
             target.setEndDate(requireNonNull(source.getEndDate()));

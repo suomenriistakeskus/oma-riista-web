@@ -28,9 +28,9 @@ public interface VersionedTestExecutionSupport<T extends GameDiaryEntitySpecVers
 
     default void forEachVersionMatchingCondition(final Predicate<T> condition, final Consumer<T> execution) {
         getTestExecutionVersions().stream().filter(condition).sorted(GameDiaryEntitySpecVersion::compareTo).forEach(version -> {
-            onBeforeVersionedTestExecution();
+            onBeforeVersionedTestExecution(version);
             runTest(version, execution);
-            onAfterVersionedTestExecution();
+            onAfterVersionedTestExecution(version);
         });
     }
 
@@ -44,10 +44,9 @@ public interface VersionedTestExecutionSupport<T extends GameDiaryEntitySpecVers
         }
     }
 
-    default void onBeforeVersionedTestExecution() {
+    default void onBeforeVersionedTestExecution(@SuppressWarnings("unused") final T version) {
     }
 
-    default void onAfterVersionedTestExecution() {
+    default void onAfterVersionedTestExecution(@SuppressWarnings("unused") final T version) {
     }
-
 }

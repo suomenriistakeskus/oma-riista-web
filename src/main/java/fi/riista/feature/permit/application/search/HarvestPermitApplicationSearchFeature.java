@@ -2,6 +2,7 @@ package fi.riista.feature.permit.application.search;
 
 import com.google.common.collect.ImmutableList;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
+import fi.riista.feature.common.decision.DecisionHandlerDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +43,15 @@ public class HarvestPermitApplicationSearchFeature {
     @Transactional(readOnly = true)
     public List<HarvestPermitApplicationSearchResultDTO> listPostalQueue() {
         final List<HarvestPermitApplication> results = harvestPermitApplicationRepository.listPostalQueue();
+
+        return harvestPermitApplicationSearchResultDTOTransformer.apply(results);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MODERATOR')")
+    @Transactional(readOnly = true)
+    public List<HarvestPermitApplicationSearchResultDTO> listAnnualPermitsToRenew(final Long handlerId) {
+        final List<HarvestPermitApplication> results =
+                harvestPermitApplicationRepository.listByAnnualPermitsToRenew(handlerId);
 
         return harvestPermitApplicationSearchResultDTOTransformer.apply(results);
     }
@@ -89,9 +99,9 @@ public class HarvestPermitApplicationSearchFeature {
 
     @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MODERATOR')")
     @Transactional(readOnly = true)
-    public List<HarvestPermitApplicationHandlerDTO> listHandlers() {
+    public List<DecisionHandlerDTO> listHandlers() {
         return harvestPermitApplicationRepository.listHandlers().stream()
-                .map(u -> new HarvestPermitApplicationHandlerDTO(u.getId(), u.getFullName()))
+                .map(u -> new DecisionHandlerDTO(u.getId(), u.getFullName()))
                 .collect(Collectors.toList());
     }
 }

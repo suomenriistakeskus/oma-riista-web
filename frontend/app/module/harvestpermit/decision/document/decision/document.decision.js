@@ -9,9 +9,9 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                 speciesAmounts: function (Species, PermitDecisionSpecies, $filter, $translate, decisionId) {
                     return PermitDecisionSpecies.getSpecies({decisionId: decisionId}).$promise;
                 },
-                derogationReasons: function (PermitDecisionDerogation, decision) {
+                derogationLawSections: function (PermitDecisionDerogation, decision) {
                     return PermitDecisionDerogation.getReasons({id: decision.id}).$promise.then(function (data) {
-                        return data.reasons;
+                        return data.lawSections;
                     });
                 },
                 protectedAreaTypes: function (PermitDecisionDerogation, decision) {
@@ -24,21 +24,31 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                 }
             },
             controllerAs: '$ctrl',
-            controller: function (PermitDecisionUtils,
-                                  decision, reference, speciesAmounts, derogationReasons,
+            controller: function (PermitDecisionUtils, PermitDecisionSection, PermitTypeCode,
+                                  HarvestPermitCategoryType,
+                                  decision, reference, speciesAmounts, derogationLawSections,
                                   protectedAreaTypes, legalFields) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'decision';
+                    $ctrl.sectionId = PermitDecisionSection.DECISION;
+                    $ctrl.extraSectionId = PermitDecisionSection.DECISION_EXTRA;
                     $ctrl.decision = decision;
                     $ctrl.reference = reference;
                     $ctrl.speciesAmounts = speciesAmounts;
-                    $ctrl.showDerogationReasons = !_.isEmpty(derogationReasons);
+                    $ctrl.showDerogationReasons = !_.isEmpty(derogationLawSections);
                     $ctrl.showProtectedAreaTypes = !_.isEmpty(protectedAreaTypes);
-                    $ctrl.derogationReasons = getSelectedItems(derogationReasons);
+                    $ctrl.derogationLawSections = derogationLawSections;
+                    $ctrl.showSpeciesAmounts = PermitTypeCode.hasSpeciesAmounts($ctrl.decision.permitTypeCode);
                     $ctrl.protectedAreaTypes = getSelectedItems(protectedAreaTypes);
                     $ctrl.legalFields = legalFields;
+                    $ctrl.incompleteData = $ctrl.decision.decisionType === 'HARVEST_PERMIT' &&
+                        $ctrl.decision.grantStatus !== 'REJECTED' &&
+                        ($ctrl.showDerogationReasons && someSectionHasNothingSelected() ||
+                        $ctrl.showProtectedAreaTypes && _.isEmpty($ctrl.protectedAreaTypes));
+                    $ctrl.showLegalFields = HarvestPermitCategoryType.isDamageBasedDerogation(decision.harvestPermitCategory) ||
+                        HarvestPermitCategoryType.isOtherDerogation(decision.harvestPermitCategory);
+                    $ctrl.showGrantStatusHeader = !$ctrl.showSpeciesAmounts;
                 };
 
                 $ctrl.canEditContent = function () {
@@ -46,9 +56,14 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                 };
 
                 $ctrl.denyComplete = function () {
-                    return $ctrl.showDerogationReasons && _.isEmpty($ctrl.derogationReasons) ||
-                        $ctrl.showProtectedAreaTypes && _.isEmpty($ctrl.protectedAreaTypes);
+                    return $ctrl.incompleteData;
                 };
+
+                function someSectionHasNothingSelected() {
+                    return _.some($ctrl.derogationLawSections, function (section) {
+                        return !_.some(section.reasons, 'checked');
+                    });
+                }
 
                 function getSelectedItems(items) {
                     return _.filter(items, 'checked');
@@ -62,11 +77,13 @@ angular.module('app.harvestpermit.decision.document.decision', [])
             decisionId: '<',
             speciesAmounts: '<',
             permitTypeCode: '<',
-            canEditContent: '<'
+            canEditContent: '<',
+            harvestPermitCategory: '<'
         },
         templateUrl: 'harvestpermit/decision/document/decision/species-amounts.html',
-        controller: function ($filter, $translate, Species, NotificationService, RefreshDecisionStateService,
-                              PermitDecisionSpeciesAmountModal, PermitDecisionSpeciesMethodModal) {
+        controller: function ($filter, $translate, Species, NotificationService, HarvestPermitCategoryType,
+                              RefreshDecisionStateService, PermitDecisionSpeciesAmountModal, NonHarvestDecisionSpeciesAmountModal,
+                              PermitDecisionSpeciesMethodModal, PermitTypes) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
@@ -91,10 +108,16 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                     })
                     .sortBy(['sortOrder', 'name'])
                     .value();
+
+                $ctrl.showForbiddenMethods = HarvestPermitCategoryType.isDamageBasedDerogation($ctrl.harvestPermitCategory) ||
+                    HarvestPermitCategoryType.isOtherDerogation($ctrl.harvestPermitCategory);
+
             };
 
             $ctrl.editSpeciesAmounts = function (gameSpeciesCode) {
-                var modalPromise = PermitDecisionSpeciesAmountModal.open($ctrl.decisionId, gameSpeciesCode, $ctrl.permitTypeCode);
+                var modalPromise = $ctrl.permitTypeCode === PermitTypes.IMPORTING || $ctrl.permitTypeCode === PermitTypes.GAME_MANAGEMENT
+                    ? NonHarvestDecisionSpeciesAmountModal.open($ctrl.decisionId, gameSpeciesCode, $ctrl.permitTypeCode)
+                    : PermitDecisionSpeciesAmountModal.open($ctrl.decisionId, gameSpeciesCode, $ctrl.permitTypeCode);
 
                 NotificationService.handleModalPromise(modalPromise).then(function () {
                     RefreshDecisionStateService.refresh();
@@ -167,3 +190,4 @@ angular.module('app.harvestpermit.decision.document.decision', [])
             };
         }
     });
+

@@ -1,0 +1,69 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.gameManagement.species.instructionsTitle"></p>
+        <p translate="harvestpermit.wizard.gameManagement.species.instructions"></p>
+    </div>
+</div>
+
+<form name="speciesAmountForm" r-force-show-errors-check-validity>
+    <div class="row">
+        <div class="col-md-4 form-group">
+            <label class="control-label" for="speciesCode" translate="harvestpermit.wizard.species.species"></label>
+
+            <select class="form-control"
+                    name="speciesCode"
+                    id="speciesCode"
+                    ng-model="$ctrl.speciesAmount.gameSpeciesCode"
+                    ng-options="g.code as g.name group by g.category for g in $ctrl.availableSpeciesOptions | orderBy:'sortOrder'"
+                    ie10-optgroup-fix>
+                <option disabled value="" translate="global.selectSpecies"></option>
+            </select>
+        </div>
+
+        <div class="col-md-4 form-group">
+            <label class="control-label"
+                   for="subSpeciesName"
+                   translate="harvestpermit.wizard.gameManagement.species.subSpeciesName"></label>
+
+            <input type="text" class="form-control"
+                   name="subSpeciesName"
+                   id="subSpeciesName"
+                   ng-model="$ctrl.speciesAmount.subSpeciesName">
+        </div>
+
+        <div class="col-md-2 form-group" show-errors>
+            <label class="control-label" for="specimenAmount"
+                   translate="harvestpermit.wizard.gameManagement.species.speciesAmount"></label>
+
+            <input type="number" class="form-control no-spinner"
+                   name="specimenAmount"
+                   id="specimenAmount"
+                   ng-model="$ctrl.speciesAmount.specimenAmount"
+                   ng-required="!$ctrl.speciesAmount.eggAmount"
+                   min="1" max="99999" step="1"
+                   r-click-select>
+        </div>
+
+        <div class="col-md-2 form-group" show-errors>
+            <label class="control-label" for="eggAmount"
+                   translate="harvestpermit.wizard.gameManagement.species.eggAmount"></label>
+
+            <input type="number" class="form-control no-spinner"
+                   name="eggAmount"
+                   id="eggAmount"
+                   ng-model="$ctrl.speciesAmount.eggAmount"
+                   ng-required="!$ctrl.speciesAmount.specimenAmount"
+                   min="1" max="99999" step="1"
+                   r-click-select>
+        </div>
+    </div>
+</form>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(speciesAmountForm)"
+        previous="$ctrl.previous(speciesAmountForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(speciesAmountForm)">
+</permit-application-wizard-navigation>

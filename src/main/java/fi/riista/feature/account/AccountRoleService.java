@@ -13,6 +13,7 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import fi.riista.util.jpa.JpaSpecs;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,6 @@ import static fi.riista.util.Collect.nullSafeGroupingBy;
 import static java.util.Comparator.comparingLong;
 import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toList;
-import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Component
 public class AccountRoleService {
@@ -79,7 +79,7 @@ public class AccountRoleService {
         final int currentHuntingYear = DateUtil.huntingYear();
         final int currentCalendarYear = DateUtil.today().getYear();
 
-        return harvestPermitRepository.findAll(where(JpaSpecs.and(
+        return harvestPermitRepository.findAll(Specification.where(JpaSpecs.and(
                 HarvestPermitSpecs.isPermitContactPerson(person),
                 JpaSpecs.or(
                         HarvestPermitSpecs.withYear(Integer.toString(currentHuntingYear)),

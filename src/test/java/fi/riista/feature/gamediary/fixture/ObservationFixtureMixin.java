@@ -2,84 +2,87 @@ package fi.riista.feature.gamediary.fixture;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Required;
+import fi.riista.feature.common.entity.RequiredWithinDeerPilot;
 import fi.riista.feature.common.fixture.FixtureMixin;
 import fi.riista.feature.common.support.EntitySupplier;
+import fi.riista.feature.gamediary.DeerHuntingType;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence;
 import fi.riista.feature.gamediary.observation.metadata.ObservationBaseFields;
-import fi.riista.feature.gamediary.observation.metadata.ObservationContextParameters;
 import fi.riista.feature.gamediary.observation.metadata.ObservationContextSensitiveFields;
 import fi.riista.feature.gamediary.observation.metadata.ObservationMetadata;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.person.Person;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
 import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
 import static fi.riista.test.TestUtils.createList;
+import static java.util.Objects.requireNonNull;
 
 @FunctionalInterface
 public interface ObservationFixtureMixin extends FixtureMixin {
 
-    default ObservationMetaFixture.Builder createObservationMetaF(@Nonnull final ObservationType observationType) {
-        return createObservationMetaF(MOST_RECENT, observationType);
-    }
-
     default ObservationMetaFixture.Builder createObservationMetaF(@Nonnull final ObservationSpecVersion version,
                                                                   @Nonnull final ObservationType observationType) {
 
-        return createObservationMetaF(getEntitySupplier().nextPositiveInt(), version, null, observationType);
+        return createObservationMetaF(getEntitySupplier().nextPositiveInt(), version, NORMAL, observationType);
     }
 
-    default ObservationMetaFixture.Builder createObservationMetaF(@Nullable final Boolean withinMooseHunting,
+    default ObservationMetaFixture.Builder createObservationMetaF(@Nonnull final ObservationCategory observationCategory,
                                                                   @Nonnull final ObservationType observationType) {
 
-        return createObservationMetaF(MOST_RECENT, withinMooseHunting, observationType);
+        return createObservationMetaF(MOST_RECENT, observationCategory, observationType);
     }
 
     default ObservationMetaFixture.Builder createObservationMetaF(final int gameSpeciesCode,
                                                                   @Nonnull final ObservationType observationType) {
 
-        return createObservationMetaF(gameSpeciesCode, MOST_RECENT, null, observationType);
+        return createObservationMetaF(gameSpeciesCode, MOST_RECENT, NORMAL, observationType);
     }
 
     default ObservationMetaFixture.Builder createObservationMetaF(final int gameSpeciesCode,
                                                                   @Nonnull final ObservationSpecVersion version,
                                                                   @Nonnull final ObservationType observationType) {
 
-        return createObservationMetaF(gameSpeciesCode, version, null, observationType);
+        return createObservationMetaF(gameSpeciesCode, version, NORMAL, observationType);
     }
 
     default ObservationMetaFixture.Builder createObservationMetaF(@Nonnull final ObservationSpecVersion version,
-                                                                  @Nullable final Boolean withinMooseHunting,
+                                                                  @Nonnull final ObservationCategory observationCategory,
                                                                   @Nonnull final ObservationType observationType) {
 
         final int gameSpeciesCode = getEntitySupplier().nextPositiveInt();
-        return createObservationMetaF(gameSpeciesCode, version, withinMooseHunting, observationType);
+
+        return createObservationMetaF(gameSpeciesCode, version, observationCategory, observationType);
+
     }
 
     default ObservationMetaFixture.Builder createObservationMetaF(final int gameSpeciesCode,
-                                                                  @Nullable final Boolean withinMooseHunting,
+                                                                  @Nonnull final ObservationCategory observationCategory,
                                                                   @Nonnull final ObservationType observationType) {
 
-        return createObservationMetaF(gameSpeciesCode, MOST_RECENT, withinMooseHunting, observationType);
+        return createObservationMetaF(gameSpeciesCode, MOST_RECENT, observationCategory, observationType);
     }
 
     default ObservationMetaFixture.Builder createObservationMetaF(final int gameSpeciesCode,
                                                                   @Nonnull final ObservationSpecVersion version,
-                                                                  @Nullable final Boolean withinMooseHunting,
+                                                                  @Nonnull final ObservationCategory observationCategory,
                                                                   @Nonnull final ObservationType observationType) {
 
         final GameSpecies species = getEntitySupplier().newGameSpecies(gameSpeciesCode);
-        return createObservationMetaF(species, version, withinMooseHunting, observationType);
+
+        return createObservationMetaF(species, version, observationCategory, observationType);
     }
 
     default ObservationMetaFixture.Builder createObservationMetaF(@Nonnull final GameSpecies species,
@@ -92,28 +95,44 @@ public interface ObservationFixtureMixin extends FixtureMixin {
                                                                   @Nonnull final ObservationSpecVersion version,
                                                                   @Nonnull final ObservationType observationType) {
 
-        return createObservationMetaF(species, version, null, observationType);
+        return createObservationMetaF(species, version, NORMAL, observationType);
     }
 
     default ObservationMetaFixture.Builder createObservationMetaF(@Nonnull final GameSpecies species,
-                                                                  @Nullable final Boolean withinMooseHunting,
+                                                                  @Nonnull final ObservationCategory observationCategory,
                                                                   @Nonnull final ObservationType observationType) {
 
-        return createObservationMetaF(species, MOST_RECENT, withinMooseHunting, observationType);
+        return createObservationMetaF(species, MOST_RECENT, observationCategory, observationType);
     }
 
     default ObservationMetaFixture.Builder createObservationMetaF(@Nonnull final GameSpecies species,
                                                                   @Nonnull final ObservationSpecVersion specVersion,
-                                                                  @Nullable final Boolean withinMooseHunting,
+                                                                  @Nonnull final ObservationCategory observationCategory,
                                                                   @Nonnull final ObservationType observationType) {
 
-        final Required mooseHuntingReq = withinMooseHunting != null ? Required.YES : Required.NO;
+        final Required mooseHuntingReq = observationCategory.isWithinMooseHunting() ? Required.YES : Required.NO;
+
+        return createObservationMetaF(species, specVersion, observationCategory, observationType, mooseHuntingReq);
+    }
+
+    default ObservationMetaFixture.Builder createObservationMetaF(@Nonnull final GameSpecies species,
+                                                                  @Nonnull final ObservationSpecVersion specVersion,
+                                                                  @Nonnull final ObservationCategory observationCategory,
+                                                                  @Nonnull final ObservationType observationType,
+                                                                  @Nonnull final Required mooseHuntingReq) {
+
+        final RequiredWithinDeerPilot deerHuntingReq =
+                observationCategory.isWithinDeerHunting() ? RequiredWithinDeerPilot.YES : RequiredWithinDeerPilot.NO;
+
         final EntitySupplier entitySupplier = getEntitySupplier();
 
         final ObservationMetadata metadata = new ObservationMetadata(
-                entitySupplier.newObservationBaseFields(species, mooseHuntingReq, specVersion),
+                entitySupplier.newObservationBaseFields(species, mooseHuntingReq, deerHuntingReq, specVersion),
                 entitySupplier.newObservationContextSensitiveFields(
-                        species, Boolean.TRUE.equals(withinMooseHunting), observationType, specVersion));
+                        species, observationCategory, observationType, specVersion));
+
+        // By default, disallow amount field and require explicit setting in tests for clarity.
+        metadata.getContextSensitiveFields().setAmount(DynamicObservationFieldPresence.NO);
 
         return new ObservationMetaFixture.Builder(metadata, entitySupplier);
     }
@@ -125,7 +144,7 @@ public interface ObservationFixtureMixin extends FixtureMixin {
         MetaFixtureBase(@Nonnull final ObservationMetadata metadata, @Nonnull final EntitySupplier entitySupplier) {
             super(metadata.getBaseFields(), metadata.getContextSensitiveFields());
 
-            this.entitySupplier = Objects.requireNonNull(entitySupplier);
+            this.entitySupplier = requireNonNull(entitySupplier);
         }
 
         protected static abstract class Builder<T extends MetaFixtureBase, SELF extends Builder<T, SELF>>
@@ -141,46 +160,79 @@ public interface ObservationFixtureMixin extends FixtureMixin {
             protected abstract SELF self();
 
             public SELF withAmount(@Nonnull final DynamicObservationFieldPresence amount) {
-                metadata.withAmount(amount);
+                requireNonNull(amount);
+                metadata.getContextSensitiveFields().setAmount(amount);
+                return self();
+            }
+
+            public SELF withDeerHuntingTypeFieldsAs(@Nonnull final DynamicObservationFieldPresence deerHuntingType,
+                                                    @Nonnull final DynamicObservationFieldPresence deerHuntingTypeDescription) {
+
+                requireNonNull(deerHuntingType);
+                requireNonNull(deerHuntingTypeDescription);
+
+                final ObservationContextSensitiveFields ctxFields = metadata.getContextSensitiveFields();
+
+                ctxFields.setDeerHuntingType(deerHuntingType);
+                ctxFields.setDeerHuntingTypeDescription(deerHuntingTypeDescription);
+
                 return self();
             }
 
             public SELF withMooselikeAmountFieldsAs(@Nonnull final Required presence) {
-                Objects.requireNonNull(presence);
-                metadata.getContextSensitiveFields().setMooselikeMaleAmount(presence);
-                metadata.getContextSensitiveFields().setMooselikeFemaleAmount(presence);
-                metadata.getContextSensitiveFields().setMooselikeFemale1CalfAmount(presence);
-                metadata.getContextSensitiveFields().setMooselikeFemale2CalfsAmount(presence);
-                metadata.getContextSensitiveFields().setMooselikeFemale3CalfsAmount(presence);
-                metadata.getContextSensitiveFields().setMooselikeFemale4CalfsAmount(presence);
-                metadata.getContextSensitiveFields().setMooselikeUnknownSpecimenAmount(presence);
+                requireNonNull(presence);
+
+                final ObservationContextSensitiveFields ctxFields = metadata.getContextSensitiveFields();
+
+                ctxFields.setMooselikeMaleAmount(presence);
+                ctxFields.setMooselikeFemaleAmount(presence);
+                ctxFields.setMooselikeFemale1CalfAmount(presence);
+                ctxFields.setMooselikeFemale2CalfsAmount(presence);
+                ctxFields.setMooselikeFemale3CalfsAmount(presence);
+                ctxFields.setMooselikeFemale4CalfsAmount(presence);
+                ctxFields.setMooselikeUnknownSpecimenAmount(presence);
 
                 if (metadata.getSpecVersion().supportsMooselikeCalfAmount()) {
-                    metadata.getContextSensitiveFields().setMooselikeCalfAmount(presence);
+                    ctxFields.setMooselikeCalfAmount(presence);
                 }
+
+                // Disable specimen specific fields.
+                ctxFields.setExtendedAgeRange(false);
+                ctxFields.setAmount(DynamicObservationFieldPresence.NO);
+                ctxFields.setGender(Required.NO);
+                ctxFields.setAge(Required.NO);
+                ctxFields.setWounded(Required.NO);
+                ctxFields.setDead(Required.NO);
+                ctxFields.setOnCarcass(Required.NO);
+                ctxFields.setCollarOrRadioTransmitter(Required.NO);
+                ctxFields.setLegRingOrWingMark(Required.NO);
+                ctxFields.setEarMark(Required.NO);
 
                 return self();
             }
 
             public SELF withLargeCarnivoreFieldsAs(@Nonnull final DynamicObservationFieldPresence presence) {
-                Objects.requireNonNull(presence);
-                metadata.getContextSensitiveFields().setVerifiedByCarnivoreAuthority(presence);
-                metadata.getContextSensitiveFields().setObserverName(presence);
-                metadata.getContextSensitiveFields().setObserverPhoneNumber(presence);
-                metadata.getContextSensitiveFields().setOfficialAdditionalInfo(presence);
-                metadata.getContextSensitiveFields().setWidthOfPaw(presence);
-                metadata.getContextSensitiveFields().setLengthOfPaw(presence);
+                requireNonNull(presence);
+
+                final ObservationContextSensitiveFields ctxFields = metadata.getContextSensitiveFields();
+
+                ctxFields.setVerifiedByCarnivoreAuthority(presence);
+                ctxFields.setObserverName(presence);
+                ctxFields.setObserverPhoneNumber(presence);
+                ctxFields.setOfficialAdditionalInfo(presence);
+                ctxFields.setWidthOfPaw(presence);
+                ctxFields.setLengthOfPaw(presence);
+
                 return self();
             }
 
-            public ObservationSpecimenFixture.Builder<T> createSpecimensF(final int numSpecimens) {
-                return new ObservationSpecimenFixture.Builder<>(build(), entitySupplier, numSpecimens, forMobileAPI);
+            public ObservationSpecimenFixture.Builder<T> createObservationFixture() {
+                // Specimens not allowed within real world deer hunting scenarios => hence zero specimens
+                return createSpecimenFixture(0);
             }
 
-            public ObservationSpecimenFixture.Builder<T> createSpecimensF(@Nullable final Person author,
-                                                                          final int numSpecimens) {
-
-                return createSpecimensF(numSpecimens).withAuthor(author);
+            public ObservationSpecimenFixture.Builder<T> createSpecimenFixture(final int numSpecimens) {
+                return new ObservationSpecimenFixture.Builder<>(build(), entitySupplier, numSpecimens, forMobileAPI);
             }
         }
     }
@@ -193,8 +245,8 @@ public interface ObservationFixtureMixin extends FixtureMixin {
             super(metadata, entitySupplier);
         }
 
-        public ObservationDTOBuilderForTests dtoBuilder(@Nonnull final ObservationContextParameters params) {
-            return ObservationDTOBuilderForTests.create(this, params);
+        public ObservationDTOBuilderForTests dtoBuilder() {
+            return ObservationDTOBuilderForTests.create(this);
         }
 
         public static class Builder extends MetaFixtureBase.Builder<ObservationMetaFixture, Builder> {
@@ -246,8 +298,8 @@ public interface ObservationFixtureMixin extends FixtureMixin {
             return mostRecentMetadata;
         }
 
-        public MobileObservationDTOBuilderForTests dtoBuilder(@Nonnull final ObservationContextParameters params) {
-            return MobileObservationDTOBuilderForTests.create(this, params);
+        public MobileObservationDTOBuilderForTests dtoBuilder() {
+            return MobileObservationDTOBuilderForTests.create(this);
         }
 
         public static class Builder extends MetaFixtureBase.Builder<MobileObservationMetaFixture, Builder> {
@@ -280,7 +332,7 @@ public interface ObservationFixtureMixin extends FixtureMixin {
                     final ObservationContextSensitiveFields mostRecentCtxFields =
                             entitySupplier.newObservationContextSensitiveFields(
                                     metadata.getSpecies(),
-                                    metadata.getContextSensitiveFields().isWithinMooseHunting(),
+                                    metadata.getContextSensitiveFields().getObservationCategory(),
                                     metadata.getObservationType(),
                                     MOST_RECENT);
 
@@ -316,20 +368,23 @@ public interface ObservationFixtureMixin extends FixtureMixin {
         ObservationSpecimenFixture(@Nonnull final Observation observation,
                                    @Nonnull final List<ObservationSpecimen> specimens) {
 
-            this.observation = Objects.requireNonNull(observation, "observation is null");
-            this.author = Objects.requireNonNull(observation.getAuthor(), "observation.author is null");
-            this.specimens = Objects.requireNonNull(specimens, "specimens is null");
+            this.observation = requireNonNull(observation, "observation is null");
+            this.author = requireNonNull(observation.getAuthor(), "observation.author is null");
+            this.specimens = requireNonNull(specimens, "specimens is null");
         }
 
         public static class Builder<META extends MetaFixtureBase>
                 extends AbstractObservationFixtureBuilder<META, ObservationSpecimenFixture> {
 
             private final int numSpecimensToCreate;
-            private final ObservationContextParameters params;
 
             private GeoLocation location;
+
             private Person author;
             private boolean isCarnivoreAuthority;
+
+            private DeerHuntingType deerHuntingType;
+            private GroupHuntingDay huntingDay;
 
             public Builder(@Nonnull final META metadataFixture,
                            @Nonnull final EntitySupplier entitySupplier,
@@ -340,7 +395,6 @@ public interface ObservationFixtureMixin extends FixtureMixin {
 
                 this.numSpecimensToCreate = numSpecimensToCreate;
                 this.isCarnivoreAuthority = false;
-                this.params = new ObservationContextParameters(() -> isCarnivoreAuthority);
 
                 if (numSpecimensToCreate > 0 && !metadata.isAmountLegal(this.isCarnivoreAuthority)) {
                     throw new IllegalStateException("Metadata does not allow specimens to be created");
@@ -348,7 +402,7 @@ public interface ObservationFixtureMixin extends FixtureMixin {
             }
 
             public Builder<META> withGeoLocation(@Nonnull final GeoLocation location) {
-                this.location = Objects.requireNonNull(location)
+                this.location = requireNonNull(location)
                         .withSource(forMobileAPI ? GeoLocation.Source.GPS_DEVICE : GeoLocation.Source.MANUAL);
                 return this;
             }
@@ -358,8 +412,18 @@ public interface ObservationFixtureMixin extends FixtureMixin {
                 return this;
             }
 
-            public Builder<META> withCarnivoreAuthority(final boolean isCarnivoreAuthority) {
-                this.isCarnivoreAuthority = isCarnivoreAuthority;
+            public Builder<META> withDeerHuntingType(@Nullable final DeerHuntingType deerHuntingType) {
+                this.deerHuntingType = deerHuntingType;
+                return this;
+            }
+
+            public Builder<META> withGroupHuntingDay(@Nullable final GroupHuntingDay huntingDay) {
+                this.huntingDay = huntingDay;
+                return this;
+            }
+
+            public Builder<META> withCarnivoreAuthorityEnabled() {
+                this.isCarnivoreAuthority = true;
                 return this;
             }
 
@@ -368,28 +432,36 @@ public interface ObservationFixtureMixin extends FixtureMixin {
                 final Observation observation = newObservation();
 
                 return new ObservationSpecimenFixture(observation, createList(numSpecimensToCreate, () -> {
-                    return entitySupplier.newObservationSpecimen(
-                            observation, metadata, params.isUserAssignedCarnivoreAuthority());
+                    return entitySupplier.newObservationSpecimen(observation, metadata, isCarnivoreAuthority);
                 }));
             }
 
             public void consumeBy(@Nonnull final BiConsumer<META, ObservationSpecimenFixture> consumer) {
-                Objects.requireNonNull(consumer);
+                requireNonNull(consumer);
                 consumer.accept(metadata, build());
             }
 
             private Observation newObservation() {
                 final Person person = Optional.ofNullable(author).orElseGet(entitySupplier::newPerson);
-                final boolean carnivoreAuthority = params.isUserAssignedCarnivoreAuthority();
 
                 final Observation observation = forMobileAPI
-                        ? entitySupplier.newMobileObservation(person, metadata, carnivoreAuthority)
-                        : entitySupplier.newObservation(person, metadata, carnivoreAuthority);
-
-                observation.setAmount(numSpecimensToCreate);
+                        ? entitySupplier.newMobileObservation(person, metadata, isCarnivoreAuthority)
+                        : entitySupplier.newObservation(person, metadata, isCarnivoreAuthority);
 
                 if (location != null) {
                     observation.setGeoLocation(location);
+                }
+
+                if (deerHuntingType != null) {
+                    observation.setDeerHuntingType(deerHuntingType);
+                }
+
+                if (numSpecimensToCreate > 0) {
+                    observation.setAmount(numSpecimensToCreate);
+                }
+
+                if (huntingDay != null) {
+                    observation.updateHuntingDayOfGroup(huntingDay, person);
                 }
 
                 return observation;

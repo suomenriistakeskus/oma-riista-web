@@ -1,12 +1,13 @@
 package fi.riista.feature.gis.metsahallitus;
 
-import fi.riista.util.DateUtil;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Optional;
+
+import static fi.riista.util.DateUtil.currentYear;
 
 @Component
 public class MetsahallitusMaterialYear {
@@ -27,9 +28,5 @@ public class MetsahallitusMaterialYear {
     @Transactional(readOnly = true)
     public int getLatestPienriistaYear() {
         return Optional.ofNullable(metsahallitusPienriistaRepository.findLatestYear()).orElse(currentYear());
-    }
-
-    private int currentYear() {
-        return DateUtil.today().year().get();
     }
 }

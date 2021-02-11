@@ -1,11 +1,10 @@
 package fi.riista.feature.gamediary.image;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
+import fi.riista.config.quartz.RunAsAdminJob;
 import org.joda.time.Hours;
 import org.joda.time.ReadablePeriod;
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,7 @@ import javax.annotation.Resource;
         name = "RemoveTemporaryGameDiaryImages",
         fixedRate = 3600 * 1000
 )
-public class RemoveTemporaryGameDiaryImagesJob implements Job {
+public class RemoveTemporaryGameDiaryImagesJob extends RunAsAdminJob {
 
     private static final Logger LOG = LoggerFactory.getLogger(RemoveTemporaryGameDiaryImagesJob.class);
 
@@ -26,7 +25,7 @@ public class RemoveTemporaryGameDiaryImagesJob implements Job {
     private TemporaryGameDiaryImagesRemover temporaryGameDiaryImagesRemover;
 
     @Override
-    public void execute(JobExecutionContext context) {
+    public void executeAsAdmin() {
         try {
             temporaryGameDiaryImagesRemover.removeExpiredTemporaryImages(EXPIRATION_TIME);
         } catch (Exception e) {

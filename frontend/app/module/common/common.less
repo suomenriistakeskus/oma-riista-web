@@ -281,6 +281,11 @@ input[type=checkbox].r-non-labeled-checkbox {
   padding: 10px 15px;
 }
 
+.nav-pills > li.active > a > .text-danger {
+  background-color: #c44d4a;
+  color: #FFFFFF;
+}
+
 .dropdown-menu > .active > a {
   font-weight: bold;
 }
@@ -340,6 +345,28 @@ input[type=checkbox].r-non-labeled-checkbox {
   background-color: @table-bg-accent;
   padding: 4px 8px;
   border-bottom: 1px solid @table-border-color;
+}
+
+// Single column tables follows style of normal table
+// but has header in different row than content
+// and has no lines between rows
+
+.table-single-column > tbody {
+  font-size: 13px;
+}
+
+.table-single-column > tbody > tr > th {
+  text-transform: uppercase;
+  font-family: @font-family-open-sans;
+  font-weight: bold;
+  font-size: 11px;
+  line-height: 18px;
+  color: #737373;
+  padding: 8px 0px 8px;
+}
+
+.table-single-column > tbody > tr > td {
+  padding: 0px 0px 16px;
 }
 
 .table-striped > tbody > tr > th {

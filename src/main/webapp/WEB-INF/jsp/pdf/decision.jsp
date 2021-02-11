@@ -89,7 +89,7 @@
     </div>
 
     <div class="header-container">
-        <div class="col-1 extend">
+        <div class="col-1">
             <p>
                 <em>Vastaanottaja / Mottagare</em><br/>
                 <c:if test="${model.deliveryAddress == null}">
@@ -119,6 +119,19 @@
                 <c:out value="${model.heading.decisionName}"/>
             </h1>
         </div>
+        <c:if test="${model.classified}">
+            <div class="col-2">
+                <c:choose>
+                    <c:when test="${model.swedish}">
+                        <%@include file="decision_classified_sv.jsp" %>
+                    </c:when>
+                    <c:otherwise>
+                        <%@include file="decision_classified_fi.jsp" %>
+                    </c:otherwise>
+                </c:choose>
+
+            </div>
+        </c:if>
     </div>
 
 

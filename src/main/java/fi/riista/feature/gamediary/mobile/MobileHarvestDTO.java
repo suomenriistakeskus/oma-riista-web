@@ -10,14 +10,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import java.util.ArrayList;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class MobileHarvestDTO extends HarvestDTOBase {
-
-    // Required for apiVersion >= 2
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._2)
-    private HarvestSpecVersion harvestSpecVersion;
 
     /**
      * Version of DTO.
@@ -27,54 +23,25 @@ public class MobileHarvestDTO extends HarvestDTOBase {
      *
      * Used in server to detect which functionalities client supports.
      *
-     * THIS IS DEPRECATED, {@link #harvestSpecVersion} IS NOW THE PREFERRED
-     * SOURCE OF INFORMATION FOR RECOGNIZING WHAT MOBILE CLIENT IS CAPABLE TO DO
-     * WITH HARVEST DATA.
+     * DEPRECATED, {@link #getHarvestSpecVersion()} IS DE FACTO SOURCE FOR
+     * RECOGNIZING WHAT MOBILE CLIENT IS CAPABLE TO DO WITH HARVEST DATA.
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Deprecated
-    private Integer apiVersion;
+    private Integer apiVersion = 2;
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
-    protected Long mobileClientRefId;
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
+    private Long mobileClientRefId;
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     @Min(Harvest.MIN_AMOUNT)
     @Max(Harvest.MAX_AMOUNT)
-    protected Integer amount;
+    private int amount;
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
-    protected boolean harvestReportDone;
-
-    public MobileHarvestDTO() {
-        // Specimen list needs to be left null to simulate/support old mobile client versions.
-    }
-
-    public MobileHarvestDTO(@Nonnull final HarvestSpecVersion specVersion) {
-        setHarvestSpecVersion(Objects.requireNonNull(specVersion));
-        // Specimen list needs to be left null to simulate/support old mobile client versions.
-    }
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
+    private boolean harvestReportDone;
 
     // Accessors -->
-
-    @Override
-    public HarvestSpecVersion getHarvestSpecVersion() {
-        return harvestSpecVersion;
-    }
-
-    public void setHarvestSpecVersion(final HarvestSpecVersion specVersion) {
-        this.harvestSpecVersion = specVersion;
-
-        if (specVersion != null) {
-            if (specVersion.requiresDeprecatedApiParameter()) {
-                setApiVersion(1);
-            }
-
-            if (specVersion.requiresSpecimenList() && getSpecimens() == null) {
-                setSpecimens(new ArrayList<>());
-            }
-        }
-    }
 
     @Deprecated
     public Integer getApiVersion() {
@@ -94,11 +61,12 @@ public class MobileHarvestDTO extends HarvestDTOBase {
         this.mobileClientRefId = mobileClientRefId;
     }
 
-    public Integer getAmount() {
+    @Override
+    public int getAmount() {
         return amount;
     }
 
-    public void setAmount(@Nullable final Integer amount) {
+    public void setAmount(final int amount) {
         this.amount = amount;
     }
 
@@ -122,12 +90,7 @@ public class MobileHarvestDTO extends HarvestDTOBase {
 
         protected Builder(@Nonnull final HarvestSpecVersion specVersion) {
             super();
-            withSpecVersion(Objects.requireNonNull(specVersion));
-        }
-
-        public SELF withSpecVersion(@Nullable final HarvestSpecVersion specVersion) {
-            dto.setHarvestSpecVersion(specVersion);
-            return self();
+            withSpecVersion(requireNonNull(specVersion));
         }
 
         public SELF withMobileClientRefId(@Nullable final Long mobileClientRefId) {
@@ -135,7 +98,7 @@ public class MobileHarvestDTO extends HarvestDTOBase {
             return self();
         }
 
-        public SELF withAmount(@Nullable final Integer amount) {
+        public SELF withAmount(final int amount) {
             dto.setAmount(amount);
             return self();
         }
@@ -172,5 +135,4 @@ public class MobileHarvestDTO extends HarvestDTOBase {
             return this;
         }
     }
-
 }

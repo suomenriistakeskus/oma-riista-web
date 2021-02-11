@@ -1,0 +1,37 @@
+<form>
+    <div class="row">
+        <div class="col-xs-3">
+            <div class="form-group">
+                <organisation-selection
+                        show-rk="true"
+                        show-rka="true"
+                        show-inactive-rhys="true"
+                        area-code="$ctrl.areaCode"
+                        rhy-code="$ctrl.rhyCode"></organisation-selection>
+            </div>
+        </div>
+        <div class="col-xs-3">
+            <div class="form-group">
+                <select class="form-control"
+                        ng-options="y for y in $ctrl.availableYears"
+                        ng-model="$ctrl.selectedYear">
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-3">
+            <div class="form-group">
+                <select class="form-control"
+                        ng-options="('event.type.'+o|translate) for o in $ctrl.eventTypes"
+                        ng-model="$ctrl.selectedEventType">
+                    <option value="">{{'reporting.dashboard.eventsTab.allEventTypes' | translate}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-3">
+            <button type="button" class="btn btn-primary btn-block"
+                    ng-click="$ctrl.exportToExcel()">
+                <span translate="global.button.exportToExcel"></span>
+            </button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,26 @@
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+        <tr>
+            <th class="col-xs-3" translate="harvestpermit.wizard.species.table.headerSpecies"></th>
+            <th translate="harvestpermit.wizard.importing.species.scientificName"></th>
+            <th translate="harvestpermit.wizard.importing.species.specimenAmount"></th>
+            <th translate="harvestpermit.wizard.importing.species.eggAmount"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="s in ::$ctrl.species">
+            <td ng-bind="s.gameSpeciesCode | translateSpeciesCode"></td>
+            <td ng-bind="s.subSpeciesName"></td>
+            <td>
+                <span ng-bind="s.specimenAmount"></span>
+                <span ng-if="!!s.specimenAmount" translate="global.pcs"></span>
+            </td>
+            <td>
+                <span ng-bind="s.eggAmount"></span>
+                <span ng-if="!!s.eggAmount" translate="global.pcs"></span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

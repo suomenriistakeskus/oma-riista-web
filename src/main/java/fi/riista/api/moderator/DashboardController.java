@@ -2,19 +2,27 @@ package fi.riista.api.moderator;
 
 import fi.riista.feature.dashboard.DashboardAnnouncementsDTO;
 import fi.riista.feature.dashboard.DashboardClubsDTO;
+import fi.riista.feature.dashboard.DashboardDeerPilotFeature;
+import fi.riista.feature.dashboard.DashboardDeerPilotMemberDTO;
+import fi.riista.feature.dashboard.DashboardDeerPilotMemberExcelView;
 import fi.riista.feature.dashboard.DashboardFeature;
 import fi.riista.feature.dashboard.DashboardHarvestReportDTO;
 import fi.riista.feature.dashboard.DashboardHarvestReportExcelView;
 import fi.riista.feature.dashboard.DashboardHarvestsObservationsDTO;
 import fi.riista.feature.dashboard.DashboardMooseHuntingDTO;
+import fi.riista.feature.dashboard.DashboardMooselikeEndOfHuntingExcelFeature;
 import fi.riista.feature.dashboard.DashboardPdfDTO;
 import fi.riista.feature.dashboard.DashboardRhyEditDTO;
 import fi.riista.feature.dashboard.DashboardRhyEditExcelView;
 import fi.riista.feature.dashboard.DashboardShootingTestDTO;
 import fi.riista.feature.dashboard.DashboardSrvaDTO;
 import fi.riista.feature.dashboard.DashboardUsersDTO;
+import fi.riista.feature.dashboard.EventSearchConditionDTO;
+import fi.riista.feature.dashboard.EventSearchExcelFeature;
 import fi.riista.feature.gamediary.summary.AdminGameDiarySummaryExcelFeature;
 import fi.riista.feature.gamediary.summary.AdminGameDiarySummaryRequestDTO;
+import fi.riista.feature.harvestpermit.HarvestPermitPublicPdfDownloadRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitPublicPdfDownloadStatisticsDTO;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.util.DateUtil;
 import fi.riista.util.MediaTypeExtras;
@@ -24,15 +32,19 @@ import org.joda.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @RestController
@@ -44,6 +56,18 @@ public class DashboardController {
 
     @Resource
     private AdminGameDiarySummaryExcelFeature adminGameDiarySummaryExcelFeature;
+
+    @Resource
+    private DashboardMooselikeEndOfHuntingExcelFeature dashboardMooselikeEndOfHuntingExcelFeature;
+
+    @Resource
+    private DashboardDeerPilotFeature dashboardDeerPilotFeature;
+
+    @Resource
+    private EventSearchExcelFeature eventSearchExcelFeature;
+
+    @Resource
+    private HarvestPermitPublicPdfDownloadRepository downloadRepository;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping("users")
@@ -73,6 +97,13 @@ public class DashboardController {
     @GetMapping("moosehunting")
     public DashboardMooseHuntingDTO getMooseHuntingMetrics() {
         return dashboardFeature.getMetricsMooseHunting();
+    }
+
+    @PostMapping("/deerpilot/excel/{rhyCode:\\d+}")
+    public ModelAndView searchDeerPilotMemberExcel(@PathVariable final String rhyCode) {
+        final List<DashboardDeerPilotMemberDTO> memberDTOS =
+                dashboardDeerPilotFeature.exportRhyDeerStatistics(rhyCode);
+        return new ModelAndView(new DashboardDeerPilotMemberExcelView(memberDTOS));
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -132,7 +163,8 @@ public class DashboardController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate begin,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
 
-        final List<DashboardRhyEditDTO> results = dashboardFeature.getRhyEditMetrics(beginToDate(begin), endToDate(end));
+        final List<DashboardRhyEditDTO> results =
+                dashboardFeature.getRhyEditMetrics(beginToDate(begin), endToDate(end));
         return new ModelAndView(new DashboardRhyEditExcelView(results));
     }
 
@@ -157,6 +189,7 @@ public class DashboardController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate beginDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate,
             @RequestParam final boolean harvestReportOnly,
+            @RequestParam final boolean officialHarvestOnly,
             @RequestParam(required = false) final Integer speciesCode,
             @RequestParam(required = false) final OrganisationType organisationType,
             @RequestParam(required = false) final String officialCode) {
@@ -164,10 +197,31 @@ public class DashboardController {
         dto.setBeginDate(beginDate);
         dto.setEndDate(endDate);
         dto.setHarvestReportOnly(harvestReportOnly);
+        dto.setOfficialHarvestOnly(officialHarvestOnly);
         dto.setSpeciesCode(speciesCode);
         dto.setOfficialCode(officialCode);
         dto.setOrganisationType(organisationType);
 
         return new ModelAndView(adminGameDiarySummaryExcelFeature.export(dto));
+    }
+
+    @PostMapping("/mooselike/endofhunting/excel/{huntingYear:\\d+}/{speciesCode:\\d+}")
+    public ModelAndView exportMooselikePartnerEndOfHuntingReports(@PathVariable final int huntingYear,
+                                                                  @PathVariable final int speciesCode,
+                                                                  final Locale locale) {
+        return new ModelAndView(dashboardMooselikeEndOfHuntingExcelFeature.exportMooselikeHuntingSummaries(speciesCode, huntingYear, locale));
+
+    }
+
+    @PostMapping(value = "/events", produces = MediaTypeExtras.APPLICATION_EXCEL_VALUE)
+    public ModelAndView exportEvents(@Valid @RequestBody final EventSearchConditionDTO searchCondition,
+                                     final Locale locale) {
+        return new ModelAndView(eventSearchExcelFeature.export(searchCondition, locale));
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping("/carnivore/downloads")
+    public HarvestPermitPublicPdfDownloadStatisticsDTO getCarnivorePublicPdfDownloadStatistics() {
+        return downloadRepository.getStatistics();
     }
 }

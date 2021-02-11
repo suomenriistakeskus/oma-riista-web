@@ -7,6 +7,8 @@ import fi.riista.feature.gamediary.GameGender;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.stream.Stream;
 
 public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements HarvestSpecimenBusinessFields {
@@ -25,16 +27,45 @@ public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements Har
     private GameFitnessClass fitnessClass;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean antlersLost;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private GameAntlersType antlersType;
 
+    @Min(0)
+    @Max(200)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer antlersWidth;
 
+    @Min(0)
+    @Max(30)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer antlerPointsLeft;
 
+    @Min(0)
+    @Max(30)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer antlerPointsRight;
+
+    @Min(0)
+    @Max(50)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer antlersGirth;
+
+    @Min(0)
+    @Max(100)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer antlersLength;
+
+    @Min(0)
+    @Max(100)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer antlersInnerWidth;
+
+    @Min(0)
+    @Max(10)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer antlerShaftWidth;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean notEdible;
@@ -113,6 +144,16 @@ public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements Har
     }
 
     @Override
+    public Boolean getAntlersLost() {
+        return antlersLost;
+    }
+
+    @Override
+    public void setAntlersLost(final Boolean antlersLost) {
+        this.antlersLost = antlersLost;
+    }
+
+    @Override
     public GameAntlersType getAntlersType() {
         return antlersType;
     }
@@ -150,6 +191,46 @@ public class HarvestSpecimenDTO extends GameDiaryEntrySpecimenDTO implements Har
     @Override
     public void setAntlerPointsRight(final Integer antlerPointsRight) {
         this.antlerPointsRight = antlerPointsRight;
+    }
+
+    @Override
+    public Integer getAntlersGirth() {
+        return antlersGirth;
+    }
+
+    @Override
+    public void setAntlersGirth(final Integer antlersGirth) {
+        this.antlersGirth = antlersGirth;
+    }
+
+    @Override
+    public Integer getAntlersLength() {
+        return antlersLength;
+    }
+
+    @Override
+    public void setAntlersLength(final Integer antlersLength) {
+        this.antlersLength = antlersLength;
+    }
+
+    @Override
+    public Integer getAntlersInnerWidth() {
+        return antlersInnerWidth;
+    }
+
+    @Override
+    public void setAntlersInnerWidth(final Integer antlersInnerWidth) {
+        this.antlersInnerWidth = antlersInnerWidth;
+    }
+
+    @Override
+    public Integer getAntlerShaftWidth() {
+        return antlerShaftWidth;
+    }
+
+    @Override
+    public void setAntlerShaftWidth(final Integer antlerShaftWidth) {
+        this.antlerShaftWidth = antlerShaftWidth;
     }
 
     @Override

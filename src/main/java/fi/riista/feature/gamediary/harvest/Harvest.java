@@ -2,6 +2,7 @@ package fi.riista.feature.gamediary.harvest;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.PropertyIdentifier;
+import fi.riista.feature.gamediary.DeerHuntingType;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -25,6 +26,7 @@ import fi.riista.util.jpa.CriteriaUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.persistence.Access;
@@ -200,7 +202,15 @@ public class Harvest extends GameDiaryEntry implements HasHarvestReportState {
     private PermittedMethod permittedMethod;
 
     @OneToMany(mappedBy = "harvest", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<HarvestRegistryItem> harvestRegistryItem = new HashSet<HarvestRegistryItem>();
+    private Set<HarvestRegistryItem> harvestRegistryItem = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private DeerHuntingType deerHuntingType;
+
+    @Size(max = 255)
+    @Column
+    private String deerHuntingOtherTypeDescription;
 
     @Transient
     private HuntingClub huntingClub;
@@ -252,6 +262,11 @@ public class Harvest extends GameDiaryEntry implements HasHarvestReportState {
     public boolean isHarvestReportFieldsConsistent() {
         return F.allNull(this.harvestReportAuthor, this.harvestReportState, this.harvestReportDate) ||
                 F.allNotNull(this.harvestReportAuthor, this.harvestReportState, this.harvestReportDate);
+    }
+
+    @AssertTrue
+    public boolean isDeerHuntingDecriptionSetOnlyForOtherType() {
+        return StringUtils.isEmpty(this.deerHuntingOtherTypeDescription) || this.deerHuntingType == DeerHuntingType.OTHER;
     }
 
     @Override
@@ -606,5 +621,21 @@ public class Harvest extends GameDiaryEntry implements HasHarvestReportState {
 
     public void setHuntingClub(HuntingClub huntingClub) {
         this.huntingClub = huntingClub;
+    }
+
+    public DeerHuntingType getDeerHuntingType() {
+        return deerHuntingType;
+    }
+
+    public void setDeerHuntingType(final DeerHuntingType deerHuntingType) {
+        this.deerHuntingType = deerHuntingType;
+    }
+
+    public String getDeerHuntingOtherTypeDescription() {
+        return deerHuntingOtherTypeDescription;
+    }
+
+    public void setDeerHuntingOtherTypeDescription(final String deerHuntingOtherTypeDescription) {
+        this.deerHuntingOtherTypeDescription = deerHuntingOtherTypeDescription;
     }
 }

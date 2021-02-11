@@ -3,7 +3,6 @@ package fi.riista.feature.permit.invoice.batch;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.storage.FileDownloadService;
-import fi.riista.util.DateUtil;
 import org.joda.time.YearMonth;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,7 +37,6 @@ public class FivaldiInvoiceBatchFeature {
                 .stream()
                 .filter(PermitDecisionInvoiceBatch::isDownloaded)
                 .map(batch -> batch.getLifecycleFields().getCreationTime())
-                .map(DateUtil::toDateTimeNullSafe)
                 .map(YearMonth::new)
                 .sorted(reverseOrder())
                 .distinct()

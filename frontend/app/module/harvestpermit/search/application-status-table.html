@@ -22,68 +22,41 @@
     </div>
 </div>
 
+<slice-pager slice="$ctrl.pageInfo" load-page="$ctrl.selectPage(page)"></slice-pager>
+
 <div class="reporting-applications">
     <table class="table table-striped">
         <thead>
         <tr>
             <th></th>
-            <th colspan="3">Hirvieläimet<br>&nbsp;</th>
-            <th colspan="3">Hirvieläimen<br> uusi lupa</th>
-            <th colspan="3">Poikkeuslupa<br> linnut</th>
-            <th colspan="3">Suurpedot<br>&nbsp;</th>
+            <th colspan="3" ng-repeat="categoryStatus in $ctrl.stats[0].categoryStatuses track by $index">
+                <span translate="harvestpermit.admin.application.menu.statusTableHeadings.{{categoryStatus.category}}.row1"></span><br>
+                <span translate="harvestpermit.admin.application.menu.statusTableHeadings.{{categoryStatus.category}}.row2"></span><br>
+                <span translate="harvestpermit.admin.application.menu.statusTableHeadings.{{categoryStatus.category}}.row3"></span>
+            </th>
         </tr>
         <tr>
             <th>Alue</th>
 
-            <th>H</th>
+            <th ng-repeat-start="n in [].constructor($ctrl.stats[0].categoryStatuses.length) track by $index">H</th>
             <th>K</th>
-            <th>V</th>
-
-            <th>H</th>
-            <th>K</th>
-            <th>V</th>
-
-            <th>H</th>
-            <th>K</th>
-            <th>V</th>
-
-            <th>H</th>
-            <th>K</th>
-            <th>V</th>
+            <th ng-repeat-end>V</th>
         </tr>
         </thead>
         <tbody>
 
-        <tr ng-repeat="stat in $ctrl.stats">
+        <tr ng-repeat="stat in $ctrl.stats track by $index">
             <td>
                 <span ng-bind="stat.rka.officialCode"></span>
                 <span name-translated="stat.rka"></span>
             </td>
 
-            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['MOOSELIKE'].H)}}"
-                      ng-bind="stat.permitCategoryToStatus['MOOSELIKE'].H"></span></td>
-            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['MOOSELIKE'].K)}}"
-                      ng-bind="stat.permitCategoryToStatus['MOOSELIKE'].K"></span></td>
-            <td><span ng-bind="stat.permitCategoryToStatus['MOOSELIKE'].V"></span></td>
-
-            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['MOOSELIKE_NEW'].H)}}"
-                      ng-bind="stat.permitCategoryToStatus['MOOSELIKE_NEW'].H"></span></td>
-            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['MOOSELIKE_NEW'].K)}}"
-                      ng-bind="stat.permitCategoryToStatus['MOOSELIKE_NEW'].K"></span></td>
-            <td><span ng-bind="stat.permitCategoryToStatus['MOOSELIKE_NEW'].V"></span></td>
-
-            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['BIRD'].H)}}"
-                      ng-bind="stat.permitCategoryToStatus['BIRD'].H"></span></td>
-            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['BIRD'].K)}}"
-                      ng-bind="stat.permitCategoryToStatus['BIRD'].K"></span></td>
-            <td><span ng-bind="stat.permitCategoryToStatus['BIRD'].V"></span></td>
-
-            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['LARGE_CARNIVORE'].H)}}"
-                      ng-bind="stat.permitCategoryToStatus['LARGE_CARNIVORE'].H"></span></td>
-            <td><span class="{{$ctrl.getClass(stat.permitCategoryToStatus['LARGE_CARNIVORE'].K)}}"
-                      ng-bind="stat.permitCategoryToStatus['LARGE_CARNIVORE'].K"></span></td>
-            <td><span ng-bind="stat.permitCategoryToStatus['LARGE_CARNIVORE'].V"></span></td>
-
+            <td ng-repeat-start="categoryStatus in stat.categoryStatuses track by $index">
+                <span class="{{$ctrl.getClass(categoryStatus.statuses.H)}}"
+                      ng-bind="categoryStatus.statuses.H"></span></td>
+            <td><span class="{{$ctrl.getClass(categoryStatus.statuses.K)}}"
+                      ng-bind="categoryStatus.statuses.K"></span></td>
+            <td ng-repeat-end><span ng-bind="categoryStatus.statuses.V"></span></td>
         </tr>
         </tbody>
     </table>

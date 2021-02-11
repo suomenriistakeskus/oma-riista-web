@@ -1,0 +1,24 @@
+<div class="alert alert-info">
+    <span ng-if="$ctrl.areaInfo.geoLocation" class="fa fa-info-circle"></span>
+    <span ng-if="!$ctrl.areaInfo.geoLocation" class="fa fa-exclamation-triangle"></span>
+
+    <div class="alert-content">
+        <span class="alert-title" translate="harvestpermit.wizard.carnivore.map.areaTitle"></span>
+        <p translate="harvestpermit.wizard.gameManagement.map.instructions"></p>
+        <p translate="harvestpermit.wizard.gameManagement.map.geoLocationInstruction"></p>
+    </div>
+</div>
+
+<ng-form name="derogationAreaForm">
+    <!-- TODO: Figure out whether to copy or refactor this component out from bird wizard -->
+    <bird-application-location-editor protected-area="$ctrl.areaInfo"></bird-application-location-editor>
+</ng-form>
+
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(derogationAreaForm)"
+        previous="$ctrl.previous(derogationAreaForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(derogationAreaForm)">
+</permit-application-wizard-navigation>
